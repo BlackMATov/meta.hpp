@@ -1,0 +1,22 @@
+name: darwin
+
+on: [push, pull_request]
+
+jobs:
+  build:
+    runs-on: ${{matrix.config.os}}
+    strategy:
+      fail-fast: false
+      matrix:
+        config:
+        # https://github.com/actions/virtual-environments/tree/main/images/macos
+        - { os: "macos-10.15", xcode: "10.3" }
+        - { os: "macos-10.15", xcode: "11.7" }
+        - { os: "macos-10.15", xcode: "12.4" }
+    name: "xcode-${{matrix.config.xcode}}"
+    steps:
+    - uses: actions/checkout@v2
+    - name: Select Xcode
+      run: sudo xcode-select --switch "/Applications/Xcode_${{matrix.config.xcode}}.app"
+    - name: Build && Test
+      run: .ci/build_darwin.sh
