@@ -19,7 +19,10 @@ jobs:
         - { os: "ubuntu-20.04", cc: "clang-10", cxx: "clang++-10" }
     name: "${{matrix.config.cxx}}"
     steps:
-    - uses: actions/checkout@v2
+    - name: Setup
+      run: sudo apt-get -y install "${{matrix.config.cc}}" "${{matrix.config.cxx}}"
+    - name: Checkout
+      uses: actions/checkout@v2
     - name: Build && Test
       run: .ci/build_linux.sh
       env: { CC: "${{matrix.config.cc}}", CXX: "${{matrix.config.cxx}}" }
