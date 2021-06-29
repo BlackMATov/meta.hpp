@@ -6,6 +6,14 @@
 
 #pragma once
 
-namespace meta_hpp
-{
-}
+#include "meta_fwd.hpp"
+
+#include "meta_value.hpp"
+#include "meta_registry.hpp"
+
+#include "meta_class.hpp"
+#include "meta_field.hpp"
+#include "meta_function.hpp"
+#include "meta_method.hpp"
+#include "meta_namespace.hpp"
+#include "meta_variable.hpp"

@@ -4,10 +4,13 @@
  * Copyright (C) 2021, by Matvey Cherevko (blackmatov@gmail.com)
  ******************************************************************************/
 
-#include <meta.hpp/meta.hpp>
+#include <meta.hpp/meta_value.hpp>
 #include "doctest/doctest.hpp"
 
-namespace meta_tests
+namespace
 {
-    using namespace meta_hpp;
+}
+
+TEST_CASE("meta/value") {
+    namespace meta = meta_hpp;
 }
