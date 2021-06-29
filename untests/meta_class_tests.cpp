@@ -5,6 +5,11 @@
  ******************************************************************************/
 
 #include <meta.hpp/meta_class.hpp>
+#include <meta.hpp/meta_field.hpp>
+#include <meta.hpp/meta_function.hpp>
+#include <meta.hpp/meta_method.hpp>
+#include <meta.hpp/meta_variable.hpp>
+
 #include "doctest/doctest.hpp"
 
 namespace

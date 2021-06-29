@@ -87,27 +87,23 @@ TEST_CASE("meta/examples/ivec3") {
 TEST_CASE("meta/examples/simple") {
     namespace meta = meta_hpp;
 
-    auto registry = meta::registry{}(
-        meta::namespace_("vmath")(
-            meta::class_<ivec2>("ivec2")(
-                meta::field_<&ivec2::x>("x"),
-                meta::field_<&ivec2::y>("y"),
-                meta::method_<&ivec2::dot>("dot"),
-                meta::method_<&ivec2::length2>("length2")
-            ),
-            meta::class_<ivec3>("ivec3")(
-                meta::field_<&ivec3::x>("x"),
-                meta::field_<&ivec3::y>("y"),
-                meta::field_<&ivec3::z>("z"),
-                meta::method_<&ivec3::dot>("dot"),
-                meta::method_<&ivec3::length2>("length2")
-            ),
-            meta::function_<meta::select<ivec2(ivec2,ivec2)>(&add)>("iadd2"),
-            meta::function_<meta::select<ivec3(ivec3,ivec3)>(&add)>("iadd3")
-        )
-    );
-
-    meta::namespace_info vmath_info = registry.get_namespace("vmath").value();
+    meta::namespace_info vmath_info = meta::namespace_("vmath")(
+        meta::class_<ivec2>("ivec2")(
+            meta::field_<&ivec2::x>("x"),
+            meta::field_<&ivec2::y>("y"),
+            meta::method_<&ivec2::dot>("dot"),
+            meta::method_<&ivec2::length2>("length2")
+        ),
+        meta::class_<ivec3>("ivec3")(
+            meta::field_<&ivec3::x>("x"),
+            meta::field_<&ivec3::y>("y"),
+            meta::field_<&ivec3::z>("z"),
+            meta::method_<&ivec3::dot>("dot"),
+            meta::method_<&ivec3::length2>("length2")
+        ),
+        meta::function_<meta::select<ivec2(ivec2,ivec2)>(&add)>("iadd2"),
+        meta::function_<meta::select<ivec3(ivec3,ivec3)>(&add)>("iadd3")
+    ).info();
 
     meta::class_info ivec2_info = vmath_info.get_class("ivec2").value();
     meta::field_info ivec2_x_info = ivec2_info.get_field("x").value();

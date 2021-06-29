@@ -9,11 +9,21 @@
 #include "meta_fwd.hpp"
 
 #include "meta_value.hpp"
-#include "meta_registry.hpp"
 
 #include "meta_class.hpp"
+#include "meta_class_info.hpp"
+
 #include "meta_field.hpp"
+#include "meta_field_info.hpp"
+
 #include "meta_function.hpp"
+#include "meta_function_info.hpp"
+
 #include "meta_method.hpp"
+#include "meta_method_info.hpp"
+
 #include "meta_namespace.hpp"
+#include "meta_namespace_info.hpp"
+
 #include "meta_variable.hpp"
+#include "meta_variable_info.hpp"

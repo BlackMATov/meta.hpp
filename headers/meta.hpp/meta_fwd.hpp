@@ -21,7 +21,6 @@
 namespace meta_hpp
 {
     class value;
-    class registry;
 
     class class_info;
     class field_info;

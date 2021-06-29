@@ -4,7 +4,11 @@
  * Copyright (C) 2021, by Matvey Cherevko (blackmatov@gmail.com)
  ******************************************************************************/
 
+#include <meta.hpp/meta_class.hpp>
+#include <meta.hpp/meta_function.hpp>
 #include <meta.hpp/meta_namespace.hpp>
+#include <meta.hpp/meta_variable.hpp>
+
 #include "doctest/doctest.hpp"
 
 namespace
