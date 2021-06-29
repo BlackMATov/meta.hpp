@@ -23,10 +23,9 @@ namespace meta_hpp::field_detail
     };
 
     template < typename T, typename Base >
-    struct field_traits<const T Base::*> {
+    struct field_traits<const T Base::*>
+         : field_traits<T Base::*> {
         static constexpr bool is_const = true;
-        using value_type = T;
-        using instance_type = Base;
     };
 
     template < auto Field  >
@@ -42,7 +41,7 @@ namespace meta_hpp::field_detail
     }
 
     template < auto Field  >
-    void setter(void* instance, value value) {
+    void setter([[maybe_unused]] void* instance, value value) {
         using ft = field_traits<decltype(Field)>;
         using value_type = typename ft::value_type;
         using instance_type = typename ft::instance_type;

@@ -39,13 +39,13 @@ namespace meta_hpp::method_detail
          : method_traits<R(Base::*)(Args...) const> {};
 
     template < auto Method, std::size_t... Is >
-    value invoke(void* instance, value* args, std::index_sequence<Is...>) {
+    value invoke([[maybe_unused]] void* instance, value* args, std::index_sequence<Is...>) {
         using mt = method_traits<decltype(Method)>;
         using return_type = typename mt::return_type;
         using instance_type = typename mt::instance_type;
         using argument_types = typename mt::argument_types;
 
-        auto typed_arguments = std::make_tuple(
+        [[maybe_unused]] auto typed_arguments = std::make_tuple(
             (args + Is)->try_cast<std::tuple_element_t<Is, argument_types>>()...);
 
         if ( !(std::get<Is>(typed_arguments) && ...) ) {
@@ -77,13 +77,13 @@ namespace meta_hpp::method_detail
     }
 
     template < auto Method, std::size_t... Is >
-    value cinvoke(const void* instance, value* args, std::index_sequence<Is...>) {
+    value cinvoke([[maybe_unused]] const void* instance, value* args, std::index_sequence<Is...>) {
         using mt = method_traits<decltype(Method)>;
         using return_type = typename mt::return_type;
         using instance_type = typename mt::instance_type;
         using argument_types = typename mt::argument_types;
 
-        auto typed_arguments = std::make_tuple(
+        [[maybe_unused]] auto typed_arguments = std::make_tuple(
             (args + Is)->try_cast<std::tuple_element_t<Is, argument_types>>()...);
 
         if ( !(std::get<Is>(typed_arguments) && ...) ) {

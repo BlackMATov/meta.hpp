@@ -99,8 +99,6 @@ namespace meta_hpp
     template < auto Variable >
     class variable_ {
     public:
-        static_assert(std::is_pointer_v<decltype(Variable)>);
-
         explicit variable_(std::string id)
         : info_(std::move(id)) {
             info_.getter_ = &variable_detail::getter<Variable>;
