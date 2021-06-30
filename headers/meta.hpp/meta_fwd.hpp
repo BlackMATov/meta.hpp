@@ -8,6 +8,8 @@
 
 #include <any>
 #include <array>
+#include <cstddef>
+#include <cstdint>
 #include <functional>
 #include <map>
 #include <optional>
