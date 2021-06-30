@@ -34,6 +34,48 @@ namespace meta_hpp
             return id_;
         }
 
+        template < typename F >
+        void each_class(F&& f) const {
+            for ( auto [_, info] : classes_ ) {
+                std::invoke(f, info);
+            }
+        }
+
+        template < typename F >
+        void each_data(F&& f) const {
+            for ( auto [_, info] : datas_ ) {
+                std::invoke(f, info);
+            }
+        }
+
+        template < typename F >
+        void each_field(F&& f) const {
+            for ( auto [_, info] : fields_ ) {
+                std::invoke(f, info);
+            }
+        }
+
+        template < typename F >
+        void each_function(F&& f) const {
+            for ( auto [_, info] : functions_ ) {
+                std::invoke(f, info);
+            }
+        }
+
+        template < typename F >
+        void each_method(F&& f) const {
+            for ( auto [_, info] : methods_ ) {
+                std::invoke(f, info);
+            }
+        }
+
+        template < typename F >
+        void each_variable(F&& f) const {
+            for ( auto [_, info] : variables_ ) {
+                std::invoke(f, info);
+            }
+        }
+
         std::optional<class_info> get_class(std::string_view id) const {
             return detail::find_opt(classes_, id);
         }

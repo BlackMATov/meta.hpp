@@ -150,6 +150,13 @@ namespace meta_hpp
             return cinvoke_(instance, vargs.data(), vargs.size());
         }
 
+        template < typename F >
+        void each_data(F&& f) const {
+            for ( auto [_, info] : datas_ ) {
+                std::invoke(f, info);
+            }
+        }
+
         std::optional<data_info> get_data(std::string_view id) const {
             return detail::find_opt(datas_, id);
         }

@@ -32,6 +32,42 @@ namespace meta_hpp
         const std::string& id() const noexcept {
             return id_;
         }
+
+        template < typename F >
+        void each_class(F&& f) const {
+            for ( auto [_, info] : classes_ ) {
+                std::invoke(f, info);
+            }
+        }
+
+        template < typename F >
+        void each_data(F&& f) const {
+            for ( auto [_, info] : datas_ ) {
+                std::invoke(f, info);
+            }
+        }
+
+        template < typename F >
+        void each_function(F&& f) const {
+            for ( auto [_, info] : functions_ ) {
+                std::invoke(f, info);
+            }
+        }
+
+        template < typename F >
+        void each_namespace(F&& f) const {
+            for ( auto [_, info] : namespaces_ ) {
+                std::invoke(f, info);
+            }
+        }
+
+        template < typename F >
+        void each_variable(F&& f) const {
+            for ( auto [_, info] : variables_ ) {
+                std::invoke(f, info);
+            }
+        }
+
         std::optional<class_info> get_class(std::string_view id) const {
             return detail::find_opt(classes_, id);
         }
