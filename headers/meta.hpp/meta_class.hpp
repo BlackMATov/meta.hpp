@@ -28,63 +28,38 @@ namespace meta_hpp
             return info_;
         }
 
+        operator const class_info&() const noexcept {
+            return info_;
+        }
+
         template < typename... Internals >
         class_& operator()(Internals&&...internals) {
             (add_(std::forward<Internals>(internals)), ...);
             return *this;
         }
     private:
-        template < typename InternalClass >
-        void add_(const class_<InternalClass>& internal) {
-            detail::merge_with(
-                info_.classes_,
-                internal.info().id(),
-                internal.info(),
-                &class_info::merge_with_);
+        void add_(const class_info& info) {
+            detail::merge_with(info_.classes_, info.id(), info, &class_info::merge_with_);
         }
 
-        void add_(const data_& internal) {
-            detail::merge_with(
-                info_.datas_,
-                internal.info().id(),
-                internal.info(),
-                &data_info::merge_with_);
+        void add_(const data_info& info) {
+            detail::merge_with(info_.datas_, info.id(), info, &data_info::merge_with_);
         }
 
-        template < auto InternalField >
-        void add_(const field_<InternalField>& internal) {
-            detail::merge_with(
-                info_.fields_,
-                internal.info().id(),
-                internal.info(),
-                &field_info::merge_with_);
+        void add_(const field_info& info) {
+            detail::merge_with(info_.fields_, info.id(), info, &field_info::merge_with_);
         }
 
-        template < auto InternalFunction >
-        void add_(const function_<InternalFunction>& internal) {
-            detail::merge_with(
-                info_.functions_,
-                internal.info().id(),
-                internal.info(),
-                &function_info::merge_with_);
+        void add_(const function_info& info) {
+            detail::merge_with(info_.functions_, info.id(), info, &function_info::merge_with_);
         }
 
-        template < auto InternalMethod >
-        void add_(const method_<InternalMethod>& internal) {
-            detail::merge_with(
-                info_.methods_,
-                internal.info().id(),
-                internal.info(),
-                &method_info::merge_with_);
+        void add_(const method_info& info) {
+            detail::merge_with(info_.methods_, info.id(), info, &method_info::merge_with_);
         }
 
-        template < auto InternalVariable >
-        void add_(const variable_<InternalVariable>& internal) {
-            detail::merge_with(
-                info_.variables_,
-                internal.info().id(),
-                internal.info(),
-                &variable_info::merge_with_);
+        void add_(const variable_info& info) {
+            detail::merge_with(info_.variables_, info.id(), info, &variable_info::merge_with_);
         }
     private:
         class_info info_;

@@ -29,18 +29,18 @@ namespace meta_hpp
             return info_;
         }
 
+        operator const method_info&() const {
+            return info_;
+        }
+
         template < typename... Internals >
         method_& operator()(Internals&&...internals) {
             (add_(std::forward<Internals>(internals)), ...);
             return *this;
         }
     private:
-        void add_(const data_& internal) {
-            detail::merge_with(
-                info_.datas_,
-                internal.info().id(),
-                internal.info(),
-                &data_info::merge_with_);
+        void add_(const data_info& info) {
+            detail::merge_with(info_.datas_, info.id(), info, &data_info::merge_with_);
         }
     private:
         method_info info_;

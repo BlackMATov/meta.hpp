@@ -29,13 +29,13 @@ TEST_CASE("meta/function") {
     meta::function_<&int_f_int> int_f_int_function_("int_f_int");
     meta::function_<&int_f_int2> int_f_int2_function_("int_f_int2");
 
-    const meta::function_info& void_f_void_info = void_f_void_function_.info();
-    const meta::function_info& void_f_int_info = void_f_int_function_.info();
-    const meta::function_info& void_f_int2_info = void_f_int2_function_.info();
+    const meta::function_info& void_f_void_info = void_f_void_function_;
+    const meta::function_info& void_f_int_info = void_f_int_function_;
+    const meta::function_info& void_f_int2_info = void_f_int2_function_;
 
-    const meta::function_info& int_f_void_info = int_f_void_function_.info();
-    const meta::function_info& int_f_int_info = int_f_int_function_.info();
-    const meta::function_info& int_f_int2_info = int_f_int2_function_.info();
+    const meta::function_info& int_f_void_info = int_f_void_function_;
+    const meta::function_info& int_f_int_info = int_f_int_function_;
+    const meta::function_info& int_f_int2_info = int_f_int2_function_;
 
     SUBCASE("void_return") {
         CHECK_NOTHROW(void_f_void_info.invoke());

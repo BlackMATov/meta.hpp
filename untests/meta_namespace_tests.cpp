@@ -24,7 +24,7 @@ TEST_CASE("meta/namespace") {
 
     meta::namespace_ namespace_{"ns"};
     const meta::namespace_& cnamespace_ = namespace_;
-    const meta::namespace_info& ns_info = cnamespace_.info();
+    const meta::namespace_info& ns_info = cnamespace_;
 
     CHECK_FALSE(ns_info.get_class("clazz"));
     CHECK_FALSE(ns_info.get_function("func"));
@@ -75,6 +75,7 @@ TEST_CASE("meta/namespace/merge") {
     namespace meta = meta_hpp;
 
     meta::namespace_ namespace_{"ns"};
+    const meta::namespace_info& ns_info = namespace_;
 
     namespace_(
         meta::namespace_{"ns2"}(
@@ -96,7 +97,7 @@ TEST_CASE("meta/namespace/merge") {
         )
     );
 
-    const meta::namespace_info ns2_info = namespace_.info().get_namespace("ns2").value();
+    const meta::namespace_info ns2_info = ns_info.get_namespace("ns2").value();
     const meta::namespace_info ns3_info = ns2_info.get_namespace("ns3").value();
 
     CHECK(ns2_info.get_class("clazz"));

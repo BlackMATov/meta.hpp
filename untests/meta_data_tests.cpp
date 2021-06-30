@@ -31,7 +31,7 @@ TEST_CASE("meta/data") {
     using namespace std::string_literals;
 
     meta::data_ data_("key"s, "value"s);
-    const meta::data_info& data_info = data_.info();
+    const meta::data_info& data_info = data_;
 
     CHECK(data_info.id() == "key");
     CHECK(data_info.get().to_string() == "value");
@@ -74,7 +74,7 @@ TEST_CASE("meta/data/class") {
 
     const meta::class_info clazz_info = meta::class_<clazz>("clazz")(
         meta::data_("hello"s, "world"s)
-    ).info();
+    );
 
     CHECK(clazz_info.get_data("hello"));
     CHECK(clazz_info.get_data("hello")->get().to_string() == "world");
@@ -88,7 +88,7 @@ TEST_CASE("meta/data/data") {
         meta::data_("hello"s, "world"s)(
             meta::data_("hello2"s, "world2"s)
         )
-    ).info();
+    );
 
     CHECK(clazz_info.get_data("hello"));
     CHECK(clazz_info.get_data("hello")->get_data("hello2"));
@@ -103,7 +103,7 @@ TEST_CASE("meta/data/field") {
         meta::field_<&clazz::field>("field")(
             meta::data_("hello"s, "world"s)
         )
-    ).info();
+    );
 
     CHECK(clazz_info.get_field("field"));
     CHECK(clazz_info.get_field("field")->get_data("hello"));
@@ -118,7 +118,7 @@ TEST_CASE("meta/data/function") {
         meta::function_<&clazz::function>("function")(
             meta::data_("hello"s, "world"s)
         )
-    ).info();
+    );
 
     CHECK(clazz_info.get_function("function"));
     CHECK(clazz_info.get_function("function")->get_data("hello"));
@@ -133,7 +133,7 @@ TEST_CASE("meta/data/method") {
         meta::method_<&clazz::method>("method")(
             meta::data_("hello"s, "world"s)
         )
-    ).info();
+    );
 
     CHECK(clazz_info.get_method("method"));
     CHECK(clazz_info.get_method("method")->get_data("hello"));
@@ -146,7 +146,7 @@ TEST_CASE("meta/data/namespace") {
 
     const meta::namespace_info ns_info = meta::namespace_("ns")(
         meta::data_("hello"s, "world"s)
-    ).info();
+    );
 
     CHECK(ns_info.get_data("hello"));
     CHECK(ns_info.get_data("hello")->get().to_string() == "world");
@@ -160,7 +160,7 @@ TEST_CASE("meta/data/variable") {
         meta::variable_<&clazz::variable>("variable")(
             meta::data_("hello"s, "world"s)
         )
-    ).info();
+    );
 
     CHECK(clazz_info.get_variable("variable"));
     CHECK(clazz_info.get_variable("variable")->get_data("hello"));

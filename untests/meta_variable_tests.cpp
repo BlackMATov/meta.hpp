@@ -29,8 +29,8 @@ TEST_CASE("meta/variable") {
         meta::variable_<&variable> variable_{"variable"};
         meta::variable_<&cvariable> cvariable_{"cvariable"};
 
-        const meta::variable_info& variable_info = variable_.info();
-        const meta::variable_info& cvariable_info = cvariable_.info();
+        const meta::variable_info& variable_info = variable_;
+        const meta::variable_info& cvariable_info = cvariable_;
 
         {
             CHECK(variable == 1);
@@ -62,8 +62,8 @@ TEST_CASE("meta/variable") {
         meta::variable_<&clazz::variable> variable_{"variable"};
         meta::variable_<&clazz::cvariable> cvariable_{"cvariable"};
 
-        const meta::variable_info& variable_info = variable_.info();
-        const meta::variable_info& cvariable_info = cvariable_.info();
+        const meta::variable_info& variable_info = variable_;
+        const meta::variable_info& cvariable_info = cvariable_;
 
         {
             CHECK(clazz::variable == 1);

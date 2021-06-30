@@ -22,8 +22,8 @@ TEST_CASE("meta/field") {
     meta::field_<&clazz::field> field_{"field"};
     meta::field_<&clazz::cfield> cfield_{"cfield"};
 
-    const meta::field_info& field_info = field_.info();
-    const meta::field_info& cfield_info = cfield_.info();
+    const meta::field_info& field_info = field_;
+    const meta::field_info& cfield_info = cfield_;
 
     {
         clazz instance;

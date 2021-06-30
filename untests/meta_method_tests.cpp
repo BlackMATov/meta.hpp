@@ -40,13 +40,13 @@ TEST_CASE("meta/non_const_method") {
     meta::method_<&clazz::int_f_int> int_f_int_method_("int_f_int");
     meta::method_<&clazz::int_f_int2> int_f_int2_method_("int_f_int2");
 
-    const meta::method_info& void_f_void_info = void_f_void_method_.info();
-    const meta::method_info& void_f_int_info = void_f_int_method_.info();
-    const meta::method_info& void_f_int2_info = void_f_int2_method_.info();
+    const meta::method_info& void_f_void_info = void_f_void_method_;
+    const meta::method_info& void_f_int_info = void_f_int_method_;
+    const meta::method_info& void_f_int2_info = void_f_int2_method_;
 
-    const meta::method_info& int_f_void_info = int_f_void_method_.info();
-    const meta::method_info& int_f_int_info = int_f_int_method_.info();
-    const meta::method_info& int_f_int2_info = int_f_int2_method_.info();
+    const meta::method_info& int_f_void_info = int_f_void_method_;
+    const meta::method_info& int_f_int_info = int_f_int_method_;
+    const meta::method_info& int_f_int2_info = int_f_int2_method_;
 
     SUBCASE("void_return") {
         clazz instance;
@@ -108,13 +108,13 @@ TEST_CASE("meta/const_method") {
     meta::method_<&clazz::const_int_f_int> int_f_int_method_("int_f_int");
     meta::method_<&clazz::const_int_f_int2> int_f_int2_method_("int_f_int2");
 
-    const meta::method_info& void_f_void_info = void_f_void_method_.info();
-    const meta::method_info& void_f_int_info = void_f_int_method_.info();
-    const meta::method_info& void_f_int2_info = void_f_int2_method_.info();
+    const meta::method_info& void_f_void_info = void_f_void_method_;
+    const meta::method_info& void_f_int_info = void_f_int_method_;
+    const meta::method_info& void_f_int2_info = void_f_int2_method_;
 
-    const meta::method_info& int_f_void_info = int_f_void_method_.info();
-    const meta::method_info& int_f_int_info = int_f_int_method_.info();
-    const meta::method_info& int_f_int2_info = int_f_int2_method_.info();
+    const meta::method_info& int_f_void_info = int_f_void_method_;
+    const meta::method_info& int_f_int_info = int_f_int_method_;
+    const meta::method_info& int_f_int2_info = int_f_int2_method_;
 
     SUBCASE("void_return") {
         clazz instance;

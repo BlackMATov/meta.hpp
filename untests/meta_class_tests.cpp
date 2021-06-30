@@ -40,7 +40,7 @@ TEST_CASE("meta/class") {
 
     meta::class_<clazz> class_{"clazz"};
     const meta::class_<clazz>& cclass_ = class_;
-    const meta::class_info& clazz_info = cclass_.info();
+    const meta::class_info& clazz_info = cclass_;
 
     CHECK_FALSE(clazz_info.get_class("clazz2"));
     CHECK_FALSE(clazz_info.get_field("field"));
