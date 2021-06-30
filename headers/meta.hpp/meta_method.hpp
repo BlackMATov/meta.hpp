@@ -20,7 +20,7 @@ namespace meta_hpp
         static_assert(std::is_member_function_pointer_v<decltype(Method)>);
 
         explicit method_(std::string id)
-        : info_(std::move(id)) {
+        : info_{get_family_id<decltype(Method)>(), std::move(id)} {
             info_.invoke_ = &method_detail::invoke<Method>;
             info_.cinvoke_ = &method_detail::cinvoke<Method>;
         }

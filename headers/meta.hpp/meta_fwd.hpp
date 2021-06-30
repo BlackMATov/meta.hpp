@@ -8,6 +8,7 @@
 
 #include <any>
 #include <array>
+#include <cassert>
 #include <cstddef>
 #include <cstdint>
 #include <functional>
@@ -42,6 +43,48 @@ namespace meta_hpp
     template < auto Method > class method_;
     class namespace_;
     template < auto Variable > class variable_;
+}
+
+namespace meta_hpp
+{
+    struct family_id {
+        using underlying_type = std::size_t;
+        underlying_type id{};
+
+        friend bool operator<(family_id l, family_id r) noexcept {
+            return l.id < r.id;
+        }
+    };
+
+    namespace family_id_detail
+    {
+        template < typename Void = void >
+        class type_family_base {
+            static_assert(
+                std::is_void_v<Void>,
+                "unexpected internal error");
+        protected:
+            static family_id::underlying_type last_id_;
+        };
+
+        template < typename T >
+        class type_family final : public type_family_base<> {
+        public:
+            static family_id id() noexcept {
+                static family_id self_id{++last_id_};
+                assert(self_id.id > 0u && "family_id overflow");
+                return self_id;
+            }
+        };
+
+        template < typename Void >
+        family_id::underlying_type type_family_base<Void>::last_id_{};
+    }
+
+    template < typename T >
+    family_id get_family_id() noexcept {
+        return family_id_detail::type_family<T>::id();
+    }
 }
 
 namespace meta_hpp

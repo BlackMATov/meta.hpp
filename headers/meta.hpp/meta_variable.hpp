@@ -18,7 +18,7 @@ namespace meta_hpp
     class variable_ {
     public:
         explicit variable_(std::string id)
-        : info_(std::move(id)) {
+        : info_{get_family_id<decltype(Variable)>(), std::move(id)} {
             info_.getter_ = &variable_detail::getter<Variable>;
             info_.setter_ = &variable_detail::setter<Variable>;
         }

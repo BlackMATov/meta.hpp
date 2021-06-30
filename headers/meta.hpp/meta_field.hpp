@@ -20,7 +20,7 @@ namespace meta_hpp
         static_assert(std::is_member_object_pointer_v<decltype(Field)>);
 
         explicit field_(std::string id)
-        : info_(std::move(id)) {
+        : info_{get_family_id<decltype(Field)>(), std::move(id)} {
             info_.getter_ = &field_detail::getter<Field>;
             info_.setter_ = &field_detail::setter<Field>;
         }

@@ -27,9 +27,14 @@ namespace meta_hpp
         class_info& operator=(class_info&&) = default;
         class_info& operator=(const class_info&) = default;
 
-        class_info(std::string id)
-        : id_(std::move(id)) {}
+        class_info(family_id fid, std::string id)
+        : fid_(std::move(fid))
+        , id_(std::move(id)) {}
     public:
+        const family_id& fid() const noexcept {
+            return fid_;
+        }
+
         const std::string& id() const noexcept {
             return id_;
         }
@@ -114,6 +119,7 @@ namespace meta_hpp
             detail::merge_with(variables_, other.variables_, &variable_info::merge_with_);
         }
     private:
+        family_id fid_;
         std::string id_;
         std::map<std::string, class_info, std::less<>> classes_;
         std::map<std::string, data_info, std::less<>> datas_;

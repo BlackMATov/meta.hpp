@@ -20,7 +20,7 @@ namespace meta_hpp
         static_assert(std::is_function_v<std::remove_pointer_t<decltype(Function)>>);
 
         explicit function_(std::string id)
-        : info_(std::move(id)) {
+        : info_{get_family_id<decltype(Function)>(), std::move(id)} {
             info_.invoke_ = &function_detail::invoke<Function>;
         }
 

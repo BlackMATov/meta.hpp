@@ -132,9 +132,14 @@ namespace meta_hpp
         method_info& operator=(method_info&&) = default;
         method_info& operator=(const method_info&) = default;
 
-        method_info(std::string id)
-        : id_(std::move(id)) {}
+        method_info(family_id fid, std::string id)
+        : fid_(std::move(fid))
+        , id_(std::move(id)) {}
     public:
+        const family_id& fid() const noexcept {
+            return fid_;
+        }
+
         const std::string& id() const noexcept {
             return id_;
         }
@@ -171,6 +176,7 @@ namespace meta_hpp
             detail::merge_with(datas_, other.datas_, &data_info::merge_with_);
         }
     private:
+        family_id fid_;
         std::string id_;
         value(*invoke_)(void*, value*, std::size_t);
         value(*cinvoke_)(const void*, value*, std::size_t);
