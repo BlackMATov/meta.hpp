@@ -70,3 +70,42 @@ TEST_CASE("meta/namespace") {
         CHECK(cvariable_info.id() == "cvariable");
     }
 }
+
+TEST_CASE("meta/namespace/merge") {
+    namespace meta = meta_hpp;
+
+    meta::namespace_ namespace_{"ns"};
+
+    namespace_(
+        meta::namespace_{"ns2"}(
+            meta::class_<clazz>{"clazz"},
+            meta::function_<&func>("func"),
+            meta::namespace_{"ns3"},
+            meta::variable_<&variable>("variable")
+        )
+    );
+
+    namespace_(
+        meta::namespace_{"ns2"}(
+            meta::class_<clazz>{"clazz"},
+            meta::function_<&func>("func2"),
+            meta::namespace_{"ns3"}(
+                meta::namespace_{"ns4"},
+                meta::variable_<&variable>("variable2")
+            )
+        )
+    );
+
+    const meta::namespace_info ns2_info = namespace_.info().get_namespace("ns2").value();
+    const meta::namespace_info ns3_info = ns2_info.get_namespace("ns3").value();
+
+    CHECK(ns2_info.get_class("clazz"));
+    CHECK(ns2_info.get_function("func"));
+    CHECK(ns2_info.get_function("func2"));
+
+    CHECK(ns2_info.get_namespace("ns3"));
+    CHECK(ns2_info.get_variable("variable"));
+
+    CHECK(ns3_info.get_namespace("ns4"));
+    CHECK(ns3_info.get_variable("variable2"));
+}
