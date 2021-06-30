@@ -13,6 +13,9 @@
 #include "meta_class.hpp"
 #include "meta_class_info.hpp"
 
+#include "meta_data.hpp"
+#include "meta_data_info.hpp"
+
 #include "meta_field.hpp"
 #include "meta_field_info.hpp"
 

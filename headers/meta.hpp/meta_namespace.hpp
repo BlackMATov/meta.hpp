@@ -8,6 +8,11 @@
 
 #include "meta_fwd.hpp"
 
+#include "meta_class.hpp"
+#include "meta_data.hpp"
+#include "meta_function.hpp"
+#include "meta_variable.hpp"
+
 #include "meta_namespace_info.hpp"
 
 namespace meta_hpp
@@ -36,6 +41,14 @@ namespace meta_hpp
                 &class_info::merge_with_);
         }
 
+        void add_(const data_& internal) {
+            detail::merge_with(
+                info_.datas_,
+                internal.info().id(),
+                internal.info(),
+                &data_info::merge_with_);
+        }
+
         template < auto InternalFunction >
         void add_(const function_<InternalFunction>& internal) {
             detail::merge_with(
@@ -53,8 +66,8 @@ namespace meta_hpp
                 &namespace_info::merge_with_);
         }
 
-        template < auto Internalvariable >
-        void add_(const variable_<Internalvariable>& internal) {
+        template < auto InternalVariable >
+        void add_(const variable_<InternalVariable>& internal) {
             detail::merge_with(
                 info_.variables_,
                 internal.info().id(),

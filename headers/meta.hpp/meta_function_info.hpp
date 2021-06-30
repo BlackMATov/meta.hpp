@@ -7,8 +7,9 @@
 #pragma once
 
 #include "meta_fwd.hpp"
-
 #include "meta_value.hpp"
+
+#include "meta_data_info.hpp"
 
 namespace meta_hpp::function_detail
 {
@@ -76,15 +77,19 @@ namespace meta_hpp
 
         function_info(std::string id)
         : id_(std::move(id)) {}
-
+    public:
         const std::string& id() const noexcept {
             return id_;
         }
-    public:
+
         template < typename... Args >
         value invoke(Args&&... args) const {
             std::array<value, sizeof...(Args)> vargs{{std::forward<Args>(args)...}};
             return invoke_(vargs.data(), vargs.size());
+        }
+
+        std::optional<data_info> get_data(std::string_view id) const {
+            return detail::find_opt(datas_, id);
         }
     private:
         friend class class_info;
@@ -96,10 +101,12 @@ namespace meta_hpp
         template < auto Function > friend class function_;
     private:
         void merge_with_(const function_info& other) {
-            (void)other;
+            invoke_ = other.invoke_;
+            detail::merge_with(datas_, other.datas_, &data_info::merge_with_);
         }
     private:
         std::string id_;
         value(*invoke_)(value*, std::size_t);
+        std::map<std::string, data_info, std::less<>> datas_;
     };
 }

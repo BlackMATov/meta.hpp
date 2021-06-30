@@ -23,28 +23,20 @@ namespace meta_hpp
     class value;
 
     class class_info;
+    class data_info;
     class field_info;
     class function_info;
     class method_info;
     class namespace_info;
     class variable_info;
 
-    template < typename Class >
-    class class_;
-
-    template < auto Field >
-    class field_;
-
-    template < auto Function >
-    class function_;
-
-    template < auto Method >
-    class method_;
-
+    template < typename Class > class class_;
+    class data_;
+    template < auto Field > class field_;
+    template < auto Function > class function_;
+    template < auto Method > class method_;
     class namespace_;
-
-    template < auto Variable >
-    class variable_;
+    template < auto Variable > class variable_;
 }
 
 namespace meta_hpp

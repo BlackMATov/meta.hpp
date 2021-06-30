@@ -7,8 +7,9 @@
 #pragma once
 
 #include "meta_fwd.hpp"
-
 #include "meta_value.hpp"
+
+#include "meta_data_info.hpp"
 
 namespace meta_hpp::variable_detail
 {
@@ -64,11 +65,10 @@ namespace meta_hpp
 
         variable_info(std::string id)
         : id_(std::move(id)) {}
-
+    public:
         const std::string& id() const noexcept {
             return id_;
         }
-    public:
         value get() const {
             return getter_();
         }
@@ -77,19 +77,28 @@ namespace meta_hpp
         void set(Value&& value) const {
             return setter_(std::forward<Value>(value));
         }
+
+        std::optional<data_info> get_data(std::string_view id) const {
+            return detail::find_opt(datas_, id);
+        }
     private:
         friend class class_info;
         friend class namespace_info;
+
         template < typename Class > friend class class_;
         friend class namespace_;
+
         template < auto Variable > friend class variable_;
     private:
         void merge_with_(const variable_info& other) {
-            (void)other;
+            getter_ = other.getter_;
+            setter_ = other.setter_;
+            detail::merge_with(datas_, other.datas_, &data_info::merge_with_);
         }
     private:
         std::string id_;
         value(*getter_)();
         void(*setter_)(value);
+        std::map<std::string, data_info, std::less<>> datas_;
     };
 }

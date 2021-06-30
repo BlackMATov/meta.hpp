@@ -7,8 +7,9 @@
 #pragma once
 
 #include "meta_fwd.hpp"
-
 #include "meta_value.hpp"
+
+#include "meta_data_info.hpp"
 
 namespace meta_hpp::method_detail
 {
@@ -133,11 +134,10 @@ namespace meta_hpp
 
         method_info(std::string id)
         : id_(std::move(id)) {}
-
+    public:
         const std::string& id() const noexcept {
             return id_;
         }
-    public:
         template < typename... Args >
         value invoke(void* instance, Args&&... args) const {
             std::array<value, sizeof...(Args)> vargs{{std::forward<Args>(args)...}};
@@ -149,17 +149,24 @@ namespace meta_hpp
             std::array<value, sizeof...(Args)> vargs{{std::forward<Args>(args)...}};
             return cinvoke_(instance, vargs.data(), vargs.size());
         }
+
+        std::optional<data_info> get_data(std::string_view id) const {
+            return detail::find_opt(datas_, id);
+        }
     private:
         friend class class_info;
         template < typename Class > friend class class_;
         template < auto Method > friend class method_;
     private:
         void merge_with_(const method_info& other) {
-            (void)other;
+            invoke_ = other.invoke_;
+            cinvoke_ = other.cinvoke_;
+            detail::merge_with(datas_, other.datas_, &data_info::merge_with_);
         }
     private:
         std::string id_;
         value(*invoke_)(void*, value*, std::size_t);
         value(*cinvoke_)(const void*, value*, std::size_t);
+        std::map<std::string, data_info, std::less<>> datas_;
     };
 }

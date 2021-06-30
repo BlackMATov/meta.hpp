@@ -85,35 +85,49 @@ TEST_CASE("meta/examples/ivec3") {
 }
 
 TEST_CASE("meta/examples/simple") {
-    namespace meta = meta_hpp;
+    using namespace meta_hpp;
 
-    meta::namespace_info vmath_info = meta::namespace_("vmath")(
-        meta::class_<ivec2>("ivec2")(
-            meta::field_<&ivec2::x>("x"),
-            meta::field_<&ivec2::y>("y"),
-            meta::method_<&ivec2::dot>("dot"),
-            meta::method_<&ivec2::length2>("length2")
+    namespace_info vmath_info = namespace_("vmath")(
+        class_<ivec2>("ivec2")(
+            field_<&ivec2::x>("x")(
+                data_("tooltip", "x-coordinate field")
+            ),
+            field_<&ivec2::y>("y")(
+                data_("tooltip", "y-coordinate field")
+            ),
+            method_<&ivec2::dot>("dot"),
+            method_<&ivec2::length2>("length2")
         ),
-        meta::class_<ivec3>("ivec3")(
-            meta::field_<&ivec3::x>("x"),
-            meta::field_<&ivec3::y>("y"),
-            meta::field_<&ivec3::z>("z"),
-            meta::method_<&ivec3::dot>("dot"),
-            meta::method_<&ivec3::length2>("length2")
+        class_<ivec3>("ivec3")(
+            field_<&ivec3::x>("x")(
+                data_("tooltip", "x-coordinate field")
+            ),
+            field_<&ivec3::y>("y")(
+                data_("tooltip", "y-coordinate field")
+            ),
+            field_<&ivec3::z>("z")(
+                data_("tooltip", "z-coordinate field")
+            ),
+            method_<&ivec3::dot>("dot"),
+            method_<&ivec3::length2>("length2")
         ),
-        meta::function_<meta::select<ivec2(ivec2,ivec2)>(&add)>("iadd2"),
-        meta::function_<meta::select<ivec3(ivec3,ivec3)>(&add)>("iadd3")
+        function_<select<ivec2(ivec2,ivec2)>(&add)>("iadd2"),
+        function_<select<ivec3(ivec3,ivec3)>(&add)>("iadd3")
     ).info();
 
-    meta::class_info ivec2_info = vmath_info.get_class("ivec2").value();
-    meta::field_info ivec2_x_info = ivec2_info.get_field("x").value();
-    meta::field_info ivec2_y_info = ivec2_info.get_field("y").value();
+    class_info ivec2_info = vmath_info.get_class("ivec2").value();
 
-    meta::method_info ivec2_dot_info = ivec2_info.get_method("dot").value();
-    meta::method_info ivec2_length2_info = ivec2_info.get_method("length2").value();
+    field_info ivec2_x_info = ivec2_info.get_field("x").value();
+    field_info ivec2_y_info = ivec2_info.get_field("y").value();
 
-    meta::function_info iadd2_info = vmath_info.get_function("iadd2").value();
-    meta::function_info iadd3_info = vmath_info.get_function("iadd3").value();
+    data_info ivec2_x_tooltip_info = ivec2_x_info.get_data("tooltip").value();
+    data_info ivec2_y_tooltip_info = ivec2_y_info.get_data("tooltip").value();
+
+    method_info ivec2_dot_info = ivec2_info.get_method("dot").value();
+    method_info ivec2_length2_info = ivec2_info.get_method("length2").value();
+
+    function_info iadd2_info = vmath_info.get_function("iadd2").value();
+    function_info iadd3_info = vmath_info.get_function("iadd3").value();
 
     {
         ivec2 v2{1,2};
