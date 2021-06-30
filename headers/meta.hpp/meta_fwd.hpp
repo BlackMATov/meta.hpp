@@ -19,10 +19,13 @@
 #include <tuple>
 #include <type_traits>
 #include <utility>
+#include <variant>
 
 namespace meta_hpp
 {
     class value;
+
+    class type;
 
     class class_info;
     class data_info;

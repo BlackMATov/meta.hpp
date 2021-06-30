@@ -10,6 +10,8 @@
 
 #include "meta_value.hpp"
 
+#include "meta_type.hpp"
+
 #include "meta_class.hpp"
 #include "meta_class_info.hpp"
 
