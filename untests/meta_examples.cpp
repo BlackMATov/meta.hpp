@@ -150,3 +150,41 @@ TEST_CASE("meta/examples/simple") {
         CHECK(v.z == 8);
     }
 }
+
+TEST_CASE("meta/examples/advanced") {
+    using namespace meta_hpp;
+
+    auto db = registry{}(
+        class_<ivec2>("ivec2")(
+            field_<&ivec2::x>("x"),
+            field_<&ivec2::y>("y"),
+            method_<&ivec2::dot>("dot"),
+            method_<&ivec2::length2>("length2")
+        ),
+        class_<ivec3>("ivec3")(
+            field_<&ivec3::x>("x"),
+            field_<&ivec3::y>("y"),
+            field_<&ivec3::z>("z"),
+            method_<&ivec3::dot>("dot"),
+            method_<&ivec3::length2>("length2")
+        )
+    );
+
+    ivec3 v3{1,2,3};
+
+    type v3_type = db.resolve(v3).value();
+    class_info v3_info = v3_type.get_class_info();
+
+    std::cout << "class " << v3_info.id() << std::endl;
+
+    v3_info.each_field([&v3](const field_info& info){
+        std::cout
+            << "  - " << info.id()
+            << ": " << info.get(&v3).to_int() << std::endl;
+    });
+
+    v3_info.each_method([](const method_info& info){
+        std::cout
+            << "  + " << info.id() << "()" << std::endl;
+    });
+}
