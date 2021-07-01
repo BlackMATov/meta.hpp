@@ -171,8 +171,9 @@ namespace meta_hpp
         template < auto Method > friend class method_;
     private:
         void merge_with_(const method_info& other) {
-            invoke_ = other.invoke_;
-            cinvoke_ = other.cinvoke_;
+            if ( fid() != other.fid() ) {
+                throw std::logic_error("method_info::merge failed");
+            }
             detail::merge_with(datas_, other.datas_, &data_info::merge_with_);
         }
     private:

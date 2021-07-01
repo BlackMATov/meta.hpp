@@ -105,8 +105,9 @@ namespace meta_hpp
         template < auto Field > friend class field_;
     private:
         void merge_with_(const field_info& other) {
-            getter_ = other.getter_;
-            setter_ = other.setter_;
+            if ( fid() != other.fid() ) {
+                throw std::logic_error("field_info::merge failed");
+            }
             detail::merge_with(datas_, other.datas_, &data_info::merge_with_);
         }
     private:

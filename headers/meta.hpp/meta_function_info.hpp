@@ -113,7 +113,9 @@ namespace meta_hpp
         template < auto Function > friend class function_;
     private:
         void merge_with_(const function_info& other) {
-            invoke_ = other.invoke_;
+            if ( fid() != other.fid() ) {
+                throw std::logic_error("function_info::merge failed");
+            }
             detail::merge_with(datas_, other.datas_, &data_info::merge_with_);
         }
     private:

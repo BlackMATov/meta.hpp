@@ -103,8 +103,9 @@ namespace meta_hpp
         template < auto Variable > friend class variable_;
     private:
         void merge_with_(const variable_info& other) {
-            getter_ = other.getter_;
-            setter_ = other.setter_;
+            if ( fid() != other.fid() ) {
+                throw std::logic_error("variable_info::merge failed");
+            }
             detail::merge_with(datas_, other.datas_, &data_info::merge_with_);
         }
     private:

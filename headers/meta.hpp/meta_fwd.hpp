@@ -55,6 +55,14 @@ namespace meta_hpp
         friend bool operator<(family_id l, family_id r) noexcept {
             return l.id < r.id;
         }
+
+        friend bool operator==(family_id l, family_id r) noexcept {
+            return l.id == r.id;
+        }
+
+        friend bool operator!=(family_id l, family_id r) noexcept {
+            return l.id != r.id;
+        }
     };
 
     namespace family_id_detail

@@ -111,6 +111,9 @@ namespace meta_hpp
         friend class namespace_;
     private:
         void merge_with_(const class_info& other) {
+            if ( fid() != other.fid() ) {
+                throw std::logic_error("class_info::merge failed");
+            }
             detail::merge_with(classes_, other.classes_, &class_info::merge_with_);
             detail::merge_with(datas_, other.datas_, &data_info::merge_with_);
             detail::merge_with(fields_, other.fields_, &field_info::merge_with_);
