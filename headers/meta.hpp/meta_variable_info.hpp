@@ -62,10 +62,6 @@ namespace meta_hpp
 
         variable_info& operator=(variable_info&&) = default;
         variable_info& operator=(const variable_info&) = default;
-
-        variable_info(family_id fid, std::string id)
-        : fid_(std::move(fid))
-        , id_(std::move(id)) {}
     public:
         const family_id& fid() const noexcept {
             return fid_;
@@ -103,6 +99,10 @@ namespace meta_hpp
     private:
         template < auto Variable >
         friend class variable_;
+
+        variable_info(family_id fid, std::string id)
+        : fid_{std::move(fid)}
+        , id_{std::move(id)} {}
     private:
         family_id fid_;
         std::string id_;

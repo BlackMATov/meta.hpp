@@ -67,10 +67,6 @@ namespace meta_hpp
 
         field_info& operator=(field_info&&) = default;
         field_info& operator=(const field_info&) = default;
-
-        field_info(family_id fid, std::string id)
-        : fid_(std::move(fid))
-        , id_(std::move(id)) {}
     public:
         const family_id& fid() const noexcept {
             return fid_;
@@ -108,6 +104,10 @@ namespace meta_hpp
     private:
         template < auto Field >
         friend class field_;
+
+        field_info(family_id fid, std::string id)
+        : fid_{std::move(fid)}
+        , id_{std::move(id)} {}
     private:
         family_id fid_;
         std::string id_;

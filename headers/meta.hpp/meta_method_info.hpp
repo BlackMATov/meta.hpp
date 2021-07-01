@@ -131,10 +131,6 @@ namespace meta_hpp
 
         method_info& operator=(method_info&&) = default;
         method_info& operator=(const method_info&) = default;
-
-        method_info(family_id fid, std::string id)
-        : fid_(std::move(fid))
-        , id_(std::move(id)) {}
     public:
         const family_id& fid() const noexcept {
             return fid_;
@@ -175,6 +171,10 @@ namespace meta_hpp
     private:
         template < auto Method >
         friend class method_;
+
+        method_info(family_id fid, std::string id)
+        : fid_{std::move(fid)}
+        , id_{std::move(id)} {}
     private:
         family_id fid_;
         std::string id_;

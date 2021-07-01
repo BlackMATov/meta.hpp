@@ -25,9 +25,6 @@ namespace meta_hpp
 
         namespace_info& operator=(namespace_info&&) = default;
         namespace_info& operator=(const namespace_info&) = default;
-
-        namespace_info(std::string id)
-        : id_(std::move(id)) {}
     public:
         const std::string& id() const noexcept {
             return id_;
@@ -97,6 +94,9 @@ namespace meta_hpp
         }
     private:
         friend class namespace_;
+
+        namespace_info(std::string id)
+        : id_{std::move(id)} {}
     private:
         std::string id_;
         std::map<std::string, class_info, std::less<>> classes_;

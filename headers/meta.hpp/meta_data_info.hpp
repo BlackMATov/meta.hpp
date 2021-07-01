@@ -20,10 +20,6 @@ namespace meta_hpp
 
         data_info& operator=(data_info&&) = default;
         data_info& operator=(const data_info&) = default;
-
-        data_info(std::string id, value value)
-        : id_(std::move(id))
-        , value_(std::move(value)) {}
     public:
         const std::string& id() const noexcept {
             return id_;
@@ -50,6 +46,10 @@ namespace meta_hpp
         }
     private:
         friend class data_;
+
+        data_info(std::string id, value value)
+        : id_{std::move(id)}
+        , value_{std::move(value)} {}
     private:
         std::string id_;
         value value_;
