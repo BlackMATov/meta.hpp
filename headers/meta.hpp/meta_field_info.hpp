@@ -98,18 +98,16 @@ namespace meta_hpp
         std::optional<data_info> get_data(std::string_view id) const {
             return detail::find_opt(datas_, id);
         }
-    private:
-        friend class class_info;
 
-        template < typename Class > friend class class_;
-        template < auto Field > friend class field_;
-    private:
-        void merge_with_(const field_info& other) {
+        void merge(const field_info& other) {
             if ( fid() != other.fid() ) {
                 throw std::logic_error("field_info::merge failed");
             }
-            detail::merge_with(datas_, other.datas_, &data_info::merge_with_);
+            detail::merge_with(datas_, other.datas_, &data_info::merge);
         }
+    private:
+        template < auto Field >
+        friend class field_;
     private:
         family_id fid_;
         std::string id_;

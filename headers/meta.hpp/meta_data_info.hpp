@@ -43,27 +43,13 @@ namespace meta_hpp
         std::optional<data_info> get_data(std::string_view id) const {
             return detail::find_opt(datas_, id);
         }
-    private:
-        friend class class_info;
-        friend class field_info;
-        friend class function_info;
-        friend class method_info;
-        friend class namespace_info;
-        friend class variable_info;
 
-        template < typename Class > friend class class_;
-        template < auto Field > friend class field_;
-        template < auto Function > friend class function_;
-        template < auto Method > friend class method_;
-        friend class namespace_;
-        template < auto Variable > friend class variable_;
-
-        friend class data_;
-    private:
-        void merge_with_(const data_info& other) {
+        void merge(const data_info& other) {
             value_ = other.value_;
-            detail::merge_with(datas_, other.datas_, &data_info::merge_with_);
+            detail::merge_with(datas_, other.datas_, &data_info::merge);
         }
+    private:
+        friend class data_;
     private:
         std::string id_;
         value value_;

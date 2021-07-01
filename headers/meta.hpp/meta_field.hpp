@@ -40,7 +40,7 @@ namespace meta_hpp
         }
     private:
         void add_(const data_info& info) {
-            detail::merge_with(info_.datas_, info.id(), info, &data_info::merge_with_);
+            detail::merge_with(info_.datas_, info.id(), info, &data_info::merge);
         }
     private:
         field_info info_;

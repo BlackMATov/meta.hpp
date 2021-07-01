@@ -37,23 +37,23 @@ namespace meta_hpp
         }
     private:
         void add_(const class_info& info) {
-            detail::merge_with(info_.classes_, info.id(), info, &class_info::merge_with_);
+            detail::merge_with(info_.classes_, info.id(), info, &class_info::merge);
         }
 
         void add_(const data_info& info) {
-            detail::merge_with(info_.datas_, info.id(), info, &data_info::merge_with_);
+            detail::merge_with(info_.datas_, info.id(), info, &data_info::merge);
         }
 
         void add_(const function_info& info) {
-            detail::merge_with(info_.functions_, info.id(), info, &function_info::merge_with_);
+            detail::merge_with(info_.functions_, info.id(), info, &function_info::merge);
         }
 
         void add_(const namespace_info& info) {
-            detail::merge_with(info_.namespaces_, info.id(), info, &namespace_info::merge_with_);
+            detail::merge_with(info_.namespaces_, info.id(), info, &namespace_info::merge);
         }
 
         void add_(const variable_info& info) {
-            detail::merge_with(info_.variables_, info.id(), info, &variable_info::merge_with_);
+            detail::merge_with(info_.variables_, info.id(), info, &variable_info::merge);
         }
     private:
         namespace_info info_;

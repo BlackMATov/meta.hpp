@@ -87,16 +87,16 @@ namespace meta_hpp
         std::optional<variable_info> get_variable(std::string_view id) const {
             return detail::find_opt(variables_, id);
         }
+
+        void merge(const namespace_info& other) {
+            detail::merge_with(classes_, other.classes_, &class_info::merge);
+            detail::merge_with(datas_, other.datas_, &data_info::merge);
+            detail::merge_with(functions_, other.functions_, &function_info::merge);
+            detail::merge_with(namespaces_, other.namespaces_, &namespace_info::merge);
+            detail::merge_with(variables_, other.variables_, &variable_info::merge);
+        }
     private:
         friend class namespace_;
-    private:
-        void merge_with_(const namespace_info& other) {
-            detail::merge_with(classes_, other.classes_, &class_info::merge_with_);
-            detail::merge_with(datas_, other.datas_, &data_info::merge_with_);
-            detail::merge_with(functions_, other.functions_, &function_info::merge_with_);
-            detail::merge_with(namespaces_, other.namespaces_, &namespace_info::merge_with_);
-            detail::merge_with(variables_, other.variables_, &variable_info::merge_with_);
-        }
     private:
         std::string id_;
         std::map<std::string, class_info, std::less<>> classes_;

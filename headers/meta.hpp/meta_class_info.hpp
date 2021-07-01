@@ -104,23 +104,21 @@ namespace meta_hpp
         std::optional<variable_info> get_variable(std::string_view id) const {
             return detail::find_opt(variables_, id);
         }
-    private:
-        friend class namespace_info;
 
-        template < typename Class > friend class class_;
-        friend class namespace_;
-    private:
-        void merge_with_(const class_info& other) {
+        void merge(const class_info& other) {
             if ( fid() != other.fid() ) {
                 throw std::logic_error("class_info::merge failed");
             }
-            detail::merge_with(classes_, other.classes_, &class_info::merge_with_);
-            detail::merge_with(datas_, other.datas_, &data_info::merge_with_);
-            detail::merge_with(fields_, other.fields_, &field_info::merge_with_);
-            detail::merge_with(functions_, other.functions_, &function_info::merge_with_);
-            detail::merge_with(methods_, other.methods_, &method_info::merge_with_);
-            detail::merge_with(variables_, other.variables_, &variable_info::merge_with_);
+            detail::merge_with(classes_, other.classes_, &class_info::merge);
+            detail::merge_with(datas_, other.datas_, &data_info::merge);
+            detail::merge_with(fields_, other.fields_, &field_info::merge);
+            detail::merge_with(functions_, other.functions_, &function_info::merge);
+            detail::merge_with(methods_, other.methods_, &method_info::merge);
+            detail::merge_with(variables_, other.variables_, &variable_info::merge);
         }
+    private:
+        template < typename Class >
+        friend class class_;
     private:
         family_id fid_;
         std::string id_;
