@@ -18,14 +18,7 @@ namespace meta_hpp
     class variable_ {
     public:
         explicit variable_(std::string id)
-        : info_{get_family_id<decltype(Variable)>(), std::move(id)} {
-            info_.getter_ = &variable_detail::getter<Variable>;
-            info_.setter_ = &variable_detail::setter<Variable>;
-        }
-
-        const variable_info& info() const noexcept {
-            return info_;
-        }
+        : info_{detail::auto_arg<Variable>, std::move(id)} {}
 
         operator const variable_info&() const noexcept {
             return info_;

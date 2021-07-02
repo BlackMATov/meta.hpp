@@ -116,8 +116,9 @@ namespace meta_hpp
         template < typename Class >
         friend class class_;
 
-        class_info(family_id fid, std::string id)
-        : fid_{std::move(fid)}
+        template < typename Class >
+        class_info(detail::typename_arg_t<Class>, std::string id)
+        : fid_{get_family_id<Class>()}
         , id_{std::move(id)} {}
     private:
         family_id fid_;

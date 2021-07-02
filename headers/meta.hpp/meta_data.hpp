@@ -15,11 +15,7 @@ namespace meta_hpp
     class data_ {
     public:
         explicit data_(std::string id, value value)
-        : info_(std::move(id), std::move(value)) {}
-
-        const data_info& info() const noexcept {
-            return info_;
-        }
+        : info_{std::move(id), std::move(value)} {}
 
         operator const data_info&() const noexcept {
             return info_;

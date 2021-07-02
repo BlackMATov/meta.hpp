@@ -24,30 +24,6 @@
 
 namespace meta_hpp
 {
-    class value;
-
-    class registry;
-    class type;
-
-    class class_info;
-    class data_info;
-    class field_info;
-    class function_info;
-    class method_info;
-    class namespace_info;
-    class variable_info;
-
-    template < typename Class > class class_;
-    class data_;
-    template < auto Field > class field_;
-    template < auto Function > class function_;
-    template < auto Method > class method_;
-    class namespace_;
-    template < auto Variable > class variable_;
-}
-
-namespace meta_hpp
-{
     struct family_id {
         using underlying_type = std::size_t;
         underlying_type id{};
@@ -117,6 +93,23 @@ namespace meta_hpp
     constexpr auto select_non_const(R(Base::*f)(Args...)) noexcept {
         return f;
     }
+}
+
+namespace meta_hpp::detail
+{
+    template < auto Arg >
+    struct auto_arg_t {
+    };
+
+    template < typename Arg >
+    struct typename_arg_t {
+    };
+
+    template < auto Arg >
+    inline auto_arg_t<Arg> auto_arg;
+
+    template < typename Arg >
+    inline typename_arg_t<Arg> typename_arg;
 }
 
 namespace meta_hpp::detail

@@ -29,7 +29,7 @@ namespace meta_hpp
 
         template < typename Info >
         type(Info&& info)
-        : info_(std::forward<Info>(info)) {}
+        : info_{std::forward<Info>(info)} {}
 
         bool is_class() const noexcept { return std::holds_alternative<class_info>(info_); }
         bool is_field() const noexcept { return std::holds_alternative<field_info>(info_); }

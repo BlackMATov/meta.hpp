@@ -105,9 +105,12 @@ namespace meta_hpp
         template < auto Field >
         friend class field_;
 
-        field_info(family_id fid, std::string id)
-        : fid_{std::move(fid)}
-        , id_{std::move(id)} {}
+        template < typename FieldType, FieldType Field >
+        field_info(detail::auto_arg_t<Field>, std::string id)
+        : fid_{get_family_id<FieldType>()}
+        , id_{std::move(id)}
+        , getter_{&field_detail::getter<Field>}
+        , setter_{&field_detail::setter<Field>} {}
     private:
         family_id fid_;
         std::string id_;

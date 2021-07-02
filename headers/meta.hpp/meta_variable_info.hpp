@@ -70,6 +70,7 @@ namespace meta_hpp
         const std::string& id() const noexcept {
             return id_;
         }
+
         value get() const {
             return getter_();
         }
@@ -100,9 +101,12 @@ namespace meta_hpp
         template < auto Variable >
         friend class variable_;
 
-        variable_info(family_id fid, std::string id)
-        : fid_{std::move(fid)}
-        , id_{std::move(id)} {}
+        template < typename VariableType, VariableType Variable >
+        variable_info(detail::auto_arg_t<Variable>, std::string id)
+        : fid_{get_family_id<VariableType>()}
+        , id_{std::move(id)}
+        , getter_{&variable_detail::getter<Variable>}
+        , setter_{&variable_detail::setter<Variable>} {}
     private:
         family_id fid_;
         std::string id_;

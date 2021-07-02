@@ -22,11 +22,7 @@ namespace meta_hpp
     class class_ {
     public:
         explicit class_(std::string id)
-        : info_{get_family_id<Class>(), std::move(id)} {}
-
-        const class_info& info() const noexcept {
-            return info_;
-        }
+        : info_{detail::typename_arg<Class>, std::move(id)} {}
 
         operator const class_info&() const noexcept {
             return info_;

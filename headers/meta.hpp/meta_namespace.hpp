@@ -20,11 +20,7 @@ namespace meta_hpp
     class namespace_ {
     public:
         explicit namespace_(std::string id)
-        : info_(std::move(id)) {}
-
-        const namespace_info& info() const noexcept {
-            return info_;
-        }
+        : info_{std::move(id)} {}
 
         operator const namespace_info&() const noexcept {
             return info_;

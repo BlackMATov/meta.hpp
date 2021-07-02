@@ -139,6 +139,7 @@ namespace meta_hpp
         const std::string& id() const noexcept {
             return id_;
         }
+
         template < typename... Args >
         value invoke(void* instance, Args&&... args) const {
             std::array<value, sizeof...(Args)> vargs{{std::forward<Args>(args)...}};
@@ -172,9 +173,12 @@ namespace meta_hpp
         template < auto Method >
         friend class method_;
 
-        method_info(family_id fid, std::string id)
-        : fid_{std::move(fid)}
-        , id_{std::move(id)} {}
+        template < typename MethodType, MethodType Method >
+        method_info(detail::auto_arg_t<Method>, std::string id)
+        : fid_{get_family_id<MethodType>()}
+        , id_{std::move(id)}
+        , invoke_{&method_detail::invoke<Method>}
+        , cinvoke_{&method_detail::cinvoke<Method>} {}
     private:
         family_id fid_;
         std::string id_;
