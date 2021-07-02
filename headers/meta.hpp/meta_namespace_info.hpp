@@ -32,36 +32,36 @@ namespace meta_hpp
 
         template < typename F >
         void each_class(F&& f) const {
-            for ( auto [_, info] : classes_ ) {
-                std::invoke(f, info);
+            for ( auto&& id_info : classes_ ) {
+                std::invoke(f, id_info.second);
             }
         }
 
         template < typename F >
         void each_data(F&& f) const {
-            for ( auto [_, info] : datas_ ) {
-                std::invoke(f, info);
+            for ( auto&& id_info : datas_ ) {
+                std::invoke(f, id_info.second);
             }
         }
 
         template < typename F >
         void each_function(F&& f) const {
-            for ( auto [_, info] : functions_ ) {
-                std::invoke(f, info);
+            for ( auto&& id_info : functions_ ) {
+                std::invoke(f, id_info.second);
             }
         }
 
         template < typename F >
         void each_namespace(F&& f) const {
-            for ( auto [_, info] : namespaces_ ) {
-                std::invoke(f, info);
+            for ( auto&& id_info : namespaces_ ) {
+                std::invoke(f, id_info.second);
             }
         }
 
         template < typename F >
         void each_variable(F&& f) const {
-            for ( auto [_, info] : variables_ ) {
-                std::invoke(f, info);
+            for ( auto&& id_info : variables_ ) {
+                std::invoke(f, id_info.second);
             }
         }
 

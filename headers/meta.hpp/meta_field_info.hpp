@@ -86,8 +86,8 @@ namespace meta_hpp
 
         template < typename F >
         void each_data(F&& f) const {
-            for ( auto [_, info] : datas_ ) {
-                std::invoke(f, info);
+            for ( auto&& id_info : datas_ ) {
+                std::invoke(f, id_info.second);
             }
         }
 
