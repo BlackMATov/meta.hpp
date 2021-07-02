@@ -39,6 +39,7 @@ namespace meta_hpp
     public:
         bool to_bool() const { return cast<bool>(); }
         int to_int() const { return cast<int>(); }
+        unsigned to_uint() const { return cast<unsigned>(); }
         float to_float() const { return cast<float>(); }
         double to_double() const { return cast<double>(); }
         std::string to_string() const { return cast<std::string>(); }
@@ -47,14 +48,15 @@ namespace meta_hpp
         std::int16_t to_int16() const { return cast<std::int16_t>(); }
         std::int32_t to_int32() const { return cast<std::int32_t>(); }
         std::int64_t to_int64() const { return cast<std::int64_t>(); }
+        std::ptrdiff_t to_ptrdiff_t() const { return cast<std::ptrdiff_t>(); }
+        std::intptr_t to_intptr_t() const { return cast<std::intptr_t>(); }
 
         std::uint8_t to_uint8() const { return cast<std::uint8_t>(); }
         std::uint16_t to_uint16() const { return cast<std::uint16_t>(); }
         std::uint32_t to_uint32() const { return cast<std::uint32_t>(); }
         std::uint64_t to_uint64() const { return cast<std::uint64_t>(); }
-
         std::size_t to_size_t() const { return cast<std::size_t>(); }
-        std::ptrdiff_t to_ptrdiff_t() const { return cast<std::ptrdiff_t>(); }
+        std::uintptr_t to_uintptr_t() const { return cast<std::uintptr_t>(); }
     private:
         std::any raw_;
     };

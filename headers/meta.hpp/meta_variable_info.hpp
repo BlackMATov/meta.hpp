@@ -23,14 +23,14 @@ namespace meta_hpp::variable_detail
     };
 
     template < typename T >
-    struct variable_traits<const T*> {
+    struct variable_traits<const T*>
+         : variable_traits<T*> {
         static constexpr bool is_const = true;
-        using value_type = T;
     };
 
     template < auto Variable  >
     value getter() {
-        using vt = variable_traits<decltype(Variable)>;
+        using vt = variable_traits<std::remove_reference_t<decltype(Variable)>>;
         using value_type = typename vt::value_type;
 
         value_type typed_value = *Variable;
@@ -40,7 +40,7 @@ namespace meta_hpp::variable_detail
 
     template < auto Variable  >
     void setter(value value) {
-        using vt = variable_traits<decltype(Variable)>;
+        using vt = variable_traits<std::remove_reference_t<decltype(Variable)>>;
         using value_type = typename vt::value_type;
 
         if constexpr ( !vt::is_const ) {

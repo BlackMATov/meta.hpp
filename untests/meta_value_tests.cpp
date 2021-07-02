@@ -17,20 +17,22 @@ TEST_CASE("meta/value") {
 
     CHECK(meta::value{true}.to_bool() == true);
     CHECK(meta::value{1}.to_int() == 1);
+    CHECK(meta::value{1u}.to_uint() == 1u);
     CHECK(meta::value{1.f}.to_float() == 1.f);
     CHECK(meta::value{1.0}.to_double() == 1.0);
     CHECK(meta::value{"meta"s}.to_string() == "meta");
 
-    CHECK(meta::value{std::in_place_type<std::int8_t>, 1}.to_int8() == 1);
-    CHECK(meta::value{std::in_place_type<std::int16_t>, 1}.to_int16() == 1);
-    CHECK(meta::value{std::in_place_type<std::int32_t>, 1}.to_int32() == 1);
-    CHECK(meta::value{std::in_place_type<std::int64_t>, 1}.to_int64() == 1);
+    CHECK(meta::value{std::in_place_type<std::int8_t>, std::int8_t{1}}.to_int8() == 1);
+    CHECK(meta::value{std::in_place_type<std::int16_t>, std::int16_t{1}}.to_int16() == 1);
+    CHECK(meta::value{std::in_place_type<std::int32_t>, std::int32_t{1}}.to_int32() == 1);
+    CHECK(meta::value{std::in_place_type<std::int64_t>, std::int64_t{1}}.to_int64() == 1);
+    CHECK(meta::value{std::in_place_type<std::ptrdiff_t>, std::ptrdiff_t{1}}.to_ptrdiff_t() == 1);
+    CHECK(meta::value{std::in_place_type<std::intptr_t>, std::intptr_t{1}}.to_intptr_t() == 1);
 
-    CHECK(meta::value{std::in_place_type<std::uint8_t>, 1}.to_uint8() == 1u);
-    CHECK(meta::value{std::in_place_type<std::uint16_t>, 1}.to_uint16() == 1u);
-    CHECK(meta::value{std::in_place_type<std::uint32_t>, 1}.to_uint32() == 1u);
-    CHECK(meta::value{std::in_place_type<std::uint64_t>, 1}.to_uint64() == 1u);
-
-    CHECK(meta::value{std::in_place_type<std::size_t>, 1}.to_size_t() == 1u);
-    CHECK(meta::value{std::in_place_type<std::ptrdiff_t>, 1}.to_ptrdiff_t() == 1u);
+    CHECK(meta::value{std::in_place_type<std::uint8_t>, std::uint8_t{1}}.to_uint8() == 1u);
+    CHECK(meta::value{std::in_place_type<std::uint16_t>, std::uint16_t{1}}.to_uint16() == 1u);
+    CHECK(meta::value{std::in_place_type<std::uint32_t>, std::uint32_t{1}}.to_uint32() == 1u);
+    CHECK(meta::value{std::in_place_type<std::uint64_t>, std::uint64_t{1}}.to_uint64() == 1u);
+    CHECK(meta::value{std::in_place_type<std::size_t>, std::size_t{1}}.to_size_t() == 1u);
+    CHECK(meta::value{std::in_place_type<std::uintptr_t>, std::uintptr_t{1}}.to_uintptr_t() == 1u);
 }
