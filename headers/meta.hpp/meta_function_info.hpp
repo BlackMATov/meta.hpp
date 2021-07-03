@@ -28,7 +28,7 @@ namespace meta_hpp::function_detail
          : function_traits<R(*)(Args...)> {};
 
     template < auto Function, std::size_t... Is >
-    value invoke(value* args, std::index_sequence<Is...>) {
+    std::optional<value> invoke(value* args, std::index_sequence<Is...>) {
         using ft = function_traits<decltype(Function)>;
         using return_type = typename ft::return_type;
         using argument_types = typename ft::argument_types;
@@ -43,7 +43,7 @@ namespace meta_hpp::function_detail
         if constexpr ( std::is_void_v<return_type> ) {
             std::invoke(Function,
                 *std::get<Is>(typed_arguments)...);
-            return value{};
+            return std::nullopt;
         } else {
             return_type return_value = std::invoke(Function,
                 *std::get<Is>(typed_arguments)...);
@@ -52,7 +52,7 @@ namespace meta_hpp::function_detail
     }
 
     template < auto Function >
-    value invoke(value* args, std::size_t arg_count) {
+    std::optional<value> invoke(value* args, std::size_t arg_count) {
         using ft = function_traits<decltype(Function)>;
 
         if ( arg_count != ft::arity ) {
@@ -84,7 +84,7 @@ namespace meta_hpp
         }
 
         template < typename... Args >
-        value invoke(Args&&... args) const {
+        std::optional<value> invoke(Args&&... args) const {
             std::array<value, sizeof...(Args)> vargs{{std::forward<Args>(args)...}};
             return invoke_(vargs.data(), vargs.size());
         }
@@ -118,7 +118,7 @@ namespace meta_hpp
     private:
         family_id fid_;
         std::string id_;
-        value(*invoke_)(value*, std::size_t);
+        std::optional<value>(*invoke_)(value*, std::size_t);
         std::map<std::string, data_info, std::less<>> datas_;
     };
 }

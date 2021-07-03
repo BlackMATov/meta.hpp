@@ -55,17 +55,17 @@ TEST_CASE("meta/function") {
     }
 
     SUBCASE("int_return") {
-        CHECK(int_f_void_info.invoke().cast<int>() == 1);
+        CHECK(int_f_void_info.invoke()->cast<int>() == 1);
         CHECK_THROWS_AS(int_f_void_info.invoke(1), std::logic_error);
 
         CHECK_THROWS_AS(int_f_int_info.invoke(), std::logic_error);
-        CHECK(int_f_int_info.invoke(1).cast<int>() == 1);
+        CHECK(int_f_int_info.invoke(1)->cast<int>() == 1);
         CHECK_THROWS_AS(int_f_int_info.invoke(1.f), std::logic_error);
         CHECK_THROWS_AS(int_f_int_info.invoke(1, 2), std::logic_error);
 
         CHECK_THROWS_AS(int_f_int2_info.invoke(), std::logic_error);
         CHECK_THROWS_AS(int_f_int2_info.invoke(1), std::logic_error);
-        CHECK(int_f_int2_info.invoke(1, 2).cast<int>() == 3);
+        CHECK(int_f_int2_info.invoke(1, 2)->cast<int>() == 3);
         CHECK_THROWS_AS(int_f_int2_info.invoke(1.f, 2), std::logic_error);
         CHECK_THROWS_AS(int_f_int2_info.invoke(1, 2.f), std::logic_error);
         CHECK_THROWS_AS(int_f_int2_info.invoke(1, 2, 3), std::logic_error);

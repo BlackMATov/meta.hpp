@@ -40,7 +40,7 @@ namespace meta_hpp::method_detail
          : method_traits<R(Base::*)(Args...) const> {};
 
     template < auto Method, std::size_t... Is >
-    value invoke([[maybe_unused]] void* instance, value* args, std::index_sequence<Is...>) {
+    std::optional<value> invoke([[maybe_unused]] void* instance, value* args, std::index_sequence<Is...>) {
         using mt = method_traits<decltype(Method)>;
         using return_type = typename mt::return_type;
         using instance_type = typename mt::instance_type;
@@ -57,7 +57,7 @@ namespace meta_hpp::method_detail
             std::invoke(Method,
                 std::ref(*static_cast<instance_type*>(instance)),
                 *std::get<Is>(typed_arguments)...);
-            return value{};
+            return std::nullopt;
         } else {
             return_type return_value = std::invoke(Method,
                 std::ref(*static_cast<instance_type*>(instance)),
@@ -67,7 +67,7 @@ namespace meta_hpp::method_detail
     }
 
     template < auto Method >
-    value invoke(void* instance, value* args, std::size_t arg_count) {
+    std::optional<value> invoke(void* instance, value* args, std::size_t arg_count) {
         using mt = method_traits<decltype(Method)>;
 
         if ( arg_count != mt::arity ) {
@@ -78,7 +78,7 @@ namespace meta_hpp::method_detail
     }
 
     template < auto Method, std::size_t... Is >
-    value cinvoke([[maybe_unused]] const void* instance, value* args, std::index_sequence<Is...>) {
+    std::optional<value> cinvoke([[maybe_unused]] const void* instance, value* args, std::index_sequence<Is...>) {
         using mt = method_traits<decltype(Method)>;
         using return_type = typename mt::return_type;
         using instance_type = typename mt::instance_type;
@@ -96,7 +96,7 @@ namespace meta_hpp::method_detail
                 std::invoke(Method,
                     std::ref(*static_cast<const instance_type*>(instance)),
                     *std::get<Is>(typed_arguments)...);
-                return value{};
+                return std::nullopt;
             } else {
                 return_type return_value = std::invoke(Method,
                     std::ref(*static_cast<const instance_type*>(instance)),
@@ -109,7 +109,7 @@ namespace meta_hpp::method_detail
     }
 
     template < auto Method >
-    value cinvoke(const void* instance, value* args, std::size_t arg_count) {
+    std::optional<value> cinvoke(const void* instance, value* args, std::size_t arg_count) {
         using mt = method_traits<decltype(Method)>;
 
         if ( arg_count != mt::arity ) {
@@ -141,13 +141,13 @@ namespace meta_hpp
         }
 
         template < typename... Args >
-        value invoke(void* instance, Args&&... args) const {
+        std::optional<value> invoke(void* instance, Args&&... args) const {
             std::array<value, sizeof...(Args)> vargs{{std::forward<Args>(args)...}};
             return invoke_(instance, vargs.data(), vargs.size());
         }
 
         template < typename... Args >
-        value invoke(const void* instance, Args&&... args) const {
+        std::optional<value> invoke(const void* instance, Args&&... args) const {
             std::array<value, sizeof...(Args)> vargs{{std::forward<Args>(args)...}};
             return cinvoke_(instance, vargs.data(), vargs.size());
         }
@@ -182,8 +182,8 @@ namespace meta_hpp
     private:
         family_id fid_;
         std::string id_;
-        value(*invoke_)(void*, value*, std::size_t);
-        value(*cinvoke_)(const void*, value*, std::size_t);
+        std::optional<value>(*invoke_)(void*, value*, std::size_t);
+        std::optional<value>(*cinvoke_)(const void*, value*, std::size_t);
         std::map<std::string, data_info, std::less<>> datas_;
     };
 }

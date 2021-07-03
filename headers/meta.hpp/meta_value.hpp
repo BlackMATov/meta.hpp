@@ -12,28 +12,60 @@ namespace meta_hpp
 {
     class value {
     public:
-        value() = default;
+        value() = delete;
+
+        value(value&&) = default;
+        value(const value&) = default;
+
+        value& operator=(value&&) = default;
+        value& operator=(const value&) = default;
 
         template < typename T >
         value(T&& value)
         : raw_{std::forward<T>(value)} {}
 
+        template < typename T >
+        value& operator=(T&& value) noexcept {
+            raw_ = std::forward<T>(value);
+            return *this;
+        }
+
         template < typename T, typename... Args >
         value(std::in_place_type_t<T>, Args&&... args)
         : raw_{std::in_place_type<T>, std::forward<Args>(args)...} {}
 
+        template < typename T, typename U, typename... Args >
+        value(std::in_place_type_t<T>, std::initializer_list<U> ilist, Args&&... args)
+        : raw_{std::in_place_type<T>, ilist, std::forward<Args>(args)...} {}
+
+        void swap(value& other) noexcept {
+            raw_.swap(other.raw_);
+        }
+
         template < typename T >
-        auto cast() const {
+        T cast() && {
+            return std::any_cast<T>(std::move(raw_));
+        }
+
+        template < typename T >
+        T cast() & {
             return std::any_cast<T>(raw_);
         }
 
         template < typename T >
-        auto try_cast() noexcept {
+        T cast() const & {
+            return std::any_cast<T>(raw_);
+        }
+
+        template < typename T >
+        std::add_pointer_t<T>
+        try_cast() noexcept {
             return std::any_cast<T>(&raw_);
         }
 
         template < typename T >
-        auto try_cast() const noexcept {
+        std::add_pointer_t<std::add_const_t<T>>
+        try_cast() const noexcept {
             return std::any_cast<T>(&raw_);
         }
     public:
@@ -60,4 +92,8 @@ namespace meta_hpp
     private:
         std::any raw_;
     };
+
+    inline void swap(value& l, value& r) noexcept {
+        l.swap(r);
+    }
 }

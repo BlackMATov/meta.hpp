@@ -133,18 +133,18 @@ TEST_CASE("meta/examples/simple") {
         ivec2 v2{1,2};
         CHECK(ivec2_x_info.get(&v2).cast<int>() == 1);
         CHECK(ivec2_y_info.get(&v2).cast<int>() == 2);
-        CHECK(ivec2_dot_info.invoke(&v2, v2).cast<int>() == 5);
-        CHECK(ivec2_length2_info.invoke(&v2).cast<int>() == 5);
+        CHECK(ivec2_dot_info.invoke(&v2, v2)->cast<int>() == 5);
+        CHECK(ivec2_length2_info.invoke(&v2)->cast<int>() == 5);
     }
 
     {
-        ivec2 v = iadd2_info.invoke(ivec2{1,2}, ivec2{3,4}).cast<ivec2>();
+        ivec2 v = iadd2_info.invoke(ivec2{1,2}, ivec2{3,4})->cast<ivec2>();
         CHECK(v.x == 4);
         CHECK(v.y == 6);
     }
 
     {
-        ivec3 v = iadd3_info.invoke(ivec3{1,2,3}, ivec3{3,4,5}).cast<ivec3>();
+        ivec3 v = iadd3_info.invoke(ivec3{1,2,3}, ivec3{3,4,5})->cast<ivec3>();
         CHECK(v.x == 4);
         CHECK(v.y == 6);
         CHECK(v.z == 8);
