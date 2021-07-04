@@ -24,6 +24,17 @@
 
 namespace meta_hpp
 {
+    template < typename... Ts >
+    struct overloaded : Ts... {
+        using Ts::operator()...;
+    };
+
+    template < typename... Ts >
+    overloaded(Ts...) -> overloaded<Ts...>;
+}
+
+namespace meta_hpp
+{
     struct family_id {
         using underlying_type = std::size_t;
         underlying_type id{};

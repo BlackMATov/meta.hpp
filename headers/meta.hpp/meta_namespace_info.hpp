@@ -65,6 +65,15 @@ namespace meta_hpp
             }
         }
 
+        template < typename F >
+        void visit(F&& f) const {
+            each_class(f);
+            each_data(f);
+            each_function(f);
+            each_namespace(f);
+            each_variable(f);
+        }
+
         std::optional<class_info> get_class(std::string_view id) const {
             return detail::find_opt(classes_, id);
         }

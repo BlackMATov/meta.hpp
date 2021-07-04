@@ -159,6 +159,11 @@ namespace meta_hpp
             }
         }
 
+        template < typename F >
+        void visit(F&& f) const {
+            each_data(f);
+        }
+
         std::optional<data_info> get_data(std::string_view id) const {
             return detail::find_opt(datas_, id);
         }
