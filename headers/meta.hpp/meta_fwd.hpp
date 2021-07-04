@@ -8,6 +8,7 @@
 
 #include <any>
 #include <array>
+#include <atomic>
 #include <cassert>
 #include <cstddef>
 #include <cstdint>
@@ -60,8 +61,11 @@ namespace meta_hpp
                 std::is_void_v<Void>,
                 "unexpected internal error");
         protected:
-            static family_id::underlying_type last_id_;
+            static std::atomic<family_id::underlying_type> last_id_;
         };
+
+        template < typename Void >
+        std::atomic<family_id::underlying_type> family_base<Void>::last_id_{};
 
         template < typename T >
         class type_family final : public family_base<> {
@@ -82,9 +86,6 @@ namespace meta_hpp
                 return self_id;
             }
         };
-
-        template < typename Void >
-        family_id::underlying_type family_base<Void>::last_id_{};
     }
 
     template < typename T >
