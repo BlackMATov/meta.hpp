@@ -31,19 +31,83 @@ namespace meta_hpp
         type(Info&& info)
         : info_{std::forward<Info>(info)} {}
 
-        bool is_class() const noexcept { return std::holds_alternative<class_info>(info_); }
-        bool is_field() const noexcept { return std::holds_alternative<field_info>(info_); }
-        bool is_function() const noexcept { return std::holds_alternative<function_info>(info_); }
-        bool is_method() const noexcept { return std::holds_alternative<method_info>(info_); }
-        bool is_namespace() const noexcept { return std::holds_alternative<namespace_info>(info_); }
-        bool is_variable() const noexcept { return std::holds_alternative<variable_info>(info_); }
+        bool is_class() const noexcept {
+            return std::holds_alternative<class_info>(info_);
+        }
 
-        const class_info& get_class_info() const { return std::get<class_info>(info_); }
-        const field_info& get_field_info() const { return std::get<field_info>(info_); }
-        const function_info& get_function_info() const { return std::get<function_info>(info_); }
-        const method_info& get_method_info() const { return std::get<method_info>(info_); }
-        const namespace_info& get_namespace_info() const { return std::get<namespace_info>(info_); }
-        const variable_info& get_variable_info() const { return std::get<variable_info>(info_); }
+        bool is_field() const noexcept {
+            return std::holds_alternative<field_info>(info_);
+        }
+
+        bool is_function() const noexcept {
+            return std::holds_alternative<function_info>(info_);
+        }
+
+        bool is_method() const noexcept {
+            return std::holds_alternative<method_info>(info_);
+        }
+
+        bool is_namespace() const noexcept {
+            return std::holds_alternative<namespace_info>(info_);
+        }
+
+        bool is_variable() const noexcept {
+            return std::holds_alternative<variable_info>(info_);
+        }
+
+        std::optional<class_info> get_class() const {
+            if ( const class_info* info = std::get_if<class_info>(&info_); info ) {
+                return *info;
+            }
+            return std::nullopt;
+        }
+
+        std::optional<field_info> get_field() const {
+            if ( const field_info* info = std::get_if<field_info>(&info_); info ) {
+                return *info;
+            }
+            return std::nullopt;
+        }
+
+        std::optional<function_info> get_function() const {
+            if ( const function_info* info = std::get_if<function_info>(&info_); info ) {
+                return *info;
+            }
+            return std::nullopt;
+        }
+
+        std::optional<method_info> get_method() const {
+            if ( const method_info* info = std::get_if<method_info>(&info_); info ) {
+                return *info;
+            }
+            return std::nullopt;
+        }
+
+        std::optional<namespace_info> get_namespace() const {
+            if ( const namespace_info* info = std::get_if<namespace_info>(&info_); info ) {
+                return *info;
+            }
+            return std::nullopt;
+        }
+
+        std::optional<variable_info> get_variable() const {
+            if ( const variable_info* info = std::get_if<variable_info>(&info_); info ) {
+                return *info;
+            }
+            return std::nullopt;
+        }
+
+        void merge(const type& other) {
+            if ( info_.index() != other.info_.index() ) {
+                throw std::logic_error("type::merge failed");
+            }
+            std::visit(overloaded {
+                [&other](auto& info){
+                    using info_type = std::remove_reference_t<decltype(info)>;
+                    info.merge(std::get<info_type>(other.info_));
+                }
+            }, info_);
+        }
     private:
         std::variant<
             class_info,

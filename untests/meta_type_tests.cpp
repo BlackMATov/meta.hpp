@@ -33,25 +33,44 @@ TEST_CASE("meta/type") {
 
     meta::type class_type = meta::class_<clazz>("clazz");
     CHECK(class_type.is_class());
-    CHECK(class_type.get_class_info().id() == "clazz");
+    CHECK(class_type.get_class()->id() == "clazz");
 
     meta::type field_type = meta::field_<&clazz::field>("field");
     CHECK(field_type.is_field());
-    CHECK(field_type.get_field_info().id() == "field");
+    CHECK(field_type.get_field()->id() == "field");
 
     meta::type function_type = meta::function_<&clazz::function>("function");
     CHECK(function_type.is_function());
-    CHECK(function_type.get_function_info().id() == "function");
+    CHECK(function_type.get_function()->id() == "function");
 
     meta::type method_type = meta::method_<&clazz::method>("method");
     CHECK(method_type.is_method());
-    CHECK(method_type.get_method_info().id() == "method");
+    CHECK(method_type.get_method()->id() == "method");
 
     meta::type namespace_type = meta::namespace_("ns");
     CHECK(namespace_type.is_namespace());
-    CHECK(namespace_type.get_namespace_info().id() == "ns");
+    CHECK(namespace_type.get_namespace()->id() == "ns");
 
     meta::type variable_type = meta::variable_<&clazz::variable>("variable");
     CHECK(variable_type.is_variable());
-    CHECK(variable_type.get_variable_info().id() == "variable");
+    CHECK(variable_type.get_variable()->id() == "variable");
+}
+
+TEST_CASE("meta/type/merge") {
+    namespace meta = meta_hpp;
+    using namespace std::string_literals;
+
+    {
+        meta::type clazz_type = meta::class_<clazz>("clazz")(
+            meta::field_<&clazz::field>("field")
+        );
+
+        clazz_type.merge(meta::class_<clazz>("clazz")(
+            meta::function_<&clazz::function>("function")
+        ));
+
+        REQUIRE(clazz_type.is_class());
+        CHECK(clazz_type.get_class()->get_field("field"));
+        CHECK(clazz_type.get_class()->get_function("function"));
+    }
 }

@@ -173,7 +173,7 @@ TEST_CASE("meta/examples/advanced") {
     ivec3 v3{1,2,3};
 
     type v3_type = db.resolve(v3).value();
-    class_info v3_info = v3_type.get_class_info();
+    class_info v3_info = v3_type.get_class().value();
 
     std::cout << "class " << v3_info.id() << std::endl;
 
