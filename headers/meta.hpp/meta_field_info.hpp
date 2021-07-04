@@ -110,9 +110,9 @@ namespace meta_hpp
         template < auto Field >
         friend class field_;
 
-        template < typename FieldType, FieldType Field >
+        template < auto Field >
         field_info(detail::auto_arg_t<Field>, std::string id)
-        : fid_{get_family_id<FieldType>()}
+        : fid_{get_value_family_id<Field>()}
         , id_{std::move(id)}
         , getter_{&field_detail::getter<Field>}
         , setter_{&field_detail::setter<Field>} {}

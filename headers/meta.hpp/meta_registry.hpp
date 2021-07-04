@@ -23,17 +23,20 @@ namespace meta_hpp
     public:
         template < typename T >
         std::optional<type> resolve() const {
-            return detail::find_opt(family_to_types_, get_family_id<T>());
+            const family_id fid = get_type_family_id<T>();
+            return detail::find_opt(family_to_types_, fid);
         }
 
         template < auto T >
         std::optional<type> resolve() const {
-            return resolve<decltype(T)>();
+            const family_id fid = get_value_family_id<T>();
+            return detail::find_opt(family_to_types_, fid);
         }
 
         template < typename T >
         std::optional<type> resolve(T&&) const {
-            return resolve<std::decay_t<T>>();
+            const family_id fid = get_type_family_id<std::decay_t<T>>();
+            return detail::find_opt(family_to_types_, fid);
         }
 
         std::optional<class_info> get_class_by_name(std::string_view name) const {

@@ -186,9 +186,9 @@ namespace meta_hpp
         template < auto Method >
         friend class method_;
 
-        template < typename MethodType, MethodType Method >
+        template < auto Method >
         method_info(detail::auto_arg_t<Method>, std::string id)
-        : fid_{get_family_id<MethodType>()}
+        : fid_{get_value_family_id<Method>()}
         , id_{std::move(id)}
         , invoke_{&method_detail::invoke<Method>}
         , cinvoke_{&method_detail::cinvoke<Method>} {}

@@ -106,9 +106,9 @@ namespace meta_hpp
         template < auto Variable >
         friend class variable_;
 
-        template < typename VariableType, VariableType Variable >
+        template < auto Variable >
         variable_info(detail::auto_arg_t<Variable>, std::string id)
-        : fid_{get_family_id<VariableType>()}
+        : fid_{get_value_family_id<Variable>()}
         , id_{std::move(id)}
         , getter_{&variable_detail::getter<Variable>}
         , setter_{&variable_detail::setter<Variable>} {}

@@ -119,9 +119,9 @@ namespace meta_hpp
         template < auto Function >
         friend class function_;
 
-        template < typename FunctionType, FunctionType Function >
+        template < auto Function >
         function_info(detail::auto_arg_t<Function>, std::string id)
-        : fid_{get_family_id<FunctionType>()}
+        : fid_{get_value_family_id<Function>()}
         , id_{std::move(id)}
         , invoke_{&function_detail::invoke<Function>} {}
     private:
