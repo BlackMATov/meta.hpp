@@ -85,8 +85,12 @@ namespace meta_hpp
 
         template < typename... Args >
         std::optional<value> invoke(Args&&... args) const {
-            std::array<value, sizeof...(Args)> vargs{{std::forward<Args>(args)...}};
-            return invoke_(vargs.data(), vargs.size());
+            if constexpr ( sizeof...(Args) > 0u ) {
+                std::array<value, sizeof...(Args)> vargs{std::forward<Args>(args)...};
+                return invoke_(vargs.data(), vargs.size());
+            } else {
+                return invoke_(nullptr, 0u);
+            }
         }
 
         template < typename F >

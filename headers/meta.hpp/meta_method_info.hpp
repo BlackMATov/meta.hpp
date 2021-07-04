@@ -142,14 +142,22 @@ namespace meta_hpp
 
         template < typename... Args >
         std::optional<value> invoke(void* instance, Args&&... args) const {
-            std::array<value, sizeof...(Args)> vargs{{std::forward<Args>(args)...}};
-            return invoke_(instance, vargs.data(), vargs.size());
+            if constexpr ( sizeof...(Args) > 0u ) {
+                std::array<value, sizeof...(Args)> vargs{std::forward<Args>(args)...};
+                return invoke_(instance, vargs.data(), vargs.size());
+            } else {
+                return invoke_(instance, nullptr, 0u);
+            }
         }
 
         template < typename... Args >
         std::optional<value> invoke(const void* instance, Args&&... args) const {
-            std::array<value, sizeof...(Args)> vargs{{std::forward<Args>(args)...}};
-            return cinvoke_(instance, vargs.data(), vargs.size());
+            if constexpr ( sizeof...(Args) > 0u ) {
+                std::array<value, sizeof...(Args)> vargs{std::forward<Args>(args)...};
+                return cinvoke_(instance, vargs.data(), vargs.size());
+            } else {
+                return cinvoke_(instance, nullptr, 0u);
+            }
         }
 
         template < typename F >
