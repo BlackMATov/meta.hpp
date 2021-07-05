@@ -14,6 +14,8 @@ namespace
 {
     class clazz {};
     class clazz2 {};
+
+    void func() {}
 }
 
 TEST_CASE("meta/value") {
@@ -59,6 +61,110 @@ TEST_CASE("meta/value/fid") {
 
     CHECK(meta::value{std::in_place_type<int>, 1}.fid() == meta::get_type_family_id<int>());
     CHECK(meta::value{std::in_place_type<std::vector<int>>, {1,2,3,4}}.fid() == meta::get_type_family_id<std::vector<int>>());
+}
+
+TEST_CASE("meta/value/equal") {
+    namespace meta = meta_hpp;
+    using namespace std::string_literals;
+
+    {
+        CHECK(meta::value{1} == 1);
+        CHECK(meta::value{1} != 0);
+        CHECK(meta::value{1} != "hello"s);
+
+        CHECK_FALSE(meta::value{1} != 1);
+        CHECK_FALSE(meta::value{1} == 0);
+        CHECK_FALSE(meta::value{1} == "hello"s);
+    }
+
+    {
+        CHECK(1 == meta::value{1});
+        CHECK(0 != meta::value{1});
+        CHECK("hello"s != meta::value{1});
+
+        CHECK_FALSE(1 != meta::value{1});
+        CHECK_FALSE(0 == meta::value{1});
+        CHECK_FALSE("hello"s == meta::value{1});
+    }
+
+    {
+        int i = 1;
+
+        CHECK(meta::value{1} == i);
+        CHECK(meta::value{1} == std::as_const(i));
+        CHECK_FALSE(meta::value{1} != i);
+        CHECK_FALSE(meta::value{1} != std::as_const(i));
+
+        CHECK(i == meta::value{1});
+        CHECK(std::as_const(i) == meta::value{1});
+        CHECK_FALSE(i != meta::value{1});
+        CHECK_FALSE(std::as_const(i) != meta::value{1});
+    }
+
+    {
+        CHECK(meta::value{1} == meta::value{1});
+        CHECK(meta::value{1} != meta::value{0});
+        CHECK(meta::value{1} != meta::value{"hello"s});
+        CHECK_FALSE(meta::value{1} != meta::value{1});
+        CHECK_FALSE(meta::value{1} == meta::value{0});
+        CHECK_FALSE(meta::value{1} == meta::value{"hello"s});
+
+        CHECK(meta::value{1} == meta::value{1});
+        CHECK(meta::value{0} != meta::value{1});
+        CHECK(meta::value{"hello"s} != meta::value{1});
+        CHECK_FALSE(meta::value{1} != meta::value{1});
+        CHECK_FALSE(meta::value{0} == meta::value{1});
+        CHECK_FALSE(meta::value{"hello"s} == meta::value{1});
+    }
+
+    {
+        CHECK(meta::value{std::in_place_type<int>, 1} == meta::value{1});
+        CHECK(meta::value{1} == meta::value{std::in_place_type<int>, 1});
+
+        using vi = std::vector<int>;
+        CHECK(meta::value{std::in_place_type<vi>, {1,2,3}} == meta::value{vi{1,2,3}});
+        CHECK(meta::value{vi{1,2,3}} == meta::value{std::in_place_type<vi>, {1,2,3}});
+        CHECK_FALSE(meta::value{std::in_place_type<vi>, {1,2,3}} == meta::value{vi{1,2,4}});
+        CHECK_FALSE(meta::value{vi{1,2,4}} == meta::value{std::in_place_type<vi>, {1,2,3}});
+    }
+
+    {
+        meta::value v1{&func};
+        meta::value v2{&func};
+
+        CHECK(v1 == v1);
+        CHECK_FALSE(v1 != v1);
+
+        CHECK(v1 == v2);
+        CHECK_FALSE(v1 != v2);
+    }
+
+    {
+        meta::value v1{clazz{}};
+        meta::value v2{clazz{}};
+
+        CHECK(v1 == v1);
+        CHECK_FALSE(v1 != v1);
+
+        CHECK(v1 != v2);
+        CHECK_FALSE(v1 == v2);
+    }
+
+    {
+        const int rv = 1;
+
+        meta::value v1{&rv};
+        meta::value v2{&rv};
+
+        CHECK(v1 == v1);
+        CHECK_FALSE(v1 != v1);
+    }
+
+    {
+        meta::value v1{"hello"s};
+        meta::value{1}.swap(v1);
+        CHECK(v1 == meta::value{1});
+    }
 }
 
 TEST_CASE("meta/value/swap") {

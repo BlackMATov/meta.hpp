@@ -10,6 +10,34 @@
 
 namespace meta_hpp
 {
+    class value;
+}
+
+namespace meta_hpp::value_detail
+{
+    struct traits {
+        bool(*equal)(const value&, const value&){};
+        bool(*not_equal)(const value&, const value&){};
+    };
+
+    template < typename T >
+    bool value_equal(const value& l, const value& r);
+
+    template < typename T >
+    bool value_not_equal(const value& l, const value& r);
+
+    template < typename T >
+    const traits* get_traits() noexcept {
+        static traits traits{
+            &value_equal<T>,
+            &value_not_equal<T>,
+        };
+        return &traits;
+    }
+}
+
+namespace meta_hpp
+{
     class value {
     public:
         value() = delete;
@@ -25,7 +53,8 @@ namespace meta_hpp
                  , typename = std::enable_if_t<!std::is_same_v<U, value>> >
         value(T&& val)
         : raw_{std::forward<T>(val)}
-        , fid_{get_type_family_id<U>()} {}
+        , fid_{get_type_family_id<U>()}
+        , traits_{value_detail::get_traits<U>()} {}
 
         template < typename T
                  , typename U = std::decay_t<T>
@@ -38,12 +67,14 @@ namespace meta_hpp
         template < typename T, typename... Args >
         explicit value(std::in_place_type_t<T>, Args&&... args)
         : raw_{std::in_place_type<T>, std::forward<Args>(args)...}
-        , fid_{get_type_family_id<T>()} {}
+        , fid_{get_type_family_id<T>()}
+        , traits_{value_detail::get_traits<T>()} {}
 
         template < typename T, typename U, typename... Args >
         explicit value(std::in_place_type_t<T>, std::initializer_list<U> ilist, Args&&... args)
         : raw_{std::in_place_type<T>, ilist, std::forward<Args>(args)...}
-        , fid_{get_type_family_id<T>()} {}
+        , fid_{get_type_family_id<T>()}
+        , traits_{value_detail::get_traits<T>()} {}
 
         template < typename T >
         T cast() && {
@@ -80,6 +111,51 @@ namespace meta_hpp
             using std::swap;
             swap(raw_, other.raw_);
             swap(fid_, other.fid_);
+            swap(traits_, other.traits_);
+        }
+
+        template < typename T
+                 , typename U = std::decay_t<T>
+                 , typename = std::enable_if_t<!std::is_same_v<U, value>>
+                 , typename = std::enable_if_t<std::is_invocable_v<std::equal_to<>, U, U>> >
+        friend bool operator==(const value& l, T&& r) {
+            return l.fid() == get_type_family_id<U>()
+                && std::equal_to<>{}(*l.try_cast<U>(), std::forward<T>(r));
+        }
+
+        template < typename T
+                 , typename U = std::decay_t<T>
+                 , typename = std::enable_if_t<!std::is_same_v<U, value>>
+                 , typename = std::enable_if_t<std::is_invocable_v<std::equal_to<>, U, U>> >
+        friend bool operator==(T&& l, const value& r) {
+            return get_type_family_id<U>() == r.fid()
+                && std::equal_to<>{}(std::forward<T>(l), *r.try_cast<U>());
+        }
+
+        template < typename T
+                 , typename U = std::decay_t<T>
+                 , typename = std::enable_if_t<!std::is_same_v<U, value>>
+                 , typename = std::enable_if_t<std::is_invocable_v<std::equal_to<>, U, U>> >
+        friend bool operator!=(const value& l, T&& r) {
+            return l.fid() != get_type_family_id<U>()
+                || std::not_equal_to<>{}(*l.try_cast<U>(), std::forward<T>(r));
+        }
+
+        template < typename T
+                 , typename U = std::decay_t<T>
+                 , typename = std::enable_if_t<!std::is_same_v<U, value>>
+                 , typename = std::enable_if_t<std::is_invocable_v<std::equal_to<>, U, U>> >
+        friend bool operator!=(T&& l, const value& r) {
+            return get_type_family_id<U>() != r.fid()
+                || std::not_equal_to<>{}(std::forward<T>(l), *r.try_cast<U>());
+        }
+
+        friend bool operator==(const value& l, const value& r) {
+            return l.traits_->equal(l, r);
+        }
+
+        friend bool operator!=(const value& l, const value& r) {
+            return l.traits_->not_equal(l, r);
         }
     public:
         bool to_bool() const { return cast<bool>(); }
@@ -105,9 +181,37 @@ namespace meta_hpp
     private:
         std::any raw_;
         family_id fid_;
+        const value_detail::traits* traits_{};
     };
 
     inline void swap(value& l, value& r) noexcept {
         l.swap(r);
+    }
+}
+
+namespace meta_hpp::value_detail
+{
+    template < typename T >
+    bool value_equal(const value& l, const value& r) {
+        if ( l.fid() != r.fid() ) {
+            return false;
+        }
+        if constexpr ( std::is_invocable_v<std::equal_to<>, T, T> ) {
+            return std::equal_to<>{}(*l.try_cast<T>(), *(r.try_cast<T>()));
+        } else {
+            return std::addressof(l) == std::addressof(r);
+        }
+    }
+
+    template < typename T >
+    bool value_not_equal(const value& l, const value& r) {
+        if ( l.fid() != r.fid() ) {
+            return true;
+        }
+        if constexpr ( std::is_invocable_v<std::not_equal_to<>, T, T> ) {
+            return std::not_equal_to<>{}(*l.try_cast<T>(), *(r.try_cast<T>()));
+        } else {
+            return std::addressof(l) != std::addressof(r);
+        }
     }
 }
