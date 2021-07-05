@@ -20,7 +20,7 @@ namespace meta_hpp::function_detail
         using return_type = typename ft::return_type;
         using argument_types = typename ft::argument_types;
 
-        auto typed_arguments = std::make_tuple(
+        [[maybe_unused]] auto typed_arguments = std::make_tuple(
             (args + Is)->try_cast<std::tuple_element_t<Is, argument_types>>()...);
 
         if ( !(std::get<Is>(typed_arguments) && ...) ) {

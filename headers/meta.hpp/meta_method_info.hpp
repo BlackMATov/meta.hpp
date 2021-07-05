@@ -27,7 +27,7 @@ namespace meta_hpp::method_detail
             throw std::logic_error("an attempt to call a method with incorrect instance type");
         }
 
-        auto typed_arguments = std::make_tuple(
+        [[maybe_unused]] auto typed_arguments = std::make_tuple(
             (args + Is)->try_cast<std::tuple_element_t<Is, argument_types>>()...);
 
         if ( !(std::get<Is>(typed_arguments) && ...) ) {
@@ -67,7 +67,7 @@ namespace meta_hpp::method_detail
                 throw std::logic_error("an attempt to call a method with incorrect instance type");
             }
 
-            auto typed_arguments = std::make_tuple(
+            [[maybe_unused]] auto typed_arguments = std::make_tuple(
                 (args + Is)->try_cast<std::tuple_element_t<Is, argument_types>>()...);
 
             if ( !(std::get<Is>(typed_arguments) && ...) ) {
