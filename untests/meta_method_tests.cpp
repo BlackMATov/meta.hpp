@@ -27,6 +27,8 @@ namespace
         int const_int_f_int(int a) const { return a; }
         int const_int_f_int2(int a, int b) const { return a + b; }
     };
+
+    class clazz2 {};
 }
 
 TEST_CASE("meta/non_const_method") {
@@ -48,52 +50,66 @@ TEST_CASE("meta/non_const_method") {
     const meta::method_info& int_f_int_info = int_f_int_method_;
     const meta::method_info& int_f_int2_info = int_f_int2_method_;
 
+    SUBCASE("another_instance") {
+        clazz2 instance;
+        CHECK_THROWS_AS(void_f_void_info.invoke(instance), std::logic_error);
+        CHECK_THROWS_AS(void_f_int_info.invoke(instance, 1), std::logic_error);
+        CHECK_THROWS_AS(void_f_int2_info.invoke(instance, 1, 2), std::logic_error);
+    }
+
     SUBCASE("void_return") {
         clazz instance;
 
-        CHECK_NOTHROW(void_f_void_info.invoke(&instance));
-        CHECK_THROWS_AS(void_f_void_info.invoke(&instance, 1), std::logic_error);
+        CHECK_NOTHROW(void_f_void_info.invoke(instance));
+        CHECK_THROWS_AS(void_f_void_info.invoke(instance, 1), std::logic_error);
 
-        CHECK_THROWS_AS(void_f_int_info.invoke(&instance), std::logic_error);
-        CHECK_NOTHROW(void_f_int_info.invoke(&instance, 1));
-        CHECK_THROWS_AS(void_f_int_info.invoke(&instance, 1.f), std::logic_error);
-        CHECK_THROWS_AS(void_f_int_info.invoke(&instance, 1, 2), std::logic_error);
+        CHECK_THROWS_AS(void_f_int_info.invoke(instance), std::logic_error);
+        CHECK_NOTHROW(void_f_int_info.invoke(instance, 1));
+        CHECK_THROWS_AS(void_f_int_info.invoke(instance, 1.f), std::logic_error);
+        CHECK_THROWS_AS(void_f_int_info.invoke(instance, 1, 2), std::logic_error);
 
-        CHECK_THROWS_AS(void_f_int2_info.invoke(&instance), std::logic_error);
-        CHECK_THROWS_AS(void_f_int2_info.invoke(&instance, 1), std::logic_error);
-        CHECK_NOTHROW(void_f_int2_info.invoke(&instance, 1, 2));
-        CHECK_THROWS_AS(void_f_int2_info.invoke(&instance, 1.f, 2), std::logic_error);
-        CHECK_THROWS_AS(void_f_int2_info.invoke(&instance, 1, 2.f), std::logic_error);
-        CHECK_THROWS_AS(void_f_int2_info.invoke(&instance, 1, 2, 3), std::logic_error);
+        CHECK_THROWS_AS(void_f_int2_info.invoke(instance), std::logic_error);
+        CHECK_THROWS_AS(void_f_int2_info.invoke(instance, 1), std::logic_error);
+        CHECK_NOTHROW(void_f_int2_info.invoke(instance, 1, 2));
+        CHECK_THROWS_AS(void_f_int2_info.invoke(instance, 1.f, 2), std::logic_error);
+        CHECK_THROWS_AS(void_f_int2_info.invoke(instance, 1, 2.f), std::logic_error);
+        CHECK_THROWS_AS(void_f_int2_info.invoke(instance, 1, 2, 3), std::logic_error);
 
         const clazz& cinstance = instance;
-        CHECK_THROWS_AS(void_f_void_info.invoke(&cinstance), std::logic_error);
-        CHECK_THROWS_AS(void_f_int_info.invoke(&cinstance, 1), std::logic_error);
-        CHECK_THROWS_AS(void_f_int2_info.invoke(&cinstance, 1, 2), std::logic_error);
+        CHECK_THROWS_AS(void_f_void_info.invoke(cinstance), std::logic_error);
+        CHECK_THROWS_AS(void_f_int_info.invoke(cinstance, 1), std::logic_error);
+        CHECK_THROWS_AS(void_f_int2_info.invoke(cinstance, 1, 2), std::logic_error);
     }
 
     SUBCASE("int_return") {
         clazz instance;
 
-        CHECK(int_f_void_info.invoke(&instance)->cast<int>() == 1);
-        CHECK_THROWS_AS(int_f_void_info.invoke(&instance, 1), std::logic_error);
+        CHECK(int_f_void_info.invoke(instance)->cast<int>() == 1);
+        CHECK_THROWS_AS(int_f_void_info.invoke(instance, 1), std::logic_error);
 
-        CHECK_THROWS_AS(int_f_int_info.invoke(&instance), std::logic_error);
-        CHECK(int_f_int_info.invoke(&instance, 1)->cast<int>() == 1);
-        CHECK_THROWS_AS(int_f_int_info.invoke(&instance, 1.f), std::logic_error);
-        CHECK_THROWS_AS(int_f_int_info.invoke(&instance, 1, 2), std::logic_error);
+        CHECK_THROWS_AS(int_f_int_info.invoke(instance), std::logic_error);
+        CHECK(int_f_int_info.invoke(instance, 1)->cast<int>() == 1);
+        CHECK_THROWS_AS(int_f_int_info.invoke(instance, 1.f), std::logic_error);
+        CHECK_THROWS_AS(int_f_int_info.invoke(instance, 1, 2), std::logic_error);
 
-        CHECK_THROWS_AS(int_f_int2_info.invoke(&instance), std::logic_error);
-        CHECK_THROWS_AS(int_f_int2_info.invoke(&instance, 1), std::logic_error);
-        CHECK(int_f_int2_info.invoke(&instance, 1, 2)->cast<int>() == 3);
-        CHECK_THROWS_AS(int_f_int2_info.invoke(&instance, 1.f, 2), std::logic_error);
-        CHECK_THROWS_AS(int_f_int2_info.invoke(&instance, 1, 2.f), std::logic_error);
-        CHECK_THROWS_AS(int_f_int2_info.invoke(&instance, 1, 2, 3), std::logic_error);
+        CHECK_THROWS_AS(int_f_int2_info.invoke(instance), std::logic_error);
+        CHECK_THROWS_AS(int_f_int2_info.invoke(instance, 1), std::logic_error);
+        CHECK(int_f_int2_info.invoke(instance, 1, 2)->cast<int>() == 3);
+        CHECK_THROWS_AS(int_f_int2_info.invoke(instance, 1.f, 2), std::logic_error);
+        CHECK_THROWS_AS(int_f_int2_info.invoke(instance, 1, 2.f), std::logic_error);
+        CHECK_THROWS_AS(int_f_int2_info.invoke(instance, 1, 2, 3), std::logic_error);
 
         const clazz& cinstance = instance;
-        CHECK_THROWS_AS(int_f_void_info.invoke(&cinstance), std::logic_error);
-        CHECK_THROWS_AS(int_f_int_info.invoke(&cinstance, 1), std::logic_error);
-        CHECK_THROWS_AS(int_f_int2_info.invoke(&cinstance, 1, 2), std::logic_error);
+        CHECK_THROWS_AS(int_f_void_info.invoke(cinstance), std::logic_error);
+        CHECK_THROWS_AS(int_f_int_info.invoke(cinstance, 1), std::logic_error);
+        CHECK_THROWS_AS(int_f_int2_info.invoke(cinstance, 1, 2), std::logic_error);
+    }
+
+    SUBCASE("int_return_by_value") {
+        meta::value instance{clazz{}};
+        CHECK(int_f_void_info.invoke(instance)->cast<int>() == 1);
+        CHECK(int_f_int_info.invoke(instance, 1)->cast<int>() == 1);
+        CHECK(int_f_int2_info.invoke(instance, 1, 2)->cast<int>() == 3);
     }
 }
 
@@ -116,51 +132,65 @@ TEST_CASE("meta/const_method") {
     const meta::method_info& int_f_int_info = int_f_int_method_;
     const meta::method_info& int_f_int2_info = int_f_int2_method_;
 
+    SUBCASE("another_instance") {
+        const clazz2 instance;
+        CHECK_THROWS_AS(void_f_void_info.invoke(instance), std::logic_error);
+        CHECK_THROWS_AS(void_f_int_info.invoke(instance, 1), std::logic_error);
+        CHECK_THROWS_AS(void_f_int2_info.invoke(instance, 1, 2), std::logic_error);
+    }
+
     SUBCASE("void_return") {
         clazz instance;
 
-        CHECK_NOTHROW(void_f_void_info.invoke(&instance));
-        CHECK_THROWS_AS(void_f_void_info.invoke(&instance, 1), std::logic_error);
+        CHECK_NOTHROW(void_f_void_info.invoke(instance));
+        CHECK_THROWS_AS(void_f_void_info.invoke(instance, 1), std::logic_error);
 
-        CHECK_THROWS_AS(void_f_int_info.invoke(&instance), std::logic_error);
-        CHECK_NOTHROW(void_f_int_info.invoke(&instance, 1));
-        CHECK_THROWS_AS(void_f_int_info.invoke(&instance, 1.f), std::logic_error);
-        CHECK_THROWS_AS(void_f_int_info.invoke(&instance, 1, 2), std::logic_error);
+        CHECK_THROWS_AS(void_f_int_info.invoke(instance), std::logic_error);
+        CHECK_NOTHROW(void_f_int_info.invoke(instance, 1));
+        CHECK_THROWS_AS(void_f_int_info.invoke(instance, 1.f), std::logic_error);
+        CHECK_THROWS_AS(void_f_int_info.invoke(instance, 1, 2), std::logic_error);
 
-        CHECK_THROWS_AS(void_f_int2_info.invoke(&instance), std::logic_error);
-        CHECK_THROWS_AS(void_f_int2_info.invoke(&instance, 1), std::logic_error);
-        CHECK_NOTHROW(void_f_int2_info.invoke(&instance, 1, 2));
-        CHECK_THROWS_AS(void_f_int2_info.invoke(&instance, 1.f, 2), std::logic_error);
-        CHECK_THROWS_AS(void_f_int2_info.invoke(&instance, 1, 2.f), std::logic_error);
-        CHECK_THROWS_AS(void_f_int2_info.invoke(&instance, 1, 2, 3), std::logic_error);
+        CHECK_THROWS_AS(void_f_int2_info.invoke(instance), std::logic_error);
+        CHECK_THROWS_AS(void_f_int2_info.invoke(instance, 1), std::logic_error);
+        CHECK_NOTHROW(void_f_int2_info.invoke(instance, 1, 2));
+        CHECK_THROWS_AS(void_f_int2_info.invoke(instance, 1.f, 2), std::logic_error);
+        CHECK_THROWS_AS(void_f_int2_info.invoke(instance, 1, 2.f), std::logic_error);
+        CHECK_THROWS_AS(void_f_int2_info.invoke(instance, 1, 2, 3), std::logic_error);
 
         const clazz& cinstance = instance;
-        CHECK_NOTHROW(void_f_void_info.invoke(&cinstance));
-        CHECK_NOTHROW(void_f_int_info.invoke(&cinstance, 1));
-        CHECK_NOTHROW(void_f_int2_info.invoke(&cinstance, 1, 2));
+        CHECK_NOTHROW(void_f_void_info.invoke(cinstance));
+        CHECK_NOTHROW(void_f_int_info.invoke(cinstance, 1));
+        CHECK_NOTHROW(void_f_int2_info.invoke(cinstance, 1, 2));
     }
 
     SUBCASE("int_return") {
         clazz instance;
 
-        CHECK(int_f_void_info.invoke(&instance)->cast<int>() == 1);
-        CHECK_THROWS_AS(int_f_void_info.invoke(&instance, 1), std::logic_error);
+        CHECK(int_f_void_info.invoke(instance)->cast<int>() == 1);
+        CHECK_THROWS_AS(int_f_void_info.invoke(instance, 1), std::logic_error);
 
-        CHECK_THROWS_AS(int_f_int_info.invoke(&instance), std::logic_error);
-        CHECK(int_f_int_info.invoke(&instance, 1)->cast<int>() == 1);
-        CHECK_THROWS_AS(int_f_int_info.invoke(&instance, 1.f), std::logic_error);
-        CHECK_THROWS_AS(int_f_int_info.invoke(&instance, 1, 2), std::logic_error);
+        CHECK_THROWS_AS(int_f_int_info.invoke(instance), std::logic_error);
+        CHECK(int_f_int_info.invoke(instance, 1)->cast<int>() == 1);
+        CHECK_THROWS_AS(int_f_int_info.invoke(instance, 1.f), std::logic_error);
+        CHECK_THROWS_AS(int_f_int_info.invoke(instance, 1, 2), std::logic_error);
 
-        CHECK_THROWS_AS(int_f_int2_info.invoke(&instance), std::logic_error);
-        CHECK_THROWS_AS(int_f_int2_info.invoke(&instance, 1), std::logic_error);
-        CHECK(int_f_int2_info.invoke(&instance, 1, 2)->cast<int>() == 3);
-        CHECK_THROWS_AS(int_f_int2_info.invoke(&instance, 1.f, 2), std::logic_error);
-        CHECK_THROWS_AS(int_f_int2_info.invoke(&instance, 1, 2.f), std::logic_error);
-        CHECK_THROWS_AS(int_f_int2_info.invoke(&instance, 1, 2, 3), std::logic_error);
+        CHECK_THROWS_AS(int_f_int2_info.invoke(instance), std::logic_error);
+        CHECK_THROWS_AS(int_f_int2_info.invoke(instance, 1), std::logic_error);
+        CHECK(int_f_int2_info.invoke(instance, 1, 2)->cast<int>() == 3);
+        CHECK_THROWS_AS(int_f_int2_info.invoke(instance, 1.f, 2), std::logic_error);
+        CHECK_THROWS_AS(int_f_int2_info.invoke(instance, 1, 2.f), std::logic_error);
+        CHECK_THROWS_AS(int_f_int2_info.invoke(instance, 1, 2, 3), std::logic_error);
 
         const clazz& cinstance = instance;
-        CHECK(int_f_void_info.invoke(&cinstance)->cast<int>() == 1);
-        CHECK(int_f_int_info.invoke(&cinstance, 1)->cast<int>() == 1);
-        CHECK(int_f_int2_info.invoke(&cinstance, 1, 2)->cast<int>() == 3);
+        CHECK(int_f_void_info.invoke(cinstance)->cast<int>() == 1);
+        CHECK(int_f_int_info.invoke(cinstance, 1)->cast<int>() == 1);
+        CHECK(int_f_int2_info.invoke(cinstance, 1, 2)->cast<int>() == 3);
+    }
+
+    SUBCASE("int_return_by_value") {
+        meta::value instance{clazz{}};
+        CHECK(int_f_void_info.invoke(instance)->cast<int>() == 1);
+        CHECK(int_f_int_info.invoke(instance, 1)->cast<int>() == 1);
+        CHECK(int_f_int2_info.invoke(instance, 1, 2)->cast<int>() == 3);
     }
 }

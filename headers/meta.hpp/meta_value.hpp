@@ -104,12 +104,14 @@ namespace meta_hpp
         template < typename T >
         std::add_pointer_t<T>
         try_cast() noexcept {
+            static_assert(!std::is_reference_v<T>);
             return std::any_cast<T>(&raw_);
         }
 
         template < typename T >
         std::add_pointer_t<std::add_const_t<T>>
         try_cast() const noexcept {
+            static_assert(!std::is_reference_v<T>);
             return std::any_cast<T>(&raw_);
         }
 

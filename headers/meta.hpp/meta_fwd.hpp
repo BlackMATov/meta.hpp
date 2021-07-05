@@ -250,3 +250,21 @@ namespace meta_hpp::detail
         static constexpr bool is_noexcept = true;
     };
 }
+
+namespace meta_hpp::detail
+{
+    template < typename Variable >
+    struct variable_traits;
+
+    template < typename T >
+    struct variable_traits<T*> {
+        static constexpr bool is_const = false;
+        using value_type = T;
+    };
+
+    template < typename T >
+    struct variable_traits<const T*>
+         : variable_traits<T*> {
+        static constexpr bool is_const = true;
+    };
+}

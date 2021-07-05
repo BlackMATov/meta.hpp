@@ -7,49 +7,47 @@
 #pragma once
 
 #include "meta_fwd.hpp"
+
+#include "meta_instance.hpp"
 #include "meta_value.hpp"
 
 #include "meta_data_info.hpp"
 
 namespace meta_hpp::field_detail
 {
-    template < typename Field >
-    struct field_traits;
-
-    template < typename T, typename Base >
-    struct field_traits<T Base::*> {
-        static constexpr bool is_const = false;
-        using value_type = T;
-        using instance_type = Base;
-    };
-
-    template < typename T, typename Base >
-    struct field_traits<const T Base::*>
-         : field_traits<T Base::*> {
-        static constexpr bool is_const = true;
-    };
-
     template < auto Field  >
-    value getter(const void* instance) {
-        using ft = field_traits<decltype(Field)>;
+    value getter(cinstance instance) {
+        using ft = detail::field_traits<decltype(Field)>;
         using value_type = typename ft::value_type;
         using instance_type = typename ft::instance_type;
 
-        auto instance_ptr = static_cast<const instance_type*>(instance);
-        value_type typed_value = std::invoke(Field, *instance_ptr);
+        const instance_type* typed_instance{instance.try_cast<instance_type>()};
+        if ( !typed_instance ) {
+            throw std::logic_error("an attempt to get a field with incorrect instance type");
+        }
 
+        value_type typed_value{std::invoke(Field, *typed_instance)};
         return value{std::move(typed_value)};
     }
 
     template < auto Field  >
-    void setter([[maybe_unused]] void* instance, value value) {
-        using ft = field_traits<decltype(Field)>;
+    void setter([[maybe_unused]] instance instance, value value) {
+        using ft = detail::field_traits<decltype(Field)>;
         using value_type = typename ft::value_type;
         using instance_type = typename ft::instance_type;
 
         if constexpr ( !ft::is_const ) {
-            auto instance_ptr = static_cast<instance_type*>(instance);
-            std::invoke(Field, *instance_ptr) = value.cast<value_type>();
+            instance_type* typed_instance{instance.try_cast<instance_type>()};
+            if ( !typed_instance ) {
+                throw std::logic_error("an attempt to set a field with incorrect instance type");
+            }
+
+            value_type* typed_value{value.try_cast<value_type>()};
+            if ( !typed_value ) {
+                throw std::logic_error("an attempt to set a field with incorrect argument type");
+            }
+
+            std::invoke(Field, *typed_instance) = std::move(*typed_value);
         } else {
             throw std::logic_error("an attempt to change a constant field");
         }
@@ -75,12 +73,12 @@ namespace meta_hpp
         const std::string& id() const noexcept {
             return id_;
         }
-        value get(const void* instance) const {
+        value get(cinstance instance) const {
             return getter_(instance);
         }
 
         template < typename Value >
-        void set(void* instance, Value&& value) const {
+        void set(instance instance, Value&& value) const {
             return setter_(instance, std::forward<Value>(value));
         }
 
@@ -119,8 +117,8 @@ namespace meta_hpp
     private:
         family_id fid_;
         std::string id_;
-        value(*getter_)(const void*);
-        void(*setter_)(void*, value);
+        value(*getter_)(cinstance);
+        void(*setter_)(instance, value);
         std::map<std::string, data_info, std::less<>> datas_;
     };
 }

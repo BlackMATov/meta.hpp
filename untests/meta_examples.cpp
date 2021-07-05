@@ -131,10 +131,10 @@ TEST_CASE("meta/examples/simple") {
 
     {
         ivec2 v2{1,2};
-        CHECK(ivec2_x_info.get(&v2).cast<int>() == 1);
-        CHECK(ivec2_y_info.get(&v2).cast<int>() == 2);
-        CHECK(ivec2_dot_info.invoke(&v2, v2)->cast<int>() == 5);
-        CHECK(ivec2_length2_info.invoke(&v2)->cast<int>() == 5);
+        CHECK(ivec2_x_info.get(v2).cast<int>() == 1);
+        CHECK(ivec2_y_info.get(v2).cast<int>() == 2);
+        CHECK(ivec2_dot_info.invoke(v2, v2)->cast<int>() == 5);
+        CHECK(ivec2_length2_info.invoke(v2)->cast<int>() == 5);
     }
 
     {
@@ -180,7 +180,7 @@ TEST_CASE("meta/examples/advanced") {
     v3_info.each_field([&v3](const field_info& info){
         std::cout
             << "  - " << info.id()
-            << ": " << info.get(&v3).to_int() << std::endl;
+            << ": " << info.get(v3).to_int() << std::endl;
     });
 
     v3_info.each_method([](const method_info& info){

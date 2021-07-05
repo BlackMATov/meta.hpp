@@ -7,33 +7,20 @@
 #pragma once
 
 #include "meta_fwd.hpp"
+
 #include "meta_value.hpp"
 
 #include "meta_data_info.hpp"
 
 namespace meta_hpp::function_detail
 {
-    template < typename Function >
-    struct function_traits;
-
-    template < typename R, typename... Args >
-    struct function_traits<R(*)(Args...)> {
-        static constexpr std::size_t arity = sizeof...(Args);
-        using return_type = R;
-        using argument_types = std::tuple<Args...>;
-    };
-
-    template < typename R, typename... Args >
-    struct function_traits<R(*)(Args...) noexcept>
-         : function_traits<R(*)(Args...)> {};
-
     template < auto Function, std::size_t... Is >
     std::optional<value> invoke(value* args, std::index_sequence<Is...>) {
-        using ft = function_traits<decltype(Function)>;
+        using ft = detail::function_traits<decltype(Function)>;
         using return_type = typename ft::return_type;
         using argument_types = typename ft::argument_types;
 
-        [[maybe_unused]] auto typed_arguments = std::make_tuple(
+        auto typed_arguments = std::make_tuple(
             (args + Is)->try_cast<std::tuple_element_t<Is, argument_types>>()...);
 
         if ( !(std::get<Is>(typed_arguments) && ...) ) {
@@ -41,19 +28,17 @@ namespace meta_hpp::function_detail
         }
 
         if constexpr ( std::is_void_v<return_type> ) {
-            std::invoke(Function,
-                *std::get<Is>(typed_arguments)...);
+            std::invoke(Function, std::move(*std::get<Is>(typed_arguments))...);
             return std::nullopt;
         } else {
-            return_type return_value = std::invoke(Function,
-                *std::get<Is>(typed_arguments)...);
+            return_type return_value{std::invoke(Function, std::move(*std::get<Is>(typed_arguments))...)};
             return value{std::move(return_value)};
         }
     }
 
     template < auto Function >
     std::optional<value> invoke(value* args, std::size_t arg_count) {
-        using ft = function_traits<decltype(Function)>;
+        using ft = detail::function_traits<decltype(Function)>;
 
         if ( arg_count != ft::arity ) {
             throw std::logic_error("an attempt to call a function with an incorrect arity");

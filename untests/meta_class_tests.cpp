@@ -150,8 +150,8 @@ TEST_CASE("meta/class/merge") {
 
         {
             clazz::clazz2 instance{};
-            CHECK(clazz_info.get_class("child")->get_field("field")->get(&instance).to_int() == 21);
-            CHECK(clazz_info.get_class("child")->get_field("cfield")->get(&instance).to_int() == 22);
+            CHECK(clazz_info.get_class("child")->get_field("field")->get(instance).to_int() == 21);
+            CHECK(clazz_info.get_class("child")->get_field("cfield")->get(instance).to_int() == 22);
         }
     }
 }

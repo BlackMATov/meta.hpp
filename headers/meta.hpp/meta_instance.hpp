@@ -51,6 +51,24 @@ namespace meta_hpp
         family_id fid() const noexcept {
             return fid_;
         }
+
+        template < typename T >
+        std::add_pointer_t<T>
+        try_cast() noexcept {
+            static_assert(!std::is_reference_v<T>);
+            return fid() == get_type_family_id<T>()
+                ? static_cast<std::add_pointer_t<T>>(data_)
+                : nullptr;
+        }
+
+        template < typename T >
+        std::add_pointer_t<std::add_const_t<T>>
+        try_cast() const noexcept {
+            static_assert(!std::is_reference_v<T>);
+            return fid() == get_type_family_id<T>()
+                ? static_cast<std::add_pointer_t<std::add_const_t<T>>>(data_)
+                : nullptr;
+        }
     private:
         void* data_{};
         family_id fid_{};
@@ -91,6 +109,15 @@ namespace meta_hpp
 
         family_id fid() const noexcept {
             return fid_;
+        }
+
+        template < typename T >
+        std::add_pointer_t<std::add_const_t<T>>
+        try_cast() const noexcept {
+            static_assert(!std::is_reference_v<T>);
+            return fid() == get_type_family_id<T>()
+                ? static_cast<std::add_pointer_t<std::add_const_t<T>>>(data_)
+                : nullptr;
         }
     private:
         const void* data_{};

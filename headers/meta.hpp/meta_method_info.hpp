@@ -7,46 +7,27 @@
 #pragma once
 
 #include "meta_fwd.hpp"
+
+#include "meta_instance.hpp"
 #include "meta_value.hpp"
 
 #include "meta_data_info.hpp"
 
 namespace meta_hpp::method_detail
 {
-    template < typename Method >
-    struct method_traits;
-
-    template < typename R, typename Base, typename... Args >
-    struct method_traits<R(Base::*)(Args...)> {
-        static constexpr bool is_const = false;
-        static constexpr std::size_t arity = sizeof...(Args);
-        using return_type = R;
-        using instance_type = Base;
-        using argument_types = std::tuple<Args...>;
-    };
-
-    template < typename R, typename Base, typename... Args >
-    struct method_traits<R(Base::*)(Args...) const>
-         : method_traits<R(Base::*)(Args...)> {
-        static constexpr bool is_const = true;
-    };
-
-    template < typename R, typename Base, typename... Args >
-    struct method_traits<R(Base::*)(Args...) noexcept>
-         : method_traits<R(Base::*)(Args...)> {};
-
-    template < typename R, typename Base, typename... Args >
-    struct method_traits<R(Base::*)(Args...) const noexcept>
-         : method_traits<R(Base::*)(Args...) const> {};
-
     template < auto Method, std::size_t... Is >
-    std::optional<value> invoke([[maybe_unused]] void* instance, value* args, std::index_sequence<Is...>) {
-        using mt = method_traits<decltype(Method)>;
+    std::optional<value> invoke(instance instance, value* args, std::index_sequence<Is...>) {
+        using mt = detail::method_traits<decltype(Method)>;
         using return_type = typename mt::return_type;
         using instance_type = typename mt::instance_type;
         using argument_types = typename mt::argument_types;
 
-        [[maybe_unused]] auto typed_arguments = std::make_tuple(
+        instance_type* typed_instance{instance.try_cast<instance_type>()};
+        if ( !typed_instance ) {
+            throw std::logic_error("an attempt to call a method with incorrect instance type");
+        }
+
+        auto typed_arguments = std::make_tuple(
             (args + Is)->try_cast<std::tuple_element_t<Is, argument_types>>()...);
 
         if ( !(std::get<Is>(typed_arguments) && ...) ) {
@@ -54,21 +35,17 @@ namespace meta_hpp::method_detail
         }
 
         if constexpr ( std::is_void_v<return_type> ) {
-            std::invoke(Method,
-                std::ref(*static_cast<instance_type*>(instance)),
-                *std::get<Is>(typed_arguments)...);
+            std::invoke(Method, *typed_instance, std::move(*std::get<Is>(typed_arguments))...);
             return std::nullopt;
         } else {
-            return_type return_value = std::invoke(Method,
-                std::ref(*static_cast<instance_type*>(instance)),
-                *std::get<Is>(typed_arguments)...);
+            return_type return_value{std::invoke(Method, *typed_instance, std::move(*std::get<Is>(typed_arguments))...)};
             return value{std::move(return_value)};
         }
     }
 
     template < auto Method >
-    std::optional<value> invoke(void* instance, value* args, std::size_t arg_count) {
-        using mt = method_traits<decltype(Method)>;
+    std::optional<value> invoke(instance instance, value* args, std::size_t arg_count) {
+        using mt = detail::method_traits<decltype(Method)>;
 
         if ( arg_count != mt::arity ) {
             throw std::logic_error("an attempt to call a method with an incorrect arity");
@@ -78,29 +55,30 @@ namespace meta_hpp::method_detail
     }
 
     template < auto Method, std::size_t... Is >
-    std::optional<value> cinvoke([[maybe_unused]] const void* instance, value* args, std::index_sequence<Is...>) {
-        using mt = method_traits<decltype(Method)>;
+    std::optional<value> cinvoke([[maybe_unused]] cinstance instance, value* args, std::index_sequence<Is...>) {
+        using mt = detail::method_traits<decltype(Method)>;
         using return_type = typename mt::return_type;
         using instance_type = typename mt::instance_type;
         using argument_types = typename mt::argument_types;
 
-        [[maybe_unused]] auto typed_arguments = std::make_tuple(
-            (args + Is)->try_cast<std::tuple_element_t<Is, argument_types>>()...);
-
-        if ( !(std::get<Is>(typed_arguments) && ...) ) {
-            throw std::logic_error("an attempt to call a method with incorrect argument types");
-        }
-
         if constexpr ( mt::is_const ) {
+            const instance_type* typed_instance{instance.try_cast<instance_type>()};
+            if ( !typed_instance ) {
+                throw std::logic_error("an attempt to call a method with incorrect instance type");
+            }
+
+            auto typed_arguments = std::make_tuple(
+                (args + Is)->try_cast<std::tuple_element_t<Is, argument_types>>()...);
+
+            if ( !(std::get<Is>(typed_arguments) && ...) ) {
+                throw std::logic_error("an attempt to call a method with incorrect argument types");
+            }
+
             if constexpr ( std::is_void_v<return_type> ) {
-                std::invoke(Method,
-                    std::ref(*static_cast<const instance_type*>(instance)),
-                    *std::get<Is>(typed_arguments)...);
+                std::invoke(Method, *typed_instance, std::move(*std::get<Is>(typed_arguments))...);
                 return std::nullopt;
             } else {
-                return_type return_value = std::invoke(Method,
-                    std::ref(*static_cast<const instance_type*>(instance)),
-                    *std::get<Is>(typed_arguments)...);
+                return_type return_value{std::invoke(Method, *typed_instance, std::move(*std::get<Is>(typed_arguments))...)};
                 return value{std::move(return_value)};
             }
         } else {
@@ -109,8 +87,8 @@ namespace meta_hpp::method_detail
     }
 
     template < auto Method >
-    std::optional<value> cinvoke(const void* instance, value* args, std::size_t arg_count) {
-        using mt = method_traits<decltype(Method)>;
+    std::optional<value> cinvoke(cinstance instance, value* args, std::size_t arg_count) {
+        using mt = detail::method_traits<decltype(Method)>;
 
         if ( arg_count != mt::arity ) {
             throw std::logic_error("an attempt to call a method with a different arity");
@@ -140,23 +118,23 @@ namespace meta_hpp
             return id_;
         }
 
-        template < typename... Args >
-        std::optional<value> invoke(void* instance, Args&&... args) const {
+        template < typename T, typename... Args >
+        std::optional<value> invoke(T& inst, Args&&... args) const {
             if constexpr ( sizeof...(Args) > 0u ) {
                 std::array<value, sizeof...(Args)> vargs{std::forward<Args>(args)...};
-                return invoke_(instance, vargs.data(), vargs.size());
+                return invoke_(inst, vargs.data(), vargs.size());
             } else {
-                return invoke_(instance, nullptr, 0u);
+                return invoke_(inst, nullptr, 0u);
             }
         }
 
-        template < typename... Args >
-        std::optional<value> invoke(const void* instance, Args&&... args) const {
+        template < typename T, typename... Args >
+        std::optional<value> invoke(const T& inst, Args&&... args) const {
             if constexpr ( sizeof...(Args) > 0u ) {
                 std::array<value, sizeof...(Args)> vargs{std::forward<Args>(args)...};
-                return cinvoke_(instance, vargs.data(), vargs.size());
+                return cinvoke_(inst, vargs.data(), vargs.size());
             } else {
-                return cinvoke_(instance, nullptr, 0u);
+                return cinvoke_(inst, nullptr, 0u);
             }
         }
 
@@ -195,8 +173,8 @@ namespace meta_hpp
     private:
         family_id fid_;
         std::string id_;
-        std::optional<value>(*invoke_)(void*, value*, std::size_t);
-        std::optional<value>(*cinvoke_)(const void*, value*, std::size_t);
+        std::optional<value>(*invoke_)(instance, value*, std::size_t);
+        std::optional<value>(*cinvoke_)(cinstance, value*, std::size_t);
         std::map<std::string, data_info, std::less<>> datas_;
     };
 }

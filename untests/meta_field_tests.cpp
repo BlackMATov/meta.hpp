@@ -29,35 +29,36 @@ TEST_CASE("meta/field") {
         clazz instance;
 
         CHECK(instance.field == 1);
-        CHECK(field_info.get(&instance).cast<int>() == 1);
-        CHECK(field_info.get(&std::as_const(instance)).cast<int>() == 1);
+        CHECK(field_info.get(instance).cast<int>() == 1);
+        CHECK(field_info.get(std::as_const(instance)).cast<int>() == 1);
 
-        CHECK_NOTHROW(field_info.set(&instance, 3));
+        CHECK_NOTHROW(field_info.set(instance, 3));
+        CHECK_THROWS_AS(field_info.set(instance, 4.f), std::logic_error);
 
         CHECK(instance.field == 3);
-        CHECK(field_info.get(&instance).cast<int>() == 3);
-        CHECK(field_info.get(&std::as_const(instance)).cast<int>() == 3);
+        CHECK(field_info.get(instance).cast<int>() == 3);
+        CHECK(field_info.get(std::as_const(instance)).cast<int>() == 3);
     }
 
     {
         clazz instance;
 
         CHECK(instance.cfield == 2);
-        CHECK(cfield_info.get(&instance).cast<int>() == 2);
-        CHECK(cfield_info.get(&std::as_const(instance)).cast<int>() == 2);
+        CHECK(cfield_info.get(instance).cast<int>() == 2);
+        CHECK(cfield_info.get(std::as_const(instance)).cast<int>() == 2);
 
-        CHECK_THROWS_AS(cfield_info.set(&instance, 4), std::logic_error);
+        CHECK_THROWS_AS(cfield_info.set(instance, 4), std::logic_error);
 
         CHECK(instance.cfield == 2);
-        CHECK(cfield_info.get(&instance).cast<int>() == 2);
-        CHECK(cfield_info.get(&std::as_const(instance)).cast<int>() == 2);
+        CHECK(cfield_info.get(instance).cast<int>() == 2);
+        CHECK(cfield_info.get(std::as_const(instance)).cast<int>() == 2);
     }
 
     {
         clazz instance;
 
         instance.field = 5;
-        CHECK(field_info.get(&instance).cast<int>() == 5);
-        CHECK(field_info.get(&std::as_const(instance)).cast<int>() == 5);
+        CHECK(field_info.get(instance).cast<int>() == 5);
+        CHECK(field_info.get(std::as_const(instance)).cast<int>() == 5);
     }
 }

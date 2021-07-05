@@ -37,6 +37,7 @@ TEST_CASE("meta/variable") {
             CHECK(variable_info.get().cast<int>() == 1);
 
             CHECK_NOTHROW(variable_info.set(3));
+            CHECK_THROWS_AS(variable_info.set(4.f), std::logic_error);
 
             CHECK(variable == 3);
             CHECK(variable_info.get().cast<int>() == 3);
