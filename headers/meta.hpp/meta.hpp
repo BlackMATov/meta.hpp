@@ -8,6 +8,7 @@
 
 #include "meta_fwd.hpp"
 
+#include "meta_instance.hpp"
 #include "meta_value.hpp"
 
 #include "meta_registry.hpp"
