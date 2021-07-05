@@ -20,27 +20,30 @@ namespace meta_hpp
         value& operator=(value&&) = default;
         value& operator=(const value&) = default;
 
-        template < typename T >
-        value(T&& value)
-        : raw_{std::forward<T>(value)} {}
+        template < typename T
+                 , typename U = std::decay_t<T>
+                 , typename = std::enable_if_t<!std::is_same_v<U, value>> >
+        value(T&& val)
+        : raw_{std::forward<T>(val)}
+        , fid_{get_type_family_id<U>()} {}
 
-        template < typename T >
-        value& operator=(T&& value) noexcept {
-            raw_ = std::forward<T>(value);
+        template < typename T
+                 , typename U = std::decay_t<T>
+                 , typename = std::enable_if_t<!std::is_same_v<U, value>> >
+        value& operator=(T&& val) {
+            value{std::forward<T>(val)}.swap(*this);
             return *this;
         }
 
         template < typename T, typename... Args >
-        value(std::in_place_type_t<T>, Args&&... args)
-        : raw_{std::in_place_type<T>, std::forward<Args>(args)...} {}
+        explicit value(std::in_place_type_t<T>, Args&&... args)
+        : raw_{std::in_place_type<T>, std::forward<Args>(args)...}
+        , fid_{get_type_family_id<T>()} {}
 
         template < typename T, typename U, typename... Args >
-        value(std::in_place_type_t<T>, std::initializer_list<U> ilist, Args&&... args)
-        : raw_{std::in_place_type<T>, ilist, std::forward<Args>(args)...} {}
-
-        void swap(value& other) noexcept {
-            raw_.swap(other.raw_);
-        }
+        explicit value(std::in_place_type_t<T>, std::initializer_list<U> ilist, Args&&... args)
+        : raw_{std::in_place_type<T>, ilist, std::forward<Args>(args)...}
+        , fid_{get_type_family_id<T>()} {}
 
         template < typename T >
         T cast() && {
@@ -68,6 +71,16 @@ namespace meta_hpp
         try_cast() const noexcept {
             return std::any_cast<T>(&raw_);
         }
+
+        family_id fid() const noexcept {
+            return fid_;
+        }
+
+        void swap(value& other) noexcept {
+            using std::swap;
+            swap(raw_, other.raw_);
+            swap(fid_, other.fid_);
+        }
     public:
         bool to_bool() const { return cast<bool>(); }
         int to_int() const { return cast<int>(); }
@@ -91,6 +104,7 @@ namespace meta_hpp
         std::uintptr_t to_uintptr_t() const { return cast<std::uintptr_t>(); }
     private:
         std::any raw_;
+        family_id fid_;
     };
 
     inline void swap(value& l, value& r) noexcept {
