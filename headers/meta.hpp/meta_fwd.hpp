@@ -165,3 +165,88 @@ namespace meta_hpp::detail
         }
     }
 }
+
+namespace meta_hpp::detail
+{
+    template < typename Field >
+    struct field_traits;
+
+    template < typename T, typename I >
+    struct field_traits<T I::*> {
+        static constexpr bool is_const = false;
+        using value_type = T;
+        using instance_type = I;
+    };
+
+    template < typename T, typename I >
+    struct field_traits<const T I::*>
+         : field_traits<T I::*> {
+        static constexpr bool is_const = true;
+    };
+}
+
+namespace meta_hpp::detail
+{
+    template < typename Function >
+    struct function_traits;
+
+    template < typename R, typename... Args >
+    struct function_traits<R(Args...)> {
+        static constexpr bool is_noexcept = false;
+        static constexpr std::size_t arity = sizeof...(Args);
+        using return_type = R;
+        using argument_types = std::tuple<Args...>;
+    };
+
+    template < typename R, typename... Args >
+    struct function_traits<R(*)(Args...)>
+         : function_traits<R(Args...)> {};
+
+    template < typename R, typename... Args >
+    struct function_traits<R(&)(Args...)>
+         : function_traits<R(Args...)> {};
+
+    template < typename R, typename... Args >
+    struct function_traits<R(*)(Args...) noexcept>
+         : function_traits<R(*)(Args...)> {
+        static constexpr bool is_noexcept = true;
+    };
+
+    template < typename R, typename... Args >
+    struct function_traits<R(&)(Args...) noexcept>
+         : function_traits<R(&)(Args...)> {
+        static constexpr bool is_noexcept = true;
+    };
+}
+
+namespace meta_hpp::detail
+{
+    template < typename Method >
+    struct method_traits;
+
+    template < typename R, typename I, typename... Args >
+    struct method_traits<R(I::*)(Args...)>
+         : function_traits<R(Args...)> {
+        static constexpr bool is_const = false;
+        using instance_type = I;
+    };
+
+    template < typename R, typename I, typename... Args >
+    struct method_traits<R(I::*)(Args...) const>
+         : method_traits<R(I::*)(Args...)> {
+        static constexpr bool is_const = true;
+    };
+
+    template < typename R, typename I, typename... Args >
+    struct method_traits<R(I::*)(Args...) noexcept>
+         : method_traits<R(I::*)(Args...)> {
+        static constexpr bool is_noexcept = true;
+    };
+
+    template < typename R, typename I, typename... Args >
+    struct method_traits<R(I::*)(Args...) const noexcept>
+         : method_traits<R(I::*)(Args...)> {
+        static constexpr bool is_const = true;
+        static constexpr bool is_noexcept = true;
+    };
+}
