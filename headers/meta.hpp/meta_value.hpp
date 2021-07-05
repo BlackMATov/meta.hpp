@@ -16,9 +16,17 @@ namespace meta_hpp
 namespace meta_hpp::value_detail
 {
     struct traits {
+        void*(*data)(value&);
+        const void*(*cdata)(const value&);
         bool(*equal)(const value&, const value&){};
         bool(*not_equal)(const value&, const value&){};
     };
+
+    template < typename T >
+    void* value_data(value& v);
+
+    template < typename T >
+    const void* value_cdata(const value& v);
 
     template < typename T >
     bool value_equal(const value& l, const value& r);
@@ -29,6 +37,8 @@ namespace meta_hpp::value_detail
     template < typename T >
     const traits* get_traits() noexcept {
         static traits traits{
+            &value_data<T>,
+            &value_cdata<T>,
             &value_equal<T>,
             &value_not_equal<T>,
         };
@@ -107,6 +117,14 @@ namespace meta_hpp
             return fid_;
         }
 
+        void* data() noexcept {
+            return traits_->data(*this);
+        }
+
+        const void* data() const noexcept {
+            return traits_->cdata(*this);
+        }
+
         void swap(value& other) noexcept {
             using std::swap;
             swap(raw_, other.raw_);
@@ -178,11 +196,40 @@ namespace meta_hpp
         std::uint64_t to_uint64() const { return cast<std::uint64_t>(); }
         std::size_t to_size_t() const { return cast<std::size_t>(); }
         std::uintptr_t to_uintptr_t() const { return cast<std::uintptr_t>(); }
+    public:
+        bool is_bool() const noexcept { return !!try_cast<bool>(); }
+        bool is_int() const noexcept { return !!try_cast<int>(); }
+        bool is_uint() const noexcept { return !!try_cast<unsigned>(); }
+        bool is_float() const noexcept { return !!try_cast<float>(); }
+        bool is_double() const noexcept { return !!try_cast<double>(); }
+        bool is_string() const noexcept { return !!try_cast<std::string>(); }
+
+        bool is_int8() const noexcept { return !!try_cast<std::int8_t>(); }
+        bool is_int16() const noexcept { return !!try_cast<std::int16_t>(); }
+        bool is_int32() const noexcept { return !!try_cast<std::int32_t>(); }
+        bool is_int64() const noexcept { return !!try_cast<std::int64_t>(); }
+        bool is_ptrdiff_t() const noexcept { return !!try_cast<std::ptrdiff_t>(); }
+        bool is_intptr_t() const noexcept { return !!try_cast<std::intptr_t>(); }
+
+        bool is_uint8() const noexcept { return !!try_cast<std::uint8_t>(); }
+        bool is_uint16() const noexcept { return !!try_cast<std::uint16_t>(); }
+        bool is_uint32() const noexcept { return !!try_cast<std::uint32_t>(); }
+        bool is_uint64() const noexcept { return !!try_cast<std::uint64_t>(); }
+        bool is_size_t() const noexcept { return !!try_cast<std::size_t>(); }
+        bool is_uintptr_t() const noexcept { return !!try_cast<std::uintptr_t>(); }
     private:
         std::any raw_;
         family_id fid_;
         const value_detail::traits* traits_{};
     };
+
+    inline void* data(value& v) noexcept {
+        return v.data();
+    }
+
+    inline const void* data(const value& v) noexcept {
+        return v.data();
+    }
 
     inline void swap(value& l, value& r) noexcept {
         l.swap(r);
@@ -191,6 +238,16 @@ namespace meta_hpp
 
 namespace meta_hpp::value_detail
 {
+    template < typename T >
+    void* value_data(value& v) {
+        return v.try_cast<T>();
+    }
+
+    template < typename T >
+    const void* value_cdata(const value& v) {
+        return v.try_cast<T>();
+    }
+
     template < typename T >
     bool value_equal(const value& l, const value& r) {
         if ( l.fid() != r.fid() ) {
