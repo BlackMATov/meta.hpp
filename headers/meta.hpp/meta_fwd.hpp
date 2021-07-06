@@ -22,6 +22,7 @@
 #include <type_traits>
 #include <utility>
 #include <variant>
+#include <vector>
 
 #define META_HPP_AUTO_T(V) decltype(V), V
 

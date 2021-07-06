@@ -131,6 +131,31 @@ namespace meta_hpp::method_detail
         using namespace std::placeholders;
         return std::bind(&raw_cinvoke<MethodType>, method, _1, _2, _3);
     }
+
+    template < typename MethodType >
+    std::optional<family_id> make_return_type() {
+        using ft = detail::method_traits<MethodType>;
+        using return_type = typename ft::return_type;
+
+        if constexpr ( !std::is_void_v<return_type> ) {
+            return get_family_id<return_type>();
+        } else {
+            return std::nullopt;
+        }
+    }
+
+    template < typename MethodType, std::size_t... Is >
+    std::vector<family_id> make_argument_types_impl(std::index_sequence<Is...>) {
+        using ft = detail::method_traits<MethodType>;
+        using argument_types = typename ft::argument_types;
+        return { get_family_id<std::tuple_element_t<Is, argument_types>>()... };
+    }
+
+    template < typename MethodType >
+    std::vector<family_id> make_argument_types() {
+        using ft = detail::method_traits<MethodType>;
+        return make_argument_types_impl<MethodType>(std::make_index_sequence<ft::arity>());
+    }
 }
 
 namespace meta_hpp
@@ -150,7 +175,18 @@ namespace meta_hpp
         }
 
         std::size_t arity() const noexcept {
-            return arity_;
+            return argument_types_.size();
+        }
+
+        std::optional<family_id> return_type() const noexcept {
+            return return_type_;
+        }
+
+        std::optional<family_id> argument_type(std::size_t index) const noexcept {
+            if ( index < argument_types_.size() ) {
+                return argument_types_[index];
+            }
+            return std::nullopt;
         }
 
         template < typename T, typename... Args >
@@ -202,12 +238,14 @@ namespace meta_hpp
         template < typename MethodType >
         method_info(std::string id, MethodType method_ptr)
         : id_{std::move(id)}
-        , arity_{detail::method_traits<MethodType>::arity}
+        , return_type_{method_detail::make_return_type<MethodType>()}
+        , argument_types_{method_detail::make_argument_types<MethodType>()}
         , invoke_{method_detail::make_invoke(method_ptr)}
         , cinvoke_{method_detail::make_cinvoke(method_ptr)} {}
     private:
         std::string id_;
-        std::size_t arity_;
+        std::optional<family_id> return_type_;
+        std::vector<family_id> argument_types_;
         method_detail::method_invoke invoke_;
         method_detail::method_cinvoke cinvoke_;
         std::map<std::string, data_info, std::less<>> datas_;

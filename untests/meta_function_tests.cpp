@@ -47,6 +47,22 @@ TEST_CASE("meta/function") {
         CHECK(int_f_int2_info.arity() == 2);
     }
 
+    SUBCASE("return_type") {
+        CHECK_FALSE(void_f_void_info.return_type());
+        CHECK(int_f_void_info.return_type() == meta::get_family_id<int>());
+    }
+
+    SUBCASE("argument_types") {
+        CHECK_FALSE(void_f_void_info.argument_type(0u));
+
+        CHECK(int_f_int_info.argument_type(0u) == meta::get_family_id<int>());
+        CHECK_FALSE(int_f_int_info.argument_type(1u));
+
+        CHECK(int_f_int2_info.argument_type(0u) == meta::get_family_id<int>());
+        CHECK(int_f_int2_info.argument_type(1u) == meta::get_family_id<int>());
+        CHECK_FALSE(int_f_int2_info.argument_type(2u));
+    }
+
     SUBCASE("void_return") {
         CHECK_NOTHROW(void_f_void_info.invoke());
         CHECK_THROWS_AS(void_f_void_info.invoke(1), std::logic_error);

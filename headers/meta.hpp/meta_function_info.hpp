@@ -62,6 +62,31 @@ namespace meta_hpp::function_detail
         using namespace std::placeholders;
         return std::bind(&raw_invoke<FunctionType>, function, _1, _2);
     }
+
+    template < typename FunctionType >
+    std::optional<family_id> make_return_type() {
+        using ft = detail::function_traits<FunctionType>;
+        using return_type = typename ft::return_type;
+
+        if constexpr ( !std::is_void_v<return_type> ) {
+            return get_family_id<return_type>();
+        } else {
+            return std::nullopt;
+        }
+    }
+
+    template < typename FunctionType, std::size_t... Is >
+    std::vector<family_id> make_argument_types_impl(std::index_sequence<Is...>) {
+        using ft = detail::function_traits<FunctionType>;
+        using argument_types = typename ft::argument_types;
+        return { get_family_id<std::tuple_element_t<Is, argument_types>>()... };
+    }
+
+    template < typename FunctionType >
+    std::vector<family_id> make_argument_types() {
+        using ft = detail::function_traits<FunctionType>;
+        return make_argument_types_impl<FunctionType>(std::make_index_sequence<ft::arity>());
+    }
 }
 
 namespace meta_hpp
@@ -81,7 +106,18 @@ namespace meta_hpp
         }
 
         std::size_t arity() const noexcept {
-            return arity_;
+            return argument_types_.size();
+        }
+
+        std::optional<family_id> return_type() const noexcept {
+            return return_type_;
+        }
+
+        std::optional<family_id> argument_type(std::size_t index) const noexcept {
+            if ( index < argument_types_.size() ) {
+                return argument_types_[index];
+            }
+            return std::nullopt;
         }
 
         template < typename... Args >
@@ -123,11 +159,13 @@ namespace meta_hpp
         template < typename FunctionType >
         function_info(std::string id, FunctionType function_ptr)
         : id_{std::move(id)}
-        , arity_{detail::function_traits<FunctionType>::arity}
+        , return_type_{function_detail::make_return_type<FunctionType>()}
+        , argument_types_{function_detail::make_argument_types<FunctionType>()}
         , invoke_{function_detail::make_invoke(function_ptr)} {}
     private:
         std::string id_;
-        std::size_t arity_;
+        std::optional<family_id> return_type_;
+        std::vector<family_id> argument_types_;
         function_detail::function_invoke invoke_;
         std::map<std::string, data_info, std::less<>> datas_;
     };
