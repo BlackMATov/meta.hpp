@@ -26,6 +26,11 @@ TEST_CASE("meta/field") {
     const meta::field_info& cfield_info = cfield_;
 
     {
+        CHECK(field_info.value_type() == meta::get_family_id<int>());
+        CHECK(cfield_info.value_type() == meta::get_family_id<int>());
+    }
+
+    {
         clazz instance;
 
         CHECK(instance.field == 1);

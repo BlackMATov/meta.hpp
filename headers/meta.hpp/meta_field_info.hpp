@@ -74,6 +74,13 @@ namespace meta_hpp::field_detail
         using namespace std::placeholders;
         return std::bind(&raw_setter<FieldType>, field, _1, _2);
     }
+
+    template < typename FieldType >
+    family_id make_value_type() noexcept {
+        using ft = detail::field_traits<FieldType>;
+        using value_type = typename ft::value_type;
+        return get_family_id<value_type>();
+    }
 }
 
 namespace meta_hpp
@@ -90,6 +97,10 @@ namespace meta_hpp
     public:
         const std::string& id() const noexcept {
             return id_;
+        }
+
+        family_id value_type() const noexcept {
+            return value_type_;
         }
 
         value get(cinstance instance) const {
@@ -130,10 +141,12 @@ namespace meta_hpp
         template < typename FieldType  >
         field_info(std::string id, FieldType field_ptr)
         : id_{std::move(id)}
+        , value_type_{field_detail::make_value_type<FieldType>()}
         , getter_{field_detail::make_getter(field_ptr)}
         , setter_{field_detail::make_setter(field_ptr)} {}
     private:
         std::string id_;
+        family_id value_type_;
         field_detail::field_getter getter_;
         field_detail::field_setter setter_;
         std::map<std::string, data_info, std::less<>> datas_;

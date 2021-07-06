@@ -33,6 +33,11 @@ TEST_CASE("meta/variable") {
         const meta::variable_info& cvariable_info = cvariable_;
 
         {
+            CHECK(variable_info.value_type() == meta::get_family_id<int>());
+            CHECK(cvariable_info.value_type() == meta::get_family_id<int>());
+        }
+
+        {
             CHECK(variable == 1);
             CHECK(variable_info.get().cast<int>() == 1);
 
@@ -65,6 +70,11 @@ TEST_CASE("meta/variable") {
 
         const meta::variable_info& variable_info = variable_;
         const meta::variable_info& cvariable_info = cvariable_;
+
+        {
+            CHECK(variable_info.value_type() == meta::get_family_id<int>());
+            CHECK(cvariable_info.value_type() == meta::get_family_id<int>());
+        }
 
         {
             CHECK(clazz::variable == 1);

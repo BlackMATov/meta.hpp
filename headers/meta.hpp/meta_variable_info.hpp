@@ -59,6 +59,13 @@ namespace meta_hpp::variable_detail
         using namespace std::placeholders;
         return std::bind(&raw_setter<VariableType>, variable, _1);
     }
+
+    template < typename VariableType >
+    family_id make_value_type() noexcept {
+        using vt = detail::variable_traits<VariableType>;
+        using value_type = typename vt::value_type;
+        return get_family_id<value_type>();
+    }
 }
 
 namespace meta_hpp
@@ -75,6 +82,10 @@ namespace meta_hpp
     public:
         const std::string& id() const noexcept {
             return id_;
+        }
+
+        family_id value_type() const noexcept {
+            return value_type_;
         }
 
         value get() const {
@@ -115,10 +126,12 @@ namespace meta_hpp
         template < typename VariableType >
         variable_info(std::string id, VariableType variable_ptr)
         : id_{std::move(id)}
+        , value_type_{variable_detail::make_value_type<VariableType>()}
         , getter_{variable_detail::make_getter(variable_ptr)}
         , setter_{variable_detail::make_setter(variable_ptr)} {}
     private:
         std::string id_;
+        family_id value_type_;
         variable_detail::variable_getter getter_;
         variable_detail::variable_setter setter_;
         std::map<std::string, data_info, std::less<>> datas_;
