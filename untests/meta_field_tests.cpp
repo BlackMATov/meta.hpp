@@ -28,6 +28,9 @@ TEST_CASE("meta/field") {
     {
         CHECK(field_info.value_type() == meta::get_family_id<int>());
         CHECK(cfield_info.value_type() == meta::get_family_id<int>());
+
+        CHECK(field_info.instance_type() == meta::get_family_id<clazz>());
+        CHECK(cfield_info.instance_type() == meta::get_family_id<clazz>());
     }
 
     {

@@ -133,9 +133,16 @@ namespace meta_hpp::method_detail
     }
 
     template < typename MethodType >
+    family_id make_instance_type() noexcept {
+        using mt = detail::method_traits<MethodType>;
+        using instance_type = typename mt::instance_type;
+        return get_family_id<instance_type>();
+    }
+
+    template < typename MethodType >
     std::optional<family_id> make_return_type() {
-        using ft = detail::method_traits<MethodType>;
-        using return_type = typename ft::return_type;
+        using mt = detail::method_traits<MethodType>;
+        using return_type = typename mt::return_type;
 
         if constexpr ( !std::is_void_v<return_type> ) {
             return get_family_id<return_type>();
@@ -146,15 +153,15 @@ namespace meta_hpp::method_detail
 
     template < typename MethodType, std::size_t... Is >
     std::vector<family_id> make_argument_types_impl(std::index_sequence<Is...>) {
-        using ft = detail::method_traits<MethodType>;
-        using argument_types = typename ft::argument_types;
+        using mt = detail::method_traits<MethodType>;
+        using argument_types = typename mt::argument_types;
         return { get_family_id<std::tuple_element_t<Is, argument_types>>()... };
     }
 
     template < typename MethodType >
     std::vector<family_id> make_argument_types() {
-        using ft = detail::method_traits<MethodType>;
-        return make_argument_types_impl<MethodType>(std::make_index_sequence<ft::arity>());
+        using mt = detail::method_traits<MethodType>;
+        return make_argument_types_impl<MethodType>(std::make_index_sequence<mt::arity>());
     }
 }
 
@@ -176,6 +183,10 @@ namespace meta_hpp
 
         std::size_t arity() const noexcept {
             return argument_types_.size();
+        }
+
+        family_id instance_type() const noexcept {
+            return instance_type_;
         }
 
         std::optional<family_id> return_type() const noexcept {
@@ -238,12 +249,14 @@ namespace meta_hpp
         template < typename MethodType >
         method_info(std::string id, MethodType method_ptr)
         : id_{std::move(id)}
+        , instance_type_{method_detail::make_instance_type<MethodType>()}
         , return_type_{method_detail::make_return_type<MethodType>()}
         , argument_types_{method_detail::make_argument_types<MethodType>()}
         , invoke_{method_detail::make_invoke(method_ptr)}
         , cinvoke_{method_detail::make_cinvoke(method_ptr)} {}
     private:
         std::string id_;
+        family_id instance_type_;
         std::optional<family_id> return_type_;
         std::vector<family_id> argument_types_;
         method_detail::method_invoke invoke_;

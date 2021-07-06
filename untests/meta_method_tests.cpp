@@ -60,6 +60,11 @@ TEST_CASE("meta/non_const_method") {
         CHECK(int_f_int2_info.arity() == 2);
     }
 
+    SUBCASE("instance_type") {
+        CHECK(void_f_void_info.instance_type() == meta::get_family_id<clazz>());
+        CHECK(int_f_void_info.instance_type() == meta::get_family_id<clazz>());
+    }
+
     SUBCASE("return_type") {
         CHECK_FALSE(void_f_void_info.return_type());
         CHECK(int_f_void_info.return_type() == meta::get_family_id<int>());
@@ -157,6 +162,27 @@ TEST_CASE("meta/const_method") {
     const meta::method_info& int_f_void_info = int_f_void_method_;
     const meta::method_info& int_f_int_info = int_f_int_method_;
     const meta::method_info& int_f_int2_info = int_f_int2_method_;
+
+    SUBCASE("instance_type") {
+        CHECK(void_f_void_info.instance_type() == meta::get_family_id<clazz>());
+        CHECK(int_f_void_info.instance_type() == meta::get_family_id<clazz>());
+    }
+
+    SUBCASE("return_type") {
+        CHECK_FALSE(void_f_void_info.return_type());
+        CHECK(int_f_void_info.return_type() == meta::get_family_id<int>());
+    }
+
+    SUBCASE("argument_types") {
+        CHECK_FALSE(void_f_void_info.argument_type(0u));
+
+        CHECK(int_f_int_info.argument_type(0u) == meta::get_family_id<int>());
+        CHECK_FALSE(int_f_int_info.argument_type(1u));
+
+        CHECK(int_f_int2_info.argument_type(0u) == meta::get_family_id<int>());
+        CHECK(int_f_int2_info.argument_type(1u) == meta::get_family_id<int>());
+        CHECK_FALSE(int_f_int2_info.argument_type(2u));
+    }
 
     SUBCASE("another_instance") {
         const clazz2 instance;
