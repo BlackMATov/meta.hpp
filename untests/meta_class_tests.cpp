@@ -61,8 +61,8 @@ TEST_CASE("meta/class") {
 
     class_(
         meta::class_<clazz::clazz2>("clazz2"),
-        meta::field_<&clazz::field>("field"),
-        meta::field_<&clazz::cfield>("cfield"),
+        meta::field_("field", &clazz::field),
+        meta::field_("cfield", &clazz::cfield),
         meta::function_<&clazz::func>("func"),
         meta::method_<&clazz::method>("method"),
         meta::method_<&clazz::cmethod>("cmethod"),
@@ -128,19 +128,19 @@ TEST_CASE("meta/class/merge") {
     SUBCASE("merge") {
         CHECK_NOTHROW(clazz_(
             meta::class_<clazz::clazz2>("child")(
-                meta::field_<&clazz::clazz2::field>("field")
+                meta::field_("field", &clazz::clazz2::field)
             )
         ));
 
         CHECK_NOTHROW(clazz_(
             meta::class_<clazz::clazz2>("child")(
-                meta::field_<&clazz::clazz2::cfield>("cfield")
+                meta::field_("cfield", &clazz::clazz2::cfield)
             )
         ));
 
         CHECK_THROWS_AS(clazz_(
             meta::class_<clazz::clazz3>("child")(
-                meta::field_<&clazz::clazz3::field>("field")
+                meta::field_("field", &clazz::clazz3::field)
             )
         ), std::logic_error);
 

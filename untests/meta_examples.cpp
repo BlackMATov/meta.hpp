@@ -89,23 +89,23 @@ TEST_CASE("meta/examples/simple") {
 
     namespace_info vmath_info = namespace_("vmath")(
         class_<ivec2>("ivec2")(
-            field_<&ivec2::x>("x")(
+            field_("x", &ivec2::x)(
                 data_("tooltip", "x-coordinate field")
             ),
-            field_<&ivec2::y>("y")(
+            field_("y", &ivec2::y)(
                 data_("tooltip", "y-coordinate field")
             ),
             method_<&ivec2::dot>("dot"),
             method_<&ivec2::length2>("length2")
         ),
         class_<ivec3>("ivec3")(
-            field_<&ivec3::x>("x")(
+            field_("x", &ivec3::x)(
                 data_("tooltip", "x-coordinate field")
             ),
-            field_<&ivec3::y>("y")(
+            field_("y", &ivec3::y)(
                 data_("tooltip", "y-coordinate field")
             ),
-            field_<&ivec3::z>("z")(
+            field_("z", &ivec3::z)(
                 data_("tooltip", "z-coordinate field")
             ),
             method_<&ivec3::dot>("dot"),
@@ -156,15 +156,15 @@ TEST_CASE("meta/examples/advanced") {
 
     auto db = registry{}(
         class_<ivec2>("ivec2")(
-            field_<&ivec2::x>("x"),
-            field_<&ivec2::y>("y"),
+            field_("x", &ivec2::x),
+            field_("y", &ivec2::y),
             method_<&ivec2::dot>("dot"),
             method_<&ivec2::length2>("length2")
         ),
         class_<ivec3>("ivec3")(
-            field_<&ivec3::x>("x"),
-            field_<&ivec3::y>("y"),
-            field_<&ivec3::z>("z"),
+            field_("x", &ivec3::x),
+            field_("y", &ivec3::y),
+            field_("z", &ivec3::z),
             method_<&ivec3::dot>("dot"),
             method_<&ivec3::length2>("length2")
         )

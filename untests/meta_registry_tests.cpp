@@ -51,15 +51,15 @@ TEST_CASE("meta/registry") {
     auto registry = meta::registry{}(
         meta::namespace_("vmath")(
             meta::class_<ivec2>("ivec2")(
-                meta::field_<&ivec2::x>("x"),
-                meta::field_<&ivec2::y>("y"),
+                meta::field_("x", &ivec2::x),
+                meta::field_("y", &ivec2::y),
                 meta::method_<&ivec2::dot>("dot"),
                 meta::variable_<&ivec2::zero>("zero")
             ),
             meta::class_<ivec3>("ivec3")(
-                meta::field_<&ivec3::x>("x"),
-                meta::field_<&ivec3::y>("y"),
-                meta::field_<&ivec3::z>("z"),
+                meta::field_("x", &ivec3::x),
+                meta::field_("y", &ivec3::y),
+                meta::field_("z", &ivec3::z),
                 meta::method_<&ivec3::dot>("dot"),
                 meta::variable_<&ivec3::zero>("zero")
             ),
@@ -172,12 +172,12 @@ TEST_CASE("meta/registry/merge") {
     SUBCASE("class") {
         registry(
             meta::class_<ivec2>("ivec2")(
-                meta::field_<&ivec2::x>("x")
+                meta::field_("x", &ivec2::x)
             ));
 
         registry(
             meta::class_<ivec2>("ivec2")(
-                meta::field_<&ivec2::y>("y")
+                meta::field_("y", &ivec2::y)
             ));
 
         CHECK(registry.resolve<ivec2>());

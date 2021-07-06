@@ -35,7 +35,7 @@ TEST_CASE("meta/type") {
     CHECK(class_type.is_class());
     CHECK(class_type.get_class()->id() == "clazz");
 
-    meta::type field_type = meta::field_<&clazz::field>("field");
+    meta::type field_type = meta::field_("field", &clazz::field);
     CHECK(field_type.is_field());
     CHECK(field_type.get_field()->id() == "field");
 
@@ -62,7 +62,7 @@ TEST_CASE("meta/type/merge") {
 
     {
         meta::type clazz_type = meta::class_<clazz>("clazz")(
-            meta::field_<&clazz::field>("field")
+            meta::field_("field", &clazz::field)
         );
 
         clazz_type.merge(meta::class_<clazz>("clazz")(
