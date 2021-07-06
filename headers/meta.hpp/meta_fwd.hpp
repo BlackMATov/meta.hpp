@@ -105,16 +105,9 @@ namespace meta_hpp
 
 namespace meta_hpp::detail
 {
-    template < typename TArg, TArg Arg >
-    struct auto_arg_t {
-    };
-
     template < typename Arg >
     struct typename_arg_t {
     };
-
-    template < typename TArg, TArg Arg >
-    inline auto_arg_t<TArg, Arg> auto_arg;
 
     template < typename Arg >
     inline typename_arg_t<Arg> typename_arg;

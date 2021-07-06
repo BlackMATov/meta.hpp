@@ -149,6 +149,10 @@ namespace meta_hpp
             return id_;
         }
 
+        std::size_t arity() const noexcept {
+            return arity_;
+        }
+
         template < typename T, typename... Args >
         std::optional<value> invoke(T& inst, Args&&... args) const {
             if constexpr ( sizeof...(Args) > 0u ) {
@@ -198,10 +202,12 @@ namespace meta_hpp
         template < typename MethodType >
         method_info(std::string id, MethodType method_ptr)
         : id_{std::move(id)}
+        , arity_{detail::method_traits<MethodType>::arity}
         , invoke_{method_detail::make_invoke(method_ptr)}
         , cinvoke_{method_detail::make_cinvoke(method_ptr)} {}
     private:
         std::string id_;
+        std::size_t arity_;
         method_detail::method_invoke invoke_;
         method_detail::method_cinvoke cinvoke_;
         std::map<std::string, data_info, std::less<>> datas_;

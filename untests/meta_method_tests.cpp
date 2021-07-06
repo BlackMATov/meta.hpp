@@ -50,6 +50,16 @@ TEST_CASE("meta/non_const_method") {
     const meta::method_info& int_f_int_info = int_f_int_method_;
     const meta::method_info& int_f_int2_info = int_f_int2_method_;
 
+    SUBCASE("arity") {
+        CHECK(void_f_void_info.arity() == 0);
+        CHECK(void_f_int_info.arity() == 1);
+        CHECK(void_f_int2_info.arity() == 2);
+
+        CHECK(int_f_void_info.arity() == 0);
+        CHECK(int_f_int_info.arity() == 1);
+        CHECK(int_f_int2_info.arity() == 2);
+    }
+
     SUBCASE("another_instance") {
         clazz2 instance;
         CHECK_THROWS_AS(void_f_void_info.invoke(instance), std::logic_error);

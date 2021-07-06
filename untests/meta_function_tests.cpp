@@ -37,6 +37,16 @@ TEST_CASE("meta/function") {
     const meta::function_info& int_f_int_info = int_f_int_function_;
     const meta::function_info& int_f_int2_info = int_f_int2_function_;
 
+    SUBCASE("arity") {
+        CHECK(void_f_void_info.arity() == 0);
+        CHECK(void_f_int_info.arity() == 1);
+        CHECK(void_f_int2_info.arity() == 2);
+
+        CHECK(int_f_void_info.arity() == 0);
+        CHECK(int_f_int_info.arity() == 1);
+        CHECK(int_f_int2_info.arity() == 2);
+    }
+
     SUBCASE("void_return") {
         CHECK_NOTHROW(void_f_void_info.invoke());
         CHECK_THROWS_AS(void_f_void_info.invoke(1), std::logic_error);

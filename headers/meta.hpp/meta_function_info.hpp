@@ -80,6 +80,10 @@ namespace meta_hpp
             return id_;
         }
 
+        std::size_t arity() const noexcept {
+            return arity_;
+        }
+
         template < typename... Args >
         std::optional<value> invoke(Args&&... args) const {
             if constexpr ( sizeof...(Args) > 0u ) {
@@ -119,9 +123,11 @@ namespace meta_hpp
         template < typename FunctionType >
         function_info(std::string id, FunctionType function_ptr)
         : id_{std::move(id)}
+        , arity_{detail::function_traits<FunctionType>::arity}
         , invoke_{function_detail::make_invoke(function_ptr)} {}
     private:
         std::string id_;
+        std::size_t arity_;
         function_detail::function_invoke invoke_;
         std::map<std::string, data_info, std::less<>> datas_;
     };
