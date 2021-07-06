@@ -13,11 +13,11 @@ namespace
     public:
         void void_f_void() noexcept {}
         void void_f_int(int a) { (void)a; }
-        void void_f_int2(int a, int b) { (void)a; (void)b; }
+        void void_f_int2(const int& a, int b) { (void)a; (void)b; }
 
-        int int_f_void() noexcept { return 1; }
-        int int_f_int(int a) { return a; }
-        int int_f_int2(int a, int b) { return a + b; }
+        const int& int_f_void() noexcept { static int i = 1; return i; }
+        int int_f_int(const int a) { return a; }
+        int int_f_int2(int a, const int& b) { return a + b; }
 
         void const_void_f_void() const noexcept {}
         void const_void_f_int(int a) const { (void)a; }

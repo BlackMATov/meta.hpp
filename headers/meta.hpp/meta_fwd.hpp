@@ -169,8 +169,8 @@ namespace meta_hpp::detail
     struct function_traits<R(Args...)> {
         static constexpr bool is_noexcept = false;
         static constexpr std::size_t arity = sizeof...(Args);
-        using return_type = R;
-        using argument_types = std::tuple<Args...>;
+        using return_type = std::decay_t<R>;
+        using argument_types = std::tuple<std::decay_t<Args>...>;
     };
 
     template < typename R, typename... Args >
