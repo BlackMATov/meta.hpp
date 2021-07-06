@@ -14,18 +14,23 @@
 
 namespace meta_hpp::variable_detail
 {
-    template < auto Variable  >
-    value getter() {
-        using vt = detail::variable_traits<std::remove_reference_t<decltype(Variable)>>;
+    template < typename VariableType >
+    value raw_getter(
+        VariableType variable)
+    {
+        using vt = detail::variable_traits<std::remove_reference_t<VariableType>>;
         using value_type = typename vt::value_type;
 
-        value_type typed_value{*Variable};
+        value_type typed_value{*variable};
         return value{std::move(typed_value)};
     }
 
-    template < auto Variable  >
-    void setter(value value) {
-        using vt = detail::variable_traits<std::remove_reference_t<decltype(Variable)>>;
+    template < typename VariableType >
+    void raw_setter(
+        [[maybe_unused]] VariableType variable,
+        [[maybe_unused]] value value)
+    {
+        using vt = detail::variable_traits<std::remove_reference_t<VariableType>>;
         using value_type = typename vt::value_type;
 
         if constexpr ( !vt::is_const ) {
@@ -34,10 +39,25 @@ namespace meta_hpp::variable_detail
                 throw std::logic_error("an attempt to set a variable with incorrect argument type");
             }
 
-            *Variable = std::move(*typed_value);
+            *variable = std::move(*typed_value);
         } else {
             throw std::logic_error("an attempt to set a constant variable");
         }
+    }
+
+    using variable_getter = std::function<value()>;
+    using variable_setter = std::function<void(value)>;
+
+    template < typename VariableType >
+    variable_getter make_getter(VariableType variable) {
+        using namespace std::placeholders;
+        return std::bind(&raw_getter<VariableType>, variable);
+    }
+
+    template < typename VariableType >
+    variable_setter make_setter(VariableType variable) {
+        using namespace std::placeholders;
+        return std::bind(&raw_setter<VariableType>, variable, _1);
     }
 }
 
@@ -53,10 +73,6 @@ namespace meta_hpp
         variable_info& operator=(variable_info&&) = default;
         variable_info& operator=(const variable_info&) = default;
     public:
-        const family_id& fid() const noexcept {
-            return fid_;
-        }
-
         const std::string& id() const noexcept {
             return id_;
         }
@@ -87,26 +103,24 @@ namespace meta_hpp
         }
 
         void merge(const variable_info& other) {
-            if ( fid() != other.fid() ) {
+            if ( id() != other.id() ) {
                 throw std::logic_error("variable_info::merge failed");
             }
             detail::merge_with(datas_, other.datas_, &data_info::merge);
         }
     private:
-        template < auto Variable >
+        template < typename VariableType >
         friend class variable_;
 
-        template < auto Variable >
-        variable_info(detail::auto_arg_t<Variable>, std::string id)
-        : fid_{get_value_family_id<Variable>()}
-        , id_{std::move(id)}
-        , getter_{&variable_detail::getter<Variable>}
-        , setter_{&variable_detail::setter<Variable>} {}
+        template < typename VariableType >
+        variable_info(std::string id, VariableType variable_ptr)
+        : id_{std::move(id)}
+        , getter_{variable_detail::make_getter(variable_ptr)}
+        , setter_{variable_detail::make_setter(variable_ptr)} {}
     private:
-        family_id fid_;
         std::string id_;
-        value(*getter_)();
-        void(*setter_)(value);
+        variable_detail::variable_getter getter_;
+        variable_detail::variable_setter setter_;
         std::map<std::string, data_info, std::less<>> datas_;
     };
 }

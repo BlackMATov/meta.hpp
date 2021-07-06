@@ -100,7 +100,7 @@ TEST_CASE("meta/data/field") {
     using namespace std::string_literals;
 
     const meta::class_info clazz_info = meta::class_<clazz>("clazz")(
-        meta::field_<&clazz::field>("field")(
+        meta::field_("field", &clazz::field)(
             meta::data_("hello"s, "world"s)
         )
     );
@@ -115,7 +115,7 @@ TEST_CASE("meta/data/function") {
     using namespace std::string_literals;
 
     const meta::class_info clazz_info = meta::class_<clazz>("clazz")(
-        meta::function_<&clazz::function>("function")(
+        meta::function_("function", &clazz::function)(
             meta::data_("hello"s, "world"s)
         )
     );
@@ -130,7 +130,7 @@ TEST_CASE("meta/data/method") {
     using namespace std::string_literals;
 
     const meta::class_info clazz_info = meta::class_<clazz>("clazz")(
-        meta::method_<&clazz::method>("method")(
+        meta::method_("method", &clazz::method)(
             meta::data_("hello"s, "world"s)
         )
     );
@@ -157,7 +157,7 @@ TEST_CASE("meta/data/variable") {
     using namespace std::string_literals;
 
     const meta::class_info clazz_info = meta::class_<clazz>("clazz")(
-        meta::variable_<&clazz::variable>("variable")(
+        meta::variable_("variable", &clazz::variable)(
             meta::data_("hello"s, "world"s)
         )
     );

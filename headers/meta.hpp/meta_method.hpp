@@ -14,13 +14,13 @@
 
 namespace meta_hpp
 {
-    template < auto Method >
+    template < typename MethodType >
     class method_ {
     public:
-        static_assert(std::is_member_function_pointer_v<decltype(Method)>);
+        static_assert(std::is_member_function_pointer_v<MethodType>);
 
-        explicit method_(std::string id)
-        : info_{detail::auto_arg<Method>, std::move(id)} {}
+        explicit method_(std::string id, MethodType method_ptr)
+        : info_{std::move(id), method_ptr} {}
 
         operator const method_info&() const {
             return info_;

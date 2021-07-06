@@ -29,7 +29,7 @@
 
 - [gcc](https://www.gnu.org/software/gcc/) **>= 7**
 - [clang](https://clang.llvm.org/) **>= 7**
-- [msvc](https://visualstudio.microsoft.com/) **>= 2019**
+- [msvc](https://visualstudio.microsoft.com/) **>= 2017**
 
 ## Installation
 

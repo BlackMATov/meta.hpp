@@ -14,13 +14,13 @@
 
 namespace meta_hpp
 {
-    template < auto Field >
+    template < typename FieldType >
     class field_ {
     public:
-        static_assert(std::is_member_object_pointer_v<decltype(Field)>);
+        static_assert(std::is_member_object_pointer_v<FieldType>);
 
-        explicit field_(std::string id)
-        : info_{detail::auto_arg<Field>, std::move(id)} {}
+        explicit field_(std::string id, FieldType field_ptr)
+        : info_{std::move(id), field_ptr} {}
 
         operator const field_info&() const noexcept {
             return info_;

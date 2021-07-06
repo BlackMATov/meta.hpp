@@ -15,9 +15,14 @@
 
 namespace meta_hpp::method_detail
 {
-    template < auto Method, std::size_t... Is >
-    std::optional<value> invoke(instance instance, value* args, std::index_sequence<Is...>) {
-        using mt = detail::method_traits<decltype(Method)>;
+    template < typename MethodType, std::size_t... Is >
+    std::optional<value> raw_invoke_impl(
+        MethodType method,
+        instance instance,
+        value* args,
+        std::index_sequence<Is...>)
+    {
+        using mt = detail::method_traits<MethodType>;
         using return_type = typename mt::return_type;
         using instance_type = typename mt::instance_type;
         using argument_types = typename mt::argument_types;
@@ -35,28 +40,38 @@ namespace meta_hpp::method_detail
         }
 
         if constexpr ( std::is_void_v<return_type> ) {
-            std::invoke(Method, *typed_instance, std::move(*std::get<Is>(typed_arguments))...);
+            std::invoke(method, *typed_instance, std::move(*std::get<Is>(typed_arguments))...);
             return std::nullopt;
         } else {
-            return_type return_value{std::invoke(Method, *typed_instance, std::move(*std::get<Is>(typed_arguments))...)};
+            return_type return_value{std::invoke(method, *typed_instance, std::move(*std::get<Is>(typed_arguments))...)};
             return value{std::move(return_value)};
         }
     }
 
-    template < auto Method >
-    std::optional<value> invoke(instance instance, value* args, std::size_t arg_count) {
-        using mt = detail::method_traits<decltype(Method)>;
+    template < typename MethodType >
+    std::optional<value> raw_invoke(
+        MethodType method,
+        instance instance,
+        value* args,
+        std::size_t arg_count)
+    {
+        using mt = detail::method_traits<MethodType>;
 
         if ( arg_count != mt::arity ) {
             throw std::logic_error("an attempt to call a method with an incorrect arity");
         }
 
-        return invoke<Method>(instance, args, std::make_index_sequence<mt::arity>());
+        return raw_invoke_impl<MethodType>(method, instance, args, std::make_index_sequence<mt::arity>());
     }
 
-    template < auto Method, std::size_t... Is >
-    std::optional<value> cinvoke([[maybe_unused]] cinstance instance, value* args, std::index_sequence<Is...>) {
-        using mt = detail::method_traits<decltype(Method)>;
+    template < typename MethodType, std::size_t... Is >
+    std::optional<value> raw_cinvoke_impl(
+        [[maybe_unused]] MethodType method,
+        [[maybe_unused]] cinstance instance,
+        [[maybe_unused]] value* args,
+        std::index_sequence<Is...>)
+    {
+        using mt = detail::method_traits<MethodType>;
         using return_type = typename mt::return_type;
         using instance_type = typename mt::instance_type;
         using argument_types = typename mt::argument_types;
@@ -75,10 +90,10 @@ namespace meta_hpp::method_detail
             }
 
             if constexpr ( std::is_void_v<return_type> ) {
-                std::invoke(Method, *typed_instance, std::move(*std::get<Is>(typed_arguments))...);
+                std::invoke(method, *typed_instance, std::move(*std::get<Is>(typed_arguments))...);
                 return std::nullopt;
             } else {
-                return_type return_value{std::invoke(Method, *typed_instance, std::move(*std::get<Is>(typed_arguments))...)};
+                return_type return_value{std::invoke(method, *typed_instance, std::move(*std::get<Is>(typed_arguments))...)};
                 return value{std::move(return_value)};
             }
         } else {
@@ -86,15 +101,35 @@ namespace meta_hpp::method_detail
         }
     }
 
-    template < auto Method >
-    std::optional<value> cinvoke(cinstance instance, value* args, std::size_t arg_count) {
-        using mt = detail::method_traits<decltype(Method)>;
+    template < typename MethodType >
+    std::optional<value> raw_cinvoke(
+        MethodType method,
+        cinstance instance,
+        value* args,
+        std::size_t arg_count)
+    {
+        using mt = detail::method_traits<MethodType>;
 
         if ( arg_count != mt::arity ) {
             throw std::logic_error("an attempt to call a method with a different arity");
         }
 
-        return cinvoke<Method>(instance, args, std::make_index_sequence<mt::arity>());
+        return raw_cinvoke_impl<MethodType>(method, instance, args, std::make_index_sequence<mt::arity>());
+    }
+
+    using method_invoke = std::function<std::optional<value>(instance, value*, std::size_t)>;
+    using method_cinvoke = std::function<std::optional<value>(cinstance, value*, std::size_t)>;
+
+    template < typename MethodType >
+    method_invoke make_invoke(MethodType method) {
+        using namespace std::placeholders;
+        return std::bind(&raw_invoke<MethodType>, method, _1, _2, _3);
+    }
+
+    template < typename MethodType >
+    method_cinvoke make_cinvoke(MethodType method) {
+        using namespace std::placeholders;
+        return std::bind(&raw_cinvoke<MethodType>, method, _1, _2, _3);
     }
 }
 
@@ -110,10 +145,6 @@ namespace meta_hpp
         method_info& operator=(method_info&&) = default;
         method_info& operator=(const method_info&) = default;
     public:
-        const family_id& fid() const noexcept {
-            return fid_;
-        }
-
         const std::string& id() const noexcept {
             return id_;
         }
@@ -155,26 +186,24 @@ namespace meta_hpp
         }
 
         void merge(const method_info& other) {
-            if ( fid() != other.fid() ) {
+            if ( id() != other.id() ) {
                 throw std::logic_error("method_info::merge failed");
             }
             detail::merge_with(datas_, other.datas_, &data_info::merge);
         }
     private:
-        template < auto Method >
+        template < typename MethodType >
         friend class method_;
 
-        template < auto Method >
-        method_info(detail::auto_arg_t<Method>, std::string id)
-        : fid_{get_value_family_id<Method>()}
-        , id_{std::move(id)}
-        , invoke_{&method_detail::invoke<Method>}
-        , cinvoke_{&method_detail::cinvoke<Method>} {}
+        template < typename MethodType >
+        method_info(std::string id, MethodType method_ptr)
+        : id_{std::move(id)}
+        , invoke_{method_detail::make_invoke(method_ptr)}
+        , cinvoke_{method_detail::make_cinvoke(method_ptr)} {}
     private:
-        family_id fid_;
         std::string id_;
-        std::optional<value>(*invoke_)(instance, value*, std::size_t);
-        std::optional<value>(*cinvoke_)(cinstance, value*, std::size_t);
+        method_detail::method_invoke invoke_;
+        method_detail::method_cinvoke cinvoke_;
         std::map<std::string, data_info, std::less<>> datas_;
     };
 }

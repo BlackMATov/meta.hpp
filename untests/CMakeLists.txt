@@ -31,7 +31,7 @@ target_compile_options(${PROJECT_NAME}
     $<$<OR:$<CXX_COMPILER_ID:Clang>,$<CXX_COMPILER_ID:AppleClang>>:
         -Werror -Weverything -Wno-unknown-warning-option
         -Wconversion -Wimplicit-int-float-conversion
-        -Wno-c++98-compat-pedantic -Wno-ctad-maybe-unsupported
+        -Wno-c++98-compat-pedantic -Wno-ctad-maybe-unsupported -Wno-padded
         -Wno-float-equal -Wno-double-promotion -Wno-shadow-field-in-constructor>)
 
 add_test(${PROJECT_NAME} ${PROJECT_NAME})

@@ -34,10 +34,10 @@ TEST_CASE("meta/namespace") {
 
     namespace_(
         meta::class_<clazz>("clazz"),
-        meta::function_<&func>("func"),
+        meta::function_("func", &func),
         meta::namespace_("ns2"),
-        meta::variable_<&variable>("variable"),
-        meta::variable_<&cvariable>("cvariable"));
+        meta::variable_("variable", &variable),
+        meta::variable_("cvariable", &cvariable));
 
     CHECK(ns_info.get_class("clazz"));
     CHECK(ns_info.get_function("func"));
@@ -80,19 +80,19 @@ TEST_CASE("meta/namespace/merge") {
     namespace_(
         meta::namespace_{"ns2"}(
             meta::class_<clazz>{"clazz"},
-            meta::function_<&func>("func"),
+            meta::function_("func", &func),
             meta::namespace_{"ns3"},
-            meta::variable_<&variable>("variable")
+            meta::variable_("variable", &variable)
         )
     );
 
     namespace_(
         meta::namespace_{"ns2"}(
             meta::class_<clazz>{"clazz"},
-            meta::function_<&func>("func2"),
+            meta::function_("func2", &func),
             meta::namespace_{"ns3"}(
                 meta::namespace_{"ns4"},
-                meta::variable_<&variable>("variable2")
+                meta::variable_("variable2", &variable)
             )
         )
     );

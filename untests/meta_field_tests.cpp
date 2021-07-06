@@ -19,8 +19,8 @@ namespace
 TEST_CASE("meta/field") {
     namespace meta = meta_hpp;
 
-    meta::field_<&clazz::field> field_{"field"};
-    meta::field_<&clazz::cfield> cfield_{"cfield"};
+    meta::field_ field_{"field", &clazz::field};
+    meta::field_ cfield_{"cfield", &clazz::cfield};
 
     const meta::field_info& field_info = field_;
     const meta::field_info& cfield_info = cfield_;

@@ -15,9 +15,12 @@
 
 namespace meta_hpp::field_detail
 {
-    template < auto Field  >
-    value getter(cinstance instance) {
-        using ft = detail::field_traits<decltype(Field)>;
+    template < typename FieldType  >
+    value raw_getter(
+        FieldType field,
+        cinstance instance)
+    {
+        using ft = detail::field_traits<FieldType>;
         using value_type = typename ft::value_type;
         using instance_type = typename ft::instance_type;
 
@@ -26,13 +29,17 @@ namespace meta_hpp::field_detail
             throw std::logic_error("an attempt to get a field with incorrect instance type");
         }
 
-        value_type typed_value{std::invoke(Field, *typed_instance)};
+        value_type typed_value{std::invoke(field, *typed_instance)};
         return value{std::move(typed_value)};
     }
 
-    template < auto Field  >
-    void setter([[maybe_unused]] instance instance, value value) {
-        using ft = detail::field_traits<decltype(Field)>;
+    template < typename FieldType  >
+    void raw_setter(
+        [[maybe_unused]] FieldType field,
+        [[maybe_unused]] instance instance,
+        [[maybe_unused]] value value)
+    {
+        using ft = detail::field_traits<FieldType>;
         using value_type = typename ft::value_type;
         using instance_type = typename ft::instance_type;
 
@@ -47,10 +54,25 @@ namespace meta_hpp::field_detail
                 throw std::logic_error("an attempt to set a field with incorrect argument type");
             }
 
-            std::invoke(Field, *typed_instance) = std::move(*typed_value);
+            std::invoke(field, *typed_instance) = std::move(*typed_value);
         } else {
             throw std::logic_error("an attempt to change a constant field");
         }
+    }
+
+    using field_getter = std::function<value(cinstance)>;
+    using field_setter = std::function<void(instance, value)>;
+
+    template < typename FieldType >
+    field_getter make_getter(FieldType field) {
+        using namespace std::placeholders;
+        return std::bind(&raw_getter<FieldType>, field, _1);
+    }
+
+    template < typename FieldType >
+    field_setter make_setter(FieldType field) {
+        using namespace std::placeholders;
+        return std::bind(&raw_setter<FieldType>, field, _1, _2);
     }
 }
 
@@ -66,13 +88,10 @@ namespace meta_hpp
         field_info& operator=(field_info&&) = default;
         field_info& operator=(const field_info&) = default;
     public:
-        const family_id& fid() const noexcept {
-            return fid_;
-        }
-
         const std::string& id() const noexcept {
             return id_;
         }
+
         value get(cinstance instance) const {
             return getter_(instance);
         }
@@ -99,26 +118,24 @@ namespace meta_hpp
         }
 
         void merge(const field_info& other) {
-            if ( fid() != other.fid() ) {
+            if ( id() != other.id() ) {
                 throw std::logic_error("field_info::merge failed");
             }
             detail::merge_with(datas_, other.datas_, &data_info::merge);
         }
     private:
-        template < auto Field >
+        template < typename FieldType >
         friend class field_;
 
-        template < auto Field >
-        field_info(detail::auto_arg_t<Field>, std::string id)
-        : fid_{get_value_family_id<Field>()}
-        , id_{std::move(id)}
-        , getter_{&field_detail::getter<Field>}
-        , setter_{&field_detail::setter<Field>} {}
+        template < typename FieldType  >
+        field_info(std::string id, FieldType field_ptr)
+        : id_{std::move(id)}
+        , getter_{field_detail::make_getter(field_ptr)}
+        , setter_{field_detail::make_setter(field_ptr)} {}
     private:
-        family_id fid_;
         std::string id_;
-        value(*getter_)(cinstance);
-        void(*setter_)(instance, value);
+        field_detail::field_getter getter_;
+        field_detail::field_setter setter_;
         std::map<std::string, data_info, std::less<>> datas_;
     };
 }

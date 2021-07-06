@@ -35,15 +35,15 @@ TEST_CASE("meta/type") {
     CHECK(class_type.is_class());
     CHECK(class_type.get_class()->id() == "clazz");
 
-    meta::type field_type = meta::field_<&clazz::field>("field");
+    meta::type field_type = meta::field_("field", &clazz::field);
     CHECK(field_type.is_field());
     CHECK(field_type.get_field()->id() == "field");
 
-    meta::type function_type = meta::function_<&clazz::function>("function");
+    meta::type function_type = meta::function_("function", &clazz::function);
     CHECK(function_type.is_function());
     CHECK(function_type.get_function()->id() == "function");
 
-    meta::type method_type = meta::method_<&clazz::method>("method");
+    meta::type method_type = meta::method_("method", &clazz::method);
     CHECK(method_type.is_method());
     CHECK(method_type.get_method()->id() == "method");
 
@@ -51,7 +51,7 @@ TEST_CASE("meta/type") {
     CHECK(namespace_type.is_namespace());
     CHECK(namespace_type.get_namespace()->id() == "ns");
 
-    meta::type variable_type = meta::variable_<&clazz::variable>("variable");
+    meta::type variable_type = meta::variable_("variable", &clazz::variable);
     CHECK(variable_type.is_variable());
     CHECK(variable_type.get_variable()->id() == "variable");
 }
@@ -62,11 +62,11 @@ TEST_CASE("meta/type/merge") {
 
     {
         meta::type clazz_type = meta::class_<clazz>("clazz")(
-            meta::field_<&clazz::field>("field")
+            meta::field_("field", &clazz::field)
         );
 
         clazz_type.merge(meta::class_<clazz>("clazz")(
-            meta::function_<&clazz::function>("function")
+            meta::function_("function", &clazz::function)
         ));
 
         REQUIRE(clazz_type.is_class());

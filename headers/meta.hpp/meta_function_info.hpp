@@ -14,9 +14,13 @@
 
 namespace meta_hpp::function_detail
 {
-    template < auto Function, std::size_t... Is >
-    std::optional<value> invoke(value* args, std::index_sequence<Is...>) {
-        using ft = detail::function_traits<decltype(Function)>;
+    template < typename FunctionType, std::size_t... Is >
+    std::optional<value> raw_invoke_impl(
+        FunctionType function,
+        value* args,
+        std::index_sequence<Is...>)
+    {
+        using ft = detail::function_traits<FunctionType>;
         using return_type = typename ft::return_type;
         using argument_types = typename ft::argument_types;
 
@@ -28,23 +32,35 @@ namespace meta_hpp::function_detail
         }
 
         if constexpr ( std::is_void_v<return_type> ) {
-            std::invoke(Function, std::move(*std::get<Is>(typed_arguments))...);
+            std::invoke(function, std::move(*std::get<Is>(typed_arguments))...);
             return std::nullopt;
         } else {
-            return_type return_value{std::invoke(Function, std::move(*std::get<Is>(typed_arguments))...)};
+            return_type return_value{std::invoke(function, std::move(*std::get<Is>(typed_arguments))...)};
             return value{std::move(return_value)};
         }
     }
 
-    template < auto Function >
-    std::optional<value> invoke(value* args, std::size_t arg_count) {
-        using ft = detail::function_traits<decltype(Function)>;
+    template < typename FunctionType >
+    std::optional<value> raw_invoke(
+        FunctionType function,
+        value* args,
+        std::size_t arg_count)
+    {
+        using ft = detail::function_traits<FunctionType>;
 
         if ( arg_count != ft::arity ) {
             throw std::logic_error("an attempt to call a function with an incorrect arity");
         }
 
-        return invoke<Function>(args, std::make_index_sequence<ft::arity>());
+        return raw_invoke_impl<FunctionType>(function, args, std::make_index_sequence<ft::arity>());
+    }
+
+    using function_invoke = std::function<std::optional<value>(value*, std::size_t)>;
+
+    template < typename FunctionType >
+    function_invoke make_invoke(FunctionType function) {
+        using namespace std::placeholders;
+        return std::bind(&raw_invoke<FunctionType>, function, _1, _2);
     }
 }
 
@@ -60,10 +76,6 @@ namespace meta_hpp
         function_info& operator=(function_info&&) = default;
         function_info& operator=(const function_info&) = default;
     public:
-        const family_id& fid() const noexcept {
-            return fid_;
-        }
-
         const std::string& id() const noexcept {
             return id_;
         }
@@ -95,24 +107,22 @@ namespace meta_hpp
         }
 
         void merge(const function_info& other) {
-            if ( fid() != other.fid() ) {
+            if ( id() != other.id() ) {
                 throw std::logic_error("function_info::merge failed");
             }
             detail::merge_with(datas_, other.datas_, &data_info::merge);
         }
     private:
-        template < auto Function >
+        template < typename FunctionType >
         friend class function_;
 
-        template < auto Function >
-        function_info(detail::auto_arg_t<Function>, std::string id)
-        : fid_{get_value_family_id<Function>()}
-        , id_{std::move(id)}
-        , invoke_{&function_detail::invoke<Function>} {}
+        template < typename FunctionType >
+        function_info(std::string id, FunctionType function_ptr)
+        : id_{std::move(id)}
+        , invoke_{function_detail::make_invoke(function_ptr)} {}
     private:
-        family_id fid_;
         std::string id_;
-        std::optional<value>(*invoke_)(value*, std::size_t);
+        function_detail::function_invoke invoke_;
         std::map<std::string, data_info, std::less<>> datas_;
     };
 }

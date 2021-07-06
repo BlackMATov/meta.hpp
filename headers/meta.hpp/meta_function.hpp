@@ -14,13 +14,13 @@
 
 namespace meta_hpp
 {
-    template < auto Function >
+    template < typename FunctionType >
     class function_ {
     public:
-        static_assert(std::is_function_v<std::remove_pointer_t<decltype(Function)>>);
+        static_assert(std::is_function_v<std::remove_pointer_t<FunctionType>>);
 
-        explicit function_(std::string id)
-        : info_{detail::auto_arg<Function>, std::move(id)} {}
+        explicit function_(std::string id, FunctionType function_ptr)
+        : info_{std::move(id), function_ptr} {}
 
         operator const function_info&() const noexcept {
             return info_;
