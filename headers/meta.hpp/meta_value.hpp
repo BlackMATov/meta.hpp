@@ -63,7 +63,7 @@ namespace meta_hpp
                  , typename = std::enable_if_t<!std::is_same_v<U, value>> >
         value(T&& val)
         : raw_{std::forward<T>(val)}
-        , fid_{get_type_family_id<U>()}
+        , fid_{get_family_id<U>()}
         , traits_{value_detail::get_traits<U>()} {}
 
         template < typename T
@@ -77,13 +77,13 @@ namespace meta_hpp
         template < typename T, typename... Args >
         explicit value(std::in_place_type_t<T>, Args&&... args)
         : raw_{std::in_place_type<T>, std::forward<Args>(args)...}
-        , fid_{get_type_family_id<T>()}
+        , fid_{get_family_id<T>()}
         , traits_{value_detail::get_traits<T>()} {}
 
         template < typename T, typename U, typename... Args >
         explicit value(std::in_place_type_t<T>, std::initializer_list<U> ilist, Args&&... args)
         : raw_{std::in_place_type<T>, ilist, std::forward<Args>(args)...}
-        , fid_{get_type_family_id<T>()}
+        , fid_{get_family_id<T>()}
         , traits_{value_detail::get_traits<T>()} {}
 
         template < typename T >
@@ -139,7 +139,7 @@ namespace meta_hpp
                  , typename = std::enable_if_t<!std::is_same_v<U, value>>
                  , typename = std::enable_if_t<std::is_invocable_v<std::equal_to<>, U, U>> >
         friend bool operator==(const value& l, T&& r) {
-            return l.fid() == get_type_family_id<U>()
+            return l.fid() == get_family_id<U>()
                 && std::equal_to<>{}(*l.try_cast<U>(), std::forward<T>(r));
         }
 
@@ -148,7 +148,7 @@ namespace meta_hpp
                  , typename = std::enable_if_t<!std::is_same_v<U, value>>
                  , typename = std::enable_if_t<std::is_invocable_v<std::equal_to<>, U, U>> >
         friend bool operator==(T&& l, const value& r) {
-            return get_type_family_id<U>() == r.fid()
+            return get_family_id<U>() == r.fid()
                 && std::equal_to<>{}(std::forward<T>(l), *r.try_cast<U>());
         }
 
@@ -157,7 +157,7 @@ namespace meta_hpp
                  , typename = std::enable_if_t<!std::is_same_v<U, value>>
                  , typename = std::enable_if_t<std::is_invocable_v<std::equal_to<>, U, U>> >
         friend bool operator!=(const value& l, T&& r) {
-            return l.fid() != get_type_family_id<U>()
+            return l.fid() != get_family_id<U>()
                 || std::not_equal_to<>{}(*l.try_cast<U>(), std::forward<T>(r));
         }
 
@@ -166,7 +166,7 @@ namespace meta_hpp
                  , typename = std::enable_if_t<!std::is_same_v<U, value>>
                  , typename = std::enable_if_t<std::is_invocable_v<std::equal_to<>, U, U>> >
         friend bool operator!=(T&& l, const value& r) {
-            return get_type_family_id<U>() != r.fid()
+            return get_family_id<U>() != r.fid()
                 || std::not_equal_to<>{}(std::forward<T>(l), *r.try_cast<U>());
         }
 

@@ -23,13 +23,13 @@ namespace meta_hpp
     public:
         template < typename T >
         std::optional<class_info> resolve() const {
-            const family_id fid = get_type_family_id<T>();
+            const family_id fid = get_family_id<T>();
             return detail::find_opt(types_, fid);
         }
 
         template < typename T >
         std::optional<class_info> resolve(T&&) const {
-            const family_id fid = get_type_family_id<std::decay_t<T>>();
+            const family_id fid = get_family_id<std::decay_t<T>>();
             return detail::find_opt(types_, fid);
         }
 

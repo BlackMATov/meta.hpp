@@ -57,32 +57,26 @@ namespace meta_hpp
 
     namespace family_id_detail
     {
-        template < typename Void = void >
-        class family_base {
-            static_assert(
-                std::is_void_v<Void>,
-                "unexpected internal error");
-        protected:
-            static std::atomic<family_id::underlying_type> last_id_;
+        struct family_id_sequence {
+            static family_id next() noexcept {
+                static std::atomic<family_id::underlying_type> id{};
+                return { ++id };
+            }
         };
 
-        template < typename Void >
-        std::atomic<family_id::underlying_type> family_base<Void>::last_id_{};
-
         template < typename T >
-        class type_family final : public family_base<> {
-        public:
+        struct type_to_family_id {
             static family_id id() noexcept {
-                static family_id self_id{++last_id_};
-                assert(self_id.id > 0u && "family_id overflow");
-                return self_id;
+                static const family_id type_family_id = family_id_sequence::next();
+                assert(type_family_id.id > 0u && "family_id overflow");
+                return type_family_id;
             }
         };
     }
 
     template < typename T >
-    family_id get_type_family_id() noexcept {
-        return family_id_detail::type_family<T>::id();
+    family_id get_family_id() noexcept {
+        return family_id_detail::type_to_family_id<T>::id();
     }
 }
 

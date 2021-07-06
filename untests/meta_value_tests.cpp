@@ -75,19 +75,19 @@ TEST_CASE("meta/value/fid") {
     namespace meta = meta_hpp;
     using namespace std::string_literals;
 
-    CHECK(meta::value{clazz{}}.fid() == meta::get_type_family_id<clazz>());
-    CHECK(meta::value{clazz2{}}.fid() == meta::get_type_family_id<clazz2>());
+    CHECK(meta::value{clazz{}}.fid() == meta::get_family_id<clazz>());
+    CHECK(meta::value{clazz2{}}.fid() == meta::get_family_id<clazz2>());
     CHECK(meta::value{clazz{}}.fid() != meta::value{clazz2{}}.fid());
 
     {
         meta::value v = clazz{};
-        CHECK(v.fid() == meta::get_type_family_id<clazz>());
+        CHECK(v.fid() == meta::get_family_id<clazz>());
         v = clazz2{};
-        CHECK(v.fid() == meta::get_type_family_id<clazz2>());
+        CHECK(v.fid() == meta::get_family_id<clazz2>());
     }
 
-    CHECK(meta::value{std::in_place_type<int>, 1}.fid() == meta::get_type_family_id<int>());
-    CHECK(meta::value{std::in_place_type<std::vector<int>>, {1,2,3,4}}.fid() == meta::get_type_family_id<std::vector<int>>());
+    CHECK(meta::value{std::in_place_type<int>, 1}.fid() == meta::get_family_id<int>());
+    CHECK(meta::value{std::in_place_type<std::vector<int>>, {1,2,3,4}}.fid() == meta::get_family_id<std::vector<int>>());
 }
 
 TEST_CASE("meta/value/data") {
@@ -213,9 +213,9 @@ TEST_CASE("meta/value/swap") {
     meta::value v2{42};
     meta::swap(v1, v2);
 
-    CHECK(v1.fid() == meta::get_type_family_id<int>());
+    CHECK(v1.fid() == meta::get_family_id<int>());
     CHECK(v1.to_int() == 42);
 
-    CHECK(v2.fid() == meta::get_type_family_id<std::string>());
+    CHECK(v2.fid() == meta::get_family_id<std::string>());
     CHECK(v2.to_string() == "hello");
 }
