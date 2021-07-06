@@ -22,13 +22,13 @@ namespace meta_hpp
     class registry {
     public:
         template < typename T >
-        std::optional<type> resolve() const {
+        std::optional<class_info> resolve() const {
             const family_id fid = get_type_family_id<T>();
             return detail::find_opt(types_, fid);
         }
 
         template < typename T >
-        std::optional<type> resolve(T&&) const {
+        std::optional<class_info> resolve(T&&) const {
             const family_id fid = get_type_family_id<std::decay_t<T>>();
             return detail::find_opt(types_, fid);
         }
@@ -127,7 +127,7 @@ namespace meta_hpp
                 ? info.id()
                 : prefix + "::" + info.id();
 
-            detail::merge_with(types_, info.fid(), info, &type::merge);
+            detail::merge_with(types_, info.fid(), info, &class_info::merge);
             detail::merge_with(classes_, name, info, &class_info::merge);
 
             info.visit(overloaded {
@@ -213,7 +213,7 @@ namespace meta_hpp
             });
         }
     private:
-        std::map<family_id, type, std::less<>> types_;
+        std::map<family_id, class_info, std::less<>> types_;
         std::map<std::string, class_info, std::less<>> classes_;
         std::map<std::string, field_info, std::less<>> fields_;
         std::map<std::string, function_info, std::less<>> functions_;

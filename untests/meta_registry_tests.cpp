@@ -107,15 +107,15 @@ TEST_CASE("meta/registry") {
         const meta::class_info v3_info = meta::class_<ivec3>("ivec3");
         CHECK(v2_info.fid() != v3_info.fid());
 
-        CHECK(v2_info.fid() == registry.resolve<ivec2>()->get_class()->fid());
-        CHECK(v2_info.fid() == registry.resolve(v2)->get_class()->fid());
-        CHECK(v2_info.fid() == registry.resolve(std::as_const(v2))->get_class()->fid());
-        CHECK(v2_info.fid() == registry.resolve(static_cast<ivec2&&>(v2))->get_class()->fid());
+        CHECK(v2_info.fid() == registry.resolve<ivec2>()->fid());
+        CHECK(v2_info.fid() == registry.resolve(v2)->fid());
+        CHECK(v2_info.fid() == registry.resolve(std::as_const(v2))->fid());
+        CHECK(v2_info.fid() == registry.resolve(static_cast<ivec2&&>(v2))->fid());
 
-        CHECK(v3_info.fid() == registry.resolve<ivec3>()->get_class()->fid());
-        CHECK(v3_info.fid() == registry.resolve(v3)->get_class()->fid());
-        CHECK(v3_info.fid() == registry.resolve(std::as_const(v3))->get_class()->fid());
-        CHECK(v3_info.fid() == registry.resolve(static_cast<ivec3&&>(v3))->get_class()->fid());
+        CHECK(v3_info.fid() == registry.resolve<ivec3>()->fid());
+        CHECK(v3_info.fid() == registry.resolve(v3)->fid());
+        CHECK(v3_info.fid() == registry.resolve(std::as_const(v3))->fid());
+        CHECK(v3_info.fid() == registry.resolve(static_cast<ivec3&&>(v3))->fid());
 
         {
             REQUIRE(registry.get_class_by_name("vmath::ivec2"));
@@ -181,14 +181,12 @@ TEST_CASE("meta/registry/merge") {
             ));
 
         CHECK(registry.resolve<ivec2>());
-        CHECK(registry.resolve<ivec2>()->get_class());
-        CHECK(registry.resolve<ivec2>()->get_class()->get_field("x"));
-        CHECK(registry.resolve<ivec2>()->get_class()->get_field("y"));
+        CHECK(registry.resolve<ivec2>()->get_field("x"));
+        CHECK(registry.resolve<ivec2>()->get_field("y"));
 
         CHECK(registry.resolve(ivec2{}));
-        CHECK(registry.resolve(ivec2{})->get_class());
-        CHECK(registry.resolve(ivec2{})->get_class()->get_field("x"));
-        CHECK(registry.resolve(ivec2{})->get_class()->get_field("y"));
+        CHECK(registry.resolve(ivec2{})->get_field("x"));
+        CHECK(registry.resolve(ivec2{})->get_field("y"));
 
         CHECK(registry.get_class_by_name("ivec2"));
         CHECK(registry.get_class_by_name("ivec2")->get_field("x"));
