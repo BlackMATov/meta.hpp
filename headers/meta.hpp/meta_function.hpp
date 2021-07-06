@@ -20,7 +20,7 @@ namespace meta_hpp
         static_assert(std::is_function_v<std::remove_pointer_t<decltype(Function)>>);
 
         explicit function_(std::string id)
-        : info_{detail::auto_arg<Function>, std::move(id)} {}
+        : info_{detail::auto_arg<META_HPP_AUTO_T(Function)>, std::move(id)} {}
 
         operator const function_info&() const noexcept {
             return info_;

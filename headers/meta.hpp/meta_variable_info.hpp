@@ -14,18 +14,18 @@
 
 namespace meta_hpp::variable_detail
 {
-    template < auto Variable  >
+    template < typename VariableType, VariableType Variable >
     value getter() {
-        using vt = detail::variable_traits<std::remove_reference_t<decltype(Variable)>>;
+        using vt = detail::variable_traits<std::remove_reference_t<VariableType>>;
         using value_type = typename vt::value_type;
 
         value_type typed_value{*Variable};
         return value{std::move(typed_value)};
     }
 
-    template < auto Variable  >
+    template < typename VariableType, VariableType Variable >
     void setter(value value) {
-        using vt = detail::variable_traits<std::remove_reference_t<decltype(Variable)>>;
+        using vt = detail::variable_traits<std::remove_reference_t<VariableType>>;
         using value_type = typename vt::value_type;
 
         if constexpr ( !vt::is_const ) {
@@ -96,12 +96,12 @@ namespace meta_hpp
         template < auto Variable >
         friend class variable_;
 
-        template < auto Variable >
-        variable_info(detail::auto_arg_t<Variable>, std::string id)
-        : fid_{get_value_family_id<Variable>()}
+        template < typename VariableType, VariableType Variable >
+        variable_info(detail::auto_arg_t<VariableType, Variable>, std::string id)
+        : fid_{get_value_family_id<VariableType, Variable>()}
         , id_{std::move(id)}
-        , getter_{&variable_detail::getter<Variable>}
-        , setter_{&variable_detail::setter<Variable>} {}
+        , getter_{&variable_detail::getter<VariableType, Variable>}
+        , setter_{&variable_detail::setter<VariableType, Variable>} {}
     private:
         family_id fid_;
         std::string id_;

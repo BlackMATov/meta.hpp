@@ -27,9 +27,9 @@ namespace meta_hpp
             return detail::find_opt(types_, fid);
         }
 
-        template < auto T >
+        template < typename T, T V >
         std::optional<type> resolve() const {
-            const family_id fid = get_value_family_id<T>();
+            const family_id fid = get_value_family_id<T, V>();
             return detail::find_opt(types_, fid);
         }
 

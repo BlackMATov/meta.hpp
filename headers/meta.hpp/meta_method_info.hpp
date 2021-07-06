@@ -15,9 +15,9 @@
 
 namespace meta_hpp::method_detail
 {
-    template < auto Method, std::size_t... Is >
+    template < typename MethodType, MethodType Method, std::size_t... Is >
     std::optional<value> invoke(instance instance, value* args, std::index_sequence<Is...>) {
-        using mt = detail::method_traits<decltype(Method)>;
+        using mt = detail::method_traits<MethodType>;
         using return_type = typename mt::return_type;
         using instance_type = typename mt::instance_type;
         using argument_types = typename mt::argument_types;
@@ -43,20 +43,20 @@ namespace meta_hpp::method_detail
         }
     }
 
-    template < auto Method >
+    template < typename MethodType, MethodType Method >
     std::optional<value> invoke(instance instance, value* args, std::size_t arg_count) {
-        using mt = detail::method_traits<decltype(Method)>;
+        using mt = detail::method_traits<MethodType>;
 
         if ( arg_count != mt::arity ) {
             throw std::logic_error("an attempt to call a method with an incorrect arity");
         }
 
-        return invoke<Method>(instance, args, std::make_index_sequence<mt::arity>());
+        return invoke<MethodType, Method>(instance, args, std::make_index_sequence<mt::arity>());
     }
 
-    template < auto Method, std::size_t... Is >
+    template < typename MethodType, MethodType Method, std::size_t... Is >
     std::optional<value> cinvoke([[maybe_unused]] cinstance instance, value* args, std::index_sequence<Is...>) {
-        using mt = detail::method_traits<decltype(Method)>;
+        using mt = detail::method_traits<MethodType>;
         using return_type = typename mt::return_type;
         using instance_type = typename mt::instance_type;
         using argument_types = typename mt::argument_types;
@@ -86,15 +86,15 @@ namespace meta_hpp::method_detail
         }
     }
 
-    template < auto Method >
+    template < typename MethodType, MethodType Method >
     std::optional<value> cinvoke(cinstance instance, value* args, std::size_t arg_count) {
-        using mt = detail::method_traits<decltype(Method)>;
+        using mt = detail::method_traits<MethodType>;
 
         if ( arg_count != mt::arity ) {
             throw std::logic_error("an attempt to call a method with a different arity");
         }
 
-        return cinvoke<Method>(instance, args, std::make_index_sequence<mt::arity>());
+        return cinvoke<MethodType, Method>(instance, args, std::make_index_sequence<mt::arity>());
     }
 }
 
@@ -164,12 +164,12 @@ namespace meta_hpp
         template < auto Method >
         friend class method_;
 
-        template < auto Method >
-        method_info(detail::auto_arg_t<Method>, std::string id)
-        : fid_{get_value_family_id<Method>()}
+        template < typename MethodType, MethodType Method >
+        method_info(detail::auto_arg_t<MethodType, Method>, std::string id)
+        : fid_{get_value_family_id<MethodType, Method>()}
         , id_{std::move(id)}
-        , invoke_{&method_detail::invoke<Method>}
-        , cinvoke_{&method_detail::cinvoke<Method>} {}
+        , invoke_{&method_detail::invoke<MethodType, Method>}
+        , cinvoke_{&method_detail::cinvoke<MethodType, Method>} {}
     private:
         family_id fid_;
         std::string id_;

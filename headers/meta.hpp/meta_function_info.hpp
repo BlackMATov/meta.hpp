@@ -14,9 +14,9 @@
 
 namespace meta_hpp::function_detail
 {
-    template < auto Function, std::size_t... Is >
+    template < typename FunctionType, FunctionType Function, std::size_t... Is >
     std::optional<value> invoke(value* args, std::index_sequence<Is...>) {
-        using ft = detail::function_traits<decltype(Function)>;
+        using ft = detail::function_traits<FunctionType>;
         using return_type = typename ft::return_type;
         using argument_types = typename ft::argument_types;
 
@@ -36,15 +36,15 @@ namespace meta_hpp::function_detail
         }
     }
 
-    template < auto Function >
+    template < typename FunctionType, FunctionType Function >
     std::optional<value> invoke(value* args, std::size_t arg_count) {
-        using ft = detail::function_traits<decltype(Function)>;
+        using ft = detail::function_traits<FunctionType>;
 
         if ( arg_count != ft::arity ) {
             throw std::logic_error("an attempt to call a function with an incorrect arity");
         }
 
-        return invoke<Function>(args, std::make_index_sequence<ft::arity>());
+        return invoke<FunctionType, Function>(args, std::make_index_sequence<ft::arity>());
     }
 }
 
@@ -104,11 +104,11 @@ namespace meta_hpp
         template < auto Function >
         friend class function_;
 
-        template < auto Function >
-        function_info(detail::auto_arg_t<Function>, std::string id)
-        : fid_{get_value_family_id<Function>()}
+        template < typename FunctionType, FunctionType Function >
+        function_info(detail::auto_arg_t<FunctionType, Function>, std::string id)
+        : fid_{get_value_family_id<FunctionType, Function>()}
         , id_{std::move(id)}
-        , invoke_{&function_detail::invoke<Function>} {}
+        , invoke_{&function_detail::invoke<FunctionType, Function>} {}
     private:
         family_id fid_;
         std::string id_;

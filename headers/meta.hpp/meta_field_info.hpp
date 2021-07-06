@@ -15,9 +15,9 @@
 
 namespace meta_hpp::field_detail
 {
-    template < auto Field  >
+    template < typename FieldType, FieldType Field  >
     value getter(cinstance instance) {
-        using ft = detail::field_traits<decltype(Field)>;
+        using ft = detail::field_traits<FieldType>;
         using value_type = typename ft::value_type;
         using instance_type = typename ft::instance_type;
 
@@ -30,9 +30,9 @@ namespace meta_hpp::field_detail
         return value{std::move(typed_value)};
     }
 
-    template < auto Field  >
+    template < typename FieldType, FieldType Field  >
     void setter([[maybe_unused]] instance instance, value value) {
-        using ft = detail::field_traits<decltype(Field)>;
+        using ft = detail::field_traits<FieldType>;
         using value_type = typename ft::value_type;
         using instance_type = typename ft::instance_type;
 
@@ -108,12 +108,12 @@ namespace meta_hpp
         template < auto Field >
         friend class field_;
 
-        template < auto Field >
-        field_info(detail::auto_arg_t<Field>, std::string id)
-        : fid_{get_value_family_id<Field>()}
+        template < typename FieldType, FieldType Field  >
+        field_info(detail::auto_arg_t<FieldType, Field>, std::string id)
+        : fid_{get_value_family_id<FieldType, Field>()}
         , id_{std::move(id)}
-        , getter_{&field_detail::getter<Field>}
-        , setter_{&field_detail::setter<Field>} {}
+        , getter_{&field_detail::getter<FieldType, Field>}
+        , setter_{&field_detail::setter<FieldType, Field>} {}
     private:
         family_id fid_;
         std::string id_;

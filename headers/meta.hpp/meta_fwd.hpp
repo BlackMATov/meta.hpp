@@ -23,6 +23,8 @@
 #include <utility>
 #include <variant>
 
+#define META_HPP_AUTO_T(V) decltype(V), V
+
 namespace meta_hpp
 {
     template < typename... Ts >
@@ -77,7 +79,7 @@ namespace meta_hpp
             }
         };
 
-        template < auto V >
+        template < typename T, T V >
         class value_family final : public family_base<> {
         public:
             static family_id id() noexcept {
@@ -93,9 +95,9 @@ namespace meta_hpp
         return family_id_detail::type_family<T>::id();
     }
 
-    template < auto V >
+    template < typename T, T V >
     family_id get_value_family_id() noexcept {
-        return family_id_detail::value_family<V>::id();
+        return family_id_detail::value_family<T, V>::id();
     }
 }
 
@@ -124,7 +126,7 @@ namespace meta_hpp
 
 namespace meta_hpp::detail
 {
-    template < auto Arg >
+    template < typename TArg, TArg Arg >
     struct auto_arg_t {
     };
 
@@ -132,8 +134,8 @@ namespace meta_hpp::detail
     struct typename_arg_t {
     };
 
-    template < auto Arg >
-    inline auto_arg_t<Arg> auto_arg;
+    template < typename TArg, TArg Arg >
+    inline auto_arg_t<TArg, Arg> auto_arg;
 
     template < typename Arg >
     inline typename_arg_t<Arg> typename_arg;

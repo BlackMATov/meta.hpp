@@ -18,7 +18,7 @@ namespace meta_hpp
     class variable_ {
     public:
         explicit variable_(std::string id)
-        : info_{detail::auto_arg<Variable>, std::move(id)} {}
+        : info_{detail::auto_arg<META_HPP_AUTO_T(Variable)>, std::move(id)} {}
 
         operator const variable_info&() const noexcept {
             return info_;

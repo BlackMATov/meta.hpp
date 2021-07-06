@@ -20,7 +20,7 @@ namespace meta_hpp
         static_assert(std::is_member_function_pointer_v<decltype(Method)>);
 
         explicit method_(std::string id)
-        : info_{detail::auto_arg<Method>, std::move(id)} {}
+        : info_{detail::auto_arg<META_HPP_AUTO_T(Method)>, std::move(id)} {}
 
         operator const method_info&() const {
             return info_;

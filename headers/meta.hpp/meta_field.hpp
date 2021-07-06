@@ -20,7 +20,7 @@ namespace meta_hpp
         static_assert(std::is_member_object_pointer_v<decltype(Field)>);
 
         explicit field_(std::string id)
-        : info_{detail::auto_arg<Field>, std::move(id)} {}
+        : info_{detail::auto_arg<META_HPP_AUTO_T(Field)>, std::move(id)} {}
 
         operator const field_info&() const noexcept {
             return info_;
