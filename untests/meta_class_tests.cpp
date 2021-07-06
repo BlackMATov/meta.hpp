@@ -64,8 +64,8 @@ TEST_CASE("meta/class") {
         meta::field_("field", &clazz::field),
         meta::field_("cfield", &clazz::cfield),
         meta::function_<&clazz::func>("func"),
-        meta::method_<&clazz::method>("method"),
-        meta::method_<&clazz::cmethod>("cmethod"),
+        meta::method_("method", &clazz::method),
+        meta::method_("cmethod", &clazz::cmethod),
         meta::variable_<&clazz::variable>("variable"),
         meta::variable_<&clazz::cvariable>("cvariable"));
 

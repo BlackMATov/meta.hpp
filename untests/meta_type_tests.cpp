@@ -43,7 +43,7 @@ TEST_CASE("meta/type") {
     CHECK(function_type.is_function());
     CHECK(function_type.get_function()->id() == "function");
 
-    meta::type method_type = meta::method_<&clazz::method>("method");
+    meta::type method_type = meta::method_("method", &clazz::method);
     CHECK(method_type.is_method());
     CHECK(method_type.get_method()->id() == "method");
 

@@ -34,13 +34,13 @@ namespace
 TEST_CASE("meta/non_const_method") {
     namespace meta = meta_hpp;
 
-    meta::method_<&clazz::void_f_void> void_f_void_method_("void_f_void");
-    meta::method_<&clazz::void_f_int> void_f_int_method_("void_f_int");
-    meta::method_<&clazz::void_f_int2> void_f_int2_method_("void_f_int2");
+    meta::method_ void_f_void_method_("void_f_void", &clazz::void_f_void);
+    meta::method_ void_f_int_method_("void_f_int", &clazz::void_f_int);
+    meta::method_ void_f_int2_method_("void_f_int2", &clazz::void_f_int2);
 
-    meta::method_<&clazz::int_f_void> int_f_void_method_("int_f_void");
-    meta::method_<&clazz::int_f_int> int_f_int_method_("int_f_int");
-    meta::method_<&clazz::int_f_int2> int_f_int2_method_("int_f_int2");
+    meta::method_ int_f_void_method_("int_f_void", &clazz::int_f_void);
+    meta::method_ int_f_int_method_("int_f_int", &clazz::int_f_int);
+    meta::method_ int_f_int2_method_("int_f_int2", &clazz::int_f_int2);
 
     const meta::method_info& void_f_void_info = void_f_void_method_;
     const meta::method_info& void_f_int_info = void_f_int_method_;
@@ -116,13 +116,13 @@ TEST_CASE("meta/non_const_method") {
 TEST_CASE("meta/const_method") {
     namespace meta = meta_hpp;
 
-    meta::method_<&clazz::const_void_f_void> void_f_void_method_("void_f_void");
-    meta::method_<&clazz::const_void_f_int> void_f_int_method_("void_f_int");
-    meta::method_<&clazz::const_void_f_int2> void_f_int2_method_("void_f_int2");
+    meta::method_ void_f_void_method_("void_f_void", &clazz::const_void_f_void);
+    meta::method_ void_f_int_method_("void_f_int", &clazz::const_void_f_int);
+    meta::method_ void_f_int2_method_("void_f_int2", &clazz::const_void_f_int2);
 
-    meta::method_<&clazz::const_int_f_void> int_f_void_method_("int_f_void");
-    meta::method_<&clazz::const_int_f_int> int_f_int_method_("int_f_int");
-    meta::method_<&clazz::const_int_f_int2> int_f_int2_method_("int_f_int2");
+    meta::method_ int_f_void_method_("int_f_void", &clazz::const_int_f_void);
+    meta::method_ int_f_int_method_("int_f_int", &clazz::const_int_f_int);
+    meta::method_ int_f_int2_method_("int_f_int2", &clazz::const_int_f_int2);
 
     const meta::method_info& void_f_void_info = void_f_void_method_;
     const meta::method_info& void_f_int_info = void_f_int_method_;

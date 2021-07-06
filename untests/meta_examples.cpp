@@ -95,8 +95,8 @@ TEST_CASE("meta/examples/simple") {
             field_("y", &ivec2::y)(
                 data_("tooltip", "y-coordinate field")
             ),
-            method_<&ivec2::dot>("dot"),
-            method_<&ivec2::length2>("length2")
+            method_("dot", &ivec2::dot),
+            method_("length2", &ivec2::length2)
         ),
         class_<ivec3>("ivec3")(
             field_("x", &ivec3::x)(
@@ -108,8 +108,8 @@ TEST_CASE("meta/examples/simple") {
             field_("z", &ivec3::z)(
                 data_("tooltip", "z-coordinate field")
             ),
-            method_<&ivec3::dot>("dot"),
-            method_<&ivec3::length2>("length2")
+            method_("dot", &ivec3::dot),
+            method_("length2", &ivec3::length2)
         ),
         function_<select<ivec2(ivec2,ivec2)>(&add)>("iadd2"),
         function_<select<ivec3(ivec3,ivec3)>(&add)>("iadd3")
@@ -158,15 +158,15 @@ TEST_CASE("meta/examples/advanced") {
         class_<ivec2>("ivec2")(
             field_("x", &ivec2::x),
             field_("y", &ivec2::y),
-            method_<&ivec2::dot>("dot"),
-            method_<&ivec2::length2>("length2")
+            method_("dot", &ivec2::dot),
+            method_("length2", &ivec2::length2)
         ),
         class_<ivec3>("ivec3")(
             field_("x", &ivec3::x),
             field_("y", &ivec3::y),
             field_("z", &ivec3::z),
-            method_<&ivec3::dot>("dot"),
-            method_<&ivec3::length2>("length2")
+            method_("dot", &ivec3::dot),
+            method_("length2", &ivec3::length2)
         )
     );
 

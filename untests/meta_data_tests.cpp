@@ -130,7 +130,7 @@ TEST_CASE("meta/data/method") {
     using namespace std::string_literals;
 
     const meta::class_info clazz_info = meta::class_<clazz>("clazz")(
-        meta::method_<&clazz::method>("method")(
+        meta::method_("method", &clazz::method)(
             meta::data_("hello"s, "world"s)
         )
     );
