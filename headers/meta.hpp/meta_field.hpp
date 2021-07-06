@@ -19,8 +19,8 @@ namespace meta_hpp
     public:
         static_assert(std::is_member_object_pointer_v<FieldType>);
 
-        explicit field_(std::string id, FieldType field)
-        : info_{std::move(id), field} {}
+        explicit field_(std::string id, FieldType field_ptr)
+        : info_{std::move(id), field_ptr} {}
 
         operator const field_info&() const noexcept {
             return info_;

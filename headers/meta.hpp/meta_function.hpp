@@ -19,8 +19,8 @@ namespace meta_hpp
     public:
         static_assert(std::is_function_v<std::remove_pointer_t<FunctionType>>);
 
-        explicit function_(std::string id, FunctionType function)
-        : info_{std::move(id), function} {}
+        explicit function_(std::string id, FunctionType function_ptr)
+        : info_{std::move(id), function_ptr} {}
 
         operator const function_info&() const noexcept {
             return info_;

@@ -17,8 +17,10 @@ namespace meta_hpp
     template < typename VariableType >
     class variable_ {
     public:
-        explicit variable_(std::string id, VariableType variable)
-        : info_{std::move(id), variable} {}
+        static_assert(std::is_pointer_v<VariableType>);
+
+        explicit variable_(std::string id, VariableType variable_ptr)
+        : info_{std::move(id), variable_ptr} {}
 
         operator const variable_info&() const noexcept {
             return info_;

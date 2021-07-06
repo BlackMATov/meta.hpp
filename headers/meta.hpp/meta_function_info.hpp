@@ -117,9 +117,9 @@ namespace meta_hpp
         friend class function_;
 
         template < typename FunctionType >
-        function_info(std::string id, FunctionType function)
+        function_info(std::string id, FunctionType function_ptr)
         : id_{std::move(id)}
-        , invoke_{function_detail::make_invoke(function)} {}
+        , invoke_{function_detail::make_invoke(function_ptr)} {}
     private:
         std::string id_;
         function_detail::function_invoke invoke_;

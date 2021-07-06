@@ -113,10 +113,10 @@ namespace meta_hpp
         friend class variable_;
 
         template < typename VariableType >
-        variable_info(std::string id, VariableType variable)
+        variable_info(std::string id, VariableType variable_ptr)
         : id_{std::move(id)}
-        , getter_{variable_detail::make_getter(variable)}
-        , setter_{variable_detail::make_setter(variable)} {}
+        , getter_{variable_detail::make_getter(variable_ptr)}
+        , setter_{variable_detail::make_setter(variable_ptr)} {}
     private:
         std::string id_;
         variable_detail::variable_getter getter_;

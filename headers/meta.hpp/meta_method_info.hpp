@@ -196,10 +196,10 @@ namespace meta_hpp
         friend class method_;
 
         template < typename MethodType >
-        method_info(std::string id, MethodType method)
+        method_info(std::string id, MethodType method_ptr)
         : id_{std::move(id)}
-        , invoke_{method_detail::make_invoke(method)}
-        , cinvoke_{method_detail::make_cinvoke(method)} {}
+        , invoke_{method_detail::make_invoke(method_ptr)}
+        , cinvoke_{method_detail::make_cinvoke(method_ptr)} {}
     private:
         std::string id_;
         method_detail::method_invoke invoke_;

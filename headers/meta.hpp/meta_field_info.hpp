@@ -128,10 +128,10 @@ namespace meta_hpp
         friend class field_;
 
         template < typename FieldType  >
-        field_info(std::string id, FieldType field)
+        field_info(std::string id, FieldType field_ptr)
         : id_{std::move(id)}
-        , getter_{field_detail::make_getter(field)}
-        , setter_{field_detail::make_setter(field)} {}
+        , getter_{field_detail::make_getter(field_ptr)}
+        , setter_{field_detail::make_setter(field_ptr)} {}
     private:
         std::string id_;
         field_detail::field_getter getter_;

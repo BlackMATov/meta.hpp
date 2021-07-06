@@ -19,8 +19,8 @@ namespace meta_hpp
     public:
         static_assert(std::is_member_function_pointer_v<MethodType>);
 
-        explicit method_(std::string id, MethodType method)
-        : info_{std::move(id), method} {}
+        explicit method_(std::string id, MethodType method_ptr)
+        : info_{std::move(id), method_ptr} {}
 
         operator const method_info&() const {
             return info_;
