@@ -26,8 +26,8 @@ TEST_CASE("meta/variable") {
     namespace meta = meta_hpp;
 
     SUBCASE("in_namespace") {
-        meta::variable_<&variable> variable_{"variable"};
-        meta::variable_<&cvariable> cvariable_{"cvariable"};
+        meta::variable_ variable_{"variable", &variable};
+        meta::variable_ cvariable_{"cvariable", &cvariable};
 
         const meta::variable_info& variable_info = variable_;
         const meta::variable_info& cvariable_info = cvariable_;
@@ -60,8 +60,8 @@ TEST_CASE("meta/variable") {
     }
 
     SUBCASE("in_class") {
-        meta::variable_<&clazz::variable> variable_{"variable"};
-        meta::variable_<&clazz::cvariable> cvariable_{"cvariable"};
+        meta::variable_ variable_{"variable", &clazz::variable};
+        meta::variable_ cvariable_{"cvariable", &clazz::cvariable};
 
         const meta::variable_info& variable_info = variable_;
         const meta::variable_info& cvariable_info = cvariable_;

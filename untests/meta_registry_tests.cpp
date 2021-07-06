@@ -54,14 +54,14 @@ TEST_CASE("meta/registry") {
                 meta::field_("x", &ivec2::x),
                 meta::field_("y", &ivec2::y),
                 meta::method_("dot", &ivec2::dot),
-                meta::variable_<&ivec2::zero>("zero")
+                meta::variable_("zero", &ivec2::zero)
             ),
             meta::class_<ivec3>("ivec3")(
                 meta::field_("x", &ivec3::x),
                 meta::field_("y", &ivec3::y),
                 meta::field_("z", &ivec3::z),
                 meta::method_("dot", &ivec3::dot),
-                meta::variable_<&ivec3::zero>("zero")
+                meta::variable_("zero", &ivec3::zero)
             ),
             meta::function_("iadd2", &iadd2),
             meta::function_("iadd3", &iadd3)

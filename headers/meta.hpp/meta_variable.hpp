@@ -14,11 +14,11 @@
 
 namespace meta_hpp
 {
-    template < auto Variable >
+    template < typename VariableType >
     class variable_ {
     public:
-        explicit variable_(std::string id)
-        : info_{detail::auto_arg<META_HPP_AUTO_T(Variable)>, std::move(id)} {}
+        explicit variable_(std::string id, VariableType variable)
+        : info_{std::move(id), variable} {}
 
         operator const variable_info&() const noexcept {
             return info_;

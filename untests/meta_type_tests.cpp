@@ -51,7 +51,7 @@ TEST_CASE("meta/type") {
     CHECK(namespace_type.is_namespace());
     CHECK(namespace_type.get_namespace()->id() == "ns");
 
-    meta::type variable_type = meta::variable_<&clazz::variable>("variable");
+    meta::type variable_type = meta::variable_("variable", &clazz::variable);
     CHECK(variable_type.is_variable());
     CHECK(variable_type.get_variable()->id() == "variable");
 }

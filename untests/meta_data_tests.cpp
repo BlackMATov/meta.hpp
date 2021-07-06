@@ -157,7 +157,7 @@ TEST_CASE("meta/data/variable") {
     using namespace std::string_literals;
 
     const meta::class_info clazz_info = meta::class_<clazz>("clazz")(
-        meta::variable_<&clazz::variable>("variable")(
+        meta::variable_("variable", &clazz::variable)(
             meta::data_("hello"s, "world"s)
         )
     );

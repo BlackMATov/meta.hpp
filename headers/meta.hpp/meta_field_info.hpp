@@ -37,7 +37,7 @@ namespace meta_hpp::field_detail
     void raw_setter(
         [[maybe_unused]] FieldType field,
         [[maybe_unused]] instance instance,
-        value value)
+        [[maybe_unused]] value value)
     {
         using ft = detail::field_traits<FieldType>;
         using value_type = typename ft::value_type;

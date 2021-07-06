@@ -68,7 +68,7 @@ namespace meta_hpp::method_detail
     std::optional<value> raw_cinvoke_impl(
         [[maybe_unused]] MethodType method,
         [[maybe_unused]] cinstance instance,
-        value* args,
+        [[maybe_unused]] value* args,
         std::index_sequence<Is...>)
     {
         using mt = detail::method_traits<MethodType>;

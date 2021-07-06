@@ -66,8 +66,8 @@ TEST_CASE("meta/class") {
         meta::function_("func", &clazz::func),
         meta::method_("method", &clazz::method),
         meta::method_("cmethod", &clazz::cmethod),
-        meta::variable_<&clazz::variable>("variable"),
-        meta::variable_<&clazz::cvariable>("cvariable"));
+        meta::variable_("variable", &clazz::variable),
+        meta::variable_("cvariable", &clazz::cvariable));
 
     CHECK(clazz_info.get_class("clazz2"));
     CHECK(clazz_info.get_field("field"));
