@@ -115,7 +115,7 @@ TEST_CASE("meta/data/function") {
     using namespace std::string_literals;
 
     const meta::class_info clazz_info = meta::class_<clazz>("clazz")(
-        meta::function_<&clazz::function>("function")(
+        meta::function_("function", &clazz::function)(
             meta::data_("hello"s, "world"s)
         )
     );

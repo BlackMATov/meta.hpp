@@ -39,7 +39,7 @@ TEST_CASE("meta/type") {
     CHECK(field_type.is_field());
     CHECK(field_type.get_field()->id() == "field");
 
-    meta::type function_type = meta::function_<&clazz::function>("function");
+    meta::type function_type = meta::function_("function", &clazz::function);
     CHECK(function_type.is_function());
     CHECK(function_type.get_function()->id() == "function");
 
@@ -66,7 +66,7 @@ TEST_CASE("meta/type/merge") {
         );
 
         clazz_type.merge(meta::class_<clazz>("clazz")(
-            meta::function_<&clazz::function>("function")
+            meta::function_("function", &clazz::function)
         ));
 
         REQUIRE(clazz_type.is_class());

@@ -21,13 +21,13 @@ namespace
 TEST_CASE("meta/function") {
     namespace meta = meta_hpp;
 
-    meta::function_<&void_f_void> void_f_void_function_("void_f_void");
-    meta::function_<&void_f_int> void_f_int_function_("void_f_int");
-    meta::function_<&void_f_int2> void_f_int2_function_("void_f_int2");
+    meta::function_ void_f_void_function_("void_f_void", &void_f_void);
+    meta::function_ void_f_int_function_("void_f_int", &void_f_int);
+    meta::function_ void_f_int2_function_("void_f_int2", &void_f_int2);
 
-    meta::function_<&int_f_void> int_f_void_function_("int_f_void");
-    meta::function_<&int_f_int> int_f_int_function_("int_f_int");
-    meta::function_<&int_f_int2> int_f_int2_function_("int_f_int2");
+    meta::function_ int_f_void_function_("int_f_void", &int_f_void);
+    meta::function_ int_f_int_function_("int_f_int", &int_f_int);
+    meta::function_ int_f_int2_function_("int_f_int2", &int_f_int2);
 
     const meta::function_info& void_f_void_info = void_f_void_function_;
     const meta::function_info& void_f_int_info = void_f_int_function_;

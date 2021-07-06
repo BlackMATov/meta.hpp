@@ -111,8 +111,8 @@ TEST_CASE("meta/examples/simple") {
             method_("dot", &ivec3::dot),
             method_("length2", &ivec3::length2)
         ),
-        function_<select<ivec2(ivec2,ivec2)>(&add)>("iadd2"),
-        function_<select<ivec3(ivec3,ivec3)>(&add)>("iadd3")
+        function_("iadd2", select<ivec2(ivec2,ivec2)>(&add)),
+        function_("iadd3", select<ivec3(ivec3,ivec3)>(&add))
     );
 
     class_info ivec2_info = vmath_info.get_class("ivec2").value();

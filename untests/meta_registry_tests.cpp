@@ -63,8 +63,8 @@ TEST_CASE("meta/registry") {
                 meta::method_("dot", &ivec3::dot),
                 meta::variable_<&ivec3::zero>("zero")
             ),
-            meta::function_<&iadd2>("iadd2"),
-            meta::function_<&iadd3>("iadd3")
+            meta::function_("iadd2", &iadd2),
+            meta::function_("iadd3", &iadd3)
         )
     );
 
