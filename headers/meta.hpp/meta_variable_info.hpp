@@ -53,10 +53,6 @@ namespace meta_hpp
         variable_info& operator=(variable_info&&) = default;
         variable_info& operator=(const variable_info&) = default;
     public:
-        const family_id& fid() const noexcept {
-            return fid_;
-        }
-
         const std::string& id() const noexcept {
             return id_;
         }
@@ -87,7 +83,7 @@ namespace meta_hpp
         }
 
         void merge(const variable_info& other) {
-            if ( fid() != other.fid() ) {
+            if ( id() != other.id() ) {
                 throw std::logic_error("variable_info::merge failed");
             }
             detail::merge_with(datas_, other.datas_, &data_info::merge);
@@ -98,12 +94,10 @@ namespace meta_hpp
 
         template < typename VariableType, VariableType Variable >
         variable_info(detail::auto_arg_t<VariableType, Variable>, std::string id)
-        : fid_{get_value_family_id<VariableType, Variable>()}
-        , id_{std::move(id)}
+        : id_{std::move(id)}
         , getter_{&variable_detail::getter<VariableType, Variable>}
         , setter_{&variable_detail::setter<VariableType, Variable>} {}
     private:
-        family_id fid_;
         std::string id_;
         value(*getter_)();
         void(*setter_)(value);

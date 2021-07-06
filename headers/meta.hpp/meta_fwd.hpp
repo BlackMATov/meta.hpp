@@ -78,26 +78,11 @@ namespace meta_hpp
                 return self_id;
             }
         };
-
-        template < typename T, T V >
-        class value_family final : public family_base<> {
-        public:
-            static family_id id() noexcept {
-                static family_id self_id{++last_id_};
-                assert(self_id.id > 0u && "family_id overflow");
-                return self_id;
-            }
-        };
     }
 
     template < typename T >
     family_id get_type_family_id() noexcept {
         return family_id_detail::type_family<T>::id();
-    }
-
-    template < typename T, T V >
-    family_id get_value_family_id() noexcept {
-        return family_id_detail::value_family<T, V>::id();
     }
 }
 

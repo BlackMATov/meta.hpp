@@ -89,69 +89,6 @@ TEST_CASE("meta/registry") {
         CHECK(ivec3_info.id() == "ivec3");
     }
 
-    SUBCASE("field_template") {
-        REQUIRE(registry.resolve<META_HPP_AUTO_T(&ivec2::x)>());
-        REQUIRE(registry.resolve<META_HPP_AUTO_T(&ivec2::y)>());
-
-        const meta::type ivec2_x_type = registry.resolve<META_HPP_AUTO_T(&ivec2::x)>().value();
-        const meta::type ivec2_y_type = registry.resolve<META_HPP_AUTO_T(&ivec2::y)>().value();
-
-        REQUIRE(ivec2_x_type.is_field());
-        REQUIRE(ivec2_y_type.is_field());
-
-        const meta::field_info ivec2_x_info = ivec2_x_type.get_field().value();
-        const meta::field_info ivec2_y_info = ivec2_y_type.get_field().value();
-
-        CHECK(ivec2_x_info.id() == "x");
-        CHECK(ivec2_y_info.id() == "y");
-    }
-
-    SUBCASE("field_instance") {
-        CHECK_FALSE(registry.resolve(&ivec2::x));
-    }
-
-    SUBCASE("function_template") {
-        REQUIRE(registry.resolve<META_HPP_AUTO_T(&iadd2)>());
-
-        const meta::type iadd2_type = registry.resolve<META_HPP_AUTO_T(&iadd2)>().value();
-        REQUIRE(iadd2_type.is_function());
-
-        const meta::function_info iadd2_info = iadd2_type.get_function().value();
-        CHECK(iadd2_info.id() == "iadd2");
-    }
-
-    SUBCASE("function_instance") {
-        CHECK_FALSE(registry.resolve(&iadd3));
-    }
-
-    SUBCASE("method_template") {
-        REQUIRE(registry.resolve<META_HPP_AUTO_T(&ivec2::dot)>());
-
-        const meta::type ivec2_dot_type = registry.resolve<META_HPP_AUTO_T(&ivec2::dot)>().value();
-        REQUIRE(ivec2_dot_type.is_method());
-
-        const meta::method_info ivec2_dot_info = ivec2_dot_type.get_method().value();
-        CHECK(ivec2_dot_info.id() == "dot");
-    }
-
-    SUBCASE("method_instance") {
-        CHECK_FALSE(registry.resolve(&ivec3::dot));
-    }
-
-    SUBCASE("variable_template") {
-        REQUIRE(registry.resolve<META_HPP_AUTO_T(&ivec2::zero)>());
-
-        const meta::type ivec2_zero_type = registry.resolve<META_HPP_AUTO_T(&ivec2::zero)>().value();
-        REQUIRE(ivec2_zero_type.is_variable());
-
-        const meta::variable_info ivec2_x_info = ivec2_zero_type.get_variable().value();
-        CHECK(ivec2_x_info.id() == "zero");
-    }
-
-    SUBCASE("variable_instance") {
-        CHECK_FALSE(registry.resolve(&ivec3::zero));
-    }
-
     SUBCASE("resolve/class") {
         ivec2 v2;
         ivec3 v3;
@@ -190,110 +127,39 @@ TEST_CASE("meta/registry") {
     }
 
     SUBCASE("resolve/field") {
-        REQUIRE(registry.resolve<META_HPP_AUTO_T(&ivec2::x)>());
-        REQUIRE(registry.resolve<META_HPP_AUTO_T(&ivec2::y)>());
-        CHECK_FALSE(registry.resolve(&ivec2::x));
-        CHECK_FALSE(registry.resolve(&ivec2::y));
+        REQUIRE(registry.get_field_by_name("vmath::ivec2::x"));
+        REQUIRE(registry.get_field_by_name("vmath::ivec2::y"));
+        REQUIRE(registry.get_field_by_name("vmath::ivec3::x"));
+        REQUIRE(registry.get_field_by_name("vmath::ivec3::y"));
 
-        REQUIRE(registry.resolve<META_HPP_AUTO_T(&ivec3::x)>());
-        REQUIRE(registry.resolve<META_HPP_AUTO_T(&ivec3::y)>());
-        CHECK_FALSE(registry.resolve(&ivec3::x));
-        CHECK_FALSE(registry.resolve(&ivec3::y));
-
-        const meta::field_info v2_x_info = meta::field_<&ivec2::x>("x");
-        const meta::field_info v2_y_info = meta::field_<&ivec2::y>("y");
-        CHECK(v2_x_info.fid() != v2_y_info.fid());
-
-        const meta::field_info v3_x_info = meta::field_<&ivec3::x>("x");
-        const meta::field_info v3_y_info = meta::field_<&ivec3::y>("y");
-        CHECK(v3_x_info.fid() != v3_y_info.fid());
-
-        CHECK(v2_x_info.fid() != v3_x_info.fid());
-        CHECK(v2_y_info.fid() != v3_y_info.fid());
-
-        CHECK(v2_x_info.fid() == registry.resolve<META_HPP_AUTO_T(&ivec2::x)>()->get_field()->fid());
-        CHECK(v2_y_info.fid() == registry.resolve<META_HPP_AUTO_T(&ivec2::y)>()->get_field()->fid());
-
-        CHECK(v3_x_info.fid() == registry.resolve<META_HPP_AUTO_T(&ivec3::x)>()->get_field()->fid());
-        CHECK(v3_y_info.fid() == registry.resolve<META_HPP_AUTO_T(&ivec3::y)>()->get_field()->fid());
-
-        {
-            REQUIRE(registry.get_field_by_name("vmath::ivec2::x"));
-            REQUIRE(registry.get_field_by_name("vmath::ivec2::y"));
-            REQUIRE(registry.get_field_by_name("vmath::ivec3::x"));
-            REQUIRE(registry.get_field_by_name("vmath::ivec3::y"));
-
-            CHECK(v2_x_info.fid() == registry.get_field_by_name("vmath::ivec2::x")->fid());
-            CHECK(v2_y_info.fid() == registry.get_field_by_name("vmath::ivec2::y")->fid());
-            CHECK(v3_x_info.fid() == registry.get_field_by_name("vmath::ivec3::x")->fid());
-            CHECK(v3_y_info.fid() == registry.get_field_by_name("vmath::ivec3::y")->fid());
-        }
+        CHECK("x" == registry.get_field_by_name("vmath::ivec2::x")->id());
+        CHECK("y" == registry.get_field_by_name("vmath::ivec2::y")->id());
+        CHECK("x" == registry.get_field_by_name("vmath::ivec3::x")->id());
+        CHECK("y" == registry.get_field_by_name("vmath::ivec3::y")->id());
     }
 
     SUBCASE("resolve/function") {
-        REQUIRE(registry.resolve<META_HPP_AUTO_T(&iadd2)>());
-        REQUIRE(registry.resolve<META_HPP_AUTO_T(&iadd3)>());
-        CHECK_FALSE(registry.resolve(&iadd2));
-        CHECK_FALSE(registry.resolve(&iadd3));
+        REQUIRE(registry.get_function_by_name("vmath::iadd2"));
+        REQUIRE(registry.get_function_by_name("vmath::iadd3"));
 
-        const meta::function_info iadd2_info = meta::function_<&iadd2>("iadd2");
-        const meta::function_info iadd3_info = meta::function_<&iadd3>("iadd3");
-        CHECK(iadd2_info.fid() != iadd3_info.fid());
-
-        CHECK(iadd2_info.fid() == registry.resolve<META_HPP_AUTO_T(&iadd2)>()->get_function()->fid());
-        CHECK(iadd3_info.fid() == registry.resolve<META_HPP_AUTO_T(&iadd3)>()->get_function()->fid());
-
-        {
-            REQUIRE(registry.get_function_by_name("vmath::iadd2"));
-            REQUIRE(registry.get_function_by_name("vmath::iadd3"));
-
-            CHECK(iadd2_info.fid() == registry.get_function_by_name("vmath::iadd2")->fid());
-            CHECK(iadd3_info.fid() == registry.get_function_by_name("vmath::iadd3")->fid());
-        }
+        CHECK("iadd2" == registry.get_function_by_name("vmath::iadd2")->id());
+        CHECK("iadd3" == registry.get_function_by_name("vmath::iadd3")->id());
     }
 
     SUBCASE("resolve/method") {
-        REQUIRE(registry.resolve<META_HPP_AUTO_T(&ivec2::dot)>());
-        REQUIRE(registry.resolve<META_HPP_AUTO_T(&ivec3::dot)>());
-        CHECK_FALSE(registry.resolve(&ivec2::dot));
-        CHECK_FALSE(registry.resolve(&ivec3::dot));
+        REQUIRE(registry.get_method_by_name("vmath::ivec2::dot"));
+        REQUIRE(registry.get_method_by_name("vmath::ivec3::dot"));
 
-        const meta::method_info v2_dot_info = meta::method_<&ivec2::dot>("dot");
-        const meta::method_info v3_dot_info = meta::method_<&ivec3::dot>("dot");
-        CHECK(v2_dot_info.fid() != v3_dot_info.fid());
-
-        CHECK(v2_dot_info.fid() == registry.resolve<META_HPP_AUTO_T(&ivec2::dot)>()->get_method()->fid());
-        CHECK(v3_dot_info.fid() == registry.resolve<META_HPP_AUTO_T(&ivec3::dot)>()->get_method()->fid());
-
-        {
-            REQUIRE(registry.get_method_by_name("vmath::ivec2::dot"));
-            REQUIRE(registry.get_method_by_name("vmath::ivec3::dot"));
-
-            CHECK(v2_dot_info.fid() == registry.get_method_by_name("vmath::ivec2::dot")->fid());
-            CHECK(v3_dot_info.fid() == registry.get_method_by_name("vmath::ivec3::dot")->fid());
-        }
+        CHECK("dot" == registry.get_method_by_name("vmath::ivec2::dot")->id());
+        CHECK("dot" == registry.get_method_by_name("vmath::ivec3::dot")->id());
     }
 
     SUBCASE("resolve/variable") {
-        REQUIRE(registry.resolve<META_HPP_AUTO_T(&ivec2::zero)>());
-        REQUIRE(registry.resolve<META_HPP_AUTO_T(&ivec3::zero)>());
-        CHECK_FALSE(registry.resolve(&ivec2::zero));
-        CHECK_FALSE(registry.resolve(&ivec3::zero));
+        REQUIRE(registry.get_variable_by_name("vmath::ivec2::zero"));
+        REQUIRE(registry.get_variable_by_name("vmath::ivec3::zero"));
 
-        const meta::variable_info v2_zero_info = meta::variable_<&ivec2::zero>("zero");
-        const meta::variable_info v3_zero_info = meta::variable_<&ivec3::zero>("zero");
-        CHECK(v2_zero_info.fid() != v3_zero_info.fid());
-
-        CHECK(v2_zero_info.fid() == registry.resolve<META_HPP_AUTO_T(&ivec2::zero)>()->get_variable()->fid());
-        CHECK(v3_zero_info.fid() == registry.resolve<META_HPP_AUTO_T(&ivec3::zero)>()->get_variable()->fid());
-
-        {
-            REQUIRE(registry.get_variable_by_name("vmath::ivec2::zero"));
-            REQUIRE(registry.get_variable_by_name("vmath::ivec3::zero"));
-
-            CHECK(v2_zero_info.fid() == registry.get_variable_by_name("vmath::ivec2::zero")->fid());
-            CHECK(v3_zero_info.fid() == registry.get_variable_by_name("vmath::ivec3::zero")->fid());
-        }
+        CHECK("zero" == registry.get_variable_by_name("vmath::ivec2::zero")->id());
+        CHECK("zero" == registry.get_variable_by_name("vmath::ivec3::zero")->id());
     }
 }
 

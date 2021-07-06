@@ -66,13 +66,10 @@ namespace meta_hpp
         field_info& operator=(field_info&&) = default;
         field_info& operator=(const field_info&) = default;
     public:
-        const family_id& fid() const noexcept {
-            return fid_;
-        }
-
         const std::string& id() const noexcept {
             return id_;
         }
+
         value get(cinstance instance) const {
             return getter_(instance);
         }
@@ -99,7 +96,7 @@ namespace meta_hpp
         }
 
         void merge(const field_info& other) {
-            if ( fid() != other.fid() ) {
+            if ( id() != other.id() ) {
                 throw std::logic_error("field_info::merge failed");
             }
             detail::merge_with(datas_, other.datas_, &data_info::merge);
@@ -110,12 +107,10 @@ namespace meta_hpp
 
         template < typename FieldType, FieldType Field  >
         field_info(detail::auto_arg_t<FieldType, Field>, std::string id)
-        : fid_{get_value_family_id<FieldType, Field>()}
-        , id_{std::move(id)}
+        : id_{std::move(id)}
         , getter_{&field_detail::getter<FieldType, Field>}
         , setter_{&field_detail::setter<FieldType, Field>} {}
     private:
-        family_id fid_;
         std::string id_;
         value(*getter_)(cinstance);
         void(*setter_)(instance, value);

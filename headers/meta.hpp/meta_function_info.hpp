@@ -60,10 +60,6 @@ namespace meta_hpp
         function_info& operator=(function_info&&) = default;
         function_info& operator=(const function_info&) = default;
     public:
-        const family_id& fid() const noexcept {
-            return fid_;
-        }
-
         const std::string& id() const noexcept {
             return id_;
         }
@@ -95,7 +91,7 @@ namespace meta_hpp
         }
 
         void merge(const function_info& other) {
-            if ( fid() != other.fid() ) {
+            if ( id() != other.id() ) {
                 throw std::logic_error("function_info::merge failed");
             }
             detail::merge_with(datas_, other.datas_, &data_info::merge);
@@ -106,11 +102,9 @@ namespace meta_hpp
 
         template < typename FunctionType, FunctionType Function >
         function_info(detail::auto_arg_t<FunctionType, Function>, std::string id)
-        : fid_{get_value_family_id<FunctionType, Function>()}
-        , id_{std::move(id)}
+        : id_{std::move(id)}
         , invoke_{&function_detail::invoke<FunctionType, Function>} {}
     private:
-        family_id fid_;
         std::string id_;
         std::optional<value>(*invoke_)(value*, std::size_t);
         std::map<std::string, data_info, std::less<>> datas_;

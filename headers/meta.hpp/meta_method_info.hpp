@@ -110,10 +110,6 @@ namespace meta_hpp
         method_info& operator=(method_info&&) = default;
         method_info& operator=(const method_info&) = default;
     public:
-        const family_id& fid() const noexcept {
-            return fid_;
-        }
-
         const std::string& id() const noexcept {
             return id_;
         }
@@ -155,7 +151,7 @@ namespace meta_hpp
         }
 
         void merge(const method_info& other) {
-            if ( fid() != other.fid() ) {
+            if ( id() != other.id() ) {
                 throw std::logic_error("method_info::merge failed");
             }
             detail::merge_with(datas_, other.datas_, &data_info::merge);
@@ -166,12 +162,10 @@ namespace meta_hpp
 
         template < typename MethodType, MethodType Method >
         method_info(detail::auto_arg_t<MethodType, Method>, std::string id)
-        : fid_{get_value_family_id<MethodType, Method>()}
-        , id_{std::move(id)}
+        : id_{std::move(id)}
         , invoke_{&method_detail::invoke<MethodType, Method>}
         , cinvoke_{&method_detail::cinvoke<MethodType, Method>} {}
     private:
-        family_id fid_;
         std::string id_;
         std::optional<value>(*invoke_)(instance, value*, std::size_t);
         std::optional<value>(*cinvoke_)(cinstance, value*, std::size_t);
