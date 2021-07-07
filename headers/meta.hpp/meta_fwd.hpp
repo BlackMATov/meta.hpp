@@ -24,8 +24,6 @@
 #include <variant>
 #include <vector>
 
-#define META_HPP_AUTO_T(V) decltype(V), V
-
 namespace meta_hpp
 {
     template < typename... Ts >
@@ -39,45 +37,42 @@ namespace meta_hpp
 
 namespace meta_hpp
 {
-    struct family_id {
-        using underlying_type = std::size_t;
-        underlying_type id{};
+    class family_id {
+    public:
+        family_id(const family_id&) = default;
+        family_id& operator=(const family_id&) = default;
 
         friend bool operator<(family_id l, family_id r) noexcept {
-            return l.id < r.id;
+            return l.id_ < r.id_;
         }
 
         friend bool operator==(family_id l, family_id r) noexcept {
-            return l.id == r.id;
+            return l.id_ == r.id_;
         }
 
         friend bool operator!=(family_id l, family_id r) noexcept {
-            return l.id != r.id;
+            return l.id_ != r.id_;
+        }
+    private:
+        using underlying_type = std::size_t;
+        underlying_type id_{};
+    private:
+        template < typename T >
+        friend family_id get_family_id() noexcept;
+
+        family_id() noexcept
+        : id_{next()} {}
+
+        static underlying_type next() noexcept {
+            static std::atomic<underlying_type> id{};
+            return ++id;
         }
     };
 
-    namespace family_id_detail
-    {
-        struct family_id_sequence {
-            static family_id next() noexcept {
-                static std::atomic<family_id::underlying_type> id{};
-                return { ++id };
-            }
-        };
-
-        template < typename T >
-        struct type_to_family_id {
-            static family_id id() noexcept {
-                static const family_id type_family_id = family_id_sequence::next();
-                assert(type_family_id.id > 0u && "family_id overflow");
-                return type_family_id;
-            }
-        };
-    }
-
     template < typename T >
     family_id get_family_id() noexcept {
-        return family_id_detail::type_to_family_id<T>::id();
+        static const family_id id = family_id{};
+        return id;
     }
 }
 

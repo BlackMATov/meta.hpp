@@ -71,7 +71,7 @@ namespace meta_hpp
         }
     private:
         void* data_{};
-        family_id fid_{};
+        family_id fid_;
     };
 }
 
@@ -121,6 +121,6 @@ namespace meta_hpp
         }
     private:
         const void* data_{};
-        family_id fid_{};
+        family_id fid_;
     };
 }
