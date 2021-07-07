@@ -181,6 +181,10 @@ namespace meta_hpp
             return id_;
         }
 
+        family_id family() const noexcept {
+            return family_;
+        }
+
         std::size_t arity() const noexcept {
             return argument_types_.size();
         }
@@ -237,7 +241,7 @@ namespace meta_hpp
         }
 
         void merge(const method_info& other) {
-            if ( id() != other.id() ) {
+            if ( id() != other.id() || family() != other.family() ) {
                 throw std::logic_error("method_info::merge failed");
             }
             detail::merge_with(datas_, other.datas_, &data_info::merge);
@@ -249,6 +253,7 @@ namespace meta_hpp
         template < typename MethodType >
         method_info(std::string id, MethodType method_ptr)
         : id_{std::move(id)}
+        , family_{get_family_id<MethodType>()}
         , instance_type_{method_detail::make_instance_type<MethodType>()}
         , return_type_{method_detail::make_return_type<MethodType>()}
         , argument_types_{method_detail::make_argument_types<MethodType>()}
@@ -256,6 +261,7 @@ namespace meta_hpp
         , cinvoke_{method_detail::make_cinvoke(method_ptr)} {}
     private:
         std::string id_;
+        family_id family_;
         family_id instance_type_;
         std::optional<family_id> return_type_;
         std::vector<family_id> argument_types_;

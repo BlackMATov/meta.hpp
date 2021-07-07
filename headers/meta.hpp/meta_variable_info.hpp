@@ -84,6 +84,10 @@ namespace meta_hpp
             return id_;
         }
 
+        family_id family() const noexcept {
+            return family_;
+        }
+
         family_id value_type() const noexcept {
             return value_type_;
         }
@@ -114,7 +118,7 @@ namespace meta_hpp
         }
 
         void merge(const variable_info& other) {
-            if ( id() != other.id() ) {
+            if ( id() != other.id() || family() != other.family() ) {
                 throw std::logic_error("variable_info::merge failed");
             }
             detail::merge_with(datas_, other.datas_, &data_info::merge);
@@ -126,11 +130,13 @@ namespace meta_hpp
         template < typename VariableType >
         variable_info(std::string id, VariableType variable_ptr)
         : id_{std::move(id)}
+        , family_{get_family_id<VariableType>()}
         , value_type_{variable_detail::make_value_type<VariableType>()}
         , getter_{variable_detail::make_getter(variable_ptr)}
         , setter_{variable_detail::make_setter(variable_ptr)} {}
     private:
         std::string id_;
+        family_id family_;
         family_id value_type_;
         variable_detail::variable_getter getter_;
         variable_detail::variable_setter setter_;

@@ -105,24 +105,24 @@ TEST_CASE("meta/registry") {
 
         const meta::class_info v2_info = meta::class_<ivec2>("ivec2");
         const meta::class_info v3_info = meta::class_<ivec3>("ivec3");
-        CHECK(v2_info.fid() != v3_info.fid());
+        CHECK(v2_info.family() != v3_info.family());
 
-        CHECK(v2_info.fid() == registry.resolve<ivec2>()->fid());
-        CHECK(v2_info.fid() == registry.resolve(v2)->fid());
-        CHECK(v2_info.fid() == registry.resolve(std::as_const(v2))->fid());
-        CHECK(v2_info.fid() == registry.resolve(static_cast<ivec2&&>(v2))->fid());
+        CHECK(v2_info.family() == registry.resolve<ivec2>()->family());
+        CHECK(v2_info.family() == registry.resolve(v2)->family());
+        CHECK(v2_info.family() == registry.resolve(std::as_const(v2))->family());
+        CHECK(v2_info.family() == registry.resolve(static_cast<ivec2&&>(v2))->family());
 
-        CHECK(v3_info.fid() == registry.resolve<ivec3>()->fid());
-        CHECK(v3_info.fid() == registry.resolve(v3)->fid());
-        CHECK(v3_info.fid() == registry.resolve(std::as_const(v3))->fid());
-        CHECK(v3_info.fid() == registry.resolve(static_cast<ivec3&&>(v3))->fid());
+        CHECK(v3_info.family() == registry.resolve<ivec3>()->family());
+        CHECK(v3_info.family() == registry.resolve(v3)->family());
+        CHECK(v3_info.family() == registry.resolve(std::as_const(v3))->family());
+        CHECK(v3_info.family() == registry.resolve(static_cast<ivec3&&>(v3))->family());
 
         {
             REQUIRE(registry.get_class_by_name("vmath::ivec2"));
             REQUIRE(registry.get_class_by_name("vmath::ivec3"));
 
-            CHECK(v2_info.fid() == registry.get_class_by_name("vmath::ivec2")->fid());
-            CHECK(v3_info.fid() == registry.get_class_by_name("vmath::ivec3")->fid());
+            CHECK(v2_info.family() == registry.get_class_by_name("vmath::ivec2")->family());
+            CHECK(v3_info.family() == registry.get_class_by_name("vmath::ivec3")->family());
         }
     }
 

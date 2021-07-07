@@ -106,6 +106,10 @@ namespace meta_hpp
             return id_;
         }
 
+        family_id family() const noexcept {
+            return family_;
+        }
+
         family_id value_type() const noexcept {
             return value_type_;
         }
@@ -140,7 +144,7 @@ namespace meta_hpp
         }
 
         void merge(const field_info& other) {
-            if ( id() != other.id() ) {
+            if ( id() != other.id() || family() != other.family() ) {
                 throw std::logic_error("field_info::merge failed");
             }
             detail::merge_with(datas_, other.datas_, &data_info::merge);
@@ -152,12 +156,14 @@ namespace meta_hpp
         template < typename FieldType  >
         field_info(std::string id, FieldType field_ptr)
         : id_{std::move(id)}
+        , family_{get_family_id<FieldType>()}
         , value_type_{field_detail::make_value_type<FieldType>()}
         , instance_type_{field_detail::make_instance_type<FieldType>()}
         , getter_{field_detail::make_getter(field_ptr)}
         , setter_{field_detail::make_setter(field_ptr)} {}
     private:
         std::string id_;
+        family_id family_;
         family_id value_type_;
         family_id instance_type_;
         field_detail::field_getter getter_;

@@ -105,6 +105,10 @@ namespace meta_hpp
             return id_;
         }
 
+        family_id family() const noexcept {
+            return family_;
+        }
+
         std::size_t arity() const noexcept {
             return argument_types_.size();
         }
@@ -147,7 +151,7 @@ namespace meta_hpp
         }
 
         void merge(const function_info& other) {
-            if ( id() != other.id() ) {
+            if ( id() != other.id() || family() != other.family() ) {
                 throw std::logic_error("function_info::merge failed");
             }
             detail::merge_with(datas_, other.datas_, &data_info::merge);
@@ -159,11 +163,13 @@ namespace meta_hpp
         template < typename FunctionType >
         function_info(std::string id, FunctionType function_ptr)
         : id_{std::move(id)}
+        , family_{get_family_id<FunctionType>()}
         , return_type_{function_detail::make_return_type<FunctionType>()}
         , argument_types_{function_detail::make_argument_types<FunctionType>()}
         , invoke_{function_detail::make_invoke(function_ptr)} {}
     private:
         std::string id_;
+        family_id family_;
         std::optional<family_id> return_type_;
         std::vector<family_id> argument_types_;
         function_detail::function_invoke invoke_;

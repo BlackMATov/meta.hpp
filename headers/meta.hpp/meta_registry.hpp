@@ -127,7 +127,7 @@ namespace meta_hpp
                 ? info.id()
                 : prefix + "::" + info.id();
 
-            detail::merge_with(types_, info.fid(), info, &class_info::merge);
+            detail::merge_with(types_, info.family(), info, &class_info::merge);
             detail::merge_with(classes_, name, info, &class_info::merge);
 
             info.visit(overloaded {

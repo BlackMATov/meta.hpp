@@ -27,12 +27,12 @@ namespace meta_hpp
         class_info& operator=(class_info&&) = default;
         class_info& operator=(const class_info&) = default;
     public:
-        const family_id& fid() const noexcept {
-            return fid_;
-        }
-
         const std::string& id() const noexcept {
             return id_;
+        }
+
+        family_id family() const noexcept {
+            return family_;
         }
 
         template < typename F >
@@ -112,7 +112,7 @@ namespace meta_hpp
         }
 
         void merge(const class_info& other) {
-            if ( fid() != other.fid() ) {
+            if ( id() != other.id() || family() != other.family() ) {
                 throw std::logic_error("class_info::merge failed");
             }
             detail::merge_with(classes_, other.classes_, &class_info::merge);
@@ -128,11 +128,11 @@ namespace meta_hpp
 
         template < typename Class >
         class_info(detail::typename_arg_t<Class>, std::string id)
-        : fid_{get_family_id<Class>()}
-        , id_{std::move(id)} {}
+        : id_{std::move(id)}
+        , family_{get_family_id<Class>()} {}
     private:
-        family_id fid_;
         std::string id_;
+        family_id family_;
         std::map<std::string, class_info, std::less<>> classes_;
         std::map<std::string, data_info, std::less<>> datas_;
         std::map<std::string, field_info, std::less<>> fields_;
