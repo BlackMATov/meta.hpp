@@ -85,17 +85,17 @@ TEST_CASE("meta/family") {
     using namespace std::string_literals;
 
     SUBCASE("class") {
-        meta::class_info ivec2_info = meta::class_<ivec2>("ivec2");
-        meta::class_info ivec3_info = meta::class_<ivec3>("ivec3");
+        meta::class_info ivec2_info = meta::class_<ivec2>("ivec2").make_info();
+        meta::class_info ivec3_info = meta::class_<ivec3>("ivec3").make_info();
         CHECK(ivec2_info.family() != ivec3_info.family());
     }
 
     SUBCASE("field") {
-        meta::field_info ivec2_x_info = meta::field_("x", &ivec2::x);
-        meta::field_info ivec2_y_info = meta::field_("y", &ivec2::y);
+        meta::field_info ivec2_x_info = meta::field_("x", &ivec2::x).make_info();
+        meta::field_info ivec2_y_info = meta::field_("y", &ivec2::y).make_info();
 
-        meta::field_info ivec3_x_info = meta::field_("x", &ivec3::x);
-        meta::field_info ivec3_y_info = meta::field_("y", &ivec3::y);
+        meta::field_info ivec3_x_info = meta::field_("x", &ivec3::x).make_info();
+        meta::field_info ivec3_y_info = meta::field_("y", &ivec3::y).make_info();
 
         CHECK(ivec2_x_info.family() == ivec2_y_info.family());
 
@@ -104,11 +104,11 @@ TEST_CASE("meta/family") {
     }
 
     SUBCASE("function") {
-        meta::function_info iadd2_info = meta::function_("iadd2", &iadd2);
-        meta::function_info isub2_info = meta::function_("isub2", &isub2);
+        meta::function_info iadd2_info = meta::function_("iadd2", &iadd2).make_info();
+        meta::function_info isub2_info = meta::function_("isub2", &isub2).make_info();
 
-        meta::function_info iadd3_info = meta::function_("iadd3", &iadd3);
-        meta::function_info isub3_info = meta::function_("isub3", &isub3);
+        meta::function_info iadd3_info = meta::function_("iadd3", &iadd3).make_info();
+        meta::function_info isub3_info = meta::function_("isub3", &isub3).make_info();
 
         CHECK(iadd2_info.family() == isub2_info.family());
         CHECK(iadd3_info.family() == isub3_info.family());
@@ -118,11 +118,11 @@ TEST_CASE("meta/family") {
     }
 
     SUBCASE("method") {
-        meta::method_info add2_info = meta::method_("add", &ivec2::add);
-        meta::method_info sub2_info = meta::method_("sub", &ivec2::sub);
+        meta::method_info add2_info = meta::method_("add", &ivec2::add).make_info();
+        meta::method_info sub2_info = meta::method_("sub", &ivec2::sub).make_info();
 
-        meta::method_info add3_info = meta::method_("add", &ivec3::add);
-        meta::method_info sub3_info = meta::method_("sub", &ivec3::sub);
+        meta::method_info add3_info = meta::method_("add", &ivec3::add).make_info();
+        meta::method_info sub3_info = meta::method_("sub", &ivec3::sub).make_info();
 
         CHECK(add2_info.family() == sub2_info.family());
         CHECK(add3_info.family() == sub3_info.family());
@@ -132,11 +132,11 @@ TEST_CASE("meta/family") {
     }
 
     SUBCASE("variable") {
-        meta::variable_info zero2_info = meta::variable_("zero", &ivec2::zero);
-        meta::variable_info unit2_info = meta::variable_("unit", &ivec2::unit);
+        meta::variable_info zero2_info = meta::variable_("zero", &ivec2::zero).make_info();
+        meta::variable_info unit2_info = meta::variable_("unit", &ivec2::unit).make_info();
 
-        meta::variable_info zero3_info = meta::variable_("zero", &ivec3::zero);
-        meta::variable_info unit3_info = meta::variable_("unit", &ivec3::unit);
+        meta::variable_info zero3_info = meta::variable_("zero", &ivec3::zero).make_info();
+        meta::variable_info unit3_info = meta::variable_("unit", &ivec3::unit).make_info();
 
         CHECK(zero2_info.family() == unit2_info.family());
         CHECK(zero3_info.family() == unit3_info.family());

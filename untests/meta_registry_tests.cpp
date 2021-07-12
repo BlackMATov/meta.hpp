@@ -103,8 +103,8 @@ TEST_CASE("meta/registry") {
         REQUIRE(registry.resolve(std::as_const(v3)));
         REQUIRE(registry.resolve(static_cast<ivec3&&>(v3)));
 
-        const meta::class_info v2_info = meta::class_<ivec2>("ivec2");
-        const meta::class_info v3_info = meta::class_<ivec3>("ivec3");
+        const meta::class_info v2_info = meta::class_<ivec2>("ivec2").make_info();
+        const meta::class_info v3_info = meta::class_<ivec3>("ivec3").make_info();
         CHECK(v2_info.family() != v3_info.family());
 
         CHECK(v2_info.family() == registry.resolve<ivec2>()->family());

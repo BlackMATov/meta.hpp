@@ -48,16 +48,18 @@ TEST_CASE("meta/class") {
     namespace meta = meta_hpp;
 
     meta::class_<clazz> class_{"clazz"};
-    const meta::class_info& clazz_info = class_;
 
-    CHECK_FALSE(clazz_info.get_class("clazz2"));
-    CHECK_FALSE(clazz_info.get_field("field"));
-    CHECK_FALSE(clazz_info.get_field("cfield"));
-    CHECK_FALSE(clazz_info.get_function("func"));
-    CHECK_FALSE(clazz_info.get_method("method"));
-    CHECK_FALSE(clazz_info.get_method("cmethod"));
-    CHECK_FALSE(clazz_info.get_variable("variable"));
-    CHECK_FALSE(clazz_info.get_variable("cvariable"));
+    {
+        const meta::class_info info = class_.make_info();
+        CHECK_FALSE(info.get_class("clazz2"));
+        CHECK_FALSE(info.get_field("field"));
+        CHECK_FALSE(info.get_field("cfield"));
+        CHECK_FALSE(info.get_function("func"));
+        CHECK_FALSE(info.get_method("method"));
+        CHECK_FALSE(info.get_method("cmethod"));
+        CHECK_FALSE(info.get_variable("variable"));
+        CHECK_FALSE(info.get_variable("cvariable"));
+    }
 
     class_(
         meta::class_<clazz::clazz2>("clazz2"),
@@ -69,53 +71,56 @@ TEST_CASE("meta/class") {
         meta::variable_("variable", &clazz::variable),
         meta::variable_("cvariable", &clazz::cvariable));
 
-    CHECK(clazz_info.get_class("clazz2"));
-    CHECK(clazz_info.get_field("field"));
-    CHECK(clazz_info.get_field("cfield"));
-    CHECK(clazz_info.get_function("func"));
-    CHECK(clazz_info.get_method("method"));
-    CHECK(clazz_info.get_method("cmethod"));
-    CHECK(clazz_info.get_variable("variable"));
-    CHECK(clazz_info.get_variable("cvariable"));
-
     {
-        meta::class_info clazz2_info = clazz_info.get_class("clazz2").value();
-        CHECK(clazz2_info.id() == "clazz2");
-    }
+        const meta::class_info info = class_.make_info();
+        CHECK(info.get_class("clazz2"));
+        CHECK(info.get_field("field"));
+        CHECK(info.get_field("cfield"));
+        CHECK(info.get_function("func"));
+        CHECK(info.get_method("method"));
+        CHECK(info.get_method("cmethod"));
+        CHECK(info.get_variable("variable"));
+        CHECK(info.get_variable("cvariable"));
 
-    {
-        meta::field_info field_info = clazz_info.get_field("field").value();
-        CHECK(field_info.id() == "field");
-    }
+        {
+            meta::class_info clazz2_info = info.get_class("clazz2").value();
+            CHECK(clazz2_info.id() == "clazz2");
+        }
 
-    {
-        meta::field_info cfield_info = clazz_info.get_field("cfield").value();
-        CHECK(cfield_info.id() == "cfield");
-    }
+        {
+            meta::field_info field_info = info.get_field("field").value();
+            CHECK(field_info.id() == "field");
+        }
 
-    {
-        meta::function_info function_info = clazz_info.get_function("func").value();
-        CHECK(function_info.id() == "func");
-    }
+        {
+            meta::field_info cfield_info = info.get_field("cfield").value();
+            CHECK(cfield_info.id() == "cfield");
+        }
 
-    {
-        meta::method_info method_info = clazz_info.get_method("method").value();
-        CHECK(method_info.id() == "method");
-    }
+        {
+            meta::function_info function_info = info.get_function("func").value();
+            CHECK(function_info.id() == "func");
+        }
 
-    {
-        meta::method_info cmethod_info = clazz_info.get_method("cmethod").value();
-        CHECK(cmethod_info.id() == "cmethod");
-    }
+        {
+            meta::method_info method_info = info.get_method("method").value();
+            CHECK(method_info.id() == "method");
+        }
 
-    {
-        meta::variable_info variable_info = clazz_info.get_variable("variable").value();
-        CHECK(variable_info.id() == "variable");
-    }
+        {
+            meta::method_info cmethod_info = info.get_method("cmethod").value();
+            CHECK(cmethod_info.id() == "cmethod");
+        }
 
-    {
-        meta::variable_info cvariable_info = clazz_info.get_variable("cvariable").value();
-        CHECK(cvariable_info.id() == "cvariable");
+        {
+            meta::variable_info variable_info = info.get_variable("variable").value();
+            CHECK(variable_info.id() == "variable");
+        }
+
+        {
+            meta::variable_info cvariable_info = info.get_variable("cvariable").value();
+            CHECK(cvariable_info.id() == "cvariable");
+        }
     }
 }
 
@@ -123,7 +128,6 @@ TEST_CASE("meta/class/merge") {
     namespace meta = meta_hpp;
 
     meta::class_<clazz> clazz_{"clazz"};
-    const meta::class_info& clazz_info = clazz_;
 
     SUBCASE("merge") {
         CHECK_NOTHROW(clazz_(
@@ -144,14 +148,18 @@ TEST_CASE("meta/class/merge") {
             )
         ), std::logic_error);
 
-        CHECK(clazz_info.get_class("child"));
-        CHECK(clazz_info.get_class("child")->get_field("field"));
-        CHECK(clazz_info.get_class("child")->get_field("cfield"));
-
         {
-            clazz::clazz2 instance{};
-            CHECK(clazz_info.get_class("child")->get_field("field")->get(instance).to_int() == 21);
-            CHECK(clazz_info.get_class("child")->get_field("cfield")->get(instance).to_int() == 22);
+            const meta::class_info info = clazz_.make_info();
+
+            CHECK(info.get_class("child"));
+            CHECK(info.get_class("child")->get_field("field"));
+            CHECK(info.get_class("child")->get_field("cfield"));
+
+            {
+                clazz::clazz2 instance{};
+                CHECK(info.get_class("child")->get_field("field")->get(instance).to_int() == 21);
+                CHECK(info.get_class("child")->get_field("cfield")->get(instance).to_int() == 22);
+            }
         }
     }
 }

@@ -122,6 +122,25 @@ namespace meta_hpp
             return *this;
         }
     private:
+        template < typename InternalClass >
+        void add_(const std::string& prefix, class_<InternalClass> internal) {
+            add_(prefix, std::move(internal).make_info());
+        }
+
+        template < typename FunctionType >
+        void add_(const std::string& prefix, function_<FunctionType> internal) {
+            add_(prefix, std::move(internal).make_info());
+        }
+
+        void add_(const std::string& prefix, namespace_ internal) {
+            add_(prefix, std::move(internal).make_info());
+        }
+
+        template < typename VariableType >
+        void add_(const std::string& prefix, variable_<VariableType> internal) {
+            add_(prefix, std::move(internal).make_info());
+        }
+    private:
         void add_(const std::string& prefix, const class_info& info) {
             const std::string name = prefix.empty()
                 ? info.id()
