@@ -22,8 +22,8 @@ TEST_CASE("meta/field") {
     meta::field_ field_{"field", &clazz::field};
     meta::field_ cfield_{"cfield", &clazz::cfield};
 
-    const meta::field_info& field_info = field_;
-    const meta::field_info& cfield_info = cfield_;
+    const meta::field_info field_info = field_.make_info();
+    const meta::field_info cfield_info = cfield_.make_info();
 
     {
         CHECK(field_info.value_type() == meta::get_family_id<int>());

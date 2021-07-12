@@ -22,7 +22,7 @@ namespace meta_hpp
         explicit namespace_(std::string id)
         : info_{std::move(id)} {}
 
-        operator const namespace_info&() const noexcept {
+        const namespace_info& make_info() const {
             return info_;
         }
 
@@ -32,23 +32,31 @@ namespace meta_hpp
             return *this;
         }
     private:
-        void add_(const class_info& info) {
+        template < typename InternalClass >
+        void add_(class_<InternalClass> internal) {
+            class_info info = std::move(internal).make_info();
             detail::merge_with(info_.classes_, info.id(), info, &class_info::merge);
         }
 
-        void add_(const data_info& info) {
+        void add_(data_ internal) {
+            data_info info = std::move(internal).make_info();
             detail::merge_with(info_.datas_, info.id(), info, &data_info::merge);
         }
 
-        void add_(const function_info& info) {
+        template < typename FunctionType >
+        void add_(function_<FunctionType> internal) {
+            function_info info = std::move(internal).make_info();
             detail::merge_with(info_.functions_, info.id(), info, &function_info::merge);
         }
 
-        void add_(const namespace_info& info) {
+        void add_(namespace_ internal) {
+            namespace_info info = std::move(internal).make_info();
             detail::merge_with(info_.namespaces_, info.id(), info, &namespace_info::merge);
         }
 
-        void add_(const variable_info& info) {
+        template < typename VariableType >
+        void add_(variable_<VariableType> internal) {
+            variable_info info = std::move(internal).make_info();
             detail::merge_with(info_.variables_, info.id(), info, &variable_info::merge);
         }
     private:

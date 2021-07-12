@@ -22,7 +22,7 @@ namespace meta_hpp
         explicit field_(std::string id, FieldType field_ptr)
         : info_{std::move(id), field_ptr} {}
 
-        operator const field_info&() const noexcept {
+        const field_info& make_info() const {
             return info_;
         }
 
@@ -32,7 +32,8 @@ namespace meta_hpp
             return *this;
         }
     private:
-        void add_(const data_info& info) {
+        void add_(data_ internal) {
+            data_info info = std::move(internal).make_info();
             detail::merge_with(info_.datas_, info.id(), info, &data_info::merge);
         }
     private:

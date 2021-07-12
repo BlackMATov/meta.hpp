@@ -22,7 +22,7 @@ namespace meta_hpp
         explicit function_(std::string id, FunctionType function_ptr)
         : info_{std::move(id), function_ptr} {}
 
-        operator const function_info&() const noexcept {
+        const function_info& make_info() const {
             return info_;
         }
 
@@ -32,7 +32,8 @@ namespace meta_hpp
             return *this;
         }
     private:
-        void add_(const data_info& info) {
+        void add_(data_ internal) {
+            data_info info = std::move(internal).make_info();
             detail::merge_with(info_.datas_, info.id(), info, &data_info::merge);
         }
     private:

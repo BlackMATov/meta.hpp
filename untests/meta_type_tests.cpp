@@ -31,27 +31,27 @@ TEST_CASE("meta/type") {
     namespace meta = meta_hpp;
     using namespace std::string_literals;
 
-    meta::type class_type = meta::class_<clazz>("clazz");
+    meta::type class_type = meta::class_<clazz>("clazz").make_info();
     CHECK(class_type.is_class());
     CHECK(class_type.get_class()->id() == "clazz");
 
-    meta::type field_type = meta::field_("field", &clazz::field);
+    meta::type field_type = meta::field_("field", &clazz::field).make_info();
     CHECK(field_type.is_field());
     CHECK(field_type.get_field()->id() == "field");
 
-    meta::type function_type = meta::function_("function", &clazz::function);
+    meta::type function_type = meta::function_("function", &clazz::function).make_info();
     CHECK(function_type.is_function());
     CHECK(function_type.get_function()->id() == "function");
 
-    meta::type method_type = meta::method_("method", &clazz::method);
+    meta::type method_type = meta::method_("method", &clazz::method).make_info();
     CHECK(method_type.is_method());
     CHECK(method_type.get_method()->id() == "method");
 
-    meta::type namespace_type = meta::namespace_("ns");
+    meta::type namespace_type = meta::namespace_("ns").make_info();
     CHECK(namespace_type.is_namespace());
     CHECK(namespace_type.get_namespace()->id() == "ns");
 
-    meta::type variable_type = meta::variable_("variable", &clazz::variable);
+    meta::type variable_type = meta::variable_("variable", &clazz::variable).make_info();
     CHECK(variable_type.is_variable());
     CHECK(variable_type.get_variable()->id() == "variable");
 }
@@ -63,11 +63,11 @@ TEST_CASE("meta/type/merge") {
     {
         meta::type clazz_type = meta::class_<clazz>("clazz")(
             meta::field_("field", &clazz::field)
-        );
+        ).make_info();
 
         clazz_type.merge(meta::class_<clazz>("clazz")(
             meta::function_("function", &clazz::function)
-        ));
+        ).make_info());
 
         REQUIRE(clazz_type.is_class());
         CHECK(clazz_type.get_class()->get_field("field"));

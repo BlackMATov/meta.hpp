@@ -113,7 +113,7 @@ TEST_CASE("meta/examples/simple") {
         ),
         function_("iadd2", select<ivec2(ivec2,ivec2)>(&add)),
         function_("iadd3", select<ivec3(ivec3,ivec3)>(&add))
-    );
+    ).make_info();
 
     class_info ivec2_info = vmath_info.get_class("ivec2").value();
 
