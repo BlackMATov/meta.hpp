@@ -122,9 +122,9 @@ namespace meta_hpp
             return getter_(instance);
         }
 
-        template < typename R >
-        R get_r(cinstance instance) const {
-            return get(instance).cast<R>();
+        template < typename R, typename Rp = std::decay_t<R> >
+        Rp get_r(cinstance instance) const {
+            return get(instance).template cast<Rp>();
         }
 
         template < typename Value >

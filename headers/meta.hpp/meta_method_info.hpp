@@ -222,10 +222,10 @@ namespace meta_hpp
             }
         }
 
-        template < typename R, typename T, typename... Args >
-        std::optional<R> invoke_r(T& inst, Args&&... args) const {
+        template < typename R, typename Rp = std::decay_t<R>, typename T, typename... Args >
+        std::optional<Rp> invoke_r(T& inst, Args&&... args) const {
             if ( std::optional<value> r = invoke(inst, std::forward<Args>(args)...) ) {
-                return std::move(r)->template cast<R>();
+                return std::move(r)->template cast<Rp>();
             }
             return std::nullopt;
         }

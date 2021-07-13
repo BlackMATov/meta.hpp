@@ -53,33 +53,31 @@ namespace meta_hpp
         value& operator=(value&&) = default;
         value& operator=(const value&) = default;
 
-        template < typename T
-                 , typename U = std::decay_t<T>
-                 , typename = std::enable_if_t<!std::is_same_v<U, value>> >
+        template < typename T, typename Tp = std::decay_t<T>
+                 , typename = std::enable_if_t<!std::is_same_v<Tp, value>> >
         value(T&& val)
         : raw_{std::forward<T>(val)}
-        , fid_{get_family_id<U>()}
-        , traits_{value_detail::get_traits<U>()} {}
+        , fid_{get_family_id<Tp>()}
+        , traits_{value_detail::get_traits<Tp>()} {}
 
-        template < typename T
-                 , typename U = std::decay_t<T>
-                 , typename = std::enable_if_t<!std::is_same_v<U, value>> >
+        template < typename T, typename Tp = std::decay_t<T>
+                 , typename = std::enable_if_t<!std::is_same_v<Tp, value>> >
         value& operator=(T&& val) {
             value{std::forward<T>(val)}.swap(*this);
             return *this;
         }
 
-        template < typename T, typename U = std::decay_t<T>, typename... Args >
+        template < typename T, typename Tp = std::decay_t<T>, typename... Args >
         explicit value(std::in_place_type_t<T>, Args&&... args)
-        : raw_{std::in_place_type<U>, std::forward<Args>(args)...}
-        , fid_{get_family_id<U>()}
-        , traits_{value_detail::get_traits<U>()} {}
+        : raw_{std::in_place_type<Tp>, std::forward<Args>(args)...}
+        , fid_{get_family_id<Tp>()}
+        , traits_{value_detail::get_traits<Tp>()} {}
 
-        template < typename T, typename U = std::decay_t<T>, typename I, typename... Args >
+        template < typename T, typename Tp = std::decay_t<T>, typename I, typename... Args >
         explicit value(std::in_place_type_t<T>, std::initializer_list<I> ilist, Args&&... args)
-        : raw_{std::in_place_type<U>, ilist, std::forward<Args>(args)...}
-        , fid_{get_family_id<U>()}
-        , traits_{value_detail::get_traits<U>()} {}
+        : raw_{std::in_place_type<Tp>, ilist, std::forward<Args>(args)...}
+        , fid_{get_family_id<Tp>()}
+        , traits_{value_detail::get_traits<Tp>()} {}
 
         template < typename T >
         bool has_type() const noexcept {
@@ -134,12 +132,11 @@ namespace meta_hpp
             swap(traits_, other.traits_);
         }
 
-        template < typename T
-                 , typename U = std::decay_t<T>
-                 , typename = std::enable_if_t<!std::is_same_v<U, value>> >
+        template < typename T, typename Tp = std::decay_t<T>
+                 , typename = std::enable_if_t<!std::is_same_v<Tp, value>> >
         bool equals(T&& other) const {
-            return fid_ == get_family_id<U>()
-                && std::equal_to<>{}(*try_cast<U>(), std::forward<T>(other));
+            return fid_ == get_family_id<Tp>()
+                && std::equal_to<>{}(*try_cast<Tp>(), std::forward<T>(other));
         }
 
         bool equals(const value& other) const {

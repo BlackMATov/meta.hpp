@@ -131,9 +131,9 @@ namespace meta_hpp
             }
         }
 
-        template < typename R, typename... Args >
-        R invoke_r(Args&&... args) const {
-            return invoke(std::forward<Args>(args)...).template cast<R>();
+        template < typename R, typename Rp = std::decay_t<R>, typename... Args >
+        Rp invoke_r(Args&&... args) const {
+            return invoke(std::forward<Args>(args)...).template cast<Rp>();
         }
 
         template < typename... Args >
