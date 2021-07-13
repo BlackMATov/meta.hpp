@@ -9,6 +9,7 @@
 #include "meta_fwd.hpp"
 #include "meta_value.hpp"
 
+#include "meta_ctor_info.hpp"
 #include "meta_data_info.hpp"
 #include "meta_field_info.hpp"
 #include "meta_function_info.hpp"
@@ -39,6 +40,13 @@ namespace meta_hpp
         void each_class(F&& f) const {
             for ( auto&& id_info : classes_ ) {
                 std::invoke(f, id_info.second);
+            }
+        }
+
+        template < typename F >
+        void each_ctor(F&& f) const {
+            for ( auto&& family_info : ctors_ ) {
+                std::invoke(f, family_info.second);
             }
         }
 
@@ -80,6 +88,7 @@ namespace meta_hpp
         template < typename F >
         void visit(F&& f) const {
             each_class(f);
+            each_ctor(f);
             each_data(f);
             each_field(f);
             each_function(f);
@@ -89,6 +98,16 @@ namespace meta_hpp
 
         std::optional<class_info> get_class(std::string_view id) const {
             return detail::find_opt(classes_, id);
+        }
+
+        template < typename... Args >
+        std::optional<ctor_info> get_ctor() const {
+            for ( auto&& family_info : ctors_ ) {
+                if ( family_info.second.is_invocable_with<Args...>() ) {
+                    return family_info.second;
+                }
+            }
+            return std::nullopt;
         }
 
         std::optional<data_info> get_data(std::string_view id) const {
@@ -116,6 +135,7 @@ namespace meta_hpp
                 throw std::logic_error("class_info::merge failed");
             }
             detail::merge_with(classes_, other.classes_, &class_info::merge);
+            detail::merge_with(ctors_, other.ctors_, &ctor_info::merge);
             detail::merge_with(datas_, other.datas_, &data_info::merge);
             detail::merge_with(fields_, other.fields_, &field_info::merge);
             detail::merge_with(functions_, other.functions_, &function_info::merge);
@@ -134,6 +154,7 @@ namespace meta_hpp
         std::string id_;
         family_id family_;
         std::map<std::string, class_info, std::less<>> classes_;
+        std::map<family_id, ctor_info, std::less<>> ctors_;
         std::map<std::string, data_info, std::less<>> datas_;
         std::map<std::string, field_info, std::less<>> fields_;
         std::map<std::string, function_info, std::less<>> functions_;

@@ -17,6 +17,9 @@
 #include "meta_class.hpp"
 #include "meta_class_info.hpp"
 
+#include "meta_ctor.hpp"
+#include "meta_ctor_info.hpp"
+
 #include "meta_data.hpp"
 #include "meta_data_info.hpp"
 
