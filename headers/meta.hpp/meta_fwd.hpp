@@ -105,8 +105,15 @@ namespace meta_hpp::detail
     struct typename_arg_t {
     };
 
+    template < typename... Args >
+    struct typename_args_t {
+    };
+
     template < typename Arg >
     inline typename_arg_t<Arg> typename_arg;
+
+    template < typename... Args >
+    inline typename_args_t<Args...> typename_args;
 }
 
 namespace meta_hpp::detail
@@ -134,6 +141,16 @@ namespace meta_hpp::detail
             merge_with(dst, key, value, f);
         }
     }
+}
+
+namespace meta_hpp::detail
+{
+    template < typename Class, typename... Args >
+    struct ctor_traits {
+        static constexpr std::size_t arity = sizeof...(Args);
+        using return_type = std::decay_t<Class>;
+        using argument_types = std::tuple<std::decay_t<Args>...>;
+    };
 }
 
 namespace meta_hpp::detail

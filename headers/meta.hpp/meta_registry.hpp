@@ -11,6 +11,8 @@
 #include "meta_type.hpp"
 
 #include "meta_class.hpp"
+#include "meta_ctor.hpp"
+#include "meta_data.hpp"
 #include "meta_field.hpp"
 #include "meta_function.hpp"
 #include "meta_method.hpp"
@@ -150,6 +152,7 @@ namespace meta_hpp
             detail::merge_with(classes_, name, info, &class_info::merge);
 
             info.visit(overloaded {
+                [](const ctor_info&) {},
                 [](const data_info&) {},
                 [this, &name](const auto& internal){
                     add_(name, internal);

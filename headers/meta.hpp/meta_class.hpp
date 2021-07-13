@@ -8,6 +8,7 @@
 
 #include "meta_fwd.hpp"
 
+#include "meta_ctor.hpp"
 #include "meta_data.hpp"
 #include "meta_field.hpp"
 #include "meta_function.hpp"
@@ -38,6 +39,12 @@ namespace meta_hpp
         void add_(class_<InternalClass> internal) {
             class_info info = std::move(internal).make_info();
             detail::merge_with(info_.classes_, info.id(), info, &class_info::merge);
+        }
+
+        template < typename... Args >
+        void add_(ctor_<Args...> internal) {
+            ctor_info info = std::move(internal).template make_info<Class>();
+            detail::merge_with(info_.ctors_, info.family(), info, &ctor_info::merge);
         }
 
         void add_(data_ internal) {

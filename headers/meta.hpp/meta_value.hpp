@@ -53,33 +53,36 @@ namespace meta_hpp
         value& operator=(value&&) = default;
         value& operator=(const value&) = default;
 
-        template < typename T
-                 , typename U = std::decay_t<T>
-                 , typename = std::enable_if_t<!std::is_same_v<U, value>> >
+        template < typename T, typename Tp = std::decay_t<T>
+                 , typename = std::enable_if_t<!std::is_same_v<Tp, value>> >
         value(T&& val)
         : raw_{std::forward<T>(val)}
-        , fid_{get_family_id<U>()}
-        , traits_{value_detail::get_traits<U>()} {}
+        , fid_{get_family_id<Tp>()}
+        , traits_{value_detail::get_traits<Tp>()} {}
 
-        template < typename T
-                 , typename U = std::decay_t<T>
-                 , typename = std::enable_if_t<!std::is_same_v<U, value>> >
+        template < typename T, typename Tp = std::decay_t<T>
+                 , typename = std::enable_if_t<!std::is_same_v<Tp, value>> >
         value& operator=(T&& val) {
             value{std::forward<T>(val)}.swap(*this);
             return *this;
         }
 
-        template < typename T, typename... Args >
+        template < typename T, typename Tp = std::decay_t<T>, typename... Args >
         explicit value(std::in_place_type_t<T>, Args&&... args)
-        : raw_{std::in_place_type<T>, std::forward<Args>(args)...}
-        , fid_{get_family_id<T>()}
-        , traits_{value_detail::get_traits<T>()} {}
+        : raw_{std::in_place_type<Tp>, std::forward<Args>(args)...}
+        , fid_{get_family_id<Tp>()}
+        , traits_{value_detail::get_traits<Tp>()} {}
 
-        template < typename T, typename U, typename... Args >
-        explicit value(std::in_place_type_t<T>, std::initializer_list<U> ilist, Args&&... args)
-        : raw_{std::in_place_type<T>, ilist, std::forward<Args>(args)...}
-        , fid_{get_family_id<T>()}
-        , traits_{value_detail::get_traits<T>()} {}
+        template < typename T, typename Tp = std::decay_t<T>, typename I, typename... Args >
+        explicit value(std::in_place_type_t<T>, std::initializer_list<I> ilist, Args&&... args)
+        : raw_{std::in_place_type<Tp>, ilist, std::forward<Args>(args)...}
+        , fid_{get_family_id<Tp>()}
+        , traits_{value_detail::get_traits<Tp>()} {}
+
+        template < typename T >
+        bool has_type() const noexcept {
+            return fid_ == get_family_id<T>();
+        }
 
         template < typename T >
         T cast() && {
@@ -129,12 +132,11 @@ namespace meta_hpp
             swap(traits_, other.traits_);
         }
 
-        template < typename T
-                 , typename U = std::decay_t<T>
-                 , typename = std::enable_if_t<!std::is_same_v<U, value>> >
+        template < typename T, typename Tp = std::decay_t<T>
+                 , typename = std::enable_if_t<!std::is_same_v<Tp, value>> >
         bool equals(T&& other) const {
-            return fid() == get_family_id<U>()
-                && std::equal_to<>{}(*try_cast<U>(), std::forward<T>(other));
+            return fid_ == get_family_id<Tp>()
+                && std::equal_to<>{}(*try_cast<Tp>(), std::forward<T>(other));
         }
 
         bool equals(const value& other) const {
@@ -146,7 +148,7 @@ namespace meta_hpp
         unsigned to_uint() const { return cast<unsigned>(); }
         float to_float() const { return cast<float>(); }
         double to_double() const { return cast<double>(); }
-        std::string to_string() const { return cast<std::string>(); }
+        const std::string& to_string() const { return cast<const std::string&>(); }
 
         std::int8_t to_int8() const { return cast<std::int8_t>(); }
         std::int16_t to_int16() const { return cast<std::int16_t>(); }
@@ -162,26 +164,26 @@ namespace meta_hpp
         std::size_t to_size_t() const { return cast<std::size_t>(); }
         std::uintptr_t to_uintptr_t() const { return cast<std::uintptr_t>(); }
     public:
-        bool is_bool() const noexcept { return !!try_cast<bool>(); }
-        bool is_int() const noexcept { return !!try_cast<int>(); }
-        bool is_uint() const noexcept { return !!try_cast<unsigned>(); }
-        bool is_float() const noexcept { return !!try_cast<float>(); }
-        bool is_double() const noexcept { return !!try_cast<double>(); }
-        bool is_string() const noexcept { return !!try_cast<std::string>(); }
+        bool is_bool() const noexcept { return has_type<bool>(); }
+        bool is_int() const noexcept { return has_type<int>(); }
+        bool is_uint() const noexcept { return has_type<unsigned>(); }
+        bool is_float() const noexcept { return has_type<float>(); }
+        bool is_double() const noexcept { return has_type<double>(); }
+        bool is_string() const noexcept { return has_type<std::string>(); }
 
-        bool is_int8() const noexcept { return !!try_cast<std::int8_t>(); }
-        bool is_int16() const noexcept { return !!try_cast<std::int16_t>(); }
-        bool is_int32() const noexcept { return !!try_cast<std::int32_t>(); }
-        bool is_int64() const noexcept { return !!try_cast<std::int64_t>(); }
-        bool is_ptrdiff_t() const noexcept { return !!try_cast<std::ptrdiff_t>(); }
-        bool is_intptr_t() const noexcept { return !!try_cast<std::intptr_t>(); }
+        bool is_int8() const noexcept { return has_type<std::int8_t>(); }
+        bool is_int16() const noexcept { return has_type<std::int16_t>(); }
+        bool is_int32() const noexcept { return has_type<std::int32_t>(); }
+        bool is_int64() const noexcept { return has_type<std::int64_t>(); }
+        bool is_ptrdiff_t() const noexcept { return has_type<std::ptrdiff_t>(); }
+        bool is_intptr_t() const noexcept { return has_type<std::intptr_t>(); }
 
-        bool is_uint8() const noexcept { return !!try_cast<std::uint8_t>(); }
-        bool is_uint16() const noexcept { return !!try_cast<std::uint16_t>(); }
-        bool is_uint32() const noexcept { return !!try_cast<std::uint32_t>(); }
-        bool is_uint64() const noexcept { return !!try_cast<std::uint64_t>(); }
-        bool is_size_t() const noexcept { return !!try_cast<std::size_t>(); }
-        bool is_uintptr_t() const noexcept { return !!try_cast<std::uintptr_t>(); }
+        bool is_uint8() const noexcept { return has_type<std::uint8_t>(); }
+        bool is_uint16() const noexcept { return has_type<std::uint16_t>(); }
+        bool is_uint32() const noexcept { return has_type<std::uint32_t>(); }
+        bool is_uint64() const noexcept { return has_type<std::uint64_t>(); }
+        bool is_size_t() const noexcept { return has_type<std::size_t>(); }
+        bool is_uintptr_t() const noexcept { return has_type<std::uintptr_t>(); }
     private:
         std::any raw_;
         family_id fid_;
@@ -213,7 +215,7 @@ namespace meta_hpp::value_detail
         if constexpr ( std::is_invocable_v<std::equal_to<>, T, T> ) {
             return std::equal_to<>{}(*l.try_cast<T>(), *r.try_cast<T>());
         } else {
-            return std::addressof(l) == std::addressof(r);
+            return value_cdata<T>(l) == value_cdata<T>(r);
         }
     }
 }
