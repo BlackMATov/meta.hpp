@@ -56,7 +56,7 @@ namespace meta_hpp
         std::add_pointer_t<T>
         try_cast() noexcept {
             static_assert(!std::is_reference_v<T>);
-            return fid() == get_family_id<T>()
+            return fid_ == get_family_id<T>()
                 ? static_cast<std::add_pointer_t<T>>(data_)
                 : nullptr;
         }
@@ -65,7 +65,7 @@ namespace meta_hpp
         std::add_pointer_t<std::add_const_t<T>>
         try_cast() const noexcept {
             static_assert(!std::is_reference_v<T>);
-            return fid() == get_family_id<T>()
+            return fid_ == get_family_id<T>()
                 ? static_cast<std::add_pointer_t<std::add_const_t<T>>>(data_)
                 : nullptr;
         }
@@ -91,8 +91,8 @@ namespace meta_hpp
                  , typename = std::enable_if_t<!std::is_same_v<T, value>>
                  , typename = std::enable_if_t<!std::is_same_v<T, instance>>
                  , typename = std::enable_if_t<!std::is_same_v<T, cinstance>> >
-        cinstance(const T& data)
-        : data_{std::addressof(data)}
+        cinstance(const T& v)
+        : data_{std::addressof(v)}
         , fid_{get_family_id<T>()} {}
 
         cinstance(const value& v)
@@ -115,7 +115,7 @@ namespace meta_hpp
         std::add_pointer_t<std::add_const_t<T>>
         try_cast() const noexcept {
             static_assert(!std::is_reference_v<T>);
-            return fid() == get_family_id<T>()
+            return fid_ == get_family_id<T>()
                 ? static_cast<std::add_pointer_t<std::add_const_t<T>>>(data_)
                 : nullptr;
         }

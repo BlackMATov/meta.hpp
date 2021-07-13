@@ -69,14 +69,25 @@ TEST_CASE("meta/value") {
     CHECK(meta::value{std::in_place_type<std::uint64_t>, std::uint64_t{1}}.is_uint64());
     CHECK(meta::value{std::in_place_type<std::size_t>, std::size_t{1}}.is_size_t());
     CHECK(meta::value{std::in_place_type<std::uintptr_t>, std::uintptr_t{1}}.is_uintptr_t());
+
+    SUBCASE("in_place") {
+        CHECK(meta::value{std::in_place_type<std::uint8_t>, std::uint8_t{1}}.is_uint8());
+        CHECK(meta::value{std::in_place_type<std::uint8_t&>, std::uint8_t{1}}.is_uint8());
+        CHECK(meta::value{std::in_place_type<const std::uint8_t>, std::uint8_t{1}}.is_uint8());
+        CHECK(meta::value{std::in_place_type<const std::uint8_t&>, std::uint8_t{1}}.is_uint8());
+    }
 }
 
 TEST_CASE("meta/value/fid") {
     namespace meta = meta_hpp;
     using namespace std::string_literals;
 
+    CHECK(meta::value{clazz{}}.has_type<clazz>());
     CHECK(meta::value{clazz{}}.fid() == meta::get_family_id<clazz>());
+
+    CHECK(meta::value{clazz2{}}.has_type<clazz2>());
     CHECK(meta::value{clazz2{}}.fid() == meta::get_family_id<clazz2>());
+
     CHECK(meta::value{clazz{}}.fid() != meta::value{clazz2{}}.fid());
 
     {
