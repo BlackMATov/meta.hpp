@@ -122,9 +122,23 @@ namespace meta_hpp
             return getter_(instance);
         }
 
+        template < typename R >
+        R get_r(cinstance instance) const {
+            return get(instance).cast<R>();
+        }
+
         template < typename Value >
         void set(instance instance, Value&& value) const {
-            return setter_(instance, std::forward<Value>(value));
+            setter_(instance, std::forward<Value>(value));
+        }
+
+        value operator()(cinstance instance) const {
+            return get(instance);
+        }
+
+        template < typename Value >
+        void operator()(instance instance, Value&& value) const {
+            set(instance, std::forward<Value>(value));
         }
 
         template < typename F >

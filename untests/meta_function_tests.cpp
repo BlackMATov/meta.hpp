@@ -64,33 +64,52 @@ TEST_CASE("meta/function") {
     }
 
     SUBCASE("void_return") {
-        CHECK_NOTHROW(void_f_void_info.invoke());
+        CHECK_FALSE(void_f_void_info());
+        CHECK_FALSE(void_f_void_info.invoke());
+        CHECK_FALSE(void_f_void_info.invoke_r<int>());
+        CHECK_THROWS_AS(void_f_void_info(1), std::logic_error);
         CHECK_THROWS_AS(void_f_void_info.invoke(1), std::logic_error);
 
+        CHECK_THROWS_AS(void_f_int_info(), std::logic_error);
         CHECK_THROWS_AS(void_f_int_info.invoke(), std::logic_error);
-        CHECK_NOTHROW(void_f_int_info.invoke(1));
+        CHECK_FALSE(void_f_int_info(1));
+        CHECK_FALSE(void_f_int_info.invoke(1));
+        CHECK_FALSE(void_f_int_info.invoke_r<int>(1));
+        CHECK_THROWS_AS(void_f_int_info(1.f), std::logic_error);
         CHECK_THROWS_AS(void_f_int_info.invoke(1.f), std::logic_error);
+        CHECK_THROWS_AS(void_f_int_info(1, 2), std::logic_error);
         CHECK_THROWS_AS(void_f_int_info.invoke(1, 2), std::logic_error);
 
+        CHECK_THROWS_AS(void_f_int2_info(), std::logic_error);
         CHECK_THROWS_AS(void_f_int2_info.invoke(), std::logic_error);
+        CHECK_THROWS_AS(void_f_int2_info(1), std::logic_error);
         CHECK_THROWS_AS(void_f_int2_info.invoke(1), std::logic_error);
-        CHECK_NOTHROW(void_f_int2_info.invoke(1, 2));
+        CHECK_FALSE(void_f_int2_info(1, 2));
+        CHECK_FALSE(void_f_int2_info.invoke(1, 2));
+        CHECK_FALSE(void_f_int2_info.invoke_r<int>(1, 2));
+        CHECK_THROWS_AS(void_f_int2_info(1.f, 2), std::logic_error);
         CHECK_THROWS_AS(void_f_int2_info.invoke(1.f, 2), std::logic_error);
+        CHECK_THROWS_AS(void_f_int2_info(1, 2.f), std::logic_error);
         CHECK_THROWS_AS(void_f_int2_info.invoke(1, 2.f), std::logic_error);
+        CHECK_THROWS_AS(void_f_int2_info(1, 2, 3), std::logic_error);
         CHECK_THROWS_AS(void_f_int2_info.invoke(1, 2, 3), std::logic_error);
     }
 
     SUBCASE("int_return") {
+        CHECK(int_f_void_info.invoke_r<int>() == 1);
         CHECK(int_f_void_info.invoke()->cast<int>() == 1);
         CHECK_THROWS_AS(int_f_void_info.invoke(1), std::logic_error);
+        CHECK_THROWS_AS(int_f_void_info.invoke_r<int>(1), std::logic_error);
 
         CHECK_THROWS_AS(int_f_int_info.invoke(), std::logic_error);
+        CHECK(int_f_int_info.invoke_r<int>(1) == 1);
         CHECK(int_f_int_info.invoke(1)->cast<int>() == 1);
         CHECK_THROWS_AS(int_f_int_info.invoke(1.f), std::logic_error);
         CHECK_THROWS_AS(int_f_int_info.invoke(1, 2), std::logic_error);
 
         CHECK_THROWS_AS(int_f_int2_info.invoke(), std::logic_error);
         CHECK_THROWS_AS(int_f_int2_info.invoke(1), std::logic_error);
+        CHECK(int_f_int2_info.invoke_r<int>(1, 2) == 3);
         CHECK(int_f_int2_info.invoke(1, 2)->cast<int>() == 3);
         CHECK_THROWS_AS(int_f_int2_info.invoke(1.f, 2), std::logic_error);
         CHECK_THROWS_AS(int_f_int2_info.invoke(1, 2.f), std::logic_error);

@@ -103,7 +103,7 @@ namespace meta_hpp
         template < typename... Args >
         std::optional<ctor_info> get_ctor() const {
             for ( auto&& family_info : ctors_ ) {
-                if ( family_info.second.is_invocable_with<Args...>() ) {
+                if ( family_info.second.is_invocable<Args...>() ) {
                     return family_info.second;
                 }
             }

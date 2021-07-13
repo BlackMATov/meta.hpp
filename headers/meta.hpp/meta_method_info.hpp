@@ -208,20 +208,31 @@ namespace meta_hpp
         std::optional<value> invoke(T& inst, Args&&... args) const {
             if constexpr ( sizeof...(Args) > 0u ) {
                 std::array<value, sizeof...(Args)> vargs{std::forward<Args>(args)...};
-                return invoke_(inst, vargs.data(), vargs.size());
+                if constexpr ( std::is_const_v<T> ) {
+                    return cinvoke_(inst, vargs.data(), vargs.size());
+                } else {
+                    return invoke_(inst, vargs.data(), vargs.size());
+                }
             } else {
-                return invoke_(inst, nullptr, 0u);
+                if constexpr ( std::is_const_v<T> ) {
+                    return cinvoke_(inst, nullptr, 0u);
+                } else {
+                    return invoke_(inst, nullptr, 0u);
+                }
             }
         }
 
-        template < typename T, typename... Args >
-        std::optional<value> invoke(const T& inst, Args&&... args) const {
-            if constexpr ( sizeof...(Args) > 0u ) {
-                std::array<value, sizeof...(Args)> vargs{std::forward<Args>(args)...};
-                return cinvoke_(inst, vargs.data(), vargs.size());
-            } else {
-                return cinvoke_(inst, nullptr, 0u);
+        template < typename R, typename T, typename... Args >
+        std::optional<R> invoke_r(T& inst, Args&&... args) const {
+            if ( std::optional<value> r = invoke(inst, std::forward<Args>(args)...) ) {
+                return std::move(r)->template cast<R>();
             }
+            return std::nullopt;
+        }
+
+        template < typename T, typename... Args >
+        std::optional<value> operator()(T& inst, Args&&... args) const {
+            return invoke(inst, std::forward<Args>(args)...);
         }
 
         template < typename F >

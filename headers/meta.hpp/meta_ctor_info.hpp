@@ -131,8 +131,18 @@ namespace meta_hpp
             }
         }
 
+        template < typename R, typename... Args >
+        R invoke_r(Args&&... args) const {
+            return invoke(std::forward<Args>(args)...).template cast<R>();
+        }
+
         template < typename... Args >
-        bool is_invocable_with() const noexcept {
+        value operator()(Args&&... args) const {
+            return invoke(std::forward<Args>(args)...);
+        }
+
+        template < typename... Args >
+        bool is_invocable() const noexcept {
             return ctor_detail::parameters_equal<Args...>(argument_types_);
         }
 

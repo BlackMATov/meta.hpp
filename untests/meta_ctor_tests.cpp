@@ -53,39 +53,69 @@ TEST_CASE("meta/ctor") {
     }
 
     SUBCASE("invoke0") {
+        CHECK(ctor0().cast<const clazz&>().v1 == 1);
+        CHECK(ctor0().cast<const clazz&>().v2 == 2);
+        CHECK_THROWS_AS(ctor0(1), std::logic_error);
+
         CHECK(ctor0.invoke().cast<const clazz&>().v1 == 1);
         CHECK(ctor0.invoke().cast<const clazz&>().v2 == 2);
         CHECK_THROWS_AS(ctor0.invoke(1), std::logic_error);
+
+        CHECK(ctor0.invoke_r<const clazz&>().v1 == 1);
+        CHECK(ctor0.invoke_r<const clazz&>().v2 == 2);
+        CHECK_THROWS_AS(ctor0.invoke_r<const clazz&>(1), std::logic_error);
     }
 
     SUBCASE("invoke1") {
+        CHECK(ctor1(42).cast<const clazz&>().v1 == 42);
+        CHECK(ctor1(42).cast<const clazz&>().v2 == 42);
+        CHECK_THROWS_AS(ctor1(), std::logic_error);
+        CHECK_THROWS_AS(ctor1(1,1), std::logic_error);
+
         CHECK(ctor1.invoke(42).cast<const clazz&>().v1 == 42);
         CHECK(ctor1.invoke(42).cast<const clazz&>().v2 == 42);
         CHECK_THROWS_AS(ctor1.invoke(), std::logic_error);
         CHECK_THROWS_AS(ctor1.invoke(1,1), std::logic_error);
+
+        CHECK(ctor1.invoke_r<const clazz&>(42).v1 == 42);
+        CHECK(ctor1.invoke_r<const clazz&>(42).v2 == 42);
+        CHECK_THROWS_AS(ctor1.invoke_r<const clazz&>(), std::logic_error);
+        CHECK_THROWS_AS(ctor1.invoke_r<const clazz&>(1,1), std::logic_error);
     }
 
     SUBCASE("invoke2") {
+        CHECK(ctor2(21,42).cast<const clazz&>().v1 == 21);
+        CHECK(ctor2(21,42).cast<const clazz&>().v2 == 42);
+        CHECK_THROWS_AS(ctor2(), std::logic_error);
+        CHECK_THROWS_AS(ctor2(1), std::logic_error);
+        CHECK_THROWS_AS(ctor2(1,1,1), std::logic_error);
+
         CHECK(ctor2.invoke(21,42).cast<const clazz&>().v1 == 21);
         CHECK(ctor2.invoke(21,42).cast<const clazz&>().v2 == 42);
         CHECK_THROWS_AS(ctor2.invoke(), std::logic_error);
         CHECK_THROWS_AS(ctor2.invoke(1), std::logic_error);
         CHECK_THROWS_AS(ctor2.invoke(1,1,1), std::logic_error);
+
+        CHECK(ctor2.invoke_r<const clazz&>(21,42).v1 == 21);
+        CHECK(ctor2.invoke_r<const clazz&>(21,42).v2 == 42);
+        CHECK_THROWS_AS(ctor2.invoke_r<const clazz&>(), std::logic_error);
+        CHECK_THROWS_AS(ctor2.invoke_r<const clazz&>(1), std::logic_error);
+        CHECK_THROWS_AS(ctor2.invoke_r<const clazz&>(1,1,1), std::logic_error);
     }
 
-    SUBCASE("is_invocable_with") {
-        CHECK(ctor0.is_invocable_with<>());
-        CHECK_FALSE(ctor0.is_invocable_with<int>());
+    SUBCASE("is_invocable") {
+        CHECK(ctor0.is_invocable<>());
+        CHECK_FALSE(ctor0.is_invocable<int>());
 
-        CHECK(ctor1.is_invocable_with<int>());
-        CHECK_FALSE(ctor1.is_invocable_with<float>());
-        CHECK_FALSE(ctor1.is_invocable_with<>());
-        CHECK_FALSE(ctor1.is_invocable_with<int, int>());
+        CHECK(ctor1.is_invocable<int>());
+        CHECK_FALSE(ctor1.is_invocable<float>());
+        CHECK_FALSE(ctor1.is_invocable<>());
+        CHECK_FALSE(ctor1.is_invocable<int, int>());
 
-        CHECK(ctor2.is_invocable_with<int, int>());
-        CHECK_FALSE(ctor2.is_invocable_with<int, float>());
-        CHECK_FALSE(ctor2.is_invocable_with<>());
-        CHECK_FALSE(ctor2.is_invocable_with<int>());
+        CHECK(ctor2.is_invocable<int, int>());
+        CHECK_FALSE(ctor2.is_invocable<int, float>());
+        CHECK_FALSE(ctor2.is_invocable<>());
+        CHECK_FALSE(ctor2.is_invocable<int>());
     }
 }
 

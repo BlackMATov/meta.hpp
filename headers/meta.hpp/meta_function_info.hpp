@@ -134,6 +134,19 @@ namespace meta_hpp
             }
         }
 
+        template < typename R, typename... Args >
+        std::optional<R> invoke_r(Args&&... args) const {
+            if ( std::optional<value> r = invoke(std::forward<Args>(args)...) ) {
+                return std::move(r)->template cast<R>();
+            }
+            return std::nullopt;
+        }
+
+        template < typename... Args >
+        std::optional<value> operator()(Args&&... args) const {
+            return invoke(std::forward<Args>(args)...);
+        }
+
         template < typename F >
         void each_data(F&& f) const {
             for ( auto&& id_info : datas_ ) {
