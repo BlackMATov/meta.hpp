@@ -4,11 +4,6 @@
  * Copyright (C) 2021, by Matvey Cherevko (blackmatov@gmail.com)
  ******************************************************************************/
 
-#include "meta_tests.hpp"
+#pragma once
 
-namespace
-{
-}
-
-TEST_CASE("meta") {
-}
+#include "../../meta_tests.hpp"

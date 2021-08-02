@@ -4,11 +4,11 @@
  * Copyright (C) 2021, by Matvey Cherevko (blackmatov@gmail.com)
  ******************************************************************************/
 
-#include "meta_tests.hpp"
+#include "_traits_fwd.hpp"
 
 namespace
 {
 }
 
-TEST_CASE("meta") {
+TEST_CASE("features/traits/pointer") {
 }
