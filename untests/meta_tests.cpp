@@ -4,4 +4,12 @@
  * Copyright (C) 2021, by Matvey Cherevko (blackmatov@gmail.com)
  ******************************************************************************/
 
-#pragma once
+#include <meta.hpp/meta.hpp>
+#include "doctest/doctest.hpp"
+
+namespace
+{
+}
+
+TEST_CASE("meta") {
+}
