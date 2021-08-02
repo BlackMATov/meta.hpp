@@ -6,6 +6,9 @@
 
 #pragma once
 
+#include "../meta_fwd.hpp"
+#include "../meta_utilities.hpp"
+
 namespace meta_hpp
 {
     class method_info final {

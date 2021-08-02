@@ -6,9 +6,34 @@
 
 #pragma once
 
+#include "../meta_fwd.hpp"
+#include "../meta_utilities.hpp"
+
+#include "../meta_infos/member_info.hpp"
+
 namespace meta_hpp
 {
     template < typename Member >
     class member_ final {
+    public:
+        explicit member_(std::string name, Member instance);
+
+        member_info make_info() const;
+    private:
+        std::string name_;
+        Member instance_;
     };
+}
+
+namespace meta_hpp
+{
+    template < typename Member >
+    inline member_<Member>::member_(std::string name, Member instance)
+    : name_{std::move(name)}
+    , instance_{std::move(instance)} {}
+
+    template < typename Member >
+    inline member_info member_<Member>::make_info() const {
+        return member_info{};
+    }
 }

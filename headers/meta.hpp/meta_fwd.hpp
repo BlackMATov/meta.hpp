@@ -52,3 +52,19 @@ namespace meta_hpp
     template < typename Method > class method_;
     class namespace_;
 }
+
+namespace meta_hpp
+{
+    template < typename K, typename V >
+    using info_map = std::map<K, V, std::less<>>;
+
+    using class_info_map = info_map<std::string, class_info>;
+    using ctor_info_map = info_map<std::string, ctor_info>;
+    using data_info_map = info_map<std::string, data_info>;
+    using enum_info_map = info_map<std::string, enum_info>;
+    using evalue_info_map = info_map<std::string, evalue_info>;
+    using function_info_map = info_map<std::string, function_info>;
+    using member_info_map = info_map<std::string, member_info>;
+    using method_info_map = info_map<std::string, method_info>;
+    using namespace_info_map = info_map<std::string, namespace_info>;
+}

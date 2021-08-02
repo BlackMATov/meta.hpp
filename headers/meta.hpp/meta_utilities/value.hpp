@@ -7,28 +7,17 @@
 #pragma once
 
 #include "../meta_fwd.hpp"
-#include "../meta_utilities.hpp"
-
-#include "../meta_infos/ctor_info.hpp"
 
 namespace meta_hpp
 {
-    template < typename... Args >
-    class ctor_ final {
+    class value final {
     public:
-        explicit ctor_() = default;
+        value() = delete;
 
-        template < typename Class >
-        ctor_info make_info() const;
-    private:
+        value(value&&) = default;
+        value& operator=(value&&) = default;
+
+        value(const value&) = default;
+        value& operator=(const value&) = default;
     };
-}
-
-namespace meta_hpp
-{
-    template < typename... Args >
-    template < typename Class >
-    inline ctor_info ctor_<Args...>::make_info() const {
-        return ctor_info{};
-    }
 }
