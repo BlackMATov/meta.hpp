@@ -9,6 +9,11 @@
 #include "../meta_fwd.hpp"
 #include "../meta_utilities.hpp"
 
+#include "class_info.hpp"
+#include "data_info.hpp"
+#include "enum_info.hpp"
+#include "function_info.hpp"
+
 namespace meta_hpp
 {
     class namespace_info final {
@@ -19,6 +24,24 @@ namespace meta_hpp
         explicit operator bool() const noexcept;
 
         const std::string& name() const noexcept;
+    public:
+        template < typename F >
+        void visit(F&& f) const;
+
+        template < typename F >
+        void each_class(F&& f) const;
+
+        template < typename F >
+        void each_data(F&& f) const;
+
+        template < typename F >
+        void each_enum(F&& f) const;
+
+        template < typename F >
+        void each_function(F&& f) const;
+
+        template < typename F >
+        void each_namespace(F&& f) const;
     private:
         friend class namespace_;
 
@@ -33,6 +56,11 @@ namespace meta_hpp
 {
     struct namespace_info::state final {
         std::string name;
+        class_info_map classes;
+        data_info_map datas;
+        enum_info_map enums;
+        function_info_map functions;
+        namespace_info_map namespaces;
     };
 }
 
@@ -48,12 +76,62 @@ namespace meta_hpp
     }
 
     inline const std::string& namespace_info::name() const noexcept {
-        assert(state_);
         return state_->name;
     }
+}
 
+namespace meta_hpp
+{
+    template < typename F >
+    void namespace_info::visit(F&& f) const {
+        each_class(f);
+        each_data(f);
+        each_enum(f);
+        each_function(f);
+        each_namespace(f);
+    }
+
+    template < typename F >
+    void namespace_info::each_class(F&& f) const {
+        for ( auto&& name_info : state_->classes ) {
+            std::invoke(f, name_info.second);
+        }
+    }
+
+    template < typename F >
+    void namespace_info::each_data(F&& f) const {
+        for ( auto&& name_info : state_->datas ) {
+            std::invoke(f, name_info.second);
+        }
+    }
+
+    template < typename F >
+    void namespace_info::each_enum(F&& f) const {
+        for ( auto&& name_info : state_->enums ) {
+            std::invoke(f, name_info.second);
+        }
+    }
+
+    template < typename F >
+    void namespace_info::each_function(F&& f) const {
+        for ( auto&& name_info : state_->functions ) {
+            std::invoke(f, name_info.second);
+        }
+    }
+
+    template < typename F >
+    void namespace_info::each_namespace(F&& f) const {
+        for ( auto&& name_info : state_->namespaces ) {
+            std::invoke(f, name_info.second);
+        }
+    }
+}
+
+namespace meta_hpp
+{
     inline namespace_info::namespace_info(std::string name)
     : state_{std::make_shared<state>(state{
-        std::move(name)
+        std::move(name),
+        {}, {}, {}, {}, {}
     })} {}
 }

@@ -9,6 +9,8 @@
 #include "../meta_fwd.hpp"
 #include "../meta_utilities.hpp"
 
+#include "data_info.hpp"
+
 namespace meta_hpp
 {
     class evalue_info final {
@@ -20,6 +22,12 @@ namespace meta_hpp
 
         const std::string& name() const noexcept;
         const class value& value() const noexcept;
+    public:
+        template < typename F >
+        void visit(F&& f) const;
+
+        template < typename F >
+        void each_data(F&& f) const;
     private:
         template < typename Enum > friend class evalue_;
 
@@ -36,6 +44,7 @@ namespace meta_hpp
     struct evalue_info::state final {
         std::string name;
         class value value;
+        data_info_map datas;
     };
 }
 
@@ -51,19 +60,36 @@ namespace meta_hpp
     }
 
     inline const std::string& evalue_info::name() const noexcept {
-        assert(state_);
         return state_->name;
     }
 
     inline const class value& evalue_info::value() const noexcept {
-        assert(state_);
         return state_->value;
     }
+}
 
+namespace meta_hpp
+{
+    template < typename F >
+    void evalue_info::visit(F&& f) const {
+        each_data(f);
+    }
+
+    template < typename F >
+    void evalue_info::each_data(F&& f) const {
+        for ( auto&& name_info : state_->datas ) {
+            std::invoke(f, name_info.second);
+        }
+    }
+}
+
+namespace meta_hpp
+{
     template < typename Enum >
     inline evalue_info::evalue_info(std::string name, Enum value)
     : state_{std::make_shared<state>(state{
         std::move(name),
-        std::move(value)
+        std::move(value),
+        {}
     })} {}
 }

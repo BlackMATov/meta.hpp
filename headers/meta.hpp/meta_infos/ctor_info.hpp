@@ -9,6 +9,8 @@
 #include "../meta_fwd.hpp"
 #include "../meta_utilities.hpp"
 
+#include "data_info.hpp"
+
 namespace meta_hpp
 {
     class ctor_info final {
@@ -17,6 +19,12 @@ namespace meta_hpp
 
         void merge(const ctor_info& other);
         explicit operator bool() const noexcept;
+    public:
+        template < typename F >
+        void visit(F&& f) const;
+
+        template < typename F >
+        void each_data(F&& f) const;
     private:
         template < typename... Args > friend class ctor_;
 
@@ -31,6 +39,7 @@ namespace meta_hpp
 namespace meta_hpp
 {
     struct ctor_info::state final {
+        data_info_map datas;
     };
 }
 
@@ -44,9 +53,28 @@ namespace meta_hpp
     inline ctor_info::operator bool() const noexcept {
         return !!state_;
     }
+}
 
+namespace meta_hpp
+{
+    template < typename F >
+    void ctor_info::visit(F&& f) const {
+        each_data(f);
+    }
+
+    template < typename F >
+    void ctor_info::each_data(F&& f) const {
+        for ( auto&& name_info : state_->datas ) {
+            std::invoke(f, name_info.second);
+        }
+    }
+}
+
+namespace meta_hpp
+{
     template < typename Class, typename... Args >
     inline ctor_info::ctor_info(typename_arg_t<Class>, typename_arg_t<Args...>)
     : state_{std::make_shared<state>(state{
+        {}
     })} {}
 }

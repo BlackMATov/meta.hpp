@@ -9,6 +9,8 @@
 #include "../meta_fwd.hpp"
 #include "../meta_utilities.hpp"
 
+#include "data_info.hpp"
+
 namespace meta_hpp
 {
     class method_info final {
@@ -19,6 +21,12 @@ namespace meta_hpp
         explicit operator bool() const noexcept;
 
         const std::string& name() const noexcept;
+    public:
+        template < typename F >
+        void visit(F&& f) const;
+
+        template < typename F >
+        void each_data(F&& f) const;
     private:
         template < typename Method > friend class method_;
 
@@ -34,6 +42,7 @@ namespace meta_hpp
 {
     struct method_info::state final {
         std::string name;
+        data_info_map datas;
     };
 }
 
@@ -49,14 +58,32 @@ namespace meta_hpp
     }
 
     inline const std::string& method_info::name() const noexcept {
-        assert(state_);
         return state_->name;
     }
+}
 
+namespace meta_hpp
+{
+    template < typename F >
+    void method_info::visit(F&& f) const {
+        each_data(f);
+    }
+
+    template < typename F >
+    void method_info::each_data(F&& f) const {
+        for ( auto&& name_info : state_->datas ) {
+            std::invoke(f, name_info.second);
+        }
+    }
+}
+
+namespace meta_hpp
+{
     template < typename Method >
     inline method_info::method_info(std::string name, Method instance)
     : state_{std::make_shared<state>(state{
-        std::move(name)
+        std::move(name),
+        {}
     })} {
         (void)instance;
     }
