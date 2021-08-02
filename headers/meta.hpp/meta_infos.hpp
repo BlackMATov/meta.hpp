@@ -6,5 +6,14 @@
 
 #pragma once
 
-#include <meta.hpp/meta_all.hpp>
-#include "doctest/doctest.hpp"
+#include "meta_fwd.hpp"
+
+#include "meta_infos/class_info.hpp"
+#include "meta_infos/ctor_info.hpp"
+#include "meta_infos/data_info.hpp"
+#include "meta_infos/enum_info.hpp"
+#include "meta_infos/evalue_info.hpp"
+#include "meta_infos/function_info.hpp"
+#include "meta_infos/member_info.hpp"
+#include "meta_infos/method_info.hpp"
+#include "meta_infos/namespace_info.hpp"

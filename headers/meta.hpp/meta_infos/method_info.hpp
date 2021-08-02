@@ -6,5 +6,8 @@
 
 #pragma once
 
-#include <meta.hpp/meta_all.hpp>
-#include "doctest/doctest.hpp"
+namespace meta_hpp
+{
+    class method_info final {
+    };
+}

@@ -6,5 +6,9 @@
 
 #pragma once
 
-#include <meta.hpp/meta_all.hpp>
-#include "doctest/doctest.hpp"
+namespace meta_hpp
+{
+    template < typename Class >
+    class class_ final {
+    };
+}

@@ -4,7 +4,11 @@
  * Copyright (C) 2021, by Matvey Cherevko (blackmatov@gmail.com)
  ******************************************************************************/
 
-#pragma once
+#include "_infos_fwd.hpp"
 
-#include <meta.hpp/meta_all.hpp>
-#include "doctest/doctest.hpp"
+namespace
+{
+}
+
+TEST_CASE("features/infos/data") {
+}

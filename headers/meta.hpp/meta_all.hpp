@@ -6,5 +6,6 @@
 
 #pragma once
 
-#include <meta.hpp/meta_all.hpp>
-#include "doctest/doctest.hpp"
+#include "meta_fwd.hpp"
+#include "meta_infos.hpp"
+#include "meta_registry.hpp"
