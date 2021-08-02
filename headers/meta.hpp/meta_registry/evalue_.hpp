@@ -34,6 +34,6 @@ namespace meta_hpp
 
     template < typename Enum >
     inline evalue_info evalue_<Enum>::make_info() const {
-        return evalue_info{};
+        return evalue_info{name_, value_};
     }
 }

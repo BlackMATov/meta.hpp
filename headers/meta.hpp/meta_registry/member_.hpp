@@ -34,6 +34,6 @@ namespace meta_hpp
 
     template < typename Member >
     inline member_info member_<Member>::make_info() const {
-        return member_info{};
+        return member_info{name_, instance_};
     }
 }

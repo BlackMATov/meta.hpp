@@ -12,5 +12,48 @@
 namespace meta_hpp
 {
     class enum_info final {
+    public:
+        enum_info() = default;
+
+        void merge(const enum_info& other);
+        explicit operator bool() const noexcept;
+
+        const std::string& name() const noexcept;
+    private:
+        template < typename Enum > friend class enum_;
+
+        explicit enum_info(std::string name);
+    private:
+        struct state;
+        std::shared_ptr<state> state_;
     };
+}
+
+namespace meta_hpp
+{
+    struct enum_info::state final {
+        std::string name;
+    };
+}
+
+namespace meta_hpp
+{
+    inline void enum_info::merge(const enum_info& other) {
+        (void)other;
+        ///TODO: implme
+    }
+
+    inline enum_info::operator bool() const noexcept {
+        return !!state_;
+    }
+
+    inline const std::string& enum_info::name() const noexcept {
+        assert(state_);
+        return state_->name;
+    }
+
+    inline enum_info::enum_info(std::string name)
+    : state_{std::make_shared<state>(state{
+        std::move(name)
+    })} {}
 }

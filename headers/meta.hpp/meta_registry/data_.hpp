@@ -31,6 +31,6 @@ namespace meta_hpp
     , value_{std::move(value)} {}
 
     inline data_info data_::make_info() const {
-        return data_info{};
+        return data_info{name_, value_};
     }
 }

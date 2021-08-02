@@ -34,6 +34,6 @@ namespace meta_hpp
 
     template < typename Method >
     inline method_info method_<Method>::make_info() const {
-        return method_info{};
+        return method_info{name_, instance_};
     }
 }

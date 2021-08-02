@@ -52,7 +52,6 @@ namespace meta_hpp
         void add_(const std::string& prefix, ...) = delete;
     private:
         void add_info_(const std::string& prefix, const class_info& info);
-        void add_info_(const std::string& prefix, const ctor_info& info);
         void add_info_(const std::string& prefix, const data_info& info);
         void add_info_(const std::string& prefix, const enum_info& info);
         void add_info_(const std::string& prefix, const evalue_info& info);
@@ -70,6 +69,41 @@ namespace meta_hpp
         method_info_map methods_;
         namespace_info_map namespaces_;
     };
+}
+
+namespace meta_hpp
+{
+    inline class_info registry::get_class_by_name(std::string_view name) const noexcept {
+        return detail::find_or_default(classes_, name);
+    }
+
+    inline data_info registry::get_data_by_name(std::string_view name) const noexcept {
+        return detail::find_or_default(datas_, name);
+    }
+
+    inline enum_info registry::get_enum_by_name(std::string_view name) const noexcept {
+        return detail::find_or_default(enums_, name);
+    }
+
+    inline evalue_info registry::get_evalue_by_name(std::string_view name) const noexcept {
+        return detail::find_or_default(evalues_, name);
+    }
+
+    inline function_info registry::get_function_by_name(std::string_view name) const noexcept {
+        return detail::find_or_default(functions_, name);
+    }
+
+    inline member_info registry::get_member_by_name(std::string_view name) const noexcept {
+        return detail::find_or_default(members_, name);
+    }
+
+    inline method_info registry::get_method_by_name(std::string_view name) const noexcept {
+        return detail::find_or_default(methods_, name);
+    }
+
+    inline namespace_info registry::get_namespace_by_name(std::string_view name) const noexcept {
+        return detail::find_or_default(namespaces_, name);
+    }
 }
 
 namespace meta_hpp
@@ -120,47 +154,42 @@ namespace meta_hpp
 namespace meta_hpp
 {
     inline void registry::add_info_(const std::string& prefix, const class_info& info) {
-        (void)prefix;
-        (void)info;
-    }
-
-    inline void registry::add_info_(const std::string& prefix, const ctor_info& info) {
-        (void)prefix;
-        (void)info;
+        std::string name = prefix.empty() ? info.name() : prefix + "::" + info.name();
+        detail::merge_with(classes_, name, info, &class_info::merge);
     }
 
     inline void registry::add_info_(const std::string& prefix, const data_info& info) {
-        (void)prefix;
-        (void)info;
+        std::string name = prefix.empty() ? info.name() : prefix + "::" + info.name();
+        detail::merge_with(datas_, name, info, &data_info::merge);
     }
 
     inline void registry::add_info_(const std::string& prefix, const enum_info& info) {
-        (void)prefix;
-        (void)info;
+        std::string name = prefix.empty() ? info.name() : prefix + "::" + info.name();
+        detail::merge_with(enums_, name, info, &enum_info::merge);
     }
 
     inline void registry::add_info_(const std::string& prefix, const evalue_info& info) {
-        (void)prefix;
-        (void)info;
+        std::string name = prefix.empty() ? info.name() : prefix + "::" + info.name();
+        detail::merge_with(evalues_, name, info, &evalue_info::merge);
     }
 
     inline void registry::add_info_(const std::string& prefix, const function_info& info) {
-        (void)prefix;
-        (void)info;
+        std::string name = prefix.empty() ? info.name() : prefix + "::" + info.name();
+        detail::merge_with(functions_, name, info, &function_info::merge);
     }
 
     inline void registry::add_info_(const std::string& prefix, const member_info& info) {
-        (void)prefix;
-        (void)info;
+        std::string name = prefix.empty() ? info.name() : prefix + "::" + info.name();
+        detail::merge_with(members_, name, info, &member_info::merge);
     }
 
     inline void registry::add_info_(const std::string& prefix, const method_info& info) {
-        (void)prefix;
-        (void)info;
+        std::string name = prefix.empty() ? info.name() : prefix + "::" + info.name();
+        detail::merge_with(methods_, name, info, &method_info::merge);
     }
 
     inline void registry::add_info_(const std::string& prefix, const namespace_info& info) {
-        (void)prefix;
-        (void)info;
+        std::string name = prefix.empty() ? info.name() : prefix + "::" + info.name();
+        detail::merge_with(namespaces_, name, info, &namespace_info::merge);
     }
 }

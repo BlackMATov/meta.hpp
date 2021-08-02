@@ -32,6 +32,6 @@ namespace meta_hpp
 
     template < typename Class >
     inline class_info class_<Class>::make_info() const {
-        return class_info{};
+        return class_info{name_};
     }
 }

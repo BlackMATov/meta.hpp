@@ -29,6 +29,6 @@ namespace meta_hpp
     template < typename... Args >
     template < typename Class >
     inline ctor_info ctor_<Args...>::make_info() const {
-        return ctor_info{};
+        return ctor_info{typename_arg<Class>, typename_arg<Args...>};
     }
 }

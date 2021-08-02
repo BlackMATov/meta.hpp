@@ -68,3 +68,37 @@ namespace meta_hpp
     using method_info_map = info_map<std::string, method_info>;
     using namespace_info_map = info_map<std::string, namespace_info>;
 }
+
+namespace meta_hpp
+{
+    template < typename... Args >
+    struct typename_arg_t {};
+
+    template < typename... Args >
+    inline typename_arg_t<Args...> typename_arg;
+}
+
+namespace meta_hpp::detail
+{
+    template < typename K, typename V, typename C, typename A, typename K2, typename U >
+    V find_or(const std::map<K, V, C, A>& src, K2&& key, U&& def) {
+        if ( auto iter = src.find(std::forward<K2>(key)); iter != src.end() ) {
+            return iter->second;
+        }
+        return std::forward<U>(def);
+    }
+
+    template < typename K, typename V, typename C, typename A, typename K2 >
+    V find_or_default(const std::map<K, V, C, A>& src, K2&& key) {
+        return find_or(src, std::forward<K2>(key), V{});
+    }
+
+    template < typename K, typename V, typename C, typename A, typename K2, typename V2, typename F >
+    void merge_with(std::map<K, V, C, A>& dst, K2&& key, V2&& value, F&& f) {
+        if ( auto iter = dst.find(key); iter != dst.end() ) {
+            std::invoke(std::forward<F>(f), iter->second, std::forward<V2>(value));
+        } else {
+            dst.emplace(std::forward<K2>(key), std::forward<V2>(value));
+        }
+    }
+}

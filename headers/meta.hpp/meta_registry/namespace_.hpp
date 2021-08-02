@@ -29,6 +29,6 @@ namespace meta_hpp
     : name_{std::move(name)} {}
 
     inline namespace_info namespace_::make_info() const {
-        return namespace_info{};
+        return namespace_info{name_};
     }
 }

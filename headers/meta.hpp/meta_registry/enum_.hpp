@@ -32,6 +32,6 @@ namespace meta_hpp
 
     template < typename Enum >
     inline enum_info enum_<Enum>::make_info() const {
-        return enum_info{};
+        return enum_info{name_};
     }
 }

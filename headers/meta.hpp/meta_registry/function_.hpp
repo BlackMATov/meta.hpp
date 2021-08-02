@@ -34,6 +34,6 @@ namespace meta_hpp
 
     template < typename Function >
     inline function_info function_<Function>::make_info() const {
-        return function_info{};
+        return function_info{name_, instance_};
     }
 }
