@@ -55,6 +55,21 @@ namespace meta_hpp
 
 namespace meta_hpp
 {
+    class arithmetic_type;
+    class array_type;
+    class class_type;
+    class ctor_type;
+    class enum_type;
+    class function_type;
+    class member_type;
+    class method_type;
+    class pointer_type;
+    class reference_type;
+    class void_type;
+}
+
+namespace meta_hpp
+{
     template < typename K, typename V >
     using info_map = std::map<K, V, std::less<>>;
 
