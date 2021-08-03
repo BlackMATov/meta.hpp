@@ -52,6 +52,7 @@ namespace meta_hpp
     private:
         struct add_info_f;
         void add_info_(const std::string& prefix, const class_info& info);
+        void add_info_(const std::string& prefix, const ctor_info& info);
         void add_info_(const std::string& prefix, const data_info& info);
         void add_info_(const std::string& prefix, const enum_info& info);
         void add_info_(const std::string& prefix, const evalue_info& info);
@@ -59,6 +60,7 @@ namespace meta_hpp
         void add_info_(const std::string& prefix, const member_info& info);
         void add_info_(const std::string& prefix, const method_info& info);
         void add_info_(const std::string& prefix, const namespace_info& info);
+        void add_info_(const std::string& prefix, ...) = delete;
     private:
         class_info_map classes_;
         data_info_map datas_;
@@ -155,56 +157,61 @@ namespace meta_hpp
 {
     struct registry::add_info_f final {
         template < typename Info >
-        void operator()(registry& self, const std::string& prefix, Info&& info) {
+        void operator()(registry& self, const std::string& prefix, Info&& info) const {
             self.add_info_(prefix, std::forward<Info>(info));
         }
     };
 
     inline void registry::add_info_(const std::string& prefix, const class_info& info) {
         std::string name = prefix.empty() ? info.name() : prefix + "::" + info.name();
-        info.visit(curry(add_info_f{}, *this, name));
+        info.visit(curry(add_info_f{}, std::ref(*this), name));
         detail::merge_with(classes_, name, info, &class_info::merge);
+    }
+
+    inline void registry::add_info_(const std::string& prefix, const ctor_info& info) {
+        (void)prefix;
+        (void)info;
     }
 
     inline void registry::add_info_(const std::string& prefix, const data_info& info) {
         std::string name = prefix.empty() ? info.name() : prefix + "::" + info.name();
-        info.visit(curry(add_info_f{}, *this, name));
+        info.visit(curry(add_info_f{}, std::ref(*this), name));
         detail::merge_with(datas_, name, info, &data_info::merge);
     }
 
     inline void registry::add_info_(const std::string& prefix, const enum_info& info) {
         std::string name = prefix.empty() ? info.name() : prefix + "::" + info.name();
-        info.visit(curry(add_info_f{}, *this, name));
+        info.visit(curry(add_info_f{}, std::ref(*this), name));
         detail::merge_with(enums_, name, info, &enum_info::merge);
     }
 
     inline void registry::add_info_(const std::string& prefix, const evalue_info& info) {
         std::string name = prefix.empty() ? info.name() : prefix + "::" + info.name();
-        info.visit(curry(add_info_f{}, *this, name));
+        info.visit(curry(add_info_f{}, std::ref(*this), name));
         detail::merge_with(evalues_, name, info, &evalue_info::merge);
     }
 
     inline void registry::add_info_(const std::string& prefix, const function_info& info) {
         std::string name = prefix.empty() ? info.name() : prefix + "::" + info.name();
-        info.visit(curry(add_info_f{}, *this, name));
+        info.visit(curry(add_info_f{}, std::ref(*this), name));
         detail::merge_with(functions_, name, info, &function_info::merge);
     }
 
     inline void registry::add_info_(const std::string& prefix, const member_info& info) {
         std::string name = prefix.empty() ? info.name() : prefix + "::" + info.name();
-        info.visit(curry(add_info_f{}, *this, name));
+        info.visit(curry(add_info_f{}, std::ref(*this), name));
         detail::merge_with(members_, name, info, &member_info::merge);
     }
 
     inline void registry::add_info_(const std::string& prefix, const method_info& info) {
         std::string name = prefix.empty() ? info.name() : prefix + "::" + info.name();
-        info.visit(curry(add_info_f{}, *this, name));
+        info.visit(curry(add_info_f{}, std::ref(*this), name));
         detail::merge_with(methods_, name, info, &method_info::merge);
     }
 
     inline void registry::add_info_(const std::string& prefix, const namespace_info& info) {
         std::string name = prefix.empty() ? info.name() : prefix + "::" + info.name();
-        info.visit(curry(add_info_f{}, *this, name));
+        info.visit(curry(add_info_f{}, std::ref(*this), name));
         detail::merge_with(namespaces_, name, info, &namespace_info::merge);
     }
 }

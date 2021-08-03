@@ -6,16 +6,7 @@
 
 #pragma once
 
-#include "_types_fwd.hpp"
+#include "../meta_fwd.hpp"
+#include "../meta_infos.hpp"
+#include "../meta_utilities.hpp"
 
-namespace meta_hpp
-{
-    class arithmetic_type final : public base_type {
-    public:
-        template < typename T >
-        explicit arithmetic_type(typename_arg_t<T>)
-        : base_type{typename_arg<T>} {
-            static_assert(std::is_arithmetic_v<T>);
-        }
-    };
-}

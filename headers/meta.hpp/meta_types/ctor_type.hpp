@@ -14,6 +14,9 @@ namespace meta_hpp
     public:
         template < typename Class, typename... Args >
         explicit ctor_type(typename_arg_t<Class>, typename_arg_t<Args...>)
-        : base_type{typename_arg<Class, Args...>} {}
+        : base_type{typename_arg<Class, Args...>} {
+            static_assert(std::is_class_v<Class>);
+            static_assert(std::is_constructible_v<Class, Args...>);
+        }
     };
 }

@@ -6,10 +6,9 @@
 
 #pragma once
 
-#include "../meta_fwd.hpp"
-#include "../meta_utilities.hpp"
+#include "_registry_fwd.hpp"
 
-#include "../meta_infos/ctor_info.hpp"
+#include "data_.hpp"
 
 namespace meta_hpp
 {
@@ -20,7 +19,14 @@ namespace meta_hpp
 
         template < typename Class >
         ctor_info make_info() const;
+    public:
+        template < typename... Internals >
+        ctor_& operator()(Internals&&...internals);
     private:
+        void add_(const data_& internal);
+        void add_(...) = delete;
+    private:
+        data_info_map datas_;
     };
 }
 
@@ -29,6 +35,24 @@ namespace meta_hpp
     template < typename... Args >
     template < typename Class >
     inline ctor_info ctor_<Args...>::make_info() const {
-        return ctor_info{typename_arg<Class>, typename_arg<Args...>};
+        ctor_info info{typename_arg<Class>, typename_arg<Args...>};
+        info.state_->datas.insert(datas_.begin(), datas_.end());
+        return info;
+    }
+
+    template < typename... Args >
+    template < typename... Internals >
+    inline ctor_<Args...>& ctor_<Args...>::operator()(Internals&&...internals) {
+        (add_(std::forward<Internals>(internals)), ...);
+        return *this;
+    }
+}
+
+namespace meta_hpp
+{
+    template < typename... Args >
+    inline void ctor_<Args...>::add_(const data_& internal) {
+        auto info = internal.make_info();
+        detail::merge_with(datas_, info.name(), info, &data_info::merge);
     }
 }

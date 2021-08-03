@@ -6,10 +6,9 @@
 
 #pragma once
 
-#include "../meta_fwd.hpp"
-#include "../meta_utilities.hpp"
+#include "_registry_fwd.hpp"
 
-#include "../meta_infos/evalue_info.hpp"
+#include "data_.hpp"
 
 namespace meta_hpp
 {
@@ -19,9 +18,16 @@ namespace meta_hpp
         explicit evalue_(std::string name, Enum value);
 
         evalue_info make_info() const;
+    public:
+        template < typename... Internals >
+        evalue_& operator()(Internals&&...internals);
+    private:
+        void add_(const data_& internal);
+        void add_(...) = delete;
     private:
         std::string name_;
         Enum value_;
+        data_info_map datas_;
     };
 }
 
@@ -34,6 +40,24 @@ namespace meta_hpp
 
     template < typename Enum >
     inline evalue_info evalue_<Enum>::make_info() const {
-        return evalue_info{name_, value_};
+        evalue_info info{name_, value_};
+        info.state_->datas.insert(datas_.begin(), datas_.end());
+        return info;
+    }
+
+    template < typename Enum >
+    template < typename... Internals >
+    inline evalue_<Enum>& evalue_<Enum>::operator()(Internals&&...internals) {
+        (add_(std::forward<Internals>(internals)), ...);
+        return *this;
+    }
+}
+
+namespace meta_hpp
+{
+    template < typename Enum >
+    inline void evalue_<Enum>::add_(const data_& internal) {
+        auto info = internal.make_info();
+        detail::merge_with(datas_, info.name(), info, &data_info::merge);
     }
 }

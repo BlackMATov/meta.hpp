@@ -14,6 +14,8 @@ namespace meta_hpp
     public:
         template < typename T >
         explicit enum_type(typename_arg_t<T>)
-        : base_type{typename_arg<T>} {}
+        : base_type{typename_arg<T>} {
+            static_assert(std::is_enum_v<T>);
+        }
     };
 }

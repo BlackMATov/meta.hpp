@@ -6,10 +6,7 @@
 
 #pragma once
 
-#include "../meta_fwd.hpp"
-#include "../meta_utilities.hpp"
-
-#include "../meta_infos/data_info.hpp"
+#include "_registry_fwd.hpp"
 
 namespace meta_hpp
 {
@@ -18,9 +15,16 @@ namespace meta_hpp
         explicit data_(std::string name, class value value);
 
         data_info make_info() const;
+    public:
+        template < typename... Internals >
+        data_& operator()(Internals&&...internals);
+    private:
+        void add_(const data_& internal);
+        void add_(...) = delete;
     private:
         std::string name_;
         class value value_;
+        data_info_map datas_;
     };
 }
 
@@ -31,6 +35,22 @@ namespace meta_hpp
     , value_{std::move(value)} {}
 
     inline data_info data_::make_info() const {
-        return data_info{name_, value_};
+        data_info info{name_, value_};
+        info.state_->datas.insert(datas_.begin(), datas_.end());
+        return info;
+    }
+
+    template < typename... Internals >
+    inline data_& data_::operator()(Internals&&...internals) {
+        (add_(std::forward<Internals>(internals)), ...);
+        return *this;
+    }
+}
+
+namespace meta_hpp
+{
+    inline void data_::add_(const data_& internal) {
+        auto info = internal.make_info();
+        detail::merge_with(datas_, info.name(), info, &data_info::merge);
     }
 }
