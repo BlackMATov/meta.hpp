@@ -37,12 +37,12 @@ TEST_CASE("features/infos/function") {
         function_{"arg_crref", &arg_crref}
     );
 
-    const function_info arg_copy_info = db.get_function_by_name("arg_copy");
-    const function_info arg_ref_info = db.get_function_by_name("arg_ref");
-    const function_info arg_cref_info = db.get_function_by_name("arg_cref");
-    const function_info arg_rref_info = db.get_function_by_name("arg_rref");
-    const function_info arg_crref_info = db.get_function_by_name("arg_crref");
-    const function_info arg_not_exist_info = db.get_function_by_name("arg_not_exist");
+    const function_info arg_copy_info = db.get_function_by_path("arg_copy");
+    const function_info arg_ref_info = db.get_function_by_path("arg_ref");
+    const function_info arg_cref_info = db.get_function_by_path("arg_cref");
+    const function_info arg_rref_info = db.get_function_by_path("arg_rref");
+    const function_info arg_crref_info = db.get_function_by_path("arg_crref");
+    const function_info arg_not_exist_info = db.get_function_by_path("arg_not_exist");
 
     REQUIRE(arg_copy_info);
     REQUIRE(arg_ref_info);

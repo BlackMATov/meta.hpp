@@ -41,6 +41,12 @@ namespace meta_hpp
 
         template < typename F >
         void each_namespace(F&& f) const;
+
+        class_info get_class_by_name(std::string_view name) const noexcept;
+        data_info get_data_by_name(std::string_view name) const noexcept;
+        enum_info get_enum_by_name(std::string_view name) const noexcept;
+        function_info get_function_by_name(std::string_view name) const noexcept;
+        namespace_info get_namespace_by_name(std::string_view name) const noexcept;
     private:
         friend class namespace_;
 
@@ -123,6 +129,26 @@ namespace meta_hpp
         for ( auto&& name_info : state_->namespaces ) {
             std::invoke(f, name_info.second);
         }
+    }
+
+    inline class_info namespace_info::get_class_by_name(std::string_view name) const noexcept {
+        return detail::find_or_default(state_->classes, name);
+    }
+
+    inline data_info namespace_info::get_data_by_name(std::string_view name) const noexcept {
+        return detail::find_or_default(state_->datas, name);
+    }
+
+    inline enum_info namespace_info::get_enum_by_name(std::string_view name) const noexcept {
+        return detail::find_or_default(state_->enums, name);
+    }
+
+    inline function_info namespace_info::get_function_by_name(std::string_view name) const noexcept {
+        return detail::find_or_default(state_->functions, name);
+    }
+
+    inline namespace_info namespace_info::get_namespace_by_name(std::string_view name) const noexcept {
+        return detail::find_or_default(state_->namespaces, name);
     }
 }
 

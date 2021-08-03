@@ -24,14 +24,14 @@ namespace meta_hpp
     public:
         registry() = default;
 
-        class_info get_class_by_name(std::string_view name) const noexcept;
-        data_info get_data_by_name(std::string_view name) const noexcept;
-        enum_info get_enum_by_name(std::string_view name) const noexcept;
-        evalue_info get_evalue_by_name(std::string_view name) const noexcept;
-        function_info get_function_by_name(std::string_view name) const noexcept;
-        member_info get_member_by_name(std::string_view name) const noexcept;
-        method_info get_method_by_name(std::string_view name) const noexcept;
-        namespace_info get_namespace_by_name(std::string_view name) const noexcept;
+        class_info get_class_by_path(std::string_view path) const noexcept;
+        data_info get_data_by_path(std::string_view path) const noexcept;
+        enum_info get_enum_by_path(std::string_view path) const noexcept;
+        evalue_info get_evalue_by_path(std::string_view path) const noexcept;
+        function_info get_function_by_path(std::string_view path) const noexcept;
+        member_info get_member_by_path(std::string_view path) const noexcept;
+        method_info get_method_by_path(std::string_view path) const noexcept;
+        namespace_info get_namespace_by_path(std::string_view path) const noexcept;
     public:
         template < typename... Internals >
         registry& operator()(Internals&&... internals);
@@ -75,36 +75,36 @@ namespace meta_hpp
 
 namespace meta_hpp
 {
-    inline class_info registry::get_class_by_name(std::string_view name) const noexcept {
-        return detail::find_or_default(classes_, name);
+    inline class_info registry::get_class_by_path(std::string_view path) const noexcept {
+        return detail::find_or_default(classes_, path);
     }
 
-    inline data_info registry::get_data_by_name(std::string_view name) const noexcept {
-        return detail::find_or_default(datas_, name);
+    inline data_info registry::get_data_by_path(std::string_view path) const noexcept {
+        return detail::find_or_default(datas_, path);
     }
 
-    inline enum_info registry::get_enum_by_name(std::string_view name) const noexcept {
-        return detail::find_or_default(enums_, name);
+    inline enum_info registry::get_enum_by_path(std::string_view path) const noexcept {
+        return detail::find_or_default(enums_, path);
     }
 
-    inline evalue_info registry::get_evalue_by_name(std::string_view name) const noexcept {
-        return detail::find_or_default(evalues_, name);
+    inline evalue_info registry::get_evalue_by_path(std::string_view path) const noexcept {
+        return detail::find_or_default(evalues_, path);
     }
 
-    inline function_info registry::get_function_by_name(std::string_view name) const noexcept {
-        return detail::find_or_default(functions_, name);
+    inline function_info registry::get_function_by_path(std::string_view path) const noexcept {
+        return detail::find_or_default(functions_, path);
     }
 
-    inline member_info registry::get_member_by_name(std::string_view name) const noexcept {
-        return detail::find_or_default(members_, name);
+    inline member_info registry::get_member_by_path(std::string_view path) const noexcept {
+        return detail::find_or_default(members_, path);
     }
 
-    inline method_info registry::get_method_by_name(std::string_view name) const noexcept {
-        return detail::find_or_default(methods_, name);
+    inline method_info registry::get_method_by_path(std::string_view path) const noexcept {
+        return detail::find_or_default(methods_, path);
     }
 
-    inline namespace_info registry::get_namespace_by_name(std::string_view name) const noexcept {
-        return detail::find_or_default(namespaces_, name);
+    inline namespace_info registry::get_namespace_by_path(std::string_view path) const noexcept {
+        return detail::find_or_default(namespaces_, path);
     }
 }
 

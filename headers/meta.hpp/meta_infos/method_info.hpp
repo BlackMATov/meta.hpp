@@ -27,6 +27,8 @@ namespace meta_hpp
 
         template < typename F >
         void each_data(F&& f) const;
+
+        data_info get_data_by_name(std::string_view name) const noexcept;
     private:
         template < typename Method > friend class method_;
 
@@ -79,6 +81,10 @@ namespace meta_hpp
         for ( auto&& name_info : state_->datas ) {
             std::invoke(f, name_info.second);
         }
+    }
+
+    inline data_info method_info::get_data_by_name(std::string_view name) const noexcept {
+        return detail::find_or_default(state_->datas, name);
     }
 }
 

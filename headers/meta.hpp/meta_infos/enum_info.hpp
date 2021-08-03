@@ -31,6 +31,9 @@ namespace meta_hpp
 
         template < typename F >
         void each_evalue(F&& f) const;
+
+        data_info get_data_by_name(std::string_view name) const noexcept;
+        evalue_info get_evalue_by_name(std::string_view name) const noexcept;
     private:
         template < typename Enum > friend class enum_;
 
@@ -92,6 +95,14 @@ namespace meta_hpp
         for ( auto&& name_info : state_->evalues ) {
             std::invoke(f, name_info.second);
         }
+    }
+
+    inline data_info enum_info::get_data_by_name(std::string_view name) const noexcept {
+        return detail::find_or_default(state_->datas, name);
+    }
+
+    inline evalue_info enum_info::get_evalue_by_name(std::string_view name) const noexcept {
+        return detail::find_or_default(state_->evalues, name);
     }
 }
 
