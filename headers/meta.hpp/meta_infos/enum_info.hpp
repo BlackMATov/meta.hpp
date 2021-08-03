@@ -6,8 +6,7 @@
 
 #pragma once
 
-#include "../meta_fwd.hpp"
-#include "../meta_utilities.hpp"
+#include "_infos_fwd.hpp"
 
 #include "data_info.hpp"
 #include "evalue_info.hpp"
@@ -22,6 +21,7 @@ namespace meta_hpp
         explicit operator bool() const noexcept;
 
         const std::string& name() const noexcept;
+        const enum_type& type() const noexcept;
     public:
         template < typename F >
         void visit(F&& f) const;
@@ -34,7 +34,8 @@ namespace meta_hpp
     private:
         template < typename Enum > friend class enum_;
 
-        explicit enum_info(std::string name);
+        template < typename Enum >
+        explicit enum_info(typename_arg_t<Enum>, std::string name);
     private:
         struct state;
         std::shared_ptr<state> state_;
@@ -45,6 +46,7 @@ namespace meta_hpp
 {
     struct enum_info::state final {
         std::string name;
+        enum_type type;
         data_info_map datas;
         evalue_info_map evalues;
     };
@@ -63,6 +65,10 @@ namespace meta_hpp
 
     inline const std::string& enum_info::name() const noexcept {
         return state_->name;
+    }
+
+    inline const enum_type& enum_info::type() const noexcept {
+        return state_->type;
     }
 }
 
@@ -91,9 +97,11 @@ namespace meta_hpp
 
 namespace meta_hpp
 {
-    inline enum_info::enum_info(std::string name)
+    template < typename Enum >
+    inline enum_info::enum_info(typename_arg_t<Enum>, std::string name)
     : state_{std::make_shared<state>(state{
         std::move(name),
+        enum_type{typename_arg<Enum>},
         {}, {}
     })} {}
 }

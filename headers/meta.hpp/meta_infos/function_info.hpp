@@ -6,8 +6,7 @@
 
 #pragma once
 
-#include "../meta_fwd.hpp"
-#include "../meta_utilities.hpp"
+#include "_infos_fwd.hpp"
 
 #include "data_info.hpp"
 
@@ -21,6 +20,7 @@ namespace meta_hpp
         explicit operator bool() const noexcept;
 
         const std::string& name() const noexcept;
+        const function_type& type() const noexcept;
     public:
         template < typename F >
         void visit(F&& f) const;
@@ -42,6 +42,7 @@ namespace meta_hpp
 {
     struct function_info::state final {
         std::string name;
+        function_type type;
         data_info_map datas;
     };
 }
@@ -59,6 +60,10 @@ namespace meta_hpp
 
     inline const std::string& function_info::name() const noexcept {
         return state_->name;
+    }
+
+    inline const function_type& function_info::type() const noexcept {
+        return state_->type;
     }
 }
 
@@ -83,6 +88,7 @@ namespace meta_hpp
     inline function_info::function_info(std::string name, Function instance)
     : state_{std::make_shared<state>(state{
         std::move(name),
+        function_type{typename_arg<Function>},
         {}
     })} {
         (void)instance;

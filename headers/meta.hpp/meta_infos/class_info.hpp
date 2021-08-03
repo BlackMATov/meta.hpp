@@ -6,8 +6,7 @@
 
 #pragma once
 
-#include "../meta_fwd.hpp"
-#include "../meta_utilities.hpp"
+#include "_infos_fwd.hpp"
 
 #include "ctor_info.hpp"
 #include "data_info.hpp"
@@ -26,6 +25,7 @@ namespace meta_hpp
         explicit operator bool() const noexcept;
 
         const std::string& name() const noexcept;
+        const class_type& type() const noexcept;
     public:
         template < typename F >
         void visit(F&& f) const;
@@ -53,7 +53,8 @@ namespace meta_hpp
     private:
         template < typename Class > friend class class_;
 
-        explicit class_info(std::string name);
+        template < typename Class >
+        explicit class_info(typename_arg_t<Class>, std::string name);
     private:
         struct state;
         std::shared_ptr<state> state_;
@@ -64,6 +65,7 @@ namespace meta_hpp
 {
     struct class_info::state final {
         std::string name;
+        class_type type;
         class_info_map classes;
         ctor_info_map ctors;
         data_info_map datas;
@@ -87,6 +89,10 @@ namespace meta_hpp
 
     inline const std::string& class_info::name() const noexcept {
         return state_->name;
+    }
+
+    inline const class_type& class_info::type() const noexcept {
+        return state_->type;
     }
 }
 
@@ -155,9 +161,11 @@ namespace meta_hpp
 
 namespace meta_hpp
 {
-    inline class_info::class_info(std::string name)
+    template < typename Class >
+    inline class_info::class_info(typename_arg_t<Class>, std::string name)
     : state_{std::make_shared<state>(state{
         std::move(name),
+        class_type{typename_arg<Class>},
         {}, {}, {}, {}, {}, {}, {}
     })} {}
 }
