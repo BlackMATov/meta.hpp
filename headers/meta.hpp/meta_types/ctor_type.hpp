@@ -6,10 +6,14 @@
 
 #pragma once
 
-#include "../meta_fwd.hpp"
+#include "_types_fwd.hpp"
 
 namespace meta_hpp
 {
-    class ctor_type final {
+    class ctor_type final : public base_type {
+    public:
+        template < typename Class, typename... Args >
+        explicit ctor_type(typename_arg_t<Class>, typename_arg_t<Args...>)
+        : base_type{typename_arg<Class, Args...>} {}
     };
 }

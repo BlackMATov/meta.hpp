@@ -6,10 +6,14 @@
 
 #pragma once
 
-#include "../meta_fwd.hpp"
+#include "_types_fwd.hpp"
 
 namespace meta_hpp
 {
-    class void_type final {
+    class void_type final : public base_type {
+    public:
+        template < typename T >
+        explicit void_type(typename_arg_t<T>)
+        : base_type{typename_arg<T>} {}
     };
 }
