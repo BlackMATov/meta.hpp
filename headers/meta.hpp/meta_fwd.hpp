@@ -73,6 +73,12 @@ namespace meta_hpp
 
 namespace meta_hpp
 {
+    class arg;
+    class value;
+}
+
+namespace meta_hpp
+{
     template < typename K, typename V >
     using info_map = std::map<K, V, std::less<>>;
 
