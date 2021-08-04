@@ -8,5 +8,5 @@
 
 #include "meta_fwd.hpp"
 
-#include "meta_utilities/curry.hpp"
+#include "meta_utilities/arg.hpp"
 #include "meta_utilities/value.hpp"

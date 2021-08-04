@@ -10,6 +10,7 @@
 #include "meta_infos.hpp"
 
 #include "meta_registry/class_.hpp"
+#include "meta_registry/ctor_.hpp"
 #include "meta_registry/data_.hpp"
 #include "meta_registry/enum_.hpp"
 #include "meta_registry/evalue_.hpp"
@@ -164,7 +165,7 @@ namespace meta_hpp
 
     inline void registry::add_info_(const std::string& prefix, const class_info& info) {
         std::string name = prefix.empty() ? info.name() : prefix + "::" + info.name();
-        info.visit(curry(add_info_f{}, std::ref(*this), name));
+        info.visit(kari_hpp::curry(add_info_f{}, std::ref(*this), name));
         detail::merge_with(classes_, name, info, &class_info::merge);
     }
 
@@ -175,43 +176,43 @@ namespace meta_hpp
 
     inline void registry::add_info_(const std::string& prefix, const data_info& info) {
         std::string name = prefix.empty() ? info.name() : prefix + "::" + info.name();
-        info.visit(curry(add_info_f{}, std::ref(*this), name));
+        info.visit(kari_hpp::curry(add_info_f{}, std::ref(*this), name));
         detail::merge_with(datas_, name, info, &data_info::merge);
     }
 
     inline void registry::add_info_(const std::string& prefix, const enum_info& info) {
         std::string name = prefix.empty() ? info.name() : prefix + "::" + info.name();
-        info.visit(curry(add_info_f{}, std::ref(*this), name));
+        info.visit(kari_hpp::curry(add_info_f{}, std::ref(*this), name));
         detail::merge_with(enums_, name, info, &enum_info::merge);
     }
 
     inline void registry::add_info_(const std::string& prefix, const evalue_info& info) {
         std::string name = prefix.empty() ? info.name() : prefix + "::" + info.name();
-        info.visit(curry(add_info_f{}, std::ref(*this), name));
+        info.visit(kari_hpp::curry(add_info_f{}, std::ref(*this), name));
         detail::merge_with(evalues_, name, info, &evalue_info::merge);
     }
 
     inline void registry::add_info_(const std::string& prefix, const function_info& info) {
         std::string name = prefix.empty() ? info.name() : prefix + "::" + info.name();
-        info.visit(curry(add_info_f{}, std::ref(*this), name));
+        info.visit(kari_hpp::curry(add_info_f{}, std::ref(*this), name));
         detail::merge_with(functions_, name, info, &function_info::merge);
     }
 
     inline void registry::add_info_(const std::string& prefix, const member_info& info) {
         std::string name = prefix.empty() ? info.name() : prefix + "::" + info.name();
-        info.visit(curry(add_info_f{}, std::ref(*this), name));
+        info.visit(kari_hpp::curry(add_info_f{}, std::ref(*this), name));
         detail::merge_with(members_, name, info, &member_info::merge);
     }
 
     inline void registry::add_info_(const std::string& prefix, const method_info& info) {
         std::string name = prefix.empty() ? info.name() : prefix + "::" + info.name();
-        info.visit(curry(add_info_f{}, std::ref(*this), name));
+        info.visit(kari_hpp::curry(add_info_f{}, std::ref(*this), name));
         detail::merge_with(methods_, name, info, &method_info::merge);
     }
 
     inline void registry::add_info_(const std::string& prefix, const namespace_info& info) {
         std::string name = prefix.empty() ? info.name() : prefix + "::" + info.name();
-        info.visit(curry(add_info_f{}, std::ref(*this), name));
+        info.visit(kari_hpp::curry(add_info_f{}, std::ref(*this), name));
         detail::merge_with(namespaces_, name, info, &namespace_info::merge);
     }
 }

@@ -7,9 +7,19 @@ endif()
 
 project(meta.hpp)
 
+add_subdirectory(vendors/enum.hpp)
+add_subdirectory(vendors/kari.hpp)
+
 add_library(${PROJECT_NAME} INTERFACE)
-target_compile_features(${PROJECT_NAME} INTERFACE cxx_std_17)
-target_include_directories(${PROJECT_NAME} INTERFACE headers)
+
+target_link_libraries(${PROJECT_NAME}
+    INTERFACE enum.hpp kari.hpp)
+
+target_compile_features(${PROJECT_NAME}
+    INTERFACE cxx_std_17)
+
+target_include_directories(${PROJECT_NAME}
+    INTERFACE headers)
 
 if(BUILD_AS_STANDALONE)
     option(BUILD_WITH_UNTESTS "Build with unit tests" ON)

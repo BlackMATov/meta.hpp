@@ -27,6 +27,11 @@
 #include <variant>
 #include <vector>
 
+#include <enum.hpp/enum.hpp>
+#include <enum.hpp/enum_bitflags.hpp>
+
+#include <kari.hpp/kari.hpp>
+
 namespace meta_hpp
 {
     class class_info;
