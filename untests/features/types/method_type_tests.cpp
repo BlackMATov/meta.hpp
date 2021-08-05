@@ -18,7 +18,7 @@ namespace
         int x{};
         int y{};
 
-        int& at(std::size_t i) {
+        [[maybe_unused]] int& at(std::size_t i) {
             switch ( i ) {
             case 0: return x;
             case 1: return y;
@@ -26,7 +26,7 @@ namespace
             }
         }
 
-        int length2() const noexcept {
+        [[maybe_unused]] int length2() const noexcept {
             return x * x + y * y;
         }
     };

@@ -29,9 +29,6 @@ target_compile_options(${PROJECT_NAME}
         -Werror -Wall -Wextra -Wpedantic>
     PRIVATE
     $<$<OR:$<CXX_COMPILER_ID:Clang>,$<CXX_COMPILER_ID:AppleClang>>:
-        -Werror -Weverything -Wconversion -Wno-unknown-warning-option
-        -Wno-padded
-        -Wno-c++98-compat-pedantic
-        -Wno-shadow-field-in-constructor>)
+        -Werror -Weverything -Wconversion>)
 
 add_test(${PROJECT_NAME} ${PROJECT_NAME})

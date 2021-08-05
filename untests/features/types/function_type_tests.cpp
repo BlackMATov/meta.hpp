@@ -19,9 +19,9 @@ namespace
         int y{};
     };
 
-    void arg_copy(ivec2) {}
-    void arg_ref_noexcept(ivec2&) noexcept {}
-    void arg_cref_noexcept(const ivec2&) noexcept {}
+    [[maybe_unused]] void arg_copy(ivec2) {}
+    [[maybe_unused]] void arg_ref_noexcept(ivec2&) noexcept {}
+    [[maybe_unused]] void arg_cref_noexcept(const ivec2&) noexcept {}
 }
 
 TEST_CASE("features/types/function") {

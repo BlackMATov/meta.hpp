@@ -18,9 +18,9 @@ namespace
         int x{};
         int y{};
 
-        ivec2() = default;
-        explicit ivec2(int v): x{v}, y{v} {}
-        ivec2(int x, int y): x{x}, y{y} {}
+        [[maybe_unused]] ivec2() = default;
+        [[maybe_unused]] explicit ivec2(int v): x{v}, y{v} {}
+        [[maybe_unused]] ivec2(int x, int y): x{x}, y{y} {}
     };
 }
 
