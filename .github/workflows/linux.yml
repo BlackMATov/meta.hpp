@@ -24,6 +24,8 @@ jobs:
       run: sudo apt-get -y install "${{matrix.config.cc}}" "${{matrix.config.cxx}}"
     - name: Checkout
       uses: actions/checkout@v2
+      with:
+        submodules: recursive
     - name: Build && Test
       run: .ci/build_linux.sh
       env: { CC: "${{matrix.config.cc}}", CXX: "${{matrix.config.cxx}}" }

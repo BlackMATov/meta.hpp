@@ -16,6 +16,8 @@ jobs:
     name: "xcode-${{matrix.config.xcode}}"
     steps:
     - uses: actions/checkout@v2
+      with:
+        submodules: recursive
     - name: Select Xcode
       run: sudo xcode-select --switch "/Applications/Xcode_${{matrix.config.xcode}}.app"
     - name: Build && Test

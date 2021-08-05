@@ -17,5 +17,7 @@ jobs:
     name: "${{matrix.config.vs}} ${{matrix.config.arch}}"
     steps:
     - uses: actions/checkout@v2
+      with:
+        submodules: recursive
     - name: Build && Test
       run: .ci\build_windows_${{matrix.config.arch}}.bat
