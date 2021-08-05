@@ -8,7 +8,65 @@
 
 namespace
 {
+    using namespace meta_hpp;
+    using namespace std::string_literals;
 }
 
 TEST_CASE("features/types/arithmetic") {
+    SUBCASE("int") {
+        using type = int;
+
+        REQUIRE(type_db::get<type>());
+        REQUIRE(type_db::get<type>().is<arithmetic_type>());
+
+        const arithmetic_type at = type_db::get<type>().as<arithmetic_type>();
+        CHECK(at.id() == type_id{typename_arg<base_type::tag<type>>});
+
+        CHECK(at.raw_type().id() == type_db::get<type>().id());
+        CHECK(at.size() == sizeof(type));
+
+        CHECK_FALSE(at.is_const());
+        CHECK(at.is_signed());
+        CHECK_FALSE(at.is_unsigned());
+        CHECK(at.is_integral());
+        CHECK_FALSE(at.is_floating_point());
+    }
+
+    SUBCASE("const float") {
+        using type = const float;
+
+        REQUIRE(type_db::get<type>());
+        REQUIRE(type_db::get<type>().is<arithmetic_type>());
+
+        const arithmetic_type at = type_db::get<type>().as<arithmetic_type>();
+        CHECK(at.id() == type_id{typename_arg<base_type::tag<type>>});
+
+        CHECK(at.raw_type().id() == type_db::get<float>().id());
+        CHECK(at.size() == sizeof(type));
+
+        CHECK(at.is_const());
+        CHECK(at.is_signed());
+        CHECK_FALSE(at.is_unsigned());
+        CHECK_FALSE(at.is_integral());
+        CHECK(at.is_floating_point());
+    }
+
+    SUBCASE("const unsigned") {
+        using type = const unsigned;
+
+        REQUIRE(type_db::get<type>());
+        REQUIRE(type_db::get<type>().is<arithmetic_type>());
+
+        const arithmetic_type at = type_db::get<type>().as<arithmetic_type>();
+        CHECK(at.id() == type_id{typename_arg<base_type::tag<type>>});
+
+        CHECK(at.raw_type().id() == type_db::get<unsigned>().id());
+        CHECK(at.size() == sizeof(type));
+
+        CHECK(at.is_const());
+        CHECK_FALSE(at.is_signed());
+        CHECK(at.is_unsigned());
+        CHECK(at.is_integral());
+        CHECK_FALSE(at.is_floating_point());
+    }
 }

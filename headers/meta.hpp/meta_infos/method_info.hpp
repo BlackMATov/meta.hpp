@@ -94,7 +94,7 @@ namespace meta_hpp
     inline method_info::method_info(std::string name, Method instance)
     : state_{std::make_shared<state>(state{
         std::move(name),
-        method_type{typename_arg<Method>},
+        type_db::get<Method>().template as<method_type>(),
         {}
     })} {
         (void)instance;

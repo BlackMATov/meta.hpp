@@ -61,7 +61,6 @@ namespace meta_hpp
 namespace meta_hpp
 {
     class type_id;
-    class base_type;
 
     class arithmetic_type;
     class array_type;

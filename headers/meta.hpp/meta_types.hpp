@@ -19,3 +19,64 @@
 #include "meta_types/pointer_type.hpp"
 #include "meta_types/reference_type.hpp"
 #include "meta_types/void_type.hpp"
+
+namespace meta_hpp
+{
+    namespace detail
+    {
+        template < typename Tuple >
+        struct multi_get_impl;
+
+        template < typename... Ts >
+        struct multi_get_impl<std::tuple<Ts...>> {
+            static std::vector<any_type> get() {
+                return { type_db::get<Ts>()... };
+            }
+        };
+
+        template < typename T >
+        auto make_any_type() {
+            if constexpr ( std::is_arithmetic_v<T> ) {
+                return arithmetic_type{typename_arg<T>};
+            }
+            if constexpr ( std::is_array_v<T> ) {
+                return array_type{typename_arg<T>};
+            }
+            if constexpr ( std::is_class_v<T> ) {
+                return class_type{typename_arg<T>};
+            }
+            if constexpr ( std::is_enum_v<T> ) {
+                return enum_type{typename_arg<T>};
+            }
+            if constexpr ( std::is_pointer_v<T> && std::is_function_v<std::remove_pointer_t<T>> ) {
+                return function_type{typename_arg<T>};
+            }
+            if constexpr ( std::is_member_object_pointer_v<T> ) {
+                return member_type{typename_arg<T>};
+            }
+            if constexpr ( std::is_member_function_pointer_v<T> ) {
+                return method_type{typename_arg<T>};
+            }
+            if constexpr ( std::is_pointer_v<T> && !std::is_function_v<std::remove_pointer_t<T>> ) {
+                return pointer_type{typename_arg<T>};
+            }
+            if constexpr ( std::is_reference_v<T> ) {
+                return reference_type{typename_arg<T>};
+            }
+            if constexpr ( std::is_void_v<T> ) {
+                return void_type{typename_arg<T>};
+            }
+        }
+    }
+
+    template < typename T >
+    inline any_type type_db::get() {
+        static const auto raw_type = detail::make_any_type<T>();
+        return raw_type;
+    }
+
+    template < typename Tuple >
+    inline std::vector<any_type> type_db::multi_get() {
+        return detail::multi_get_impl<Tuple>::get();
+    }
+}

@@ -196,7 +196,7 @@ namespace meta_hpp
     inline class_info::class_info(typename_arg_t<Class>, std::string name)
     : state_{std::make_shared<state>(state{
         std::move(name),
-        class_type{typename_arg<Class>},
+        type_db::get<Class>().template as<class_type>(),
         {}, {}, {}, {}, {}, {}, {}
     })} {}
 }

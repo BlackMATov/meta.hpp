@@ -8,7 +8,38 @@
 
 namespace
 {
+    using namespace meta_hpp;
+    using namespace std::string_literals;
+}
+
+namespace
+{
+    struct clazz {
+        int int_member{};
+        const int const_int_member{10};
+    };
 }
 
 TEST_CASE("features/types/member") {
+    SUBCASE("clazz::int_member") {
+        using type = decltype(&clazz::int_member);
+
+        REQUIRE(type_db::get<type>());
+        REQUIRE(type_db::get<type>().is<member_type>());
+
+        const member_type mt = type_db::get<type>().as<member_type>();
+        CHECK(mt.class_type().id() == type_db::get<clazz>().id());
+        CHECK(mt.value_type().id() == type_db::get<int>().id());
+    }
+
+    SUBCASE("clazz::const_int_member") {
+        using type = decltype(&clazz::const_int_member);
+
+        REQUIRE(type_db::get<type>());
+        REQUIRE(type_db::get<type>().is<member_type>());
+
+        const member_type mt = type_db::get<type>().as<member_type>();
+        CHECK(mt.class_type().id() == type_db::get<clazz>().id());
+        CHECK(mt.value_type().id() == type_db::get<const int>().id());
+    }
 }

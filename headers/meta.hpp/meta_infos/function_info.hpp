@@ -94,7 +94,7 @@ namespace meta_hpp
     inline function_info::function_info(std::string name, Function instance)
     : state_{std::make_shared<state>(state{
         std::move(name),
-        function_type{typename_arg<Function>},
+        type_db::get<Function>().template as<function_type>(),
         {}
     })} {
         (void)instance;
