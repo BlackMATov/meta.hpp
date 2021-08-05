@@ -7,4 +7,4 @@
 #pragma once
 
 #include <meta.hpp/meta_all.hpp>
-#include "doctest/doctest.hpp"
+#include <doctest/doctest.h>
