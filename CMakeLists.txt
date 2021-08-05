@@ -3,6 +3,8 @@ cmake_minimum_required(VERSION 3.8 FATAL_ERROR)
 
 if(NOT DEFINED PROJECT_NAME)
     set(BUILD_AS_STANDALONE ON)
+else()
+    set(BUILD_AS_STANDALONE OFF)
 endif()
 
 project(meta.hpp)
