@@ -44,6 +44,9 @@ TEST_CASE("features/types/method") {
         CHECK(mt.return_type().id() == type_db::get<int&>().id());
         CHECK(mt.argument_types().size() == 1);
         CHECK(mt.arity() == 1);
+
+        CHECK(mt.flags() == (method_flags{}));
+
         CHECK_FALSE(mt.is_const());
         CHECK_FALSE(mt.is_noexcept());
 
@@ -69,6 +72,11 @@ TEST_CASE("features/types/method") {
         CHECK(mt.return_type().id() == type_db::get<int>().id());
         CHECK(mt.argument_types().size() == 0);
         CHECK(mt.arity() == 0);
+
+        CHECK(mt.flags() == (
+            method_flags::is_const |
+            method_flags::is_noexcept));
+
         CHECK(mt.is_const());
         CHECK(mt.is_noexcept());
 

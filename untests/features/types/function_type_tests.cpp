@@ -35,6 +35,8 @@ TEST_CASE("features/types/function") {
         CHECK(ft.return_type().id() == type_db::get<void>().id());
         CHECK(ft.argument_types().size() == 1);
         CHECK(ft.arity() == 1);
+
+        CHECK(ft.flags() == (function_flags{}));
         CHECK_FALSE(ft.is_noexcept());
 
         {
@@ -58,6 +60,8 @@ TEST_CASE("features/types/function") {
         CHECK(ft.return_type().id() == type_db::get<void>().id());
         CHECK(ft.argument_types().size() == 1);
         CHECK(ft.arity() == 1);
+
+        CHECK(ft.flags() == (function_flags::is_noexcept));
         CHECK(ft.is_noexcept());
 
         {
@@ -81,6 +85,8 @@ TEST_CASE("features/types/function") {
         CHECK(ft.return_type().id() == type_db::get<void>().id());
         CHECK(ft.argument_types().size() == 1);
         CHECK(ft.arity() == 1);
+
+        CHECK(ft.flags() == (function_flags::is_noexcept));
         CHECK(ft.is_noexcept());
 
         {

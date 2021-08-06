@@ -29,6 +29,9 @@ TEST_CASE("features/types/reference") {
         CHECK(rt.id() == type_id{typename_arg<base_type::tag<ivec2&>>});
 
         CHECK(rt.data_type().id() == type_db::get<ivec2>().id());
+
+        CHECK(rt.flags() == (reference_flags::is_lvalue));
+
         CHECK(rt.is_lvalue());
         CHECK_FALSE(rt.is_rvalue());
     }
@@ -41,6 +44,9 @@ TEST_CASE("features/types/reference") {
         CHECK(rt.id() == type_id{typename_arg<base_type::tag<const ivec2&&>>});
 
         CHECK(rt.data_type().id() == type_db::get<const ivec2>().id());
+
+        CHECK(rt.flags() == (reference_flags::is_rvalue));
+
         CHECK_FALSE(rt.is_lvalue());
         CHECK(rt.is_rvalue());
     }

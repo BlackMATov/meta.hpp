@@ -31,6 +31,8 @@ TEST_CASE("features/types/ctor") {
         CHECK(ct.class_type().id() == type_db::get<ivec2>().id());
         CHECK(ct.argument_types().size() == 0);
         CHECK(ct.arity() == 0);
+
+        CHECK(ct.flags() == (ctor_flags::is_noexcept));
         CHECK(ct.is_noexcept());
 
         {
@@ -41,10 +43,12 @@ TEST_CASE("features/types/ctor") {
     SUBCASE("ivec2_int") {
         ctor_type ct{typename_arg<ivec2>, typename_arg<int>};
 
-        CHECK_FALSE(ct.is_noexcept());
         CHECK(ct.arity() == 1);
         CHECK(ct.class_type().id() == type_db::get<ivec2>().id());
         CHECK(ct.argument_types().size() == 1);
+
+        CHECK(ct.flags() == (ctor_flags{}));
+        CHECK_FALSE(ct.is_noexcept());
 
         {
             REQUIRE(ct.argument_type(0));
@@ -63,6 +67,8 @@ TEST_CASE("features/types/ctor") {
         CHECK(ct.class_type().id() == type_db::get<ivec2>().id());
         CHECK(ct.argument_types().size() == 2);
         CHECK(ct.arity() == 2);
+
+        CHECK(ct.flags() == (ctor_flags{}));
         CHECK_FALSE(ct.is_noexcept());
 
         {

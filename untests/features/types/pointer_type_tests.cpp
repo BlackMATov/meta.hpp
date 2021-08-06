@@ -31,6 +31,8 @@ TEST_CASE("features/types/pointer") {
         CHECK(pt.id() == type_id{typename_arg<base_type::tag<type>>});
 
         CHECK(pt.data_type().id() == type_db::get<ivec2>().id());
+
+        CHECK(pt.flags() == (pointer_flags{}));
         CHECK_FALSE(pt.is_const());
     }
 
@@ -44,6 +46,8 @@ TEST_CASE("features/types/pointer") {
         CHECK(pt.id() == type_id{typename_arg<base_type::tag<type>>});
 
         CHECK(pt.data_type().id() == type_db::get<const ivec2>().id());
+
+        CHECK(pt.flags() == (pointer_flags{}));
         CHECK_FALSE(pt.is_const());
     }
 
@@ -57,6 +61,8 @@ TEST_CASE("features/types/pointer") {
         CHECK(pt.id() == type_id{typename_arg<base_type::tag<type>>});
 
         CHECK(pt.data_type().id() == type_db::get<ivec2>().id());
+
+        CHECK(pt.flags() == (pointer_flags::is_const));
         CHECK(pt.is_const());
     }
 
@@ -70,6 +76,8 @@ TEST_CASE("features/types/pointer") {
         CHECK(pt.id() == type_id{typename_arg<base_type::tag<type>>});
 
         CHECK(pt.data_type().id() == type_db::get<const ivec2>().id());
+
+        CHECK(pt.flags() == (pointer_flags::is_const));
         CHECK(pt.is_const());
     }
 }

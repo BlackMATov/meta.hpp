@@ -43,6 +43,10 @@ TEST_CASE("features/types/class") {
         CHECK(ct.raw_type().id() == type_db::get<type>().id());
         CHECK(ct.size() == sizeof(type));
 
+        CHECK(ct.flags() == (
+            class_flags::is_abstract |
+            class_flags::is_polymorphic));
+
         CHECK_FALSE(ct.is_const());
         CHECK_FALSE(ct.is_empty());
         CHECK_FALSE(ct.is_final());
@@ -61,6 +65,10 @@ TEST_CASE("features/types/class") {
 
         CHECK(ct.raw_type().id() == type_db::get<type>().id());
         CHECK(ct.size() == sizeof(type));
+
+        CHECK(ct.flags() == (
+            class_flags::is_final |
+            class_flags::is_polymorphic));
 
         CHECK_FALSE(ct.is_const());
         CHECK_FALSE(ct.is_empty());
@@ -81,6 +89,10 @@ TEST_CASE("features/types/class") {
         CHECK(ct.raw_type().id() == type_db::get<type>().id());
         CHECK(ct.size() == sizeof(type));
 
+        CHECK(ct.flags() == (
+            class_flags::is_empty |
+            class_flags::is_final));
+
         CHECK_FALSE(ct.is_const());
         CHECK(ct.is_empty());
         CHECK(ct.is_final());
@@ -100,6 +112,9 @@ TEST_CASE("features/types/class") {
         CHECK(ct.raw_type().id() == type_db::get<type>().id());
         CHECK(ct.size() == sizeof(type));
 
+        CHECK(ct.flags() == (
+            class_flags::is_final));
+
         CHECK_FALSE(ct.is_const());
         CHECK_FALSE(ct.is_empty());
         CHECK(ct.is_final());
@@ -118,6 +133,10 @@ TEST_CASE("features/types/class") {
 
         CHECK(ct.raw_type().id() == type_db::get<ivec2>().id());
         CHECK(ct.size() == sizeof(type));
+
+        CHECK(ct.flags() == (
+            class_flags::is_const |
+            class_flags::is_final));
 
         CHECK(ct.is_const());
         CHECK_FALSE(ct.is_empty());

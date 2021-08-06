@@ -25,6 +25,10 @@ TEST_CASE("features/types/arithmetic") {
         CHECK(at.raw_type().id() == type_db::get<type>().id());
         CHECK(at.size() == sizeof(type));
 
+        CHECK(at.flags() == (
+            arithmetic_flags::is_signed |
+            arithmetic_flags::is_integral));
+
         CHECK_FALSE(at.is_const());
         CHECK(at.is_signed());
         CHECK_FALSE(at.is_unsigned());
@@ -44,6 +48,11 @@ TEST_CASE("features/types/arithmetic") {
         CHECK(at.raw_type().id() == type_db::get<float>().id());
         CHECK(at.size() == sizeof(type));
 
+        CHECK(at.flags() == (
+            arithmetic_flags::is_const |
+            arithmetic_flags::is_signed |
+            arithmetic_flags::is_floating_point));
+
         CHECK(at.is_const());
         CHECK(at.is_signed());
         CHECK_FALSE(at.is_unsigned());
@@ -62,6 +71,11 @@ TEST_CASE("features/types/arithmetic") {
 
         CHECK(at.raw_type().id() == type_db::get<unsigned>().id());
         CHECK(at.size() == sizeof(type));
+
+        CHECK(at.flags() == (
+            arithmetic_flags::is_const |
+            arithmetic_flags::is_unsigned |
+            arithmetic_flags::is_integral));
 
         CHECK(at.is_const());
         CHECK_FALSE(at.is_signed());

@@ -24,6 +24,9 @@ TEST_CASE("features/types/array") {
 
         CHECK(at.data_type().id() == type_db::get<int>().id());
         CHECK(at.extent() == 0);
+
+        CHECK(at.flags() == (array_flags::is_unbounded));
+
         CHECK_FALSE(at.is_bounded());
         CHECK(at.is_unbounded());
     }
@@ -39,6 +42,9 @@ TEST_CASE("features/types/array") {
 
         CHECK(at.data_type().id() == type_db::get<const unsigned>().id());
         CHECK(at.extent() == 42);
+
+        CHECK(at.flags() == (array_flags::is_bounded));
+
         CHECK(at.is_bounded());
         CHECK_FALSE(at.is_unbounded());
     }
