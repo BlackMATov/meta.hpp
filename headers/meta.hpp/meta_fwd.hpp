@@ -34,6 +34,12 @@
 
 namespace meta_hpp
 {
+    template < typename Enum >
+    using bitflags = enum_hpp::bitflags::bitflags<Enum>;
+}
+
+namespace meta_hpp
+{
     class class_info;
     class ctor_info;
     class data_info;

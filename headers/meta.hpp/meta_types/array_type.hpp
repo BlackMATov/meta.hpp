@@ -10,6 +10,13 @@
 
 namespace meta_hpp
 {
+    enum class array_flags : unsigned {
+        is_bounded = 1 << 0,
+        is_unbounded = 1 << 1,
+    };
+
+    ENUM_HPP_OPERATORS_DECL(array_flags)
+
     class array_type final : public base_type {
     public:
         array_type() = default;
@@ -23,8 +30,10 @@ namespace meta_hpp
         template < typename T >
         explicit array_type(typename_arg_t<T>);
 
-        any_type data_type() const noexcept;
         std::size_t extent() const noexcept;
+        any_type data_type() const noexcept;
+
+        bitflags<array_flags> flags() const noexcept;
         bool is_bounded() const noexcept;
         bool is_unbounded() const noexcept;
     private:
@@ -36,10 +45,9 @@ namespace meta_hpp
 namespace meta_hpp
 {
     struct array_type::state final {
-        const any_type data_type;
         const std::size_t extent;
-        const bool is_bounded;
-        const bool is_unbounded;
+        const any_type data_type;
+        const bitflags<array_flags> flags;
     };
 }
 
@@ -50,18 +58,30 @@ namespace meta_hpp::detail
 
     template < typename T >
     struct array_traits<T[]> {
-        using data_type = T;
         static constexpr std::size_t extent{0};
-        static constexpr bool is_bounded{false};
-        static constexpr bool is_unbounded{true};
+
+        static any_type make_data_type() {
+            using data_type = T;
+            return type_db::get<data_type>();
+        }
+
+        static bitflags<array_flags> make_flags() noexcept {
+            return array_flags::is_unbounded;
+        }
     };
 
     template < typename T, std::size_t N >
     struct array_traits<T[N]> {
-        using data_type = T;
         static constexpr std::size_t extent{N};
-        static constexpr bool is_bounded{true};
-        static constexpr bool is_unbounded{false};
+
+        static any_type make_data_type() {
+            using data_type = T;
+            return type_db::get<data_type>();
+        }
+
+        static bitflags<array_flags> make_flags() noexcept {
+            return array_flags::is_bounded;
+        }
     };
 }
 
@@ -71,27 +91,30 @@ namespace meta_hpp
     inline array_type::array_type(typename_arg_t<T>)
     : base_type{typename_arg<T>}
     , state_{std::make_shared<state>(state{
-        type_db::get<typename detail::array_traits<T>::data_type>(),
         detail::array_traits<T>::extent,
-        detail::array_traits<T>::is_bounded,
-        detail::array_traits<T>::is_unbounded,
+        detail::array_traits<T>::make_data_type(),
+        detail::array_traits<T>::make_flags(),
     })} {
         static_assert(std::is_array_v<T>);
-    }
-
-    inline any_type array_type::data_type() const noexcept {
-        return state_->data_type;
     }
 
     inline std::size_t array_type::extent() const noexcept {
         return state_->extent;
     }
 
+    inline any_type array_type::data_type() const noexcept {
+        return state_->data_type;
+    }
+
+    inline bitflags<array_flags> array_type::flags() const noexcept {
+        return state_->flags;
+    }
+
     inline bool array_type::is_bounded() const noexcept {
-        return state_->is_bounded;
+        return state_->flags.has(array_flags::is_bounded);
     }
 
     inline bool array_type::is_unbounded() const noexcept {
-        return state_->is_unbounded;
+        return state_->flags.has(array_flags::is_unbounded);
     }
 }

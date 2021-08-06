@@ -10,6 +10,12 @@
 
 namespace meta_hpp
 {
+    enum class ctor_flags : unsigned {
+        is_noexcept = 1 << 0,
+    };
+
+    ENUM_HPP_OPERATORS_DECL(ctor_flags)
+
     class ctor_type final : public base_type {
     public:
         ctor_type() = default;
@@ -23,24 +29,16 @@ namespace meta_hpp
         template < typename Class, typename... Args >
         explicit ctor_type(typename_arg_t<Class>, typename_arg_t<Args...>);
 
+        std::size_t arity() const noexcept;
         any_type class_type() const noexcept;
         any_type argument_type(std::size_t i) const noexcept;
         const std::vector<any_type>& argument_types() const noexcept;
-        std::size_t arity() const noexcept;
+
+        bitflags<ctor_flags> flags() const noexcept;
         bool is_noexcept() const noexcept;
     private:
         struct state;
         std::shared_ptr<state> state_;
-    };
-}
-
-namespace meta_hpp
-{
-    struct ctor_type::state final {
-        const any_type class_type;
-        const std::vector<any_type> argument_types;
-        const std::size_t arity;
-        const bool is_noexcept;
     };
 }
 
@@ -49,26 +47,50 @@ namespace meta_hpp::detail
     template < typename C, typename... Args >
     struct ctor_traits {
         static_assert(std::is_constructible_v<C, Args...>);
-        using class_type = C;
-        using argument_types = std::tuple<Args...>;
         static constexpr std::size_t arity{sizeof...(Args)};
-        static constexpr bool is_noexcept{std::is_nothrow_constructible_v<C, Args...>};
+
+        static any_type make_class_type() {
+            using class_type = C;
+            return type_db::get<class_type>();
+        }
+
+        static std::vector<any_type> make_argument_types() {
+            using argument_types = std::tuple<Args...>;
+            return type_db::multi_get<argument_types>();
+        }
+
+        static bitflags<ctor_flags> make_flags() noexcept {
+            bitflags<ctor_flags> flags;
+            if ( std::is_nothrow_constructible_v<C, Args...> ) flags.set(ctor_flags::is_noexcept);
+            return flags;
+        }
     };
 }
 
 namespace meta_hpp
 {
+    struct ctor_type::state final {
+        const std::size_t arity;
+        const any_type class_type;
+        const std::vector<any_type> argument_types;
+        const bitflags<ctor_flags> flags;
+    };
+
     template < typename Class, typename... Args >
     inline ctor_type::ctor_type(typename_arg_t<Class>, typename_arg_t<Args...>)
     : base_type{typename_arg<Class, Args...>}
     , state_{std::make_shared<state>(state{
-        type_db::get<typename detail::ctor_traits<Class, Args...>::class_type>(),
-        type_db::multi_get<typename detail::ctor_traits<Class, Args...>::argument_types>(),
         detail::ctor_traits<Class, Args...>::arity,
-        detail::ctor_traits<Class, Args...>::is_noexcept,
+        detail::ctor_traits<Class, Args...>::make_class_type(),
+        detail::ctor_traits<Class, Args...>::make_argument_types(),
+        detail::ctor_traits<Class, Args...>::make_flags(),
     })} {
         static_assert(std::is_class_v<Class>);
         static_assert(std::is_constructible_v<Class, Args...>);
+    }
+
+    inline std::size_t ctor_type::arity() const noexcept {
+        return state_->arity;
     }
 
     inline any_type ctor_type::class_type() const noexcept {
@@ -85,11 +107,11 @@ namespace meta_hpp
         return state_->argument_types;
     }
 
-    inline std::size_t ctor_type::arity() const noexcept {
-        return state_->arity;
+    inline bitflags<ctor_flags> ctor_type::flags() const noexcept {
+        return state_->flags;
     }
 
     inline bool ctor_type::is_noexcept() const noexcept {
-        return state_->is_noexcept;
+        return state_->flags.has(ctor_flags::is_noexcept);
     }
 }

@@ -46,8 +46,15 @@ namespace meta_hpp::detail
 
     template < typename V, typename C >
     struct member_pointer_traits<V C::*> {
-        using class_type = C;
-        using value_type = V;
+        static any_type make_class_type() {
+            using class_type = C;
+            return type_db::get<class_type>();
+        }
+
+        static any_type make_value_type() {
+            using value_type = V;
+            return type_db::get<value_type>();
+        }
     };
 }
 
@@ -57,8 +64,8 @@ namespace meta_hpp
     inline member_type::member_type(typename_arg_t<T>)
     : base_type{typename_arg<T>}
     , state_{std::make_shared<state>(state{
-        type_db::get<typename detail::member_pointer_traits<T>::class_type>(),
-        type_db::get<typename detail::member_pointer_traits<T>::value_type>(),
+        detail::member_pointer_traits<T>::make_class_type(),
+        detail::member_pointer_traits<T>::make_value_type(),
     })} {
         static_assert(std::is_member_object_pointer_v<T>);
     }

@@ -10,6 +10,13 @@
 
 namespace meta_hpp
 {
+    enum class reference_flags : unsigned {
+        is_lvalue = 1 << 0,
+        is_rvalue = 1 << 1,
+    };
+
+    ENUM_HPP_OPERATORS_DECL(reference_flags)
+
     class reference_type final : public base_type {
     public:
         reference_type() = default;
@@ -24,20 +31,13 @@ namespace meta_hpp
         explicit reference_type(typename_arg_t<T>);
 
         any_type data_type() const noexcept;
+
+        bitflags<reference_flags> flags() const noexcept;
         bool is_lvalue() const noexcept;
         bool is_rvalue() const noexcept;
     private:
         struct state;
         std::shared_ptr<state> state_;
-    };
-}
-
-namespace meta_hpp
-{
-    struct reference_type::state final {
-        const any_type data_type;
-        const bool is_lvalue;
-        const bool is_rvalue;
     };
 }
 
@@ -48,28 +48,42 @@ namespace meta_hpp::detail
 
     template < typename T >
     struct reference_traits<T&> {
-        using data_type = T;
-        static constexpr bool is_lvalue{true};
-        static constexpr bool is_rvalue{false};
+        static any_type make_data_type() {
+            using data_type = T;
+            return type_db::get<data_type>();
+        }
+
+        static bitflags<reference_flags> make_flags() noexcept {
+            return reference_flags::is_lvalue;
+        }
     };
 
     template < typename T >
     struct reference_traits<T&&> {
-        using data_type = T;
-        static constexpr bool is_lvalue{false};
-        static constexpr bool is_rvalue{true};
+        static any_type make_data_type() {
+            using data_type = T;
+            return type_db::get<data_type>();
+        }
+
+        static bitflags<reference_flags> make_flags() noexcept {
+            return reference_flags::is_rvalue;
+        }
     };
 }
 
 namespace meta_hpp
 {
+    struct reference_type::state final {
+        const any_type data_type;
+        const bitflags<reference_flags> flags;
+    };
+
     template < typename T >
     inline reference_type::reference_type(typename_arg_t<T>)
     : base_type{typename_arg<T>}
     , state_{std::make_shared<state>(state{
-        type_db::get<typename detail::reference_traits<T>::data_type>(),
-        detail::reference_traits<T>::is_lvalue,
-        detail::reference_traits<T>::is_rvalue,
+        detail::reference_traits<T>::make_data_type(),
+        detail::reference_traits<T>::make_flags(),
     })} {
         static_assert(std::is_reference_v<T>);
     }
@@ -78,11 +92,15 @@ namespace meta_hpp
         return state_->data_type;
     }
 
+    inline bitflags<reference_flags> reference_type::flags() const noexcept {
+        return state_->flags;
+    }
+
     inline bool reference_type::is_lvalue() const noexcept {
-        return state_->is_lvalue;
+        return state_->flags.has(reference_flags::is_lvalue);
     }
 
     inline bool reference_type::is_rvalue() const noexcept {
-        return state_->is_rvalue;
+        return state_->flags.has(reference_flags::is_rvalue);
     }
 }
