@@ -42,10 +42,10 @@ namespace meta_hpp
 namespace meta_hpp::detail
 {
     template < typename T >
-    struct method_pointer_traits;
+    struct member_pointer_traits;
 
     template < typename V, typename C >
-    struct method_pointer_traits<V C::*> {
+    struct member_pointer_traits<V C::*> {
         using class_type = C;
         using value_type = V;
     };
@@ -57,8 +57,8 @@ namespace meta_hpp
     inline member_type::member_type(typename_arg_t<T>)
     : base_type{typename_arg<T>}
     , state_{std::make_shared<state>(state{
-        type_db::get<typename detail::method_pointer_traits<T>::class_type>(),
-        type_db::get<typename detail::method_pointer_traits<T>::value_type>(),
+        type_db::get<typename detail::member_pointer_traits<T>::class_type>(),
+        type_db::get<typename detail::member_pointer_traits<T>::value_type>(),
     })} {
         static_assert(std::is_member_object_pointer_v<T>);
     }
