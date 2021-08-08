@@ -91,7 +91,7 @@ namespace meta_hpp
 namespace meta_hpp
 {
     template < typename Enum >
-    inline evalue_info::evalue_info(std::string name, Enum value)
+    evalue_info::evalue_info(std::string name, Enum value)
     : state_{std::make_shared<state>(state{
         std::move(name),
         std::move(value),

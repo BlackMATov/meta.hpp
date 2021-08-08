@@ -41,7 +41,7 @@ namespace meta_hpp
     }
 
     template < typename... Internals >
-    inline data_& data_::operator()(Internals&&...internals) {
+    data_& data_::operator()(Internals&&...internals) {
         (add_(std::forward<Internals>(internals)), ...);
         return *this;
     }

@@ -56,11 +56,11 @@ namespace meta_hpp
 namespace meta_hpp
 {
     template < typename Class >
-    inline class_<Class>::class_(std::string name)
+    class_<Class>::class_(std::string name)
     : name_{std::move(name)} {}
 
     template < typename Class >
-    inline class_info class_<Class>::make_info() const {
+    class_info class_<Class>::make_info() const {
         class_info info{typename_arg<Class>, name_};
         info.state_->classes.insert(classes_.begin(), classes_.end());
         info.state_->ctors.insert(ctors_.begin(), ctors_.end());
@@ -74,7 +74,7 @@ namespace meta_hpp
 
     template < typename Class >
     template < typename... Internals >
-    inline class_<Class>& class_<Class>::operator()(Internals&&...internals) {
+    class_<Class>& class_<Class>::operator()(Internals&&...internals) {
         (add_(std::forward<Internals>(internals)), ...);
         return *this;
     }
@@ -84,48 +84,48 @@ namespace meta_hpp
 {
     template < typename Class >
     template < typename Class2 >
-    inline void class_<Class>::add_(const class_<Class2>& internal) {
+    void class_<Class>::add_(const class_<Class2>& internal) {
         auto info = internal.make_info();
         detail::merge_with(classes_, info.name(), info, &class_info::merge);
     }
 
     template < typename Class >
     template < typename... Args >
-    inline void class_<Class>::add_(const ctor_<Args...>& internal) {
+    void class_<Class>::add_(const ctor_<Args...>& internal) {
         auto info = internal.template make_info<Class>();
         detail::merge_with(ctors_, info.type().id(), info, &ctor_info::merge);
     }
 
     template < typename Class >
-    inline void class_<Class>::add_(const data_& internal) {
+    void class_<Class>::add_(const data_& internal) {
         auto info = internal.make_info();
         detail::merge_with(datas_, info.name(), info, &data_info::merge);
     }
 
     template < typename Class >
     template < typename Enum >
-    inline void class_<Class>::add_(const enum_<Enum>& internal) {
+    void class_<Class>::add_(const enum_<Enum>& internal) {
         auto info = internal.make_info();
         detail::merge_with(enums_, info.name(), info, &enum_info::merge);
     }
 
     template < typename Class >
     template < typename Function >
-    inline void class_<Class>::add_(const function_<Function>& internal) {
+    void class_<Class>::add_(const function_<Function>& internal) {
         auto info = internal.make_info();
         detail::merge_with(functions_, info.name(), info, &function_info::merge);
     }
 
     template < typename Class >
     template < typename Member >
-    inline void class_<Class>::add_(const member_<Member>& internal) {
+    void class_<Class>::add_(const member_<Member>& internal) {
         auto info = internal.make_info();
         detail::merge_with(members_, info.name(), info, &member_info::merge);
     }
 
     template < typename Class >
     template < typename Method >
-    inline void class_<Class>::add_(const method_<Method>& internal) {
+    void class_<Class>::add_(const method_<Method>& internal) {
         auto info = internal.make_info();
         detail::merge_with(methods_, info.name(), info, &method_info::merge);
     }

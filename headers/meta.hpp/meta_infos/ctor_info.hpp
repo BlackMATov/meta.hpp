@@ -85,7 +85,7 @@ namespace meta_hpp
 namespace meta_hpp
 {
     template < typename Class, typename... Args >
-    inline ctor_info::ctor_info(typename_arg_t<Class>, typename_arg_t<Args...>)
+    ctor_info::ctor_info(typename_arg_t<Class>, typename_arg_t<Args...>)
     : state_{std::make_shared<state>(state{
         ctor_type{typename_arg<Class>, typename_arg<Args...>},
         {}

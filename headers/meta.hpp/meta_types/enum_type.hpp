@@ -76,8 +76,8 @@ namespace meta_hpp
     };
 
     template < typename T >
-    inline enum_type::enum_type(typename_arg_t<T>)
-    : type_base{typename_arg<T>}
+    enum_type::enum_type(typename_arg_t<T>)
+    : type_base{typename_arg<struct enum_type_tag, T>}
     , state_{std::make_shared<state>(state{
         detail::enum_traits<T>::make_raw_type(),
         detail::enum_traits<T>::make_underlying_type(),

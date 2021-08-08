@@ -88,8 +88,8 @@ namespace meta_hpp::detail
 namespace meta_hpp
 {
     template < typename T >
-    inline array_type::array_type(typename_arg_t<T>)
-    : type_base{typename_arg<T>}
+    array_type::array_type(typename_arg_t<T>)
+    : type_base{typename_arg<struct array_type_tag, T>}
     , state_{std::make_shared<state>(state{
         detail::array_traits<T>::extent,
         detail::array_traits<T>::make_data_type(),

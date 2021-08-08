@@ -72,8 +72,8 @@ namespace meta_hpp::detail
 namespace meta_hpp
 {
     template < typename T >
-    inline void_type::void_type(typename_arg_t<T>)
-    : type_base{typename_arg<T>}
+    void_type::void_type(typename_arg_t<T>)
+    : type_base{typename_arg<struct void_type_tag, T>}
     , state_{std::make_shared<state>(state{
         detail::void_traits<T>::make_raw_type(),
         detail::void_traits<T>::make_flags(),

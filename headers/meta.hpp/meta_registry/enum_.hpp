@@ -36,11 +36,11 @@ namespace meta_hpp
 namespace meta_hpp
 {
     template < typename Enum >
-    inline enum_<Enum>::enum_(std::string name)
+    enum_<Enum>::enum_(std::string name)
     : name_{std::move(name)} {}
 
     template < typename Enum >
-    inline enum_info enum_<Enum>::make_info() const {
+    enum_info enum_<Enum>::make_info() const {
         enum_info info{typename_arg<Enum>, name_};
         info.state_->datas.insert(datas_.begin(), datas_.end());
         info.state_->evalues.insert(evalues_.begin(), evalues_.end());
@@ -49,7 +49,7 @@ namespace meta_hpp
 
     template < typename Enum >
     template < typename... Internals >
-    inline enum_<Enum>& enum_<Enum>::operator()(Internals&&...internals) {
+    enum_<Enum>& enum_<Enum>::operator()(Internals&&...internals) {
         (add_(std::forward<Internals>(internals)), ...);
         return *this;
     }
@@ -58,13 +58,13 @@ namespace meta_hpp
 namespace meta_hpp
 {
     template < typename Enum >
-    inline void enum_<Enum>::add_(const data_& internal) {
+    void enum_<Enum>::add_(const data_& internal) {
         auto info = internal.make_info();
         detail::merge_with(datas_, info.name(), info, &data_info::merge);
     }
 
     template < typename Enum >
-    inline void enum_<Enum>::add_(const evalue_<Enum>& internal) {
+    void enum_<Enum>::add_(const evalue_<Enum>& internal) {
         auto info = internal.make_info();
         detail::merge_with(evalues_, info.name(), info, &evalue_info::merge);
     }

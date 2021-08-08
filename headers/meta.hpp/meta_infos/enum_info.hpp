@@ -109,7 +109,7 @@ namespace meta_hpp
 namespace meta_hpp
 {
     template < typename Enum >
-    inline enum_info::enum_info(typename_arg_t<Enum>, std::string name)
+    enum_info::enum_info(typename_arg_t<Enum>, std::string name)
     : state_{std::make_shared<state>(state{
         std::move(name),
         type_db::get<Enum>().template as<enum_type>(),

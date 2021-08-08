@@ -28,7 +28,6 @@ TEST_CASE("features/types/pointer") {
         REQUIRE(type_db::get<type>().is<pointer_type>());
 
         const pointer_type pt = type_db::get<type>().as<pointer_type>();
-        CHECK(pt.id() == type_id{typename_arg<base_type::tag<type>>});
 
         CHECK(pt.data_type().id() == type_db::get<ivec2>().id());
 
@@ -43,7 +42,6 @@ TEST_CASE("features/types/pointer") {
         REQUIRE(type_db::get<type>().is<pointer_type>());
 
         const pointer_type pt = type_db::get<type>().as<pointer_type>();
-        CHECK(pt.id() == type_id{typename_arg<base_type::tag<type>>});
 
         CHECK(pt.data_type().id() == type_db::get<const ivec2>().id());
 
@@ -58,7 +56,6 @@ TEST_CASE("features/types/pointer") {
         REQUIRE(type_db::get<type>().is<pointer_type>());
 
         const pointer_type pt = type_db::get<type>().as<pointer_type>();
-        CHECK(pt.id() == type_id{typename_arg<base_type::tag<type>>});
 
         CHECK(pt.data_type().id() == type_db::get<ivec2>().id());
 
@@ -73,7 +70,6 @@ TEST_CASE("features/types/pointer") {
         REQUIRE(type_db::get<type>().is<pointer_type>());
 
         const pointer_type pt = type_db::get<type>().as<pointer_type>();
-        CHECK(pt.id() == type_id{typename_arg<base_type::tag<type>>});
 
         CHECK(pt.data_type().id() == type_db::get<const ivec2>().id());
 

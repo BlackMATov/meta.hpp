@@ -20,7 +20,6 @@ TEST_CASE("features/types/arithmetic") {
         REQUIRE(type_db::get<type>().is<arithmetic_type>());
 
         const arithmetic_type at = type_db::get<type>().as<arithmetic_type>();
-        CHECK(at.id() == type_id{typename_arg<base_type::tag<type>>});
 
         CHECK_FALSE(at.raw_type());
         CHECK(at.size() == sizeof(type));
@@ -43,7 +42,6 @@ TEST_CASE("features/types/arithmetic") {
         REQUIRE(type_db::get<type>().is<arithmetic_type>());
 
         const arithmetic_type at = type_db::get<type>().as<arithmetic_type>();
-        CHECK(at.id() == type_id{typename_arg<base_type::tag<type>>});
 
         CHECK(at.raw_type().id() == type_db::get<float>().id());
         CHECK(at.size() == sizeof(type));
@@ -67,7 +65,6 @@ TEST_CASE("features/types/arithmetic") {
         REQUIRE(type_db::get<type>().is<arithmetic_type>());
 
         const arithmetic_type at = type_db::get<type>().as<arithmetic_type>();
-        CHECK(at.id() == type_id{typename_arg<base_type::tag<type>>});
 
         CHECK(at.raw_type().id() == type_db::get<unsigned>().id());
         CHECK(at.size() == sizeof(type));

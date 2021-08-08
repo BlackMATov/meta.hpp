@@ -79,8 +79,8 @@ namespace meta_hpp
     };
 
     template < typename T >
-    inline reference_type::reference_type(typename_arg_t<T>)
-    : type_base{typename_arg<T>}
+    reference_type::reference_type(typename_arg_t<T>)
+    : type_base{typename_arg<struct reference_type_tag, T>}
     , state_{std::make_shared<state>(state{
         detail::reference_traits<T>::make_data_type(),
         detail::reference_traits<T>::make_flags(),

@@ -107,8 +107,8 @@ namespace meta_hpp
     };
 
     template < typename T >
-    inline method_type::method_type(typename_arg_t<T>)
-    : type_base{typename_arg<T>}
+    method_type::method_type(typename_arg_t<T>)
+    : type_base{typename_arg<struct member_type_tag, T>}
     , state_{std::make_shared<state>(state{
         detail::method_pointer_traits<T>::arity,
         detail::method_pointer_traits<T>::make_class_type(),

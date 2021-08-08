@@ -38,7 +38,6 @@ TEST_CASE("features/types/class") {
         REQUIRE(type_db::get<type>().is<class_type>());
 
         const class_type ct = type_db::get<type>().as<class_type>();
-        CHECK(ct.id() == type_id{typename_arg<base_type::tag<type>>});
 
         CHECK_FALSE(ct.raw_type());
         CHECK(ct.size() == sizeof(type));
@@ -61,7 +60,6 @@ TEST_CASE("features/types/class") {
         REQUIRE(type_db::get<type>().is<class_type>());
 
         const class_type ct = type_db::get<type>().as<class_type>();
-        CHECK(ct.id() == type_id{typename_arg<base_type::tag<type>>});
 
         CHECK_FALSE(ct.raw_type());
         CHECK(ct.size() == sizeof(type));
@@ -84,7 +82,6 @@ TEST_CASE("features/types/class") {
         REQUIRE(type_db::get<type>().is<class_type>());
 
         const class_type ct = type_db::get<type>().as<class_type>();
-        CHECK(ct.id() == type_id{typename_arg<base_type::tag<type>>});
 
         CHECK_FALSE(ct.raw_type());
         CHECK(ct.size() == sizeof(type));
@@ -107,7 +104,6 @@ TEST_CASE("features/types/class") {
         REQUIRE(type_db::get<type>().is<class_type>());
 
         const class_type ct = type_db::get<type>().as<class_type>();
-        CHECK(ct.id() == type_id{typename_arg<base_type::tag<type>>});
 
         CHECK_FALSE(ct.raw_type());
         CHECK(ct.size() == sizeof(type));
@@ -129,7 +125,6 @@ TEST_CASE("features/types/class") {
         REQUIRE(type_db::get<type>().is<class_type>());
 
         const class_type ct = type_db::get<type>().as<class_type>();
-        CHECK(ct.id() == type_id{typename_arg<base_type::tag<type>>});
 
         REQUIRE(ct.raw_type());
         CHECK(ct.raw_type().id() == type_db::get<ivec2>().id());

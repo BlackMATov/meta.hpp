@@ -20,7 +20,6 @@ TEST_CASE("features/types/array") {
         REQUIRE(type_db::get<type>().is<array_type>());
 
         const array_type at = type_db::get<type>().as<array_type>();
-        CHECK(at.id() == type_id{typename_arg<base_type::tag<type>>});
 
         CHECK(at.data_type().id() == type_db::get<int>().id());
         CHECK(at.extent() == 0);
@@ -38,7 +37,6 @@ TEST_CASE("features/types/array") {
         REQUIRE(type_db::get<type>().is<array_type>());
 
         const array_type at = type_db::get<type>().as<array_type>();
-        CHECK(at.id() == type_id{typename_arg<base_type::tag<type>>});
 
         CHECK(at.data_type().id() == type_db::get<const unsigned>().id());
         CHECK(at.extent() == 42);

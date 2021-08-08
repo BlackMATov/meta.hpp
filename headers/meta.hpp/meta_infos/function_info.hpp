@@ -91,7 +91,7 @@ namespace meta_hpp
 namespace meta_hpp
 {
     template < typename Function >
-    inline function_info::function_info(std::string name, Function instance)
+    function_info::function_info(std::string name, Function instance)
     : state_{std::make_shared<state>(state{
         std::move(name),
         type_db::get<Function>().template as<function_type>(),

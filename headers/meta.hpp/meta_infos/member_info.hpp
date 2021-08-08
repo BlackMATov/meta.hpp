@@ -91,7 +91,7 @@ namespace meta_hpp
 namespace meta_hpp
 {
     template < typename Member >
-    inline member_info::member_info(std::string name, Member instance)
+    member_info::member_info(std::string name, Member instance)
     : state_{std::make_shared<state>(state{
         std::move(name),
         type_db::get<Member>().template as<member_type>(),

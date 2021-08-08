@@ -77,7 +77,7 @@ namespace meta_hpp
     };
 
     template < typename Class, typename... Args >
-    inline ctor_type::ctor_type(typename_arg_t<Class>, typename_arg_t<Args...>)
+    ctor_type::ctor_type(typename_arg_t<Class>, typename_arg_t<Args...>)
     : type_base{typename_arg<struct ctor_type_tag, Class, Args...>}
     , state_{std::make_shared<state>(state{
         detail::ctor_traits<Class, Args...>::arity,

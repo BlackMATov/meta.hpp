@@ -26,7 +26,6 @@ TEST_CASE("features/types/reference") {
         REQUIRE(type_db::get<ivec2&>().is<reference_type>());
 
         const reference_type rt = type_db::get<ivec2&>().as<reference_type>();
-        CHECK(rt.id() == type_id{typename_arg<base_type::tag<ivec2&>>});
 
         CHECK(rt.data_type().id() == type_db::get<ivec2>().id());
 
@@ -41,7 +40,6 @@ TEST_CASE("features/types/reference") {
         REQUIRE(type_db::get<const ivec2&&>().is<reference_type>());
 
         const reference_type rt = type_db::get<const ivec2&&>().as<reference_type>();
-        CHECK(rt.id() == type_id{typename_arg<base_type::tag<const ivec2&&>>});
 
         CHECK(rt.data_type().id() == type_db::get<const ivec2>().id());
 

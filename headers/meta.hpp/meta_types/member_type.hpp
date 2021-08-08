@@ -61,8 +61,8 @@ namespace meta_hpp::detail
 namespace meta_hpp
 {
     template < typename T >
-    inline member_type::member_type(typename_arg_t<T>)
-    : type_base{typename_arg<T>}
+    member_type::member_type(typename_arg_t<T>)
+    : type_base{typename_arg<struct member_type_tag, T>}
     , state_{std::make_shared<state>(state{
         detail::member_pointer_traits<T>::make_class_type(),
         detail::member_pointer_traits<T>::make_value_type(),

@@ -34,12 +34,12 @@ namespace meta_hpp
 namespace meta_hpp
 {
     template < typename Enum >
-    inline evalue_<Enum>::evalue_(std::string name, Enum value)
+    evalue_<Enum>::evalue_(std::string name, Enum value)
     : name_{std::move(name)}
     , value_{std::move(value)} {}
 
     template < typename Enum >
-    inline evalue_info evalue_<Enum>::make_info() const {
+    evalue_info evalue_<Enum>::make_info() const {
         evalue_info info{name_, value_};
         info.state_->datas.insert(datas_.begin(), datas_.end());
         return info;
@@ -47,7 +47,7 @@ namespace meta_hpp
 
     template < typename Enum >
     template < typename... Internals >
-    inline evalue_<Enum>& evalue_<Enum>::operator()(Internals&&...internals) {
+    evalue_<Enum>& evalue_<Enum>::operator()(Internals&&...internals) {
         (add_(std::forward<Internals>(internals)), ...);
         return *this;
     }
@@ -56,7 +56,7 @@ namespace meta_hpp
 namespace meta_hpp
 {
     template < typename Enum >
-    inline void evalue_<Enum>::add_(const data_& internal) {
+    void evalue_<Enum>::add_(const data_& internal) {
         auto info = internal.make_info();
         detail::merge_with(datas_, info.name(), info, &data_info::merge);
     }

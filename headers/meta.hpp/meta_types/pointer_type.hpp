@@ -75,8 +75,8 @@ namespace meta_hpp
     };
 
     template < typename T >
-    inline pointer_type::pointer_type(typename_arg_t<T>)
-    : type_base{typename_arg<T>}
+    pointer_type::pointer_type(typename_arg_t<T>)
+    : type_base{typename_arg<struct pointer_type_tag, T>}
     , state_{std::make_shared<state>(state{
         detail::pointer_traits<T>::make_data_type(),
         detail::pointer_traits<T>::make_flags(),

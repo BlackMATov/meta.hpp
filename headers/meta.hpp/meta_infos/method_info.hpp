@@ -91,7 +91,7 @@ namespace meta_hpp
 namespace meta_hpp
 {
     template < typename Method >
-    inline method_info::method_info(std::string name, Method instance)
+    method_info::method_info(std::string name, Method instance)
     : state_{std::make_shared<state>(state{
         std::move(name),
         type_db::get<Method>().template as<method_type>(),

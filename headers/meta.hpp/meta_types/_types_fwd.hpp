@@ -20,10 +20,6 @@ namespace meta_hpp
         type_id(const type_id&) = default;
         type_id& operator=(const type_id&) = default;
 
-        template < typename T >
-        explicit type_id(typename_arg_t<T>) noexcept
-        : id_{type_to_id<T>()} {}
-
         explicit operator bool() const noexcept {
             return !!id_;
         }
@@ -47,6 +43,12 @@ namespace meta_hpp
         using underlying_type = std::size_t;
         underlying_type id_{0u};
     private:
+        friend class type_base;
+
+        template < typename T >
+        explicit type_id(typename_arg_t<T>) noexcept
+        : id_{type_to_id<T>()} {}
+
         static underlying_type next() noexcept {
             static std::atomic<underlying_type> id{};
             return ++id;
@@ -86,10 +88,6 @@ namespace meta_hpp
         type_base(const type_base&) = default;
         type_base& operator=(const type_base&) = default;
 
-        template < typename... Ts >
-        explicit type_base(typename_arg_t<Ts...>)
-        : id_{typename_arg<tag<Ts...>>} {}
-
         type_id id() const noexcept {
             return id_;
         }
@@ -97,6 +95,10 @@ namespace meta_hpp
         explicit operator bool() const noexcept {
             return !!id_;
         }
+    protected:
+        template < typename... Ts >
+        explicit type_base(typename_arg_t<Ts...>)
+        : id_{typename_arg<tag<Ts...>>} {}
     private:
         type_id id_;
     };

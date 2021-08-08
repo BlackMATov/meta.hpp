@@ -84,8 +84,8 @@ namespace meta_hpp
     };
 
     template < typename T >
-    inline function_type::function_type(typename_arg_t<T>)
-    : type_base{typename_arg<T>}
+    function_type::function_type(typename_arg_t<T>)
+    : type_base{typename_arg<struct function_type_tag, T>}
     , state_{std::make_shared<state>(state{
         detail::function_pointer_traits<T>::arity,
         detail::function_pointer_traits<T>::make_return_type(),

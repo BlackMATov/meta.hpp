@@ -85,8 +85,8 @@ namespace meta_hpp
     };
 
     template < typename T >
-    inline class_type::class_type(typename_arg_t<T>)
-    : type_base{typename_arg<T>}
+    class_type::class_type(typename_arg_t<T>)
+    : type_base{typename_arg<struct class_type_tag, T>}
     , state_{std::make_shared<state>(state{
         detail::class_traits<T>::size,
         detail::class_traits<T>::make_raw_type(),

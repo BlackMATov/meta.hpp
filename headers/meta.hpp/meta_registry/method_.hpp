@@ -34,12 +34,12 @@ namespace meta_hpp
 namespace meta_hpp
 {
     template < typename Method >
-    inline method_<Method>::method_(std::string name, Method instance)
+    method_<Method>::method_(std::string name, Method instance)
     : name_{std::move(name)}
     , instance_{std::move(instance)} {}
 
     template < typename Method >
-    inline method_info method_<Method>::make_info() const {
+    method_info method_<Method>::make_info() const {
         method_info info{name_, instance_};
         info.state_->datas.insert(datas_.begin(), datas_.end());
         return info;
@@ -47,7 +47,7 @@ namespace meta_hpp
 
     template < typename Method >
     template < typename... Internals >
-    inline method_<Method>& method_<Method>::operator()(Internals&&...internals) {
+    method_<Method>& method_<Method>::operator()(Internals&&...internals) {
         (add_(std::forward<Internals>(internals)), ...);
         return *this;
     }
@@ -56,7 +56,7 @@ namespace meta_hpp
 namespace meta_hpp
 {
     template < typename Method >
-    inline void method_<Method>::add_(const data_& internal) {
+    void method_<Method>::add_(const data_& internal) {
         auto info = internal.make_info();
         detail::merge_with(datas_, info.name(), info, &data_info::merge);
     }

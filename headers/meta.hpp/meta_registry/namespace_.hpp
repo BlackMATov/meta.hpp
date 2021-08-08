@@ -59,7 +59,7 @@ namespace meta_hpp
     }
 
     template < typename... Internals >
-    inline namespace_& namespace_::operator()(Internals&&...internals) {
+    namespace_& namespace_::operator()(Internals&&...internals) {
         (add_(std::forward<Internals>(internals)), ...);
         return *this;
     }
@@ -68,7 +68,7 @@ namespace meta_hpp
 namespace meta_hpp
 {
     template < typename Class >
-    inline void namespace_::add_(const class_<Class>& internal) {
+    void namespace_::add_(const class_<Class>& internal) {
         auto info = internal.make_info();
         detail::merge_with(classes_, info.name(), info, &class_info::merge);
     }
@@ -79,13 +79,13 @@ namespace meta_hpp
     }
 
     template < typename Enum >
-    inline void namespace_::add_(const enum_<Enum>& internal) {
+    void namespace_::add_(const enum_<Enum>& internal) {
         auto info = internal.make_info();
         detail::merge_with(enums_, info.name(), info, &enum_info::merge);
     }
 
     template < typename Function >
-    inline void namespace_::add_(const function_<Function>& internal) {
+    void namespace_::add_(const function_<Function>& internal) {
         auto info = internal.make_info();
         detail::merge_with(functions_, info.name(), info, &function_info::merge);
     }

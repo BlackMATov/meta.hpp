@@ -85,8 +85,8 @@ namespace meta_hpp
     };
 
     template < typename T >
-    inline arithmetic_type::arithmetic_type(typename_arg_t<T>)
-    : type_base{typename_arg<T>}
+    arithmetic_type::arithmetic_type(typename_arg_t<T>)
+    : type_base{typename_arg<struct arithmetic_type_tag, T>}
     , state_{std::make_shared<state>(state{
         detail::arithmetic_traits<T>::size,
         detail::arithmetic_traits<T>::make_raw_type(),
