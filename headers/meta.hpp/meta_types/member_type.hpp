@@ -10,7 +10,7 @@
 
 namespace meta_hpp
 {
-    class member_type final : public base_type {
+    class member_type final : public type_base {
     public:
         member_type() = default;
 
@@ -62,7 +62,7 @@ namespace meta_hpp
 {
     template < typename T >
     inline member_type::member_type(typename_arg_t<T>)
-    : base_type{typename_arg<T>}
+    : type_base{typename_arg<T>}
     , state_{std::make_shared<state>(state{
         detail::member_pointer_traits<T>::make_class_type(),
         detail::member_pointer_traits<T>::make_value_type(),

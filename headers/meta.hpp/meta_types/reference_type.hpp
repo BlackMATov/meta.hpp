@@ -17,7 +17,7 @@ namespace meta_hpp
 
     ENUM_HPP_OPERATORS_DECL(reference_flags)
 
-    class reference_type final : public base_type {
+    class reference_type final : public type_base {
     public:
         reference_type() = default;
 
@@ -80,7 +80,7 @@ namespace meta_hpp
 
     template < typename T >
     inline reference_type::reference_type(typename_arg_t<T>)
-    : base_type{typename_arg<T>}
+    : type_base{typename_arg<T>}
     , state_{std::make_shared<state>(state{
         detail::reference_traits<T>::make_data_type(),
         detail::reference_traits<T>::make_flags(),

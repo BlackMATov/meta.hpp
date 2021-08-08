@@ -17,7 +17,7 @@ namespace meta_hpp
 
     ENUM_HPP_OPERATORS_DECL(method_flags)
 
-    class method_type final : public base_type {
+    class method_type final : public type_base {
     public:
         method_type() = default;
 
@@ -108,7 +108,7 @@ namespace meta_hpp
 
     template < typename T >
     inline method_type::method_type(typename_arg_t<T>)
-    : base_type{typename_arg<T>}
+    : type_base{typename_arg<T>}
     , state_{std::make_shared<state>(state{
         detail::method_pointer_traits<T>::arity,
         detail::method_pointer_traits<T>::make_class_type(),

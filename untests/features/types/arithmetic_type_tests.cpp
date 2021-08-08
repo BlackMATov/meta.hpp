@@ -22,7 +22,7 @@ TEST_CASE("features/types/arithmetic") {
         const arithmetic_type at = type_db::get<type>().as<arithmetic_type>();
         CHECK(at.id() == type_id{typename_arg<base_type::tag<type>>});
 
-        CHECK(at.raw_type().id() == type_db::get<type>().id());
+        CHECK_FALSE(at.raw_type());
         CHECK(at.size() == sizeof(type));
 
         CHECK(at.flags() == (

@@ -16,7 +16,7 @@ namespace meta_hpp
 
     ENUM_HPP_OPERATORS_DECL(function_flags)
 
-    class function_type final : public base_type {
+    class function_type final : public type_base {
     public:
         function_type() = default;
 
@@ -85,7 +85,7 @@ namespace meta_hpp
 
     template < typename T >
     inline function_type::function_type(typename_arg_t<T>)
-    : base_type{typename_arg<T>}
+    : type_base{typename_arg<T>}
     , state_{std::make_shared<state>(state{
         detail::function_pointer_traits<T>::arity,
         detail::function_pointer_traits<T>::make_return_type(),

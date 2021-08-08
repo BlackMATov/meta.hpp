@@ -22,7 +22,7 @@ TEST_CASE("features/types/void") {
         const void_type vt = type_db::get<type>().as<void_type>();
         CHECK(vt.id() == type_id{typename_arg<base_type::tag<type>>});
 
-        CHECK(vt.raw_type().id() == type_db::get<type>().id());
+        CHECK_FALSE(vt.raw_type());
 
         CHECK(vt.flags() == (void_flags{}));
         CHECK_FALSE(vt.is_const());
@@ -37,6 +37,7 @@ TEST_CASE("features/types/void") {
         const void_type vt = type_db::get<type>().as<void_type>();
         CHECK(vt.id() == type_id{typename_arg<base_type::tag<type>>});
 
+        REQUIRE(vt.raw_type());
         CHECK(vt.raw_type().id() == type_db::get<void>().id());
 
         CHECK(vt.flags() == (void_flags::is_const));

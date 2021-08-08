@@ -31,7 +31,7 @@ TEST_CASE("features/types/enum") {
         const enum_type et = type_db::get<type>().as<enum_type>();
         CHECK(et.id() == type_id{typename_arg<base_type::tag<type>>});
 
-        CHECK(et.raw_type().id() == type_db::get<type>().id());
+        CHECK_FALSE(et.raw_type());
         CHECK(et.underlying_type().id() == type_db::get<unsigned>().id());
 
         CHECK(et.flags() == (enum_flags{}));
@@ -47,6 +47,7 @@ TEST_CASE("features/types/enum") {
         const enum_type et = type_db::get<type>().as<enum_type>();
         CHECK(et.id() == type_id{typename_arg<base_type::tag<type>>});
 
+        REQUIRE(et.raw_type());
         CHECK(et.raw_type().id() == type_db::get<ecolor>().id());
         CHECK(et.underlying_type().id() == type_db::get<unsigned>().id());
 

@@ -16,7 +16,7 @@ namespace meta_hpp
 
     ENUM_HPP_OPERATORS_DECL(ctor_flags)
 
-    class ctor_type final : public base_type {
+    class ctor_type final : public type_base {
     public:
         ctor_type() = default;
 
@@ -78,7 +78,7 @@ namespace meta_hpp
 
     template < typename Class, typename... Args >
     inline ctor_type::ctor_type(typename_arg_t<Class>, typename_arg_t<Args...>)
-    : base_type{typename_arg<Class, Args...>}
+    : type_base{typename_arg<struct ctor_type_tag, Class, Args...>}
     , state_{std::make_shared<state>(state{
         detail::ctor_traits<Class, Args...>::arity,
         detail::ctor_traits<Class, Args...>::make_class_type(),

@@ -16,7 +16,7 @@ namespace meta_hpp
 
     ENUM_HPP_OPERATORS_DECL(void_flags)
 
-    class void_type final : public base_type {
+    class void_type final : public type_base {
     public:
         void_type() = default;
 
@@ -54,10 +54,10 @@ namespace meta_hpp::detail
 
     template < typename T >
     struct void_traits<T, std::enable_if_t<std::is_void_v<T>>> {
-        static any_type make_raw_type(const void_type& self) {
+        static any_type make_raw_type() {
             using raw_type = std::remove_const_t<T>;
             return std::is_same_v<T, raw_type>
-                ? any_type{self}
+                ? any_type{}
                 : type_db::get<raw_type>();
         }
 
@@ -73,9 +73,9 @@ namespace meta_hpp
 {
     template < typename T >
     inline void_type::void_type(typename_arg_t<T>)
-    : base_type{typename_arg<T>}
+    : type_base{typename_arg<T>}
     , state_{std::make_shared<state>(state{
-        detail::void_traits<T>::make_raw_type(*this),
+        detail::void_traits<T>::make_raw_type(),
         detail::void_traits<T>::make_flags(),
     })} {
         static_assert(std::is_void_v<T>);

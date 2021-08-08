@@ -20,7 +20,7 @@ namespace meta_hpp
 
     ENUM_HPP_OPERATORS_DECL(class_flags)
 
-    class class_type final : public base_type {
+    class class_type final : public type_base {
     public:
         class_type() = default;
 
@@ -57,10 +57,10 @@ namespace meta_hpp::detail
     struct class_traits<T, std::enable_if_t<std::is_class_v<T>>> {
         static constexpr std::size_t size{sizeof(T)};
 
-        static any_type make_raw_type(const class_type& self) {
+        static any_type make_raw_type() {
             using raw_type = std::remove_const_t<T>;
             return std::is_same_v<T, raw_type>
-                ? any_type{self}
+                ? any_type{}
                 : type_db::get<raw_type>();
         }
 
@@ -86,10 +86,10 @@ namespace meta_hpp
 
     template < typename T >
     inline class_type::class_type(typename_arg_t<T>)
-    : base_type{typename_arg<T>}
+    : type_base{typename_arg<T>}
     , state_{std::make_shared<state>(state{
         detail::class_traits<T>::size,
-        detail::class_traits<T>::make_raw_type(*this),
+        detail::class_traits<T>::make_raw_type(),
         detail::class_traits<T>::make_flags(),
     })} {
         static_assert(std::is_class_v<T>);

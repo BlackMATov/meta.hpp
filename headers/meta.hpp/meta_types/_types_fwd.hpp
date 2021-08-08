@@ -72,22 +72,22 @@ namespace std
 
 namespace meta_hpp
 {
-    class base_type {
+    class type_base {
     public:
         template < typename... Ts >
         struct tag {};
     public:
-        base_type() = default;
-        virtual ~base_type() = default;
+        type_base() = default;
+        virtual ~type_base() = default;
 
-        base_type(base_type&&) = default;
-        base_type& operator=(base_type&&) = default;
+        type_base(type_base&&) = default;
+        type_base& operator=(type_base&&) = default;
 
-        base_type(const base_type&) = default;
-        base_type& operator=(const base_type&) = default;
+        type_base(const type_base&) = default;
+        type_base& operator=(const type_base&) = default;
 
         template < typename... Ts >
-        explicit base_type(typename_arg_t<Ts...>)
+        explicit type_base(typename_arg_t<Ts...>)
         : id_{typename_arg<tag<Ts...>>} {}
 
         type_id id() const noexcept {
@@ -114,11 +114,6 @@ namespace meta_hpp
         any_type(const any_type&) = default;
         any_type& operator=(const any_type&) = default;
 
-        template < typename T, std::enable_if_t<std::is_base_of_v<base_type, T>, int> = 0 >
-        any_type(const T& type)
-        : id_{type.id()}
-        , type_{std::addressof(type)} {}
-
         type_id id() const noexcept {
             return id_;
         }
@@ -128,16 +123,24 @@ namespace meta_hpp
         }
 
         template < typename T >
-        std::enable_if_t<std::is_base_of_v<base_type, T>, T> as() const noexcept {
+        std::enable_if_t<std::is_base_of_v<type_base, T>, T> as() const noexcept {
             using Tptr = std::add_pointer_t<std::add_const_t<T>>;
             return is<T>() ? *std::get<Tptr>(type_) : T{};
         }
 
         template < typename T >
-        std::enable_if_t<std::is_base_of_v<base_type, T>, bool> is() const noexcept {
+        std::enable_if_t<std::is_base_of_v<type_base, T>, bool> is() const noexcept {
             using Tptr = std::add_pointer_t<std::add_const_t<T>>;
             return std::holds_alternative<Tptr>(type_);
         }
+    private:
+        friend class type_db;
+
+        template < typename T
+                 , std::enable_if_t<std::is_base_of_v<type_base, T>, int> = 0 >
+        explicit any_type(const T& type)
+        : id_{type.id()}
+        , type_{std::addressof(type)} {}
     private:
         type_id id_;
         std::variant<
