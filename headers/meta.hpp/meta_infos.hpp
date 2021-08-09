@@ -8,6 +8,7 @@
 
 #include "meta_fwd.hpp"
 
+#include "meta_infos/base_info.hpp"
 #include "meta_infos/class_info.hpp"
 #include "meta_infos/ctor_info.hpp"
 #include "meta_infos/data_info.hpp"

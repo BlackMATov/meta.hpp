@@ -8,6 +8,7 @@
 
 #include "_registry_fwd.hpp"
 
+#include "base_.hpp"
 #include "ctor_.hpp"
 #include "data_.hpp"
 #include "enum_.hpp"
@@ -27,6 +28,8 @@ namespace meta_hpp
         template < typename... Internals >
         class_& operator()(Internals&&...internals);
     private:
+        template < typename Base >
+        void add_(const base_<Base>& internal);
         template < typename Class2 >
         void add_(const class_<Class2>& internal);
         template < typename... Args >
@@ -43,6 +46,7 @@ namespace meta_hpp
         void add_(...) = delete;
     private:
         std::string name_;
+        base_info_map bases_;
         class_info_map classes_;
         ctor_info_map ctors_;
         data_info_map datas_;
@@ -62,6 +66,7 @@ namespace meta_hpp
     template < typename Class >
     class_info class_<Class>::make_info() const {
         class_info info{typename_arg<Class>, name_};
+        info.state_->bases.insert(bases_.begin(), bases_.end());
         info.state_->classes.insert(classes_.begin(), classes_.end());
         info.state_->ctors.insert(ctors_.begin(), ctors_.end());
         info.state_->datas.insert(datas_.begin(), datas_.end());
@@ -82,6 +87,13 @@ namespace meta_hpp
 
 namespace meta_hpp
 {
+    template < typename Class >
+    template < typename Base >
+    void class_<Class>::add_(const base_<Base>& internal) {
+        auto info = internal.template make_info<Class>();
+        detail::merge_with(bases_, info.type().id(), info, &base_info::merge);
+    }
+
     template < typename Class >
     template < typename Class2 >
     void class_<Class>::add_(const class_<Class2>& internal) {

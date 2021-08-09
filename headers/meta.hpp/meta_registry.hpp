@@ -9,6 +9,7 @@
 #include "meta_fwd.hpp"
 #include "meta_infos.hpp"
 
+#include "meta_registry/base_.hpp"
 #include "meta_registry/class_.hpp"
 #include "meta_registry/ctor_.hpp"
 #include "meta_registry/data_.hpp"
@@ -48,6 +49,7 @@ namespace meta_hpp
         void add_(const std::string& prefix, ...) = delete;
     private:
         struct add_info_f;
+        void add_info_(const std::string& prefix, const base_info& info);
         void add_info_(const std::string& prefix, const class_info& info);
         void add_info_(const std::string& prefix, const ctor_info& info);
         void add_info_(const std::string& prefix, const data_info& info);
@@ -148,6 +150,11 @@ namespace meta_hpp
             self.add_info_(prefix, std::forward<Info>(info));
         }
     };
+
+    inline void registry::add_info_(const std::string& prefix, const base_info& info) {
+        (void)prefix;
+        (void)info;
+    }
 
     inline void registry::add_info_(const std::string& prefix, const class_info& info) {
         std::string name = prefix.empty() ? info.name() : prefix + "::" + info.name();

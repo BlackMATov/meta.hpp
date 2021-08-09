@@ -148,6 +148,7 @@ namespace meta_hpp
         std::variant<
             const arithmetic_type*,
             const array_type*,
+            const base_type*,
             const class_type*,
             const ctor_type*,
             const enum_type*,

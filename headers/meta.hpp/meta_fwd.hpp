@@ -40,6 +40,7 @@ namespace meta_hpp
 
 namespace meta_hpp
 {
+    class base_info;
     class class_info;
     class ctor_info;
     class data_info;
@@ -53,6 +54,7 @@ namespace meta_hpp
 
 namespace meta_hpp
 {
+    template < typename Base > class base_;
     template < typename Class > class class_;
     template < typename... Args > class ctor_;
     class data_;
@@ -70,6 +72,7 @@ namespace meta_hpp
 
     class arithmetic_type;
     class array_type;
+    class base_type;
     class class_type;
     class ctor_type;
     class enum_type;
@@ -92,6 +95,7 @@ namespace meta_hpp
     template < typename K, typename V >
     using info_map = std::map<K, V, std::less<>>;
 
+    using base_info_map = info_map<type_id, base_info>;
     using class_info_map = info_map<std::string, class_info>;
     using ctor_info_map = info_map<type_id, ctor_info>;
     using data_info_map = info_map<std::string, data_info>;

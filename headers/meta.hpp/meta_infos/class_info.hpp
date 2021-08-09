@@ -8,6 +8,7 @@
 
 #include "_infos_fwd.hpp"
 
+#include "base_info.hpp"
 #include "ctor_info.hpp"
 #include "data_info.hpp"
 #include "enum_info.hpp"
@@ -26,9 +27,22 @@ namespace meta_hpp
 
         const std::string& name() const noexcept;
         const class_type& type() const noexcept;
+
+        template < typename Base >
+        bool is_derived_from() const;
+        bool is_derived_from(any_type base) const noexcept;
+
+        template < typename... Args >
+        ctor_info get_ctor_by_args() const noexcept;
+        template < std::size_t Args >
+        ctor_info get_ctor_by_args(const std::array<any_type, Args>& args) const noexcept;
+        ctor_info get_ctor_by_args(const std::vector<any_type>& args) const noexcept;
     public:
         template < typename F >
         void visit(F&& f) const;
+
+        template < typename F >
+        void each_base(F&& f) const;
 
         template < typename F >
         void each_class(F&& f) const;
@@ -73,6 +87,7 @@ namespace meta_hpp
     struct class_info::state final {
         std::string name;
         class_type type;
+        base_info_map bases;
         class_info_map classes;
         ctor_info_map ctors;
         data_info_map datas;
@@ -101,12 +116,62 @@ namespace meta_hpp
     inline const class_type& class_info::type() const noexcept {
         return state_->type;
     }
+
+    template < typename Base >
+    bool class_info::is_derived_from() const {
+        return class_info::is_derived_from(type_db::get<Base>());
+    }
+
+    inline bool class_info::is_derived_from(any_type base) const noexcept {
+        for ( auto&& id_info : state_->bases ) {
+            if ( base.id() == id_info.second.type().base_class_type().id() ) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    template < typename... Args >
+    ctor_info class_info::get_ctor_by_args() const noexcept {
+        std::array<any_type, sizeof...(Args)> args{type_db::get<Args>()...};
+        return get_ctor_by_args(args);
+    }
+
+    template < std::size_t Args >
+    ctor_info class_info::get_ctor_by_args(const std::array<any_type, Args>& args) const noexcept {
+        for ( auto&& id_info : state_->ctors ) {
+            const std::vector<any_type>& ctor_args =
+                id_info.second.type().argument_types();
+
+            if ( args.size() == ctor_args.size()
+                && std::equal(args.begin(), args.end(), ctor_args.begin()) )
+            {
+                return id_info.second;
+            }
+        }
+        return ctor_info{};
+    }
+
+    inline ctor_info class_info::get_ctor_by_args(const std::vector<any_type>& args) const noexcept {
+        for ( auto&& id_info : state_->ctors ) {
+            const std::vector<any_type>& ctor_args =
+                id_info.second.type().argument_types();
+
+            if ( args.size() == ctor_args.size()
+                && std::equal(args.begin(), args.end(), ctor_args.begin()) )
+            {
+                return id_info.second;
+            }
+        }
+        return ctor_info{};
+    }
 }
 
 namespace meta_hpp
 {
     template < typename F >
     void class_info::visit(F&& f) const {
+        each_base(f);
         each_class(f);
         each_ctor(f);
         each_data(f);
@@ -114,6 +179,13 @@ namespace meta_hpp
         each_function(f);
         each_member(f);
         each_method(f);
+    }
+
+    template < typename F >
+    void class_info::each_base(F&& f) const {
+        for ( auto&& id_info : state_->bases ) {
+            std::invoke(f, id_info.second);
+        }
     }
 
     template < typename F >
@@ -197,6 +269,6 @@ namespace meta_hpp
     : state_{std::make_shared<state>(state{
         std::move(name),
         type_db::get<Class>().template as<class_type>(),
-        {}, {}, {}, {}, {}, {}, {}
+        {}, {}, {}, {}, {}, {}, {}, {}
     })} {}
 }

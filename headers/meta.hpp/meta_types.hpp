@@ -10,6 +10,7 @@
 
 #include "meta_types/arithmetic_type.hpp"
 #include "meta_types/array_type.hpp"
+#include "meta_types/base_type.hpp"
 #include "meta_types/class_type.hpp"
 #include "meta_types/ctor_type.hpp"
 #include "meta_types/enum_type.hpp"
