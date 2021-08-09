@@ -44,10 +44,6 @@ namespace meta_hpp
         void add_(const std::string& prefix, const enum_<Enum>& internal);
         template < typename Function >
         void add_(const std::string& prefix, const function_<Function>& internal);
-        template < typename Member >
-        void add_(const std::string& prefix, const member_<Member>& internal);
-        template < typename Method >
-        void add_(const std::string& prefix, const method_<Method>& internal);
         void add_(const std::string& prefix, const namespace_& internal);
         void add_(const std::string& prefix, ...) = delete;
     private:
@@ -136,16 +132,6 @@ namespace meta_hpp
 
     template < typename Function >
     inline void registry::add_(const std::string& prefix, const function_<Function>& internal) {
-        add_info_(prefix, internal.make_info());
-    }
-
-    template < typename Member >
-    inline void registry::add_(const std::string& prefix, const member_<Member>& internal) {
-        add_info_(prefix, internal.make_info());
-    }
-
-    template < typename Method >
-    inline void registry::add_(const std::string& prefix, const method_<Method>& internal) {
         add_info_(prefix, internal.make_info());
     }
 

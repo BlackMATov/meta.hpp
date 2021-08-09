@@ -30,6 +30,40 @@ TEST_CASE("features/types/array") {
         CHECK(at.is_unbounded());
     }
 
+    SUBCASE("unsigned[42][]") {
+        using type = unsigned[][42];
+
+        REQUIRE(type_db::get<type>());
+        REQUIRE(type_db::get<type>().is<array_type>());
+
+        const array_type at = type_db::get<type>().as<array_type>();
+
+        CHECK(at.data_type().id() == type_db::get<unsigned[42]>().id());
+        CHECK(at.extent() == 0);
+
+        CHECK(at.flags() == (array_flags::is_unbounded));
+
+        CHECK_FALSE(at.is_bounded());
+        CHECK(at.is_unbounded());
+    }
+
+    SUBCASE("const int[42][21]") {
+        using type = const int[42][21];
+
+        REQUIRE(type_db::get<type>());
+        REQUIRE(type_db::get<type>().is<array_type>());
+
+        const array_type at = type_db::get<type>().as<array_type>();
+
+        CHECK(at.data_type().id() == type_db::get<const int[21]>().id());
+        CHECK(at.extent() == 42);
+
+        CHECK(at.flags() == (array_flags::is_bounded));
+
+        CHECK(at.is_bounded());
+        CHECK_FALSE(at.is_unbounded());
+    }
+
     SUBCASE("const unsigned[42]") {
         using type = const unsigned[42];
 

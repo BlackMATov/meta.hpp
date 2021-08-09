@@ -51,13 +51,14 @@ namespace meta_hpp::detail
     struct function_pointer_traits<R(*)(Args...)> {
         static constexpr std::size_t arity{sizeof...(Args)};
 
+        using return_type = R;
+        using argument_types = std::tuple<Args...>;
+
         static any_type make_return_type() {
-            using return_type = R;
             return type_db::get<return_type>();
         }
 
         static std::vector<any_type> make_argument_types() {
-            using argument_types = std::tuple<Args...>;
             return type_db::multi_get<argument_types>();
         }
 

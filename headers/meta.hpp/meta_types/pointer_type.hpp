@@ -40,29 +40,18 @@ namespace meta_hpp
 namespace meta_hpp::detail
 {
     template < typename T >
-    struct pointer_traits;
+    struct pointer_traits {
+        static_assert(std::is_pointer_v<T>);
+        using data_type = std::remove_pointer_t<T>;
 
-    template < typename T >
-    struct pointer_traits<T*> {
         static any_type make_data_type() {
-            using data_type = T;
             return type_db::get<data_type>();
         }
 
         static bitflags<pointer_flags> make_flags() noexcept {
-            return bitflags<pointer_flags>{};
-        }
-    };
-
-    template < typename T >
-    struct pointer_traits<T* const> {
-        static any_type make_data_type() {
-            using data_type = T;
-            return type_db::get<data_type>();
-        }
-
-        static bitflags<pointer_flags> make_flags() noexcept {
-            return pointer_flags::is_const;
+            bitflags<pointer_flags> flags;
+            if ( std::is_const_v<T> ) flags.set(pointer_flags::is_const);
+            return flags;
         }
     };
 }

@@ -109,40 +109,29 @@ namespace meta_hpp
     struct typename_arg_t {};
 
     template < typename... Args >
-    inline typename_arg_t<Args...> typename_arg;
+    inline constexpr typename_arg_t<Args...> typename_arg;
 }
 
-namespace meta_hpp
+namespace meta_hpp::stdex
 {
     template < typename T >
-    struct add_ptr {
-        using type = std::add_pointer_t<T>;
-    };
+    struct is_bounded_array: std::false_type {};
+    template < typename T, std::size_t N >
+    struct is_bounded_array<T[N]>: std::true_type {};
+    template < typename T >
+    inline constexpr bool is_bounded_array_v = is_bounded_array<T>::value;
 
     template < typename T >
-    struct remove_cv {
-        using type = std::remove_cv_t<T>;
-    };
-
+    struct is_unbounded_array: std::false_type {};
     template < typename T >
-    struct remove_ref {
-        using type = std::remove_reference_t<T>;
-    };
+    struct is_unbounded_array<T[]>: std::true_type {};
+    template < typename T >
+    inline constexpr bool is_unbounded_array_v = is_unbounded_array<T>::value;
 
     template < typename T >
     struct remove_cvref {
         using type = std::remove_cv_t<std::remove_reference_t<T>>;
     };
-
-    template < typename T >
-    using add_ptr_t = typename add_ptr<T>::type;
-
-    template < typename T >
-    using remove_cv_t = typename remove_cv<T>::type;
-
-    template < typename T >
-    using remove_ref_t = typename remove_ref<T>::type;
-
     template < typename T >
     using remove_cvref_t = typename remove_cvref<T>::type;
 }

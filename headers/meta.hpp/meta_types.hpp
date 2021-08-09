@@ -70,13 +70,13 @@ namespace meta_hpp
     }
 
     template < typename T >
-    inline any_type type_db::get() {
+    any_type type_db::get() {
         static const auto raw_type = detail::make_any_type<T>();
         return any_type{raw_type};
     }
 
     template < typename Tuple >
-    inline std::vector<any_type> type_db::multi_get() {
+    std::vector<any_type> type_db::multi_get() {
         return detail::multi_get_impl<Tuple>::get();
     }
 }

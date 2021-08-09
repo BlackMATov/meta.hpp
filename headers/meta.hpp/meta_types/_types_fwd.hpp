@@ -158,6 +158,28 @@ namespace meta_hpp
             const reference_type*,
             const void_type*> type_;
     };
+
+    inline bool operator<(const any_type& l, const any_type& r) noexcept {
+        return l.id() < r.id();
+    }
+
+    inline bool operator==(const any_type& l, const any_type& r) noexcept {
+        return l.id() == r.id();
+    }
+
+    inline bool operator!=(const any_type& l, const any_type& r) noexcept {
+        return l.id() != r.id();
+    }
+}
+
+namespace std
+{
+    template <>
+    struct hash<meta_hpp::any_type> {
+        size_t operator()(const meta_hpp::any_type& type) const noexcept {
+            return type.id().hash();
+        }
+    };
 }
 
 namespace meta_hpp

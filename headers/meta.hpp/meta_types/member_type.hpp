@@ -46,13 +46,14 @@ namespace meta_hpp::detail
 
     template < typename V, typename C >
     struct member_pointer_traits<V C::*> {
+        using class_type = C;
+        using value_type = V;
+
         static any_type make_class_type() {
-            using class_type = C;
             return type_db::get<class_type>();
         }
 
         static any_type make_value_type() {
-            using value_type = V;
             return type_db::get<value_type>();
         }
     };

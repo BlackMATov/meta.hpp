@@ -30,6 +30,7 @@ TEST_CASE("features/types/enum") {
 
         const enum_type et = type_db::get<type>().as<enum_type>();
 
+        CHECK(et.size() == sizeof(type));
         CHECK_FALSE(et.raw_type());
         CHECK(et.underlying_type().id() == type_db::get<unsigned>().id());
 
@@ -45,6 +46,7 @@ TEST_CASE("features/types/enum") {
 
         const enum_type et = type_db::get<type>().as<enum_type>();
 
+        CHECK(et.size() == sizeof(type));
         REQUIRE(et.raw_type());
         CHECK(et.raw_type().id() == type_db::get<ecolor>().id());
         CHECK(et.underlying_type().id() == type_db::get<unsigned>().id());

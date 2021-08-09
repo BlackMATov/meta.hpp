@@ -29,6 +29,7 @@ namespace meta_hpp
         template < typename T >
         explicit enum_type(typename_arg_t<T>);
 
+        std::size_t size() const noexcept;
         any_type raw_type() const noexcept;
         any_type underlying_type() const noexcept;
 
@@ -42,20 +43,21 @@ namespace meta_hpp
 
 namespace meta_hpp::detail
 {
-    template < typename T, typename = void >
-    struct enum_traits;
-
     template < typename T >
-    struct enum_traits<T, std::enable_if_t<std::is_enum_v<T>>> {
+    struct enum_traits {
+        static_assert(std::is_enum_v<T>);
+        static constexpr std::size_t size{sizeof(T)};
+
+        using raw_type = std::remove_const_t<T>;
+        using underlying_type = std::underlying_type_t<T>;
+
         static any_type make_raw_type() {
-            using raw_type = std::remove_const_t<T>;
             return std::is_same_v<T, raw_type>
                 ? any_type{}
                 : type_db::get<raw_type>();
         }
 
         static any_type make_underlying_type() {
-            using underlying_type = std::underlying_type_t<T>;
             return type_db::get<underlying_type>();
         }
 
@@ -70,6 +72,7 @@ namespace meta_hpp::detail
 namespace meta_hpp
 {
     struct enum_type::state final {
+        const std::size_t size;
         const any_type raw_type;
         const any_type underlying_type;
         const bitflags<enum_flags> flags;
@@ -79,11 +82,16 @@ namespace meta_hpp
     enum_type::enum_type(typename_arg_t<T>)
     : type_base{typename_arg<struct enum_type_tag, T>}
     , state_{std::make_shared<state>(state{
+        detail::enum_traits<T>::size,
         detail::enum_traits<T>::make_raw_type(),
         detail::enum_traits<T>::make_underlying_type(),
         detail::enum_traits<T>::make_flags(),
     })} {
         static_assert(std::is_enum_v<T>);
+    }
+
+    inline std::size_t enum_type::size() const noexcept {
+        return state_->size;
     }
 
     inline any_type enum_type::raw_type() const noexcept {

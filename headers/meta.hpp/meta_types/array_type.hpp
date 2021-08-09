@@ -54,33 +54,21 @@ namespace meta_hpp
 namespace meta_hpp::detail
 {
     template < typename T >
-    struct array_traits;
+    struct array_traits {
+        static_assert(std::is_array_v<T>);
+        static constexpr std::size_t extent{std::extent_v<T>};
 
-    template < typename T >
-    struct array_traits<T[]> {
-        static constexpr std::size_t extent{0};
+        using data_type = std::remove_extent_t<T>;
 
         static any_type make_data_type() {
-            using data_type = T;
             return type_db::get<data_type>();
         }
 
         static bitflags<array_flags> make_flags() noexcept {
-            return array_flags::is_unbounded;
-        }
-    };
-
-    template < typename T, std::size_t N >
-    struct array_traits<T[N]> {
-        static constexpr std::size_t extent{N};
-
-        static any_type make_data_type() {
-            using data_type = T;
-            return type_db::get<data_type>();
-        }
-
-        static bitflags<array_flags> make_flags() noexcept {
-            return array_flags::is_bounded;
+            bitflags<array_flags> flags;
+            if ( stdex::is_bounded_array_v<T> ) flags.set(array_flags::is_bounded);
+            if ( stdex::is_unbounded_array_v<T> ) flags.set(array_flags::is_unbounded);
+            return flags;
         }
     };
 }

@@ -50,15 +50,14 @@ namespace meta_hpp
 
 namespace meta_hpp::detail
 {
-    template < typename T, typename = void >
-    struct class_traits;
-
     template < typename T >
-    struct class_traits<T, std::enable_if_t<std::is_class_v<T>>> {
+    struct class_traits {
+        static_assert(std::is_class_v<T>);
         static constexpr std::size_t size{sizeof(T)};
 
+        using raw_type = std::remove_const_t<T>;
+
         static any_type make_raw_type() {
-            using raw_type = std::remove_const_t<T>;
             return std::is_same_v<T, raw_type>
                 ? any_type{}
                 : type_db::get<raw_type>();

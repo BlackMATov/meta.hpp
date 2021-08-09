@@ -44,24 +44,25 @@ namespace meta_hpp
 
 namespace meta_hpp::detail
 {
-    template < typename C, typename... Args >
+    template < typename Class, typename... Args >
     struct ctor_traits {
-        static_assert(std::is_constructible_v<C, Args...>);
+        static_assert(std::is_constructible_v<Class, Args...>);
         static constexpr std::size_t arity{sizeof...(Args)};
 
+        using class_type = Class;
+        using argument_types = std::tuple<Args...>;
+
         static any_type make_class_type() {
-            using class_type = C;
             return type_db::get<class_type>();
         }
 
         static std::vector<any_type> make_argument_types() {
-            using argument_types = std::tuple<Args...>;
             return type_db::multi_get<argument_types>();
         }
 
         static bitflags<ctor_flags> make_flags() noexcept {
             bitflags<ctor_flags> flags;
-            if ( std::is_nothrow_constructible_v<C, Args...> ) flags.set(ctor_flags::is_noexcept);
+            if ( std::is_nothrow_constructible_v<Class, Args...> ) flags.set(ctor_flags::is_noexcept);
             return flags;
         }
     };

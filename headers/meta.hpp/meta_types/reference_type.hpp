@@ -44,29 +44,19 @@ namespace meta_hpp
 namespace meta_hpp::detail
 {
     template < typename T >
-    struct reference_traits;
+    struct reference_traits {
+        static_assert(std::is_reference_v<T>);
+        using data_type = std::remove_reference_t<T>;
 
-    template < typename T >
-    struct reference_traits<T&> {
         static any_type make_data_type() {
-            using data_type = T;
             return type_db::get<data_type>();
         }
 
         static bitflags<reference_flags> make_flags() noexcept {
-            return reference_flags::is_lvalue;
-        }
-    };
-
-    template < typename T >
-    struct reference_traits<T&&> {
-        static any_type make_data_type() {
-            using data_type = T;
-            return type_db::get<data_type>();
-        }
-
-        static bitflags<reference_flags> make_flags() noexcept {
-            return reference_flags::is_rvalue;
+            bitflags<reference_flags> flags;
+            if ( std::is_lvalue_reference_v<T> ) flags.set(reference_flags::is_lvalue);
+            if ( std::is_rvalue_reference_v<T> ) flags.set(reference_flags::is_rvalue);
+            return flags;
         }
     };
 }

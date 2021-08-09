@@ -54,18 +54,19 @@ namespace meta_hpp::detail
     struct method_pointer_traits<R(C::*)(Args...)> {
         static constexpr std::size_t arity{sizeof...(Args)};
 
+        using class_type = C;
+        using return_type = R;
+        using argument_types = std::tuple<Args...>;
+
         static any_type make_class_type() {
-            using class_type = C;
             return type_db::get<class_type>();
         }
 
         static any_type make_return_type() {
-            using return_type = R;
             return type_db::get<return_type>();
         }
 
         static std::vector<any_type> make_argument_types() {
-            using argument_types = std::tuple<Args...>;
             return type_db::multi_get<argument_types>();
         }
 
