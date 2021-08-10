@@ -183,42 +183,42 @@ TEST_CASE("features/utilities/arg/type") {
     }
 }
 
-TEST_CASE("features/utilities/arg/can_cast") {
+TEST_CASE("features/utilities/arg/can_cast_to") {
     SUBCASE("ptr") {
         ivec2 v{1,2};
         ivec2* vp = &v;
         arg a{vp};
 
-        CHECK_FALSE(a.can_cast<ivec2>());
-        CHECK_FALSE(a.can_cast<const ivec2>());
+        CHECK_FALSE(a.can_cast_to<ivec2>());
+        CHECK_FALSE(a.can_cast_to<const ivec2>());
 
-        CHECK(a.can_cast<ivec2*>());
-        CHECK(a.can_cast<const ivec2*>());
-        CHECK(a.can_cast<ivec2* const>());
-        CHECK(a.can_cast<const ivec2* const>());
+        CHECK(a.can_cast_to<ivec2*>());
+        CHECK(a.can_cast_to<const ivec2*>());
+        CHECK(a.can_cast_to<ivec2* const>());
+        CHECK(a.can_cast_to<const ivec2* const>());
 
-        CHECK_FALSE(a.can_cast<ivec2&>());
-        CHECK_FALSE(a.can_cast<const ivec2&>());
-        CHECK_FALSE(a.can_cast<ivec2&&>());
-        CHECK_FALSE(a.can_cast<const ivec2&&>());
+        CHECK_FALSE(a.can_cast_to<ivec2&>());
+        CHECK_FALSE(a.can_cast_to<const ivec2&>());
+        CHECK_FALSE(a.can_cast_to<ivec2&&>());
+        CHECK_FALSE(a.can_cast_to<const ivec2&&>());
 
         {
-            CHECK_FALSE(a.can_cast<ivec3*>());
-            CHECK_FALSE(a.can_cast<const ivec3*>());
-            CHECK_FALSE(a.can_cast<ivec3* const>());
-            CHECK_FALSE(a.can_cast<const ivec3* const>());
+            CHECK_FALSE(a.can_cast_to<ivec3*>());
+            CHECK_FALSE(a.can_cast_to<const ivec3*>());
+            CHECK_FALSE(a.can_cast_to<ivec3* const>());
+            CHECK_FALSE(a.can_cast_to<const ivec3* const>());
         }
 
         {
-            CHECK(a.can_cast<ivec2*&>());
-            CHECK_FALSE(a.can_cast<const ivec2*&>());
-            CHECK(a.can_cast<ivec2* const&>());
-            CHECK(a.can_cast<const ivec2* const&>());
+            CHECK(a.can_cast_to<ivec2*&>());
+            CHECK_FALSE(a.can_cast_to<const ivec2*&>());
+            CHECK(a.can_cast_to<ivec2* const&>());
+            CHECK(a.can_cast_to<const ivec2* const&>());
 
-            CHECK_FALSE(a.can_cast<ivec2*&&>());
-            CHECK_FALSE(a.can_cast<const ivec2*&&>());
-            CHECK_FALSE(a.can_cast<ivec2* const&&>());
-            CHECK_FALSE(a.can_cast<const ivec2* const&&>());
+            CHECK_FALSE(a.can_cast_to<ivec2*&&>());
+            CHECK_FALSE(a.can_cast_to<const ivec2*&&>());
+            CHECK_FALSE(a.can_cast_to<ivec2* const&&>());
+            CHECK_FALSE(a.can_cast_to<const ivec2* const&&>());
 
             []([[maybe_unused]] ivec2 *&){}(vp);
             //[]([[maybe_unused]] const ivec2 *&){}(vp);
@@ -237,36 +237,36 @@ TEST_CASE("features/utilities/arg/can_cast") {
         ivec2* vp = &v;
         arg a{std::move(vp)};
 
-        CHECK_FALSE(a.can_cast<ivec2>());
-        CHECK_FALSE(a.can_cast<const ivec2>());
+        CHECK_FALSE(a.can_cast_to<ivec2>());
+        CHECK_FALSE(a.can_cast_to<const ivec2>());
 
-        CHECK(a.can_cast<ivec2*>());
-        CHECK(a.can_cast<const ivec2*>());
-        CHECK(a.can_cast<ivec2* const>());
-        CHECK(a.can_cast<const ivec2* const>());
+        CHECK(a.can_cast_to<ivec2*>());
+        CHECK(a.can_cast_to<const ivec2*>());
+        CHECK(a.can_cast_to<ivec2* const>());
+        CHECK(a.can_cast_to<const ivec2* const>());
 
-        CHECK_FALSE(a.can_cast<ivec2&>());
-        CHECK_FALSE(a.can_cast<const ivec2&>());
-        CHECK_FALSE(a.can_cast<ivec2&&>());
-        CHECK_FALSE(a.can_cast<const ivec2&&>());
+        CHECK_FALSE(a.can_cast_to<ivec2&>());
+        CHECK_FALSE(a.can_cast_to<const ivec2&>());
+        CHECK_FALSE(a.can_cast_to<ivec2&&>());
+        CHECK_FALSE(a.can_cast_to<const ivec2&&>());
 
         {
-            CHECK_FALSE(a.can_cast<ivec3*>());
-            CHECK_FALSE(a.can_cast<const ivec3*>());
-            CHECK_FALSE(a.can_cast<ivec3* const>());
-            CHECK_FALSE(a.can_cast<const ivec3* const>());
+            CHECK_FALSE(a.can_cast_to<ivec3*>());
+            CHECK_FALSE(a.can_cast_to<const ivec3*>());
+            CHECK_FALSE(a.can_cast_to<ivec3* const>());
+            CHECK_FALSE(a.can_cast_to<const ivec3* const>());
         }
 
         {
-            CHECK_FALSE(a.can_cast<ivec2*&>());
-            CHECK_FALSE(a.can_cast<const ivec2*&>());
-            CHECK(a.can_cast<ivec2* const&>());
-            CHECK(a.can_cast<const ivec2* const&>());
+            CHECK_FALSE(a.can_cast_to<ivec2*&>());
+            CHECK_FALSE(a.can_cast_to<const ivec2*&>());
+            CHECK(a.can_cast_to<ivec2* const&>());
+            CHECK(a.can_cast_to<const ivec2* const&>());
 
-            CHECK(a.can_cast<ivec2*&&>());
-            CHECK_FALSE(a.can_cast<const ivec2*&&>());
-            CHECK(a.can_cast<ivec2* const&&>());
-            CHECK(a.can_cast<const ivec2* const&&>());
+            CHECK(a.can_cast_to<ivec2*&&>());
+            CHECK_FALSE(a.can_cast_to<const ivec2*&&>());
+            CHECK(a.can_cast_to<ivec2* const&&>());
+            CHECK(a.can_cast_to<const ivec2* const&&>());
 
             //[]([[maybe_unused]] ivec2 *&){}(std::move(vp));
             //[]([[maybe_unused]] const ivec2 *&){}(std::move(vp));
@@ -285,36 +285,36 @@ TEST_CASE("features/utilities/arg/can_cast") {
         ivec2* const vp = &v;
         arg a{vp};
 
-        CHECK_FALSE(a.can_cast<ivec2>());
-        CHECK_FALSE(a.can_cast<const ivec2>());
+        CHECK_FALSE(a.can_cast_to<ivec2>());
+        CHECK_FALSE(a.can_cast_to<const ivec2>());
 
-        CHECK(a.can_cast<ivec2*>());
-        CHECK(a.can_cast<const ivec2*>());
-        CHECK(a.can_cast<ivec2* const>());
-        CHECK(a.can_cast<const ivec2* const>());
+        CHECK(a.can_cast_to<ivec2*>());
+        CHECK(a.can_cast_to<const ivec2*>());
+        CHECK(a.can_cast_to<ivec2* const>());
+        CHECK(a.can_cast_to<const ivec2* const>());
 
-        CHECK_FALSE(a.can_cast<ivec2&>());
-        CHECK_FALSE(a.can_cast<const ivec2&>());
-        CHECK_FALSE(a.can_cast<ivec2&&>());
-        CHECK_FALSE(a.can_cast<const ivec2&&>());
+        CHECK_FALSE(a.can_cast_to<ivec2&>());
+        CHECK_FALSE(a.can_cast_to<const ivec2&>());
+        CHECK_FALSE(a.can_cast_to<ivec2&&>());
+        CHECK_FALSE(a.can_cast_to<const ivec2&&>());
 
         {
-            CHECK_FALSE(a.can_cast<ivec3*>());
-            CHECK_FALSE(a.can_cast<const ivec3*>());
-            CHECK_FALSE(a.can_cast<ivec3* const>());
-            CHECK_FALSE(a.can_cast<const ivec3* const>());
+            CHECK_FALSE(a.can_cast_to<ivec3*>());
+            CHECK_FALSE(a.can_cast_to<const ivec3*>());
+            CHECK_FALSE(a.can_cast_to<ivec3* const>());
+            CHECK_FALSE(a.can_cast_to<const ivec3* const>());
         }
 
         {
-            CHECK_FALSE(a.can_cast<ivec2*&>());
-            CHECK_FALSE(a.can_cast<const ivec2*&>());
-            CHECK(a.can_cast<ivec2* const&>());
-            CHECK(a.can_cast<const ivec2* const&>());
+            CHECK_FALSE(a.can_cast_to<ivec2*&>());
+            CHECK_FALSE(a.can_cast_to<const ivec2*&>());
+            CHECK(a.can_cast_to<ivec2* const&>());
+            CHECK(a.can_cast_to<const ivec2* const&>());
 
-            CHECK_FALSE(a.can_cast<ivec2*&&>());
-            CHECK_FALSE(a.can_cast<const ivec2*&&>());
-            CHECK_FALSE(a.can_cast<ivec2* const&&>());
-            CHECK_FALSE(a.can_cast<const ivec2* const&&>());
+            CHECK_FALSE(a.can_cast_to<ivec2*&&>());
+            CHECK_FALSE(a.can_cast_to<const ivec2*&&>());
+            CHECK_FALSE(a.can_cast_to<ivec2* const&&>());
+            CHECK_FALSE(a.can_cast_to<const ivec2* const&&>());
 
             // []([[maybe_unused]] ivec2 *&){}(vp);
             // []([[maybe_unused]] const ivec2 *&){}(vp);
@@ -333,36 +333,36 @@ TEST_CASE("features/utilities/arg/can_cast") {
         ivec2* const vp = &v;
         arg a{std::move(vp)};
 
-        CHECK_FALSE(a.can_cast<ivec2>());
-        CHECK_FALSE(a.can_cast<const ivec2>());
+        CHECK_FALSE(a.can_cast_to<ivec2>());
+        CHECK_FALSE(a.can_cast_to<const ivec2>());
 
-        CHECK(a.can_cast<ivec2*>());
-        CHECK(a.can_cast<const ivec2*>());
-        CHECK(a.can_cast<ivec2* const>());
-        CHECK(a.can_cast<const ivec2* const>());
+        CHECK(a.can_cast_to<ivec2*>());
+        CHECK(a.can_cast_to<const ivec2*>());
+        CHECK(a.can_cast_to<ivec2* const>());
+        CHECK(a.can_cast_to<const ivec2* const>());
 
-        CHECK_FALSE(a.can_cast<ivec2&>());
-        CHECK_FALSE(a.can_cast<const ivec2&>());
-        CHECK_FALSE(a.can_cast<ivec2&&>());
-        CHECK_FALSE(a.can_cast<const ivec2&&>());
+        CHECK_FALSE(a.can_cast_to<ivec2&>());
+        CHECK_FALSE(a.can_cast_to<const ivec2&>());
+        CHECK_FALSE(a.can_cast_to<ivec2&&>());
+        CHECK_FALSE(a.can_cast_to<const ivec2&&>());
 
         {
-            CHECK_FALSE(a.can_cast<ivec3*>());
-            CHECK_FALSE(a.can_cast<const ivec3*>());
-            CHECK_FALSE(a.can_cast<ivec3* const>());
-            CHECK_FALSE(a.can_cast<const ivec3* const>());
+            CHECK_FALSE(a.can_cast_to<ivec3*>());
+            CHECK_FALSE(a.can_cast_to<const ivec3*>());
+            CHECK_FALSE(a.can_cast_to<ivec3* const>());
+            CHECK_FALSE(a.can_cast_to<const ivec3* const>());
         }
 
         {
-            CHECK_FALSE(a.can_cast<ivec2*&>());
-            CHECK_FALSE(a.can_cast<const ivec2*&>());
-            CHECK(a.can_cast<ivec2* const&>());
-            CHECK(a.can_cast<const ivec2* const&>());
+            CHECK_FALSE(a.can_cast_to<ivec2*&>());
+            CHECK_FALSE(a.can_cast_to<const ivec2*&>());
+            CHECK(a.can_cast_to<ivec2* const&>());
+            CHECK(a.can_cast_to<const ivec2* const&>());
 
-            CHECK_FALSE(a.can_cast<ivec2*&&>());
-            CHECK_FALSE(a.can_cast<const ivec2*&&>());
-            CHECK(a.can_cast<ivec2* const&&>());
-            CHECK(a.can_cast<const ivec2* const&&>());
+            CHECK_FALSE(a.can_cast_to<ivec2*&&>());
+            CHECK_FALSE(a.can_cast_to<const ivec2*&&>());
+            CHECK(a.can_cast_to<ivec2* const&&>());
+            CHECK(a.can_cast_to<const ivec2* const&&>());
 
             //[]([[maybe_unused]] ivec2 *&){}(std::move(vp));
             //[]([[maybe_unused]] const ivec2 *&){}(std::move(vp));
@@ -381,34 +381,34 @@ TEST_CASE("features/utilities/arg/can_cast") {
         const ivec2* vp = &v;
         arg a{vp};
 
-        CHECK_FALSE(a.can_cast<ivec2>());
-        CHECK_FALSE(a.can_cast<const ivec2>());
+        CHECK_FALSE(a.can_cast_to<ivec2>());
+        CHECK_FALSE(a.can_cast_to<const ivec2>());
 
-        CHECK_FALSE(a.can_cast<ivec2*>());
-        CHECK(a.can_cast<const ivec2*>());
-        CHECK_FALSE(a.can_cast<ivec2* const>());
-        CHECK(a.can_cast<const ivec2* const>());
+        CHECK_FALSE(a.can_cast_to<ivec2*>());
+        CHECK(a.can_cast_to<const ivec2*>());
+        CHECK_FALSE(a.can_cast_to<ivec2* const>());
+        CHECK(a.can_cast_to<const ivec2* const>());
 
-        CHECK_FALSE(a.can_cast<ivec2&>());
-        CHECK_FALSE(a.can_cast<const ivec2&>());
-        CHECK_FALSE(a.can_cast<ivec2&&>());
-        CHECK_FALSE(a.can_cast<const ivec2&&>());
+        CHECK_FALSE(a.can_cast_to<ivec2&>());
+        CHECK_FALSE(a.can_cast_to<const ivec2&>());
+        CHECK_FALSE(a.can_cast_to<ivec2&&>());
+        CHECK_FALSE(a.can_cast_to<const ivec2&&>());
 
         {
-            CHECK_FALSE(a.can_cast<const ivec3*>());
-            CHECK_FALSE(a.can_cast<const ivec3* const>());
+            CHECK_FALSE(a.can_cast_to<const ivec3*>());
+            CHECK_FALSE(a.can_cast_to<const ivec3* const>());
         }
 
         {
-            CHECK_FALSE(a.can_cast<ivec2*&>());
-            CHECK(a.can_cast<const ivec2*&>());
-            CHECK_FALSE(a.can_cast<ivec2* const&>());
-            CHECK(a.can_cast<const ivec2* const&>());
+            CHECK_FALSE(a.can_cast_to<ivec2*&>());
+            CHECK(a.can_cast_to<const ivec2*&>());
+            CHECK_FALSE(a.can_cast_to<ivec2* const&>());
+            CHECK(a.can_cast_to<const ivec2* const&>());
 
-            CHECK_FALSE(a.can_cast<ivec2*&&>());
-            CHECK_FALSE(a.can_cast<const ivec2*&&>());
-            CHECK_FALSE(a.can_cast<ivec2* const&&>());
-            CHECK_FALSE(a.can_cast<const ivec2* const&&>());
+            CHECK_FALSE(a.can_cast_to<ivec2*&&>());
+            CHECK_FALSE(a.can_cast_to<const ivec2*&&>());
+            CHECK_FALSE(a.can_cast_to<ivec2* const&&>());
+            CHECK_FALSE(a.can_cast_to<const ivec2* const&&>());
 
             //[]([[maybe_unused]] ivec2 *&){}(vp);
             []([[maybe_unused]] const ivec2 *&){}(vp);
@@ -427,34 +427,34 @@ TEST_CASE("features/utilities/arg/can_cast") {
         const ivec2* vp = &v;
         arg a{std::move(vp)};
 
-        CHECK_FALSE(a.can_cast<ivec2>());
-        CHECK_FALSE(a.can_cast<const ivec2>());
+        CHECK_FALSE(a.can_cast_to<ivec2>());
+        CHECK_FALSE(a.can_cast_to<const ivec2>());
 
-        CHECK_FALSE(a.can_cast<ivec2*>());
-        CHECK(a.can_cast<const ivec2*>());
-        CHECK_FALSE(a.can_cast<ivec2* const>());
-        CHECK(a.can_cast<const ivec2* const>());
+        CHECK_FALSE(a.can_cast_to<ivec2*>());
+        CHECK(a.can_cast_to<const ivec2*>());
+        CHECK_FALSE(a.can_cast_to<ivec2* const>());
+        CHECK(a.can_cast_to<const ivec2* const>());
 
-        CHECK_FALSE(a.can_cast<ivec2&>());
-        CHECK_FALSE(a.can_cast<const ivec2&>());
-        CHECK_FALSE(a.can_cast<ivec2&&>());
-        CHECK_FALSE(a.can_cast<const ivec2&&>());
+        CHECK_FALSE(a.can_cast_to<ivec2&>());
+        CHECK_FALSE(a.can_cast_to<const ivec2&>());
+        CHECK_FALSE(a.can_cast_to<ivec2&&>());
+        CHECK_FALSE(a.can_cast_to<const ivec2&&>());
 
         {
-            CHECK_FALSE(a.can_cast<const ivec3*>());
-            CHECK_FALSE(a.can_cast<const ivec3* const>());
+            CHECK_FALSE(a.can_cast_to<const ivec3*>());
+            CHECK_FALSE(a.can_cast_to<const ivec3* const>());
         }
 
         {
-            CHECK_FALSE(a.can_cast<ivec2*&>());
-            CHECK_FALSE(a.can_cast<const ivec2*&>());
-            CHECK_FALSE(a.can_cast<ivec2* const&>());
-            CHECK(a.can_cast<const ivec2* const&>());
+            CHECK_FALSE(a.can_cast_to<ivec2*&>());
+            CHECK_FALSE(a.can_cast_to<const ivec2*&>());
+            CHECK_FALSE(a.can_cast_to<ivec2* const&>());
+            CHECK(a.can_cast_to<const ivec2* const&>());
 
-            CHECK_FALSE(a.can_cast<ivec2*&&>());
-            CHECK(a.can_cast<const ivec2*&&>());
-            CHECK_FALSE(a.can_cast<ivec2* const&&>());
-            CHECK(a.can_cast<const ivec2* const&&>());
+            CHECK_FALSE(a.can_cast_to<ivec2*&&>());
+            CHECK(a.can_cast_to<const ivec2*&&>());
+            CHECK_FALSE(a.can_cast_to<ivec2* const&&>());
+            CHECK(a.can_cast_to<const ivec2* const&&>());
 
             //[]([[maybe_unused]] ivec2 *&){}(std::move(vp));
             //[]([[maybe_unused]] const ivec2 *&){}(std::move(vp));
@@ -473,34 +473,34 @@ TEST_CASE("features/utilities/arg/can_cast") {
         const ivec2* const vp = &v;
         arg a{vp};
 
-        CHECK_FALSE(a.can_cast<ivec2>());
-        CHECK_FALSE(a.can_cast<const ivec2>());
-        CHECK_FALSE(a.can_cast<ivec2*>());
-        CHECK(a.can_cast<const ivec2*>());
+        CHECK_FALSE(a.can_cast_to<ivec2>());
+        CHECK_FALSE(a.can_cast_to<const ivec2>());
+        CHECK_FALSE(a.can_cast_to<ivec2*>());
+        CHECK(a.can_cast_to<const ivec2*>());
 
-        CHECK_FALSE(a.can_cast<ivec2* const>());
-        CHECK(a.can_cast<const ivec2* const>());
+        CHECK_FALSE(a.can_cast_to<ivec2* const>());
+        CHECK(a.can_cast_to<const ivec2* const>());
 
-        CHECK_FALSE(a.can_cast<ivec2&>());
-        CHECK_FALSE(a.can_cast<const ivec2&>());
-        CHECK_FALSE(a.can_cast<ivec2&&>());
-        CHECK_FALSE(a.can_cast<const ivec2&&>());
+        CHECK_FALSE(a.can_cast_to<ivec2&>());
+        CHECK_FALSE(a.can_cast_to<const ivec2&>());
+        CHECK_FALSE(a.can_cast_to<ivec2&&>());
+        CHECK_FALSE(a.can_cast_to<const ivec2&&>());
 
         {
-            CHECK_FALSE(a.can_cast<const ivec3*>());
-            CHECK_FALSE(a.can_cast<const ivec3* const>());
+            CHECK_FALSE(a.can_cast_to<const ivec3*>());
+            CHECK_FALSE(a.can_cast_to<const ivec3* const>());
         }
 
         {
-            CHECK_FALSE(a.can_cast<ivec2*&>());
-            CHECK_FALSE(a.can_cast<const ivec2*&>());
-            CHECK_FALSE(a.can_cast<ivec2* const&>());
-            CHECK(a.can_cast<const ivec2* const&>());
+            CHECK_FALSE(a.can_cast_to<ivec2*&>());
+            CHECK_FALSE(a.can_cast_to<const ivec2*&>());
+            CHECK_FALSE(a.can_cast_to<ivec2* const&>());
+            CHECK(a.can_cast_to<const ivec2* const&>());
 
-            CHECK_FALSE(a.can_cast<ivec2*&&>());
-            CHECK_FALSE(a.can_cast<const ivec2*&&>());
-            CHECK_FALSE(a.can_cast<ivec2* const&&>());
-            CHECK_FALSE(a.can_cast<const ivec2* const&&>());
+            CHECK_FALSE(a.can_cast_to<ivec2*&&>());
+            CHECK_FALSE(a.can_cast_to<const ivec2*&&>());
+            CHECK_FALSE(a.can_cast_to<ivec2* const&&>());
+            CHECK_FALSE(a.can_cast_to<const ivec2* const&&>());
 
             //[]([[maybe_unused]] ivec2 *&){}(vp);
             //[]([[maybe_unused]] const ivec2 *&){}(vp);
@@ -519,34 +519,34 @@ TEST_CASE("features/utilities/arg/can_cast") {
         const ivec2* const vp = &v;
         arg a{std::move(vp)};
 
-        CHECK_FALSE(a.can_cast<ivec2>());
-        CHECK_FALSE(a.can_cast<const ivec2>());
+        CHECK_FALSE(a.can_cast_to<ivec2>());
+        CHECK_FALSE(a.can_cast_to<const ivec2>());
 
-        CHECK_FALSE(a.can_cast<ivec2*>());
-        CHECK(a.can_cast<const ivec2*>());
-        CHECK_FALSE(a.can_cast<ivec2* const>());
-        CHECK(a.can_cast<const ivec2* const>());
+        CHECK_FALSE(a.can_cast_to<ivec2*>());
+        CHECK(a.can_cast_to<const ivec2*>());
+        CHECK_FALSE(a.can_cast_to<ivec2* const>());
+        CHECK(a.can_cast_to<const ivec2* const>());
 
-        CHECK_FALSE(a.can_cast<ivec2&>());
-        CHECK_FALSE(a.can_cast<const ivec2&>());
-        CHECK_FALSE(a.can_cast<ivec2&&>());
-        CHECK_FALSE(a.can_cast<const ivec2&&>());
+        CHECK_FALSE(a.can_cast_to<ivec2&>());
+        CHECK_FALSE(a.can_cast_to<const ivec2&>());
+        CHECK_FALSE(a.can_cast_to<ivec2&&>());
+        CHECK_FALSE(a.can_cast_to<const ivec2&&>());
 
         {
-            CHECK_FALSE(a.can_cast<const ivec3*>());
-            CHECK_FALSE(a.can_cast<const ivec3* const>());
+            CHECK_FALSE(a.can_cast_to<const ivec3*>());
+            CHECK_FALSE(a.can_cast_to<const ivec3* const>());
         }
 
         {
-            CHECK_FALSE(a.can_cast<ivec2*&>());
-            CHECK_FALSE(a.can_cast<const ivec2*&>());
-            CHECK_FALSE(a.can_cast<ivec2* const&>());
-            CHECK(a.can_cast<const ivec2* const&>());
+            CHECK_FALSE(a.can_cast_to<ivec2*&>());
+            CHECK_FALSE(a.can_cast_to<const ivec2*&>());
+            CHECK_FALSE(a.can_cast_to<ivec2* const&>());
+            CHECK(a.can_cast_to<const ivec2* const&>());
 
-            CHECK_FALSE(a.can_cast<ivec2*&&>());
-            CHECK_FALSE(a.can_cast<const ivec2*&&>());
-            CHECK_FALSE(a.can_cast<ivec2* const&&>());
-            CHECK(a.can_cast<const ivec2* const&&>());
+            CHECK_FALSE(a.can_cast_to<ivec2*&&>());
+            CHECK_FALSE(a.can_cast_to<const ivec2*&&>());
+            CHECK_FALSE(a.can_cast_to<ivec2* const&&>());
+            CHECK(a.can_cast_to<const ivec2* const&&>());
 
             //[]([[maybe_unused]] ivec2 *&){}(std::move(vp));
             //[]([[maybe_unused]] const ivec2 *&){}(std::move(vp));
@@ -565,36 +565,36 @@ TEST_CASE("features/utilities/arg/can_cast") {
         ivec2& vr = v;
         arg a{vr};
 
-        CHECK(a.can_cast<ivec2>());
-        CHECK(a.can_cast<const ivec2>());
+        CHECK(a.can_cast_to<ivec2>());
+        CHECK(a.can_cast_to<const ivec2>());
 
-        CHECK_FALSE(a.can_cast<ivec2*>());
-        CHECK_FALSE(a.can_cast<const ivec2*>());
-        CHECK_FALSE(a.can_cast<ivec2* const>());
-        CHECK_FALSE(a.can_cast<const ivec2* const>());
+        CHECK_FALSE(a.can_cast_to<ivec2*>());
+        CHECK_FALSE(a.can_cast_to<const ivec2*>());
+        CHECK_FALSE(a.can_cast_to<ivec2* const>());
+        CHECK_FALSE(a.can_cast_to<const ivec2* const>());
 
-        CHECK(a.can_cast<ivec2&>());
-        CHECK(a.can_cast<const ivec2&>());
-        CHECK_FALSE(a.can_cast<ivec2&&>());
-        CHECK_FALSE(a.can_cast<const ivec2&&>());
+        CHECK(a.can_cast_to<ivec2&>());
+        CHECK(a.can_cast_to<const ivec2&>());
+        CHECK_FALSE(a.can_cast_to<ivec2&&>());
+        CHECK_FALSE(a.can_cast_to<const ivec2&&>());
 
         {
-            CHECK_FALSE(a.can_cast<ivec3>());
-            CHECK_FALSE(a.can_cast<const ivec3>());
-            CHECK_FALSE(a.can_cast<ivec3&>());
-            CHECK_FALSE(a.can_cast<const ivec3&>());
+            CHECK_FALSE(a.can_cast_to<ivec3>());
+            CHECK_FALSE(a.can_cast_to<const ivec3>());
+            CHECK_FALSE(a.can_cast_to<ivec3&>());
+            CHECK_FALSE(a.can_cast_to<const ivec3&>());
         }
 
         {
-            CHECK_FALSE(a.can_cast<ivec2*&>());
-            CHECK_FALSE(a.can_cast<const ivec2*&>());
-            CHECK_FALSE(a.can_cast<ivec2* const&>());
-            CHECK_FALSE(a.can_cast<const ivec2* const&>());
+            CHECK_FALSE(a.can_cast_to<ivec2*&>());
+            CHECK_FALSE(a.can_cast_to<const ivec2*&>());
+            CHECK_FALSE(a.can_cast_to<ivec2* const&>());
+            CHECK_FALSE(a.can_cast_to<const ivec2* const&>());
 
-            CHECK_FALSE(a.can_cast<ivec2*&&>());
-            CHECK_FALSE(a.can_cast<const ivec2*&&>());
-            CHECK_FALSE(a.can_cast<ivec2* const&&>());
-            CHECK_FALSE(a.can_cast<const ivec2* const&&>());
+            CHECK_FALSE(a.can_cast_to<ivec2*&&>());
+            CHECK_FALSE(a.can_cast_to<const ivec2*&&>());
+            CHECK_FALSE(a.can_cast_to<ivec2* const&&>());
+            CHECK_FALSE(a.can_cast_to<const ivec2* const&&>());
         }
     }
 
@@ -603,35 +603,35 @@ TEST_CASE("features/utilities/arg/can_cast") {
         const ivec2& vr = v;
         arg a{vr};
 
-        CHECK(a.can_cast<ivec2>());
-        CHECK(a.can_cast<const ivec2>());
+        CHECK(a.can_cast_to<ivec2>());
+        CHECK(a.can_cast_to<const ivec2>());
 
-        CHECK_FALSE(a.can_cast<ivec2*>());
-        CHECK_FALSE(a.can_cast<const ivec2*>());
-        CHECK_FALSE(a.can_cast<ivec2* const>());
-        CHECK_FALSE(a.can_cast<const ivec2* const>());
+        CHECK_FALSE(a.can_cast_to<ivec2*>());
+        CHECK_FALSE(a.can_cast_to<const ivec2*>());
+        CHECK_FALSE(a.can_cast_to<ivec2* const>());
+        CHECK_FALSE(a.can_cast_to<const ivec2* const>());
 
-        CHECK_FALSE(a.can_cast<ivec2&>());
-        CHECK(a.can_cast<const ivec2&>());
-        CHECK_FALSE(a.can_cast<ivec2&&>());
-        CHECK_FALSE(a.can_cast<const ivec2&&>());
+        CHECK_FALSE(a.can_cast_to<ivec2&>());
+        CHECK(a.can_cast_to<const ivec2&>());
+        CHECK_FALSE(a.can_cast_to<ivec2&&>());
+        CHECK_FALSE(a.can_cast_to<const ivec2&&>());
 
         {
-            CHECK_FALSE(a.can_cast<ivec3>());
-            CHECK_FALSE(a.can_cast<const ivec3>());
-            CHECK_FALSE(a.can_cast<const ivec3&>());
+            CHECK_FALSE(a.can_cast_to<ivec3>());
+            CHECK_FALSE(a.can_cast_to<const ivec3>());
+            CHECK_FALSE(a.can_cast_to<const ivec3&>());
         }
 
         {
-            CHECK_FALSE(a.can_cast<ivec2*&>());
-            CHECK_FALSE(a.can_cast<const ivec2*&>());
-            CHECK_FALSE(a.can_cast<ivec2* const&>());
-            CHECK_FALSE(a.can_cast<const ivec2* const&>());
+            CHECK_FALSE(a.can_cast_to<ivec2*&>());
+            CHECK_FALSE(a.can_cast_to<const ivec2*&>());
+            CHECK_FALSE(a.can_cast_to<ivec2* const&>());
+            CHECK_FALSE(a.can_cast_to<const ivec2* const&>());
 
-            CHECK_FALSE(a.can_cast<ivec2*&&>());
-            CHECK_FALSE(a.can_cast<const ivec2*&&>());
-            CHECK_FALSE(a.can_cast<ivec2* const&&>());
-            CHECK_FALSE(a.can_cast<const ivec2* const&&>());
+            CHECK_FALSE(a.can_cast_to<ivec2*&&>());
+            CHECK_FALSE(a.can_cast_to<const ivec2*&&>());
+            CHECK_FALSE(a.can_cast_to<ivec2* const&&>());
+            CHECK_FALSE(a.can_cast_to<const ivec2* const&&>());
         }
     }
 
@@ -639,37 +639,37 @@ TEST_CASE("features/utilities/arg/can_cast") {
         ivec2 v{1,2};
         arg a{std::move(v)};
 
-        CHECK(a.can_cast<ivec2>());
-        CHECK(a.can_cast<const ivec2>());
+        CHECK(a.can_cast_to<ivec2>());
+        CHECK(a.can_cast_to<const ivec2>());
 
-        CHECK_FALSE(a.can_cast<ivec2*>());
-        CHECK_FALSE(a.can_cast<const ivec2*>());
-        CHECK_FALSE(a.can_cast<ivec2* const>());
-        CHECK_FALSE(a.can_cast<const ivec2* const>());
+        CHECK_FALSE(a.can_cast_to<ivec2*>());
+        CHECK_FALSE(a.can_cast_to<const ivec2*>());
+        CHECK_FALSE(a.can_cast_to<ivec2* const>());
+        CHECK_FALSE(a.can_cast_to<const ivec2* const>());
 
-        CHECK_FALSE(a.can_cast<ivec2&>());
-        CHECK(a.can_cast<const ivec2&>());
-        CHECK(a.can_cast<ivec2&&>());
-        CHECK(a.can_cast<const ivec2&&>());
+        CHECK_FALSE(a.can_cast_to<ivec2&>());
+        CHECK(a.can_cast_to<const ivec2&>());
+        CHECK(a.can_cast_to<ivec2&&>());
+        CHECK(a.can_cast_to<const ivec2&&>());
 
         {
-            CHECK_FALSE(a.can_cast<ivec3>());
-            CHECK_FALSE(a.can_cast<const ivec3>());
-            CHECK_FALSE(a.can_cast<const ivec3&>());
-            CHECK_FALSE(a.can_cast<ivec3&&>());
-            CHECK_FALSE(a.can_cast<const ivec3&&>());
+            CHECK_FALSE(a.can_cast_to<ivec3>());
+            CHECK_FALSE(a.can_cast_to<const ivec3>());
+            CHECK_FALSE(a.can_cast_to<const ivec3&>());
+            CHECK_FALSE(a.can_cast_to<ivec3&&>());
+            CHECK_FALSE(a.can_cast_to<const ivec3&&>());
         }
 
         {
-            CHECK_FALSE(a.can_cast<ivec2*&>());
-            CHECK_FALSE(a.can_cast<const ivec2*&>());
-            CHECK_FALSE(a.can_cast<ivec2* const&>());
-            CHECK_FALSE(a.can_cast<const ivec2* const&>());
+            CHECK_FALSE(a.can_cast_to<ivec2*&>());
+            CHECK_FALSE(a.can_cast_to<const ivec2*&>());
+            CHECK_FALSE(a.can_cast_to<ivec2* const&>());
+            CHECK_FALSE(a.can_cast_to<const ivec2* const&>());
 
-            CHECK_FALSE(a.can_cast<ivec2*&&>());
-            CHECK_FALSE(a.can_cast<const ivec2*&&>());
-            CHECK_FALSE(a.can_cast<ivec2* const&&>());
-            CHECK_FALSE(a.can_cast<const ivec2* const&&>());
+            CHECK_FALSE(a.can_cast_to<ivec2*&&>());
+            CHECK_FALSE(a.can_cast_to<const ivec2*&&>());
+            CHECK_FALSE(a.can_cast_to<ivec2* const&&>());
+            CHECK_FALSE(a.can_cast_to<const ivec2* const&&>());
         }
     }
 
@@ -677,36 +677,36 @@ TEST_CASE("features/utilities/arg/can_cast") {
         const ivec2 v{1,2};
         arg a{std::move(v)};
 
-        CHECK(a.can_cast<ivec2>());
-        CHECK(a.can_cast<const ivec2>());
+        CHECK(a.can_cast_to<ivec2>());
+        CHECK(a.can_cast_to<const ivec2>());
 
-        CHECK_FALSE(a.can_cast<ivec2*>());
-        CHECK_FALSE(a.can_cast<const ivec2*>());
-        CHECK_FALSE(a.can_cast<ivec2* const>());
-        CHECK_FALSE(a.can_cast<const ivec2* const>());
+        CHECK_FALSE(a.can_cast_to<ivec2*>());
+        CHECK_FALSE(a.can_cast_to<const ivec2*>());
+        CHECK_FALSE(a.can_cast_to<ivec2* const>());
+        CHECK_FALSE(a.can_cast_to<const ivec2* const>());
 
-        CHECK_FALSE(a.can_cast<ivec2&>());
-        CHECK(a.can_cast<const ivec2&>());
-        CHECK_FALSE(a.can_cast<ivec2&&>());
-        CHECK(a.can_cast<const ivec2&&>());
+        CHECK_FALSE(a.can_cast_to<ivec2&>());
+        CHECK(a.can_cast_to<const ivec2&>());
+        CHECK_FALSE(a.can_cast_to<ivec2&&>());
+        CHECK(a.can_cast_to<const ivec2&&>());
 
         {
-            CHECK_FALSE(a.can_cast<ivec3>());
-            CHECK_FALSE(a.can_cast<const ivec3>());
-            CHECK_FALSE(a.can_cast<const ivec3&>());
-            CHECK_FALSE(a.can_cast<const ivec3&&>());
+            CHECK_FALSE(a.can_cast_to<ivec3>());
+            CHECK_FALSE(a.can_cast_to<const ivec3>());
+            CHECK_FALSE(a.can_cast_to<const ivec3&>());
+            CHECK_FALSE(a.can_cast_to<const ivec3&&>());
         }
 
         {
-            CHECK_FALSE(a.can_cast<ivec2*&>());
-            CHECK_FALSE(a.can_cast<const ivec2*&>());
-            CHECK_FALSE(a.can_cast<ivec2* const&>());
-            CHECK_FALSE(a.can_cast<const ivec2* const&>());
+            CHECK_FALSE(a.can_cast_to<ivec2*&>());
+            CHECK_FALSE(a.can_cast_to<const ivec2*&>());
+            CHECK_FALSE(a.can_cast_to<ivec2* const&>());
+            CHECK_FALSE(a.can_cast_to<const ivec2* const&>());
 
-            CHECK_FALSE(a.can_cast<ivec2*&&>());
-            CHECK_FALSE(a.can_cast<const ivec2*&&>());
-            CHECK_FALSE(a.can_cast<ivec2* const&&>());
-            CHECK_FALSE(a.can_cast<const ivec2* const&&>());
+            CHECK_FALSE(a.can_cast_to<ivec2*&&>());
+            CHECK_FALSE(a.can_cast_to<const ivec2*&&>());
+            CHECK_FALSE(a.can_cast_to<ivec2* const&&>());
+            CHECK_FALSE(a.can_cast_to<const ivec2* const&&>());
         }
     }
 }
