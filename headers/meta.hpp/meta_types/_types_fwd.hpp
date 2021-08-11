@@ -190,7 +190,7 @@ namespace meta_hpp
         type_db() = delete;
 
         template < typename T >
-        static any_type get();
+        static const any_type& get();
 
         template < typename Tuple >
         static std::vector<any_type> multi_get();

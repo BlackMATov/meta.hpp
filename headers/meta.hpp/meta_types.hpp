@@ -71,9 +71,10 @@ namespace meta_hpp
     }
 
     template < typename T >
-    any_type type_db::get() {
+    const any_type& type_db::get() {
         static const auto raw_type = detail::make_any_type<T>();
-        return any_type{raw_type};
+        static const auto type = any_type{raw_type};
+        return type;
     }
 
     template < typename Tuple >

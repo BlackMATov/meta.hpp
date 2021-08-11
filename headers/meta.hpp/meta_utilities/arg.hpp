@@ -30,16 +30,12 @@ namespace meta_hpp
         template < typename T, std::enable_if_t<
             std::is_pointer_v<T> ||
             std::is_lvalue_reference_v<T>, int> = 0 >
-        explicit arg_base(typename_arg_t<T>)
-        : raw_type_{type_db::get<stdex::remove_cvref_t<T>>()}
-        , ref_type_{std::is_const_v<std::remove_reference_t<T>> ? ref_types::cref : ref_types::ref} {}
+        explicit arg_base(typename_arg_t<T>);
 
         template < typename T, std::enable_if_t<
             std::is_rvalue_reference_v<T> ||
             (!std::is_pointer_v<T> && !std::is_reference_v<T>), int> = 0 >
-        explicit arg_base(typename_arg_t<T>)
-        : raw_type_{type_db::get<stdex::remove_cvref_t<T>>()}
-        , ref_type_{std::is_const_v<std::remove_reference_t<T>> ? ref_types::crref : ref_types::rref} {}
+        explicit arg_base(typename_arg_t<T>);
 
         bool is_const() const noexcept;
         bool is_lvalue() const noexcept;
@@ -58,6 +54,20 @@ namespace meta_hpp
 
 namespace meta_hpp
 {
+    template < typename T, std::enable_if_t<
+        std::is_pointer_v<T> ||
+        std::is_lvalue_reference_v<T>, int> >
+    arg_base::arg_base(typename_arg_t<T>)
+    : raw_type_{type_db::get<stdex::remove_cvref_t<T>>()}
+    , ref_type_{std::is_const_v<std::remove_reference_t<T>> ? ref_types::cref : ref_types::ref} {}
+
+    template < typename T, std::enable_if_t<
+        std::is_rvalue_reference_v<T> ||
+        (!std::is_pointer_v<T> && !std::is_reference_v<T>), int> >
+    arg_base::arg_base(typename_arg_t<T>)
+    : raw_type_{type_db::get<stdex::remove_cvref_t<T>>()}
+    , ref_type_{std::is_const_v<std::remove_reference_t<T>> ? ref_types::crref : ref_types::rref} {}
+
     inline bool arg_base::is_const() const noexcept {
         return ref_type_ == ref_types::cref
             || ref_type_ == ref_types::crref;
