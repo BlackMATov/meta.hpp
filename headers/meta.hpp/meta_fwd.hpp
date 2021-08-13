@@ -88,6 +88,7 @@ namespace meta_hpp
 namespace meta_hpp
 {
     class arg;
+    class inst;
     class value;
 }
 

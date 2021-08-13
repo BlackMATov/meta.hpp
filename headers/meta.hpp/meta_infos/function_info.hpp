@@ -21,6 +21,12 @@ namespace meta_hpp
 
         const std::string& name() const noexcept;
         const function_type& type() const noexcept;
+
+        template < typename... Args >
+        std::optional<value> invoke(Args&&... args) const;
+
+        template < typename... Args >
+        bool is_invocable_with() const noexcept;
     public:
         template < typename F >
         void visit(F&& f) const;
@@ -33,11 +39,102 @@ namespace meta_hpp
         template < typename Function > friend class function_;
 
         template < typename Function >
-        explicit function_info(std::string name, Function instance);
+        explicit function_info(std::string name, Function function);
     private:
         struct state;
         std::shared_ptr<state> state_;
     };
+}
+
+namespace meta_hpp::detail
+{
+    using function_invoke = std::function<std::optional<value>(const arg*, std::size_t)>;
+
+    template < typename Function, std::size_t... Is >
+    std::optional<value> raw_function_invoke_impl(
+        Function function,
+        const arg* args,
+        std::index_sequence<Is...>)
+    {
+        using ft = function_pointer_traits<Function>;
+        using return_type = typename ft::return_type;
+        using argument_types = typename ft::argument_types;
+
+        if ( !(... && (args + Is)->can_cast_to<std::tuple_element_t<Is, argument_types>>()) ) {
+            throw std::logic_error("an attempt to call a function with an incorrect argument types");
+        }
+
+        if constexpr ( std::is_void_v<return_type> ) {
+            std::invoke(function,
+                (args + Is)->cast<std::tuple_element_t<Is, argument_types>>()...);
+            return std::nullopt;
+        } else {
+            return_type return_value{std::invoke(function,
+                (args + Is)->cast<std::tuple_element_t<Is, argument_types>>()...)};
+            return value{std::forward<return_type>(return_value)};
+        }
+    }
+
+    template < typename Function >
+    std::optional<value> raw_function_invoke(
+        Function function,
+        const arg* args,
+        std::size_t arg_count)
+    {
+        using ft = function_pointer_traits<Function>;
+
+        if ( arg_count != ft::arity ) {
+            throw std::logic_error("an attempt to call a function with an incorrect arity");
+        }
+
+        return raw_function_invoke_impl<Function>(
+            function,
+            args,
+            std::make_index_sequence<ft::arity>());
+    }
+
+    template < typename Function >
+    function_invoke make_function_invoke(Function function) {
+        using namespace std::placeholders;
+        return std::bind(&raw_function_invoke<Function>, function, _1, _2);
+    }
+}
+
+namespace meta_hpp::detail
+{
+    using function_is_invocable_with = std::function<bool(const arg_base*, std::size_t)>;
+
+    template < typename Function, std::size_t... Is >
+    bool raw_function_is_invocable_with_impl(
+        const arg_base* arg_bases,
+        std::index_sequence<Is...>)
+    {
+        using ft = function_pointer_traits<Function>;
+        using argument_types = typename ft::argument_types;
+        return (... && (arg_bases + Is)->can_cast_to<std::tuple_element_t<Is, argument_types>>() );
+    }
+
+    template < typename Function >
+    bool raw_function_is_invocable_with(
+        const arg_base* arg_bases,
+        std::size_t arg_count)
+    {
+        using ft = function_pointer_traits<Function>;
+
+        if ( arg_count != ft::arity ) {
+            return false;
+        }
+
+        return raw_function_is_invocable_with_impl<Function>(
+            arg_bases,
+            std::make_index_sequence<ft::arity>());
+    }
+
+    template < typename Function >
+    function_is_invocable_with make_function_is_invocable_with() {
+        using namespace std::placeholders;
+        return std::bind(&raw_function_is_invocable_with<Function>, _1, _2);
+    }
 }
 
 namespace meta_hpp
@@ -46,6 +143,8 @@ namespace meta_hpp
         std::string name;
         function_type type;
         data_info_map datas;
+        detail::function_invoke invoke;
+        detail::function_is_invocable_with is_invocable_with;
     };
 }
 
@@ -66,6 +165,18 @@ namespace meta_hpp
 
     inline const function_type& function_info::type() const noexcept {
         return state_->type;
+    }
+
+    template < typename... Args >
+    std::optional<value> function_info::invoke(Args&&... args) const {
+        std::array<arg, sizeof...(Args)> vargs{arg{std::forward<Args>(args)}...};
+        return state_->invoke(vargs.data(), vargs.size());
+    }
+
+    template < typename... Args >
+    bool function_info::is_invocable_with() const noexcept {
+        std::array<arg_base, sizeof...(Args)> arg_bases{arg_base{typename_arg<Args>}...};
+        return state_->is_invocable_with(arg_bases.data(), arg_bases.size());
     }
 }
 
@@ -91,12 +202,12 @@ namespace meta_hpp
 namespace meta_hpp
 {
     template < typename Function >
-    function_info::function_info(std::string name, Function instance)
+    function_info::function_info(std::string name, Function function)
     : state_{std::make_shared<state>(state{
         std::move(name),
         type_db::get<Function>().template as<function_type>(),
-        {}
-    })} {
-        (void)instance;
-    }
+        {},
+        detail::make_function_invoke<Function>(function),
+        detail::make_function_is_invocable_with<Function>(),
+    })} {}
 }

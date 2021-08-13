@@ -13,6 +13,9 @@ namespace meta_hpp
     enum class method_flags : unsigned {
         is_const = 1 << 0,
         is_noexcept = 1 << 1,
+        is_volatile = 1 << 2,
+        is_lvalue_qualified = 1 << 3,
+        is_rvalue_qualified = 1 << 4,
     };
 
     ENUM_HPP_OPERATORS_DECL(method_flags)
@@ -39,6 +42,9 @@ namespace meta_hpp
         bitflags<method_flags> flags() const noexcept;
         bool is_const() const noexcept;
         bool is_noexcept() const noexcept;
+        bool is_volatile() const noexcept;
+        bool is_lvalue_qualified() const noexcept;
+        bool is_rvalue_qualified() const noexcept;
     private:
         struct state;
         std::shared_ptr<state> state_;
@@ -56,6 +62,7 @@ namespace meta_hpp::detail
 
         using class_type = C;
         using return_type = R;
+        using qualified_type = C;
         using argument_types = std::tuple<Args...>;
 
         static any_type make_class_type() {
@@ -77,6 +84,7 @@ namespace meta_hpp::detail
 
     template < typename R, typename C, typename... Args >
     struct method_pointer_traits<R(C::*)(Args...) const> : method_pointer_traits<R(C::*)(Args...)> {
+        using qualified_type = const C;
         static bitflags<method_flags> make_flags() noexcept {
             return method_flags::is_const;
         }
@@ -84,6 +92,7 @@ namespace meta_hpp::detail
 
     template < typename R, typename C, typename... Args >
     struct method_pointer_traits<R(C::*)(Args...) noexcept> : method_pointer_traits<R(C::*)(Args...)> {
+        using qualified_type = C;
         static bitflags<method_flags> make_flags() noexcept {
             return method_flags::is_noexcept;
         }
@@ -91,8 +100,171 @@ namespace meta_hpp::detail
 
     template < typename R, typename C, typename... Args >
     struct method_pointer_traits<R(C::*)(Args...) const noexcept> : method_pointer_traits<R(C::*)(Args...)> {
+        using qualified_type = const C;
         static bitflags<method_flags> make_flags() noexcept {
             return method_flags::is_const | method_flags::is_noexcept;
+        }
+    };
+
+    template < typename R, typename C, typename... Args >
+    struct method_pointer_traits<R(C::*)(Args...) &> : method_pointer_traits<R(C::*)(Args...)> {
+        using qualified_type = C&;
+        static bitflags<method_flags> make_flags() noexcept {
+            return method_flags::is_lvalue_qualified;
+        }
+    };
+
+    template < typename R, typename C, typename... Args >
+    struct method_pointer_traits<R(C::*)(Args...) & noexcept> : method_pointer_traits<R(C::*)(Args...)> {
+        using qualified_type = C&;
+        static bitflags<method_flags> make_flags() noexcept {
+            return method_flags::is_noexcept | method_flags::is_lvalue_qualified;
+        }
+    };
+
+    template < typename R, typename C, typename... Args >
+    struct method_pointer_traits<R(C::*)(Args...) const &> : method_pointer_traits<R(C::*)(Args...)> {
+        using qualified_type = const C&;
+        static bitflags<method_flags> make_flags() noexcept {
+            return method_flags::is_const | method_flags::is_lvalue_qualified;
+        }
+    };
+
+    template < typename R, typename C, typename... Args >
+    struct method_pointer_traits<R(C::*)(Args...) const & noexcept> : method_pointer_traits<R(C::*)(Args...)> {
+        using qualified_type = const C&;
+        static bitflags<method_flags> make_flags() noexcept {
+            return method_flags::is_const | method_flags::is_noexcept | method_flags::is_lvalue_qualified;
+        }
+    };
+
+    template < typename R, typename C, typename... Args >
+    struct method_pointer_traits<R(C::*)(Args...) &&> : method_pointer_traits<R(C::*)(Args...)> {
+        using qualified_type = C&&;
+        static bitflags<method_flags> make_flags() noexcept {
+            return method_flags::is_rvalue_qualified;
+        }
+    };
+
+    template < typename R, typename C, typename... Args >
+    struct method_pointer_traits<R(C::*)(Args...) && noexcept> : method_pointer_traits<R(C::*)(Args...)> {
+        using qualified_type = C&&;
+        static bitflags<method_flags> make_flags() noexcept {
+            return method_flags::is_noexcept | method_flags::is_rvalue_qualified;
+        }
+    };
+
+    template < typename R, typename C, typename... Args >
+    struct method_pointer_traits<R(C::*)(Args...) const &&> : method_pointer_traits<R(C::*)(Args...)> {
+        using qualified_type = const C&&;
+        static bitflags<method_flags> make_flags() noexcept {
+            return method_flags::is_const | method_flags::is_rvalue_qualified;
+        }
+    };
+
+    template < typename R, typename C, typename... Args >
+    struct method_pointer_traits<R(C::*)(Args...) const && noexcept> : method_pointer_traits<R(C::*)(Args...)> {
+        using qualified_type = const C&&;
+        static bitflags<method_flags> make_flags() noexcept {
+            return method_flags::is_const | method_flags::is_noexcept | method_flags::is_rvalue_qualified;
+        }
+    };
+
+    //
+
+    template < typename R, typename C, typename... Args >
+    struct method_pointer_traits<R(C::*)(Args...) volatile> : method_pointer_traits<R(C::*)(Args...)> {
+        using qualified_type = C;
+        static bitflags<method_flags> make_flags() noexcept {
+            return method_flags::is_volatile;
+        }
+    };
+
+    template < typename R, typename C, typename... Args >
+    struct method_pointer_traits<R(C::*)(Args...) volatile const> : method_pointer_traits<R(C::*)(Args...)> {
+        using qualified_type = const C;
+        static bitflags<method_flags> make_flags() noexcept {
+            return method_flags::is_volatile | method_flags::is_const;
+        }
+    };
+
+    template < typename R, typename C, typename... Args >
+    struct method_pointer_traits<R(C::*)(Args...) volatile noexcept> : method_pointer_traits<R(C::*)(Args...)> {
+        using qualified_type = C;
+        static bitflags<method_flags> make_flags() noexcept {
+            return method_flags::is_volatile | method_flags::is_noexcept;
+        }
+    };
+
+    template < typename R, typename C, typename... Args >
+    struct method_pointer_traits<R(C::*)(Args...) volatile const noexcept> : method_pointer_traits<R(C::*)(Args...)> {
+        using qualified_type = const C;
+        static bitflags<method_flags> make_flags() noexcept {
+            return method_flags::is_volatile | method_flags::is_const | method_flags::is_noexcept;
+        }
+    };
+
+    template < typename R, typename C, typename... Args >
+    struct method_pointer_traits<R(C::*)(Args...) volatile &> : method_pointer_traits<R(C::*)(Args...)> {
+        using qualified_type = C&;
+        static bitflags<method_flags> make_flags() noexcept {
+            return method_flags::is_volatile | method_flags::is_lvalue_qualified;
+        }
+    };
+
+    template < typename R, typename C, typename... Args >
+    struct method_pointer_traits<R(C::*)(Args...) volatile & noexcept> : method_pointer_traits<R(C::*)(Args...)> {
+        using qualified_type = C&;
+        static bitflags<method_flags> make_flags() noexcept {
+            return method_flags::is_volatile | method_flags::is_noexcept | method_flags::is_lvalue_qualified;
+        }
+    };
+
+    template < typename R, typename C, typename... Args >
+    struct method_pointer_traits<R(C::*)(Args...) volatile const &> : method_pointer_traits<R(C::*)(Args...)> {
+        using qualified_type = const C&;
+        static bitflags<method_flags> make_flags() noexcept {
+            return method_flags::is_volatile | method_flags::is_const | method_flags::is_lvalue_qualified;
+        }
+    };
+
+    template < typename R, typename C, typename... Args >
+    struct method_pointer_traits<R(C::*)(Args...) volatile const & noexcept> : method_pointer_traits<R(C::*)(Args...)> {
+        using qualified_type = const C&;
+        static bitflags<method_flags> make_flags() noexcept {
+            return method_flags::is_volatile | method_flags::is_const | method_flags::is_noexcept | method_flags::is_lvalue_qualified;
+        }
+    };
+
+    template < typename R, typename C, typename... Args >
+    struct method_pointer_traits<R(C::*)(Args...) volatile &&> : method_pointer_traits<R(C::*)(Args...)> {
+        using qualified_type = C&&;
+        static bitflags<method_flags> make_flags() noexcept {
+            return method_flags::is_volatile | method_flags::is_rvalue_qualified;
+        }
+    };
+
+    template < typename R, typename C, typename... Args >
+    struct method_pointer_traits<R(C::*)(Args...) volatile && noexcept> : method_pointer_traits<R(C::*)(Args...)> {
+        using qualified_type = C&&;
+        static bitflags<method_flags> make_flags() noexcept {
+            return method_flags::is_volatile | method_flags::is_noexcept | method_flags::is_rvalue_qualified;
+        }
+    };
+
+    template < typename R, typename C, typename... Args >
+    struct method_pointer_traits<R(C::*)(Args...) volatile const &&> : method_pointer_traits<R(C::*)(Args...)> {
+        using qualified_type = const C&&;
+        static bitflags<method_flags> make_flags() noexcept {
+            return method_flags::is_volatile | method_flags::is_const | method_flags::is_rvalue_qualified;
+        }
+    };
+
+    template < typename R, typename C, typename... Args >
+    struct method_pointer_traits<R(C::*)(Args...) volatile const && noexcept> : method_pointer_traits<R(C::*)(Args...)> {
+        using qualified_type = const C&&;
+        static bitflags<method_flags> make_flags() noexcept {
+            return method_flags::is_volatile | method_flags::is_const | method_flags::is_noexcept | method_flags::is_rvalue_qualified;
         }
     };
 }
@@ -152,5 +324,17 @@ namespace meta_hpp
 
     inline bool method_type::is_noexcept() const noexcept {
         return state_->flags.has(method_flags::is_noexcept);
+    }
+
+    inline bool method_type::is_volatile() const noexcept {
+        return state_->flags.has(method_flags::is_volatile);
+    }
+
+    inline bool method_type::is_lvalue_qualified() const noexcept {
+        return state_->flags.has(method_flags::is_lvalue_qualified);
+    }
+
+    inline bool method_type::is_rvalue_qualified() const noexcept {
+        return state_->flags.has(method_flags::is_rvalue_qualified);
     }
 }

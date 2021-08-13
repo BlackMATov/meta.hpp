@@ -21,7 +21,6 @@ namespace
 
     class derived final : public base {
     public:
-        derived() = default;
     };
 
     struct empty final {};

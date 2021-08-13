@@ -9,4 +9,5 @@
 #include "meta_fwd.hpp"
 
 #include "meta_utilities/arg.hpp"
+#include "meta_utilities/inst.hpp"
 #include "meta_utilities/value.hpp"

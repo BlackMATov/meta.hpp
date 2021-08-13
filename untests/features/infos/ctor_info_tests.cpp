@@ -23,6 +23,10 @@ namespace
         [[maybe_unused]] explicit ivec2(int v): x{v}, y{v} {}
         [[maybe_unused]] ivec2(int x, int y): x{x}, y{y} {}
     };
+
+    [[maybe_unused]] bool operator==(const ivec2& l, const ivec2& r) noexcept {
+        return l.x == r.x && l.y == r.y;
+    }
 }
 
 TEST_CASE("features/infos/ctor") {
@@ -57,6 +61,22 @@ TEST_CASE("features/infos/ctor") {
             CHECK(ci.type().id() == ci2.type().id());
             CHECK(ci.type().id() == ci2.type().id());
         }
+
+        {
+            CHECK(ci.is_invocable_with<>());
+
+            CHECK_FALSE(ci.is_invocable_with<int>());
+            CHECK_FALSE(ci.is_invocable_with<const int>());
+            CHECK_FALSE(ci.is_invocable_with<int&>());
+            CHECK_FALSE(ci.is_invocable_with<const int&>());
+            CHECK_FALSE(ci.is_invocable_with<int&&>());
+            CHECK_FALSE(ci.is_invocable_with<const int&&>());
+        }
+
+        {
+            CHECK(ci.invoke().equals(ivec2{}));
+            CHECK_THROWS(ci.invoke(42));
+        }
     }
 
     SUBCASE("int") {
@@ -76,6 +96,22 @@ TEST_CASE("features/infos/ctor") {
             CHECK(ci.type().id() == ci2.type().id());
             CHECK(ci.type().id() == ci2.type().id());
         }
+
+        {
+            CHECK_FALSE(ci.is_invocable_with<>());
+
+            CHECK(ci.is_invocable_with<int>());
+            CHECK(ci.is_invocable_with<const int>());
+            CHECK(ci.is_invocable_with<int&>());
+            CHECK(ci.is_invocable_with<const int&>());
+            CHECK(ci.is_invocable_with<int&&>());
+            CHECK(ci.is_invocable_with<const int&&>());
+        }
+
+        {
+            CHECK_THROWS(ci.invoke());
+            CHECK(ci.invoke(42).equals(ivec2{42}));
+        }
     }
 
     SUBCASE("const ivec2&") {
@@ -94,6 +130,29 @@ TEST_CASE("features/infos/ctor") {
             REQUIRE(ci3);
             CHECK(ci.type().id() == ci2.type().id());
             CHECK(ci.type().id() == ci2.type().id());
+        }
+
+        {
+            CHECK_FALSE(ci.is_invocable_with<>());
+
+            CHECK_FALSE(ci.is_invocable_with<int>());
+            CHECK_FALSE(ci.is_invocable_with<const int>());
+            CHECK_FALSE(ci.is_invocable_with<int&>());
+            CHECK_FALSE(ci.is_invocable_with<const int&>());
+            CHECK_FALSE(ci.is_invocable_with<int&&>());
+            CHECK_FALSE(ci.is_invocable_with<const int&&>());
+
+            CHECK(ci.is_invocable_with<ivec2>());
+            CHECK(ci.is_invocable_with<ivec2&>());
+            CHECK(ci.is_invocable_with<const ivec2&>());
+            CHECK(ci.is_invocable_with<ivec2&&>());
+            CHECK(ci.is_invocable_with<const ivec2&&>());
+        }
+
+        {
+            CHECK_THROWS(ci.invoke());
+            CHECK_THROWS(ci.invoke(42));
+            CHECK(ci.invoke(ivec2{21,42}).equals(ivec2{21,42}));
         }
     }
 
@@ -115,6 +174,28 @@ TEST_CASE("features/infos/ctor") {
             REQUIRE(ci3);
             CHECK(ci.type().id() == ci2.type().id());
             CHECK(ci.type().id() == ci2.type().id());
+        }
+
+        {
+            CHECK_FALSE(ci.is_invocable_with<>());
+
+            CHECK_FALSE(ci.is_invocable_with<int>());
+            CHECK_FALSE(ci.is_invocable_with<const int>());
+            CHECK_FALSE(ci.is_invocable_with<int&>());
+            CHECK_FALSE(ci.is_invocable_with<const int&>());
+            CHECK_FALSE(ci.is_invocable_with<int&&>());
+            CHECK_FALSE(ci.is_invocable_with<const int&&>());
+
+            CHECK(ci.is_invocable_with<int, int>());
+            CHECK(ci.is_invocable_with<int&, int&&>());
+            CHECK(ci.is_invocable_with<const int&, const int&&>());
+        }
+
+        {
+            CHECK_THROWS(ci.invoke());
+            CHECK_THROWS(ci.invoke(42));
+            CHECK_THROWS(ci.invoke(ivec2{21,42}));
+            CHECK(ci.invoke(21,42).equals(ivec2{21,42}));
         }
     }
 }

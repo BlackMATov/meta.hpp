@@ -10,14 +10,17 @@ namespace
 {
     using namespace meta_hpp;
     using namespace std::string_literals;
+}
 
+namespace
+{
     struct ivec2 {
         int x{};
         int y{};
 
-        ivec2() = default;
-        explicit ivec2(int v): x{v}, y{v} {}
-        ivec2(int x, int y): x{x}, y{y} {}
+        [[maybe_unused]] ivec2() = default;
+        [[maybe_unused]] explicit ivec2(int v): x{v}, y{v} {}
+        [[maybe_unused]] ivec2(int x, int y): x{x}, y{y} {}
 
         ivec2(ivec2&& other) noexcept
         : x{other.x}
