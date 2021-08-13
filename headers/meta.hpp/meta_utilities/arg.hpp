@@ -28,13 +28,14 @@ namespace meta_hpp
         arg_base& operator=(const arg_base&) = delete;
 
         template < typename T, std::enable_if_t<
-            std::is_pointer_v<T> ||
-            std::is_lvalue_reference_v<T>, int> = 0 >
+            std::is_pointer_v<T> || std::is_lvalue_reference_v<T>
+        , int> = 0 >
         explicit arg_base(typename_arg_t<T>);
 
         template < typename T, std::enable_if_t<
             std::is_rvalue_reference_v<T> ||
-            (!std::is_pointer_v<T> && !std::is_reference_v<T>), int> = 0 >
+            (!std::is_pointer_v<T> && !std::is_reference_v<T>)
+        , int> = 0 >
         explicit arg_base(typename_arg_t<T>);
 
         bool is_const() const noexcept;
@@ -55,15 +56,16 @@ namespace meta_hpp
 namespace meta_hpp
 {
     template < typename T, std::enable_if_t<
-        std::is_pointer_v<T> ||
-        std::is_lvalue_reference_v<T>, int> >
+        std::is_pointer_v<T> || std::is_lvalue_reference_v<T>
+    , int> >
     arg_base::arg_base(typename_arg_t<T>)
     : raw_type_{type_db::get<stdex::remove_cvref_t<T>>()}
     , ref_type_{std::is_const_v<std::remove_reference_t<T>> ? ref_types::cref : ref_types::ref} {}
 
     template < typename T, std::enable_if_t<
         std::is_rvalue_reference_v<T> ||
-        (!std::is_pointer_v<T> && !std::is_reference_v<T>), int> >
+        (!std::is_pointer_v<T> && !std::is_reference_v<T>)
+    , int> >
     arg_base::arg_base(typename_arg_t<T>)
     : raw_type_{type_db::get<stdex::remove_cvref_t<T>>()}
     , ref_type_{std::is_const_v<std::remove_reference_t<T>> ? ref_types::crref : ref_types::rref} {}
@@ -96,53 +98,37 @@ namespace meta_hpp
         if constexpr ( std::is_pointer_v<To> ) {
             using to_raw_type = std::remove_cv_t<To>;
             using to_raw_ptr_type = std::remove_cv_t<std::remove_pointer_t<to_raw_type>>;
-            return raw_type().id() == type_db::get<to_raw_type>().id()
-                || raw_type().id() == type_db::get<std::add_pointer_t<to_raw_ptr_type>>().id();
+            return raw_type() == type_db::get<to_raw_type>()
+                || raw_type() == type_db::get<to_raw_ptr_type*>();
         }
 
-        if constexpr ( std::is_lvalue_reference_v<To> ) {
+        if constexpr ( std::is_reference_v<To> ) {
             constexpr bool to_const = std::is_const_v<std::remove_reference_t<To>>;
-
-            if ( !to_const && is_rvalue() ) {
-                return false;
-            }
 
             if ( !to_const && is_const() ) {
                 return false;
             }
 
+            if constexpr ( std::is_lvalue_reference_v<To> ) {
+                if ( !to_const && is_rvalue() ) {
+                    return false;
+                }
+            }
+
+            if constexpr ( std::is_rvalue_reference_v<To> ) {
+                if ( !is_rvalue() ) {
+                    return false;
+                }
+            }
+
             using to_raw_type = stdex::remove_cvref_t<To>;
-            if ( raw_type().id() == type_db::get<to_raw_type>().id() ) {
+            if ( raw_type() == type_db::get<to_raw_type>() ) {
                 return true;
             }
 
             if constexpr ( to_const && std::is_pointer_v<to_raw_type> ) {
                 using to_raw_ptr_type = std::remove_cv_t<std::remove_pointer_t<to_raw_type>>;
-                return raw_type().id() == type_db::get<std::add_pointer_t<to_raw_ptr_type>>().id();
-            }
-
-            return false;
-        }
-
-        if constexpr ( std::is_rvalue_reference_v<To> ) {
-            constexpr bool to_const = std::is_const_v<std::remove_reference_t<To>>;
-
-            if ( !is_rvalue() ) {
-                return false;
-            }
-
-            if ( !to_const && is_const() ) {
-                return false;
-            }
-
-            using to_raw_type = stdex::remove_cvref_t<To>;
-            if ( raw_type().id() == type_db::get<to_raw_type>().id() ) {
-                return true;
-            }
-
-            if constexpr ( to_const && std::is_pointer_v<to_raw_type> ) {
-                using to_raw_ptr_type = std::remove_cv_t<std::remove_pointer_t<to_raw_type>>;
-                return raw_type().id() == type_db::get<std::add_pointer_t<to_raw_ptr_type>>().id();
+                return raw_type() == type_db::get<to_raw_ptr_type*>();
             }
 
             return false;
@@ -150,7 +136,7 @@ namespace meta_hpp
 
         if constexpr ( !std::is_pointer_v<To> && !std::is_reference_v<To> ) {
             using to_raw_type = std::remove_cv_t<To>;
-            if ( raw_type().id() != type_db::get<to_raw_type>().id() ) {
+            if ( raw_type() != type_db::get<to_raw_type>() ) {
                 return false;
             }
 
@@ -189,7 +175,7 @@ namespace meta_hpp
     template < typename T >
     arg::arg(T&& v)
     : arg_base{typename_arg<T&&>}
-    , data_{const_cast<std::add_pointer_t<stdex::remove_cvref_t<T>>>(std::addressof(v))} {}
+    , data_{const_cast<stdex::remove_cvref_t<T>*>(std::addressof(v))} {}
 
     template < typename To >
     To arg::cast() const {
@@ -214,7 +200,7 @@ namespace meta_hpp
         }
 
         if constexpr ( !std::is_pointer_v<To> && !std::is_reference_v<To> ) {
-            using raw_type = stdex::remove_cvref_t<To>;
+            using raw_type = std::remove_cv_t<To>;
 
             if ( ref_type() == ref_types::ref ) {
                 if constexpr ( std::is_constructible_v<To, raw_type&> ) {
