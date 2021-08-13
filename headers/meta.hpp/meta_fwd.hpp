@@ -115,7 +115,7 @@ namespace meta_hpp
     struct typename_arg_t {};
 
     template < typename... Args >
-    inline constexpr typename_arg_t<Args...> typename_arg;
+    inline constexpr typename_arg_t<Args...> typename_arg{};
 }
 
 namespace meta_hpp::stdex

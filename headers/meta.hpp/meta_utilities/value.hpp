@@ -8,6 +8,39 @@
 
 #include "../meta_fwd.hpp"
 
+namespace meta_hpp::detail
+{
+    template < typename T, typename = void >
+    struct has_value_type_equality_operator
+    : std::false_type {};
+
+    template < typename T >
+    struct has_value_type_equality_operator<T, std::void_t<decltype(
+        std::declval<value>().cast<T>() == std::declval<value>().cast<T>()
+    )>> : std::true_type {};
+
+    template < typename T >
+    inline constexpr bool has_value_type_equality_operator_v = has_value_type_equality_operator<T>::value;
+
+    template < typename T, std::enable_if_t<
+        has_value_type_equality_operator_v<T>
+    , int> = 0 >
+    bool value_equality_function(const value& l, const value& r) {
+        return l.type() == r.type()
+            && l.cast<T>() == r.cast<T>();
+    }
+
+    template < typename T, std::enable_if_t<
+        !has_value_type_equality_operator_v<T>
+    , int> = 0 >
+    bool value_equality_function(const value& l, const value& r) {
+        if ( l.type() != r.type() ) {
+            return false;
+        }
+        throw std::logic_error("value type doesn't have equality operator");
+    }
+}
+
 namespace meta_hpp
 {
     class value final {
@@ -104,16 +137,8 @@ namespace meta_hpp
             },
 
             // equals
-            +[](const value& l, const value& r) -> bool {
-                if ( l.type() != r.type() ) {
-                    return false;
-                }
-                if constexpr ( std::is_invocable_v<std::equal_to<>, const T&, const T&> ) {
-                    return std::equal_to<>{}(l.cast<T>(), r.cast<T>());
-                } else {
-                    throw std::logic_error("value type doesn't have equality operator");
-                }
-            },
+
+            &detail::value_equality_function<T>,
 
             // move_ctor
             +[](std::any& dst, value&& src) {
