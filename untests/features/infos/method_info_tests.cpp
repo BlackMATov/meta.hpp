@@ -495,8 +495,8 @@ TEST_CASE("features/infos/method") {
 
         static_assert(std::is_invocable_v<decltype(&clazz::const_method_ref), clazz&>);
         static_assert(std::is_invocable_v<decltype(&clazz::const_method_ref), const clazz&>);
-        static_assert(!std::is_invocable_v<decltype(&clazz::const_method_ref), clazz&&>);
-        static_assert(!std::is_invocable_v<decltype(&clazz::const_method_ref), const clazz&&>);
+        //static_assert(!std::is_invocable_v<decltype(&clazz::const_method_ref), clazz&&>); // msvc issue
+        //static_assert(!std::is_invocable_v<decltype(&clazz::const_method_ref), const clazz&&>); // msvc issue
 
         static_assert(std::is_invocable_v<decltype(&clazz::const_method_ref_volatile), clazz&>);
         static_assert(std::is_invocable_v<decltype(&clazz::const_method_ref_volatile), const clazz&>);
@@ -551,8 +551,8 @@ TEST_CASE("features/infos/method") {
 
         static_assert(std::is_invocable_v<decltype(&clazz::const_method_noexcept_ref), clazz&>);
         static_assert(std::is_invocable_v<decltype(&clazz::const_method_noexcept_ref), const clazz&>);
-        static_assert(!std::is_invocable_v<decltype(&clazz::const_method_noexcept_ref), clazz&&>);
-        static_assert(!std::is_invocable_v<decltype(&clazz::const_method_noexcept_ref), const clazz&&>);
+        //static_assert(!std::is_invocable_v<decltype(&clazz::const_method_noexcept_ref), clazz&&>); // msvc issue
+        //static_assert(!std::is_invocable_v<decltype(&clazz::const_method_noexcept_ref), const clazz&&>); // msvc issue
 
         static_assert(std::is_invocable_v<decltype(&clazz::const_method_noexcept_ref_volatile), clazz&>);
         static_assert(std::is_invocable_v<decltype(&clazz::const_method_noexcept_ref_volatile), const clazz&>);

@@ -185,14 +185,22 @@ namespace meta_hpp
 
     template < typename Instance, typename... Args >
     std::optional<value> method_info::invoke(Instance&& instance, Args&&... args) const {
-        std::array<arg, sizeof...(Args)> vargs{arg{std::forward<Args>(args)}...};
-        return state_->invoke(inst{std::forward<Instance>(instance)}, vargs.data(), vargs.size());
+        if constexpr ( sizeof...(Args) > 0 ) {
+            std::array<arg, sizeof...(Args)> vargs{arg{std::forward<Args>(args)}...};
+            return state_->invoke(inst{std::forward<Instance>(instance)}, vargs.data(), vargs.size());
+        } else {
+            return state_->invoke(inst{std::forward<Instance>(instance)}, nullptr, 0);
+        }
     }
 
     template < typename Inst, typename... Args >
     bool method_info::is_invocable_with() const noexcept {
-        std::array<arg_base, sizeof...(Args)> arg_bases{arg_base{typename_arg<Args>}...};
-        return state_->is_invocable_with(inst_base{typename_arg<Inst>}, arg_bases.data(), arg_bases.size());
+        if constexpr ( sizeof...(Args) > 0 ) {
+            std::array<arg_base, sizeof...(Args)> arg_bases{arg_base{typename_arg<Args>}...};
+            return state_->is_invocable_with(inst_base{typename_arg<Inst>}, arg_bases.data(), arg_bases.size());
+        } else {
+            return state_->is_invocable_with(inst_base{typename_arg<Inst>}, nullptr, 0);
+        }
     }
 }
 

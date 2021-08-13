@@ -153,14 +153,22 @@ namespace meta_hpp
 
     template < typename... Args >
     value ctor_info::invoke(Args&&... args) const {
-        std::array<arg, sizeof...(Args)> vargs{arg{std::forward<Args>(args)}...};
-        return state_->invoke(vargs.data(), vargs.size());
+        if constexpr ( sizeof...(Args) > 0 ) {
+            std::array<arg, sizeof...(Args)> vargs{arg{std::forward<Args>(args)}...};
+            return state_->invoke(vargs.data(), vargs.size());
+        } else {
+            return state_->invoke(nullptr, 0);
+        }
     }
 
     template < typename... Args >
     bool ctor_info::is_invocable_with() const noexcept {
-        std::array<arg_base, sizeof...(Args)> arg_bases{arg_base{typename_arg<Args>}...};
-        return state_->is_invocable_with(arg_bases.data(), arg_bases.size());
+        if constexpr ( sizeof...(Args) > 0 ) {
+            std::array<arg_base, sizeof...(Args)> arg_bases{arg_base{typename_arg<Args>}...};
+            return state_->is_invocable_with(arg_bases.data(), arg_bases.size());
+        } else {
+            return state_->is_invocable_with(nullptr, 0);
+        }
     }
 }
 

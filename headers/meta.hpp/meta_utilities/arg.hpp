@@ -105,13 +105,17 @@ namespace meta_hpp
         if constexpr ( std::is_reference_v<To> ) {
             constexpr bool to_const = std::is_const_v<std::remove_reference_t<To>>;
 
-            if ( !to_const && is_const() ) {
-                return false;
+            if constexpr ( !to_const ) {
+                if ( is_const() ) {
+                    return false;
+                }
             }
 
             if constexpr ( std::is_lvalue_reference_v<To> ) {
-                if ( !to_const && is_rvalue() ) {
-                    return false;
+                if constexpr ( !to_const ) {
+                    if ( is_rvalue() ) {
+                        return false;
+                    }
                 }
             }
 

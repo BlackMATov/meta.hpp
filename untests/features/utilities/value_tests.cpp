@@ -250,7 +250,7 @@ TEST_CASE("features/utilities/value") {
         val1.swap(val2);
         CHECK(val1.equals(ivec2{1,2}));
         CHECK(val2.equals("world"s));
-        CHECK(ivec2::move_ctor_counter == 3);
+        CHECK((ivec2::move_ctor_counter == 2 || ivec2::move_ctor_counter == 3));
         CHECK(ivec2::copy_ctor_counter == 0);
 
         swap(val1, val2);
