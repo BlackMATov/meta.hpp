@@ -68,7 +68,7 @@ namespace meta_hpp::detail
     }
 
     template < typename Member >
-    void raw_member_setter(Member member, const inst& inst, const arg& arg) {
+    void raw_member_setter([[maybe_unused]] Member member, const inst& inst, const arg& arg) {
         using mt = member_pointer_traits<Member>;
         using class_type = typename mt::class_type;
         using value_type = typename mt::value_type;

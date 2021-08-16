@@ -34,9 +34,10 @@ namespace meta_hpp
 
         template < typename... Args >
         ctor_info get_ctor_by_args() const noexcept;
-        template < std::size_t Args >
-        ctor_info get_ctor_by_args(const std::array<any_type, Args>& args) const noexcept;
+        template < std::size_t N >
+        ctor_info get_ctor_by_args(const std::array<any_type, N>& args) const noexcept;
         ctor_info get_ctor_by_args(const std::vector<any_type>& args) const noexcept;
+        ctor_info get_ctor_by_args(std::initializer_list<any_type> args) const noexcept;
     public:
         template < typename F >
         void visit(F&& f) const;
@@ -137,8 +138,8 @@ namespace meta_hpp
         return get_ctor_by_args(args);
     }
 
-    template < std::size_t Args >
-    ctor_info class_info::get_ctor_by_args(const std::array<any_type, Args>& args) const noexcept {
+    template < std::size_t N >
+    ctor_info class_info::get_ctor_by_args(const std::array<any_type, N>& args) const noexcept {
         for ( auto&& id_info : state_->ctors ) {
             const std::vector<any_type>& ctor_args =
                 id_info.second.type().argument_types();
@@ -153,6 +154,20 @@ namespace meta_hpp
     }
 
     inline ctor_info class_info::get_ctor_by_args(const std::vector<any_type>& args) const noexcept {
+        for ( auto&& id_info : state_->ctors ) {
+            const std::vector<any_type>& ctor_args =
+                id_info.second.type().argument_types();
+
+            if ( args.size() == ctor_args.size()
+                && std::equal(args.begin(), args.end(), ctor_args.begin()) )
+            {
+                return id_info.second;
+            }
+        }
+        return ctor_info{};
+    }
+
+    inline ctor_info class_info::get_ctor_by_args(std::initializer_list<any_type> args) const noexcept {
         for ( auto&& id_info : state_->ctors ) {
             const std::vector<any_type>& ctor_args =
                 id_info.second.type().argument_types();
