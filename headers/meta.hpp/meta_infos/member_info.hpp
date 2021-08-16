@@ -21,6 +21,12 @@ namespace meta_hpp
 
         const std::string& name() const noexcept;
         const member_type& type() const noexcept;
+
+        template < typename Instance >
+        value get(Instance&& instance) const;
+
+        template < typename Instance, typename Value >
+        void set(Instance&& instance, Value&& value) const;
     public:
         template < typename F >
         void visit(F&& f) const;
@@ -40,12 +46,71 @@ namespace meta_hpp
     };
 }
 
+namespace meta_hpp::detail
+{
+    using member_getter = std::function<value(const inst&)>;
+    using member_setter = std::function<void(const inst&, const arg&)>;
+
+    template < typename Member >
+    value raw_member_getter(Member member, const inst& inst) {
+        using mt = member_pointer_traits<Member>;
+        using class_type = typename mt::class_type;
+        using value_type = typename mt::value_type;
+
+        using qualified_type = const class_type;
+
+        if ( !inst.can_cast_to<qualified_type>() ) {
+            throw std::logic_error("an attempt to get a member with an incorrect instance type");
+        }
+
+        value_type return_value{std::invoke(member, inst.cast<qualified_type>())};
+        return value{std::forward<value_type>(return_value)};
+    }
+
+    template < typename Member >
+    void raw_member_setter(Member member, const inst& inst, const arg& arg) {
+        using mt = member_pointer_traits<Member>;
+        using class_type = typename mt::class_type;
+        using value_type = typename mt::value_type;
+
+        using qualified_type = class_type;
+
+        if constexpr ( !std::is_const_v<value_type> ) {
+            if ( !inst.can_cast_to<qualified_type>() ) {
+                throw std::logic_error("an attempt to set a member with an incorrect instance type");
+            }
+
+            if ( !arg.can_cast_to<value_type>() ) {
+                throw std::logic_error("an attempt to set a member with an incorrect argument type");
+            }
+
+            std::invoke(member, inst.cast<qualified_type>()) = arg.cast<value_type>();
+        } else {
+            throw std::logic_error("an attempt to set a constant member");
+        }
+    }
+
+    template < typename Member >
+    member_getter make_member_getter(Member member) {
+        using namespace std::placeholders;
+        return std::bind(&raw_member_getter<Member>, member, _1);
+    }
+
+    template < typename Member >
+    member_setter make_member_setter(Member member) {
+        using namespace std::placeholders;
+        return std::bind(&raw_member_setter<Member>, member, _1, _2);
+    }
+}
+
 namespace meta_hpp
 {
     struct member_info::state final {
         std::string name;
         member_type type;
         data_info_map datas;
+        detail::member_getter getter;
+        detail::member_setter setter;
     };
 }
 
@@ -66,6 +131,16 @@ namespace meta_hpp
 
     inline const member_type& member_info::type() const noexcept {
         return state_->type;
+    }
+
+    template < typename Instance >
+    value member_info::get(Instance&& instance) const {
+        return state_->getter(inst{std::forward<Instance>(instance)});
+    }
+
+    template < typename Instance, typename Value >
+    void member_info::set(Instance&& instance, Value&& value) const {
+        state_->setter(inst{std::forward<Instance>(instance)}, arg{std::forward<Value>(value)});
     }
 }
 
@@ -91,12 +166,12 @@ namespace meta_hpp
 namespace meta_hpp
 {
     template < typename Member >
-    member_info::member_info(std::string name, Member instance)
+    member_info::member_info(std::string name, Member member)
     : state_{std::make_shared<state>(state{
         std::move(name),
         type_db::get<Member>().template as<member_type>(),
-        {}
-    })} {
-        (void)instance;
-    }
+        {},
+        detail::make_member_getter<Member>(member),
+        detail::make_member_setter<Member>(member),
+    })} {}
 }
