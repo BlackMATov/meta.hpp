@@ -21,7 +21,7 @@ TEST_CASE("features/types/array") {
 
         const array_type at = type_db::get<type>().as<array_type>();
 
-        CHECK(at.data_type().id() == type_db::get<int>().id());
+        CHECK(at.data_type() == type_db::get<int>());
         CHECK(at.extent() == 0);
 
         CHECK(at.flags() == (array_flags::is_unbounded));
@@ -38,7 +38,7 @@ TEST_CASE("features/types/array") {
 
         const array_type at = type_db::get<type>().as<array_type>();
 
-        CHECK(at.data_type().id() == type_db::get<unsigned[42]>().id());
+        CHECK(at.data_type() == type_db::get<unsigned[42]>());
         CHECK(at.extent() == 0);
 
         CHECK(at.flags() == (array_flags::is_unbounded));
@@ -55,7 +55,7 @@ TEST_CASE("features/types/array") {
 
         const array_type at = type_db::get<type>().as<array_type>();
 
-        CHECK(at.data_type().id() == type_db::get<const int[21]>().id());
+        CHECK(at.data_type() == type_db::get<const int[21]>());
         CHECK(at.extent() == 42);
 
         CHECK(at.flags() == (array_flags::is_bounded));
@@ -72,7 +72,7 @@ TEST_CASE("features/types/array") {
 
         const array_type at = type_db::get<type>().as<array_type>();
 
-        CHECK(at.data_type().id() == type_db::get<const unsigned>().id());
+        CHECK(at.data_type() == type_db::get<const unsigned>());
         CHECK(at.extent() == 42);
 
         CHECK(at.flags() == (array_flags::is_bounded));

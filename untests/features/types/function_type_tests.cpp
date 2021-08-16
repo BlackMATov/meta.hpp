@@ -32,7 +32,7 @@ TEST_CASE("features/types/function") {
         REQUIRE(type_db::get<type>().is<function_type>());
 
         const function_type ft = type_db::get<type>().as<function_type>();
-        CHECK(ft.return_type().id() == type_db::get<void>().id());
+        CHECK(ft.return_type() == type_db::get<void>());
         CHECK(ft.argument_types().size() == 1);
         CHECK(ft.arity() == 1);
 
@@ -42,7 +42,7 @@ TEST_CASE("features/types/function") {
         {
             REQUIRE(ft.argument_type(0));
             const any_type arg0 = ft.argument_type(0);
-            CHECK(arg0.id() == type_db::get<ivec2>().id());
+            CHECK(arg0 == type_db::get<ivec2>());
         }
 
         {
@@ -57,7 +57,7 @@ TEST_CASE("features/types/function") {
         REQUIRE(type_db::get<type>().is<function_type>());
 
         const function_type ft = type_db::get<type>().as<function_type>();
-        CHECK(ft.return_type().id() == type_db::get<void>().id());
+        CHECK(ft.return_type() == type_db::get<void>());
         CHECK(ft.argument_types().size() == 1);
         CHECK(ft.arity() == 1);
 
@@ -67,7 +67,7 @@ TEST_CASE("features/types/function") {
         {
             REQUIRE(ft.argument_type(0));
             const any_type arg0 = ft.argument_type(0);
-            CHECK(arg0.id() == type_db::get<ivec2&>().id());
+            CHECK(arg0 == type_db::get<ivec2&>());
         }
 
         {
@@ -82,7 +82,7 @@ TEST_CASE("features/types/function") {
         REQUIRE(type_db::get<type>().is<function_type>());
 
         const function_type ft = type_db::get<type>().as<function_type>();
-        CHECK(ft.return_type().id() == type_db::get<void>().id());
+        CHECK(ft.return_type() == type_db::get<void>());
         CHECK(ft.argument_types().size() == 1);
         CHECK(ft.arity() == 1);
 
@@ -92,7 +92,7 @@ TEST_CASE("features/types/function") {
         {
             REQUIRE(ft.argument_type(0));
             const any_type arg0 = ft.argument_type(0);
-            CHECK(arg0.id() == type_db::get<const ivec2&>().id());
+            CHECK(arg0 == type_db::get<const ivec2&>());
         }
 
         {

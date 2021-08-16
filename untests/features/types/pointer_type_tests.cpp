@@ -29,7 +29,7 @@ TEST_CASE("features/types/pointer") {
 
         const pointer_type pt = type_db::get<type>().as<pointer_type>();
 
-        CHECK(pt.data_type().id() == type_db::get<ivec2>().id());
+        CHECK(pt.data_type() == type_db::get<ivec2>());
 
         CHECK(pt.flags() == (pointer_flags{}));
         CHECK_FALSE(pt.is_const());
@@ -43,7 +43,7 @@ TEST_CASE("features/types/pointer") {
 
         const pointer_type pt = type_db::get<type>().as<pointer_type>();
 
-        CHECK(pt.data_type().id() == type_db::get<const ivec2>().id());
+        CHECK(pt.data_type() == type_db::get<const ivec2>());
 
         CHECK(pt.flags() == (pointer_flags{}));
         CHECK_FALSE(pt.is_const());
@@ -57,7 +57,7 @@ TEST_CASE("features/types/pointer") {
 
         const pointer_type pt = type_db::get<type>().as<pointer_type>();
 
-        CHECK(pt.data_type().id() == type_db::get<ivec2>().id());
+        CHECK(pt.data_type() == type_db::get<ivec2>());
 
         CHECK(pt.flags() == (pointer_flags::is_const));
         CHECK(pt.is_const());
@@ -71,7 +71,7 @@ TEST_CASE("features/types/pointer") {
 
         const pointer_type pt = type_db::get<type>().as<pointer_type>();
 
-        CHECK(pt.data_type().id() == type_db::get<const ivec2>().id());
+        CHECK(pt.data_type() == type_db::get<const ivec2>());
 
         CHECK(pt.flags() == (pointer_flags::is_const));
         CHECK(pt.is_const());

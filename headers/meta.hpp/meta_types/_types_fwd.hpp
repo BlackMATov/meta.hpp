@@ -102,6 +102,20 @@ namespace meta_hpp
     private:
         type_id id_;
     };
+
+    //
+
+    inline bool operator<(const type_base& l, const type_base& r) noexcept {
+        return l.id() < r.id();
+    }
+
+    inline bool operator==(const type_base& l, const type_base& r) noexcept {
+        return l.id() == r.id();
+    }
+
+    inline bool operator!=(const type_base& l, const type_base& r) noexcept {
+        return l.id() != r.id();
+    }
 }
 
 namespace meta_hpp
@@ -160,6 +174,8 @@ namespace meta_hpp
             const void_type*> type_;
     };
 
+    //
+
     inline bool operator<(const any_type& l, const any_type& r) noexcept {
         return l.id() < r.id();
     }
@@ -169,6 +185,34 @@ namespace meta_hpp
     }
 
     inline bool operator!=(const any_type& l, const any_type& r) noexcept {
+        return l.id() != r.id();
+    }
+
+    //
+
+    inline bool operator<(const type_base& l, const any_type& r) noexcept {
+        return l.id() < r.id();
+    }
+
+    inline bool operator==(const type_base& l, const any_type& r) noexcept {
+        return l.id() == r.id();
+    }
+
+    inline bool operator!=(const type_base& l, const any_type& r) noexcept {
+        return l.id() != r.id();
+    }
+
+    //
+
+    inline bool operator<(const any_type& l, const type_base& r) noexcept {
+        return l.id() < r.id();
+    }
+
+    inline bool operator==(const any_type& l, const type_base& r) noexcept {
+        return l.id() == r.id();
+    }
+
+    inline bool operator!=(const any_type& l, const type_base& r) noexcept {
         return l.id() != r.id();
     }
 }

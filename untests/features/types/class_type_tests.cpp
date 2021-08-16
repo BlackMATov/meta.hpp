@@ -127,7 +127,7 @@ TEST_CASE("features/types/class") {
         const class_type ct = type_db::get<type>().as<class_type>();
 
         REQUIRE(ct.raw_type());
-        CHECK(ct.raw_type().id() == type_db::get<ivec2>().id());
+        CHECK(ct.raw_type() == type_db::get<ivec2>());
         CHECK(ct.size() == sizeof(type));
 
         CHECK(ct.flags() == (

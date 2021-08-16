@@ -125,7 +125,7 @@ namespace meta_hpp
 
     inline bool class_info::is_derived_from(any_type base) const noexcept {
         for ( auto&& id_info : state_->bases ) {
-            if ( base.id() == id_info.second.type().base_class_type().id() ) {
+            if ( base == id_info.second.type().base_class_type() ) {
                 return true;
             }
         }

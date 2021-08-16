@@ -36,7 +36,7 @@ TEST_CASE("features/types/void") {
         const void_type vt = type_db::get<type>().as<void_type>();
 
         REQUIRE(vt.raw_type());
-        CHECK(vt.raw_type().id() == type_db::get<void>().id());
+        CHECK(vt.raw_type() == type_db::get<void>());
 
         CHECK(vt.flags() == (void_flags::is_const));
         CHECK(vt.is_const());

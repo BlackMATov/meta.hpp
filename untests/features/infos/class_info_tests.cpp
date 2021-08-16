@@ -76,7 +76,7 @@ TEST_CASE("features/infos/class") {
         REQUIRE(db.get_class_by_path("shape"));
         const class_info shape_info = db.get_class_by_path("shape");
         CHECK(shape_info.name() == "shape");
-        CHECK(shape_info.type().id() == type_db::get<shape>().id());
+        CHECK(shape_info.type() == type_db::get<shape>());
 
         CHECK_FALSE(shape_info.is_derived_from<shape>());
         CHECK_FALSE(shape_info.is_derived_from<rectangle>());
@@ -86,7 +86,7 @@ TEST_CASE("features/infos/class") {
         REQUIRE(db.get_class_by_path("rectangle"));
         const class_info rectangle_info = db.get_class_by_path("rectangle");
         CHECK(rectangle_info.name() == "rectangle");
-        CHECK(rectangle_info.type().id() == type_db::get<rectangle>().id());
+        CHECK(rectangle_info.type() == type_db::get<rectangle>());
 
         CHECK(rectangle_info.is_derived_from<shape>());
         CHECK_FALSE(rectangle_info.is_derived_from<rectangle>());

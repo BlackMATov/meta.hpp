@@ -32,7 +32,7 @@ TEST_CASE("features/types/enum") {
 
         CHECK(et.size() == sizeof(type));
         CHECK_FALSE(et.raw_type());
-        CHECK(et.underlying_type().id() == type_db::get<unsigned>().id());
+        CHECK(et.underlying_type() == type_db::get<unsigned>());
 
         CHECK(et.flags() == (enum_flags{}));
         CHECK_FALSE(et.is_const());
@@ -48,8 +48,8 @@ TEST_CASE("features/types/enum") {
 
         CHECK(et.size() == sizeof(type));
         REQUIRE(et.raw_type());
-        CHECK(et.raw_type().id() == type_db::get<ecolor>().id());
-        CHECK(et.underlying_type().id() == type_db::get<unsigned>().id());
+        CHECK(et.raw_type() == type_db::get<ecolor>());
+        CHECK(et.underlying_type() == type_db::get<unsigned>());
 
         CHECK(et.flags() == (enum_flags::is_const));
         CHECK(et.is_const());

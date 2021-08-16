@@ -40,8 +40,8 @@ TEST_CASE("features/types/method") {
         REQUIRE(type_db::get<type>().is<method_type>());
 
         const method_type mt = type_db::get<type>().as<method_type>();
-        CHECK(mt.class_type().id() == type_db::get<ivec2>().id());
-        CHECK(mt.return_type().id() == type_db::get<int&>().id());
+        CHECK(mt.class_type() == type_db::get<ivec2>());
+        CHECK(mt.return_type() == type_db::get<int&>());
         CHECK(mt.argument_types().size() == 1);
         CHECK(mt.arity() == 1);
 
@@ -53,7 +53,7 @@ TEST_CASE("features/types/method") {
         {
             REQUIRE(mt.argument_type(0));
             const any_type arg0 = mt.argument_type(0);
-            CHECK(arg0.id() == type_db::get<std::size_t>().id());
+            CHECK(arg0 == type_db::get<std::size_t>());
         }
 
         {
@@ -68,8 +68,8 @@ TEST_CASE("features/types/method") {
         REQUIRE(type_db::get<type>().is<method_type>());
 
         const method_type mt = type_db::get<type>().as<method_type>();
-        CHECK(mt.class_type().id() == type_db::get<ivec2>().id());
-        CHECK(mt.return_type().id() == type_db::get<int>().id());
+        CHECK(mt.class_type() == type_db::get<ivec2>());
+        CHECK(mt.return_type() == type_db::get<int>());
         CHECK(mt.argument_types().size() == 0);
         CHECK(mt.arity() == 0);
 

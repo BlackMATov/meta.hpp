@@ -28,7 +28,7 @@ TEST_CASE("features/types/ctor") {
     SUBCASE("ivec2_void") {
         ctor_type ct{typename_arg<ivec2>, typename_arg<>};
 
-        CHECK(ct.class_type().id() == type_db::get<ivec2>().id());
+        CHECK(ct.class_type() == type_db::get<ivec2>());
         CHECK(ct.argument_types().size() == 0);
         CHECK(ct.arity() == 0);
 
@@ -44,7 +44,7 @@ TEST_CASE("features/types/ctor") {
         ctor_type ct{typename_arg<ivec2>, typename_arg<int>};
 
         CHECK(ct.arity() == 1);
-        CHECK(ct.class_type().id() == type_db::get<ivec2>().id());
+        CHECK(ct.class_type() == type_db::get<ivec2>());
         CHECK(ct.argument_types().size() == 1);
 
         CHECK(ct.flags() == (ctor_flags{}));
@@ -53,7 +53,7 @@ TEST_CASE("features/types/ctor") {
         {
             REQUIRE(ct.argument_type(0));
             const any_type arg0 = ct.argument_type(0);
-            CHECK(arg0.id() == type_db::get<int>().id());
+            CHECK(arg0 == type_db::get<int>());
         }
 
         {
@@ -64,7 +64,7 @@ TEST_CASE("features/types/ctor") {
     SUBCASE("ivec2_int_int") {
         ctor_type ct{typename_arg<ivec2>, typename_arg<int, int>};
 
-        CHECK(ct.class_type().id() == type_db::get<ivec2>().id());
+        CHECK(ct.class_type() == type_db::get<ivec2>());
         CHECK(ct.argument_types().size() == 2);
         CHECK(ct.arity() == 2);
 
@@ -74,13 +74,13 @@ TEST_CASE("features/types/ctor") {
         {
             REQUIRE(ct.argument_type(0));
             const any_type arg0 = ct.argument_type(0);
-            CHECK(arg0.id() == type_db::get<int>().id());
+            CHECK(arg0 == type_db::get<int>());
         }
 
         {
             REQUIRE(ct.argument_type(1));
             const any_type arg1 = ct.argument_type(1);
-            CHECK(arg1.id() == type_db::get<int>().id());
+            CHECK(arg1 == type_db::get<int>());
         }
 
         {

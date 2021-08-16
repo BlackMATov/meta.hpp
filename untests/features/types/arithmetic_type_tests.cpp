@@ -43,7 +43,7 @@ TEST_CASE("features/types/arithmetic") {
 
         const arithmetic_type at = type_db::get<type>().as<arithmetic_type>();
 
-        CHECK(at.raw_type().id() == type_db::get<float>().id());
+        CHECK(at.raw_type() == type_db::get<float>());
         CHECK(at.size() == sizeof(type));
 
         CHECK(at.flags() == (
@@ -66,7 +66,7 @@ TEST_CASE("features/types/arithmetic") {
 
         const arithmetic_type at = type_db::get<type>().as<arithmetic_type>();
 
-        CHECK(at.raw_type().id() == type_db::get<unsigned>().id());
+        CHECK(at.raw_type() == type_db::get<unsigned>());
         CHECK(at.size() == sizeof(type));
 
         CHECK(at.flags() == (

@@ -58,8 +58,8 @@ TEST_CASE("features/infos/ctor") {
             const ctor_info ci3 = ivec2_info.get_ctor_by_args(std::vector<any_type>{});
             REQUIRE(ci2);
             REQUIRE(ci3);
-            CHECK(ci.type().id() == ci2.type().id());
-            CHECK(ci.type().id() == ci2.type().id());
+            CHECK(ci.type() == ci2.type());
+            CHECK(ci.type() == ci2.type());
         }
 
         {
@@ -93,8 +93,8 @@ TEST_CASE("features/infos/ctor") {
                 type_db::get<int>()});
             REQUIRE(ci2);
             REQUIRE(ci3);
-            CHECK(ci.type().id() == ci2.type().id());
-            CHECK(ci.type().id() == ci2.type().id());
+            CHECK(ci.type() == ci2.type());
+            CHECK(ci.type() == ci2.type());
         }
 
         {
@@ -128,8 +128,8 @@ TEST_CASE("features/infos/ctor") {
                 type_db::get<const ivec2&>()});
             REQUIRE(ci2);
             REQUIRE(ci3);
-            CHECK(ci.type().id() == ci2.type().id());
-            CHECK(ci.type().id() == ci2.type().id());
+            CHECK(ci.type() == ci2.type());
+            CHECK(ci.type() == ci2.type());
         }
 
         {
@@ -172,8 +172,8 @@ TEST_CASE("features/infos/ctor") {
                 type_db::get<int>()});
             REQUIRE(ci2);
             REQUIRE(ci3);
-            CHECK(ci.type().id() == ci2.type().id());
-            CHECK(ci.type().id() == ci2.type().id());
+            CHECK(ci.type() == ci2.type());
+            CHECK(ci.type() == ci2.type());
         }
 
         {

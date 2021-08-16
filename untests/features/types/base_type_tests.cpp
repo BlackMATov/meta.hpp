@@ -25,6 +25,6 @@ namespace
 TEST_CASE("features/types/base") {
     base_type bt{typename_arg<base>, typename_arg<derived>};
 
-    CHECK(bt.base_class_type().id() == type_db::get<base>().id());
-    CHECK(bt.derived_class_type().id() == type_db::get<derived>().id());
+    CHECK(bt.base_class_type() == type_db::get<base>());
+    CHECK(bt.derived_class_type() == type_db::get<derived>());
 }
