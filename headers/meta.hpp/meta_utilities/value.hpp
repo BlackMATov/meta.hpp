@@ -25,7 +25,7 @@ namespace meta_hpp
                  , std::enable_if_t<!std::is_same_v<Tp, arg>, int> = 0
                  , std::enable_if_t<!std::is_same_v<Tp, inst>, int> = 0
                  , std::enable_if_t<!std::is_same_v<Tp, value>, int> = 0 >
-        value(T&& val);
+        explicit value(T&& val);
 
         template < typename T
                  , typename Tp = std::decay_t<T>

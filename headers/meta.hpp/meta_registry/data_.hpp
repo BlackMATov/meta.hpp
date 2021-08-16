@@ -12,7 +12,8 @@ namespace meta_hpp
 {
     class data_ final {
     public:
-        explicit data_(std::string name, class value value);
+        template < typename T >
+        explicit data_(std::string name, T&& value);
 
         data_info make_info() const;
     public:
@@ -30,9 +31,10 @@ namespace meta_hpp
 
 namespace meta_hpp
 {
-    inline data_::data_(std::string name, class value value)
+    template < typename T >
+    data_::data_(std::string name, T&& value)
     : name_{std::move(name)}
-    , value_{std::move(value)} {}
+    , value_{std::forward<T>(value)} {}
 
     inline data_info data_::make_info() const {
         data_info info{name_, value_};
