@@ -8,6 +8,8 @@
 
 #include "../meta_fwd.hpp"
 
+#include "value.hpp"
+
 namespace meta_hpp
 {
     class inst_base {
@@ -37,6 +39,11 @@ namespace meta_hpp
             (std::is_rvalue_reference_v<T> && std::is_class_v<std::remove_reference_t<T>>)
         , int> = 0>
         explicit inst_base(typename_arg_t<T>);
+
+        explicit inst_base(value& v);
+        explicit inst_base(value&& v);
+        explicit inst_base(const value& v);
+        explicit inst_base(const value&& v);
 
         bool is_const() const noexcept;
         bool is_lvalue() const noexcept;
@@ -69,6 +76,22 @@ namespace meta_hpp
     inst_base::inst_base(typename_arg_t<T>)
     : raw_type_{type_db::get<stdex::remove_cvref_t<T>>()}
     , ref_type_{std::is_const_v<std::remove_reference_t<T>> ? ref_types::crref : ref_types::rref} {}
+
+    inline inst_base::inst_base(value& v)
+    : raw_type_{v.type()}
+    , ref_type_{ref_types::ref} {}
+
+    inline inst_base::inst_base(value&& v)
+    : raw_type_{v.type()}
+    , ref_type_{ref_types::rref} {}
+
+    inline inst_base::inst_base(const value& v)
+    : raw_type_{v.type()}
+    , ref_type_{ref_types::cref} {}
+
+    inline inst_base::inst_base(const value&& v)
+    : raw_type_{v.type()}
+    , ref_type_{ref_types::crref} {}
 
     inline bool inst_base::is_const() const noexcept {
         return ref_type_ == ref_types::cref
@@ -142,6 +165,11 @@ namespace meta_hpp
                  , std::enable_if_t<!std::is_same_v<std::decay_t<T>, value>, int> = 0 >
         explicit inst(T&& v);
 
+        explicit inst(value& v);
+        explicit inst(value&& v);
+        explicit inst(const value& v);
+        explicit inst(const value&& v);
+
         template < typename To >
         decltype(auto) cast() const;
     private:
@@ -158,6 +186,22 @@ namespace meta_hpp
     inst::inst(T&& v)
     : inst_base{typename_arg<T&&>}
     , data_{const_cast<stdex::remove_cvref_t<T>*>(std::addressof(v))} {}
+
+    inline inst::inst(value& v)
+    : inst_base{v}
+    , data_{const_cast<void*>(v.data())} {}
+
+    inline inst::inst(value&& v)
+    : inst_base{v}
+    , data_{const_cast<void*>(v.data())} {}
+
+    inline inst::inst(const value& v)
+    : inst_base{v}
+    , data_{const_cast<void*>(v.data())} {}
+
+    inline inst::inst(const value&& v)
+    : inst_base{v}
+    , data_{const_cast<void*>(v.data())} {}
 
     template < typename To >
     decltype(auto) inst::cast() const {

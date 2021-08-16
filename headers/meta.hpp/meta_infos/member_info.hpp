@@ -76,6 +76,10 @@ namespace meta_hpp::detail
         using qualified_type = class_type;
 
         if constexpr ( !std::is_const_v<value_type> ) {
+            if ( inst.is_const() ) {
+                throw std::logic_error("an attempt to set a member with an const instance type");
+            }
+
             if ( !inst.can_cast_to<qualified_type>() ) {
                 throw std::logic_error("an attempt to set a member with an incorrect instance type");
             }

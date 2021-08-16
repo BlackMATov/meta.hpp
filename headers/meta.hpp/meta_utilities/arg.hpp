@@ -8,6 +8,8 @@
 
 #include "../meta_fwd.hpp"
 
+#include "value.hpp"
+
 namespace meta_hpp
 {
     class arg_base {
@@ -37,6 +39,11 @@ namespace meta_hpp
             (!std::is_pointer_v<T> && !std::is_reference_v<T>)
         , int> = 0 >
         explicit arg_base(typename_arg_t<T>);
+
+        explicit arg_base(value& v);
+        explicit arg_base(value&& v);
+        explicit arg_base(const value& v);
+        explicit arg_base(const value&& v);
 
         bool is_const() const noexcept;
         bool is_lvalue() const noexcept;
@@ -69,6 +76,22 @@ namespace meta_hpp
     arg_base::arg_base(typename_arg_t<T>)
     : raw_type_{type_db::get<stdex::remove_cvref_t<T>>()}
     , ref_type_{std::is_const_v<std::remove_reference_t<T>> ? ref_types::crref : ref_types::rref} {}
+
+    inline arg_base::arg_base(value& v)
+    : raw_type_{v.type()}
+    , ref_type_{ref_types::ref} {}
+
+    inline arg_base::arg_base(value&& v)
+    : raw_type_{v.type()}
+    , ref_type_{ref_types::rref} {}
+
+    inline arg_base::arg_base(const value& v)
+    : raw_type_{v.type()}
+    , ref_type_{ref_types::cref} {}
+
+    inline arg_base::arg_base(const value&& v)
+    : raw_type_{v.type()}
+    , ref_type_{ref_types::crref} {}
 
     inline bool arg_base::is_const() const noexcept {
         return ref_type_ == ref_types::cref
@@ -170,6 +193,11 @@ namespace meta_hpp
                  , std::enable_if_t<!std::is_same_v<std::decay_t<T>, value>, int> = 0 >
         explicit arg(T&& v);
 
+        explicit arg(value& v);
+        explicit arg(value&& v);
+        explicit arg(const value& v);
+        explicit arg(const value&& v);
+
         template < typename To >
         To cast() const;
     private:
@@ -186,6 +214,22 @@ namespace meta_hpp
     arg::arg(T&& v)
     : arg_base{typename_arg<T&&>}
     , data_{const_cast<stdex::remove_cvref_t<T>*>(std::addressof(v))} {}
+
+    inline arg::arg(value& v)
+    : arg_base{v}
+    , data_{const_cast<void*>(v.data())} {}
+
+    inline arg::arg(value&& v)
+    : arg_base{v}
+    , data_{const_cast<void*>(v.data())} {}
+
+    inline arg::arg(const value& v)
+    : arg_base{v}
+    , data_{const_cast<void*>(v.data())} {}
+
+    inline arg::arg(const value&& v)
+    : arg_base{v}
+    , data_{const_cast<void*>(v.data())} {}
 
     template < typename To >
     To arg::cast() const {

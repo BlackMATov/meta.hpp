@@ -22,11 +22,15 @@ namespace meta_hpp
 
         template < typename T
                  , typename Tp = std::decay_t<T>
+                 , std::enable_if_t<!std::is_same_v<Tp, arg>, int> = 0
+                 , std::enable_if_t<!std::is_same_v<Tp, inst>, int> = 0
                  , std::enable_if_t<!std::is_same_v<Tp, value>, int> = 0 >
         value(T&& val);
 
         template < typename T
                  , typename Tp = std::decay_t<T>
+                 , std::enable_if_t<!std::is_same_v<Tp, arg>, int> = 0
+                 , std::enable_if_t<!std::is_same_v<Tp, inst>, int> = 0
                  , std::enable_if_t<!std::is_same_v<Tp, value>, int> = 0 >
         value& operator=(T&& val);
 
@@ -191,12 +195,16 @@ namespace meta_hpp
     }
 
     template < typename T, typename Tp
+             , std::enable_if_t<!std::is_same_v<Tp, arg>, int>
+             , std::enable_if_t<!std::is_same_v<Tp, inst>, int>
              , std::enable_if_t<!std::is_same_v<Tp, value>, int> >
     value::value(T&& val)
     : raw_{std::forward<T>(val)}
     , traits_{traits::get<Tp>()} {}
 
     template < typename T, typename Tp
+             , std::enable_if_t<!std::is_same_v<Tp, arg>, int>
+             , std::enable_if_t<!std::is_same_v<Tp, inst>, int>
              , std::enable_if_t<!std::is_same_v<Tp, value>, int> >
     value& value::operator=(T&& val) {
         raw_ = std::forward<T>(val);
