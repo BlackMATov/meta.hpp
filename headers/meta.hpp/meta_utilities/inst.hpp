@@ -136,10 +136,10 @@ namespace meta_hpp
         inst(const inst&) = delete;
         inst& operator=(const inst&) = delete;
 
-        template < typename T, std::enable_if_t<
-            std::is_class_v<T> ||
-            (std::is_reference_v<T> && std::is_class_v<std::remove_reference_t<T>>)
-        , int> = 0 >
+        template < typename T
+                 , std::enable_if_t<!std::is_same_v<std::decay_t<T>, arg>, int> = 0
+                 , std::enable_if_t<!std::is_same_v<std::decay_t<T>, inst>, int> = 0
+                 , std::enable_if_t<!std::is_same_v<std::decay_t<T>, value>, int> = 0 >
         explicit inst(T&& v);
 
         template < typename To >
@@ -151,10 +151,10 @@ namespace meta_hpp
 
 namespace meta_hpp
 {
-    template < typename T, std::enable_if_t<
-        std::is_class_v<T> ||
-        (std::is_reference_v<T> && std::is_class_v<std::remove_reference_t<T>>)
-    , int> >
+    template < typename T
+             , std::enable_if_t<!std::is_same_v<std::decay_t<T>, arg>, int>
+             , std::enable_if_t<!std::is_same_v<std::decay_t<T>, inst>, int>
+             , std::enable_if_t<!std::is_same_v<std::decay_t<T>, value>, int> >
     inst::inst(T&& v)
     : inst_base{typename_arg<T&&>}
     , data_{const_cast<stdex::remove_cvref_t<T>*>(std::addressof(v))} {}

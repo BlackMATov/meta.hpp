@@ -164,7 +164,10 @@ namespace meta_hpp
         arg(const arg&) = delete;
         arg& operator=(const arg&) = delete;
 
-        template < typename T >
+        template < typename T
+                 , std::enable_if_t<!std::is_same_v<std::decay_t<T>, arg>, int> = 0
+                 , std::enable_if_t<!std::is_same_v<std::decay_t<T>, inst>, int> = 0
+                 , std::enable_if_t<!std::is_same_v<std::decay_t<T>, value>, int> = 0 >
         explicit arg(T&& v);
 
         template < typename To >
@@ -176,7 +179,10 @@ namespace meta_hpp
 
 namespace meta_hpp
 {
-    template < typename T >
+    template < typename T
+             , std::enable_if_t<!std::is_same_v<std::decay_t<T>, arg>, int>
+             , std::enable_if_t<!std::is_same_v<std::decay_t<T>, inst>, int>
+             , std::enable_if_t<!std::is_same_v<std::decay_t<T>, value>, int> >
     arg::arg(T&& v)
     : arg_base{typename_arg<T&&>}
     , data_{const_cast<stdex::remove_cvref_t<T>*>(std::addressof(v))} {}
