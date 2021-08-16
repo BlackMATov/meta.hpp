@@ -16,6 +16,7 @@
 #include <cstring>
 #include <functional>
 #include <initializer_list>
+#include <iosfwd>
 #include <map>
 #include <memory>
 #include <optional>
@@ -140,6 +141,11 @@ namespace meta_hpp::stdex
     };
     template < typename T >
     using remove_cvref_t = typename remove_cvref<T>::type;
+
+    template < typename Enum >
+    constexpr std::underlying_type_t<Enum> to_underlying(Enum e) noexcept {
+        return static_cast<std::underlying_type_t<Enum>>(e);
+    }
 }
 
 namespace meta_hpp::detail

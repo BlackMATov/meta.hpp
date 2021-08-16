@@ -9,5 +9,5 @@
 #include <meta.hpp/meta_all.hpp>
 #include <doctest/doctest.h>
 
-// https://github.com/onqtam/doctest/issues/126
 #include <iostream>
+#include <sstream>

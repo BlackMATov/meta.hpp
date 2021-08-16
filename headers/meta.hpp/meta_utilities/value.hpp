@@ -63,6 +63,9 @@ namespace meta_hpp
 
         template < typename T, typename Tp = std::decay_t<T> >
         const Tp* try_cast() const noexcept;
+
+        friend std::istream& operator>>(std::istream& os, value& v);
+        friend std::ostream& operator<<(std::ostream& os, const value& v);
     private:
         struct traits;
         std::any raw_{};
@@ -82,7 +85,7 @@ namespace meta_hpp::detail
 
     template < typename T >
     struct has_value_type_equality_operator<T, std::void_t<decltype(
-        std::declval<value>().cast<T>() == std::declval<value>().cast<T>()
+        std::declval<const T&>() == std::declval<const T&>()
     )>> : std::true_type {};
 
     template < typename T >
@@ -91,7 +94,7 @@ namespace meta_hpp::detail
     template < typename T, std::enable_if_t<
         has_value_type_equality_operator_v<T>
     , int> = 0 >
-    bool value_equality_function(const value& l, const value& r) {
+    bool value_equals_function(const value& l, const value& r) {
         return l.type() == r.type()
             && l.cast<T>() == r.cast<T>();
     }
@@ -99,11 +102,69 @@ namespace meta_hpp::detail
     template < typename T, std::enable_if_t<
         !has_value_type_equality_operator_v<T>
     , int> = 0 >
-    bool value_equality_function(const value& l, const value& r) {
+    bool value_equals_function(const value& l, const value& r) {
         if ( l.type() != r.type() ) {
             return false;
         }
         throw std::logic_error("value type doesn't have equality operator");
+    }
+}
+
+namespace meta_hpp::detail
+{
+    template < typename T, typename = void >
+    struct has_value_type_istream_operator
+    : std::false_type {};
+
+    template < typename T >
+    struct has_value_type_istream_operator<T, std::void_t<decltype(
+        std::declval<std::istream&>() >> std::declval<T&>()
+    )>> : std::true_type {};
+
+    template < typename T >
+    inline constexpr bool has_value_type_istream_operator_v = has_value_type_istream_operator<T>::value;
+
+    template < typename T, std::enable_if_t<
+        has_value_type_istream_operator_v<T>
+    , int> = 0 >
+    void value_istream_function(std::istream& os, value& v) {
+        os >> v.cast<T>();
+    }
+
+    template < typename T, std::enable_if_t<
+        !has_value_type_istream_operator_v<T>
+    , int> = 0 >
+    void value_istream_function([[maybe_unused]] std::istream& os, [[maybe_unused]] value& v) {
+        throw std::logic_error("value type doesn't have istream operator");
+    }
+}
+
+namespace meta_hpp::detail
+{
+    template < typename T, typename = void >
+    struct has_value_type_ostream_operator
+    : std::false_type {};
+
+    template < typename T >
+    struct has_value_type_ostream_operator<T, std::void_t<decltype(
+        std::declval<std::ostream&>() << std::declval<const T&>()
+    )>> : std::true_type {};
+
+    template < typename T >
+    inline constexpr bool has_value_type_ostream_operator_v = has_value_type_ostream_operator<T>::value;
+
+    template < typename T, std::enable_if_t<
+        has_value_type_ostream_operator_v<T>
+    , int> = 0 >
+    void value_ostream_function(std::ostream& os, const value& v) {
+        os << v.cast<T>();
+    }
+
+    template < typename T, std::enable_if_t<
+        !has_value_type_ostream_operator_v<T>
+    , int> = 0 >
+    void value_ostream_function([[maybe_unused]] std::ostream& os, [[maybe_unused]] const value& v) {
+        throw std::logic_error("value type doesn't have ostream operator");
     }
 }
 
@@ -119,6 +180,9 @@ namespace meta_hpp
 
         void (*const move_ctor)(std::any&, value&&);
         void (*const copy_ctor)(std::any&, const value&);
+
+        void (*const istream)(std::istream&, value&);
+        void (*const ostream)(std::ostream&, const value&);
 
         template < typename T >
         static const traits* get() noexcept;
@@ -141,8 +205,7 @@ namespace meta_hpp
             },
 
             // equals
-
-            &detail::value_equality_function<T>,
+            &detail::value_equals_function<T>,
 
             // move_ctor
             +[](std::any& dst, value&& src) {
@@ -161,6 +224,12 @@ namespace meta_hpp
                     throw std::logic_error("value type is not copy constructible");
                 }
             },
+
+            // istream
+            &detail::value_istream_function<T>,
+
+            // ostream
+            &detail::value_ostream_function<T>,
         };
         return &traits;
     }
@@ -284,5 +353,18 @@ namespace meta_hpp
     template < typename T, typename Tp >
     const Tp* value::try_cast() const noexcept {
         return std::any_cast<Tp>(&raw_);
+    }
+}
+
+namespace meta_hpp
+{
+    inline std::istream& operator>>(std::istream& is, value& v) {
+        v.traits_->istream(is, v);
+        return is;
+    }
+
+    inline std::ostream& operator<<(std::ostream& os, const value& v) {
+        v.traits_->ostream(os, v);
+        return os;
     }
 }

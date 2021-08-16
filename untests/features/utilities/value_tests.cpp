@@ -257,4 +257,24 @@ TEST_CASE("features/utilities/value") {
         CHECK(val1.equals("world"s));
         CHECK(val2.equals(ivec2{1,2}));
     }
+
+    SUBCASE("ostream") {
+        std::stringstream str_stream;
+        CHECK_NOTHROW(str_stream << value{21} << " " << value{42});
+        CHECK_THROWS(str_stream << value{ivec2{1,2}});
+        REQUIRE(str_stream.str() == "21 42");
+    }
+
+    SUBCASE("istream") {
+        std::stringstream str_stream{"21 42"};
+
+        value v{ivec2{1,2}};
+        CHECK_THROWS(str_stream >> v);
+
+        v = value{0};
+        CHECK_NOTHROW(str_stream >> v);
+        CHECK(v.equals(21));
+        CHECK_NOTHROW(str_stream >> v);
+        CHECK(v.equals(42));
+    }
 }
