@@ -51,7 +51,7 @@ TEST_CASE("features/infos/ctor") {
         REQUIRE(ci);
 
         REQUIRE(ci.get_data_by_name("info"));
-        CHECK(ci.get_data_by_name("info").value().equals("void ctor"s));
+        CHECK(ci.get_data_by_name("info").value() == "void ctor"s);
 
         {
             const ctor_info ci2 = ivec2_info.get_ctor_by_args(std::array<any_type, 0>{});
@@ -74,7 +74,7 @@ TEST_CASE("features/infos/ctor") {
         }
 
         {
-            CHECK(ci.invoke().equals(ivec2{}));
+            CHECK(ci.invoke() == ivec2{});
             CHECK_THROWS(ci.invoke(42));
         }
     }
@@ -84,7 +84,7 @@ TEST_CASE("features/infos/ctor") {
         REQUIRE(ci);
 
         REQUIRE(ci.get_data_by_name("info"));
-        CHECK(ci.get_data_by_name("info").value().equals("int ctor"s));
+        CHECK(ci.get_data_by_name("info").value() == "int ctor"s);
 
         {
             const ctor_info ci2 = ivec2_info.get_ctor_by_args(std::array<any_type, 1>{
@@ -110,7 +110,7 @@ TEST_CASE("features/infos/ctor") {
 
         {
             CHECK_THROWS(ci.invoke());
-            CHECK(ci.invoke(42).equals(ivec2{42}));
+            CHECK(ci.invoke(42) == ivec2{42});
         }
     }
 
@@ -119,7 +119,7 @@ TEST_CASE("features/infos/ctor") {
         REQUIRE(ci);
 
         REQUIRE(ci.get_data_by_name("info"));
-        CHECK(ci.get_data_by_name("info").value().equals("copy ctor"s));
+        CHECK(ci.get_data_by_name("info").value() == "copy ctor"s);
 
         {
             const ctor_info ci2 = ivec2_info.get_ctor_by_args(std::array<any_type, 1>{
@@ -152,7 +152,7 @@ TEST_CASE("features/infos/ctor") {
         {
             CHECK_THROWS(ci.invoke());
             CHECK_THROWS(ci.invoke(42));
-            CHECK(ci.invoke(ivec2{21,42}).equals(ivec2{21,42}));
+            CHECK(ci.invoke(ivec2{21,42}) == ivec2{21,42});
         }
     }
 
@@ -161,7 +161,7 @@ TEST_CASE("features/infos/ctor") {
         REQUIRE(ci);
 
         REQUIRE(ci.get_data_by_name("info"));
-        CHECK(ci.get_data_by_name("info").value().equals("int,int ctor"s));
+        CHECK(ci.get_data_by_name("info").value() == "int,int ctor"s);
 
         {
             const ctor_info ci2 = ivec2_info.get_ctor_by_args(std::array<any_type, 2>{
@@ -195,7 +195,7 @@ TEST_CASE("features/infos/ctor") {
             CHECK_THROWS(ci.invoke());
             CHECK_THROWS(ci.invoke(42));
             CHECK_THROWS(ci.invoke(ivec2{21,42}));
-            CHECK(ci.invoke(21,42).equals(ivec2{21,42}));
+            CHECK(ci.invoke(21,42) == ivec2{21,42});
         }
     }
 }

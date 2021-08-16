@@ -146,14 +146,14 @@ TEST_CASE("features/infos/method") {
         {
             clazz cl;
 
-            CHECK(mi.invoke(cl)->equals(1));
+            CHECK(mi.invoke(cl).value() == 1);
             CHECK_THROWS(mi.invoke(std::as_const(cl)));
-            CHECK(mi.invoke(std::move(cl))->equals(1));
+            CHECK(mi.invoke(std::move(cl)).value() == 1);
             CHECK_THROWS(mi.invoke(std::move(std::as_const(cl))));
 
-            CHECK(mi2.invoke(cl)->equals(1));
+            CHECK(mi2.invoke(cl).value() == 1);
             CHECK_THROWS(mi2.invoke(std::as_const(cl)));
-            CHECK(mi2.invoke(std::move(cl))->equals(1));
+            CHECK(mi2.invoke(std::move(cl)).value() == 1);
             CHECK_THROWS(mi2.invoke(std::move(std::as_const(cl))));
         }
 
@@ -202,14 +202,14 @@ TEST_CASE("features/infos/method") {
         {
             clazz cl;
 
-            CHECK(mi.invoke(cl)->equals(2));
+            CHECK(mi.invoke(cl).value() == 2);
             CHECK_THROWS(mi.invoke(std::as_const(cl)));
-            CHECK(mi.invoke(std::move(cl))->equals(2));
+            CHECK(mi.invoke(std::move(cl)).value() == 2);
             CHECK_THROWS(mi.invoke(std::move(std::as_const(cl))));
 
-            CHECK(mi2.invoke(cl)->equals(2));
+            CHECK(mi2.invoke(cl).value() == 2);
             CHECK_THROWS(mi2.invoke(std::as_const(cl)));
-            CHECK(mi2.invoke(std::move(cl))->equals(2));
+            CHECK(mi2.invoke(std::move(cl)).value() == 2);
             CHECK_THROWS(mi2.invoke(std::move(std::as_const(cl))));
         }
 
@@ -258,15 +258,15 @@ TEST_CASE("features/infos/method") {
         {
             clazz cl;
 
-            CHECK(mi.invoke(cl)->equals(3));
-            CHECK(mi.invoke(std::as_const(cl))->equals(3));
-            CHECK(mi.invoke(std::move(cl))->equals(3));
-            CHECK(mi.invoke(std::move(std::as_const(cl)))->equals(3));
+            CHECK(mi.invoke(cl).value() == 3);
+            CHECK(mi.invoke(std::as_const(cl)).value() == 3);
+            CHECK(mi.invoke(std::move(cl)).value() == 3);
+            CHECK(mi.invoke(std::move(std::as_const(cl))).value() == 3);
 
-            CHECK(mi2.invoke(cl)->equals(3));
-            CHECK(mi2.invoke(std::as_const(cl))->equals(3));
-            CHECK(mi2.invoke(std::move(cl))->equals(3));
-            CHECK(mi2.invoke(std::move(std::as_const(cl)))->equals(3));
+            CHECK(mi2.invoke(cl).value() == 3);
+            CHECK(mi2.invoke(std::as_const(cl)).value() == 3);
+            CHECK(mi2.invoke(std::move(cl)).value() == 3);
+            CHECK(mi2.invoke(std::move(std::as_const(cl))).value() == 3);
         }
 
         static_assert(std::is_invocable_v<decltype(&clazz::const_method), clazz&>);
@@ -314,15 +314,15 @@ TEST_CASE("features/infos/method") {
         {
             clazz cl;
 
-            CHECK(mi.invoke(cl)->equals(4));
-            CHECK(mi.invoke(std::as_const(cl))->equals(4));
-            CHECK(mi.invoke(std::move(cl))->equals(4));
-            CHECK(mi.invoke(std::move(std::as_const(cl)))->equals(4));
+            CHECK(mi.invoke(cl).value() == 4);
+            CHECK(mi.invoke(std::as_const(cl)).value() == 4);
+            CHECK(mi.invoke(std::move(cl)).value() == 4);
+            CHECK(mi.invoke(std::move(std::as_const(cl))).value() == 4);
 
-            CHECK(mi2.invoke(cl)->equals(4));
-            CHECK(mi2.invoke(std::as_const(cl))->equals(4));
-            CHECK(mi2.invoke(std::move(cl))->equals(4));
-            CHECK(mi2.invoke(std::move(std::as_const(cl)))->equals(4));
+            CHECK(mi2.invoke(cl).value() == 4);
+            CHECK(mi2.invoke(std::as_const(cl)).value() == 4);
+            CHECK(mi2.invoke(std::move(cl)).value() == 4);
+            CHECK(mi2.invoke(std::move(std::as_const(cl))).value() == 4);
         }
 
         static_assert(std::is_invocable_v<decltype(&clazz::const_method_noexcept), clazz&>);
@@ -370,12 +370,12 @@ TEST_CASE("features/infos/method") {
         {
             clazz cl;
 
-            CHECK(mi.invoke(cl)->equals(5));
+            CHECK(mi.invoke(cl).value() == 5);
             CHECK_THROWS(mi.invoke(std::as_const(cl)));
             CHECK_THROWS(mi.invoke(std::move(cl)));
             CHECK_THROWS(mi.invoke(std::move(std::as_const(cl))));
 
-            CHECK(mi2.invoke(cl)->equals(5));
+            CHECK(mi2.invoke(cl).value() == 5);
             CHECK_THROWS(mi2.invoke(std::as_const(cl)));
             CHECK_THROWS(mi2.invoke(std::move(cl)));
             CHECK_THROWS(mi2.invoke(std::move(std::as_const(cl))));
@@ -426,12 +426,12 @@ TEST_CASE("features/infos/method") {
         {
             clazz cl;
 
-            CHECK(mi.invoke(cl)->equals(6));
+            CHECK(mi.invoke(cl).value() == 6);
             CHECK_THROWS(mi.invoke(std::as_const(cl)));
             CHECK_THROWS(mi.invoke(std::move(cl)));
             CHECK_THROWS(mi.invoke(std::move(std::as_const(cl))));
 
-            CHECK(mi2.invoke(cl)->equals(6));
+            CHECK(mi2.invoke(cl).value() == 6);
             CHECK_THROWS(mi2.invoke(std::as_const(cl)));
             CHECK_THROWS(mi2.invoke(std::move(cl)));
             CHECK_THROWS(mi2.invoke(std::move(std::as_const(cl))));
@@ -482,13 +482,13 @@ TEST_CASE("features/infos/method") {
         {
             clazz cl;
 
-            CHECK(mi.invoke(cl)->equals(7));
-            CHECK(mi.invoke(std::as_const(cl))->equals(7));
+            CHECK(mi.invoke(cl).value() == 7);
+            CHECK(mi.invoke(std::as_const(cl)).value() == 7);
             CHECK_THROWS(mi.invoke(std::move(cl)));
             CHECK_THROWS(mi.invoke(std::move(std::as_const(cl))));
 
-            CHECK(mi2.invoke(cl)->equals(7));
-            CHECK(mi2.invoke(std::as_const(cl))->equals(7));
+            CHECK(mi2.invoke(cl).value() == 7);
+            CHECK(mi2.invoke(std::as_const(cl)).value() == 7);
             CHECK_THROWS(mi2.invoke(std::move(cl)));
             CHECK_THROWS(mi2.invoke(std::move(std::as_const(cl))));
         }
@@ -538,13 +538,13 @@ TEST_CASE("features/infos/method") {
         {
             clazz cl;
 
-            CHECK(mi.invoke(cl)->equals(8));
-            CHECK(mi.invoke(std::as_const(cl))->equals(8));
+            CHECK(mi.invoke(cl).value() == 8);
+            CHECK(mi.invoke(std::as_const(cl)).value() == 8);
             CHECK_THROWS(mi.invoke(std::move(cl)));
             CHECK_THROWS(mi.invoke(std::move(std::as_const(cl))));
 
-            CHECK(mi2.invoke(cl)->equals(8));
-            CHECK(mi2.invoke(std::as_const(cl))->equals(8));
+            CHECK(mi2.invoke(cl).value() == 8);
+            CHECK(mi2.invoke(std::as_const(cl)).value() == 8);
             CHECK_THROWS(mi2.invoke(std::move(cl)));
             CHECK_THROWS(mi2.invoke(std::move(std::as_const(cl))));
         }
@@ -596,12 +596,12 @@ TEST_CASE("features/infos/method") {
 
             CHECK_THROWS(mi.invoke(cl));
             CHECK_THROWS(mi.invoke(std::as_const(cl)));
-            CHECK(mi.invoke(std::move(cl))->equals(9));
+            CHECK(mi.invoke(std::move(cl)).value() == 9);
             CHECK_THROWS(mi.invoke(std::move(std::as_const(cl))));
 
             CHECK_THROWS(mi2.invoke(cl));
             CHECK_THROWS(mi2.invoke(std::as_const(cl)));
-            CHECK(mi2.invoke(std::move(cl))->equals(9));
+            CHECK(mi2.invoke(std::move(cl)).value() == 9);
             CHECK_THROWS(mi2.invoke(std::move(std::as_const(cl))));
         }
 
@@ -652,12 +652,12 @@ TEST_CASE("features/infos/method") {
 
             CHECK_THROWS(mi.invoke(cl));
             CHECK_THROWS(mi.invoke(std::as_const(cl)));
-            CHECK(mi.invoke(std::move(cl))->equals(10));
+            CHECK(mi.invoke(std::move(cl)).value() == 10);
             CHECK_THROWS(mi.invoke(std::move(std::as_const(cl))));
 
             CHECK_THROWS(mi2.invoke(cl));
             CHECK_THROWS(mi2.invoke(std::as_const(cl)));
-            CHECK(mi2.invoke(std::move(cl))->equals(10));
+            CHECK(mi2.invoke(std::move(cl)).value() == 10);
             CHECK_THROWS(mi2.invoke(std::move(std::as_const(cl))));
         }
 
@@ -708,13 +708,13 @@ TEST_CASE("features/infos/method") {
 
             CHECK_THROWS(mi.invoke(cl));
             CHECK_THROWS(mi.invoke(std::as_const(cl)));
-            CHECK(mi.invoke(std::move(cl))->equals(11));
-            CHECK(mi.invoke(std::move(std::as_const(cl)))->equals(11));
+            CHECK(mi.invoke(std::move(cl)).value() == 11);
+            CHECK(mi.invoke(std::move(std::as_const(cl))).value() == 11);
 
             CHECK_THROWS(mi2.invoke(cl));
             CHECK_THROWS(mi2.invoke(std::as_const(cl)));
-            CHECK(mi2.invoke(std::move(cl))->equals(11));
-            CHECK(mi2.invoke(std::move(std::as_const(cl)))->equals(11));
+            CHECK(mi2.invoke(std::move(cl)).value() == 11);
+            CHECK(mi2.invoke(std::move(std::as_const(cl))).value() == 11);
         }
 
         static_assert(!std::is_invocable_v<decltype(&clazz::const_method_rref), clazz&>);
@@ -764,13 +764,13 @@ TEST_CASE("features/infos/method") {
 
             CHECK_THROWS(mi.invoke(cl));
             CHECK_THROWS(mi.invoke(std::as_const(cl)));
-            CHECK(mi.invoke(std::move(cl))->equals(12));
-            CHECK(mi.invoke(std::move(std::as_const(cl)))->equals(12));
+            CHECK(mi.invoke(std::move(cl)).value() == 12);
+            CHECK(mi.invoke(std::move(std::as_const(cl))).value() == 12);
 
             CHECK_THROWS(mi2.invoke(cl));
             CHECK_THROWS(mi2.invoke(std::as_const(cl)));
-            CHECK(mi2.invoke(std::move(cl))->equals(12));
-            CHECK(mi2.invoke(std::move(std::as_const(cl)))->equals(12));
+            CHECK(mi2.invoke(std::move(cl)).value() == 12);
+            CHECK(mi2.invoke(std::move(std::as_const(cl))).value() == 12);
         }
 
         static_assert(!std::is_invocable_v<decltype(&clazz::const_method_noexcept_rref), clazz&>);

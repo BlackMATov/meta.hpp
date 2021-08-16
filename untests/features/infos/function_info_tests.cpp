@@ -53,7 +53,7 @@ TEST_CASE("features/infos/function") {
         REQUIRE(fi);
 
         REQUIRE(fi.get_data_by_name("info"));
-        CHECK(fi.get_data_by_name("info").value().equals("iadd function"s));
+        CHECK(fi.get_data_by_name("info").value() == "iadd function"s);
 
         CHECK_FALSE(fi.is_invocable_with());
         CHECK_FALSE(fi.is_invocable_with<int>());
@@ -68,7 +68,7 @@ TEST_CASE("features/infos/function") {
         CHECK_THROWS(fi.invoke(ivec2{}, 42));
 
         CHECK(fi.invoke(ivec2{1,2},ivec2{3,4}));
-        CHECK(fi.invoke(ivec2{1,2},ivec2{3,4})->equals(ivec2{4,6}));
+        CHECK(fi.invoke(ivec2{1,2},ivec2{3,4}).value() == ivec2{4,6});
     }
 
     SUBCASE("ilength2") {
@@ -76,7 +76,7 @@ TEST_CASE("features/infos/function") {
         REQUIRE(fi);
 
         REQUIRE(fi.get_data_by_name("info"));
-        CHECK(fi.get_data_by_name("info").value().equals("ilength2 function"s));
+        CHECK(fi.get_data_by_name("info").value() == "ilength2 function"s);
 
         CHECK_FALSE(fi.is_invocable_with());
         CHECK_FALSE(fi.is_invocable_with<int>());
@@ -90,6 +90,6 @@ TEST_CASE("features/infos/function") {
         CHECK_THROWS(fi.invoke(ivec2{}, 42));
 
         CHECK(fi.invoke(ivec2{2,3}));
-        CHECK(fi.invoke(ivec2{2,3})->equals(13));
+        CHECK(fi.invoke(ivec2{2,3}).value() == 13);
     }
 }

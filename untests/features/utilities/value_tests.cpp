@@ -94,8 +94,8 @@ TEST_CASE("features/utilities/value") {
         CHECK(!std::memcmp(std::as_const(val).data(), &vr, sizeof(ivec2)));
         CHECK(!std::memcmp(std::as_const(val).cdata(), &vr, sizeof(ivec2)));
 
-        CHECK(val.equals(ivec2{1,2}));
-        CHECK(val.equals(value{ivec2{1,2}}));
+        CHECK(val == ivec2{1,2});
+        CHECK(val == value{ivec2{1,2}});
 
         CHECK(val.cast<ivec2>() == ivec2{1,2});
         CHECK(std::as_const(val).cast<ivec2>() == ivec2{1,2});
@@ -119,8 +119,8 @@ TEST_CASE("features/utilities/value") {
         CHECK(!std::memcmp(std::as_const(val).data(), &vr, sizeof(ivec2)));
         CHECK(!std::memcmp(std::as_const(val).cdata(), &vr, sizeof(ivec2)));
 
-        CHECK(val.equals(ivec2{1,2}));
-        CHECK(val.equals(value{ivec2{1,2}}));
+        CHECK(val == ivec2{1,2});
+        CHECK(val == value{ivec2{1,2}});
 
         CHECK(val.cast<ivec2>() == ivec2{1,2});
         CHECK(std::as_const(val).cast<ivec2>() == ivec2{1,2});
@@ -138,8 +138,8 @@ TEST_CASE("features/utilities/value") {
 
         CHECK(val.type() == type_db::get<ivec2>());
 
-        CHECK(val.equals(ivec2{1,2}));
-        CHECK(val.equals(value{ivec2{1,2}}));
+        CHECK(val == ivec2{1,2});
+        CHECK(val == value{ivec2{1,2}});
 
         CHECK(val.cast<ivec2>() == ivec2{1,2});
         CHECK(std::as_const(val).cast<ivec2>() == ivec2{1,2});
@@ -157,8 +157,8 @@ TEST_CASE("features/utilities/value") {
 
         CHECK(val.type() == type_db::get<ivec2>());
 
-        CHECK(val.equals(ivec2{1,2}));
-        CHECK(val.equals(value{ivec2{1,2}}));
+        CHECK(val == ivec2{1,2});
+        CHECK(val == value{ivec2{1,2}});
 
         CHECK(val.cast<ivec2>() == ivec2{1,2});
         CHECK(std::as_const(val).cast<ivec2>() == ivec2{1,2});
@@ -174,11 +174,11 @@ TEST_CASE("features/utilities/value") {
         CHECK(ivec2::copy_ctor_counter == 0);
 
         value val_dst{std::move(val_src)};
-        CHECK(val_dst.equals(ivec2{1,2}));
+        CHECK(val_dst == ivec2{1,2});
         CHECK(ivec2::move_ctor_counter == 2);
         CHECK(ivec2::copy_ctor_counter == 0);
 
-        CHECK(val_src.equals(ivec2{0,0}));
+        CHECK(val_src == ivec2{0,0});
         CHECK(val_src.data() != val_dst.data());
     }
 
@@ -189,11 +189,11 @@ TEST_CASE("features/utilities/value") {
         CHECK(ivec2::copy_ctor_counter == 1);
 
         value val_dst{val_src};
-        CHECK(val_dst.equals(ivec2{1,2}));
+        CHECK(val_dst == ivec2{1,2});
         CHECK(ivec2::move_ctor_counter == 0);
         CHECK(ivec2::copy_ctor_counter == 2);
 
-        CHECK(val_src.equals(ivec2{1,2}));
+        CHECK(val_src == ivec2{1,2});
         CHECK(val_src.data() != val_dst.data());
     }
 
@@ -206,16 +206,16 @@ TEST_CASE("features/utilities/value") {
         value val_dst{"hello"s};
 
         val_dst = std::move(val_src1);
-        CHECK(val_dst.equals("world"s));
+        CHECK(val_dst == "world"s);
         CHECK(ivec2::move_ctor_counter == 1);
         CHECK(ivec2::copy_ctor_counter == 0);
 
         val_dst = std::move(val_src2);
-        CHECK(val_dst.equals(ivec2{1,2}));
+        CHECK(val_dst == ivec2{1,2});
         CHECK(ivec2::move_ctor_counter == 2);
         CHECK(ivec2::copy_ctor_counter == 0);
 
-        CHECK(val_src2.equals(ivec2{0,0}));
+        CHECK(val_src2 == ivec2{0,0});
         CHECK(val_src2.data() != val_dst.data());
     }
 
@@ -228,16 +228,16 @@ TEST_CASE("features/utilities/value") {
         value val_dst{"hello"s};
 
         val_dst = val_src1;
-        CHECK(val_dst.equals("world"s));
+        CHECK(val_dst == "world"s);
         CHECK(ivec2::move_ctor_counter == 1);
         CHECK(ivec2::copy_ctor_counter == 0);
 
         val_dst = val_src2;
-        CHECK(val_dst.equals(ivec2{1,2}));
+        CHECK(val_dst == ivec2{1,2});
         CHECK(ivec2::move_ctor_counter == 1);
         CHECK(ivec2::copy_ctor_counter == 1);
 
-        CHECK(val_src2.equals(ivec2{1,2}));
+        CHECK(val_src2 == ivec2{1,2});
         CHECK(val_src2.data() != val_dst.data());
     }
 
@@ -248,20 +248,20 @@ TEST_CASE("features/utilities/value") {
         CHECK(ivec2::copy_ctor_counter == 0);
 
         val1.swap(val2);
-        CHECK(val1.equals(ivec2{1,2}));
-        CHECK(val2.equals("world"s));
+        CHECK(val1 == ivec2{1,2});
+        CHECK(val2 == "world"s);
         CHECK((ivec2::move_ctor_counter == 2 || ivec2::move_ctor_counter == 3));
         CHECK(ivec2::copy_ctor_counter == 0);
 
         swap(val1, val2);
-        CHECK(val1.equals("world"s));
-        CHECK(val2.equals(ivec2{1,2}));
+        CHECK(val1 == "world"s);
+        CHECK(val2 == ivec2{1,2});
     }
 
     SUBCASE("ostream") {
         std::stringstream str_stream;
         CHECK_NOTHROW(str_stream << value{21} << " " << value{42});
-        CHECK_THROWS(str_stream << value{ivec2{1,2}});
+        CHECK_THROWS((str_stream << value{ivec2{1,2}}));
         REQUIRE(str_stream.str() == "21 42");
     }
 
@@ -273,8 +273,24 @@ TEST_CASE("features/utilities/value") {
 
         v = value{0};
         CHECK_NOTHROW(str_stream >> v);
-        CHECK(v.equals(21));
+        CHECK(v == 21);
         CHECK_NOTHROW(str_stream >> v);
-        CHECK(v.equals(42));
+        CHECK(v == 42);
+    }
+
+    SUBCASE("operator==") {
+        CHECK(value{ivec2{1,2}} == ivec2{1,2});
+        CHECK_FALSE(value{ivec2{1,2}} == ivec2{1,3});
+
+        CHECK(ivec2{1,2} == value{ivec2{1,2}});
+        CHECK_FALSE(ivec2{1,3} == value{ivec2{1,2}});
+
+        CHECK(value{ivec2{1,2}} == value{ivec2{1,2}});
+        CHECK_FALSE(value{ivec2{1,2}} == value{ivec2{1,3}});
+
+        class empty_class1 {};
+        class empty_class2 {};
+        CHECK_FALSE(value{empty_class1{}} == value{empty_class2{}});
+        CHECK_THROWS(value{empty_class1{}} == value{empty_class1{}});
     }
 }

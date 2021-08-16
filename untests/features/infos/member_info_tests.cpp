@@ -76,15 +76,15 @@ TEST_CASE("features/infos/member") {
         {
             ivec2 v{1,2};
 
-            CHECK(x_mi.get(v).equals(1));
-            CHECK(x_mi.get(std::as_const(v)).equals(1));
-            CHECK(x_mi.get(std::move(v)).equals(1));
-            CHECK(x_mi.get(std::move(std::as_const(v))).equals(1));
+            CHECK(x_mi.get(v) == 1);
+            CHECK(x_mi.get(std::as_const(v)) == 1);
+            CHECK(x_mi.get(std::move(v)) == 1);
+            CHECK(x_mi.get(std::move(std::as_const(v))) == 1);
 
-            CHECK(y_mi.get(v).equals(2));
-            CHECK(y_mi.get(std::as_const(v)).equals(2));
-            CHECK(y_mi.get(std::move(v)).equals(2));
-            CHECK(y_mi.get(std::move(std::as_const(v))).equals(2));
+            CHECK(y_mi.get(v) == 2);
+            CHECK(y_mi.get(std::as_const(v)) == 2);
+            CHECK(y_mi.get(std::move(v)) == 2);
+            CHECK(y_mi.get(std::move(std::as_const(v))) == 2);
 
             static_assert(std::is_invocable_v<decltype(&ivec2::x), ivec2&>);
             static_assert(std::is_invocable_v<decltype(&ivec2::x), const ivec2&>);
@@ -128,15 +128,15 @@ TEST_CASE("features/infos/member") {
         {
             ipnt2 v{1,2};
 
-            CHECK(x_mi.get(v).equals(1));
-            CHECK(x_mi.get(std::as_const(v)).equals(1));
-            CHECK(x_mi.get(std::move(v)).equals(1));
-            CHECK(x_mi.get(std::move(std::as_const(v))).equals(1));
+            CHECK(x_mi.get(v) == 1);
+            CHECK(x_mi.get(std::as_const(v)) == 1);
+            CHECK(x_mi.get(std::move(v)) == 1);
+            CHECK(x_mi.get(std::move(std::as_const(v))) == 1);
 
-            CHECK(y_mi.get(v).equals(2));
-            CHECK(y_mi.get(std::as_const(v)).equals(2));
-            CHECK(y_mi.get(std::move(v)).equals(2));
-            CHECK(y_mi.get(std::move(std::as_const(v))).equals(2));
+            CHECK(y_mi.get(v) == 2);
+            CHECK(y_mi.get(std::as_const(v)) == 2);
+            CHECK(y_mi.get(std::move(v)) == 2);
+            CHECK(y_mi.get(std::move(std::as_const(v))) == 2);
 
             static_assert(std::is_invocable_v<decltype(&ipnt2::x), ipnt2&>);
             static_assert(std::is_invocable_v<decltype(&ipnt2::x), const ipnt2&>);

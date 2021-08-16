@@ -42,10 +42,6 @@ namespace meta_hpp
         const void* data() const noexcept;
         const void* cdata() const noexcept;
 
-        template < typename T >
-        bool equals(const T& other) const;
-        bool equals(const value& other) const;
-
         template < typename T, typename Tp = std::decay_t<T> >
         Tp& cast() &;
 
@@ -63,6 +59,12 @@ namespace meta_hpp
 
         template < typename T, typename Tp = std::decay_t<T> >
         const Tp* try_cast() const noexcept;
+
+        template < typename T >
+        friend bool operator==(const value& l, const T& r);
+        template < typename T >
+        friend bool operator==(const T& l, const value& r);
+        friend bool operator==(const value& l, const value& r);
 
         friend std::istream& operator>>(std::istream& os, value& v);
         friend std::ostream& operator<<(std::ostream& os, const value& v);
@@ -95,17 +97,14 @@ namespace meta_hpp::detail
         has_value_type_equality_operator_v<T>
     , int> = 0 >
     bool value_equals_function(const value& l, const value& r) {
-        return l.type() == r.type()
-            && l.cast<T>() == r.cast<T>();
+        assert(l.type() == r.type());
+        return l.cast<T>() == r.cast<T>();
     }
 
     template < typename T, std::enable_if_t<
         !has_value_type_equality_operator_v<T>
     , int> = 0 >
-    bool value_equals_function(const value& l, const value& r) {
-        if ( l.type() != r.type() ) {
-            return false;
-        }
+    bool value_equals_function([[maybe_unused]] const value& l, [[maybe_unused]] const value& r) {
         throw std::logic_error("value type doesn't have equality operator");
     }
 }
@@ -303,16 +302,6 @@ namespace meta_hpp
         return traits_->cdata(*this);
     }
 
-    template < typename T >
-    bool value::equals(const T& other) const {
-        return type() == type_db::get<T>()
-            && std::equal_to<>{}(cast<T>(), other);
-    }
-
-    inline bool value::equals(const value& other) const {
-        return traits_->equals(*this, other);
-    }
-
     template < typename T, typename Tp >
     Tp& value::cast() & {
         if ( type() != type_db::get<Tp>() ) {
@@ -358,6 +347,23 @@ namespace meta_hpp
 
 namespace meta_hpp
 {
+    template < typename T >
+    bool operator==(const value& l, const T& r) {
+        return l.type() == type_db::get<T>()
+            && std::equal_to<>{}(l.cast<T>(), r);
+    }
+
+    template < typename T >
+    bool operator==(const T& l, const value& r) {
+        return type_db::get<T>() == r.type()
+            && std::equal_to<>{}(l, r.cast<T>());
+    }
+
+    inline bool operator==(const value& l, const value& r) {
+        return l.type() == r.type()
+            && l.traits_->equals(l, r);
+    }
+
     inline std::istream& operator>>(std::istream& is, value& v) {
         v.traits_->istream(is, v);
         return is;
