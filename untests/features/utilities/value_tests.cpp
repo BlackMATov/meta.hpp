@@ -288,9 +288,12 @@ TEST_CASE("features/utilities/value") {
         CHECK(value{ivec2{1,2}} == value{ivec2{1,2}});
         CHECK_FALSE(value{ivec2{1,2}} == value{ivec2{1,3}});
 
-        class empty_class1 {};
-        class empty_class2 {};
-        CHECK_FALSE(value{empty_class1{}} == value{empty_class2{}});
-        CHECK_THROWS(value{empty_class1{}} == value{empty_class1{}});
+        {
+            class empty_class1 {};
+            class empty_class2 {};
+
+            CHECK_FALSE(operator==(value{empty_class1{}}, value{empty_class2{}}));
+            CHECK_THROWS(operator==(value{empty_class1{}}, value{empty_class1{}}));
+        }
     }
 }
