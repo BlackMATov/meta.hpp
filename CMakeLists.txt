@@ -20,18 +20,13 @@ target_include_directories(${PROJECT_NAME} INTERFACE headers)
 target_compile_options(${PROJECT_NAME}
     INTERFACE
     $<$<CXX_COMPILER_ID:MSVC>:
-        /wd4702>
+        >
+    INTERFACE
+    $<$<CXX_COMPILER_ID:GNU>:
+        >
     INTERFACE
     $<$<OR:$<CXX_COMPILER_ID:Clang>,$<CXX_COMPILER_ID:AppleClang>>:
-        -Wno-c++98-compat-pedantic
-        -Wno-covered-switch-default
-        -Wno-ctad-maybe-unsupported
-        -Wno-exit-time-destructors
-        -Wno-padded
-        -Wno-poison-system-directories
-        -Wno-shadow
-        -Wno-unknown-warning-option
-        -Wno-weak-vtables>)
+        >)
 
 if(BUILD_AS_STANDALONE)
     option(BUILD_WITH_UNTESTS "Build with unit tests" ON)
