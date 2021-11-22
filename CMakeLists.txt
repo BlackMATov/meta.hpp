@@ -10,10 +10,9 @@ endif()
 project(meta.hpp)
 
 add_subdirectory(vendors/enum.hpp)
-add_subdirectory(vendors/kari.hpp)
 
 add_library(${PROJECT_NAME} INTERFACE)
-target_link_libraries(${PROJECT_NAME} INTERFACE enum.hpp kari.hpp)
+target_link_libraries(${PROJECT_NAME} INTERFACE enum.hpp)
 target_compile_features(${PROJECT_NAME} INTERFACE cxx_std_20)
 target_include_directories(${PROJECT_NAME} INTERFACE headers)
 
@@ -26,6 +25,15 @@ target_compile_options(${PROJECT_NAME}
         >
     INTERFACE
     $<$<OR:$<CXX_COMPILER_ID:Clang>,$<CXX_COMPILER_ID:AppleClang>>:
+        -Wno-c++98-compat
+        -Wno-c++98-compat-pedantic
+        -Wno-ctad-maybe-unsupported
+        -Wno-exit-time-destructors
+        -Wno-float-equal
+        -Wno-padded
+        -Wno-shadow-field-in-constructor
+        -Wno-unknown-warning-option
+        -Wno-weak-vtables
         >)
 
 if(BUILD_AS_STANDALONE)

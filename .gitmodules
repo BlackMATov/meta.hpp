@@ -1,9 +1,6 @@
 [submodule "vendors/enum.hpp"]
 	path = vendors/enum.hpp
 	url = https://github.com/BlackMATov/enum.hpp
-[submodule "vendors/kari.hpp"]
-	path = vendors/kari.hpp
-	url = https://github.com/BlackMATov/kari.hpp
 [submodule "vendors/doctest"]
 	path = vendors/doctest
 	url = https://github.com/onqtam/doctest
