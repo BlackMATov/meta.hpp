@@ -4,11 +4,19 @@
  * Copyright (C) 2021, by Matvey Cherevko (blackmatov@gmail.com)
  ******************************************************************************/
 
-#include "meta_tests.hpp"
+#pragma once
 
-namespace
+#include "../meta_base.hpp"
+#include "../meta_traits.hpp"
+
+namespace meta_hpp::detail
 {
-}
+    template < enum_kind Enum >
+    struct enum_traits {
+        using underlying_type = std::underlying_type_t<Enum>;
 
-TEST_CASE("meta") {
+        static bitflags<enum_flags> make_flags() noexcept {
+            return {};
+        }
+    };
 }

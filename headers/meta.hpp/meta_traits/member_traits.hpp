@@ -6,6 +6,21 @@
 
 #pragma once
 
-namespace meta_hpp
+#include "../meta_base.hpp"
+#include "../meta_traits.hpp"
+
+namespace meta_hpp::detail
 {
+    template < member_kind Member >
+    struct member_traits;
+
+    template < typename V, typename C >
+    struct member_traits<V C::*> {
+        using class_type = C;
+        using value_type = V;
+
+        static bitflags<member_flags> make_flags() noexcept {
+            return {};
+        }
+    };
 }
