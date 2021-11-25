@@ -38,7 +38,7 @@ namespace
 
     float base_clazz_2::base_variable_2 = 2.0f;
 
-    struct derived_clazz final : base_clazz_1, base_clazz_2 {
+    struct derived_clazz : base_clazz_1, base_clazz_2 {
         derived_clazz(int i, float f)
         : base_clazz_1{i}
         , base_clazz_2{f} {}
@@ -48,6 +48,10 @@ namespace
         static double derived_function() { return 3.0; }
 
         static constexpr double derived_variable = 3.0;
+    };
+
+    struct final_derived_clazz final : derived_clazz {
+        using derived_clazz::derived_clazz;
     };
 
     template < typename... Args >
@@ -84,6 +88,10 @@ TEST_CASE("meta/meta_types/class_type") {
         .function_("derived_function", &derived_clazz::derived_function)
         .variable_("derived_variable", &derived_clazz::derived_variable);
 
+    meta::class_<final_derived_clazz>()
+        .ctor_<int, float>()
+        .base_<derived_clazz>();
+
     const meta::class_type base_clazz_1_type = meta::resolve_type<base_clazz_1>();
     REQUIRE(base_clazz_1_type);
 
@@ -92,6 +100,9 @@ TEST_CASE("meta/meta_types/class_type") {
 
     const meta::class_type derived_clazz_type = meta::resolve_type<const derived_clazz>();
     REQUIRE(derived_clazz_type);
+
+    const meta::class_type final_derived_clazz_type = meta::resolve_type<const final_derived_clazz>();
+    REQUIRE(final_derived_clazz_type);
 
     const meta::class_type variadic_clazz_int_type = meta::resolve_type<variadic_clazz<int>>();
     REQUIRE(variadic_clazz_int_type);
@@ -102,7 +113,8 @@ TEST_CASE("meta/meta_types/class_type") {
     SUBCASE("get_flags") {
         CHECK(base_clazz_1_type.get_flags() == meta::class_flags{});
         CHECK(base_clazz_2_type.get_flags() == meta::class_flags{});
-        CHECK(derived_clazz_type.get_flags() == meta::class_flags::is_final);
+        CHECK(derived_clazz_type.get_flags() == meta::class_flags{});
+        CHECK(final_derived_clazz_type.get_flags() == meta::class_flags::is_final);
         CHECK(variadic_clazz_int_type.get_flags() == (meta::class_flags::is_empty | meta::class_flags::is_template_instantiation));
         CHECK(variadic_clazz_int_float_type.get_flags() == (meta::class_flags::is_empty | meta::class_flags::is_template_instantiation));
     }
@@ -111,6 +123,7 @@ TEST_CASE("meta/meta_types/class_type") {
         CHECK(base_clazz_1_type.get_size() == sizeof(base_clazz_1));
         CHECK(base_clazz_2_type.get_size() == sizeof(base_clazz_2));
         CHECK(derived_clazz_type.get_size() == sizeof(derived_clazz));
+        CHECK(final_derived_clazz_type.get_size() == sizeof(final_derived_clazz));
     }
 
     SUBCASE("get_arity") {
@@ -174,36 +187,42 @@ TEST_CASE("meta/meta_types/class_type") {
         CHECK(base_clazz_1_type.get_ctors().size() == 1);
         CHECK(base_clazz_2_type.get_ctors().size() == 1);
         CHECK(derived_clazz_type.get_ctors().size() == 1);
+        CHECK(final_derived_clazz_type.get_ctors().size() == 1);
     }
 
     SUBCASE("get_bases") {
         CHECK(base_clazz_1_type.get_bases() == meta::class_set{});
         CHECK(base_clazz_2_type.get_bases() == meta::class_set{});
         CHECK(derived_clazz_type.get_bases() == meta::class_set{base_clazz_1_type, base_clazz_2_type});
+        CHECK(final_derived_clazz_type.get_bases() == meta::class_set{derived_clazz_type});
     }
 
     SUBCASE("get_functions") {
         CHECK(base_clazz_1_type.get_functions().size() == 3);
         CHECK(base_clazz_2_type.get_functions().size() == 1);
         CHECK(derived_clazz_type.get_functions().size() == 1);
+        CHECK(final_derived_clazz_type.get_functions().size() == 0);
     }
 
     SUBCASE("get_members") {
         CHECK(base_clazz_1_type.get_members().size() == 1);
         CHECK(base_clazz_2_type.get_members().size() == 1);
         CHECK(derived_clazz_type.get_members().size() == 1);
+        CHECK(final_derived_clazz_type.get_members().size() == 0);
     }
 
     SUBCASE("get_methods") {
         CHECK(base_clazz_1_type.get_methods().size() == 3);
         CHECK(base_clazz_2_type.get_methods().size() == 1);
         CHECK(derived_clazz_type.get_methods().size() == 1);
+        CHECK(final_derived_clazz_type.get_methods().size() == 0);
     }
 
     SUBCASE("get_variables") {
         CHECK(base_clazz_1_type.get_variables().size() == 1);
         CHECK(base_clazz_2_type.get_variables().size() == 1);
         CHECK(derived_clazz_type.get_variables().size() == 1);
+        CHECK(final_derived_clazz_type.get_variables().size() == 0);
     }
 
     SUBCASE("is_base_of") {
@@ -216,6 +235,9 @@ TEST_CASE("meta/meta_types/class_type") {
 
             CHECK(base_clazz_1_type.is_base_of<derived_clazz>());
             CHECK(base_clazz_1_type.is_base_of(derived_clazz_type));
+
+            CHECK(base_clazz_1_type.is_base_of<final_derived_clazz>());
+            CHECK(base_clazz_1_type.is_base_of(final_derived_clazz_type));
         }
 
         {
@@ -227,6 +249,9 @@ TEST_CASE("meta/meta_types/class_type") {
 
             CHECK(base_clazz_2_type.is_base_of<derived_clazz>());
             CHECK(base_clazz_2_type.is_base_of(derived_clazz_type));
+
+            CHECK(base_clazz_2_type.is_base_of<final_derived_clazz>());
+            CHECK(base_clazz_2_type.is_base_of(final_derived_clazz_type));
         }
 
         {
@@ -273,6 +298,17 @@ TEST_CASE("meta/meta_types/class_type") {
 
             CHECK_FALSE(derived_clazz_type.is_derived_from<derived_clazz>());
             CHECK_FALSE(derived_clazz_type.is_derived_from(derived_clazz_type));
+        }
+
+        {
+            CHECK(final_derived_clazz_type.is_derived_from<base_clazz_1>());
+            CHECK(final_derived_clazz_type.is_derived_from(base_clazz_1_type));
+
+            CHECK(final_derived_clazz_type.is_derived_from<base_clazz_2>());
+            CHECK(final_derived_clazz_type.is_derived_from(base_clazz_2_type));
+
+            CHECK(final_derived_clazz_type.is_derived_from<derived_clazz>());
+            CHECK(final_derived_clazz_type.is_derived_from(derived_clazz_type));
         }
     }
 

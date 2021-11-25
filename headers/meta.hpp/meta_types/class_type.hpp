@@ -97,7 +97,21 @@ namespace meta_hpp
     }
 
     inline bool class_type::is_base_of(const class_type& derived) const noexcept {
-        return derived.data_ && derived.data_->bases.contains(*this);
+        if ( !is_valid() || !derived.is_valid() ) {
+            return false;
+        }
+
+        if ( derived.data_->bases.contains(*this) ) {
+            return true;
+        }
+
+        for ( auto&& derived_base : derived.data_->bases ) {
+            if ( is_base_of(derived_base) ) {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     template < class_kind Base >
@@ -106,7 +120,21 @@ namespace meta_hpp
     }
 
     inline bool class_type::is_derived_from(const class_type& base) const noexcept {
-        return data_ && data_->bases.contains(base);
+        if ( !is_valid() || !base.is_valid() ) {
+            return false;
+        }
+
+        if ( data_->bases.contains(base) ) {
+            return true;
+        }
+
+        for ( auto&& self_base : data_->bases ) {
+            if ( self_base.is_derived_from(base) ) {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     inline function class_type::get_function(std::string_view name) const noexcept {
