@@ -17,7 +17,7 @@ namespace meta_hpp::detail
     struct enum_tag {};
 
     template < enum_kind Enum >
-    enum_type_data_ptr enum_type_data::get() {
+    enum_type_data_ptr enum_type_data::get_static() {
         static enum_type_data_ptr data = std::make_shared<enum_type_data>(type_list<Enum>{});
         return data;
     }

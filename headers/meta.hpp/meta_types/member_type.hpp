@@ -17,7 +17,7 @@ namespace meta_hpp::detail
     struct member_tag {};
 
     template < member_kind Member >
-    member_type_data_ptr member_type_data::get() {
+    member_type_data_ptr member_type_data::get_static() {
         static member_type_data_ptr data = std::make_shared<member_type_data>(type_list<Member>{});
         return data;
     }

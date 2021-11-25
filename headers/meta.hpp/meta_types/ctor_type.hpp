@@ -17,7 +17,7 @@ namespace meta_hpp::detail
     struct ctor_tag {};
 
     template < class_kind Class, typename... Args >
-    ctor_type_data_ptr ctor_type_data::get() {
+    ctor_type_data_ptr ctor_type_data::get_static() {
         static ctor_type_data_ptr data = std::make_shared<ctor_type_data>(type_list<Class>{}, type_list<Args...>{});
         return data;
     }

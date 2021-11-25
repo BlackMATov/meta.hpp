@@ -17,7 +17,7 @@ namespace meta_hpp::detail
     struct function_tag {};
 
     template < function_kind Function >
-    function_type_data_ptr function_type_data::get() {
+    function_type_data_ptr function_type_data::get_static() {
         static function_type_data_ptr data = std::make_shared<function_type_data>(type_list<Function>{});
         return data;
     }

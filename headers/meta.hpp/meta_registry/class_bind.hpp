@@ -13,7 +13,7 @@ namespace meta_hpp
 {
     template < detail::class_kind Class >
     class_bind<Class>::class_bind()
-    : data_{detail::get_type_data<Class>()} {}
+    : data_{detail::class_type_data::get_static<Class>()} {}
 
     template < detail::class_kind Class >
     class_bind<Class>::operator class_type() const noexcept {
@@ -33,8 +33,7 @@ namespace meta_hpp
     template < detail::class_kind Base >
     class_bind<Class>& class_bind<Class>::base_() {
         static_assert(std::is_base_of_v<Base, Class>);
-        auto base_data = detail::class_type_data::get<Base>();
-        data_->bases.emplace(base_data);
+        data_->bases.emplace(resolve_type<Base>());
         return *this;
     }
 

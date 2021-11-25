@@ -17,7 +17,7 @@ namespace meta_hpp::detail
     struct number_tag {};
 
     template < number_kind Number >
-    number_type_data_ptr number_type_data::get() {
+    number_type_data_ptr number_type_data::get_static() {
         static number_type_data_ptr data = std::make_shared<number_type_data>(type_list<Number>{});
         return data;
     }

@@ -295,7 +295,8 @@ namespace meta_hpp::detail
         function_map functions;
         variable_map variables;
 
-        static scope_state_ptr get(std::string_view name);
+        static scope_state_ptr make(std::string name);
+        static scope_state_ptr get_static(std::string_view name);
 
         explicit scope_state(scope_index index);
     };
@@ -319,14 +320,7 @@ namespace meta_hpp::detail
 
 namespace meta_hpp
 {
-    namespace detail
-    {
-        inline scope_state_ptr get_scope_state(std::string_view name) {
-            return scope_state::get(name);
-        }
-    }
-
     inline scope resolve_scope(std::string_view name) {
-        return scope{detail::get_scope_state(name)};
+        return scope{detail::scope_state::get_static(name)};
     }
 }

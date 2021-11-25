@@ -421,7 +421,7 @@ namespace meta_hpp::detail
         const any_type data_type;
 
         template < array_kind Array >
-        static array_type_data_ptr get();
+        static array_type_data_ptr get_static();
 
         template < array_kind Array >
         explicit array_type_data(type_list<Array>);
@@ -440,7 +440,7 @@ namespace meta_hpp::detail
         variable_map variables;
 
         template < class_kind Class >
-        static class_type_data_ptr get();
+        static class_type_data_ptr get_static();
 
         template < class_kind Class >
         explicit class_type_data(type_list<Class>);
@@ -452,7 +452,7 @@ namespace meta_hpp::detail
         const std::vector<any_type> argument_types;
 
         template < class_kind Class, typename... Args >
-        static ctor_type_data_ptr get();
+        static ctor_type_data_ptr get_static();
 
         template < class_kind Class, typename... Args >
         explicit ctor_type_data(type_list<Class>, type_list<Args...>);
@@ -465,7 +465,7 @@ namespace meta_hpp::detail
         evalue_map evalues;
 
         template < enum_kind Enum >
-        static enum_type_data_ptr get();
+        static enum_type_data_ptr get_static();
 
         template < enum_kind Enum >
         explicit enum_type_data(type_list<Enum>);
@@ -477,7 +477,7 @@ namespace meta_hpp::detail
         const std::vector<any_type> argument_types;
 
         template < function_kind Function >
-        static function_type_data_ptr get();
+        static function_type_data_ptr get_static();
 
         template < function_kind Function >
         explicit function_type_data(type_list<Function>);
@@ -489,7 +489,7 @@ namespace meta_hpp::detail
         const any_type value_type;
 
         template < member_kind Member >
-        static member_type_data_ptr get();
+        static member_type_data_ptr get_static();
 
         template < member_kind Member >
         explicit member_type_data(type_list<Member>);
@@ -502,7 +502,7 @@ namespace meta_hpp::detail
         const std::vector<any_type> argument_types;
 
         template < method_kind Method >
-        static method_type_data_ptr get();
+        static method_type_data_ptr get_static();
 
         template < method_kind Method >
         explicit method_type_data(type_list<Method>);
@@ -513,7 +513,7 @@ namespace meta_hpp::detail
         const std::size_t size;
 
         template < number_kind Number >
-        static number_type_data_ptr get();
+        static number_type_data_ptr get_static();
 
         template < number_kind Number >
         explicit number_type_data(type_list<Number>);
@@ -524,7 +524,7 @@ namespace meta_hpp::detail
         const any_type data_type;
 
         template < pointer_kind Pointer >
-        static pointer_type_data_ptr get();
+        static pointer_type_data_ptr get_static();
 
         template < pointer_kind Pointer >
         explicit pointer_type_data(type_list<Pointer>);
@@ -535,7 +535,7 @@ namespace meta_hpp::detail
         const any_type data_type;
 
         template < reference_kind Reference >
-        static reference_type_data_ptr get();
+        static reference_type_data_ptr get_static();
 
         template < reference_kind Reference >
         explicit reference_type_data(type_list<Reference>);
@@ -545,7 +545,7 @@ namespace meta_hpp::detail
         const bitflags<void_flags> flags;
 
         template < void_kind Void >
-        static void_type_data_ptr get();
+        static void_type_data_ptr get_static();
 
         template < void_kind Void >
         explicit void_type_data(type_list<Void>);
@@ -672,24 +672,18 @@ namespace meta_hpp
 
 namespace meta_hpp
 {
-    namespace detail
-    {
-        template < typename T >
-        kind_type_data_ptr<T> get_type_data() {
-            static_assert(!std::is_const_v<T> && !std::is_volatile_v<T>);
-            return kind_type_data<T>::template get<T>();
-        }
-    }
-
     template < typename T >
     auto resolve_type() {
         using raw_type = std::remove_cv_t<T>;
-        return detail::kind_type<raw_type>{detail::get_type_data<raw_type>()};
+
+        using kind_type = detail::kind_type<raw_type>;
+        using kind_type_data = detail::kind_type_data<raw_type>;
+
+        return kind_type{kind_type_data::template get_static<raw_type>()};
     }
 
     template < typename T >
     auto resolve_type(T&&) {
-        using raw_type = std::remove_cvref_t<T>;
-        return detail::kind_type<raw_type>{detail::get_type_data<raw_type>()};
+        return resolve_type<std::remove_reference_t<T>>();
     };
 }

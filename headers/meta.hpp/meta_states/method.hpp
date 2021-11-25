@@ -118,7 +118,7 @@ namespace meta_hpp::detail
 {
     template < method_kind Method >
     method_state_ptr method_state::make(std::string name, Method method) {
-        method_index index{method_type_data::get<Method>(), std::move(name)};
+        method_index index{method_type_data::get_static<Method>(), std::move(name)};
         return std::make_shared<method_state>(std::move(index), std::move(method));
     }
 

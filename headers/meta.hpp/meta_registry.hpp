@@ -57,7 +57,11 @@ namespace meta_hpp
 {
     class scope_bind final {
     public:
-        explicit scope_bind(std::string_view name);
+        struct local_tag {};
+        struct static_tag {};
+
+        explicit scope_bind(std::string_view name, local_tag);
+        explicit scope_bind(std::string_view name, static_tag);
         operator scope() const noexcept;
 
         template < detail::class_kind Class >
@@ -88,7 +92,11 @@ namespace meta_hpp
         return enum_bind<Enum>{};
     }
 
-    inline scope_bind scope_(std::string name) {
-        return scope_bind{std::move(name)};
+    inline scope_bind local_scope_(std::string name) {
+        return scope_bind{std::move(name), scope_bind::local_tag()};
+    }
+
+    inline scope_bind static_scope_(std::string name) {
+        return scope_bind{std::move(name), scope_bind::static_tag()};
     }
 }

@@ -17,7 +17,7 @@ namespace meta_hpp::detail
     struct void_tag {};
 
     template < void_kind Void >
-    void_type_data_ptr void_type_data::get() {
+    void_type_data_ptr void_type_data::get_static() {
         static void_type_data_ptr data = std::make_shared<void_type_data>(type_list<Void>{});
         return data;
     }

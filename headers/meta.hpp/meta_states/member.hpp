@@ -76,7 +76,7 @@ namespace meta_hpp::detail
 {
     template < member_kind Member >
     member_state_ptr member_state::make(std::string name, Member member) {
-        member_index index{member_type_data::get<Member>(), std::move(name)};
+        member_index index{member_type_data::get_static<Member>(), std::move(name)};
         return std::make_shared<member_state>(std::move(index), std::move(member));
     }
 

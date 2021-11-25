@@ -17,7 +17,7 @@ namespace meta_hpp::detail
     struct class_tag {};
 
     template < class_kind Class >
-    class_type_data_ptr class_type_data::get() {
+    class_type_data_ptr class_type_data::get_static() {
         static class_type_data_ptr data = std::make_shared<class_type_data>(type_list<Class>{});
         return data;
     }

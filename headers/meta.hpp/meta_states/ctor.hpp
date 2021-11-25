@@ -92,7 +92,7 @@ namespace meta_hpp::detail
 {
     template < class_kind Class, typename... Args >
     ctor_state_ptr ctor_state::make() {
-        ctor_index index{ctor_type_data::get<Class, Args...>()};
+        ctor_index index{ctor_type_data::get_static<Class, Args...>()};
         return std::make_shared<ctor_state>(std::move(index), type_list<Class>{}, type_list<Args...>{});
     }
 

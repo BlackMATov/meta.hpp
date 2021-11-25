@@ -11,15 +11,19 @@
 
 namespace meta_hpp::detail
 {
-    inline scope_state_ptr scope_state::get(std::string_view name) {
+    inline scope_state_ptr scope_state::make(std::string name) {
+        scope_index index{std::move(name)};
+        return std::make_shared<scope_state>(std::move(index));
+    }
+
+    inline scope_state_ptr scope_state::get_static(std::string_view name) {
         static std::map<std::string, scope_state_ptr, std::less<>> states;
 
         if ( auto iter = states.find(name); iter != states.end() ) {
             return iter->second;
         }
 
-        auto state = std::make_shared<scope_state>(scope_index{std::string{name}});
-        return states.emplace(std::string{name}, state).first->second;
+        return states.emplace(std::string{name}, make(std::string{name})).first->second;
     }
 
     inline scope_state::scope_state(scope_index index)

@@ -17,7 +17,7 @@ namespace meta_hpp::detail
     struct pointer_tag {};
 
     template < pointer_kind Pointer >
-    pointer_type_data_ptr pointer_type_data::get() {
+    pointer_type_data_ptr pointer_type_data::get_static() {
         static pointer_type_data_ptr data = std::make_shared<pointer_type_data>(type_list<Pointer>{});
         return data;
     }

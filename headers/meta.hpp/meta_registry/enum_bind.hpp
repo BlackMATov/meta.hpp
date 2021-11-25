@@ -13,7 +13,7 @@ namespace meta_hpp
 {
     template < detail::enum_kind Enum >
     enum_bind<Enum>::enum_bind()
-    : data_{detail::get_type_data<Enum>()} {}
+    : data_{detail::enum_type_data::get_static<Enum>()} {}
 
     template < detail::enum_kind Enum >
     enum_bind<Enum>::operator enum_type() const noexcept {

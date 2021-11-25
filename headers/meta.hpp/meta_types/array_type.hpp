@@ -17,7 +17,7 @@ namespace meta_hpp::detail
     struct array_tag {};
 
     template < array_kind Array >
-    array_type_data_ptr array_type_data::get() {
+    array_type_data_ptr array_type_data::get_static() {
         static array_type_data_ptr data = std::make_shared<array_type_data>(type_list<Array>{});
         return data;
     }

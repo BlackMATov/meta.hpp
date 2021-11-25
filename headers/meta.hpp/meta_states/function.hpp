@@ -102,7 +102,7 @@ namespace meta_hpp::detail
 {
     template < function_kind Function >
     function_state_ptr function_state::make(std::string name, Function function) {
-        function_index index{function_type_data::get<Function>(), std::move(name)};
+        function_index index{function_type_data::get_static<Function>(), std::move(name)};
         return std::make_shared<function_state>(std::move(index), std::move(function));
     }
 

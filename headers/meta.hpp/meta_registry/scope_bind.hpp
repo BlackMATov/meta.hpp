@@ -11,8 +11,11 @@
 
 namespace meta_hpp
 {
-    inline scope_bind::scope_bind(std::string_view name)
-    : state_{detail::get_scope_state(name)} {}
+    inline scope_bind::scope_bind(std::string_view name, local_tag)
+    : state_{detail::scope_state::make(std::string{name})} {}
+
+    inline scope_bind::scope_bind(std::string_view name, static_tag)
+    : state_{detail::scope_state::get_static(name)} {}
 
     inline scope_bind::operator scope() const noexcept {
         return scope{state_};
@@ -20,15 +23,13 @@ namespace meta_hpp
 
     template < detail::class_kind Class >
     scope_bind& scope_bind::class_(std::string name) {
-        auto class_data = detail::class_type_data::get<Class>();
-        state_->classes.emplace(std::move(name), class_data);
+        state_->classes.emplace(std::move(name), resolve_type<Class>());
         return *this;
     }
 
     template < detail::enum_kind Enum >
     scope_bind& scope_bind::enum_(std::string name) {
-        auto enum_data = detail::enum_type_data::get<Enum>();
-        state_->enums.emplace(std::move(name), enum_data);
+        state_->enums.emplace(std::move(name), resolve_type<Enum>());
         return *this;
     }
 

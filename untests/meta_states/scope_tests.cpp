@@ -33,21 +33,21 @@ namespace
         return {l.x + r.x, l.y + r.y, l.z + r.z};
     }
 
-    ivec2 global_ivec2 = ivec2{1, 0};
-    const ivec3 global_const_ivec3 = ivec3{1, 0};
+    ivec2 static_ivec2 = ivec2{1, 0};
+    const ivec3 static_const_ivec3 = ivec3{1, 0};
 }
 
 TEST_CASE("meta/meta_states/scope") {
     namespace meta = meta_hpp;
 
-    meta::scope_("meta/meta_states/scope/math")
+    meta::static_scope_("meta/meta_states/scope/math")
         .enum_<color>("color")
         .class_<ivec2>("ivec2")
         .class_<ivec3>("ivec3")
         .function_("iadd2", &iadd2)
         .function_("iadd3", &iadd3)
-        .variable_("global_ivec2", &global_ivec2)
-        .variable_("global_const_ivec3", &global_const_ivec3);
+        .variable_("static_ivec2", &static_ivec2)
+        .variable_("static_const_ivec3", &static_const_ivec3);
 
     const meta::scope math_scope = meta::resolve_scope("meta/meta_states/scope/math");
     REQUIRE(math_scope);
@@ -103,12 +103,12 @@ TEST_CASE("meta/meta_states/scope") {
     SUBCASE("variables") {
         CHECK_FALSE(math_scope.get_variable("non-existent-variable"));
 
-        const meta::variable global_ivec2_var = math_scope.get_variable("global_ivec2");
-        REQUIRE(global_ivec2_var);
-        CHECK(global_ivec2_var.get_type().get_data_type() == meta::resolve_type<ivec2>());
+        const meta::variable static_ivec2_var = math_scope.get_variable("static_ivec2");
+        REQUIRE(static_ivec2_var);
+        CHECK(static_ivec2_var.get_type().get_data_type() == meta::resolve_type<ivec2>());
 
-        const meta::variable global_const_ivec3_var = math_scope.get_variable("global_const_ivec3");
-        REQUIRE(global_const_ivec3_var);
-        CHECK(global_const_ivec3_var.get_type().get_data_type() == meta::resolve_type<ivec3>());
+        const meta::variable static_const_ivec3_var = math_scope.get_variable("static_const_ivec3");
+        REQUIRE(static_const_ivec3_var);
+        CHECK(static_const_ivec3_var.get_type().get_data_type() == meta::resolve_type<ivec3>());
     }
 }

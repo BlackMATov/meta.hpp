@@ -17,7 +17,7 @@ namespace meta_hpp::detail
     struct reference_tag {};
 
     template < reference_kind Reference >
-    reference_type_data_ptr reference_type_data::get() {
+    reference_type_data_ptr reference_type_data::get_static() {
         static reference_type_data_ptr data = std::make_shared<reference_type_data>(type_list<Reference>{});
         return data;
     }

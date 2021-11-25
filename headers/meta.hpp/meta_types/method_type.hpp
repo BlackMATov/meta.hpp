@@ -17,7 +17,7 @@ namespace meta_hpp::detail
     struct method_tag {};
 
     template < method_kind Method >
-    method_type_data_ptr method_type_data::get() {
+    method_type_data_ptr method_type_data::get_static() {
         static method_type_data_ptr data = std::make_shared<method_type_data>(type_list<Method>{});
         return data;
     }
