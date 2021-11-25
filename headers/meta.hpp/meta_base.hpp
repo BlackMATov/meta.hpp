@@ -41,23 +41,6 @@ namespace meta_hpp
 
 namespace meta_hpp
 {
-    template < typename... Types >
-    struct type_list {};
-
-    template < std::size_t Index, typename TypeList >
-    struct type_list_at;
-
-    template < std::size_t Index, typename... Types >
-    struct type_list_at<Index, type_list<Types...>> {
-        using type = std::tuple_element_t<Index, std::tuple<Types...>>;
-    };
-
-    template < std::size_t Index, typename TypeList >
-    using type_list_at_t = typename type_list_at<Index, TypeList>::type;
-}
-
-namespace meta_hpp
-{
     template < typename Signature >
     constexpr auto select(Signature* func) noexcept -> Signature* {
         return func;
@@ -66,6 +49,23 @@ namespace meta_hpp
     template < typename Signature, typename Class >
     constexpr auto select(Signature Class::*func) -> decltype(func) {
         return func;
+    }
+
+    namespace detail
+    {
+        template < typename... Types >
+        struct type_list {};
+
+        template < std::size_t Index, typename TypeList >
+        struct type_list_at;
+
+        template < std::size_t Index, typename... Types >
+        struct type_list_at<Index, type_list<Types...>> {
+            using type = std::tuple_element_t<Index, std::tuple<Types...>>;
+        };
+
+        template < std::size_t Index, typename TypeList >
+        using type_list_at_t = typename type_list_at<Index, TypeList>::type;
     }
 }
 

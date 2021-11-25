@@ -10,6 +10,23 @@
 
 namespace meta_hpp
 {
+    enum class type_kind : std::uint32_t {
+        array_,
+        class_,
+        ctor_,
+        enum_,
+        function_,
+        member_,
+        method_,
+        number_,
+        pointer_,
+        reference_,
+        void_,
+    };
+}
+
+namespace meta_hpp::detail
+{
     template < typename T >
     concept array_kind = std::is_array_v<T>;
 
@@ -39,23 +56,6 @@ namespace meta_hpp
 
     template < typename T >
     concept void_kind = std::is_void_v<T>;
-}
-
-namespace meta_hpp
-{
-    enum class type_kind : std::uint32_t {
-        array_,
-        class_,
-        ctor_,
-        enum_,
-        function_,
-        member_,
-        method_,
-        number_,
-        pointer_,
-        reference_,
-        void_,
-    };
 
     template < typename T >
     constexpr type_kind make_type_kind() noexcept {

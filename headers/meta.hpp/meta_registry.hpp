@@ -11,7 +11,7 @@
 
 namespace meta_hpp
 {
-    template < class_kind Class >
+    template < detail::class_kind Class >
     class class_bind final {
     public:
         explicit class_bind();
@@ -20,19 +20,19 @@ namespace meta_hpp
         template < typename... Args >
         class_bind& ctor_();
 
-        template < class_kind Base >
+        template < detail::class_kind Base >
         class_bind& base_();
 
-        template < function_kind Function >
+        template < detail::function_kind Function >
         class_bind& function_(std::string name, Function function);
 
-        template < member_kind Member >
+        template < detail::member_kind Member >
         class_bind& member_(std::string name, Member member);
 
-        template < method_kind Method >
+        template < detail::method_kind Method >
         class_bind& method_(std::string name, Method method);
 
-        template < pointer_kind Pointer >
+        template < detail::pointer_kind Pointer >
         class_bind& variable_(std::string name, Pointer pointer);
     private:
         detail::class_type_data_ptr data_;
@@ -41,7 +41,7 @@ namespace meta_hpp
 
 namespace meta_hpp
 {
-    template < enum_kind Enum >
+    template < detail::enum_kind Enum >
     class enum_bind final {
     public:
         explicit enum_bind();
@@ -60,16 +60,16 @@ namespace meta_hpp
         explicit scope_bind(std::string_view name);
         operator scope() const noexcept;
 
-        template < class_kind Class >
+        template < detail::class_kind Class >
         scope_bind& class_(std::string name);
 
-        template < enum_kind Enum >
+        template < detail::enum_kind Enum >
         scope_bind& enum_(std::string name);
 
-        template < function_kind Function >
+        template < detail::function_kind Function >
         scope_bind& function_(std::string name, Function function);
 
-        template < pointer_kind Pointer >
+        template < detail::pointer_kind Pointer >
         scope_bind& variable_(std::string name, Pointer pointer);
     private:
         detail::scope_state_ptr state_;
@@ -78,12 +78,12 @@ namespace meta_hpp
 
 namespace meta_hpp
 {
-    template < class_kind Class >
+    template < detail::class_kind Class >
     class_bind<Class> class_() {
         return class_bind<Class>{};
     }
 
-    template < enum_kind Enum >
+    template < detail::enum_kind Enum >
     enum_bind<Enum> enum_() {
         return enum_bind<Enum>{};
     }

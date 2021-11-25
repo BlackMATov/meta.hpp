@@ -11,16 +11,16 @@
 
 namespace meta_hpp
 {
-    template < class_kind Class >
+    template < detail::class_kind Class >
     class_bind<Class>::class_bind()
     : data_{detail::get_type_data<Class>()} {}
 
-    template < class_kind Class >
+    template < detail::class_kind Class >
     class_bind<Class>::operator class_type() const noexcept {
         return class_type{data_};
     }
 
-    template < class_kind Class >
+    template < detail::class_kind Class >
     template < typename... Args >
     class_bind<Class>& class_bind<Class>::ctor_() {
         static_assert(std::is_constructible_v<Class, Args...>);
@@ -29,8 +29,8 @@ namespace meta_hpp
         return *this;
     }
 
-    template < class_kind Class >
-    template < class_kind Base >
+    template < detail::class_kind Class >
+    template < detail::class_kind Base >
     class_bind<Class>& class_bind<Class>::base_() {
         static_assert(std::is_base_of_v<Base, Class>);
         auto base_data = detail::class_type_data::get<Base>();
@@ -38,16 +38,16 @@ namespace meta_hpp
         return *this;
     }
 
-    template < class_kind Class >
-    template < function_kind Function >
+    template < detail::class_kind Class >
+    template < detail::function_kind Function >
     class_bind<Class>& class_bind<Class>::function_(std::string name, Function function) {
         auto function_state = detail::function_state::make<Function>(std::move(name), std::move(function));
         data_->functions.emplace(function_state->index, std::move(function_state));
         return *this;
     }
 
-    template < class_kind Class >
-    template < member_kind Member >
+    template < detail::class_kind Class >
+    template < detail::member_kind Member >
     class_bind<Class>& class_bind<Class>::member_(std::string name, Member member) {
         static_assert(std::same_as<Class, typename detail::member_traits<Member>::class_type>);
         auto member_state = detail::member_state::make<Member>(std::move(name), std::move(member));
@@ -55,8 +55,8 @@ namespace meta_hpp
         return *this;
     }
 
-    template < class_kind Class >
-    template < method_kind Method >
+    template < detail::class_kind Class >
+    template < detail::method_kind Method >
     class_bind<Class>& class_bind<Class>::method_(std::string name, Method method) {
         static_assert(std::same_as<Class, typename detail::method_traits<Method>::class_type>);
         auto method_state = detail::method_state::make<Method>(std::move(name), std::move(method));
@@ -64,8 +64,8 @@ namespace meta_hpp
         return *this;
     }
 
-    template < class_kind Class >
-    template < pointer_kind Pointer >
+    template < detail::class_kind Class >
+    template < detail::pointer_kind Pointer >
     class_bind<Class>& class_bind<Class>::variable_(std::string name, Pointer pointer) {
         auto variable_state = detail::variable_state::make<Pointer>(std::move(name), std::move(pointer));
         data_->variables.emplace(variable_state->index, std::move(variable_state));

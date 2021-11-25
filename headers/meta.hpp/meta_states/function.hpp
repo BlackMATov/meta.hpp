@@ -151,7 +151,7 @@ namespace meta_hpp
     template < typename... Args >
     bool function::is_invocable_with() const noexcept {
         if constexpr ( sizeof...(Args) > 0 ) {
-            std::array<detail::arg_base, sizeof...(Args)> arg_bases{detail::arg_base{type_list<Args>{}}...};
+            std::array<detail::arg_base, sizeof...(Args)> arg_bases{detail::arg_base{detail::type_list<Args>{}}...};
             return state_->is_invocable_with(arg_bases.data(), arg_bases.size());
         } else {
             return state_->is_invocable_with(nullptr, 0);

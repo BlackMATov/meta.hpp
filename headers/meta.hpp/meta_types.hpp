@@ -14,7 +14,7 @@ namespace meta_hpp
     class type_id final {
     public:
         template < typename T >
-        explicit type_id(type_list<T>) noexcept
+        explicit type_id(detail::type_list<T>) noexcept
         : id_{type_to_id<T>()} {}
 
         type_id(type_id&&) = default;
@@ -57,32 +57,35 @@ namespace meta_hpp
 
 namespace meta_hpp
 {
-    template < typename T >
-    concept types_family =
-        std::same_as<T, any_type> ||
-        std::same_as<T, array_type> ||
-        std::same_as<T, class_type> ||
-        std::same_as<T, ctor_type> ||
-        std::same_as<T, enum_type> ||
-        std::same_as<T, function_type> ||
-        std::same_as<T, member_type> ||
-        std::same_as<T, method_type> ||
-        std::same_as<T, number_type> ||
-        std::same_as<T, pointer_type> ||
-        std::same_as<T, reference_type> ||
-        std::same_as<T, void_type>;
+    namespace detail
+    {
+        template < typename T >
+        concept type_family =
+            std::same_as<T, any_type> ||
+            std::same_as<T, array_type> ||
+            std::same_as<T, class_type> ||
+            std::same_as<T, ctor_type> ||
+            std::same_as<T, enum_type> ||
+            std::same_as<T, function_type> ||
+            std::same_as<T, member_type> ||
+            std::same_as<T, method_type> ||
+            std::same_as<T, number_type> ||
+            std::same_as<T, pointer_type> ||
+            std::same_as<T, reference_type> ||
+            std::same_as<T, void_type>;
+    }
 
-    template < types_family T >
+    template < detail::type_family T >
     bool operator<(type_id l, const T& r) noexcept {
         return static_cast<bool>(r) && l < r.get_id();
     }
 
-    template < types_family T >
+    template < detail::type_family T >
     bool operator<(const T& l, type_id r) noexcept {
         return !static_cast<bool>(l) || l.get_id() < r;
     }
 
-    template < types_family T, types_family U >
+    template < detail::type_family T, detail::type_family U >
     bool operator<(const T& l, const U& r) noexcept {
         if ( !static_cast<bool>(r) ) {
             return false;
@@ -95,17 +98,17 @@ namespace meta_hpp
         return l.get_id() < r.get_id();
     }
 
-    template < types_family T >
+    template < detail::type_family T >
     bool operator==(type_id l, const T& r) noexcept {
         return static_cast<bool>(r) && l == r.get_id();
     }
 
-    template < types_family T >
+    template < detail::type_family T >
     bool operator==(const T& l, type_id r) noexcept {
         return static_cast<bool>(l) && l.get_id() == r;
     }
 
-    template < types_family T, types_family U >
+    template < detail::type_family T, detail::type_family U >
     bool operator==(const T& l, const U& r) noexcept {
         if ( static_cast<bool>(l) != static_cast<bool>(r) ) {
             return false;
@@ -118,17 +121,17 @@ namespace meta_hpp
         return l.get_id() == r.get_id();
     }
 
-    template < types_family T >
+    template < detail::type_family T >
     bool operator!=(type_id l, const T& r) noexcept {
         return !(l == r);
     }
 
-    template < types_family T >
+    template < detail::type_family T >
     bool operator!=(const T& l, type_id r) noexcept {
         return !(l == r);
     }
 
-    template < types_family T, types_family U >
+    template < detail::type_family T, detail::type_family U >
     bool operator!=(const T& l, const U& r) noexcept {
         return !(l == r);
     }
@@ -228,11 +231,11 @@ namespace meta_hpp
         const method_map& get_methods() const noexcept;
         const variable_map& get_variables() const noexcept;
 
-        template < class_kind Derived >
+        template < detail::class_kind Derived >
         bool is_base_of() const noexcept;
         bool is_base_of(const class_type& derived) const noexcept;
 
-        template < class_kind Base >
+        template < detail::class_kind Base >
         bool is_derived_from() const noexcept;
         bool is_derived_from(const class_type& base) const noexcept;
 

@@ -12,17 +12,20 @@
 
 namespace meta_hpp
 {
-    template < typename T >
-    concept states_family =
-        std::same_as<T, ctor> ||
-        std::same_as<T, evalue> ||
-        std::same_as<T, function> ||
-        std::same_as<T, member> ||
-        std::same_as<T, method> ||
-        std::same_as<T, scope> ||
-        std::same_as<T, variable>;
+    namespace detail
+    {
+        template < typename T >
+        concept state_family =
+            std::same_as<T, ctor> ||
+            std::same_as<T, evalue> ||
+            std::same_as<T, function> ||
+            std::same_as<T, member> ||
+            std::same_as<T, method> ||
+            std::same_as<T, scope> ||
+            std::same_as<T, variable>;
+    }
 
-    template < states_family T, states_family U >
+    template < detail::state_family T, detail::state_family U >
     bool operator<(const T& l, const U& r) noexcept {
         if ( !static_cast<bool>(r) ) {
             return false;
@@ -35,7 +38,7 @@ namespace meta_hpp
         return l.get_index() < r.get_index();
     }
 
-    template < states_family T, states_family U >
+    template < detail::state_family T, detail::state_family U >
     bool operator==(const T& l, const U& r) noexcept {
         if ( static_cast<bool>(l) != static_cast<bool>(r) ) {
             return false;
@@ -48,7 +51,7 @@ namespace meta_hpp
         return l.get_index() == r.get_index();
     }
 
-    template < states_family T, states_family U >
+    template < detail::state_family T, detail::state_family U >
     bool operator!=(const T& l, const U& r) noexcept {
         return !(l == r);
     }
