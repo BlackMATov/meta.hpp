@@ -75,16 +75,6 @@ namespace meta_hpp
             std::same_as<T, void_type>;
     }
 
-    template < detail::type_family T >
-    bool operator<(type_id l, const T& r) noexcept {
-        return static_cast<bool>(r) && l < r.get_id();
-    }
-
-    template < detail::type_family T >
-    bool operator<(const T& l, type_id r) noexcept {
-        return !static_cast<bool>(l) || l.get_id() < r;
-    }
-
     template < detail::type_family T, detail::type_family U >
     bool operator<(const T& l, const U& r) noexcept {
         if ( !static_cast<bool>(r) ) {
@@ -98,16 +88,6 @@ namespace meta_hpp
         return l.get_id() < r.get_id();
     }
 
-    template < detail::type_family T >
-    bool operator==(type_id l, const T& r) noexcept {
-        return static_cast<bool>(r) && l == r.get_id();
-    }
-
-    template < detail::type_family T >
-    bool operator==(const T& l, type_id r) noexcept {
-        return static_cast<bool>(l) && l.get_id() == r;
-    }
-
     template < detail::type_family T, detail::type_family U >
     bool operator==(const T& l, const U& r) noexcept {
         if ( static_cast<bool>(l) != static_cast<bool>(r) ) {
@@ -119,16 +99,6 @@ namespace meta_hpp
         }
 
         return l.get_id() == r.get_id();
-    }
-
-    template < detail::type_family T >
-    bool operator!=(type_id l, const T& r) noexcept {
-        return !(l == r);
-    }
-
-    template < detail::type_family T >
-    bool operator!=(const T& l, type_id r) noexcept {
-        return !(l == r);
     }
 
     template < detail::type_family T, detail::type_family U >
