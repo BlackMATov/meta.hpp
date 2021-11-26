@@ -69,6 +69,128 @@ namespace
     }
 }
 
+TEST_CASE("features/meta_utilities/arg/from_value") {
+    namespace meta = meta_hpp;
+
+    SUBCASE("ptr") {
+        ivec2 v{1,2};
+        ivec2* vp = &v;
+        meta::value vvp{vp};
+        meta::detail::arg a{vvp};
+
+        CHECK(a.get_raw_type() == meta::resolve_type<ivec2*>());
+        CHECK(a.get_ref_type() == meta::detail::arg::ref_types::ref);
+    }
+
+    SUBCASE("rptr") {
+        ivec2 v{1,2};
+        ivec2* vp = &v;
+        meta::value vvp{vp};
+        meta::detail::arg a{std::move(vvp)};
+
+        CHECK(a.get_raw_type() == meta::resolve_type<ivec2*>());
+        CHECK(a.get_ref_type() == meta::detail::arg::ref_types::rref);
+    }
+
+    SUBCASE("ptr_c") {
+        ivec2 v{1,2};
+        ivec2* const vp = &v;
+        const meta::value vvp{vp};
+        meta::detail::arg a{vvp};
+
+        CHECK(a.get_raw_type() == meta::resolve_type<ivec2*>());
+        CHECK(a.get_ref_type() == meta::detail::arg::ref_types::cref);
+    }
+
+    SUBCASE("rptr_c") {
+        ivec2 v{1,2};
+        ivec2* const vp = &v;
+        const meta::value vvp{vp};
+        meta::detail::arg a{std::move(vvp)};
+
+        CHECK(a.get_raw_type() == meta::resolve_type<ivec2*>());
+        CHECK(a.get_ref_type() == meta::detail::arg::ref_types::crref);
+    }
+
+    SUBCASE("cptr") {
+        const ivec2 v{1,2};
+        const ivec2* vp = &v;
+        meta::value vvp{vp};
+        meta::detail::arg a{vvp};
+
+        CHECK(a.get_raw_type() == meta::resolve_type<const ivec2*>());
+        CHECK(a.get_ref_type() == meta::detail::arg::ref_types::ref);
+    }
+
+    SUBCASE("crptr") {
+        const ivec2 v{1,2};
+        const ivec2* vp = &v;
+        meta::value vvp{vp};
+        meta::detail::arg a{std::move(vvp)};
+
+        CHECK(a.get_raw_type() == meta::resolve_type<const ivec2*>());
+        CHECK(a.get_ref_type() == meta::detail::arg::ref_types::rref);
+    }
+
+    SUBCASE("cptr_c") {
+        const ivec2 v{1,2};
+        const ivec2* const vp = &v;
+        const meta::value vvp{vp};
+        meta::detail::arg a{vvp};
+
+        CHECK(a.get_raw_type() == meta::resolve_type<const ivec2*>());
+        CHECK(a.get_ref_type() == meta::detail::arg::ref_types::cref);
+    }
+
+    SUBCASE("crptr_c") {
+        const ivec2 v{1,2};
+        const ivec2* const vp = &v;
+        const meta::value vvp{vp};
+        meta::detail::arg a{std::move(vvp)};
+
+        CHECK(a.get_raw_type() == meta::resolve_type<const ivec2*>());
+        CHECK(a.get_ref_type() == meta::detail::arg::ref_types::crref);
+    }
+
+    SUBCASE("ref") {
+        ivec2 v{1,2};
+        ivec2& vr = v;
+        meta::value vvr{vr};
+        meta::detail::arg a{vvr};
+
+        CHECK(a.get_raw_type() == meta::resolve_type<ivec2>());
+        CHECK(a.get_ref_type() == meta::detail::arg::ref_types::ref);
+    }
+
+    SUBCASE("cref") {
+        const ivec2 v{1,2};
+        const ivec2& vr = v;
+        const meta::value vvr{vr};
+        meta::detail::arg a{vvr};
+
+        CHECK(a.get_raw_type() == meta::resolve_type<ivec2>());
+        CHECK(a.get_ref_type() == meta::detail::arg::ref_types::cref);
+    }
+
+    SUBCASE("rref") {
+        ivec2 v{1,2};
+        meta::value vv{v};
+        meta::detail::arg a{std::move(vv)};
+
+        CHECK(a.get_raw_type() == meta::resolve_type<ivec2>());
+        CHECK(a.get_ref_type() == meta::detail::arg::ref_types::rref);
+    }
+
+    SUBCASE("crref") {
+        const ivec2 v{1,2};
+        const meta::value vv{v};
+        meta::detail::arg a{std::move(vv)};
+
+        CHECK(a.get_raw_type() == meta::resolve_type<ivec2>());
+        CHECK(a.get_ref_type() == meta::detail::arg::ref_types::crref);
+    }
+}
+
 TEST_CASE("features/meta_utilities/arg/type") {
     namespace meta = meta_hpp;
 

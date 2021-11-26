@@ -31,6 +31,7 @@ target_compile_options(${PROJECT_NAME}
         -Wno-exit-time-destructors
         -Wno-float-equal
         -Wno-padded
+        -Wno-shadow-field
         -Wno-shadow-field-in-constructor
         -Wno-unknown-warning-option
         -Wno-weak-vtables

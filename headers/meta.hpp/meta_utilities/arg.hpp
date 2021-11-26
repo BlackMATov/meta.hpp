@@ -12,14 +12,14 @@
 namespace meta_hpp::detail
 {
     template < typename T, std::enable_if_t<
-        std::is_pointer_v<T> || std::is_lvalue_reference_v<T>
+        (std::is_pointer_v<T> || std::is_lvalue_reference_v<T>)
     , int> >
     arg_base::arg_base(type_list<T>)
     : raw_type_{resolve_type<std::remove_cvref_t<T>>()}
     , ref_type_{std::is_const_v<std::remove_reference_t<T>> ? ref_types::cref : ref_types::ref} {}
 
     template < typename T, std::enable_if_t<
-        std::is_rvalue_reference_v<T> ||
+        (std::is_rvalue_reference_v<T>) ||
         (!std::is_pointer_v<T> && !std::is_reference_v<T>)
     , int> >
     arg_base::arg_base(type_list<T>)
@@ -127,28 +127,18 @@ namespace meta_hpp::detail
 namespace meta_hpp::detail
 {
     template < typename T, typename Tp
+             , std::enable_if_t<std::is_same_v<Tp, value>, int> >
+    arg::arg(T&& v)
+    : arg_base{std::forward<T>(v)}
+    , data_{const_cast<void*>(v.data())} {}
+
+    template < typename T, typename Tp
              , std::enable_if_t<!std::is_same_v<Tp, arg>, int>
              , std::enable_if_t<!std::is_same_v<Tp, inst>, int>
              , std::enable_if_t<!std::is_same_v<Tp, value>, int> >
     arg::arg(T&& v)
     : arg_base{type_list<T&&>{}}
     , data_{const_cast<std::remove_cvref_t<T>*>(std::addressof(v))} {}
-
-    inline arg::arg(value& v)
-    : arg_base{v}
-    , data_{const_cast<void*>(v.data())} {}
-
-    inline arg::arg(value&& v)
-    : arg_base{v}
-    , data_{const_cast<void*>(v.data())} {}
-
-    inline arg::arg(const value& v)
-    : arg_base{v}
-    , data_{const_cast<void*>(v.data())} {}
-
-    inline arg::arg(const value&& v)
-    : arg_base{v}
-    , data_{const_cast<void*>(v.data())} {}
 
     template < typename To >
     To arg::cast() const {

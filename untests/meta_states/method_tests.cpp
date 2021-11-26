@@ -58,11 +58,18 @@ namespace
         int const_method_noexcept_rref_volatile() volatile const && noexcept { return 12; }
     };
 
+    struct derived_clazz : clazz {
+        [[maybe_unused]] derived_clazz() = default;
+    };
+
     struct clazz2 {};
 }
 
 TEST_CASE("meta/meta_states/method") {
     namespace meta = meta_hpp;
+
+    meta::class_<derived_clazz>()
+        .base_<clazz>();
 
     meta::class_<clazz>()
         .method_("non_const_method", &clazz::non_const_method)
@@ -151,6 +158,16 @@ TEST_CASE("meta/meta_states/method") {
             CHECK_FALSE(mi2.is_invocable_with<const clazz&>());
             CHECK(mi2.is_invocable_with<clazz&&>());
             CHECK_FALSE(mi2.is_invocable_with<const clazz&&>());
+
+            CHECK(mi.is_invocable_with<derived_clazz&>());
+            CHECK_FALSE(mi.is_invocable_with<const derived_clazz&>());
+            CHECK(mi.is_invocable_with<derived_clazz&&>());
+            CHECK_FALSE(mi.is_invocable_with<const derived_clazz&&>());
+
+            CHECK(mi2.is_invocable_with<derived_clazz&>());
+            CHECK_FALSE(mi2.is_invocable_with<const derived_clazz&>());
+            CHECK(mi2.is_invocable_with<derived_clazz&&>());
+            CHECK_FALSE(mi2.is_invocable_with<const derived_clazz&&>());
         }
 
         {
@@ -176,6 +193,16 @@ TEST_CASE("meta/meta_states/method") {
         static_assert(!std::is_invocable_v<decltype(&clazz::non_const_method_volatile), const clazz&>);
         static_assert(std::is_invocable_v<decltype(&clazz::non_const_method_volatile), clazz&&>);
         static_assert(!std::is_invocable_v<decltype(&clazz::non_const_method_volatile), const clazz&&>);
+
+        static_assert(std::is_invocable_v<decltype(&clazz::non_const_method), derived_clazz&>);
+        static_assert(!std::is_invocable_v<decltype(&clazz::non_const_method), const derived_clazz&>);
+        static_assert(std::is_invocable_v<decltype(&clazz::non_const_method), derived_clazz&&>);
+        static_assert(!std::is_invocable_v<decltype(&clazz::non_const_method), const derived_clazz&&>);
+
+        static_assert(std::is_invocable_v<decltype(&clazz::non_const_method_volatile), derived_clazz&>);
+        static_assert(!std::is_invocable_v<decltype(&clazz::non_const_method_volatile), const derived_clazz&>);
+        static_assert(std::is_invocable_v<decltype(&clazz::non_const_method_volatile), derived_clazz&&>);
+        static_assert(!std::is_invocable_v<decltype(&clazz::non_const_method_volatile), const derived_clazz&&>);
     }
 
     SUBCASE("non_const_method_noexcept") {
@@ -210,6 +237,16 @@ TEST_CASE("meta/meta_states/method") {
             CHECK_FALSE(mi2.is_invocable_with<const clazz&>());
             CHECK(mi2.is_invocable_with<clazz&&>());
             CHECK_FALSE(mi2.is_invocable_with<const clazz&&>());
+
+            CHECK(mi.is_invocable_with<derived_clazz&>());
+            CHECK_FALSE(mi.is_invocable_with<const derived_clazz&>());
+            CHECK(mi.is_invocable_with<derived_clazz&&>());
+            CHECK_FALSE(mi.is_invocable_with<const derived_clazz&&>());
+
+            CHECK(mi2.is_invocable_with<derived_clazz&>());
+            CHECK_FALSE(mi2.is_invocable_with<const derived_clazz&>());
+            CHECK(mi2.is_invocable_with<derived_clazz&&>());
+            CHECK_FALSE(mi2.is_invocable_with<const derived_clazz&&>());
         }
 
         {
@@ -235,6 +272,16 @@ TEST_CASE("meta/meta_states/method") {
         static_assert(!std::is_invocable_v<decltype(&clazz::non_const_method_noexcept_volatile), const clazz&>);
         static_assert(std::is_invocable_v<decltype(&clazz::non_const_method_noexcept_volatile), clazz&&>);
         static_assert(!std::is_invocable_v<decltype(&clazz::non_const_method_noexcept_volatile), const clazz&&>);
+
+        static_assert(std::is_invocable_v<decltype(&clazz::non_const_method_noexcept), derived_clazz&>);
+        static_assert(!std::is_invocable_v<decltype(&clazz::non_const_method_noexcept), const derived_clazz&>);
+        static_assert(std::is_invocable_v<decltype(&clazz::non_const_method_noexcept), derived_clazz&&>);
+        static_assert(!std::is_invocable_v<decltype(&clazz::non_const_method_noexcept), const derived_clazz&&>);
+
+        static_assert(std::is_invocable_v<decltype(&clazz::non_const_method_noexcept_volatile), derived_clazz&>);
+        static_assert(!std::is_invocable_v<decltype(&clazz::non_const_method_noexcept_volatile), const derived_clazz&>);
+        static_assert(std::is_invocable_v<decltype(&clazz::non_const_method_noexcept_volatile), derived_clazz&&>);
+        static_assert(!std::is_invocable_v<decltype(&clazz::non_const_method_noexcept_volatile), const derived_clazz&&>);
     }
 
     SUBCASE("const_method") {
@@ -269,6 +316,16 @@ TEST_CASE("meta/meta_states/method") {
             CHECK(mi2.is_invocable_with<const clazz&>());
             CHECK(mi2.is_invocable_with<clazz&&>());
             CHECK(mi2.is_invocable_with<const clazz&&>());
+
+            CHECK(mi.is_invocable_with<derived_clazz&>());
+            CHECK(mi.is_invocable_with<const derived_clazz&>());
+            CHECK(mi.is_invocable_with<derived_clazz&&>());
+            CHECK(mi.is_invocable_with<const derived_clazz&&>());
+
+            CHECK(mi2.is_invocable_with<derived_clazz&>());
+            CHECK(mi2.is_invocable_with<const derived_clazz&>());
+            CHECK(mi2.is_invocable_with<derived_clazz&&>());
+            CHECK(mi2.is_invocable_with<const derived_clazz&&>());
         }
 
         {
@@ -294,6 +351,16 @@ TEST_CASE("meta/meta_states/method") {
         static_assert(std::is_invocable_v<decltype(&clazz::const_method_volatile), const clazz&>);
         static_assert(std::is_invocable_v<decltype(&clazz::const_method_volatile), clazz&&>);
         static_assert(std::is_invocable_v<decltype(&clazz::const_method_volatile), const clazz&&>);
+
+        static_assert(std::is_invocable_v<decltype(&clazz::const_method), derived_clazz&>);
+        static_assert(std::is_invocable_v<decltype(&clazz::const_method), const derived_clazz&>);
+        static_assert(std::is_invocable_v<decltype(&clazz::const_method), derived_clazz&&>);
+        static_assert(std::is_invocable_v<decltype(&clazz::const_method), const derived_clazz&&>);
+
+        static_assert(std::is_invocable_v<decltype(&clazz::const_method_volatile), derived_clazz&>);
+        static_assert(std::is_invocable_v<decltype(&clazz::const_method_volatile), const derived_clazz&>);
+        static_assert(std::is_invocable_v<decltype(&clazz::const_method_volatile), derived_clazz&&>);
+        static_assert(std::is_invocable_v<decltype(&clazz::const_method_volatile), const derived_clazz&&>);
     }
 
     SUBCASE("const_method_noexcept") {
@@ -328,6 +395,16 @@ TEST_CASE("meta/meta_states/method") {
             CHECK(mi2.is_invocable_with<const clazz&>());
             CHECK(mi2.is_invocable_with<clazz&&>());
             CHECK(mi2.is_invocable_with<const clazz&&>());
+
+            CHECK(mi.is_invocable_with<derived_clazz&>());
+            CHECK(mi.is_invocable_with<const derived_clazz&>());
+            CHECK(mi.is_invocable_with<derived_clazz&&>());
+            CHECK(mi.is_invocable_with<const derived_clazz&&>());
+
+            CHECK(mi2.is_invocable_with<derived_clazz&>());
+            CHECK(mi2.is_invocable_with<const derived_clazz&>());
+            CHECK(mi2.is_invocable_with<derived_clazz&&>());
+            CHECK(mi2.is_invocable_with<const derived_clazz&&>());
         }
 
         {
@@ -353,6 +430,16 @@ TEST_CASE("meta/meta_states/method") {
         static_assert(std::is_invocable_v<decltype(&clazz::const_method_noexcept_volatile), const clazz&>);
         static_assert(std::is_invocable_v<decltype(&clazz::const_method_noexcept_volatile), clazz&&>);
         static_assert(std::is_invocable_v<decltype(&clazz::const_method_noexcept_volatile), const clazz&&>);
+
+        static_assert(std::is_invocable_v<decltype(&clazz::const_method_noexcept), derived_clazz&>);
+        static_assert(std::is_invocable_v<decltype(&clazz::const_method_noexcept), const derived_clazz&>);
+        static_assert(std::is_invocable_v<decltype(&clazz::const_method_noexcept), derived_clazz&&>);
+        static_assert(std::is_invocable_v<decltype(&clazz::const_method_noexcept), const derived_clazz&&>);
+
+        static_assert(std::is_invocable_v<decltype(&clazz::const_method_noexcept_volatile), derived_clazz&>);
+        static_assert(std::is_invocable_v<decltype(&clazz::const_method_noexcept_volatile), const derived_clazz&>);
+        static_assert(std::is_invocable_v<decltype(&clazz::const_method_noexcept_volatile), derived_clazz&&>);
+        static_assert(std::is_invocable_v<decltype(&clazz::const_method_noexcept_volatile), const derived_clazz&&>);
     }
 
     SUBCASE("non_const_method_ref") {
@@ -387,6 +474,16 @@ TEST_CASE("meta/meta_states/method") {
             CHECK_FALSE(mi2.is_invocable_with<const clazz&>());
             CHECK_FALSE(mi2.is_invocable_with<clazz&&>());
             CHECK_FALSE(mi2.is_invocable_with<const clazz&&>());
+
+            CHECK(mi.is_invocable_with<derived_clazz&>());
+            CHECK_FALSE(mi.is_invocable_with<const derived_clazz&>());
+            CHECK_FALSE(mi.is_invocable_with<derived_clazz&&>());
+            CHECK_FALSE(mi.is_invocable_with<const derived_clazz&&>());
+
+            CHECK(mi2.is_invocable_with<derived_clazz&>());
+            CHECK_FALSE(mi2.is_invocable_with<const derived_clazz&>());
+            CHECK_FALSE(mi2.is_invocable_with<derived_clazz&&>());
+            CHECK_FALSE(mi2.is_invocable_with<const derived_clazz&&>());
         }
 
         {
@@ -412,6 +509,16 @@ TEST_CASE("meta/meta_states/method") {
         static_assert(!std::is_invocable_v<decltype(&clazz::non_const_method_ref_volatile), const clazz&>);
         static_assert(!std::is_invocable_v<decltype(&clazz::non_const_method_ref_volatile), clazz&&>);
         static_assert(!std::is_invocable_v<decltype(&clazz::non_const_method_ref_volatile), const clazz&&>);
+
+        static_assert(std::is_invocable_v<decltype(&clazz::non_const_method_ref), derived_clazz&>);
+        static_assert(!std::is_invocable_v<decltype(&clazz::non_const_method_ref), const derived_clazz&>);
+        static_assert(!std::is_invocable_v<decltype(&clazz::non_const_method_ref), derived_clazz&&>);
+        static_assert(!std::is_invocable_v<decltype(&clazz::non_const_method_ref), const derived_clazz&&>);
+
+        static_assert(std::is_invocable_v<decltype(&clazz::non_const_method_ref_volatile), derived_clazz&>);
+        static_assert(!std::is_invocable_v<decltype(&clazz::non_const_method_ref_volatile), const derived_clazz&>);
+        static_assert(!std::is_invocable_v<decltype(&clazz::non_const_method_ref_volatile), derived_clazz&&>);
+        static_assert(!std::is_invocable_v<decltype(&clazz::non_const_method_ref_volatile), const derived_clazz&&>);
     }
 
     SUBCASE("non_const_method_noexcept_ref") {
@@ -446,6 +553,16 @@ TEST_CASE("meta/meta_states/method") {
             CHECK_FALSE(mi2.is_invocable_with<const clazz&>());
             CHECK_FALSE(mi2.is_invocable_with<clazz&&>());
             CHECK_FALSE(mi2.is_invocable_with<const clazz&&>());
+
+            CHECK(mi.is_invocable_with<derived_clazz&>());
+            CHECK_FALSE(mi.is_invocable_with<const derived_clazz&>());
+            CHECK_FALSE(mi.is_invocable_with<derived_clazz&&>());
+            CHECK_FALSE(mi.is_invocable_with<const derived_clazz&&>());
+
+            CHECK(mi2.is_invocable_with<derived_clazz&>());
+            CHECK_FALSE(mi2.is_invocable_with<const derived_clazz&>());
+            CHECK_FALSE(mi2.is_invocable_with<derived_clazz&&>());
+            CHECK_FALSE(mi2.is_invocable_with<const derived_clazz&&>());
         }
 
         {
@@ -471,6 +588,16 @@ TEST_CASE("meta/meta_states/method") {
         static_assert(!std::is_invocable_v<decltype(&clazz::non_const_method_noexcept_ref_volatile), const clazz&>);
         static_assert(!std::is_invocable_v<decltype(&clazz::non_const_method_noexcept_ref_volatile), clazz&&>);
         static_assert(!std::is_invocable_v<decltype(&clazz::non_const_method_noexcept_ref_volatile), const clazz&&>);
+
+        static_assert(std::is_invocable_v<decltype(&clazz::non_const_method_noexcept_ref), derived_clazz&>);
+        static_assert(!std::is_invocable_v<decltype(&clazz::non_const_method_noexcept_ref), const derived_clazz&>);
+        static_assert(!std::is_invocable_v<decltype(&clazz::non_const_method_noexcept_ref), derived_clazz&&>);
+        static_assert(!std::is_invocable_v<decltype(&clazz::non_const_method_noexcept_ref), const derived_clazz&&>);
+
+        static_assert(std::is_invocable_v<decltype(&clazz::non_const_method_noexcept_ref_volatile), derived_clazz&>);
+        static_assert(!std::is_invocable_v<decltype(&clazz::non_const_method_noexcept_ref_volatile), const derived_clazz&>);
+        static_assert(!std::is_invocable_v<decltype(&clazz::non_const_method_noexcept_ref_volatile), derived_clazz&&>);
+        static_assert(!std::is_invocable_v<decltype(&clazz::non_const_method_noexcept_ref_volatile), const derived_clazz&&>);
     }
 
     SUBCASE("const_method_ref") {
@@ -505,6 +632,16 @@ TEST_CASE("meta/meta_states/method") {
             CHECK(mi2.is_invocable_with<const clazz&>());
             CHECK_FALSE(mi2.is_invocable_with<clazz&&>());
             CHECK_FALSE(mi2.is_invocable_with<const clazz&&>());
+
+            CHECK(mi.is_invocable_with<derived_clazz&>());
+            CHECK(mi.is_invocable_with<const derived_clazz&>());
+            CHECK_FALSE(mi.is_invocable_with<derived_clazz&&>());
+            CHECK_FALSE(mi.is_invocable_with<const derived_clazz&&>());
+
+            CHECK(mi2.is_invocable_with<derived_clazz&>());
+            CHECK(mi2.is_invocable_with<const derived_clazz&>());
+            CHECK_FALSE(mi2.is_invocable_with<derived_clazz&&>());
+            CHECK_FALSE(mi2.is_invocable_with<const derived_clazz&&>());
         }
 
         {
@@ -530,6 +667,16 @@ TEST_CASE("meta/meta_states/method") {
         static_assert(std::is_invocable_v<decltype(&clazz::const_method_ref_volatile), const clazz&>);
         static_assert(!std::is_invocable_v<decltype(&clazz::const_method_ref_volatile), clazz&&>);
         static_assert(!std::is_invocable_v<decltype(&clazz::const_method_ref_volatile), const clazz&&>);
+
+        static_assert(std::is_invocable_v<decltype(&clazz::const_method_ref), derived_clazz&>);
+        static_assert(std::is_invocable_v<decltype(&clazz::const_method_ref), const derived_clazz&>);
+        //static_assert(!std::is_invocable_v<decltype(&clazz::const_method_ref), derived_clazz&&>); // msvc issue
+        //static_assert(!std::is_invocable_v<decltype(&clazz::const_method_ref), const derived_clazz&&>); // msvc issue
+
+        static_assert(std::is_invocable_v<decltype(&clazz::const_method_ref_volatile), derived_clazz&>);
+        static_assert(std::is_invocable_v<decltype(&clazz::const_method_ref_volatile), const derived_clazz&>);
+        static_assert(!std::is_invocable_v<decltype(&clazz::const_method_ref_volatile), derived_clazz&&>);
+        static_assert(!std::is_invocable_v<decltype(&clazz::const_method_ref_volatile), const derived_clazz&&>);
     }
 
     SUBCASE("const_method_noexcept_ref") {
@@ -564,6 +711,16 @@ TEST_CASE("meta/meta_states/method") {
             CHECK(mi2.is_invocable_with<const clazz&>());
             CHECK_FALSE(mi2.is_invocable_with<clazz&&>());
             CHECK_FALSE(mi2.is_invocable_with<const clazz&&>());
+
+            CHECK(mi.is_invocable_with<derived_clazz&>());
+            CHECK(mi.is_invocable_with<const derived_clazz&>());
+            CHECK_FALSE(mi.is_invocable_with<derived_clazz&&>());
+            CHECK_FALSE(mi.is_invocable_with<const derived_clazz&&>());
+
+            CHECK(mi2.is_invocable_with<derived_clazz&>());
+            CHECK(mi2.is_invocable_with<const derived_clazz&>());
+            CHECK_FALSE(mi2.is_invocable_with<derived_clazz&&>());
+            CHECK_FALSE(mi2.is_invocable_with<const derived_clazz&&>());
         }
 
         {
@@ -589,6 +746,16 @@ TEST_CASE("meta/meta_states/method") {
         static_assert(std::is_invocable_v<decltype(&clazz::const_method_noexcept_ref_volatile), const clazz&>);
         static_assert(!std::is_invocable_v<decltype(&clazz::const_method_noexcept_ref_volatile), clazz&&>);
         static_assert(!std::is_invocable_v<decltype(&clazz::const_method_noexcept_ref_volatile), const clazz&&>);
+
+        static_assert(std::is_invocable_v<decltype(&clazz::const_method_noexcept_ref), derived_clazz&>);
+        static_assert(std::is_invocable_v<decltype(&clazz::const_method_noexcept_ref), const derived_clazz&>);
+        //static_assert(!std::is_invocable_v<decltype(&clazz::const_method_noexcept_ref), derived_clazz&&>); // msvc issue
+        //static_assert(!std::is_invocable_v<decltype(&clazz::const_method_noexcept_ref), const derived_clazz&&>); // msvc issue
+
+        static_assert(std::is_invocable_v<decltype(&clazz::const_method_noexcept_ref_volatile), derived_clazz&>);
+        static_assert(std::is_invocable_v<decltype(&clazz::const_method_noexcept_ref_volatile), const derived_clazz&>);
+        static_assert(!std::is_invocable_v<decltype(&clazz::const_method_noexcept_ref_volatile), derived_clazz&&>);
+        static_assert(!std::is_invocable_v<decltype(&clazz::const_method_noexcept_ref_volatile), const derived_clazz&&>);
     }
 
     SUBCASE("non_const_method_rref") {
@@ -623,6 +790,16 @@ TEST_CASE("meta/meta_states/method") {
             CHECK_FALSE(mi2.is_invocable_with<const clazz&>());
             CHECK(mi2.is_invocable_with<clazz&&>());
             CHECK_FALSE(mi2.is_invocable_with<const clazz&&>());
+
+            CHECK_FALSE(mi.is_invocable_with<derived_clazz&>());
+            CHECK_FALSE(mi.is_invocable_with<const derived_clazz&>());
+            CHECK(mi.is_invocable_with<derived_clazz&&>());
+            CHECK_FALSE(mi.is_invocable_with<const derived_clazz&&>());
+
+            CHECK_FALSE(mi2.is_invocable_with<derived_clazz&>());
+            CHECK_FALSE(mi2.is_invocable_with<const derived_clazz&>());
+            CHECK(mi2.is_invocable_with<derived_clazz&&>());
+            CHECK_FALSE(mi2.is_invocable_with<const derived_clazz&&>());
         }
 
         {
@@ -648,6 +825,16 @@ TEST_CASE("meta/meta_states/method") {
         static_assert(!std::is_invocable_v<decltype(&clazz::non_const_method_rref_volatile), const clazz&>);
         static_assert(std::is_invocable_v<decltype(&clazz::non_const_method_rref_volatile), clazz&&>);
         static_assert(!std::is_invocable_v<decltype(&clazz::non_const_method_rref_volatile), const clazz&&>);
+
+        static_assert(!std::is_invocable_v<decltype(&clazz::non_const_method_rref), derived_clazz&>);
+        static_assert(!std::is_invocable_v<decltype(&clazz::non_const_method_rref), const derived_clazz&>);
+        static_assert(std::is_invocable_v<decltype(&clazz::non_const_method_rref), derived_clazz&&>);
+        static_assert(!std::is_invocable_v<decltype(&clazz::non_const_method_rref), const derived_clazz&&>);
+
+        static_assert(!std::is_invocable_v<decltype(&clazz::non_const_method_rref_volatile), derived_clazz&>);
+        static_assert(!std::is_invocable_v<decltype(&clazz::non_const_method_rref_volatile), const derived_clazz&>);
+        static_assert(std::is_invocable_v<decltype(&clazz::non_const_method_rref_volatile), derived_clazz&&>);
+        static_assert(!std::is_invocable_v<decltype(&clazz::non_const_method_rref_volatile), const derived_clazz&&>);
     }
 
     SUBCASE("non_const_method_noexcept_rref") {
@@ -682,6 +869,16 @@ TEST_CASE("meta/meta_states/method") {
             CHECK_FALSE(mi2.is_invocable_with<const clazz&>());
             CHECK(mi2.is_invocable_with<clazz&&>());
             CHECK_FALSE(mi2.is_invocable_with<const clazz&&>());
+
+            CHECK_FALSE(mi.is_invocable_with<derived_clazz&>());
+            CHECK_FALSE(mi.is_invocable_with<const derived_clazz&>());
+            CHECK(mi.is_invocable_with<derived_clazz&&>());
+            CHECK_FALSE(mi.is_invocable_with<const derived_clazz&&>());
+
+            CHECK_FALSE(mi2.is_invocable_with<derived_clazz&>());
+            CHECK_FALSE(mi2.is_invocable_with<const derived_clazz&>());
+            CHECK(mi2.is_invocable_with<derived_clazz&&>());
+            CHECK_FALSE(mi2.is_invocable_with<const derived_clazz&&>());
         }
 
         {
@@ -707,6 +904,16 @@ TEST_CASE("meta/meta_states/method") {
         static_assert(!std::is_invocable_v<decltype(&clazz::non_const_method_noexcept_rref_volatile), const clazz&>);
         static_assert(std::is_invocable_v<decltype(&clazz::non_const_method_noexcept_rref_volatile), clazz&&>);
         static_assert(!std::is_invocable_v<decltype(&clazz::non_const_method_noexcept_rref_volatile), const clazz&&>);
+
+        static_assert(!std::is_invocable_v<decltype(&clazz::non_const_method_noexcept_rref), derived_clazz&>);
+        static_assert(!std::is_invocable_v<decltype(&clazz::non_const_method_noexcept_rref), const derived_clazz&>);
+        static_assert(std::is_invocable_v<decltype(&clazz::non_const_method_noexcept_rref), derived_clazz&&>);
+        static_assert(!std::is_invocable_v<decltype(&clazz::non_const_method_noexcept_rref), const derived_clazz&&>);
+
+        static_assert(!std::is_invocable_v<decltype(&clazz::non_const_method_noexcept_rref_volatile), derived_clazz&>);
+        static_assert(!std::is_invocable_v<decltype(&clazz::non_const_method_noexcept_rref_volatile), const derived_clazz&>);
+        static_assert(std::is_invocable_v<decltype(&clazz::non_const_method_noexcept_rref_volatile), derived_clazz&&>);
+        static_assert(!std::is_invocable_v<decltype(&clazz::non_const_method_noexcept_rref_volatile), const derived_clazz&&>);
     }
 
     SUBCASE("const_method_rref") {
@@ -741,6 +948,16 @@ TEST_CASE("meta/meta_states/method") {
             CHECK_FALSE(mi2.is_invocable_with<const clazz&>());
             CHECK(mi2.is_invocable_with<clazz&&>());
             CHECK(mi2.is_invocable_with<const clazz&&>());
+
+            CHECK_FALSE(mi.is_invocable_with<derived_clazz&>());
+            CHECK_FALSE(mi.is_invocable_with<const derived_clazz&>());
+            CHECK(mi.is_invocable_with<derived_clazz&&>());
+            CHECK(mi.is_invocable_with<const derived_clazz&&>());
+
+            CHECK_FALSE(mi2.is_invocable_with<derived_clazz&>());
+            CHECK_FALSE(mi2.is_invocable_with<const derived_clazz&>());
+            CHECK(mi2.is_invocable_with<derived_clazz&&>());
+            CHECK(mi2.is_invocable_with<const derived_clazz&&>());
         }
 
         {
@@ -766,6 +983,16 @@ TEST_CASE("meta/meta_states/method") {
         static_assert(!std::is_invocable_v<decltype(&clazz::const_method_rref_volatile), const clazz&>);
         static_assert(std::is_invocable_v<decltype(&clazz::const_method_rref_volatile), clazz&&>);
         static_assert(std::is_invocable_v<decltype(&clazz::const_method_rref_volatile), const clazz&&>);
+
+        static_assert(!std::is_invocable_v<decltype(&clazz::const_method_rref), derived_clazz&>);
+        static_assert(!std::is_invocable_v<decltype(&clazz::const_method_rref), const derived_clazz&>);
+        static_assert(std::is_invocable_v<decltype(&clazz::const_method_rref), derived_clazz&&>);
+        static_assert(std::is_invocable_v<decltype(&clazz::const_method_rref), const derived_clazz&&>);
+
+        static_assert(!std::is_invocable_v<decltype(&clazz::const_method_rref_volatile), derived_clazz&>);
+        static_assert(!std::is_invocable_v<decltype(&clazz::const_method_rref_volatile), const derived_clazz&>);
+        static_assert(std::is_invocable_v<decltype(&clazz::const_method_rref_volatile), derived_clazz&&>);
+        static_assert(std::is_invocable_v<decltype(&clazz::const_method_rref_volatile), const derived_clazz&&>);
     }
 
     SUBCASE("const_method_noexcept_rref") {
@@ -800,6 +1027,16 @@ TEST_CASE("meta/meta_states/method") {
             CHECK_FALSE(mi2.is_invocable_with<const clazz&>());
             CHECK(mi2.is_invocable_with<clazz&&>());
             CHECK(mi2.is_invocable_with<const clazz&&>());
+
+            CHECK_FALSE(mi.is_invocable_with<derived_clazz&>());
+            CHECK_FALSE(mi.is_invocable_with<const derived_clazz&>());
+            CHECK(mi.is_invocable_with<derived_clazz&&>());
+            CHECK(mi.is_invocable_with<const derived_clazz&&>());
+
+            CHECK_FALSE(mi2.is_invocable_with<derived_clazz&>());
+            CHECK_FALSE(mi2.is_invocable_with<const derived_clazz&>());
+            CHECK(mi2.is_invocable_with<derived_clazz&&>());
+            CHECK(mi2.is_invocable_with<const derived_clazz&&>());
         }
 
         {
@@ -825,5 +1062,15 @@ TEST_CASE("meta/meta_states/method") {
         static_assert(!std::is_invocable_v<decltype(&clazz::const_method_noexcept_rref_volatile), const clazz&>);
         static_assert(std::is_invocable_v<decltype(&clazz::const_method_noexcept_rref_volatile), clazz&&>);
         static_assert(std::is_invocable_v<decltype(&clazz::const_method_noexcept_rref_volatile), const clazz&&>);
+
+        static_assert(!std::is_invocable_v<decltype(&clazz::const_method_noexcept_rref), derived_clazz&>);
+        static_assert(!std::is_invocable_v<decltype(&clazz::const_method_noexcept_rref), const derived_clazz&>);
+        static_assert(std::is_invocable_v<decltype(&clazz::const_method_noexcept_rref), derived_clazz&&>);
+        static_assert(std::is_invocable_v<decltype(&clazz::const_method_noexcept_rref), const derived_clazz&&>);
+
+        static_assert(!std::is_invocable_v<decltype(&clazz::const_method_noexcept_rref_volatile), derived_clazz&>);
+        static_assert(!std::is_invocable_v<decltype(&clazz::const_method_noexcept_rref_volatile), const derived_clazz&>);
+        static_assert(std::is_invocable_v<decltype(&clazz::const_method_noexcept_rref_volatile), derived_clazz&&>);
+        static_assert(std::is_invocable_v<decltype(&clazz::const_method_noexcept_rref_volatile), const derived_clazz&&>);
     }
 }

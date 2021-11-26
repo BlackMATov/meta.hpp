@@ -97,12 +97,12 @@ namespace meta_hpp::detail
         arg_base& operator=(const arg_base&) = delete;
 
         template < typename T, std::enable_if_t<
-            std::is_pointer_v<T> || std::is_lvalue_reference_v<T>
+            (std::is_pointer_v<T> || std::is_lvalue_reference_v<T>)
         , int> = 0 >
         explicit arg_base(type_list<T>);
 
         template < typename T, std::enable_if_t<
-            std::is_rvalue_reference_v<T> ||
+            (std::is_rvalue_reference_v<T>) ||
             (!std::is_pointer_v<T> && !std::is_reference_v<T>)
         , int> = 0 >
         explicit arg_base(type_list<T>);
@@ -140,15 +140,14 @@ namespace meta_hpp::detail
         arg& operator=(const arg&) = delete;
 
         template < typename T, typename Tp = std::decay_t<T>
+                 , std::enable_if_t<std::is_same_v<Tp, value>, int> = 0 >
+        explicit arg(T&& v);
+
+        template < typename T, typename Tp = std::decay_t<T>
                  , std::enable_if_t<!std::is_same_v<Tp, arg>, int> = 0
                  , std::enable_if_t<!std::is_same_v<Tp, inst>, int> = 0
                  , std::enable_if_t<!std::is_same_v<Tp, value>, int> = 0 >
         explicit arg(T&& v);
-
-        explicit arg(value& v);
-        explicit arg(value&& v);
-        explicit arg(const value& v);
-        explicit arg(const value&& v);
 
         template < typename To >
         To cast() const;
@@ -177,12 +176,12 @@ namespace meta_hpp::detail
         inst_base& operator=(const inst_base&) = delete;
 
         template < typename T, std::enable_if_t<
-            std::is_lvalue_reference_v<T> && std::is_class_v<std::remove_reference_t<T>>
+            (std::is_lvalue_reference_v<T> && std::is_class_v<std::remove_reference_t<T>>)
         , int> = 0>
         explicit inst_base(type_list<T>);
 
         template < typename T, std::enable_if_t<
-            std::is_class_v<T> ||
+            (std::is_class_v<T>) ||
             (std::is_rvalue_reference_v<T> && std::is_class_v<std::remove_reference_t<T>>)
         , int> = 0>
         explicit inst_base(type_list<T>);
@@ -196,14 +195,17 @@ namespace meta_hpp::detail
         bool is_lvalue() const noexcept;
         bool is_rvalue() const noexcept;
 
-        any_type get_raw_type() const noexcept;
         ref_types get_ref_type() const noexcept;
+        const class_type& get_raw_type() const noexcept;
 
-        template < typename To >
+        template < typename To, std::enable_if_t<
+            (std::is_class_v<To>) ||
+            (std::is_reference_v<To> && std::is_class_v<std::remove_reference_t<To>>)
+        , int> = 0>
         bool can_cast_to() const noexcept;
     private:
-        any_type raw_type_{};
         ref_types ref_type_{};
+        class_type raw_type_{};
     };
 }
 
@@ -220,17 +222,19 @@ namespace meta_hpp::detail
         inst& operator=(const inst&) = delete;
 
         template < typename T, typename Tp = std::decay_t<T>
+                 , std::enable_if_t<std::is_same_v<Tp, value>, int> = 0 >
+        explicit inst(T&& v);
+
+        template < typename T, class_kind Tp = std::decay_t<T>
                  , std::enable_if_t<!std::is_same_v<Tp, arg>, int> = 0
                  , std::enable_if_t<!std::is_same_v<Tp, inst>, int> = 0
                  , std::enable_if_t<!std::is_same_v<Tp, value>, int> = 0 >
         explicit inst(T&& v);
 
-        explicit inst(value& v);
-        explicit inst(value&& v);
-        explicit inst(const value& v);
-        explicit inst(const value&& v);
-
-        template < typename To >
+        template < typename To, std::enable_if_t<
+            (std::is_class_v<To>) ||
+            (std::is_reference_v<To> && std::is_class_v<std::remove_reference_t<To>>)
+        , int> = 0>
         decltype(auto) cast() const;
     private:
         void* data_{};

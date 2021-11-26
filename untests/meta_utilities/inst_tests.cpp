@@ -31,42 +31,110 @@ namespace
         ivec2& operator=(ivec2&&) = delete;
         ivec2& operator=(const ivec2&) = delete;
     };
+
+    struct derived_ivec2 : ivec2 {
+        [[maybe_unused]] derived_ivec2() = default;
+        [[maybe_unused]] explicit derived_ivec2(int v): ivec2{v, v} {}
+        [[maybe_unused]] derived_ivec2(int x, int y): ivec2{x, y} {}
+    };
 }
 
 TEST_CASE("features/meta_utilities/inst") {
     namespace meta = meta_hpp;
 
     SUBCASE("ref") {
-        ivec2 v{1,2};
-        ivec2& vr = v;
-        meta::detail::inst a{vr};
+        {
+            derived_ivec2 v{1,2};
+            derived_ivec2& vr = v;
+            meta::detail::inst a{vr};
 
-        CHECK(a.get_raw_type() == meta::resolve_type<ivec2>());
-        CHECK(a.get_ref_type() == meta::detail::inst::ref_types::ref);
+            CHECK(a.get_raw_type() == meta::resolve_type<derived_ivec2>());
+            CHECK(a.get_ref_type() == meta::detail::inst::ref_types::ref);
+        }
+        {
+            meta::value v{derived_ivec2{1,2}};
+            meta::value& vr = v;
+            meta::detail::inst a{vr};
+
+            CHECK(a.get_raw_type() == meta::resolve_type<derived_ivec2>());
+            CHECK(a.get_ref_type() == meta::detail::inst::ref_types::ref);
+
+            CHECK(a.can_cast_to<derived_ivec2>());
+            CHECK(a.can_cast_to<derived_ivec2&>());
+            CHECK(a.can_cast_to<const derived_ivec2&>());
+            CHECK_FALSE(a.can_cast_to<derived_ivec2&&>());
+            CHECK_FALSE(a.can_cast_to<const derived_ivec2&&>());
+        }
     }
 
     SUBCASE("cref") {
-        const ivec2 v{1,2};
-        const ivec2& vr = v;
-        meta::detail::inst a{vr};
+        {
+            const derived_ivec2 v{1,2};
+            const derived_ivec2& vr = v;
+            meta::detail::inst a{vr};
 
-        CHECK(a.get_raw_type() == meta::resolve_type<ivec2>());
-        CHECK(a.get_ref_type() == meta::detail::inst::ref_types::cref);
+            CHECK(a.get_raw_type() == meta::resolve_type<derived_ivec2>());
+            CHECK(a.get_ref_type() == meta::detail::inst::ref_types::cref);
+        }
+        {
+            const meta::value v{derived_ivec2{1,2}};
+            const meta::value& vr = v;
+            meta::detail::inst a{vr};
+
+            CHECK(a.get_raw_type() == meta::resolve_type<derived_ivec2>());
+            CHECK(a.get_ref_type() == meta::detail::inst::ref_types::cref);
+
+            CHECK_FALSE(a.can_cast_to<derived_ivec2>());
+            CHECK_FALSE(a.can_cast_to<derived_ivec2&>());
+            CHECK(a.can_cast_to<const derived_ivec2&>());
+            CHECK_FALSE(a.can_cast_to<derived_ivec2&&>());
+            CHECK_FALSE(a.can_cast_to<const derived_ivec2&&>());
+        }
     }
 
     SUBCASE("rref") {
-        ivec2 v{1,2};
-        meta::detail::inst a{std::move(v)};
+        {
+            derived_ivec2 v{1,2};
+            meta::detail::inst a{std::move(v)};
 
-        CHECK(a.get_raw_type() == meta::resolve_type<ivec2>());
-        CHECK(a.get_ref_type() == meta::detail::inst::ref_types::rref);
+            CHECK(a.get_raw_type() == meta::resolve_type<derived_ivec2>());
+            CHECK(a.get_ref_type() == meta::detail::inst::ref_types::rref);
+        }
+        {
+            meta::value v{derived_ivec2{1,2}};
+            meta::detail::inst a{std::move(v)};
+
+            CHECK(a.get_raw_type() == meta::resolve_type<derived_ivec2>());
+            CHECK(a.get_ref_type() == meta::detail::inst::ref_types::rref);
+
+            CHECK(a.can_cast_to<derived_ivec2>());
+            CHECK_FALSE(a.can_cast_to<derived_ivec2&>());
+            CHECK_FALSE(a.can_cast_to<const derived_ivec2&>());
+            CHECK(a.can_cast_to<derived_ivec2&&>());
+            CHECK(a.can_cast_to<const derived_ivec2&&>());
+        }
     }
 
     SUBCASE("crref") {
-        const ivec2 v{1,2};
-        meta::detail::inst a{std::move(v)};
+        {
+            const derived_ivec2 v{1,2};
+            meta::detail::inst a{std::move(v)};
 
-        CHECK(a.get_raw_type() == meta::resolve_type<ivec2>());
-        CHECK(a.get_ref_type() == meta::detail::inst::ref_types::crref);
+            CHECK(a.get_raw_type() == meta::resolve_type<derived_ivec2>());
+            CHECK(a.get_ref_type() == meta::detail::inst::ref_types::crref);
+        }
+        {
+            const meta::value v{derived_ivec2{1,2}};
+            meta::detail::inst a{std::move(v)};
+
+            CHECK(a.get_raw_type() == meta::resolve_type<derived_ivec2>());
+            CHECK(a.get_ref_type() == meta::detail::inst::ref_types::crref);
+
+            CHECK_FALSE(a.can_cast_to<derived_ivec2>());
+            CHECK_FALSE(a.can_cast_to<derived_ivec2&>());
+            CHECK_FALSE(a.can_cast_to<const derived_ivec2&>());
+            CHECK_FALSE(a.can_cast_to<derived_ivec2&&>());
+            CHECK(a.can_cast_to<const derived_ivec2&&>());
+        }
     }
 }
