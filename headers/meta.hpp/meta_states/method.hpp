@@ -164,6 +164,11 @@ namespace meta_hpp
         }
     }
 
+    template < typename Instance, typename... Args >
+    std::optional<value> method::operator()(Instance&& instance, Args&&... args) const {
+        return invoke(std::forward<Instance>(instance), std::forward<Args>(args)...);
+    }
+
     template < typename Inst, typename... Args >
     bool method::is_invocable_with() const noexcept {
         if constexpr ( sizeof...(Args) > 0 ) {

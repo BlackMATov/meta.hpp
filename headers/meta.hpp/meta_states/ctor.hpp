@@ -135,6 +135,11 @@ namespace meta_hpp
     }
 
     template < typename... Args >
+    value ctor::operator()(Args&&... args) const {
+        return invoke(std::forward<Args>(args)...);
+    }
+
+    template < typename... Args >
     inline bool ctor::is_invocable_with() const noexcept {
         if constexpr ( sizeof...(Args) > 0 ) {
             std::array<detail::arg_base, sizeof...(Args)> arg_bases{detail::arg_base{detail::type_list<Args>{}}...};
