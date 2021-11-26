@@ -201,6 +201,12 @@ namespace meta_hpp
         const method_map& get_methods() const noexcept;
         const variable_map& get_variables() const noexcept;
 
+        template < typename... Args >
+        std::optional<value> create(Args&&... args) const;
+
+        template < typename... Args >
+        std::optional<value> operator()(Args&&... args) const;
+
         template < detail::class_kind Derived >
         bool is_base_of() const noexcept;
         bool is_base_of(const class_type& derived) const noexcept;

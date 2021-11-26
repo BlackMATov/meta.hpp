@@ -91,6 +91,21 @@ namespace meta_hpp
         return data_->variables;
     }
 
+    template < typename... Args >
+    std::optional<value> class_type::create(Args&&... args) const {
+        for ( auto&& ctor : data_->ctors ) {
+            if ( ctor.second.is_invocable_with<Args...>() ) {
+                return ctor.second.invoke(std::forward<Args>(args)...);
+            }
+        }
+        return std::nullopt;
+    }
+
+    template < typename... Args >
+    std::optional<value> class_type::operator()(Args&&... args) const {
+        return create(std::forward<Args>(args)...);
+    }
+
     template < detail::class_kind Derived >
     bool class_type::is_base_of() const noexcept {
         return is_base_of(resolve_type<Derived>());
