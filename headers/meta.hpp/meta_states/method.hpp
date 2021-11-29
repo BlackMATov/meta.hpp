@@ -77,22 +77,22 @@ namespace meta_hpp::detail
 {
     template < method_kind Method, std::size_t... Is >
     bool raw_method_is_invocable_with_impl(
-        const inst_base& inst_base,
-        const arg_base* arg_bases,
+        const inst_base& inst,
+        const arg_base* args,
         std::index_sequence<Is...>)
     {
         using mt = method_traits<Method>;
         using qualified_type = typename mt::qualified_type;
         using argument_types = typename mt::argument_types;
 
-        return inst_base.can_cast_to<qualified_type>()
-            && (... && (arg_bases + Is)->can_cast_to<type_list_at_t<Is, argument_types>>() );
+        return inst.can_cast_to<qualified_type>()
+            && (... && (args + Is)->can_cast_to<type_list_at_t<Is, argument_types>>() );
     }
 
     template < method_kind Method >
     bool raw_method_is_invocable_with(
-        const inst_base& inst_base,
-        const arg_base* arg_bases,
+        const inst_base& inst,
+        const arg_base* args,
         std::size_t arg_count)
     {
         using mt = method_traits<Method>;
@@ -102,8 +102,8 @@ namespace meta_hpp::detail
         }
 
         return raw_method_is_invocable_with_impl<Method>(
-            inst_base,
-            arg_bases,
+            inst,
+            args,
             std::make_index_sequence<mt::arity>());
     }
 
@@ -156,11 +156,12 @@ namespace meta_hpp
 
     template < typename Instance, typename... Args >
     std::optional<value> method::invoke(Instance&& instance, Args&&... args) const {
+        using namespace detail;
         if constexpr ( sizeof...(Args) > 0 ) {
-            std::array<detail::arg, sizeof...(Args)> vargs{detail::arg{std::forward<Args>(args)}...};
-            return state_->invoke(detail::inst{std::forward<Instance>(instance)}, vargs.data(), vargs.size());
+            std::array<arg, sizeof...(Args)> vargs{arg{std::forward<Args>(args)}...};
+            return state_->invoke(inst{std::forward<Instance>(instance)}, vargs.data(), vargs.size());
         } else {
-            return state_->invoke(detail::inst{std::forward<Instance>(instance)}, nullptr, 0);
+            return state_->invoke(inst{std::forward<Instance>(instance)}, nullptr, 0);
         }
     }
 
@@ -171,21 +172,23 @@ namespace meta_hpp
 
     template < typename Instance, typename... Args >
     bool method::is_invocable_with() const noexcept {
+        using namespace detail;
         if constexpr ( sizeof...(Args) > 0 ) {
-            std::array<detail::arg_base, sizeof...(Args)> arg_bases{detail::arg_base{detail::type_list<Args>{}}...};
-            return state_->is_invocable_with(detail::inst_base{detail::type_list<Instance>{}}, arg_bases.data(), arg_bases.size());
+            std::array<arg_base, sizeof...(Args)> vargs{arg_base{type_list<Args>{}}...};
+            return state_->is_invocable_with(inst_base{type_list<Instance>{}}, vargs.data(), vargs.size());
         } else {
-            return state_->is_invocable_with(detail::inst_base{detail::type_list<Instance>{}}, nullptr, 0);
+            return state_->is_invocable_with(inst_base{type_list<Instance>{}}, nullptr, 0);
         }
     }
 
     template < typename Instance, typename... Args >
     bool method::is_invocable_with(Instance&& instance, Args&&... args) const noexcept {
+        using namespace detail;
         if constexpr ( sizeof...(Args) > 0 ) {
-            std::array<detail::arg, sizeof...(Args)> vargs{detail::arg{std::forward<Args>(args)}...};
-            return state_->is_invocable_with(detail::inst{std::forward<Instance>(instance)}, vargs.data(), vargs.size());
+            std::array<arg, sizeof...(Args)> vargs{arg{std::forward<Args>(args)}...};
+            return state_->is_invocable_with(inst{std::forward<Instance>(instance)}, vargs.data(), vargs.size());
         } else {
-            return state_->is_invocable_with(detail::inst{std::forward<Instance>(instance)}, nullptr, 0);
+            return state_->is_invocable_with(inst{std::forward<Instance>(instance)}, nullptr, 0);
         }
     }
 }

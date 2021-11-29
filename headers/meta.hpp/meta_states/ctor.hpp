@@ -57,17 +57,17 @@ namespace meta_hpp::detail
 {
     template < class_kind Class, typename... Args, std::size_t... Is >
     bool raw_ctor_is_invocable_with_impl(
-        const arg_base* arg_bases,
+        const arg_base* args,
         std::index_sequence<Is...>)
     {
         using ct = ctor_traits<Class, Args...>;
         using argument_types = typename ct::argument_types;
-        return (... && (arg_bases + Is)->can_cast_to<type_list_at_t<Is, argument_types>>() );
+        return (... && (args + Is)->can_cast_to<type_list_at_t<Is, argument_types>>() );
     }
 
     template < class_kind Class, typename... Args >
     bool raw_ctor_is_invocable_with(
-        const arg_base* arg_bases,
+        const arg_base* args,
         std::size_t arg_count)
     {
         using ct = ctor_traits<Class, Args...>;
@@ -77,7 +77,7 @@ namespace meta_hpp::detail
         }
 
         return raw_ctor_is_invocable_with_impl<Class, Args...>(
-            arg_bases,
+            args,
             std::make_index_sequence<ct::arity>());
     }
 
@@ -126,8 +126,9 @@ namespace meta_hpp
 
     template < typename... Args >
     value ctor::invoke(Args&&... args) const {
+        using namespace detail;
         if constexpr ( sizeof...(Args) > 0 ) {
-            std::array<detail::arg, sizeof...(Args)> vargs{detail::arg{std::forward<Args>(args)}...};
+            std::array<arg, sizeof...(Args)> vargs{arg{std::forward<Args>(args)}...};
             return state_->invoke(vargs.data(), vargs.size());
         } else {
             return state_->invoke(nullptr, 0);
@@ -141,9 +142,10 @@ namespace meta_hpp
 
     template < typename... Args >
     bool ctor::is_invocable_with() const noexcept {
+        using namespace detail;
         if constexpr ( sizeof...(Args) > 0 ) {
-            std::array<detail::arg_base, sizeof...(Args)> arg_bases{detail::arg_base{detail::type_list<Args>{}}...};
-            return state_->is_invocable_with(arg_bases.data(), arg_bases.size());
+            std::array<arg_base, sizeof...(Args)> vargs{arg_base{type_list<Args>{}}...};
+            return state_->is_invocable_with(vargs.data(), vargs.size());
         } else {
             return state_->is_invocable_with(nullptr, 0);
         }
@@ -151,8 +153,9 @@ namespace meta_hpp
 
     template < typename... Args >
     bool ctor::is_invocable_with(Args&&... args) const noexcept {
+        using namespace detail;
         if constexpr ( sizeof...(Args) > 0 ) {
-            std::array<detail::arg, sizeof...(Args)> vargs{detail::arg{std::forward<Args>(args)}...};
+            std::array<arg, sizeof...(Args)> vargs{arg{std::forward<Args>(args)}...};
             return state_->is_invocable_with(vargs.data(), vargs.size());
         } else {
             return state_->is_invocable_with(nullptr, 0);

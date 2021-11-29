@@ -67,17 +67,17 @@ namespace meta_hpp::detail
 {
     template < function_kind Function, std::size_t... Is >
     bool raw_function_is_invocable_with_impl(
-        const arg_base* arg_bases,
+        const arg_base* args,
         std::index_sequence<Is...>)
     {
         using ft = function_traits<Function>;
         using argument_types = typename ft::argument_types;
-        return (... && (arg_bases + Is)->can_cast_to<type_list_at_t<Is, argument_types>>() );
+        return (... && (args + Is)->can_cast_to<type_list_at_t<Is, argument_types>>() );
     }
 
     template < function_kind Function >
     bool raw_function_is_invocable_with(
-        const arg_base* arg_bases,
+        const arg_base* args,
         std::size_t arg_count)
     {
         using ft = function_traits<Function>;
@@ -87,7 +87,7 @@ namespace meta_hpp::detail
         }
 
         return raw_function_is_invocable_with_impl<Function>(
-            arg_bases,
+            args,
             std::make_index_sequence<ft::arity>());
     }
 
@@ -140,8 +140,9 @@ namespace meta_hpp
 
     template < typename... Args >
     std::optional<value> function::invoke(Args&&... args) const {
+        using namespace detail;
         if constexpr ( sizeof...(Args) > 0 ) {
-            std::array<detail::arg, sizeof...(Args)> vargs{detail::arg{std::forward<Args>(args)}...};
+            std::array<arg, sizeof...(Args)> vargs{arg{std::forward<Args>(args)}...};
             return state_->invoke(vargs.data(), vargs.size());
         } else {
             return state_->invoke(nullptr, 0);
@@ -155,9 +156,10 @@ namespace meta_hpp
 
     template < typename... Args >
     bool function::is_invocable_with() const noexcept {
+        using namespace detail;
         if constexpr ( sizeof...(Args) > 0 ) {
-            std::array<detail::arg_base, sizeof...(Args)> arg_bases{detail::arg_base{detail::type_list<Args>{}}...};
-            return state_->is_invocable_with(arg_bases.data(), arg_bases.size());
+            std::array<arg_base, sizeof...(Args)> vargs{arg_base{type_list<Args>{}}...};
+            return state_->is_invocable_with(vargs.data(), vargs.size());
         } else {
             return state_->is_invocable_with(nullptr, 0);
         }
@@ -165,8 +167,9 @@ namespace meta_hpp
 
     template < typename... Args >
     bool function::is_invocable_with(Args&&... args) const noexcept {
+        using namespace detail;
         if constexpr ( sizeof...(Args) > 0 ) {
-            std::array<detail::arg, sizeof...(Args)> vargs{detail::arg{std::forward<Args>(args)}...};
+            std::array<arg, sizeof...(Args)> vargs{arg{std::forward<Args>(args)}...};
             return state_->is_invocable_with(vargs.data(), vargs.size());
         } else {
             return state_->is_invocable_with(nullptr, 0);
