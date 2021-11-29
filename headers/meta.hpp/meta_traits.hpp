@@ -77,7 +77,6 @@ namespace meta_hpp
     enum class method_flags : std::uint32_t {
         is_const = 1 << 0,
         is_noexcept = 1 << 1,
-        is_volatile = 1 << 2,
         is_lvalue_qualified = 1 << 3,
         is_rvalue_qualified = 1 << 4,
     };
