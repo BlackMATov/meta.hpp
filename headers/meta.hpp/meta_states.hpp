@@ -78,6 +78,9 @@ namespace meta_hpp
 
         template < typename... Args >
         bool is_invocable_with() const noexcept;
+
+        template < typename... Args >
+        bool is_invocable_with(Args&&... args) const noexcept;
     private:
         detail::ctor_state_ptr state_;
     };
@@ -119,6 +122,9 @@ namespace meta_hpp
 
         template < typename... Args >
         bool is_invocable_with() const noexcept;
+
+        template < typename... Args >
+        bool is_invocable_with(Args&&... args) const noexcept;
     private:
         detail::function_state_ptr state_;
     };
@@ -162,8 +168,11 @@ namespace meta_hpp
         template < typename Instance, typename... Args >
         std::optional<value> operator()(Instance&& instance, Args&&... args) const;
 
-        template < typename Inst, typename... Args >
+        template < typename Instance, typename... Args >
         bool is_invocable_with() const noexcept;
+
+        template < typename Instance, typename... Args >
+        bool is_invocable_with(Instance&& instance, Args&&... args) const noexcept;
     private:
         detail::method_state_ptr state_;
     };

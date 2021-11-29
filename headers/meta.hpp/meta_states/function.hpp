@@ -162,4 +162,14 @@ namespace meta_hpp
             return state_->is_invocable_with(nullptr, 0);
         }
     }
+
+    template < typename... Args >
+    bool function::is_invocable_with(Args&&... args) const noexcept {
+        if constexpr ( sizeof...(Args) > 0 ) {
+            std::array<detail::arg, sizeof...(Args)> vargs{detail::arg{std::forward<Args>(args)}...};
+            return state_->is_invocable_with(vargs.data(), vargs.size());
+        } else {
+            return state_->is_invocable_with(nullptr, 0);
+        }
+    }
 }

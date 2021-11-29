@@ -125,7 +125,7 @@ namespace meta_hpp
     }
 
     template < typename... Args >
-    inline value ctor::invoke(Args&&... args) const {
+    value ctor::invoke(Args&&... args) const {
         if constexpr ( sizeof...(Args) > 0 ) {
             std::array<detail::arg, sizeof...(Args)> vargs{detail::arg{std::forward<Args>(args)}...};
             return state_->invoke(vargs.data(), vargs.size());
@@ -140,10 +140,20 @@ namespace meta_hpp
     }
 
     template < typename... Args >
-    inline bool ctor::is_invocable_with() const noexcept {
+    bool ctor::is_invocable_with() const noexcept {
         if constexpr ( sizeof...(Args) > 0 ) {
             std::array<detail::arg_base, sizeof...(Args)> arg_bases{detail::arg_base{detail::type_list<Args>{}}...};
             return state_->is_invocable_with(arg_bases.data(), arg_bases.size());
+        } else {
+            return state_->is_invocable_with(nullptr, 0);
+        }
+    }
+
+    template < typename... Args >
+    bool ctor::is_invocable_with(Args&&... args) const noexcept {
+        if constexpr ( sizeof...(Args) > 0 ) {
+            std::array<detail::arg, sizeof...(Args)> vargs{detail::arg{std::forward<Args>(args)}...};
+            return state_->is_invocable_with(vargs.data(), vargs.size());
         } else {
             return state_->is_invocable_with(nullptr, 0);
         }

@@ -169,13 +169,23 @@ namespace meta_hpp
         return invoke(std::forward<Instance>(instance), std::forward<Args>(args)...);
     }
 
-    template < typename Inst, typename... Args >
+    template < typename Instance, typename... Args >
     bool method::is_invocable_with() const noexcept {
         if constexpr ( sizeof...(Args) > 0 ) {
             std::array<detail::arg_base, sizeof...(Args)> arg_bases{detail::arg_base{detail::type_list<Args>{}}...};
-            return state_->is_invocable_with(detail::inst_base{detail::type_list<Inst>{}}, arg_bases.data(), arg_bases.size());
+            return state_->is_invocable_with(detail::inst_base{detail::type_list<Instance>{}}, arg_bases.data(), arg_bases.size());
         } else {
-            return state_->is_invocable_with(detail::inst_base{detail::type_list<Inst>{}}, nullptr, 0);
+            return state_->is_invocable_with(detail::inst_base{detail::type_list<Instance>{}}, nullptr, 0);
+        }
+    }
+
+    template < typename Instance, typename... Args >
+    bool method::is_invocable_with(Instance&& instance, Args&&... args) const noexcept {
+        if constexpr ( sizeof...(Args) > 0 ) {
+            std::array<detail::arg, sizeof...(Args)> vargs{detail::arg{std::forward<Args>(args)}...};
+            return state_->is_invocable_with(detail::inst{std::forward<Instance>(instance)}, vargs.data(), vargs.size());
+        } else {
+            return state_->is_invocable_with(detail::inst{std::forward<Instance>(instance)}, nullptr, 0);
         }
     }
 }
