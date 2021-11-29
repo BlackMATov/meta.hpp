@@ -40,8 +40,12 @@ namespace
     int ivec2::move_ctor_counter{0};
     int ivec2::copy_ctor_counter{0};
 
+    bool operator<(const ivec2& l, const ivec2& r) noexcept {
+        return std::tie(l.x, l.y) < std::tie(r.x, r.y);
+    }
+
     bool operator==(const ivec2& l, const ivec2& r) noexcept {
-        return l.x == r.x && l.y == r.y;
+        return std::tie(l.x, l.y) == std::tie(r.x, r.y);
     }
 }
 
@@ -272,6 +276,25 @@ TEST_CASE("meta/meta_utilities/value") {
         CHECK(v == 21);
         CHECK_NOTHROW(str_stream >> v);
         CHECK(v == 42);
+    }
+
+    SUBCASE("operator<") {
+        CHECK(meta::value{ivec2{1,2}} < ivec2{1,3});
+        CHECK_FALSE(meta::value{ivec2{1,3}} < ivec2{1,2});
+
+        CHECK(ivec2{1,2} < meta::value{ivec2{1,3}});
+        CHECK_FALSE(ivec2{1,3} < meta::value{ivec2{1,2}});
+
+        CHECK(meta::value{ivec2{1,2}} < meta::value{ivec2{1,3}});
+        CHECK_FALSE(meta::value{ivec2{1,3}} < meta::value{ivec2{1,2}});
+
+        {
+            class empty_class1 {};
+            class empty_class2 {};
+
+            CHECK(operator<(meta::value{empty_class1{}}, meta::value{empty_class2{}}));
+            CHECK_THROWS(operator<(meta::value{empty_class1{}}, meta::value{empty_class1{}}));
+        }
     }
 
     SUBCASE("operator==") {
