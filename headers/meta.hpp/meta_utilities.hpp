@@ -59,6 +59,12 @@ namespace meta_hpp
         const Tp* try_cast() const noexcept;
 
         template < typename T >
+        friend bool operator<(const value& l, const T& r);
+        template < typename T >
+        friend bool operator<(const T& l, const value& r);
+        friend bool operator<(const value& l, const value& r);
+
+        template < typename T >
         friend bool operator==(const value& l, const T& r);
         template < typename T >
         friend bool operator==(const T& l, const value& r);
@@ -161,10 +167,10 @@ namespace meta_hpp::detail
     class inst_base {
     public:
         enum class ref_types {
-            ref,
-            rref,
-            cref,
-            crref,
+            lvalue,
+            const_lvalue,
+            rvalue,
+            const_rvalue,
         };
     public:
         inst_base() = delete;
@@ -187,8 +193,9 @@ namespace meta_hpp::detail
         explicit inst_base(type_list<T>);
 
         explicit inst_base(value& v);
-        explicit inst_base(value&& v);
         explicit inst_base(const value& v);
+
+        explicit inst_base(value&& v);
         explicit inst_base(const value&& v);
 
         bool is_const() const noexcept;

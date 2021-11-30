@@ -15,7 +15,7 @@ namespace meta_hpp::detail
         (std::is_lvalue_reference_v<T> && std::is_class_v<std::remove_reference_t<T>>)
     , int> >
     inst_base::inst_base(type_list<T>)
-    : ref_type_{std::is_const_v<std::remove_reference_t<T>> ? ref_types::cref : ref_types::ref}
+    : ref_type_{std::is_const_v<std::remove_reference_t<T>> ? ref_types::const_lvalue : ref_types::lvalue}
     , raw_type_{resolve_type<std::remove_cvref_t<T>>()} {}
 
     template < typename T, std::enable_if_t<
@@ -23,19 +23,11 @@ namespace meta_hpp::detail
         (std::is_rvalue_reference_v<T> && std::is_class_v<std::remove_reference_t<T>>)
     , int> >
     inst_base::inst_base(type_list<T>)
-    : ref_type_{std::is_const_v<std::remove_reference_t<T>> ? ref_types::crref : ref_types::rref}
+    : ref_type_{std::is_const_v<std::remove_reference_t<T>> ? ref_types::const_rvalue : ref_types::rvalue}
     , raw_type_{resolve_type<std::remove_cvref_t<T>>()} {}
 
     inline inst_base::inst_base(value& v)
-    : ref_type_{ref_types::ref}
-    , raw_type_{v.get_type().as_class()} {
-        if ( !v.get_type().is_class() ) {
-            throw std::logic_error("an attempt to create an instance with a non-class value type");
-        }
-    }
-
-    inline inst_base::inst_base(value&& v)
-    : ref_type_{ref_types::rref}
+    : ref_type_{ref_types::lvalue}
     , raw_type_{v.get_type().as_class()} {
         if ( !v.get_type().is_class() ) {
             throw std::logic_error("an attempt to create an instance with a non-class value type");
@@ -43,7 +35,15 @@ namespace meta_hpp::detail
     }
 
     inline inst_base::inst_base(const value& v)
-    : ref_type_{ref_types::cref}
+    : ref_type_{ref_types::const_lvalue}
+    , raw_type_{v.get_type().as_class()} {
+        if ( !v.get_type().is_class() ) {
+            throw std::logic_error("an attempt to create an instance with a non-class value type");
+        }
+    }
+
+    inline inst_base::inst_base(value&& v)
+    : ref_type_{ref_types::rvalue}
     , raw_type_{v.get_type().as_class()} {
         if ( !v.get_type().is_class() ) {
             throw std::logic_error("an attempt to create an instance with a non-class value type");
@@ -51,7 +51,7 @@ namespace meta_hpp::detail
     }
 
     inline inst_base::inst_base(const value&& v)
-    : ref_type_{ref_types::crref}
+    : ref_type_{ref_types::const_rvalue}
     , raw_type_{v.get_type().as_class()} {
         if ( !v.get_type().is_class() ) {
             throw std::logic_error("an attempt to create an instance with a non-class value type");
@@ -59,18 +59,18 @@ namespace meta_hpp::detail
     }
 
     inline bool inst_base::is_const() const noexcept {
-        return ref_type_ == ref_types::cref
-            || ref_type_ == ref_types::crref;
+        return ref_type_ == ref_types::const_lvalue
+            || ref_type_ == ref_types::const_rvalue;
     }
 
     inline bool inst_base::is_lvalue() const noexcept {
-        return ref_type_ == ref_types::ref
-            || ref_type_ == ref_types::cref;
+        return ref_type_ == ref_types::lvalue
+            || ref_type_ == ref_types::const_lvalue;
     }
 
     inline bool inst_base::is_rvalue() const noexcept {
-        return ref_type_ == ref_types::rref
-            || ref_type_ == ref_types::crref;
+        return ref_type_ == ref_types::rvalue
+            || ref_type_ == ref_types::const_rvalue;
     }
 
     inline inst_base::ref_types inst_base::get_ref_type() const noexcept {
@@ -86,27 +86,29 @@ namespace meta_hpp::detail
         (std::is_reference_v<To> && std::is_class_v<std::remove_reference_t<To>>)
     , int> >
     bool inst_base::can_cast_to() const noexcept {
-        constexpr bool to_const = std::is_const_v<std::remove_reference_t<To>>;
+        using to_raw_type = std::remove_cvref_t<To>;
+        using to_raw_type_cv = std::remove_reference_t<To>;
 
-        if constexpr ( !to_const ) {
+        if constexpr ( !std::is_const_v<to_raw_type_cv> ) {
             if ( is_const() ) {
                 return false;
             }
         }
 
-        if constexpr ( std::is_lvalue_reference_v<To> ) {
-            if ( !is_lvalue() ) {
+        if constexpr ( std::is_reference_v<To> ) {
+            const auto check_qualifiers = [](ref_types self_ref_type){
+                switch ( self_ref_type ) {
+                case ref_types::lvalue:       return std::is_convertible_v<to_raw_type&, To>;
+                case ref_types::const_lvalue: return std::is_convertible_v<const to_raw_type&, To>;
+                case ref_types::rvalue:       return std::is_convertible_v<to_raw_type&&, To>;
+                case ref_types::const_rvalue: return std::is_convertible_v<const to_raw_type&&, To>;
+                }
+            };
+
+            if ( !check_qualifiers(get_ref_type()) ) {
                 return false;
             }
         }
-
-        if constexpr ( std::is_rvalue_reference_v<To> ) {
-            if ( !is_rvalue() ) {
-                return false;
-            }
-        }
-
-        using to_raw_type = std::remove_cvref_t<To>;
 
         return get_raw_type() == resolve_type<to_raw_type>()
             || get_raw_type().is_derived_from(resolve_type<to_raw_type>());
@@ -135,7 +137,7 @@ namespace meta_hpp::detail
     , int> >
     decltype(auto) inst::cast() const {
         if ( !can_cast_to<To>() ) {
-            throw std::logic_error("bad an instance cast");
+            throw std::logic_error("bad instance cast");
         }
 
         if constexpr ( std::is_reference_v<To> ) {
