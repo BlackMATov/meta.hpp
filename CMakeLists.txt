@@ -30,7 +30,6 @@ target_compile_options(${PROJECT_NAME}
         -Wno-ctad-maybe-unsupported
         -Wno-exit-time-destructors
         -Wno-float-equal
-        -Wno-ignored-qualifiers
         -Wno-padded
         -Wno-shadow-field
         -Wno-shadow-field-in-constructor

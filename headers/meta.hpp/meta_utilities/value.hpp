@@ -18,23 +18,6 @@ namespace meta_hpp::detail
     struct has_value_type_less_op<T, std::void_t<decltype(
         std::declval<const T&>() < std::declval<const T&>()
     )>> : std::true_type {};
-
-    template < typename T >
-    concept has_value_type_less_op_kind = has_value_type_less_op<T>::value;
-
-    template < typename T >
-    concept has_not_value_type_less_op_kind = !has_value_type_less_op<T>::value;
-
-    template < has_value_type_less_op_kind T >
-    bool value_less_function(const value& l, const value& r) {
-        assert(l.get_type() == r.get_type());
-        return l.cast<T>() < r.cast<T>();
-    }
-
-    template < has_not_value_type_less_op_kind T >
-    bool value_less_function([[maybe_unused]] const value& l, [[maybe_unused]] const value& r) {
-        throw std::logic_error("value type doesn't have less operator");
-    }
 }
 
 namespace meta_hpp::detail
@@ -46,23 +29,6 @@ namespace meta_hpp::detail
     struct has_value_type_equals_op<T, std::void_t<decltype(
         std::declval<const T&>() == std::declval<const T&>()
     )>> : std::true_type {};
-
-    template < typename T >
-    concept has_value_type_equals_op_kind = has_value_type_equals_op<T>::value;
-
-    template < typename T >
-    concept has_not_value_type_equals_op_kind = !has_value_type_equals_op<T>::value;
-
-    template < has_value_type_equals_op_kind T >
-    bool value_equals_function(const value& l, const value& r) {
-        assert(l.get_type() == r.get_type());
-        return l.cast<T>() == r.cast<T>();
-    }
-
-    template < has_not_value_type_equals_op_kind T >
-    bool value_equals_function([[maybe_unused]] const value& l, [[maybe_unused]] const value& r) {
-        throw std::logic_error("value type doesn't have equality operator");
-    }
 }
 
 namespace meta_hpp::detail
@@ -74,22 +40,6 @@ namespace meta_hpp::detail
     struct has_value_type_istream_op<T, std::void_t<decltype(
         std::declval<std::istream&>() >> std::declval<T&>()
     )>> : std::true_type {};
-
-    template < typename T >
-    concept has_value_type_istream_op_kind = has_value_type_istream_op<T>::value;
-
-    template < typename T >
-    concept has_not_value_type_istream_op_kind = !has_value_type_istream_op<T>::value;
-
-    template < has_value_type_istream_op_kind T >
-    void value_istream_function(std::istream& os, value& v) {
-        os >> v.cast<T>();
-    }
-
-    template < has_not_value_type_istream_op_kind T >
-    void value_istream_function([[maybe_unused]] std::istream& os, [[maybe_unused]] value& v) {
-        throw std::logic_error("value type doesn't have istream operator");
-    }
 }
 
 namespace meta_hpp::detail
@@ -101,22 +51,6 @@ namespace meta_hpp::detail
     struct has_value_type_ostream_op<T, std::void_t<decltype(
         std::declval<std::ostream&>() << std::declval<const T&>()
     )>> : std::true_type {};
-
-    template < typename T >
-    concept has_value_type_ostream_op_kind = has_value_type_ostream_op<T>::value;
-
-    template < typename T >
-    concept has_not_value_type_ostream_op_kind = !has_value_type_ostream_op<T>::value;
-
-    template < has_value_type_ostream_op_kind T >
-    void value_ostream_function(std::ostream& os, const value& v) {
-        os << v.cast<T>();
-    }
-
-    template < has_not_value_type_ostream_op_kind T >
-    void value_ostream_function([[maybe_unused]] std::ostream& os, [[maybe_unused]] const value& v) {
-        throw std::logic_error("value type doesn't have ostream operator");
-    }
 }
 
 namespace meta_hpp
@@ -133,8 +67,8 @@ namespace meta_hpp
         void (*const move_ctor)(std::any&, value&&);
         void (*const copy_ctor)(std::any&, const value&);
 
-        void (*const istream)(std::istream&, value&);
-        void (*const ostream)(std::ostream&, const value&);
+        std::istream& (*const istream)(std::istream&, value&);
+        std::ostream& (*const ostream)(std::ostream&, const value&);
 
         template < typename T >
         static const traits* get() noexcept;
@@ -143,27 +77,33 @@ namespace meta_hpp
     template < typename T >
     const value::traits* value::traits::get() noexcept {
         static const traits traits{
-            // type
-            resolve_type<T>(),
+            .type = resolve_type<T>(),
 
-            // data
-            +[](value& v) noexcept -> void* {
+            .data = +[](value& v) noexcept -> void* {
                 return v.try_cast<T>();
             },
 
-            // cdata
-            +[](const value& v) noexcept -> const void* {
+            .cdata = +[](const value& v) noexcept -> const void* {
                 return v.try_cast<T>();
             },
 
-            // less
-            &detail::value_less_function<T>,
+            .less = +[](const value& l, const value& r) -> bool {
+                if constexpr ( detail::has_value_type_less_op<T>::value ) {
+                    return l.cast<T>() < r.cast<T>();
+                } else {
+                    throw std::logic_error("value type doesn't have less operator");
+                }
+            },
 
-            // equals
-            &detail::value_equals_function<T>,
+            .equals = +[](const value& l, const value& r) -> bool {
+                if constexpr ( detail::has_value_type_equals_op<T>::value ) {
+                    return l.cast<T>() == r.cast<T>();
+                } else {
+                    throw std::logic_error("value type doesn't have equality operator");
+                }
+            },
 
-            // move_ctor
-            +[](std::any& dst, value&& src) {
+            .move_ctor = +[](std::any& dst, value&& src) {
                 if constexpr ( std::is_move_constructible_v<T> ) {
                     dst.emplace<T>(std::move(src).cast<T>());
                 } else {
@@ -171,8 +111,7 @@ namespace meta_hpp
                 }
             },
 
-            // copy_ctor
-            +[](std::any& dst, const value& src) {
+            .copy_ctor = +[](std::any& dst, const value& src) {
                 if constexpr ( std::is_copy_constructible_v<T> ) {
                     dst.emplace<T>(src.cast<T>());
                 } else {
@@ -180,11 +119,21 @@ namespace meta_hpp
                 }
             },
 
-            // istream
-            &detail::value_istream_function<T>,
+            .istream = +[](std::istream& os, value& v) -> std::istream& {
+                if constexpr ( detail::has_value_type_istream_op<T>::value ) {
+                    return os >> v.cast<T>();
+                } else {
+                    throw std::logic_error("value type doesn't have istream operator");
+                }
+            },
 
-            // ostream
-            &detail::value_ostream_function<T>,
+            .ostream = +[](std::ostream& os, const value& v) -> std::ostream& {
+                if constexpr ( detail::has_value_type_ostream_op<T>::value ) {
+                    return os << v.cast<T>();
+                } else {
+                    throw std::logic_error("value type doesn't have ostream operator");
+                }
+            },
         };
         return &traits;
     }
@@ -305,19 +254,18 @@ namespace meta_hpp
 {
     template < typename T >
     bool operator<(const value& l, const T& r) {
-        return (l.get_type() < resolve_type<T>())
-            || (l.get_type() == resolve_type<T>() && std::less<>{}(l.cast<T>(), r));
+        const any_type& r_type = resolve_type<T>();
+        return (l.get_type() < r_type) || (l.get_type() == r_type && std::less<>{}(l.cast<T>(), r));
     }
 
     template < typename T >
     bool operator<(const T& l, const value& r) {
-        return (resolve_type<T>() < r.get_type())
-            || (resolve_type<T>() == r.get_type() && std::less<>{}(l, r.cast<T>()));
+        const any_type& l_type = resolve_type<T>();
+        return (l_type < r.get_type()) || (l_type == r.get_type() && std::less<>{}(l, r.cast<T>()));
     }
 
     inline bool operator<(const value& l, const value& r) {
-        return (l.get_type() < r.get_type())
-            || (l.get_type() == r.get_type() && l.traits_->less(l, r));
+        return (l.get_type() < r.get_type()) || (l.get_type() == r.get_type() && l.traits_->less(l, r));
     }
 }
 
@@ -325,12 +273,14 @@ namespace meta_hpp
 {
     template < typename T >
     bool operator==(const value& l, const T& r) {
-        return l.get_type() == resolve_type<T>() && std::equal_to<>{}(l.cast<T>(), r);
+        const any_type& r_type = resolve_type<T>();
+        return l.get_type() == r_type && std::equal_to<>{}(l.cast<T>(), r);
     }
 
     template < typename T >
     bool operator==(const T& l, const value& r) {
-        return resolve_type<T>() == r.get_type() && std::equal_to<>{}(l, r.cast<T>());
+        const any_type& l_type = resolve_type<T>();
+        return l_type == r.get_type() && std::equal_to<>{}(l, r.cast<T>());
     }
 
     inline bool operator==(const value& l, const value& r) {
@@ -341,12 +291,10 @@ namespace meta_hpp
 namespace meta_hpp
 {
     inline std::istream& operator>>(std::istream& is, value& v) {
-        v.traits_->istream(is, v);
-        return is;
+        return v.traits_->istream(is, v);
     }
 
     inline std::ostream& operator<<(std::ostream& os, const value& v) {
-        v.traits_->ostream(os, v);
-        return os;
+        return v.traits_->ostream(os, v);
     }
 }
