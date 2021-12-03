@@ -12,115 +12,108 @@
 namespace meta_hpp::detail
 {
     template < typename T, std::enable_if_t<
-        (std::is_pointer_v<T> || std::is_lvalue_reference_v<T>)
+        (std::is_lvalue_reference_v<T>)
     , int> >
     arg_base::arg_base(type_list<T>)
-    : raw_type_{resolve_type<std::remove_cvref_t<T>>()}
-    , ref_type_{std::is_const_v<std::remove_reference_t<T>> ? ref_types::cref : ref_types::ref} {}
+    : ref_type_{std::is_const_v<std::remove_reference_t<T>> ? ref_types::const_lvalue : ref_types::lvalue}
+    , raw_type_{resolve_type<std::remove_cvref_t<T>>()} {}
 
     template < typename T, std::enable_if_t<
-        (std::is_rvalue_reference_v<T>) ||
-        (!std::is_pointer_v<T> && !std::is_reference_v<T>)
+        (std::is_rvalue_reference_v<T> || !std::is_reference_v<T>)
     , int> >
     arg_base::arg_base(type_list<T>)
-    : raw_type_{resolve_type<std::remove_cvref_t<T>>()}
-    , ref_type_{std::is_const_v<std::remove_reference_t<T>> ? ref_types::crref : ref_types::rref} {}
+    : ref_type_{std::is_const_v<std::remove_reference_t<T>> ? ref_types::const_rvalue : ref_types::rvalue}
+    , raw_type_{resolve_type<std::remove_cvref_t<T>>()} {}
 
     inline arg_base::arg_base(value& v)
-    : raw_type_{v.get_type()}
-    , ref_type_{ref_types::ref} {}
-
-    inline arg_base::arg_base(value&& v)
-    : raw_type_{v.get_type()}
-    , ref_type_{ref_types::rref} {}
+    : ref_type_{ref_types::lvalue}
+    , raw_type_{v.get_type()} {}
 
     inline arg_base::arg_base(const value& v)
-    : raw_type_{v.get_type()}
-    , ref_type_{ref_types::cref} {}
+    : ref_type_{ref_types::const_lvalue}
+    , raw_type_{v.get_type()} {}
+
+    inline arg_base::arg_base(value&& v)
+    : ref_type_{ref_types::rvalue}
+    , raw_type_{v.get_type()} {}
 
     inline arg_base::arg_base(const value&& v)
-    : raw_type_{v.get_type()}
-    , ref_type_{ref_types::crref} {}
+    : ref_type_{ref_types::const_rvalue}
+    , raw_type_{v.get_type()} {}
 
     inline bool arg_base::is_const() const noexcept {
-        return ref_type_ == ref_types::cref
-            || ref_type_ == ref_types::crref;
+        return ref_type_ == ref_types::const_lvalue
+            || ref_type_ == ref_types::const_rvalue;
     }
 
     inline bool arg_base::is_lvalue() const noexcept {
-        return ref_type_ == ref_types::ref
-            || ref_type_ == ref_types::cref;
+        return ref_type_ == ref_types::lvalue
+            || ref_type_ == ref_types::const_lvalue;
     }
 
     inline bool arg_base::is_rvalue() const noexcept {
-        return ref_type_ == ref_types::rref
-            || ref_type_ == ref_types::crref;
-    }
-
-    inline any_type arg_base::get_raw_type() const noexcept {
-        return raw_type_;
+        return ref_type_ == ref_types::rvalue
+            || ref_type_ == ref_types::const_rvalue;
     }
 
     inline arg_base::ref_types arg_base::get_ref_type() const noexcept {
         return ref_type_;
     }
 
+    inline const any_type& arg_base::get_raw_type() const noexcept {
+        return raw_type_;
+    }
+
     template < typename To >
     bool arg_base::can_cast_to() const noexcept {
-        if constexpr ( std::is_pointer_v<To> ) {
-            using to_raw_type = std::remove_cv_t<To>;
-            using to_raw_ptr_type = std::remove_cv_t<std::remove_pointer_t<to_raw_type>>;
-            return get_raw_type() == resolve_type<to_raw_type>()
-                || get_raw_type() == resolve_type<to_raw_ptr_type*>();
-        }
+        using to_raw_type_cv = std::remove_reference_t<To>;
+        using to_raw_type = std::remove_cv_t<to_raw_type_cv>;
 
-        if constexpr ( std::is_reference_v<To> ) {
-            constexpr bool to_const = std::is_const_v<std::remove_reference_t<To>>;
+        static_assert(
+            !(std::is_reference_v<To> && std::is_pointer_v<to_raw_type>),
+            "references to pointers are not supported yet");
 
-            if constexpr ( !to_const ) {
-                if ( is_const() ) {
-                    return false;
-                }
+        const auto check_qualifiers = [this](){
+            switch ( get_ref_type() ) {
+            case ref_types::lvalue:       return std::is_convertible_v<to_raw_type&, To>;
+            case ref_types::const_lvalue: return std::is_convertible_v<const to_raw_type&, To>;
+            case ref_types::rvalue:       return std::is_convertible_v<to_raw_type&&, To>;
+            case ref_types::const_rvalue: return std::is_convertible_v<const to_raw_type&&, To>;
             }
+        };
 
-            if constexpr ( std::is_lvalue_reference_v<To> ) {
-                if constexpr ( !to_const ) {
-                    if ( is_rvalue() ) {
-                        return false;
-                    }
-                }
-            }
+        const auto check_convertible = [this](){
+            const auto is_a = [](const any_type& base, const any_type& derived){
+                return (base == derived)
+                    || (base.is_class() && derived.is_class() && base.as_class().is_base_of(derived.as_class()));
+            };
 
-            if constexpr ( std::is_rvalue_reference_v<To> ) {
-                if ( !is_rvalue() ) {
-                    return false;
-                }
-            }
+            const any_type& from_type = get_raw_type();
+            const any_type& to_type = resolve_type<to_raw_type>();
 
-            using to_raw_type = std::remove_cvref_t<To>;
-            if ( get_raw_type() == resolve_type<to_raw_type>() ) {
+            if ( is_a(to_type, from_type) ) {
                 return true;
             }
 
-            if constexpr ( to_const && std::is_pointer_v<to_raw_type> ) {
-                using to_raw_ptr_type = std::remove_cv_t<std::remove_pointer_t<to_raw_type>>;
-                return get_raw_type() == resolve_type<to_raw_ptr_type*>();
-            }
-
-            return false;
-        }
-
-        if constexpr ( !std::is_pointer_v<To> && !std::is_reference_v<To> ) {
-            using to_raw_type = std::remove_cv_t<To>;
-            if ( get_raw_type() != resolve_type<to_raw_type>() ) {
+            if ( std::is_lvalue_reference_v<To> && !std::is_const_v<to_raw_type_cv> ) {
                 return false;
             }
 
-            return (get_ref_type() == ref_types::ref && std::is_constructible_v<To, to_raw_type&>)
-                || (get_ref_type() == ref_types::cref && std::is_constructible_v<To, const to_raw_type&>)
-                || (get_ref_type() == ref_types::rref && std::is_constructible_v<To, to_raw_type&&>)
-                || (get_ref_type() == ref_types::crref && std::is_constructible_v<To, const to_raw_type&&>);
-        }
+            if ( from_type.is_pointer() && to_type.is_pointer() ) {
+                const pointer_type& from_type_ptr = from_type.as_pointer();
+                const bool from_type_ptr_readonly = from_type_ptr.get_flags().has(pointer_flags::is_readonly);
+
+                const pointer_type& to_type_ptr = to_type.as_pointer();
+                const bool to_type_ptr_readonly = to_type_ptr.get_flags().has(pointer_flags::is_readonly);
+
+                return to_type_ptr_readonly >= from_type_ptr_readonly
+                    && is_a(to_type_ptr.get_data_type(), from_type_ptr.get_data_type());
+            }
+
+            return false;
+        };
+
+        return check_qualifiers() && check_convertible();
     }
 }
 
@@ -165,25 +158,25 @@ namespace meta_hpp::detail
         if constexpr ( !std::is_pointer_v<To> && !std::is_reference_v<To> ) {
             using raw_type = std::remove_cv_t<To>;
 
-            if ( get_ref_type() == ref_types::ref ) {
+            if ( get_ref_type() == ref_types::lvalue ) {
                 if constexpr ( std::is_constructible_v<To, raw_type&> ) {
                     return To{*static_cast<raw_type*>(data_)};
                 }
             }
 
-            if ( get_ref_type() == ref_types::cref ) {
+            if ( get_ref_type() == ref_types::const_lvalue ) {
                 if constexpr ( std::is_constructible_v<To, const raw_type&> ) {
                     return To{std::as_const(*static_cast<raw_type*>(data_))};
                 }
             }
 
-            if ( get_ref_type() == ref_types::rref ) {
+            if ( get_ref_type() == ref_types::rvalue ) {
                 if constexpr ( std::is_constructible_v<To, raw_type&&> ) {
                     return To{std::move(*static_cast<raw_type*>(data_))};
                 }
             }
 
-            if ( get_ref_type() == ref_types::crref ) {
+            if ( get_ref_type() == ref_types::const_rvalue ) {
                 if constexpr ( std::is_constructible_v<To, const raw_type&&> ) {
                     return To{std::move(std::as_const(*static_cast<raw_type*>(data_)))};
                 }

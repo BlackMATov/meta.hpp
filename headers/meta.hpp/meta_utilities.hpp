@@ -88,10 +88,10 @@ namespace meta_hpp::detail
     class arg_base {
     public:
         enum class ref_types {
-            ref,
-            rref,
-            cref,
-            crref,
+            lvalue,
+            const_lvalue,
+            rvalue,
+            const_rvalue,
         };
     public:
         arg_base() = delete;
@@ -103,33 +103,33 @@ namespace meta_hpp::detail
         arg_base& operator=(const arg_base&) = delete;
 
         template < typename T, std::enable_if_t<
-            (std::is_pointer_v<T> || std::is_lvalue_reference_v<T>)
+            (std::is_lvalue_reference_v<T>)
         , int> = 0 >
         explicit arg_base(type_list<T>);
 
         template < typename T, std::enable_if_t<
-            (std::is_rvalue_reference_v<T>) ||
-            (!std::is_pointer_v<T> && !std::is_reference_v<T>)
+            (std::is_rvalue_reference_v<T> || !std::is_reference_v<T>)
         , int> = 0 >
         explicit arg_base(type_list<T>);
 
         explicit arg_base(value& v);
-        explicit arg_base(value&& v);
         explicit arg_base(const value& v);
+
+        explicit arg_base(value&& v);
         explicit arg_base(const value&& v);
 
         bool is_const() const noexcept;
         bool is_lvalue() const noexcept;
         bool is_rvalue() const noexcept;
 
-        any_type get_raw_type() const noexcept;
         ref_types get_ref_type() const noexcept;
+        const any_type& get_raw_type() const noexcept;
 
         template < typename To >
         bool can_cast_to() const noexcept;
     private:
-        any_type raw_type_{};
         ref_types ref_type_{};
+        any_type raw_type_{};
     };
 }
 
