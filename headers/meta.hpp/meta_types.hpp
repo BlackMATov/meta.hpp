@@ -73,6 +73,11 @@ namespace meta_hpp
             std::same_as<T, pointer_type> ||
             std::same_as<T, reference_type> ||
             std::same_as<T, void_type>;
+
+        template < type_family T >
+        auto data_access(const T& type) {
+            return type.data_;
+        }
     }
 
     template < detail::type_family T, detail::type_family U >
@@ -157,6 +162,7 @@ namespace meta_hpp
         void_type as_void() const noexcept;
     private:
         detail::type_data_base_ptr data_;
+        friend auto detail::data_access(const any_type&);
     };
 
     class array_type final {
@@ -173,8 +179,8 @@ namespace meta_hpp
         std::size_t get_extent() const noexcept;
         any_type get_data_type() const noexcept;
     private:
-        friend class any_type;
         detail::array_type_data_ptr data_;
+        friend auto detail::data_access(const array_type&);
     };
 
     class class_type final {
@@ -235,8 +241,8 @@ namespace meta_hpp
         method get_method_with(std::string_view name, std::vector<any_type> args) const noexcept;
         method get_method_with(std::string_view name, std::initializer_list<any_type> args) const noexcept;
     private:
-        friend class any_type;
         detail::class_type_data_ptr data_;
+        friend auto detail::data_access(const class_type&);
     };
 
     class ctor_type final {
@@ -255,8 +261,8 @@ namespace meta_hpp
         any_type get_argument_type(std::size_t index) const noexcept;
         const std::vector<any_type>& get_argument_types() const noexcept;
     private:
-        friend class any_type;
         detail::ctor_type_data_ptr data_;
+        friend auto detail::data_access(const ctor_type&);
     };
 
     class enum_type final {
@@ -280,8 +286,8 @@ namespace meta_hpp
         std::optional<std::string> value_to_name(Value&& value) const noexcept;
         std::optional<value> name_to_value(std::string_view name) const noexcept;
     private:
-        friend class any_type;
         detail::enum_type_data_ptr data_;
+        friend auto detail::data_access(const enum_type&);
     };
 
     class function_type final {
@@ -300,8 +306,8 @@ namespace meta_hpp
         any_type get_argument_type(std::size_t index) const noexcept;
         const std::vector<any_type>& get_argument_types() const noexcept;
     private:
-        friend class any_type;
         detail::function_type_data_ptr data_;
+        friend auto detail::data_access(const function_type&);
     };
 
     class member_type final {
@@ -318,8 +324,8 @@ namespace meta_hpp
         class_type get_owner_type() const noexcept;
         any_type get_value_type() const noexcept;
     private:
-        friend class any_type;
         detail::member_type_data_ptr data_;
+        friend auto detail::data_access(const member_type&);
     };
 
     class method_type final {
@@ -339,8 +345,8 @@ namespace meta_hpp
         any_type get_argument_type(std::size_t index) const noexcept;
         const std::vector<any_type>& get_argument_types() const noexcept;
     private:
-        friend class any_type;
         detail::method_type_data_ptr data_;
+        friend auto detail::data_access(const method_type&);
     };
 
     class number_type final {
@@ -356,8 +362,8 @@ namespace meta_hpp
 
         std::size_t get_size() const noexcept;
     private:
-        friend class any_type;
         detail::number_type_data_ptr data_;
+        friend auto detail::data_access(const number_type&);
     };
 
     class pointer_type final {
@@ -373,8 +379,8 @@ namespace meta_hpp
 
         any_type get_data_type() const noexcept;
     private:
-        friend class any_type;
         detail::pointer_type_data_ptr data_;
+        friend auto detail::data_access(const pointer_type&);
     };
 
     class reference_type final {
@@ -390,8 +396,8 @@ namespace meta_hpp
 
         any_type get_data_type() const noexcept;
     private:
-        friend class any_type;
         detail::reference_type_data_ptr data_;
+        friend auto detail::data_access(const reference_type&);
     };
 
     class void_type final {
@@ -405,8 +411,8 @@ namespace meta_hpp
         type_id get_id() const noexcept;
         bitflags<void_flags> get_flags() const noexcept;
     private:
-        friend class any_type;
         detail::void_type_data_ptr data_;
+        friend auto detail::data_access(const void_type&);
     };
 }
 
