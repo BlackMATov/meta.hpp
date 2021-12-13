@@ -86,14 +86,14 @@ namespace
         }\
     }
 
-TEST_CASE("features/meta_utilities/arg2") {
+TEST_CASE("features/meta_utilities/arg") {
     namespace meta = meta_hpp;
 
     meta::class_<dclazz>()
         .base_<clazz>();
 }
 
-TEST_CASE("features/meta_utilities/arg2/refs") {
+TEST_CASE("features/meta_utilities/arg/refs") {
     namespace meta = meta_hpp;
 
     {
@@ -241,7 +241,7 @@ TEST_CASE("features/meta_utilities/arg2/refs") {
     }
 }
 
-TEST_CASE("features/meta_utilities/arg2/ptrs") {
+TEST_CASE("features/meta_utilities/arg/ptrs") {
     namespace meta = meta_hpp;
 
     {
@@ -625,7 +625,7 @@ TEST_CASE("features/meta_utilities/arg2/ptrs") {
     }
 }
 
-TEST_CASE("features/meta_utilities/arg2/values") {
+TEST_CASE("features/meta_utilities/arg/values") {
     namespace meta = meta_hpp;
 
     {
@@ -767,7 +767,7 @@ TEST_CASE("features/meta_utilities/arg2/values") {
     }
 }
 
-TEST_CASE("features/meta_utilities/arg2/ptr_values") {
+TEST_CASE("features/meta_utilities/arg/ptr_values") {
     namespace meta = meta_hpp;
 
     {

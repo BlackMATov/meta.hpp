@@ -104,7 +104,7 @@ namespace meta_hpp
         return get_function_with(name, {resolve_type<Args>()...});
     }
 
-    inline function scope::get_function_with(std::string_view name, std::vector<any_type> args) const noexcept {
+    inline function scope::get_function_with(std::string_view name, const std::vector<any_type>& args) const noexcept {
         for ( auto&& [index, function] : state_->functions ) {
             if ( index.name != name ) {
                 continue;

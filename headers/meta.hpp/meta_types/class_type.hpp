@@ -94,7 +94,7 @@ namespace meta_hpp
     template < typename... Args >
     std::optional<value> class_type::create(Args&&... args) const {
         for ( auto&& ctor : data_->ctors ) {
-            if ( ctor.second.is_invocable_with<Args...>() ) {
+            if ( ctor.second.is_invocable_with(std::forward<Args>(args)...) ) {
                 return ctor.second.invoke(std::forward<Args>(args)...);
             }
         }
@@ -225,7 +225,7 @@ namespace meta_hpp
         return get_ctor_with({resolve_type<Args>()...});
     }
 
-    inline ctor class_type::get_ctor_with(std::vector<any_type> args) const noexcept {
+    inline ctor class_type::get_ctor_with(const std::vector<any_type>& args) const noexcept {
         for ( auto&& [index, ctor] : data_->ctors ) {
             if ( ctor.get_type().get_arity() != args.size() ) {
                 continue;
@@ -264,7 +264,7 @@ namespace meta_hpp
         return get_function_with(name, {resolve_type<Args>()...});
     }
 
-    inline function class_type::get_function_with(std::string_view name, std::vector<any_type> args) const noexcept {
+    inline function class_type::get_function_with(std::string_view name, const std::vector<any_type>& args) const noexcept {
         for ( auto&& [index, function] : data_->functions ) {
             if ( index.name != name ) {
                 continue;
@@ -323,7 +323,7 @@ namespace meta_hpp
         return get_method_with(name, {resolve_type<Args>()...});
     }
 
-    inline method class_type::get_method_with(std::string_view name, std::vector<any_type> args) const noexcept {
+    inline method class_type::get_method_with(std::string_view name, const std::vector<any_type>& args) const noexcept {
         for ( auto&& [index, method] : data_->methods ) {
             if ( index.name != name ) {
                 continue;

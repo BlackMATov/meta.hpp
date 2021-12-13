@@ -185,7 +185,7 @@ namespace meta_hpp
     bool method::is_invocable_with(Instance&& instance, Args&&... args) const noexcept {
         using namespace detail;
         if constexpr ( sizeof...(Args) > 0 ) {
-            std::array<arg, sizeof...(Args)> vargs{arg{std::forward<Args>(args)}...};
+            std::array<arg_base, sizeof...(Args)> vargs{arg{std::forward<Args>(args)}...};
             return state_->is_invocable_with(inst{std::forward<Instance>(instance)}, vargs.data(), vargs.size());
         } else {
             return state_->is_invocable_with(inst{std::forward<Instance>(instance)}, nullptr, 0);

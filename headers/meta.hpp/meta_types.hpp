@@ -228,17 +228,17 @@ namespace meta_hpp
 
         template < typename... Args >
         ctor get_ctor_with() const noexcept;
-        ctor get_ctor_with(std::vector<any_type> args) const noexcept;
+        ctor get_ctor_with(const std::vector<any_type>& args) const noexcept;
         ctor get_ctor_with(std::initializer_list<any_type> args) const noexcept;
 
         template < typename... Args >
         function get_function_with(std::string_view name) const noexcept;
-        function get_function_with(std::string_view name, std::vector<any_type> args) const noexcept;
+        function get_function_with(std::string_view name, const std::vector<any_type>& args) const noexcept;
         function get_function_with(std::string_view name, std::initializer_list<any_type> args) const noexcept;
 
         template < typename... Args >
         method get_method_with(std::string_view name) const noexcept;
-        method get_method_with(std::string_view name, std::vector<any_type> args) const noexcept;
+        method get_method_with(std::string_view name, const std::vector<any_type>& args) const noexcept;
         method get_method_with(std::string_view name, std::initializer_list<any_type> args) const noexcept;
     private:
         detail::class_type_data_ptr data_;

@@ -51,6 +51,7 @@ namespace
 
 TEST_CASE("meta/meta_utilities/value") {
     namespace meta = meta_hpp;
+    using namespace std::string_literals;
 
     ivec2::move_ctor_counter = 0;
     ivec2::copy_ctor_counter = 0;
@@ -197,16 +198,26 @@ TEST_CASE("meta/meta_utilities/value") {
         CHECK(val_src.data() != val_dst.data());
     }
 
+    SUBCASE("value& operator=(T&&)") {
+        meta::value val{10};
+
+        val = 20;
+        CHECK(val == 20);
+
+        val = "hello"s;
+        CHECK(val == "hello"s);
+    }
+
     SUBCASE("value& operator=(value&&)") {
-        meta::value val_src1{std::string("world")};
+        meta::value val_src1{"world"s};
         meta::value val_src2{ivec2{1,2}};
         CHECK(ivec2::move_ctor_counter == 1);
         CHECK(ivec2::copy_ctor_counter == 0);
 
-        meta::value val_dst{std::string("hello")};
+        meta::value val_dst{"hello"s};
 
         val_dst = std::move(val_src1);
-        CHECK(val_dst == std::string("world"));
+        CHECK(val_dst == "world"s);
         CHECK(ivec2::move_ctor_counter == 1);
         CHECK(ivec2::copy_ctor_counter == 0);
 
@@ -220,15 +231,15 @@ TEST_CASE("meta/meta_utilities/value") {
     }
 
     SUBCASE("value& operator=(const meta::value&)") {
-        meta::value val_src1{std::string("world")};
+        meta::value val_src1{"world"s};
         meta::value val_src2{ivec2{1,2}};
         CHECK(ivec2::move_ctor_counter == 1);
         CHECK(ivec2::copy_ctor_counter == 0);
 
-        meta::value val_dst{std::string("hello")};
+        meta::value val_dst{"hello"s};
 
         val_dst = val_src1;
-        CHECK(val_dst == std::string("world"));
+        CHECK(val_dst == "world"s);
         CHECK(ivec2::move_ctor_counter == 1);
         CHECK(ivec2::copy_ctor_counter == 0);
 
@@ -242,19 +253,19 @@ TEST_CASE("meta/meta_utilities/value") {
     }
 
     SUBCASE("swap") {
-        meta::value val1{std::string("world")};
+        meta::value val1{"world"s};
         meta::value val2{ivec2{1,2}};
         CHECK(ivec2::move_ctor_counter == 1);
         CHECK(ivec2::copy_ctor_counter == 0);
 
         val1.swap(val2);
         CHECK(val1 == ivec2{1,2});
-        CHECK(val2 == std::string("world"));
+        CHECK(val2 == "world"s);
         CHECK((ivec2::move_ctor_counter == 2 || ivec2::move_ctor_counter == 3));
         CHECK(ivec2::copy_ctor_counter == 0);
 
         swap(val1, val2);
-        CHECK(val1 == std::string("world"));
+        CHECK(val1 == "world"s);
         CHECK(val2 == ivec2{1,2});
     }
 
