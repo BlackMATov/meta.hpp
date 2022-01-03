@@ -18,19 +18,23 @@ namespace meta_hpp
         operator class_type() const noexcept;
 
         template < typename... Args >
-        class_bind& ctor_();
+        class_bind& ctor_()
+            requires std::is_constructible_v<Class, Args...>;
 
         template < detail::class_kind Base >
-        class_bind& base_();
+        class_bind& base_()
+            requires std::is_base_of_v<Base, Class>;
 
         template < detail::function_kind Function >
         class_bind& function_(std::string name, Function function);
 
         template < detail::member_kind Member >
-        class_bind& member_(std::string name, Member member);
+        class_bind& member_(std::string name, Member member)
+            requires std::same_as<Class, typename detail::member_traits<Member>::class_type>;
 
         template < detail::method_kind Method >
-        class_bind& method_(std::string name, Method method);
+        class_bind& method_(std::string name, Method method)
+            requires std::same_as<Class, typename detail::method_traits<Method>::class_type>;
 
         template < detail::pointer_kind Pointer >
         class_bind& variable_(std::string name, Pointer pointer);
@@ -60,7 +64,7 @@ namespace meta_hpp
         struct local_tag {};
         struct static_tag {};
 
-        explicit scope_bind(std::string_view name, local_tag);
+        explicit scope_bind(std::string name, local_tag);
         explicit scope_bind(std::string_view name, static_tag);
         operator scope() const noexcept;
 
@@ -96,7 +100,7 @@ namespace meta_hpp
         return scope_bind{std::move(name), scope_bind::local_tag()};
     }
 
-    inline scope_bind static_scope_(std::string name) {
-        return scope_bind{std::move(name), scope_bind::static_tag()};
+    inline scope_bind static_scope_(std::string_view name) {
+        return scope_bind{name, scope_bind::static_tag()};
     }
 }

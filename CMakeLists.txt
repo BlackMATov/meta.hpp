@@ -29,8 +29,10 @@ target_compile_options(${PROJECT_NAME}
         -Wno-c++98-compat-pedantic
         -Wno-ctad-maybe-unsupported
         -Wno-exit-time-destructors
+        -Wno-extra-semi-stmt
         -Wno-float-equal
         -Wno-padded
+        -Wno-reserved-identifier
         -Wno-shadow-field
         -Wno-shadow-field-in-constructor
         -Wno-unknown-warning-option

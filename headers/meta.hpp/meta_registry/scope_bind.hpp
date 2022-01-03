@@ -11,9 +11,11 @@
 
 namespace meta_hpp
 {
-    inline scope_bind::scope_bind(std::string_view name, local_tag)
-    : state_{detail::scope_state::make(std::string{name})} {}
+    // NOLINTNEXTLINE(readability-named-parameter)
+    inline scope_bind::scope_bind(std::string name, local_tag)
+    : state_{detail::scope_state::make(std::move(name))} {}
 
+    // NOLINTNEXTLINE(readability-named-parameter)
     inline scope_bind::scope_bind(std::string_view name, static_tag)
     : state_{detail::scope_state::get_static(name)} {}
 
