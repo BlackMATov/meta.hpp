@@ -57,16 +57,16 @@ namespace meta_hpp::detail
 namespace meta_hpp::detail
 {
     template < pointer_kind Pointer >
-    variable_state_ptr variable_state::make(std::string name, Pointer pointer) {
-        variable_index index{pointer_type_data::get_static<Pointer>(), std::move(name)};
-        return std::make_shared<variable_state>(index, pointer);
-    }
-
-    template < pointer_kind Pointer >
     variable_state::variable_state(variable_index index, Pointer pointer)
     : index{std::move(index)}
     , getter{make_variable_getter(pointer)}
     , setter{make_variable_setter(pointer)} {}
+
+    template < pointer_kind Pointer >
+    variable_state_ptr variable_state::make(std::string name, Pointer pointer) {
+        variable_index index{pointer_type_data::get_static<Pointer>(), std::move(name)};
+        return std::make_shared<variable_state>(index, pointer);
+    }
 }
 
 namespace meta_hpp

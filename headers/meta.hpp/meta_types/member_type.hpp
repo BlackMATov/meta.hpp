@@ -17,18 +17,18 @@ namespace meta_hpp::detail
     struct member_tag {};
 
     template < member_kind Member >
-    member_type_data_ptr member_type_data::get_static() {
-        static member_type_data_ptr data = std::make_shared<member_type_data>(type_list<Member>{});
-        return data;
-    }
-
-    template < member_kind Member >
     // NOLINTNEXTLINE(readability-named-parameter)
     member_type_data::member_type_data(type_list<Member>)
     : type_data_base{type_id{type_list<member_tag<Member>>{}}, type_kind::member_}
     , flags{member_traits<Member>::make_flags()}
     , owner_type{resolve_type<typename member_traits<Member>::class_type>()}
     , value_type{resolve_type<typename member_traits<Member>::value_type>()} {}
+
+    template < member_kind Member >
+    member_type_data_ptr member_type_data::get_static() {
+        static member_type_data_ptr data = std::make_shared<member_type_data>(type_list<Member>{});
+        return data;
+    }
 }
 
 namespace meta_hpp

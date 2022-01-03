@@ -101,16 +101,16 @@ namespace meta_hpp::detail
 namespace meta_hpp::detail
 {
     template < function_kind Function >
-    function_state_ptr function_state::make(std::string name, Function function) {
-        function_index index{function_type_data::get_static<Function>(), std::move(name)};
-        return std::make_shared<function_state>(std::move(index), std::move(function));
-    }
-
-    template < function_kind Function >
     function_state::function_state(function_index index, Function function)
     : index{std::move(index)}
     , invoke{make_function_invoke(function)}
     , is_invocable_with{make_function_is_invocable_with<Function>()} {}
+
+    template < function_kind Function >
+    function_state_ptr function_state::make(std::string name, Function function) {
+        function_index index{function_type_data::get_static<Function>(), std::move(name)};
+        return std::make_shared<function_state>(std::move(index), std::move(function));
+    }
 }
 
 namespace meta_hpp

@@ -117,16 +117,16 @@ namespace meta_hpp::detail
 namespace meta_hpp::detail
 {
     template < method_kind Method >
-    method_state_ptr method_state::make(std::string name, Method method) {
-        method_index index{method_type_data::get_static<Method>(), std::move(name)};
-        return std::make_shared<method_state>(std::move(index), std::move(method));
-    }
-
-    template < method_kind Method >
     method_state::method_state(method_index index, Method method)
     : index{std::move(index)}
     , invoke{make_method_invoke(method)}
     , is_invocable_with{make_method_is_invocable_with<Method>()} {}
+
+    template < method_kind Method >
+    method_state_ptr method_state::make(std::string name, Method method) {
+        method_index index{method_type_data::get_static<Method>(), std::move(name)};
+        return std::make_shared<method_state>(std::move(index), std::move(method));
+    }
 }
 
 namespace meta_hpp

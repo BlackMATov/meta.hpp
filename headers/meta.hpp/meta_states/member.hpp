@@ -75,16 +75,16 @@ namespace meta_hpp::detail
 namespace meta_hpp::detail
 {
     template < member_kind Member >
-    member_state_ptr member_state::make(std::string name, Member member) {
-        member_index index{member_type_data::get_static<Member>(), std::move(name)};
-        return std::make_shared<member_state>(std::move(index), std::move(member));
-    }
-
-    template < member_kind Member >
     member_state::member_state(member_index index, Member member)
     : index{std::move(index)}
     , getter{make_member_getter(member)}
     , setter{make_member_setter(member)} {}
+
+    template < member_kind Member >
+    member_state_ptr member_state::make(std::string name, Member member) {
+        member_index index{member_type_data::get_static<Member>(), std::move(name)};
+        return std::make_shared<member_state>(std::move(index), std::move(member));
+    }
 }
 
 namespace meta_hpp

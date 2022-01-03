@@ -11,6 +11,9 @@
 
 namespace meta_hpp::detail
 {
+    inline scope_state::scope_state(scope_index index)
+    : index{std::move(index)} {}
+
     inline scope_state_ptr scope_state::make(std::string name) {
         scope_index index{std::move(name)};
         return std::make_shared<scope_state>(std::move(index));
@@ -25,9 +28,6 @@ namespace meta_hpp::detail
 
         return states.emplace(std::string{name}, make(std::string{name})).first->second;
     }
-
-    inline scope_state::scope_state(scope_index index)
-    : index{std::move(index)} {}
 }
 
 namespace meta_hpp

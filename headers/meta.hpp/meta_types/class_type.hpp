@@ -23,18 +23,18 @@ namespace meta_hpp::detail
     struct class_tag {};
 
     template < class_kind Class >
-    class_type_data_ptr class_type_data::get_static() {
-        static class_type_data_ptr data = std::make_shared<class_type_data>(type_list<Class>{});
-        return data;
-    }
-
-    template < class_kind Class >
     // NOLINTNEXTLINE(readability-named-parameter)
     class_type_data::class_type_data(type_list<Class>)
     : type_data_base{type_id{type_list<class_tag<Class>>{}}, type_kind::class_}
     , flags{class_traits<Class>::make_flags()}
     , size{class_traits<Class>::size}
     , argument_types{class_traits<Class>::make_argument_types()} {}
+
+    template < class_kind Class >
+    class_type_data_ptr class_type_data::get_static() {
+        static class_type_data_ptr data = std::make_shared<class_type_data>(type_list<Class>{});
+        return data;
+    }
 }
 
 namespace meta_hpp

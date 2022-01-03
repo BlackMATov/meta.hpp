@@ -436,10 +436,10 @@ namespace meta_hpp::detail
         const any_type data_type;
 
         template < array_kind Array >
-        static array_type_data_ptr get_static();
+        explicit array_type_data(type_list<Array>);
 
         template < array_kind Array >
-        explicit array_type_data(type_list<Array>);
+        [[nodiscard]] static array_type_data_ptr get_static();
     };
 
     struct class_type_data final : type_data_base {
@@ -463,10 +463,10 @@ namespace meta_hpp::detail
         base_info_map bases_info;
 
         template < class_kind Class >
-        static class_type_data_ptr get_static();
+        explicit class_type_data(type_list<Class>);
 
         template < class_kind Class >
-        explicit class_type_data(type_list<Class>);
+        [[nodiscard]] static class_type_data_ptr get_static();
     };
 
     struct ctor_type_data final : type_data_base {
@@ -475,10 +475,10 @@ namespace meta_hpp::detail
         const std::vector<any_type> argument_types;
 
         template < class_kind Class, typename... Args >
-        static ctor_type_data_ptr get_static();
+        explicit ctor_type_data(type_list<Class>, type_list<Args...>);
 
         template < class_kind Class, typename... Args >
-        explicit ctor_type_data(type_list<Class>, type_list<Args...>);
+        [[nodiscard]] static ctor_type_data_ptr get_static();
     };
 
     struct enum_type_data final : type_data_base {
@@ -488,10 +488,10 @@ namespace meta_hpp::detail
         evalue_map evalues;
 
         template < enum_kind Enum >
-        static enum_type_data_ptr get_static();
+        explicit enum_type_data(type_list<Enum>);
 
         template < enum_kind Enum >
-        explicit enum_type_data(type_list<Enum>);
+        [[nodiscard]] static enum_type_data_ptr get_static();
     };
 
     struct function_type_data final : type_data_base {
@@ -500,10 +500,10 @@ namespace meta_hpp::detail
         const std::vector<any_type> argument_types;
 
         template < function_kind Function >
-        static function_type_data_ptr get_static();
+        explicit function_type_data(type_list<Function>);
 
         template < function_kind Function >
-        explicit function_type_data(type_list<Function>);
+        [[nodiscard]] static function_type_data_ptr get_static();
     };
 
     struct member_type_data final : type_data_base {
@@ -512,10 +512,10 @@ namespace meta_hpp::detail
         const any_type value_type;
 
         template < member_kind Member >
-        static member_type_data_ptr get_static();
+        explicit member_type_data(type_list<Member>);
 
         template < member_kind Member >
-        explicit member_type_data(type_list<Member>);
+        [[nodiscard]] static member_type_data_ptr get_static();
     };
 
     struct method_type_data final : type_data_base {
@@ -525,10 +525,10 @@ namespace meta_hpp::detail
         const std::vector<any_type> argument_types;
 
         template < method_kind Method >
-        static method_type_data_ptr get_static();
+        explicit method_type_data(type_list<Method>);
 
         template < method_kind Method >
-        explicit method_type_data(type_list<Method>);
+        [[nodiscard]] static method_type_data_ptr get_static();
     };
 
     struct number_type_data final : type_data_base {
@@ -536,10 +536,10 @@ namespace meta_hpp::detail
         const std::size_t size;
 
         template < number_kind Number >
-        static number_type_data_ptr get_static();
+        explicit number_type_data(type_list<Number>);
 
         template < number_kind Number >
-        explicit number_type_data(type_list<Number>);
+        [[nodiscard]] static number_type_data_ptr get_static();
     };
 
     struct pointer_type_data final : type_data_base {
@@ -547,10 +547,10 @@ namespace meta_hpp::detail
         const any_type data_type;
 
         template < pointer_kind Pointer >
-        static pointer_type_data_ptr get_static();
+        explicit pointer_type_data(type_list<Pointer>);
 
         template < pointer_kind Pointer >
-        explicit pointer_type_data(type_list<Pointer>);
+        [[nodiscard]] static pointer_type_data_ptr get_static();
     };
 
     struct reference_type_data final : type_data_base {
@@ -558,20 +558,20 @@ namespace meta_hpp::detail
         const any_type data_type;
 
         template < reference_kind Reference >
-        static reference_type_data_ptr get_static();
+        explicit reference_type_data(type_list<Reference>);
 
         template < reference_kind Reference >
-        explicit reference_type_data(type_list<Reference>);
+        [[nodiscard]] static reference_type_data_ptr get_static();
     };
 
     struct void_type_data final : type_data_base {
         const bitflags<void_flags> flags;
 
         template < void_kind Void >
-        static void_type_data_ptr get_static();
+        explicit void_type_data(type_list<Void>);
 
         template < void_kind Void >
-        explicit void_type_data(type_list<Void>);
+        [[nodiscard]] static void_type_data_ptr get_static();
     };
 }
 

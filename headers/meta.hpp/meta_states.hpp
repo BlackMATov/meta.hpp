@@ -26,7 +26,7 @@ namespace meta_hpp
     }
 
     template < detail::state_family T, detail::state_family U >
-    bool operator<(const T& l, const U& r) noexcept {
+    [[nodiscard]] bool operator<(const T& l, const U& r) noexcept {
         if ( !static_cast<bool>(r) ) {
             return false;
         }
@@ -39,7 +39,7 @@ namespace meta_hpp
     }
 
     template < detail::state_family T, detail::state_family U >
-    bool operator==(const T& l, const U& r) noexcept {
+    [[nodiscard]] bool operator==(const T& l, const U& r) noexcept {
         if ( static_cast<bool>(l) != static_cast<bool>(r) ) {
             return false;
         }
@@ -52,7 +52,7 @@ namespace meta_hpp
     }
 
     template < detail::state_family T, detail::state_family U >
-    bool operator!=(const T& l, const U& r) noexcept {
+    [[nodiscard]] bool operator!=(const T& l, const U& r) noexcept {
         return !(l == r);
     }
 }
@@ -64,11 +64,11 @@ namespace meta_hpp
         explicit ctor() = default;
         explicit ctor(detail::ctor_state_ptr state);
 
-        bool is_valid() const noexcept;
-        explicit operator bool() const noexcept;
+        [[nodiscard]] bool is_valid() const noexcept;
+        [[nodiscard]] explicit operator bool() const noexcept;
 
-        const ctor_index& get_index() const noexcept;
-        const ctor_type& get_type() const noexcept;
+        [[nodiscard]] const ctor_index& get_index() const noexcept;
+        [[nodiscard]] const ctor_type& get_type() const noexcept;
 
         template < typename... Args >
         value invoke(Args&&... args) const;
@@ -77,10 +77,10 @@ namespace meta_hpp
         value operator()(Args&&... args) const;
 
         template < typename... Args >
-        bool is_invocable_with() const noexcept;
+        [[nodiscard]] bool is_invocable_with() const noexcept;
 
         template < typename... Args >
-        bool is_invocable_with(Args&&... args) const noexcept;
+        [[nodiscard]] bool is_invocable_with(Args&&... args) const noexcept;
     private:
         detail::ctor_state_ptr state_;
     };
@@ -90,14 +90,14 @@ namespace meta_hpp
         explicit evalue() = default;
         explicit evalue(detail::evalue_state_ptr state);
 
-        bool is_valid() const noexcept;
-        explicit operator bool() const noexcept;
+        [[nodiscard]] bool is_valid() const noexcept;
+        [[nodiscard]] explicit operator bool() const noexcept;
 
-        const evalue_index& get_index() const noexcept;
-        const enum_type& get_type() const noexcept;
-        const std::string& get_name() const noexcept;
+        [[nodiscard]] const evalue_index& get_index() const noexcept;
+        [[nodiscard]] const enum_type& get_type() const noexcept;
+        [[nodiscard]] const std::string& get_name() const noexcept;
 
-        const value& get_value() const noexcept;
+        [[nodiscard]] const value& get_value() const noexcept;
     private:
         detail::evalue_state_ptr state_;
     };
@@ -107,12 +107,12 @@ namespace meta_hpp
         explicit function() = default;
         explicit function(detail::function_state_ptr state);
 
-        bool is_valid() const noexcept;
-        explicit operator bool() const noexcept;
+        [[nodiscard]] bool is_valid() const noexcept;
+        [[nodiscard]] explicit operator bool() const noexcept;
 
-        const function_index& get_index() const noexcept;
-        const function_type& get_type() const noexcept;
-        const std::string& get_name() const noexcept;
+        [[nodiscard]] const function_index& get_index() const noexcept;
+        [[nodiscard]] const function_type& get_type() const noexcept;
+        [[nodiscard]] const std::string& get_name() const noexcept;
 
         template < typename... Args >
         std::optional<value> invoke(Args&&... args) const;
@@ -121,10 +121,10 @@ namespace meta_hpp
         std::optional<value> operator()(Args&&... args) const;
 
         template < typename... Args >
-        bool is_invocable_with() const noexcept;
+        [[nodiscard]] bool is_invocable_with() const noexcept;
 
         template < typename... Args >
-        bool is_invocable_with(Args&&... args) const noexcept;
+        [[nodiscard]] bool is_invocable_with(Args&&... args) const noexcept;
     private:
         detail::function_state_ptr state_;
     };
@@ -134,15 +134,15 @@ namespace meta_hpp
         explicit member() = default;
         explicit member(detail::member_state_ptr state);
 
-        bool is_valid() const noexcept;
-        explicit operator bool() const noexcept;
+        [[nodiscard]] bool is_valid() const noexcept;
+        [[nodiscard]] explicit operator bool() const noexcept;
 
-        const member_index& get_index() const noexcept;
-        const member_type& get_type() const noexcept;
-        const std::string& get_name() const noexcept;
+        [[nodiscard]] const member_index& get_index() const noexcept;
+        [[nodiscard]] const member_type& get_type() const noexcept;
+        [[nodiscard]] const std::string& get_name() const noexcept;
 
         template < typename Instance >
-        value get(Instance&& instance) const;
+        [[nodiscard]] value get(Instance&& instance) const;
 
         template < typename Instance, typename Value >
         void set(Instance&& instance, Value&& value) const;
@@ -155,12 +155,12 @@ namespace meta_hpp
         explicit method() = default;
         explicit method(detail::method_state_ptr state);
 
-        bool is_valid() const noexcept;
-        explicit operator bool() const noexcept;
+        [[nodiscard]] bool is_valid() const noexcept;
+        [[nodiscard]] explicit operator bool() const noexcept;
 
-        const method_index& get_index() const noexcept;
-        const method_type& get_type() const noexcept;
-        const std::string& get_name() const noexcept;
+        [[nodiscard]] const method_index& get_index() const noexcept;
+        [[nodiscard]] const method_type& get_type() const noexcept;
+        [[nodiscard]] const std::string& get_name() const noexcept;
 
         template < typename Instance, typename... Args >
         std::optional<value> invoke(Instance&& instance, Args&&... args) const;
@@ -169,10 +169,10 @@ namespace meta_hpp
         std::optional<value> operator()(Instance&& instance, Args&&... args) const;
 
         template < typename Instance, typename... Args >
-        bool is_invocable_with() const noexcept;
+        [[nodiscard]] bool is_invocable_with() const noexcept;
 
         template < typename Instance, typename... Args >
-        bool is_invocable_with(Instance&& instance, Args&&... args) const noexcept;
+        [[nodiscard]] bool is_invocable_with(Instance&& instance, Args&&... args) const noexcept;
     private:
         detail::method_state_ptr state_;
     };
@@ -182,26 +182,26 @@ namespace meta_hpp
         explicit scope() = default;
         explicit scope(detail::scope_state_ptr state);
 
-        bool is_valid() const noexcept;
-        explicit operator bool() const noexcept;
+        [[nodiscard]] bool is_valid() const noexcept;
+        [[nodiscard]] explicit operator bool() const noexcept;
 
-        const scope_index& get_index() const noexcept;
-        const std::string& get_name() const noexcept;
+        [[nodiscard]] const scope_index& get_index() const noexcept;
+        [[nodiscard]] const std::string& get_name() const noexcept;
 
-        const class_map& get_classes() const noexcept;
-        const enum_map& get_enums() const noexcept;
-        const function_map& get_functions() const noexcept;
-        const variable_map& get_variables() const noexcept;
+        [[nodiscard]] const class_map& get_classes() const noexcept;
+        [[nodiscard]] const enum_map& get_enums() const noexcept;
+        [[nodiscard]] const function_map& get_functions() const noexcept;
+        [[nodiscard]] const variable_map& get_variables() const noexcept;
 
-        class_type get_class(std::string_view name) const noexcept;
-        enum_type get_enum(std::string_view name) const noexcept;
-        function get_function(std::string_view name) const noexcept;
-        variable get_variable(std::string_view name) const noexcept;
+        [[nodiscard]] class_type get_class(std::string_view name) const noexcept;
+        [[nodiscard]] enum_type get_enum(std::string_view name) const noexcept;
+        [[nodiscard]] function get_function(std::string_view name) const noexcept;
+        [[nodiscard]] variable get_variable(std::string_view name) const noexcept;
 
         template < typename... Args >
-        function get_function_with(std::string_view name) const noexcept;
-        function get_function_with(std::string_view name, const std::vector<any_type>& args) const noexcept;
-        function get_function_with(std::string_view name, std::initializer_list<any_type> args) const noexcept;
+        [[nodiscard]] function get_function_with(std::string_view name) const noexcept;
+        [[nodiscard]] function get_function_with(std::string_view name, const std::vector<any_type>& args) const noexcept;
+        [[nodiscard]] function get_function_with(std::string_view name, std::initializer_list<any_type> args) const noexcept;
     private:
         detail::scope_state_ptr state_;
     };
@@ -211,14 +211,14 @@ namespace meta_hpp
         explicit variable() = default;
         explicit variable(detail::variable_state_ptr state);
 
-        bool is_valid() const noexcept;
-        explicit operator bool() const noexcept;
+        [[nodiscard]] bool is_valid() const noexcept;
+        [[nodiscard]] explicit operator bool() const noexcept;
 
-        const variable_index& get_index() const noexcept;
-        const pointer_type& get_type() const noexcept;
-        const std::string& get_name() const noexcept;
+        [[nodiscard]] const variable_index& get_index() const noexcept;
+        [[nodiscard]] const pointer_type& get_type() const noexcept;
+        [[nodiscard]] const std::string& get_name() const noexcept;
 
-        value get() const;
+        [[nodiscard]] value get() const;
 
         template < typename Value >
         void set(Value&& value) const;
@@ -239,10 +239,10 @@ namespace meta_hpp::detail
         is_invocable_with_impl is_invocable_with;
 
         template < class_kind Class, typename... Args >
-        static ctor_state_ptr make();
+        explicit ctor_state(ctor_index index, type_list<Class>, type_list<Args...>);
 
         template < class_kind Class, typename... Args >
-        explicit ctor_state(ctor_index index, type_list<Class>, type_list<Args...>);
+        [[nodiscard]] static ctor_state_ptr make();
     };
 
     struct evalue_state final {
@@ -251,10 +251,10 @@ namespace meta_hpp::detail
         class value value;
 
         template < enum_kind Enum >
-        static evalue_state_ptr make(std::string name, Enum value);
+        explicit evalue_state(evalue_index index, Enum value);
 
         template < enum_kind Enum >
-        explicit evalue_state(evalue_index index, Enum value);
+        [[nodiscard]] static evalue_state_ptr make(std::string name, Enum value);
     };
 
     struct function_state final {
@@ -267,10 +267,10 @@ namespace meta_hpp::detail
         is_invocable_with_impl is_invocable_with;
 
         template < function_kind Function >
-        static function_state_ptr make(std::string name, Function function);
+        explicit function_state(function_index index, Function function);
 
         template < function_kind Function >
-        explicit function_state(function_index index, Function function);
+        [[nodiscard]] static function_state_ptr make(std::string name, Function function);
     };
 
     struct member_state final {
@@ -283,10 +283,10 @@ namespace meta_hpp::detail
         setter_impl setter;
 
         template < member_kind Member >
-        static member_state_ptr make(std::string name, Member member);
+        explicit member_state(member_index index, Member member);
 
         template < member_kind Member >
-        explicit member_state(member_index index, Member member);
+        [[nodiscard]] static member_state_ptr make(std::string name, Member member);
     };
 
     struct method_state final {
@@ -299,10 +299,10 @@ namespace meta_hpp::detail
         is_invocable_with_impl is_invocable_with;
 
         template < method_kind Method >
-        static method_state_ptr make(std::string name, Method method);
+        explicit method_state(method_index index, Method method);
 
         template < method_kind Method >
-        explicit method_state(method_index index, Method method);
+        [[nodiscard]] static method_state_ptr make(std::string name, Method method);
     };
 
     struct scope_state final {
@@ -313,10 +313,10 @@ namespace meta_hpp::detail
         function_map functions;
         variable_map variables;
 
-        static scope_state_ptr make(std::string name);
-        static scope_state_ptr get_static(std::string_view name);
-
         explicit scope_state(scope_index index);
+
+        [[nodiscard]] static scope_state_ptr make(std::string name);
+        [[nodiscard]] static scope_state_ptr get_static(std::string_view name);
     };
 
     struct variable_state final {
@@ -329,16 +329,16 @@ namespace meta_hpp::detail
         setter_impl setter;
 
         template < pointer_kind Pointer >
-        static variable_state_ptr make(std::string name, Pointer pointer);
+        explicit variable_state(variable_index index, Pointer pointer);
 
         template < pointer_kind Pointer >
-        explicit variable_state(variable_index index, Pointer pointer);
+        [[nodiscard]] static variable_state_ptr make(std::string name, Pointer pointer);
     };
 }
 
 namespace meta_hpp
 {
-    inline scope resolve_scope(std::string_view name) {
+    [[nodiscard]] inline scope resolve_scope(std::string_view name) {
         return scope{detail::scope_state::get_static(name)};
     }
 }

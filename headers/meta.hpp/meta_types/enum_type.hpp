@@ -19,17 +19,17 @@ namespace meta_hpp::detail
     struct enum_tag {};
 
     template < enum_kind Enum >
-    enum_type_data_ptr enum_type_data::get_static() {
-        static enum_type_data_ptr data = std::make_shared<enum_type_data>(type_list<Enum>{});
-        return data;
-    }
-
-    template < enum_kind Enum >
     // NOLINTNEXTLINE(readability-named-parameter)
     enum_type_data::enum_type_data(type_list<Enum>)
     : type_data_base{type_id{type_list<enum_tag<Enum>>{}}, type_kind::enum_}
     , flags{enum_traits<Enum>::make_flags()}
     , underlying_type{resolve_type<typename enum_traits<Enum>::underlying_type>()} {}
+
+    template < enum_kind Enum >
+    enum_type_data_ptr enum_type_data::get_static() {
+        static enum_type_data_ptr data = std::make_shared<enum_type_data>(type_list<Enum>{});
+        return data;
+    }
 }
 
 namespace meta_hpp

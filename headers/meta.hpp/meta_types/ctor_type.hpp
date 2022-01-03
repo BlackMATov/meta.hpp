@@ -17,18 +17,18 @@ namespace meta_hpp::detail
     struct ctor_tag {};
 
     template < class_kind Class, typename... Args >
-    ctor_type_data_ptr ctor_type_data::get_static() {
-        static ctor_type_data_ptr data = std::make_shared<ctor_type_data>(type_list<Class>{}, type_list<Args...>{});
-        return data;
-    }
-
-    template < class_kind Class, typename... Args >
     // NOLINTNEXTLINE(readability-named-parameter)
     ctor_type_data::ctor_type_data(type_list<Class>, type_list<Args...>)
     : type_data_base{type_id{type_list<ctor_tag<Class, Args...>>{}}, type_kind::ctor_}
     , flags{ctor_traits<Class, Args...>::make_flags()}
     , class_type{resolve_type<typename ctor_traits<Class, Args...>::class_type>()}
     , argument_types{ctor_traits<Class, Args...>::make_argument_types()} {}
+
+    template < class_kind Class, typename... Args >
+    ctor_type_data_ptr ctor_type_data::get_static() {
+        static ctor_type_data_ptr data = std::make_shared<ctor_type_data>(type_list<Class>{}, type_list<Args...>{});
+        return data;
+    }
 }
 
 namespace meta_hpp

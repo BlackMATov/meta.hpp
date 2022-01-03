@@ -91,16 +91,16 @@ namespace meta_hpp::detail
 namespace meta_hpp::detail
 {
     template < class_kind Class, typename... Args >
-    ctor_state_ptr ctor_state::make() {
-        ctor_index index{ctor_type_data::get_static<Class, Args...>()};
-        return std::make_shared<ctor_state>(std::move(index), type_list<Class>{}, type_list<Args...>{});
-    }
-
-    template < class_kind Class, typename... Args >
     ctor_state::ctor_state(ctor_index index, type_list<Class>, type_list<Args...>)
     : index{std::move(index)}
     , invoke{make_ctor_invoke<Class, Args...>()}
     , is_invocable_with{make_ctor_is_invocable_with<Class, Args...>()} {}
+
+    template < class_kind Class, typename... Args >
+    ctor_state_ptr ctor_state::make() {
+        ctor_index index{ctor_type_data::get_static<Class, Args...>()};
+        return std::make_shared<ctor_state>(std::move(index), type_list<Class>{}, type_list<Args...>{});
+    }
 }
 
 namespace meta_hpp
