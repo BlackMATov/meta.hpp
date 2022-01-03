@@ -13,84 +13,62 @@
 
 namespace meta_hpp::detail
 {
-    template < class_kind Class, typename... Args, std::size_t... Is >
-    value raw_ctor_invoke_impl(
-        const arg* args,
-        std::index_sequence<Is...>)
-    {
+    template < class_kind Class, typename... Args >
+    value raw_ctor_invoke(std::span<arg> args) {
         using ct = ctor_traits<Class, Args...>;
         using class_type = typename ct::class_type;
         using argument_types = typename ct::argument_types;
 
-        if ( !(... && (args + Is)->can_cast_to<type_list_at_t<Is, argument_types>>()) ) {
-            throw std::logic_error("an attempt to call a constructor with an incorrect argument types");
-        }
-
-        class_type return_value{(args + Is)->cast<type_list_at_t<Is, argument_types>>()...};
-        return value{std::forward<class_type>(return_value)};
-    }
-
-    template < class_kind Class, typename... Args >
-    value raw_ctor_invoke(
-        const arg* args,
-        std::size_t arg_count)
-    {
-        using ct = ctor_traits<Class, Args...>;
-
-        if ( arg_count != ct::arity ) {
+        if ( args.size() != ct::arity ) {
             throw std::logic_error("an attempt to call a constructor with an incorrect arity");
         }
 
-        return raw_ctor_invoke_impl<Class, Args...>(
-            args,
-            std::make_index_sequence<ct::arity>());
+        // NOLINTNEXTLINE(readability-named-parameter)
+        return std::invoke([&args]<std::size_t... Is>(std::index_sequence<Is...>){
+            if ( !(... && (args.data() + Is)->can_cast_to<type_list_at_t<Is, argument_types>>()) ) {
+                throw std::logic_error("an attempt to call a constructor with incorrect argument types");
+            }
+
+            class_type return_value{(args.data() + Is)->cast<type_list_at_t<Is, argument_types>>()...};
+            return value{std::forward<class_type>(return_value)};
+        }, std::make_index_sequence<ct::arity>());
     }
 
     template < class_kind Class, typename... Args >
     ctor_state::invoke_impl make_ctor_invoke() {
         using namespace std::placeholders;
-        return std::bind(&raw_ctor_invoke<Class, Args...>, _1, _2);
+        return std::bind(&raw_ctor_invoke<Class, Args...>, _1);
     }
 }
 
 namespace meta_hpp::detail
 {
-    template < class_kind Class, typename... Args, std::size_t... Is >
-    bool raw_ctor_is_invocable_with_impl(
-        const arg_base* args,
-        std::index_sequence<Is...>)
-    {
+    template < class_kind Class, typename... Args >
+    bool raw_ctor_is_invocable_with(std::span<arg_base> args) {
         using ct = ctor_traits<Class, Args...>;
         using argument_types = typename ct::argument_types;
-        return (... && (args + Is)->can_cast_to<type_list_at_t<Is, argument_types>>() );
-    }
 
-    template < class_kind Class, typename... Args >
-    bool raw_ctor_is_invocable_with(
-        const arg_base* args,
-        std::size_t arg_count)
-    {
-        using ct = ctor_traits<Class, Args...>;
-
-        if ( arg_count != ct::arity ) {
+        if ( args.size() != ct::arity ) {
             return false;
         }
 
-        return raw_ctor_is_invocable_with_impl<Class, Args...>(
-            args,
-            std::make_index_sequence<ct::arity>());
+        // NOLINTNEXTLINE(readability-named-parameter)
+        return std::invoke([&args]<std::size_t... Is>(std::index_sequence<Is...>){
+            return (... && (args.data() + Is)->can_cast_to<type_list_at_t<Is, argument_types>>());
+        }, std::make_index_sequence<ct::arity>());
     }
 
     template < class_kind Class, typename... Args >
     ctor_state::is_invocable_with_impl make_ctor_is_invocable_with() {
         using namespace std::placeholders;
-        return std::bind(&raw_ctor_is_invocable_with<Class, Args...>, _1, _2);
+        return std::bind(&raw_ctor_is_invocable_with<Class, Args...>, _1);
     }
 }
 
 namespace meta_hpp::detail
 {
     template < class_kind Class, typename... Args >
+    // NOLINTNEXTLINE(readability-named-parameter)
     ctor_state::ctor_state(ctor_index index, type_list<Class>, type_list<Args...>)
     : index{std::move(index)}
     , invoke{make_ctor_invoke<Class, Args...>()}
@@ -129,9 +107,9 @@ namespace meta_hpp
         using namespace detail;
         if constexpr ( sizeof...(Args) > 0 ) {
             std::array<arg, sizeof...(Args)> vargs{arg{std::forward<Args>(args)}...};
-            return state_->invoke(vargs.data(), vargs.size());
+            return state_->invoke(vargs);
         } else {
-            return state_->invoke(nullptr, 0);
+            return state_->invoke({});
         }
     }
 
@@ -145,9 +123,9 @@ namespace meta_hpp
         using namespace detail;
         if constexpr ( sizeof...(Args) > 0 ) {
             std::array<arg_base, sizeof...(Args)> vargs{arg_base{type_list<Args>{}}...};
-            return state_->is_invocable_with(vargs.data(), vargs.size());
+            return state_->is_invocable_with(vargs);
         } else {
-            return state_->is_invocable_with(nullptr, 0);
+            return state_->is_invocable_with({});
         }
     }
 
@@ -156,9 +134,9 @@ namespace meta_hpp
         using namespace detail;
         if constexpr ( sizeof...(Args) > 0 ) {
             std::array<arg_base, sizeof...(Args)> vargs{arg{std::forward<Args>(args)}...};
-            return state_->is_invocable_with(vargs.data(), vargs.size());
+            return state_->is_invocable_with(vargs);
         } else {
-            return state_->is_invocable_with(nullptr, 0);
+            return state_->is_invocable_with({});
         }
     }
 }

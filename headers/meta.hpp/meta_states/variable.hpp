@@ -100,6 +100,7 @@ namespace meta_hpp
 
     template < typename Value >
     void variable::set(Value&& value) const {
-        state_->setter(detail::arg{std::forward<Value>(value)});
+        using namespace detail;
+        state_->setter(arg{std::forward<Value>(value)});
     }
 }

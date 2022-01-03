@@ -230,8 +230,8 @@ namespace meta_hpp
 namespace meta_hpp::detail
 {
     struct ctor_state final {
-        using invoke_impl = std::function<value(const arg*, std::size_t)>;
-        using is_invocable_with_impl = std::function<bool(const arg_base*, std::size_t)>;
+        using invoke_impl = std::function<value(std::span<arg>)>;
+        using is_invocable_with_impl = std::function<bool(std::span<arg_base>)>;
 
         ctor_index index;
 
@@ -258,8 +258,8 @@ namespace meta_hpp::detail
     };
 
     struct function_state final {
-        using invoke_impl = std::function<std::optional<value>(const arg*, std::size_t)>;
-        using is_invocable_with_impl = std::function<bool(const arg_base*, std::size_t)>;
+        using invoke_impl = std::function<std::optional<value>(std::span<arg>)>;
+        using is_invocable_with_impl = std::function<bool(std::span<arg_base>)>;
 
         function_index index;
 
@@ -290,8 +290,8 @@ namespace meta_hpp::detail
     };
 
     struct method_state final {
-        using invoke_impl = std::function<std::optional<value>(const inst&, const arg*, std::size_t)>;
-        using is_invocable_with_impl = std::function<bool(const inst_base&, const arg_base*, std::size_t)>;
+        using invoke_impl = std::function<std::optional<value>(const inst&, std::span<arg>)>;
+        using is_invocable_with_impl = std::function<bool(const inst_base&, std::span<arg_base>)>;
 
         method_index index;
 

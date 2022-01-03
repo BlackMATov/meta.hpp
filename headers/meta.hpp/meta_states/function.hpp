@@ -13,88 +13,64 @@
 
 namespace meta_hpp::detail
 {
-    template < function_kind Function, std::size_t... Is >
-    std::optional<value> raw_function_invoke_impl(
-        Function function,
-        const arg* args,
-        std::index_sequence<Is...>)
-    {
+    template < function_kind Function >
+    std::optional<value> raw_function_invoke(Function function, std::span<arg> args) {
         using ft = function_traits<Function>;
         using return_type = typename ft::return_type;
         using argument_types = typename ft::argument_types;
 
-        if ( !(... && (args + Is)->can_cast_to<type_list_at_t<Is, argument_types>>()) ) {
-            throw std::logic_error("an attempt to call a function with an incorrect argument types");
-        }
-
-        if constexpr ( std::is_void_v<return_type> ) {
-            std::invoke(function,
-                (args + Is)->cast<type_list_at_t<Is, argument_types>>()...);
-            return std::nullopt;
-        } else {
-            return_type return_value{std::invoke(function,
-                (args + Is)->cast<type_list_at_t<Is, argument_types>>()...)};
-            return value{std::forward<return_type>(return_value)};
-        }
-    }
-
-    template < function_kind Function >
-    std::optional<value> raw_function_invoke(
-        Function function,
-        const arg* args,
-        std::size_t arg_count)
-    {
-        using ft = function_traits<Function>;
-
-        if ( arg_count != ft::arity ) {
+        if ( args.size() != ft::arity ) {
             throw std::logic_error("an attempt to call a function with an incorrect arity");
         }
 
-        return raw_function_invoke_impl<Function>(
-            function,
-            args,
-            std::make_index_sequence<ft::arity>());
+        // NOLINTNEXTLINE(readability-named-parameter)
+        return std::invoke([&function, &args]<std::size_t... Is>(std::index_sequence<Is...>){
+            if ( !(... && (args.data() + Is)->can_cast_to<type_list_at_t<Is, argument_types>>()) ) {
+                throw std::logic_error("an attempt to call a function with incorrect argument types");
+            }
+
+            if constexpr ( std::is_void_v<return_type> ) {
+                std::invoke(
+                    std::move(function),
+                    (args.data() + Is)->cast<type_list_at_t<Is, argument_types>>()...);
+                return std::nullopt;
+            } else {
+                return_type return_value{std::invoke(
+                    std::move(function),
+                    (args.data() + Is)->cast<type_list_at_t<Is, argument_types>>()...)};
+                return value{std::forward<return_type>(return_value)};
+            }
+        }, std::make_index_sequence<ft::arity>());
     }
 
     template < function_kind Function >
     function_state::invoke_impl make_function_invoke(Function function) {
         using namespace std::placeholders;
-        return std::bind(&raw_function_invoke<Function>, function, _1, _2);
+        return std::bind(&raw_function_invoke<Function>, function, _1);
     }
 }
 
 namespace meta_hpp::detail
 {
-    template < function_kind Function, std::size_t... Is >
-    bool raw_function_is_invocable_with_impl(
-        const arg_base* args,
-        std::index_sequence<Is...>)
-    {
+    template < function_kind Function >
+    bool raw_function_is_invocable_with(std::span<arg_base> args) {
         using ft = function_traits<Function>;
         using argument_types = typename ft::argument_types;
-        return (... && (args + Is)->can_cast_to<type_list_at_t<Is, argument_types>>() );
-    }
 
-    template < function_kind Function >
-    bool raw_function_is_invocable_with(
-        const arg_base* args,
-        std::size_t arg_count)
-    {
-        using ft = function_traits<Function>;
-
-        if ( arg_count != ft::arity ) {
+        if ( args.size() != ft::arity ) {
             return false;
         }
 
-        return raw_function_is_invocable_with_impl<Function>(
-            args,
-            std::make_index_sequence<ft::arity>());
+        // NOLINTNEXTLINE(readability-named-parameter)
+        return std::invoke([&args]<std::size_t... Is>(std::index_sequence<Is...>){
+            return (... && (args.data() + Is)->can_cast_to<type_list_at_t<Is, argument_types>>());
+        }, std::make_index_sequence<ft::arity>());
     }
 
     template < function_kind Function >
     function_state::is_invocable_with_impl make_function_is_invocable_with() {
         using namespace std::placeholders;
-        return std::bind(&raw_function_is_invocable_with<Function>, _1, _2);
+        return std::bind(&raw_function_is_invocable_with<Function>, _1);
     }
 }
 
@@ -143,9 +119,9 @@ namespace meta_hpp
         using namespace detail;
         if constexpr ( sizeof...(Args) > 0 ) {
             std::array<arg, sizeof...(Args)> vargs{arg{std::forward<Args>(args)}...};
-            return state_->invoke(vargs.data(), vargs.size());
+            return state_->invoke(vargs);
         } else {
-            return state_->invoke(nullptr, 0);
+            return state_->invoke({});
         }
     }
 
@@ -159,9 +135,9 @@ namespace meta_hpp
         using namespace detail;
         if constexpr ( sizeof...(Args) > 0 ) {
             std::array<arg_base, sizeof...(Args)> vargs{arg_base{type_list<Args>{}}...};
-            return state_->is_invocable_with(vargs.data(), vargs.size());
+            return state_->is_invocable_with(vargs);
         } else {
-            return state_->is_invocable_with(nullptr, 0);
+            return state_->is_invocable_with({});
         }
     }
 
@@ -170,9 +146,9 @@ namespace meta_hpp
         using namespace detail;
         if constexpr ( sizeof...(Args) > 0 ) {
             std::array<arg_base, sizeof...(Args)> vargs{arg{std::forward<Args>(args)}...};
-            return state_->is_invocable_with(vargs.data(), vargs.size());
+            return state_->is_invocable_with(vargs);
         } else {
-            return state_->is_invocable_with(nullptr, 0);
+            return state_->is_invocable_with({});
         }
     }
 }
