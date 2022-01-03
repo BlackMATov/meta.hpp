@@ -454,6 +454,14 @@ namespace meta_hpp::detail
         method_map methods;
         variable_map variables;
 
+        struct base_info final {
+            using upcast_fptr = void*(*)(void*);
+            const upcast_fptr upcast;
+        };
+
+        using base_info_map = std::map<class_type, base_info, std::less<>>;
+        base_info_map bases_info;
+
         template < class_kind Class >
         static class_type_data_ptr get_static();
 

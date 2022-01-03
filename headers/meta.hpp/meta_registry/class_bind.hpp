@@ -34,6 +34,11 @@ namespace meta_hpp
     class_bind<Class>& class_bind<Class>::base_() {
         static_assert(detail::derived_from<Class, Base>);
         data_->bases.emplace(resolve_type<Base>());
+        data_->bases_info.emplace(resolve_type<Base>(), detail::class_type_data::base_info{
+            .upcast = +[](void* derived) -> void* {
+                return static_cast<Base*>(static_cast<Class*>(derived));
+            }
+        });
         return *this;
     }
 
