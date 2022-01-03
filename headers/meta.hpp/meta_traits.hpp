@@ -65,6 +65,7 @@ namespace meta_hpp
     };
 
     enum class enum_flags : std::uint32_t {
+        is_scoped = 1 << 0,
     };
 
     enum class function_flags : std::uint32_t {
