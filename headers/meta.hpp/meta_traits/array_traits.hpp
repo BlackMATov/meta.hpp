@@ -19,8 +19,15 @@ namespace meta_hpp::detail
 
         static bitflags<array_flags> make_flags() noexcept {
             bitflags<array_flags> flags;
-            if ( std::is_bounded_array_v<Array> ) flags.set(array_flags::is_bounded);
-            if ( std::is_unbounded_array_v<Array> ) flags.set(array_flags::is_unbounded);
+
+            if ( std::is_bounded_array_v<Array> ) {
+                flags.set(array_flags::is_bounded);
+            }
+
+            if ( std::is_unbounded_array_v<Array> ) {
+                flags.set(array_flags::is_unbounded);
+            }
+
             return flags;
         }
     };

@@ -20,7 +20,11 @@ namespace meta_hpp::detail
 
         static bitflags<ctor_flags> make_flags() noexcept {
             bitflags<ctor_flags> flags;
-            if constexpr ( std::is_nothrow_constructible_v<Class, Args...> ) flags.set(ctor_flags::is_noexcept);
+
+            if constexpr ( std::is_nothrow_constructible_v<Class, Args...> ) {
+                flags.set(ctor_flags::is_noexcept);
+            }
+
             return flags;
         }
 

@@ -17,9 +17,11 @@ namespace meta_hpp::detail
 
         static bitflags<enum_flags> make_flags() noexcept {
             bitflags<enum_flags> flags;
+
             if constexpr ( !std::is_convertible_v<Enum, underlying_type> ) {
                 flags.set(enum_flags::is_scoped);
             }
+
             return flags;
         }
     };

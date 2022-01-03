@@ -17,9 +17,19 @@ namespace meta_hpp::detail
 
         static bitflags<reference_flags> make_flags() noexcept {
             bitflags<reference_flags> flags;
-            if constexpr ( std::is_const_v<data_type> ) flags.set(reference_flags::is_readonly);
-            if constexpr ( std::is_lvalue_reference_v<Reference> ) flags.set(reference_flags::is_lvalue);
-            if constexpr ( std::is_rvalue_reference_v<Reference> ) flags.set(reference_flags::is_rvalue);
+
+            if constexpr ( std::is_const_v<data_type> ) {
+                flags.set(reference_flags::is_readonly);
+            }
+
+            if constexpr ( std::is_lvalue_reference_v<Reference> ) {
+                flags.set(reference_flags::is_lvalue);
+            }
+
+            if constexpr ( std::is_rvalue_reference_v<Reference> ) {
+                flags.set(reference_flags::is_rvalue);
+            }
+
             return flags;
         }
     };

@@ -17,7 +17,11 @@ namespace meta_hpp::detail
 
         static bitflags<pointer_flags> make_flags() noexcept {
             bitflags<pointer_flags> flags;
-            if constexpr ( std::is_const_v<data_type> ) flags.set(pointer_flags::is_readonly);
+
+            if constexpr ( std::is_const_v<data_type> ) {
+                flags.set(pointer_flags::is_readonly);
+            }
+
             return flags;
         }
     };

@@ -50,10 +50,23 @@ namespace meta_hpp::detail
 
         static bitflags<class_flags> make_flags() noexcept {
             bitflags<class_flags> flags;
-            if constexpr ( std::is_empty_v<T> ) flags.set(class_flags::is_empty);
-            if constexpr ( std::is_final_v<T> ) flags.set(class_flags::is_final);
-            if constexpr ( std::is_abstract_v<T> ) flags.set(class_flags::is_abstract);
-            if constexpr ( std::is_polymorphic_v<T> ) flags.set(class_flags::is_polymorphic);
+
+            if constexpr ( std::is_empty_v<T> ) {
+                flags.set(class_flags::is_empty);
+            }
+
+            if constexpr ( std::is_final_v<T> ) {
+                flags.set(class_flags::is_final);
+            }
+
+            if constexpr ( std::is_abstract_v<T> ) {
+                flags.set(class_flags::is_abstract);
+            }
+
+            if constexpr ( std::is_polymorphic_v<T> ) {
+                flags.set(class_flags::is_polymorphic);
+            }
+
             return flags | impl::class_traits_base<T>::make_flags();
         }
     };
