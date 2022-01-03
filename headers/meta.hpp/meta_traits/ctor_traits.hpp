@@ -18,7 +18,7 @@ namespace meta_hpp::detail
         using class_type = Class;
         using argument_types = type_list<Args...>;
 
-        static bitflags<ctor_flags> make_flags() noexcept {
+        [[nodiscard]] static constexpr bitflags<ctor_flags> make_flags() noexcept {
             bitflags<ctor_flags> flags;
 
             if constexpr ( std::is_nothrow_constructible_v<Class, Args...> ) {
@@ -28,7 +28,7 @@ namespace meta_hpp::detail
             return flags;
         }
 
-        static std::vector<any_type> make_argument_types() {
+        [[nodiscard]] static std::vector<any_type> make_argument_types() {
             return { resolve_type<Args>()... };
         }
     };

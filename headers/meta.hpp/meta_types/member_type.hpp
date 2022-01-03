@@ -23,6 +23,7 @@ namespace meta_hpp::detail
     }
 
     template < member_kind Member >
+    // NOLINTNEXTLINE(readability-named-parameter)
     member_type_data::member_type_data(type_list<Member>)
     : type_data_base{type_id{type_list<member_tag<Member>>{}}, type_kind::member_}
     , flags{member_traits<Member>::make_flags()}

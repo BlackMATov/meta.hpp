@@ -9,6 +9,12 @@
 #include "../meta_base.hpp"
 #include "../meta_types.hpp"
 
+#include "../meta_states/ctor.hpp"
+#include "../meta_states/function.hpp"
+#include "../meta_states/member.hpp"
+#include "../meta_states/method.hpp"
+#include "../meta_states/variable.hpp"
+
 #include "../meta_traits/class_traits.hpp"
 
 namespace meta_hpp::detail
@@ -23,6 +29,7 @@ namespace meta_hpp::detail
     }
 
     template < class_kind Class >
+    // NOLINTNEXTLINE(readability-named-parameter)
     class_type_data::class_type_data(type_list<Class>)
     : type_data_base{type_id{type_list<class_tag<Class>>{}}, type_kind::class_}
     , flags{class_traits<Class>::make_flags()}

@@ -18,23 +18,19 @@ namespace meta_hpp
         operator class_type() const noexcept;
 
         template < typename... Args >
-        class_bind& ctor_()
-            requires std::is_constructible_v<Class, Args...>;
+        class_bind& ctor_();
 
         template < detail::class_kind Base >
-        class_bind& base_()
-            requires std::is_base_of_v<Base, Class>;
+        class_bind& base_();
 
         template < detail::function_kind Function >
         class_bind& function_(std::string name, Function function);
 
         template < detail::member_kind Member >
-        class_bind& member_(std::string name, Member member)
-            requires std::same_as<Class, typename detail::member_traits<Member>::class_type>;
+        class_bind& member_(std::string name, Member member);
 
         template < detail::method_kind Method >
-        class_bind& method_(std::string name, Method method)
-            requires std::same_as<Class, typename detail::method_traits<Method>::class_type>;
+        class_bind& method_(std::string name, Method method);
 
         template < detail::pointer_kind Pointer >
         class_bind& variable_(std::string name, Pointer pointer);

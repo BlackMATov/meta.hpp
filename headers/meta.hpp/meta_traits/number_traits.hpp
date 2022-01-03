@@ -15,22 +15,22 @@ namespace meta_hpp::detail
     struct number_traits {
         static constexpr std::size_t size{sizeof(Number)};
 
-        static bitflags<number_flags> make_flags() noexcept {
+        [[nodiscard]] static constexpr bitflags<number_flags> make_flags() noexcept {
             bitflags<number_flags> flags;
 
-            if ( std::is_signed_v<Number> ) {
+            if constexpr ( std::is_signed_v<Number> ) {
                 flags.set(number_flags::is_signed);
             }
 
-            if ( std::is_unsigned_v<Number> ) {
+            if constexpr ( std::is_unsigned_v<Number> ) {
                 flags.set(number_flags::is_unsigned);
             }
 
-            if ( std::is_integral_v<Number> ) {
+            if constexpr ( std::is_integral_v<Number> ) {
                 flags.set(number_flags::is_integral);
             }
 
-            if ( std::is_floating_point_v<Number> ) {
+            if constexpr ( std::is_floating_point_v<Number> ) {
                 flags.set(number_flags::is_floating_point);
             }
 

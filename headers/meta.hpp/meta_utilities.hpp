@@ -7,6 +7,29 @@
 #pragma once
 
 #include "meta_base.hpp"
+#include "meta_types.hpp"
+
+namespace meta_hpp::detail
+{
+    template < typename T >
+    concept destructible =
+        std::is_nothrow_destructible_v<T>;
+
+    template < typename T, typename... Args >
+    concept constructible_from =
+        destructible<T> &&
+        std::is_constructible_v<T, Args...>;
+
+    template < typename Derived, typename Base >
+    concept derived_from =
+        std::is_base_of_v<Base, Derived> &&
+        std::is_convertible_v<const volatile Derived*, const volatile Base*>;
+
+    template < typename From, typename To >
+    concept convertible_to =
+        std::is_convertible_v<From, To> &&
+        requires { static_cast<To>(std::declval<From>()); };
+}
 
 namespace meta_hpp
 {

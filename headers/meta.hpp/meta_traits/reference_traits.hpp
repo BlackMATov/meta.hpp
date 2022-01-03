@@ -15,7 +15,7 @@ namespace meta_hpp::detail
     struct reference_traits {
         using data_type = std::remove_reference_t<Reference>;
 
-        static bitflags<reference_flags> make_flags() noexcept {
+        [[nodiscard]] static constexpr bitflags<reference_flags> make_flags() noexcept {
             bitflags<reference_flags> flags;
 
             if constexpr ( std::is_const_v<data_type> ) {

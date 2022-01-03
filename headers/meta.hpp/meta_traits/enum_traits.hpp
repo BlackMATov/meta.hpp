@@ -15,7 +15,7 @@ namespace meta_hpp::detail
     struct enum_traits {
         using underlying_type = std::underlying_type_t<Enum>;
 
-        static bitflags<enum_flags> make_flags() noexcept {
+        [[nodiscard]] static constexpr bitflags<enum_flags> make_flags() noexcept {
             bitflags<enum_flags> flags;
 
             if constexpr ( !std::is_convertible_v<Enum, underlying_type> ) {

@@ -14,5 +14,6 @@ Checks: '-*,
         portability-*,
 
         readability-*,
+        -readability-redundant-access-specifiers,
         -readability-use-anyofallof,
         '

@@ -23,6 +23,7 @@ namespace meta_hpp::detail
     }
 
     template < class_kind Class, typename... Args >
+    // NOLINTNEXTLINE(readability-named-parameter)
     ctor_type_data::ctor_type_data(type_list<Class>, type_list<Args...>)
     : type_data_base{type_id{type_list<ctor_tag<Class, Args...>>{}}, type_kind::ctor_}
     , flags{ctor_traits<Class, Args...>::make_flags()}

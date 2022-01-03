@@ -17,14 +17,14 @@ namespace meta_hpp::detail
 
         using data_type = std::remove_extent_t<Array>;
 
-        static bitflags<array_flags> make_flags() noexcept {
+        [[nodiscard]] static constexpr bitflags<array_flags> make_flags() noexcept {
             bitflags<array_flags> flags;
 
-            if ( std::is_bounded_array_v<Array> ) {
+            if constexpr ( std::is_bounded_array_v<Array> ) {
                 flags.set(array_flags::is_bounded);
             }
 
-            if ( std::is_unbounded_array_v<Array> ) {
+            if constexpr ( std::is_unbounded_array_v<Array> ) {
                 flags.set(array_flags::is_unbounded);
             }
 

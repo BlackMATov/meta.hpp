@@ -14,7 +14,7 @@ namespace meta_hpp::detail
     template < array_kind Array >
     struct array_traits;
 
-    template < class_kind T >
+    template < class_kind Class >
     struct class_traits;
 
     template < class_kind Class, typename... Args >

@@ -23,6 +23,7 @@ namespace meta_hpp::detail
     }
 
     template < method_kind Method >
+    // NOLINTNEXTLINE(readability-named-parameter)
     method_type_data::method_type_data(type_list<Method>)
     : type_data_base{type_id{type_list<method_tag<Method>>{}}, type_kind::method_}
     , flags{method_traits<Method>::make_flags()}

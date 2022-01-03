@@ -15,7 +15,7 @@ namespace meta_hpp::detail
     struct pointer_traits {
         using data_type = std::remove_pointer_t<Pointer>;
 
-        static bitflags<pointer_flags> make_flags() noexcept {
+        [[nodiscard]] static constexpr bitflags<pointer_flags> make_flags() noexcept {
             bitflags<pointer_flags> flags;
 
             if constexpr ( std::is_const_v<data_type> ) {

@@ -21,18 +21,18 @@ namespace meta_hpp::detail
         using return_type = R;
         using argument_types = type_list<Args...>;
 
-        static bitflags<function_flags> make_flags() noexcept {
+        [[nodiscard]] static constexpr bitflags<function_flags> make_flags() noexcept {
             return {};
         }
 
-        static std::vector<any_type> make_argument_types() {
+        [[nodiscard]] static std::vector<any_type> make_argument_types() {
             return { resolve_type<Args>()... };
         }
     };
 
     template < typename R, typename... Args >
     struct function_traits<R(*)(Args...) noexcept> : function_traits<R(*)(Args...)> {
-        static bitflags<function_flags> make_flags() noexcept {
+        [[nodiscard]] static constexpr bitflags<function_flags> make_flags() noexcept {
             return function_flags::is_noexcept;
         }
     };

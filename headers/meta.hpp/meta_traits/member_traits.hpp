@@ -19,7 +19,7 @@ namespace meta_hpp::detail
         using class_type = C;
         using value_type = V;
 
-        static bitflags<member_flags> make_flags() noexcept {
+        [[nodiscard]] static constexpr bitflags<member_flags> make_flags() noexcept {
             return {};
         }
     };

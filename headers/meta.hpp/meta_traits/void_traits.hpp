@@ -13,7 +13,7 @@ namespace meta_hpp::detail
 {
     template < void_kind Void >
     struct void_traits {
-        static bitflags<void_flags> make_flags() noexcept {
+        [[nodiscard]] static constexpr bitflags<void_flags> make_flags() noexcept {
             return {};
         }
     };

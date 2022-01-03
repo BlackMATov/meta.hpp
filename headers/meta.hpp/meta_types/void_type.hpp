@@ -23,6 +23,7 @@ namespace meta_hpp::detail
     }
 
     template < void_kind Void >
+    // NOLINTNEXTLINE(readability-named-parameter)
     void_type_data::void_type_data(type_list<Void>)
     : type_data_base{type_id{type_list<void_tag<Void>>{}}, type_kind::void_}
     , flags{void_traits<Void>::make_flags()} {}
