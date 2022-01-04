@@ -31,69 +31,128 @@ namespace meta_hpp::detail
         requires { static_cast<To>(std::declval<From>()); };
 }
 
+namespace meta_hpp::detail
+{
+    template < typename T >
+    concept value_kind =
+        std::same_as<T, value>;
+
+    template < typename T >
+    concept decay_value_kind =
+        value_kind<std::decay_t<T>>;
+
+    template < typename T >
+    concept uvalue_kind =
+        std::same_as<T, arg> ||
+        std::same_as<T, inst> ||
+        std::same_as<T, value>;
+
+    template < typename T >
+    concept decay_uvalue_kind =
+        uvalue_kind<std::decay_t<T>>;
+
+    template < typename T >
+    concept decay_non_uvalue_kind =
+        (!decay_uvalue_kind<T>);
+
+    template < typename T >
+    concept arg_lvalue_ref_kind =
+        (std::is_lvalue_reference_v<T>);
+
+    template < typename T >
+    concept arg_rvalue_ref_kind =
+        (!std::is_reference_v<T>) ||
+        (std::is_rvalue_reference_v<T>);
+
+    template < typename T >
+    concept inst_class_ref_kind =
+        (std::is_class_v<T>) ||
+        (std::is_reference_v<T> && std::is_class_v<std::remove_reference_t<T>>);
+
+    template < typename T >
+    concept inst_class_lvalue_ref_kind =
+        (std::is_lvalue_reference_v<T> && std::is_class_v<std::remove_reference_t<T>>);
+
+    template < typename T >
+    concept inst_class_rvalue_ref_kind =
+        (std::is_class_v<T>) ||
+        (std::is_rvalue_reference_v<T> && std::is_class_v<std::remove_reference_t<T>>);
+}
+
+namespace meta_hpp::detail
+{
+    template < typename T >
+    concept has_less_op_kind = requires(const T& v) {
+        { v < v } -> convertible_to<bool>;
+    };
+
+    template < typename T >
+    concept has_equals_op_kind = requires(const T& v) {
+        { v == v } -> convertible_to<bool>;
+    };
+
+    template < typename T >
+    concept has_istream_op_kind = requires(std::istream& is, T& v) {
+        { is >> v } -> convertible_to<std::istream&>;
+    };
+
+    template < typename T >
+    concept has_ostream_op_kind = requires(std::ostream& os, const T& v) {
+        { os << v } -> convertible_to<std::ostream&>;
+    };
+}
+
 namespace meta_hpp
 {
     class value final {
     public:
         value() = delete;
 
+        // NOLINTNEXTLINE(performance-noexcept-move-constructor)
         value(value&& other);
         value(const value& other);
 
+        // NOLINTNEXTLINE(performance-noexcept-move-constructor)
         value& operator=(value&& other);
         value& operator=(const value& other);
 
-        template < typename T, typename Tp = std::decay_t<T>
-                 , std::enable_if_t<!std::is_same_v<Tp, value>, int> = 0
-                 , std::enable_if_t<!std::is_same_v<Tp, detail::arg>, int> = 0
-                 , std::enable_if_t<!std::is_same_v<Tp, detail::inst>, int> = 0 >
+        ~value() = default;
+
+        template < detail::decay_non_uvalue_kind T >
         explicit value(T&& val);
 
-        template < typename T, typename Tp = std::decay_t<T>
-                 , std::enable_if_t<!std::is_same_v<Tp, value>, int> = 0
-                 , std::enable_if_t<!std::is_same_v<Tp, detail::arg>, int> = 0
-                 , std::enable_if_t<!std::is_same_v<Tp, detail::inst>, int> = 0 >
+        template < detail::decay_non_uvalue_kind T >
         value& operator=(T&& val);
 
         void swap(value& other) noexcept;
 
-        const any_type& get_type() const noexcept;
+        [[nodiscard]] const any_type& get_type() const noexcept;
 
-        void* data() noexcept;
-        const void* data() const noexcept;
-        const void* cdata() const noexcept;
-
-        template < typename T, typename Tp = std::decay_t<T> >
-        Tp& cast() &;
+        [[nodiscard]] void* data() noexcept;
+        [[nodiscard]] const void* data() const noexcept;
+        [[nodiscard]] const void* cdata() const noexcept;
 
         template < typename T, typename Tp = std::decay_t<T> >
-        Tp&& cast() &&;
+        [[nodiscard]] Tp& cast() &;
 
         template < typename T, typename Tp = std::decay_t<T> >
-        const Tp& cast() const &;
+        [[nodiscard]] Tp&& cast() &&;
 
         template < typename T, typename Tp = std::decay_t<T> >
-        const Tp&& cast() const &&;
+        [[nodiscard]] const Tp& cast() const &;
 
         template < typename T, typename Tp = std::decay_t<T> >
-        Tp* try_cast() noexcept;
+        [[nodiscard]] const Tp&& cast() const &&;
 
         template < typename T, typename Tp = std::decay_t<T> >
-        const Tp* try_cast() const noexcept;
+        [[nodiscard]] Tp* try_cast() noexcept;
 
-        template < typename T >
-        friend bool operator<(const value& l, const T& r);
-        template < typename T >
-        friend bool operator<(const T& l, const value& r);
+        template < typename T, typename Tp = std::decay_t<T> >
+        [[nodiscard]] const Tp* try_cast() const noexcept;
+
         friend bool operator<(const value& l, const value& r);
-
-        template < typename T >
-        friend bool operator==(const value& l, const T& r);
-        template < typename T >
-        friend bool operator==(const T& l, const value& r);
         friend bool operator==(const value& l, const value& r);
-
-        friend std::istream& operator>>(std::istream& os, value& v);
+        friend std::istream& operator>>(std::istream& is, value& v);
         friend std::ostream& operator<<(std::ostream& os, const value& v);
     private:
         struct traits;

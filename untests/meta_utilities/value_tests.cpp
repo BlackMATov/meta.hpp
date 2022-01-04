@@ -304,7 +304,7 @@ TEST_CASE("meta/meta_utilities/value") {
             class empty_class2 {};
 
             CHECK(operator<(meta::value{empty_class1{}}, meta::value{empty_class2{}}));
-            CHECK_THROWS(operator<(meta::value{empty_class1{}}, meta::value{empty_class1{}}));
+            CHECK_THROWS(std::ignore = operator<(meta::value{empty_class1{}}, meta::value{empty_class1{}}));
         }
     }
 
@@ -323,7 +323,7 @@ TEST_CASE("meta/meta_utilities/value") {
             class empty_class2 {};
 
             CHECK_FALSE(operator==(meta::value{empty_class1{}}, meta::value{empty_class2{}}));
-            CHECK_THROWS(operator==(meta::value{empty_class1{}}, meta::value{empty_class1{}}));
+            CHECK_THROWS(std::ignore = operator==(meta::value{empty_class1{}}, meta::value{empty_class1{}}));
         }
     }
 }
