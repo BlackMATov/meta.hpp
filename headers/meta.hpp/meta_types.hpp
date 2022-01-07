@@ -711,3 +711,44 @@ namespace meta_hpp
         return resolve_type<std::remove_reference_t<T>>();
     };
 }
+
+namespace meta_hpp
+{
+    namespace detail
+    {
+        [[nodiscard]] inline void* pointer_upcast(void* ptr, const class_type& from, const class_type& to) {
+            if ( nullptr == ptr || !from || !to ) {
+                return nullptr;
+            }
+
+            if ( from == to ) {
+                return ptr;
+            }
+
+            for ( auto&& [base, base_info] : data_access(from)->bases_info ) {
+                if ( base == to ) {
+                    return base_info.upcast(ptr);
+                }
+
+                if ( base.is_derived_from(to) ) {
+                    return pointer_upcast(base_info.upcast(ptr), base, to);
+                }
+            }
+
+            return nullptr;
+        }
+    }
+
+    template < detail::class_kind Base, detail::class_kind Derived >
+    [[nodiscard]] Base* pointer_upcast(Derived* ptr) {
+        const class_type& base = resolve_type<Base>();
+        const class_type& derived = resolve_type<Derived>();
+        return static_cast<Base*>(detail::pointer_upcast(ptr, derived, base));
+    }
+
+    template < detail::class_kind Base, detail::class_kind Derived >
+    [[nodiscard]] const Base* pointer_upcast(const Derived* ptr) {
+        // NOLINTNEXTLINE(cppcoreguidelines-pro-type-const-cast)
+        return pointer_upcast<Base>(const_cast<Derived*>(ptr));
+    }
+}
