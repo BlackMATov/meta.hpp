@@ -11,18 +11,22 @@
 
 namespace meta_hpp::detail
 {
-    template < typename T, std::enable_if_t<
-        (std::is_lvalue_reference_v<T>)
-    , int> >
+    template < arg_lvalue_ref_kind T >
+        requires decay_non_uvalue_kind<T>
+    // NOLINTNEXTLINE(readability-named-parameter)
     arg_base::arg_base(type_list<T>)
-    : ref_type_{std::is_const_v<std::remove_reference_t<T>> ? ref_types::const_lvalue : ref_types::lvalue}
+    : ref_type_{std::is_const_v<std::remove_reference_t<T>>
+        ? ref_types::const_lvalue
+        : ref_types::lvalue}
     , raw_type_{resolve_type<std::remove_cvref_t<T>>()} {}
 
-    template < typename T, std::enable_if_t<
-        (std::is_rvalue_reference_v<T> || !std::is_reference_v<T>)
-    , int> >
+    template < arg_rvalue_ref_kind T >
+        requires decay_non_uvalue_kind<T>
+    // NOLINTNEXTLINE(readability-named-parameter)
     arg_base::arg_base(type_list<T>)
-    : ref_type_{std::is_const_v<std::remove_reference_t<T>> ? ref_types::const_rvalue : ref_types::rvalue}
+    : ref_type_{std::is_const_v<std::remove_reference_t<T>>
+        ? ref_types::const_rvalue
+        : ref_types::rvalue}
     , raw_type_{resolve_type<std::remove_cvref_t<T>>()} {}
 
     inline arg_base::arg_base(value& v)
@@ -65,6 +69,7 @@ namespace meta_hpp::detail
     }
 
     template < typename To >
+    // NOLINTNEXTLINE(readability-function-cognitive-complexity)
     bool arg_base::can_cast_to() const noexcept {
         using to_raw_type_cv = std::remove_reference_t<To>;
         using to_raw_type = std::remove_cv_t<to_raw_type_cv>;
@@ -73,112 +78,176 @@ namespace meta_hpp::detail
             !(std::is_reference_v<To> && std::is_pointer_v<to_raw_type>),
             "references to pointers are not supported yet");
 
-        const auto check_qualifiers = [this](){
-            switch ( get_ref_type() ) {
-            case ref_types::lvalue:       return std::is_convertible_v<to_raw_type&, To>;
-            case ref_types::const_lvalue: return std::is_convertible_v<const to_raw_type&, To>;
-            case ref_types::rvalue:       return std::is_convertible_v<to_raw_type&&, To>;
-            case ref_types::const_rvalue: return std::is_convertible_v<const to_raw_type&&, To>;
-            }
+        const any_type& from_type = get_raw_type();
+        const any_type& to_type = resolve_type<to_raw_type>();
+
+        const auto is_a = [](const any_type& base, const any_type& derived){
+            return (base == derived)
+                || (base.is_class() && derived.is_class() && base.as_class().is_base_of(derived.as_class()));
         };
 
-        const auto check_convertible = [this](){
-            const auto is_a = [](const any_type& base, const any_type& derived){
-                return (base == derived)
-                    || (base.is_class() && derived.is_class() && base.as_class().is_base_of(derived.as_class()));
-            };
-
-            const any_type& from_type = get_raw_type();
-            const any_type& to_type = resolve_type<to_raw_type>();
-
-            if ( is_a(to_type, from_type) ) {
-                return true;
-            }
-
-            if ( std::is_lvalue_reference_v<To> && !std::is_const_v<to_raw_type_cv> ) {
-                return false;
-            }
-
-            if ( from_type.is_pointer() && to_type.is_pointer() ) {
-                const pointer_type& from_type_ptr = from_type.as_pointer();
-                const bool from_type_ptr_readonly = from_type_ptr.get_flags().has(pointer_flags::is_readonly);
-
+        if constexpr ( std::is_pointer_v<To> ) {
+            if ( to_type.is_pointer() && from_type.is_pointer() ) {
                 const pointer_type& to_type_ptr = to_type.as_pointer();
                 const bool to_type_ptr_readonly = to_type_ptr.get_flags().has(pointer_flags::is_readonly);
 
-                return to_type_ptr_readonly >= from_type_ptr_readonly
-                    && is_a(to_type_ptr.get_data_type(), from_type_ptr.get_data_type());
+                const pointer_type& from_type_ptr = from_type.as_pointer();
+                const bool from_type_ptr_readonly = from_type_ptr.get_flags().has(pointer_flags::is_readonly);
+
+                const any_type& to_data_type = to_type_ptr.get_data_type();
+                const any_type& from_data_type = from_type_ptr.get_data_type();
+
+                if ( is_a(to_data_type, from_data_type) && to_type_ptr_readonly >= from_type_ptr_readonly ) {
+                    return true;
+                }
             }
+        }
 
-            return false;
-        };
+        if constexpr ( std::is_reference_v<To> ) {
+            const auto is_convertible = [this](){
+                switch ( get_ref_type() ) {
+                case ref_types::lvalue:
+                    return std::is_convertible_v<noncopyable&, copy_cvref_t<To, noncopyable>>;
+                case ref_types::const_lvalue:
+                    return std::is_convertible_v<const noncopyable&, copy_cvref_t<To, noncopyable>>;
+                case ref_types::rvalue:
+                    return std::is_convertible_v<noncopyable&&, copy_cvref_t<To, noncopyable>>;
+                case ref_types::const_rvalue:
+                    return std::is_convertible_v<const noncopyable&&, copy_cvref_t<To, noncopyable>>;
+                }
+            };
 
-        return check_qualifiers() && check_convertible();
+            if ( is_a(to_type, from_type) && is_convertible() ) {
+                return true;
+            }
+        }
+
+        if constexpr ( !std::is_pointer_v<To> && !std::is_reference_v<To> ) {
+            const auto is_constructible = [this](){
+                switch ( get_ref_type() ) {
+                case ref_types::lvalue:
+                    return std::is_constructible_v<To, to_raw_type&> && can_cast_to<to_raw_type&>();
+                case ref_types::const_lvalue:
+                    return std::is_constructible_v<To, const to_raw_type&> && can_cast_to<const to_raw_type&>();
+                case ref_types::rvalue:
+                    return std::is_constructible_v<To, to_raw_type&&> && can_cast_to<to_raw_type&&>();
+                case ref_types::const_rvalue:
+                    return std::is_constructible_v<To, const to_raw_type&&> && can_cast_to<const to_raw_type&&>();
+                }
+            };
+
+            if ( is_a(to_type, from_type) && is_constructible() ) {
+                return true;
+            }
+        }
+
+        return false;
     }
 }
 
 namespace meta_hpp::detail
 {
-    template < typename T, typename Tp
-             , std::enable_if_t<std::is_same_v<Tp, value>, int> >
+    template < decay_value_kind T >
     arg::arg(T&& v)
     : arg_base{std::forward<T>(v)}
+    // NOLINTNEXTLINE(cppcoreguidelines-pro-type-const-cast)
     , data_{const_cast<void*>(v.data())} {}
 
-    template < typename T, typename Tp
-             , std::enable_if_t<!std::is_same_v<Tp, arg>, int>
-             , std::enable_if_t<!std::is_same_v<Tp, inst>, int>
-             , std::enable_if_t<!std::is_same_v<Tp, value>, int> >
+    template < decay_non_uvalue_kind T >
     arg::arg(T&& v)
     : arg_base{type_list<T&&>{}}
+    // NOLINTNEXTLINE(cppcoreguidelines-pro-type-const-cast)
     , data_{const_cast<std::remove_cvref_t<T>*>(std::addressof(v))} {}
 
     template < typename To >
+    // NOLINTNEXTLINE(readability-function-cognitive-complexity)
     To arg::cast() const {
         if ( !can_cast_to<To>() ) {
             throw std::logic_error("bad argument cast");
         }
 
+        using to_raw_type_cv = std::remove_reference_t<To>;
+        using to_raw_type = std::remove_cv_t<to_raw_type_cv>;
+
+        const any_type& from_type = get_raw_type();
+        const any_type& to_type = resolve_type<to_raw_type>();
+
         if constexpr ( std::is_pointer_v<To> ) {
-            return *static_cast<To*>(data_);
+            if ( to_type.is_pointer() && from_type.is_pointer() ) {
+                const pointer_type& to_type_ptr = to_type.as_pointer();
+                const pointer_type& from_type_ptr = from_type.as_pointer();
+
+                const any_type& to_data_type = to_type_ptr.get_data_type();
+                const any_type& from_data_type = from_type_ptr.get_data_type();
+
+                void** from_data_ptr = static_cast<void**>(data_);
+
+                if ( to_data_type == from_data_type ) {
+                    void* to_data_ptr = *from_data_ptr;
+                    return static_cast<to_raw_type_cv>(to_data_ptr);
+                }
+
+                if ( to_data_type.is_class() && from_data_type.is_class() ) {
+                    const class_type& to_data_class = to_data_type.as_class();
+                    const class_type& from_data_class = from_data_type.as_class();
+
+                    void* to_data_ptr = detail::pointer_upcast(*from_data_ptr, from_data_class, to_data_class);
+                    return static_cast<to_raw_type_cv>(to_data_ptr);
+                }
+            }
         }
 
         if constexpr ( std::is_reference_v<To> ) {
-            using raw_type = std::remove_cvref_t<To>;
+            if ( to_type == from_type ) {
+                void* to_ptr = static_cast<void*>(data_);
 
-            if constexpr ( std::is_lvalue_reference_v<To> ) {
-                return *static_cast<raw_type*>(data_);
+                if constexpr ( std::is_lvalue_reference_v<To> ) {
+                    return *static_cast<to_raw_type_cv*>(to_ptr);
+                }
+
+                if constexpr ( std::is_rvalue_reference_v<To> ) {
+                    return std::move(*static_cast<to_raw_type_cv*>(to_ptr));
+                }
             }
 
-            if constexpr ( std::is_rvalue_reference_v<To> ) {
-                return std::move(*static_cast<raw_type*>(data_));
+            if ( to_type.is_class() && from_type.is_class() ) {
+                const class_type& to_class = to_type.as_class();
+                const class_type& from_class = from_type.as_class();
+
+                void* to_ptr = detail::pointer_upcast(data_, from_class, to_class);
+
+                if constexpr ( std::is_lvalue_reference_v<To> ) {
+                    return *static_cast<to_raw_type_cv*>(to_ptr);
+                }
+
+                if constexpr ( std::is_rvalue_reference_v<To> ) {
+                    return std::move(*static_cast<to_raw_type_cv*>(to_ptr));
+                }
             }
         }
 
         if constexpr ( !std::is_pointer_v<To> && !std::is_reference_v<To> ) {
-            using raw_type = std::remove_cv_t<To>;
-
-            if ( get_ref_type() == ref_types::lvalue ) {
-                if constexpr ( std::is_constructible_v<To, raw_type&> ) {
-                    return To{*static_cast<raw_type*>(data_)};
+            if constexpr ( std::is_constructible_v<To, to_raw_type&> ) {
+                if ( get_ref_type() == ref_types::lvalue ) {
+                    return To{cast<to_raw_type&>()};
                 }
             }
 
-            if ( get_ref_type() == ref_types::const_lvalue ) {
-                if constexpr ( std::is_constructible_v<To, const raw_type&> ) {
-                    return To{std::as_const(*static_cast<raw_type*>(data_))};
+            if constexpr ( std::is_constructible_v<To, const to_raw_type&> ) {
+                if ( get_ref_type() == ref_types::const_lvalue ) {
+                    return To{cast<const to_raw_type&>()};
                 }
             }
 
-            if ( get_ref_type() == ref_types::rvalue ) {
-                if constexpr ( std::is_constructible_v<To, raw_type&&> ) {
-                    return To{std::move(*static_cast<raw_type*>(data_))};
+            if constexpr ( std::is_constructible_v<To, to_raw_type&&> ) {
+                if ( get_ref_type() == ref_types::rvalue ) {
+                    return To{cast<to_raw_type&&>()};
                 }
             }
 
-            if ( get_ref_type() == ref_types::const_rvalue ) {
-                if constexpr ( std::is_constructible_v<To, const raw_type&&> ) {
-                    return To{std::move(std::as_const(*static_cast<raw_type*>(data_)))};
+            if constexpr ( std::is_constructible_v<To, const to_raw_type&&> ) {
+                if ( get_ref_type() == ref_types::const_rvalue ) {
+                    return To{cast<const to_raw_type&&>()};
                 }
             }
         }

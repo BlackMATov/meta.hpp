@@ -11,19 +11,71 @@
 
 namespace meta_hpp::detail
 {
-    template < typename T, std::enable_if_t<
-        (std::is_lvalue_reference_v<T> && std::is_class_v<std::remove_reference_t<T>>)
-    , int> >
+    namespace impl
+    {
+        template < inst_class_ref_kind Q, bool is_const, bool is_lvalue, bool is_rvalue >
+        struct inst_traits_impl;
+
+        template < inst_class_ref_kind Q >
+        struct inst_traits_impl<Q, false, false, false> {
+            using class_type = std::remove_cvref_t<Q>;
+            using method_type = void(class_type::*)();
+        };
+
+        template < inst_class_ref_kind Q >
+        struct inst_traits_impl<Q, false, true, false> {
+            using class_type = std::remove_cvref_t<Q>;
+            using method_type = void(class_type::*)() &;
+        };
+
+        template < inst_class_ref_kind Q >
+        struct inst_traits_impl<Q, false, false, true> {
+            using class_type = std::remove_cvref_t<Q>;
+            using method_type = void(class_type::*)() &&;
+        };
+
+        template < inst_class_ref_kind Q >
+        struct inst_traits_impl<Q, true, false, false> {
+            using class_type = std::remove_cvref_t<Q>;
+            using method_type = void(class_type::*)() const;
+        };
+
+        template < inst_class_ref_kind Q >
+        struct inst_traits_impl<Q, true, true, false> {
+            using class_type = std::remove_cvref_t<Q>;
+            using method_type = void(class_type::*)() const &;
+        };
+
+        template < inst_class_ref_kind Q >
+        struct inst_traits_impl<Q, true, false, true> {
+            using class_type = std::remove_cvref_t<Q>;
+            using method_type = void(class_type::*)() const &&;
+        };
+    }
+
+    template < inst_class_ref_kind Q >
+    struct inst_traits final : impl::inst_traits_impl<Q,
+        cvref_traits<Q>::is_const,
+        cvref_traits<Q>::is_lvalue,
+        cvref_traits<Q>::is_rvalue> {};
+}
+
+namespace meta_hpp::detail
+{
+    template < inst_class_lvalue_ref_kind T >
+    // NOLINTNEXTLINE(readability-named-parameter)
     inst_base::inst_base(type_list<T>)
-    : ref_type_{std::is_const_v<std::remove_reference_t<T>> ? ref_types::const_lvalue : ref_types::lvalue}
+    : ref_type_{std::is_const_v<std::remove_reference_t<T>>
+        ? ref_types::const_lvalue
+        : ref_types::lvalue}
     , raw_type_{resolve_type<std::remove_cvref_t<T>>()} {}
 
-    template < typename T, std::enable_if_t<
-        (std::is_class_v<T>) ||
-        (std::is_rvalue_reference_v<T> && std::is_class_v<std::remove_reference_t<T>>)
-    , int> >
+    template < inst_class_rvalue_ref_kind T >
+    // NOLINTNEXTLINE(readability-named-parameter)
     inst_base::inst_base(type_list<T>)
-    : ref_type_{std::is_const_v<std::remove_reference_t<T>> ? ref_types::const_rvalue : ref_types::rvalue}
+    : ref_type_{std::is_const_v<std::remove_reference_t<T>>
+        ? ref_types::const_rvalue
+        : ref_types::rvalue}
     , raw_type_{resolve_type<std::remove_cvref_t<T>>()} {}
 
     inline inst_base::inst_base(value& v)
@@ -81,80 +133,73 @@ namespace meta_hpp::detail
         return raw_type_;
     }
 
-    template < typename To, std::enable_if_t<
-        (std::is_class_v<To>) ||
-        (std::is_reference_v<To> && std::is_class_v<std::remove_reference_t<To>>)
-    , int> >
+    template < inst_class_ref_kind Q >
     bool inst_base::can_cast_to() const noexcept {
-        using to_raw_type = std::remove_cvref_t<To>;
-        using to_raw_type_cv = std::remove_reference_t<To>;
+        using inst_class = typename inst_traits<Q>::class_type;
+        using inst_method = typename inst_traits<Q>::method_type;
 
-        if constexpr ( !std::is_const_v<to_raw_type_cv> ) {
-            if ( is_const() ) {
-                return false;
+        const class_type& from_type = get_raw_type();
+        const class_type& to_type = resolve_type<inst_class>();
+
+        const auto is_a = [](const class_type& base, const class_type& derived){
+            return base == derived || base.is_base_of(derived);
+        };
+
+        const auto is_invocable = [this](){
+            switch ( get_ref_type() ) {
+            case ref_types::lvalue:
+                return std::is_invocable_v<inst_method, inst_class&>;
+            case ref_types::const_lvalue:
+                return std::is_invocable_v<inst_method, const inst_class&>;
+            case ref_types::rvalue:
+                return std::is_invocable_v<inst_method, inst_class&&>;
+            case ref_types::const_rvalue:
+                return std::is_invocable_v<inst_method, const inst_class&&>;
             }
-        }
+        };
 
-        if constexpr ( std::is_reference_v<To> ) {
-            const auto check_qualifiers = [](ref_types self_ref_type){
-                switch ( self_ref_type ) {
-                case ref_types::lvalue:       return std::is_convertible_v<to_raw_type&, To>;
-                case ref_types::const_lvalue: return std::is_convertible_v<const to_raw_type&, To>;
-                case ref_types::rvalue:       return std::is_convertible_v<to_raw_type&&, To>;
-                case ref_types::const_rvalue: return std::is_convertible_v<const to_raw_type&&, To>;
-                }
-            };
-
-            if ( !check_qualifiers(get_ref_type()) ) {
-                return false;
-            }
-        }
-
-        return get_raw_type() == resolve_type<to_raw_type>()
-            || get_raw_type().is_derived_from(resolve_type<to_raw_type>());
+        return is_a(to_type, from_type) && is_invocable();
     }
 }
 
 namespace meta_hpp::detail
 {
-    template < typename T, typename Tp
-             , std::enable_if_t<std::is_same_v<Tp, value>, int> >
+    template < decay_value_kind T >
     inst::inst(T&& v)
     : inst_base{std::forward<T>(v)}
+    // NOLINTNEXTLINE(cppcoreguidelines-pro-type-const-cast)
     , data_{const_cast<void*>(v.data())} {}
 
-    template < typename T, class_kind Tp
-             , std::enable_if_t<!std::is_same_v<Tp, arg>, int>
-             , std::enable_if_t<!std::is_same_v<Tp, inst>, int>
-             , std::enable_if_t<!std::is_same_v<Tp, value>, int> >
+    template < decay_non_uvalue_kind T >
     inst::inst(T&& v)
     : inst_base{type_list<T&&>{}}
+    // NOLINTNEXTLINE(cppcoreguidelines-pro-type-const-cast)
     , data_{const_cast<std::remove_cvref_t<T>*>(std::addressof(v))} {}
 
-    template < typename To, std::enable_if_t<
-        (std::is_class_v<To>) ||
-        (std::is_reference_v<To> && std::is_class_v<std::remove_reference_t<To>>)
-    , int> >
+    template < inst_class_ref_kind Q >
     decltype(auto) inst::cast() const {
-        if ( !can_cast_to<To>() ) {
+        if ( !can_cast_to<Q>() ) {
             throw std::logic_error("bad instance cast");
         }
 
-        if constexpr ( std::is_reference_v<To> ) {
-            using raw_type_with_cv = std::remove_reference_t<To>;
+        using inst_class_cv = std::remove_reference_t<Q>;
+        using inst_class = std::remove_cv_t<inst_class_cv>;
 
-            if constexpr ( std::is_lvalue_reference_v<To> ) {
-                return *static_cast<raw_type_with_cv*>(data_);
-            }
+        const class_type& from_type = get_raw_type();
+        const class_type& to_type = resolve_type<inst_class>();
 
-            if constexpr ( std::is_rvalue_reference_v<To> ) {
-                return std::move(*static_cast<raw_type_with_cv*>(data_));
-            }
+        void* to_ptr = detail::pointer_upcast(data_, from_type, to_type);
+
+        if constexpr ( !std::is_reference_v<Q> ) {
+            return *static_cast<inst_class_cv*>(to_ptr);
         }
 
-        if constexpr ( !std::is_reference_v<To>) {
-            using raw_type_with_cv = To;
-            return *static_cast<raw_type_with_cv*>(data_);
+        if constexpr ( std::is_lvalue_reference_v<Q> ) {
+            return *static_cast<inst_class_cv*>(to_ptr);
+        }
+
+        if constexpr ( std::is_rvalue_reference_v<Q> ) {
+            return std::move(*static_cast<inst_class_cv*>(to_ptr));
         }
     }
 }

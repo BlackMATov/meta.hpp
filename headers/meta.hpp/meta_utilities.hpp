@@ -68,7 +68,9 @@ namespace meta_hpp::detail
 
     template < typename T >
     concept uvalue_kind =
+        std::same_as<T, arg_base> ||
         std::same_as<T, arg> ||
+        std::same_as<T, inst_base> ||
         std::same_as<T, inst> ||
         std::same_as<T, value>;
 
@@ -218,20 +220,20 @@ namespace meta_hpp::detail
     public:
         arg_base() = delete;
 
-        arg_base(arg_base&&) = delete;
-        arg_base& operator=(arg_base&&) = delete;
+        arg_base(arg_base&&) = default;
+        arg_base(const arg_base&) = default;
 
-        arg_base(const arg_base&) = delete;
+        arg_base& operator=(arg_base&&) = delete;
         arg_base& operator=(const arg_base&) = delete;
 
-        template < typename T, std::enable_if_t<
-            (std::is_lvalue_reference_v<T>)
-        , int> = 0 >
+        virtual ~arg_base() = default;
+
+        template < arg_lvalue_ref_kind T >
+            requires decay_non_uvalue_kind<T>
         explicit arg_base(type_list<T>);
 
-        template < typename T, std::enable_if_t<
-            (std::is_rvalue_reference_v<T> || !std::is_reference_v<T>)
-        , int> = 0 >
+        template < arg_rvalue_ref_kind T >
+            requires decay_non_uvalue_kind<T>
         explicit arg_base(type_list<T>);
 
         explicit arg_base(value& v);
@@ -240,15 +242,15 @@ namespace meta_hpp::detail
         explicit arg_base(value&& v);
         explicit arg_base(const value&& v);
 
-        bool is_const() const noexcept;
-        bool is_lvalue() const noexcept;
-        bool is_rvalue() const noexcept;
+        [[nodiscard]] bool is_const() const noexcept;
+        [[nodiscard]] bool is_lvalue() const noexcept;
+        [[nodiscard]] bool is_rvalue() const noexcept;
 
-        ref_types get_ref_type() const noexcept;
-        const any_type& get_raw_type() const noexcept;
+        [[nodiscard]] ref_types get_ref_type() const noexcept;
+        [[nodiscard]] const any_type& get_raw_type() const noexcept;
 
         template < typename To >
-        bool can_cast_to() const noexcept;
+        [[nodiscard]] bool can_cast_to() const noexcept;
     private:
         ref_types ref_type_{};
         any_type raw_type_{};
@@ -261,24 +263,22 @@ namespace meta_hpp::detail
     public:
         arg() = delete;
 
-        arg(arg&&) = delete;
-        arg& operator=(arg&&) = delete;
+        arg(arg&&) = default;
+        arg(const arg&) = default;
 
-        arg(const arg&) = delete;
+        arg& operator=(arg&&) = delete;
         arg& operator=(const arg&) = delete;
 
-        template < typename T, typename Tp = std::decay_t<T>
-                 , std::enable_if_t<std::is_same_v<Tp, value>, int> = 0 >
+        ~arg() override = default;
+
+        template < decay_value_kind T >
         explicit arg(T&& v);
 
-        template < typename T, typename Tp = std::decay_t<T>
-                 , std::enable_if_t<!std::is_same_v<Tp, arg>, int> = 0
-                 , std::enable_if_t<!std::is_same_v<Tp, inst>, int> = 0
-                 , std::enable_if_t<!std::is_same_v<Tp, value>, int> = 0 >
+        template < decay_non_uvalue_kind T >
         explicit arg(T&& v);
 
         template < typename To >
-        To cast() const;
+        [[nodiscard]] To cast() const;
     private:
         void* data_{};
     };
@@ -297,21 +297,18 @@ namespace meta_hpp::detail
     public:
         inst_base() = delete;
 
-        inst_base(inst_base&&) = delete;
-        inst_base& operator=(inst_base&&) = delete;
+        inst_base(inst_base&&) = default;
+        inst_base(const inst_base&) = default;
 
-        inst_base(const inst_base&) = delete;
+        inst_base& operator=(inst_base&&) = delete;
         inst_base& operator=(const inst_base&) = delete;
 
-        template < typename T, std::enable_if_t<
-            (std::is_lvalue_reference_v<T> && std::is_class_v<std::remove_reference_t<T>>)
-        , int> = 0>
+        virtual ~inst_base() = default;
+
+        template < inst_class_lvalue_ref_kind T >
         explicit inst_base(type_list<T>);
 
-        template < typename T, std::enable_if_t<
-            (std::is_class_v<T>) ||
-            (std::is_rvalue_reference_v<T> && std::is_class_v<std::remove_reference_t<T>>)
-        , int> = 0>
+        template < inst_class_rvalue_ref_kind T >
         explicit inst_base(type_list<T>);
 
         explicit inst_base(value& v);
@@ -320,18 +317,15 @@ namespace meta_hpp::detail
         explicit inst_base(value&& v);
         explicit inst_base(const value&& v);
 
-        bool is_const() const noexcept;
-        bool is_lvalue() const noexcept;
-        bool is_rvalue() const noexcept;
+        [[nodiscard]] bool is_const() const noexcept;
+        [[nodiscard]] bool is_lvalue() const noexcept;
+        [[nodiscard]] bool is_rvalue() const noexcept;
 
-        ref_types get_ref_type() const noexcept;
-        const class_type& get_raw_type() const noexcept;
+        [[nodiscard]] ref_types get_ref_type() const noexcept;
+        [[nodiscard]] const class_type& get_raw_type() const noexcept;
 
-        template < typename To, std::enable_if_t<
-            (std::is_class_v<To>) ||
-            (std::is_reference_v<To> && std::is_class_v<std::remove_reference_t<To>>)
-        , int> = 0>
-        bool can_cast_to() const noexcept;
+        template < inst_class_ref_kind Q >
+        [[nodiscard]] bool can_cast_to() const noexcept;
     private:
         ref_types ref_type_{};
         class_type raw_type_{};
@@ -344,27 +338,22 @@ namespace meta_hpp::detail
     public:
         inst() = delete;
 
-        inst(inst&&) = delete;
-        inst& operator=(inst&&) = delete;
+        inst(inst&&) = default;
+        inst(const inst&) = default;
 
-        inst(const inst&) = delete;
+        inst& operator=(inst&&) = delete;
         inst& operator=(const inst&) = delete;
 
-        template < typename T, typename Tp = std::decay_t<T>
-                 , std::enable_if_t<std::is_same_v<Tp, value>, int> = 0 >
+        ~inst() override = default;
+
+        template < decay_value_kind T >
         explicit inst(T&& v);
 
-        template < typename T, class_kind Tp = std::decay_t<T>
-                 , std::enable_if_t<!std::is_same_v<Tp, arg>, int> = 0
-                 , std::enable_if_t<!std::is_same_v<Tp, inst>, int> = 0
-                 , std::enable_if_t<!std::is_same_v<Tp, value>, int> = 0 >
+        template < decay_non_uvalue_kind T >
         explicit inst(T&& v);
 
-        template < typename To, std::enable_if_t<
-            (std::is_class_v<To>) ||
-            (std::is_reference_v<To> && std::is_class_v<std::remove_reference_t<To>>)
-        , int> = 0>
-        decltype(auto) cast() const;
+        template < inst_class_ref_kind Q >
+        [[nodiscard]] decltype(auto) cast() const;
     private:
         void* data_{};
     };
