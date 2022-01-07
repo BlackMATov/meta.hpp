@@ -155,6 +155,8 @@ namespace meta_hpp::detail
                 return std::is_invocable_v<inst_method, inst_class&&>;
             case ref_types::const_rvalue:
                 return std::is_invocable_v<inst_method, const inst_class&&>;
+            default:
+                return false;
             }
         };
 
