@@ -147,6 +147,12 @@ namespace meta_hpp
 
         template < typename Instance, typename Value >
         void set(Instance&& instance, Value&& value) const;
+
+        template < typename Instance >
+        [[nodiscard]] value operator()(Instance&& instance) const;
+
+        template < typename Instance, typename Value >
+        void operator()(Instance&& instance, Value&& value) const;
     private:
         detail::member_state_ptr state_;
     };
@@ -223,6 +229,11 @@ namespace meta_hpp
 
         template < typename Value >
         void set(Value&& value) const;
+
+        [[nodiscard]] value operator()() const;
+
+        template < typename Value >
+        void operator()(Value&& value) const;
     private:
         detail::variable_state_ptr state_;
     };

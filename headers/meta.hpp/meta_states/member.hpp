@@ -123,4 +123,14 @@ namespace meta_hpp
         using namespace detail;
         state_->setter(inst{std::forward<Instance>(instance)}, arg{std::forward<Value>(value)});
     }
+
+    template < typename Instance >
+    value member::operator()(Instance&& instance) const {
+        return get(std::forward<Instance>(instance));
+    }
+
+    template < typename Instance, typename Value >
+    void member::operator()(Instance&& instance, Value&& value) const {
+        set(std::forward<Instance>(instance), std::forward<Value>(value));
+    }
 }

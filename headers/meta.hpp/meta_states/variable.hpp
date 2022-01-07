@@ -103,4 +103,13 @@ namespace meta_hpp
         using namespace detail;
         state_->setter(arg{std::forward<Value>(value)});
     }
+
+    inline value variable::operator()() const {
+        return get();
+    }
+
+    template < typename Value >
+    void variable::operator()(Value&& value) const {
+        set(std::forward<Value>(value));
+    }
 }

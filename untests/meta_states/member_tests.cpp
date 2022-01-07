@@ -12,6 +12,8 @@ namespace
         int int_member = 1;
         const int const_int_member = 2;
     };
+
+    struct clazz_2 {};
 }
 
 TEST_CASE("meta/meta_states/member") {
@@ -47,16 +49,38 @@ TEST_CASE("meta/meta_states/member") {
         CHECK(vm.get_name() == "int_member");
 
         clazz_1 v;
+        clazz_2 v2;
 
-        CHECK(vm.get(v) == 1);
-        CHECK(vm.get(std::as_const(v)) == 1);
-        CHECK(vm.get(std::move(v)) == 1);
-        CHECK(vm.get(std::move(std::as_const(v))) == 1);
+        {
+            CHECK(vm.get(v) == 1);
+            CHECK(vm.get(std::as_const(v)) == 1);
+            CHECK(vm.get(std::move(v)) == 1);
+            CHECK(vm.get(std::move(std::as_const(v))) == 1);
 
-        CHECK_NOTHROW(vm.set(v, 10)); CHECK(vm.get(v) == 10);
-        CHECK_THROWS(vm.set(std::as_const(v), 11)); CHECK(vm.get(v) == 10);
-        CHECK_NOTHROW(vm.set(std::move(v), 12)); CHECK(vm.get(v) == 12);
-        CHECK_THROWS(vm.set(std::move(std::as_const(v)), 13)); CHECK(vm.get(v) == 12);
+            CHECK(vm(v) == 1);
+            CHECK(vm(std::as_const(v)) == 1);
+            CHECK(vm(std::move(v)) == 1);
+            CHECK(vm(std::move(std::as_const(v))) == 1);
+
+            CHECK_THROWS(std::ignore = vm.get(v2));
+            CHECK_THROWS(std::ignore = vm(v2));
+        }
+
+        {
+            CHECK_NOTHROW(vm.set(v, 10)); CHECK(vm.get(v) == 10);
+            CHECK_THROWS(vm.set(std::as_const(v), 11)); CHECK(vm.get(v) == 10);
+            CHECK_NOTHROW(vm.set(std::move(v), 12)); CHECK(vm.get(v) == 12);
+            CHECK_THROWS(vm.set(std::move(std::as_const(v)), 13)); CHECK(vm.get(v) == 12);
+
+            CHECK_NOTHROW(vm(v, 13)); CHECK(vm(v) == 13);
+            CHECK_THROWS(vm(std::as_const(v), 14)); CHECK(vm(v) == 13);
+            CHECK_NOTHROW(vm(std::move(v), 15)); CHECK(vm(v) == 15);
+            CHECK_THROWS(vm(std::move(std::as_const(v)), 16)); CHECK(vm(v) == 15);
+
+            CHECK_THROWS(vm.set(v2, 17));
+            CHECK_THROWS(vm(v2, 17));
+            CHECK(vm(v) == 15);
+        }
     }
 
     SUBCASE("const int") {
@@ -67,15 +91,37 @@ TEST_CASE("meta/meta_states/member") {
         CHECK(vm.get_name() == "const_int_member");
 
         clazz_1 v;
+        clazz_2 v2;
 
-        CHECK(vm.get(v) == 2);
-        CHECK(vm.get(std::as_const(v)) == 2);
-        CHECK(vm.get(std::move(v)) == 2);
-        CHECK(vm.get(std::move(std::as_const(v))) == 2);
+        {
+            CHECK(vm.get(v) == 2);
+            CHECK(vm.get(std::as_const(v)) == 2);
+            CHECK(vm.get(std::move(v)) == 2);
+            CHECK(vm.get(std::move(std::as_const(v))) == 2);
 
-        CHECK_THROWS(vm.set(v, 10)); CHECK(vm.get(v) == 2);
-        CHECK_THROWS(vm.set(std::as_const(v), 11)); CHECK(vm.get(v) == 2);
-        CHECK_THROWS(vm.set(std::move(v), 12)); CHECK(vm.get(v) == 2);
-        CHECK_THROWS(vm.set(std::move(std::as_const(v)), 13)); CHECK(vm.get(v) == 2);
+            CHECK(vm(v) == 2);
+            CHECK(vm(std::as_const(v)) == 2);
+            CHECK(vm(std::move(v)) == 2);
+            CHECK(vm(std::move(std::as_const(v))) == 2);
+
+            CHECK_THROWS(std::ignore = vm.get(v2));
+            CHECK_THROWS(std::ignore = vm(v2));
+        }
+
+        {
+            CHECK_THROWS(vm.set(v, 10)); CHECK(vm.get(v) == 2);
+            CHECK_THROWS(vm.set(std::as_const(v), 11)); CHECK(vm.get(v) == 2);
+            CHECK_THROWS(vm.set(std::move(v), 12)); CHECK(vm.get(v) == 2);
+            CHECK_THROWS(vm.set(std::move(std::as_const(v)), 16)); CHECK(vm.get(v) == 2);
+
+            CHECK_THROWS(vm(v, 13)); CHECK(vm(v) == 2);
+            CHECK_THROWS(vm(std::as_const(v), 14)); CHECK(vm(v) == 2);
+            CHECK_THROWS(vm(std::move(v), 15)); CHECK(vm(v) == 2);
+            CHECK_THROWS(vm(std::move(std::as_const(v)), 16)); CHECK(vm(v) == 2);
+
+            CHECK_THROWS(vm.set(v2, 17));
+            CHECK_THROWS(vm(v2, 17));
+            CHECK(vm(v) == 2);
+        }
     }
 }
