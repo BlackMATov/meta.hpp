@@ -37,6 +37,7 @@ target_compile_options(${PROJECT_NAME}
         -Wno-shadow-field-in-constructor
         -Wno-unknown-warning-option
         -Wno-weak-vtables
+        -Wno-zero-as-null-pointer-constant
         >)
 
 if(BUILD_AS_STANDALONE)

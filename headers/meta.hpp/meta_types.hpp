@@ -709,7 +709,7 @@ namespace meta_hpp
     // NOLINTNEXTLINE(readability-named-parameter)
     [[nodiscard]] auto resolve_type(const T&) {
         return resolve_type<std::remove_reference_t<T>>();
-    };
+    }
 }
 
 namespace meta_hpp
