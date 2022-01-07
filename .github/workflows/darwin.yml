@@ -10,9 +10,9 @@ jobs:
       matrix:
         config:
         # https://github.com/actions/virtual-environments/tree/main/images/macos
-        - { os: "macos-10.15", xcode: "10.3" }
-        - { os: "macos-10.15", xcode: "11.7" }
-        - { os: "macos-10.15", xcode: "12.4" }
+        - { os: "macos-11", xcode: "13.0" }
+        - { os: "macos-11", xcode: "13.1" }
+        - { os: "macos-11", xcode: "13.2" }
     name: "xcode-${{matrix.config.xcode}}"
     steps:
     - uses: actions/checkout@v2

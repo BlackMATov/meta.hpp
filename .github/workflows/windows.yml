@@ -10,8 +10,6 @@ jobs:
       matrix:
         config:
         # https://github.com/actions/virtual-environments/tree/main/images/win
-        - { os: "windows-2016", vs: "Visual Studio 2017", arch: "x86" }
-        - { os: "windows-2016", vs: "Visual Studio 2017", arch: "x64" }
         - { os: "windows-2019", vs: "Visual Studio 2019", arch: "x86" }
         - { os: "windows-2019", vs: "Visual Studio 2019", arch: "x64" }
     name: "${{matrix.config.vs}} ${{matrix.config.arch}}"
