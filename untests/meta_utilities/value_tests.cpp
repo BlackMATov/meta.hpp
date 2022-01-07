@@ -40,12 +40,12 @@ namespace
     int ivec2::move_ctor_counter{0};
     int ivec2::copy_ctor_counter{0};
 
-    bool operator<(const ivec2& l, const ivec2& r) noexcept {
-        return std::tie(l.x, l.y) < std::tie(r.x, r.y);
+    [[maybe_unused]] bool operator<(const ivec2& l, const ivec2& r) noexcept {
+        return (l.x < r.x) || (l.x == r.x && l.y < r.y);
     }
 
-    bool operator==(const ivec2& l, const ivec2& r) noexcept {
-        return std::tie(l.x, l.y) == std::tie(r.x, r.y);
+    [[maybe_unused]] bool operator==(const ivec2& l, const ivec2& r) noexcept {
+        return l.x == r.x && l.y == r.y;
     }
 }
 
@@ -303,7 +303,7 @@ TEST_CASE("meta/meta_utilities/value") {
             class empty_class1 {};
             class empty_class2 {};
 
-            CHECK(operator<(meta::value{empty_class1{}}, meta::value{empty_class2{}}));
+            CHECK((operator<(meta::value{empty_class1{}}, meta::value{empty_class2{}}) || operator<(meta::value{empty_class2{}}, meta::value{empty_class1{}})));
             CHECK_THROWS(std::ignore = operator<(meta::value{empty_class1{}}, meta::value{empty_class1{}}));
         }
     }

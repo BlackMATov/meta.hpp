@@ -601,11 +601,11 @@ namespace meta_hpp
         , name{std::move(name)} {}
 
         [[nodiscard]] friend bool operator<(const evalue_index& l, const evalue_index& r) noexcept {
-            return std::tie(l.type, l.name) < std::tie(r.type, r.name);
+            return (l.type < r.type) || (l.type == r.type && l.name < r.name);
         }
 
         [[nodiscard]] friend bool operator==(const evalue_index& l, const evalue_index& r) noexcept {
-            return std::tie(l.type, l.name) == std::tie(r.type, r.name);
+            return l.type == r.type && l.name == r.name;
         }
     };
 
@@ -618,11 +618,11 @@ namespace meta_hpp
         , name{std::move(name)} {}
 
         [[nodiscard]] friend bool operator<(const function_index& l, const function_index& r) noexcept {
-            return std::tie(l.type, l.name) < std::tie(r.type, r.name);
+            return (l.type < r.type) || (l.type == r.type && l.name < r.name);
         }
 
         [[nodiscard]] friend bool operator==(const function_index& l, const function_index& r) noexcept {
-            return std::tie(l.type, l.name) == std::tie(r.type, r.name);
+            return l.type == r.type && l.name == r.name;
         }
     };
 
@@ -635,11 +635,11 @@ namespace meta_hpp
         , name{std::move(name)} {}
 
         [[nodiscard]] friend bool operator<(const member_index& l, const member_index& r) noexcept {
-            return std::tie(l.type, l.name) < std::tie(r.type, r.name);
+            return (l.type < r.type) || (l.type == r.type && l.name < r.name);
         }
 
         [[nodiscard]] friend bool operator==(const member_index& l, const member_index& r) noexcept {
-            return std::tie(l.type, l.name) == std::tie(r.type, r.name);
+            return l.type == r.type && l.name == r.name;
         }
     };
 
@@ -652,11 +652,11 @@ namespace meta_hpp
         , name{std::move(name)} {}
 
         [[nodiscard]] friend bool operator<(const method_index& l, const method_index& r) noexcept {
-            return std::tie(l.type, l.name) < std::tie(r.type, r.name);
+            return (l.type < r.type) || (l.type == r.type && l.name < r.name);
         }
 
         [[nodiscard]] friend bool operator==(const method_index& l, const method_index& r) noexcept {
-            return std::tie(l.type, l.name) == std::tie(r.type, r.name);
+            return l.type == r.type && l.name == r.name;
         }
     };
 
@@ -684,11 +684,11 @@ namespace meta_hpp
         , name{std::move(name)} {}
 
         [[nodiscard]] friend bool operator<(const variable_index& l, const variable_index& r) noexcept {
-            return std::tie(l.type, l.name) < std::tie(r.type, r.name);
+            return (l.type < r.type) || (l.type == r.type && l.name < r.name);
         }
 
         [[nodiscard]] friend bool operator==(const variable_index& l, const variable_index& r) noexcept {
-            return std::tie(l.type, l.name) == std::tie(r.type, r.name);
+            return l.type == r.type && l.name == r.name;
         }
     };
 }
