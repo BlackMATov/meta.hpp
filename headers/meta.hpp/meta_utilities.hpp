@@ -11,6 +11,31 @@
 
 namespace meta_hpp::detail
 {
+    template < typename From >
+    struct cvref_traits {
+        static constexpr bool is_lvalue = std::is_lvalue_reference_v<From>;
+        static constexpr bool is_rvalue = std::is_rvalue_reference_v<From>;
+        static constexpr bool is_const = std::is_const_v<std::remove_reference_t<From>>;
+        static constexpr bool is_volatile = std::is_volatile_v<std::remove_reference_t<From>>;
+
+        template < bool yesno, template < typename > typename Q, typename V >
+        using apply_t_if = std::conditional_t<yesno, Q<V>, V>;
+
+        template < typename To >
+        using copy_to =
+            apply_t_if<is_lvalue, std::add_lvalue_reference_t,
+            apply_t_if<is_rvalue, std::add_rvalue_reference_t,
+            apply_t_if<is_const, std::add_const_t,
+            apply_t_if<is_volatile, std::add_volatile_t,
+            std::remove_cvref_t<To>>>>>;
+    };
+
+    template < typename From, typename To >
+    using copy_cvref_t = typename cvref_traits<From>::template copy_to<To>;
+}
+
+namespace meta_hpp::detail
+{
     template < typename T >
     concept destructible =
         std::is_nothrow_destructible_v<T>;
