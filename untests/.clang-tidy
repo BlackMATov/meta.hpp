@@ -6,16 +6,12 @@ Checks: '-*,
         concurrency-*,
 
         cppcoreguidelines-*,
+        -cppcoreguidelines-avoid-magic-numbers,
+        -cppcoreguidelines-avoid-non-const-global-variables,
 
         modernize-*,
         -modernize-use-trailing-return-type,
 
-        performance-*,
-
         portability-*,
-
-        readability-*,
-        -readability-redundant-access-specifiers,
-        -readability-use-anyofallof,
         '
 ...
