@@ -60,7 +60,7 @@ namespace meta_hpp::detail
 {
     template < typename T >
     concept value_kind =
-        std::same_as<T, value>;
+        std::is_same_v<T, value>;
 
     template < typename T >
     concept decay_value_kind =
@@ -68,11 +68,11 @@ namespace meta_hpp::detail
 
     template < typename T >
     concept uvalue_kind =
-        std::same_as<T, arg_base> ||
-        std::same_as<T, arg> ||
-        std::same_as<T, inst_base> ||
-        std::same_as<T, inst> ||
-        std::same_as<T, value>;
+        std::is_same_v<T, arg_base> ||
+        std::is_same_v<T, arg> ||
+        std::is_same_v<T, inst_base> ||
+        std::is_same_v<T, inst> ||
+        std::is_same_v<T, value>;
 
     template < typename T >
     concept decay_uvalue_kind =

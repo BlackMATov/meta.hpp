@@ -64,18 +64,18 @@ namespace meta_hpp
     {
         template < typename T >
         concept type_family =
-            std::same_as<T, any_type> ||
-            std::same_as<T, array_type> ||
-            std::same_as<T, class_type> ||
-            std::same_as<T, ctor_type> ||
-            std::same_as<T, enum_type> ||
-            std::same_as<T, function_type> ||
-            std::same_as<T, member_type> ||
-            std::same_as<T, method_type> ||
-            std::same_as<T, number_type> ||
-            std::same_as<T, pointer_type> ||
-            std::same_as<T, reference_type> ||
-            std::same_as<T, void_type>;
+            std::is_same_v<T, any_type> ||
+            std::is_same_v<T, array_type> ||
+            std::is_same_v<T, class_type> ||
+            std::is_same_v<T, ctor_type> ||
+            std::is_same_v<T, enum_type> ||
+            std::is_same_v<T, function_type> ||
+            std::is_same_v<T, member_type> ||
+            std::is_same_v<T, method_type> ||
+            std::is_same_v<T, number_type> ||
+            std::is_same_v<T, pointer_type> ||
+            std::is_same_v<T, reference_type> ||
+            std::is_same_v<T, void_type>;
 
         template < type_family T >
         [[nodiscard]] auto data_access(const T& type) {

@@ -53,7 +53,7 @@ namespace meta_hpp
     template < detail::class_kind Class >
     template < detail::member_kind Member >
     class_bind<Class>& class_bind<Class>::member_(std::string name, Member member) {
-        static_assert(std::same_as<Class, typename detail::member_traits<Member>::class_type>);
+        static_assert(std::is_same_v<Class, typename detail::member_traits<Member>::class_type>);
         auto member_state = detail::member_state::make<Member>(std::move(name), std::move(member));
         data_->members.emplace(member_state->index, std::move(member_state));
         return *this;
@@ -62,7 +62,7 @@ namespace meta_hpp
     template < detail::class_kind Class >
     template < detail::method_kind Method >
     class_bind<Class>& class_bind<Class>::method_(std::string name, Method method) {
-        static_assert(std::same_as<Class, typename detail::method_traits<Method>::class_type>);
+        static_assert(std::is_same_v<Class, typename detail::method_traits<Method>::class_type>);
         auto method_state = detail::method_state::make<Method>(std::move(name), std::move(method));
         data_->methods.emplace(method_state->index, std::move(method_state));
         return *this;

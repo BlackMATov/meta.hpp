@@ -16,13 +16,13 @@ namespace meta_hpp
     {
         template < typename T >
         concept state_family =
-            std::same_as<T, ctor> ||
-            std::same_as<T, evalue> ||
-            std::same_as<T, function> ||
-            std::same_as<T, member> ||
-            std::same_as<T, method> ||
-            std::same_as<T, scope> ||
-            std::same_as<T, variable>;
+            std::is_same_v<T, ctor> ||
+            std::is_same_v<T, evalue> ||
+            std::is_same_v<T, function> ||
+            std::is_same_v<T, member> ||
+            std::is_same_v<T, method> ||
+            std::is_same_v<T, scope> ||
+            std::is_same_v<T, variable>;
     }
 
     template < detail::state_family T, detail::state_family U >
