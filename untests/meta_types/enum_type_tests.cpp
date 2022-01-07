@@ -90,6 +90,7 @@ TEST_CASE("meta/meta_types/enum_type") {
             const meta::evalue green_value = color_type.get_evalue("green");
             REQUIRE(green_value);
             CHECK(green_value.get_value() == color::green);
+            CHECK(green_value.get_underlying_value() == meta::detail::to_underlying(color::green));
         }
 
         {
@@ -106,6 +107,7 @@ TEST_CASE("meta/meta_types/enum_type") {
             const meta::evalue green_value = ecolor_type.get_evalue("green");
             REQUIRE(green_value);
             CHECK(green_value.get_value() == ecolor_green);
+            CHECK(green_value.get_underlying_value() == meta::detail::to_underlying(ecolor_green));
         }
 
         {

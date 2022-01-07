@@ -98,6 +98,7 @@ namespace meta_hpp
         [[nodiscard]] const std::string& get_name() const noexcept;
 
         [[nodiscard]] const value& get_value() const noexcept;
+        [[nodiscard]] const value& get_underlying_value() const noexcept;
     private:
         detail::evalue_state_ptr state_;
     };
@@ -248,7 +249,8 @@ namespace meta_hpp::detail
     struct evalue_state final {
         evalue_index index;
 
-        class value value;
+        value enum_value;
+        value underlying_value;
 
         template < enum_kind Enum >
         explicit evalue_state(evalue_index index, Enum value);

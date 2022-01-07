@@ -59,6 +59,14 @@ namespace meta_hpp::detail
 namespace meta_hpp::detail
 {
     template < typename T >
+    [[nodiscard]] constexpr std::underlying_type_t<T> to_underlying(T v) noexcept {
+        return static_cast<std::underlying_type_t<T>>(v);
+    }
+}
+
+namespace meta_hpp::detail
+{
+    template < typename T >
     concept value_kind =
         std::is_same_v<T, value>;
 

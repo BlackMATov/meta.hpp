@@ -16,7 +16,8 @@ namespace meta_hpp::detail
     template < enum_kind Enum >
     evalue_state::evalue_state(evalue_index index, Enum value)
     : index{std::move(index)}
-    , value{std::move(value)} {}
+    , enum_value{value}
+    , underlying_value{to_underlying(value)} {}
 
     template < enum_kind Enum >
     evalue_state_ptr evalue_state::make(std::string name, Enum value) {
@@ -51,6 +52,10 @@ namespace meta_hpp
     }
 
     inline const value& evalue::get_value() const noexcept {
-        return state_->value;
+        return state_->enum_value;
+    }
+
+    inline const value& evalue::get_underlying_value() const noexcept {
+        return state_->underlying_value;
     }
 }
