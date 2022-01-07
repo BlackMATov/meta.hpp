@@ -12,11 +12,11 @@ namespace
         int x{};
         int y{};
 
-        int dot(const ivec2& other) const noexcept {
+        [[nodiscard]] int dot(const ivec2& other) const noexcept {
             return x * other.x + y * other.y;
         }
 
-        int length2() const noexcept {
+        [[nodiscard]] int length2() const noexcept {
             return dot(*this);
         }
     };

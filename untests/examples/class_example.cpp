@@ -8,40 +8,52 @@
 
 namespace
 {
+    constexpr double pi_v = 3.1415926536;
+
     class shape {
     public:
         shape() = default;
-        shape(const shape&) = default;
-        shape& operator=(const shape&) = default;
+        virtual ~shape() = default;
 
-        virtual ~shape() {}
-        virtual double area() const = 0;
+        [[nodiscard]] virtual double area() const = 0;
     };
 
     class circle : public shape {
-        double radius_;
     public:
-        circle(const circle&) = default;
-        circle& operator=(const circle&) = default;
+        explicit circle(double radius)
+        : radius_{radius} {}
 
-        explicit circle(double radius) : radius_{radius} {}
-        double area() const override { return 3.1415926536 * radius_ * radius_; }
+        [[nodiscard]] double area() const override {
+            return pi_v * radius_ * radius_;
+        }
 
-        double radius() const { return radius_; }
+        [[nodiscard]] double radius() const {
+            return radius_;
+        }
+    private:
+        double radius_{};
     };
 
     class rectangle : public shape {
-        double width_;
-        double height_;
     public:
-        rectangle(const rectangle&) = default;
-        rectangle& operator=(const rectangle&) = default;
+        explicit rectangle(double width, double height)
+        : width_{width}
+        , height_{height} {}
 
-        explicit rectangle(double width, double height) : width_{width}, height_{height} {}
-        double area() const override { return width_ * height_; }
+        [[nodiscard]] double area() const override {
+            return width_ * height_;
+        }
 
-        double width() const { return width_; }
-        double height() const { return height_; }
+        [[nodiscard]] double width() const {
+            return width_;
+        }
+
+        [[nodiscard]] double height() const {
+            return height_;
+        }
+    private:
+        double width_{};
+        double height_{};
     };
 }
 

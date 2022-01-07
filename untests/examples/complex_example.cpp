@@ -16,15 +16,15 @@ namespace
         ivec2(int v) : x{v}, y{v} {}
         ivec2(int x, int y) : x{x}, y{y} {}
 
-        int dot(const ivec2& other) const noexcept {
+        [[nodiscard]] int dot(const ivec2& other) const noexcept {
             return x * other.x + y * other.y;
         }
 
-        int length2() const noexcept {
+        [[nodiscard]] int length2() const noexcept {
             return dot(*this);
         }
 
-        friend bool operator==(const ivec2& l, const ivec2& r) noexcept {
+        [[nodiscard]] friend bool operator==(const ivec2& l, const ivec2& r) noexcept {
             return l.x == r.x && l.y == r.y;
         }
     };
