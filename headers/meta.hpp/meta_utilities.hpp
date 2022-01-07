@@ -127,6 +127,21 @@ namespace meta_hpp::detail
     };
 }
 
+namespace meta_hpp::detail
+{
+    class noncopyable {
+    protected:
+        noncopyable() = default;
+        ~noncopyable() = default;
+    public:
+        noncopyable(noncopyable&&) = delete;
+        noncopyable(const noncopyable&) = delete;
+
+        noncopyable& operator=(noncopyable&&) = delete;
+        noncopyable& operator=(const noncopyable&) = delete;
+    };
+}
+
 namespace meta_hpp
 {
     class value final {
