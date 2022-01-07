@@ -234,10 +234,9 @@ namespace meta_hpp::detail
         using invoke_impl = std::function<value(std::span<arg>)>;
         using is_invocable_with_impl = std::function<bool(std::span<arg_base>)>;
 
-        ctor_index index;
-
-        invoke_impl invoke;
-        is_invocable_with_impl is_invocable_with;
+        const ctor_index index;
+        const invoke_impl invoke;
+        const is_invocable_with_impl is_invocable_with;
 
         template < class_kind Class, typename... Args >
         explicit ctor_state(ctor_index index, type_list<Class>, type_list<Args...>);
@@ -247,10 +246,9 @@ namespace meta_hpp::detail
     };
 
     struct evalue_state final {
-        evalue_index index;
-
-        value enum_value;
-        value underlying_value;
+        const evalue_index index;
+        const value enum_value;
+        const value underlying_value;
 
         template < enum_kind Enum >
         explicit evalue_state(evalue_index index, Enum value);
@@ -263,10 +261,9 @@ namespace meta_hpp::detail
         using invoke_impl = std::function<std::optional<value>(std::span<arg>)>;
         using is_invocable_with_impl = std::function<bool(std::span<arg_base>)>;
 
-        function_index index;
-
-        invoke_impl invoke;
-        is_invocable_with_impl is_invocable_with;
+        const function_index index;
+        const invoke_impl invoke;
+        const is_invocable_with_impl is_invocable_with;
 
         template < function_kind Function >
         explicit function_state(function_index index, Function function);
@@ -279,10 +276,9 @@ namespace meta_hpp::detail
         using getter_impl = std::function<value(const inst&)>;
         using setter_impl = std::function<void(const inst&, const arg&)>;
 
-        member_index index;
-
-        getter_impl getter;
-        setter_impl setter;
+        const member_index index;
+        const getter_impl getter;
+        const setter_impl setter;
 
         template < member_kind Member >
         explicit member_state(member_index index, Member member);
@@ -295,10 +291,9 @@ namespace meta_hpp::detail
         using invoke_impl = std::function<std::optional<value>(const inst&, std::span<arg>)>;
         using is_invocable_with_impl = std::function<bool(const inst_base&, std::span<arg_base>)>;
 
-        method_index index;
-
-        invoke_impl invoke;
-        is_invocable_with_impl is_invocable_with;
+        const method_index index;
+        const invoke_impl invoke;
+        const is_invocable_with_impl is_invocable_with;
 
         template < method_kind Method >
         explicit method_state(method_index index, Method method);
@@ -308,7 +303,7 @@ namespace meta_hpp::detail
     };
 
     struct scope_state final {
-        scope_index index;
+        const scope_index index;
 
         class_map classes;
         enum_map enums;
@@ -325,10 +320,9 @@ namespace meta_hpp::detail
         using getter_impl = std::function<value()>;
         using setter_impl = std::function<void(const arg&)>;
 
-        variable_index index;
-
-        getter_impl getter;
-        setter_impl setter;
+        const variable_index index;
+        const getter_impl getter;
+        const setter_impl setter;
 
         template < pointer_kind Pointer >
         explicit variable_state(variable_index index, Pointer pointer);
