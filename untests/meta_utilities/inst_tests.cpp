@@ -8,18 +8,24 @@
 
 namespace
 {
-    struct clazz {
-        int m1() { return 1; }
-        int m2() & { return 1; }
-        int m3() && { return 1; }
-        int m4() const { return 1; }
-        int m5() const & { return 1; }
-        int m6() const && { return 1; }
+    struct fake {
+        int i = 10;
     };
 
-    struct dclazz : clazz {};
+    struct clazz {
+        int ii = 1;
+        [[nodiscard]] int m1() { return ii; }
+        [[nodiscard]] int m2() & { return ii; }
+        [[nodiscard]] int m3() && { return ii; }
+        [[nodiscard]] int m4() const { return ii; }
+        [[nodiscard]] int m5() const & { return ii; }
+        [[nodiscard]] int m6() const && { return ii; }
+    };
+
+    struct dclazz : fake, clazz {};
 }
 
+// NOLINTNEXTLINE(cppcoreguidelines-macro-usage)
 #define META_HPP_CHECK_INVOCABLE(Inst, FName, Qualifiers)\
     {\
         using namespace meta::detail;\
@@ -29,20 +35,21 @@ namespace
         if ( std::is_invocable_v<decltype(method_ptr), decltype(Inst)> ) {\
             CHECK(inst{Inst}.can_cast_to<clazz Qualifiers>());\
             CHECK(inst_base{type_list<decltype(Inst)>{}}.can_cast_to<clazz Qualifiers>());\
-            CHECK_NOTHROW(inst{Inst}.cast<clazz Qualifiers>());\
+            CHECK_NOTHROW(std::ignore = inst{Inst}.cast<clazz Qualifiers>());\
             \
             CHECK(m_state.is_invocable_with<decltype(Inst)>());\
             CHECK(m_state.invoke(Inst) == 1);\
         } else {\
             CHECK_FALSE(inst{Inst}.can_cast_to<clazz Qualifiers>());\
             CHECK_FALSE(inst_base{type_list<decltype(Inst)>{}}.can_cast_to<clazz Qualifiers>());\
-            CHECK_THROWS(inst{Inst}.cast<clazz Qualifiers>());\
+            CHECK_THROWS(std::ignore = inst{Inst}.cast<clazz Qualifiers>());\
             \
             CHECK_FALSE(m_state.is_invocable_with<decltype(Inst)>());\
             CHECK_THROWS(m_state.invoke(Inst));\
         }\
     }
 
+// NOLINTNEXTLINE(cppcoreguidelines-macro-usage)
 #define META_HPP_CHECK_INVOCABLE_2(FromValue, FName, FromType, ToQualifiers)\
     {\
         using namespace meta::detail;\
@@ -63,8 +70,9 @@ namespace
 TEST_CASE("features/meta_utilities/inst2") {
     namespace meta = meta_hpp;
 
-    meta::class_<dclazz>()
-        .base_<clazz>();
+    meta::class_<fake>();
+    meta::class_<clazz>();
+    meta::class_<dclazz>().base_<fake>().base_<clazz>();
 }
 
 TEST_CASE("features/meta_utilities/inst2/refs") {
