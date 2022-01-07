@@ -9,5 +9,6 @@
 #include <meta.hpp/meta_all.hpp>
 #include <doctest/doctest.h>
 
+#include <cstring>
 #include <iostream>
 #include <sstream>
