@@ -165,7 +165,7 @@ namespace meta_hpp
         [[nodiscard]] void_type as_void() const noexcept;
     private:
         detail::type_data_base_ptr data_;
-        friend auto detail::data_access(const any_type&);
+        friend auto detail::data_access<any_type>(const any_type&);
     };
 
     class array_type final {
@@ -183,7 +183,7 @@ namespace meta_hpp
         [[nodiscard]] any_type get_data_type() const noexcept;
     private:
         detail::array_type_data_ptr data_;
-        friend auto detail::data_access(const array_type&);
+        friend auto detail::data_access<array_type>(const array_type&);
     };
 
     class class_type final {
@@ -245,7 +245,7 @@ namespace meta_hpp
         [[nodiscard]] method get_method_with(std::string_view name, std::initializer_list<any_type> args) const noexcept;
     private:
         detail::class_type_data_ptr data_;
-        friend auto detail::data_access(const class_type&);
+        friend auto detail::data_access<class_type>(const class_type&);
     };
 
     class ctor_type final {
@@ -265,7 +265,7 @@ namespace meta_hpp
         [[nodiscard]] const std::vector<any_type>& get_argument_types() const noexcept;
     private:
         detail::ctor_type_data_ptr data_;
-        friend auto detail::data_access(const ctor_type&);
+        friend auto detail::data_access<ctor_type>(const ctor_type&);
     };
 
     class enum_type final {
@@ -290,7 +290,7 @@ namespace meta_hpp
         [[nodiscard]] std::optional<value> name_to_value(std::string_view name) const noexcept;
     private:
         detail::enum_type_data_ptr data_;
-        friend auto detail::data_access(const enum_type&);
+        friend auto detail::data_access<enum_type>(const enum_type&);
     };
 
     class function_type final {
@@ -310,7 +310,7 @@ namespace meta_hpp
         [[nodiscard]] const std::vector<any_type>& get_argument_types() const noexcept;
     private:
         detail::function_type_data_ptr data_;
-        friend auto detail::data_access(const function_type&);
+        friend auto detail::data_access<function_type>(const function_type&);
     };
 
     class member_type final {
@@ -328,7 +328,7 @@ namespace meta_hpp
         [[nodiscard]] any_type get_value_type() const noexcept;
     private:
         detail::member_type_data_ptr data_;
-        friend auto detail::data_access(const member_type&);
+        friend auto detail::data_access<member_type>(const member_type&);
     };
 
     class method_type final {
@@ -349,7 +349,7 @@ namespace meta_hpp
         [[nodiscard]] const std::vector<any_type>& get_argument_types() const noexcept;
     private:
         detail::method_type_data_ptr data_;
-        friend auto detail::data_access(const method_type&);
+        friend auto detail::data_access<method_type>(const method_type&);
     };
 
     class number_type final {
@@ -366,7 +366,7 @@ namespace meta_hpp
         [[nodiscard]] std::size_t get_size() const noexcept;
     private:
         detail::number_type_data_ptr data_;
-        friend auto detail::data_access(const number_type&);
+        friend auto detail::data_access<number_type>(const number_type&);
     };
 
     class pointer_type final {
@@ -383,7 +383,7 @@ namespace meta_hpp
         [[nodiscard]] any_type get_data_type() const noexcept;
     private:
         detail::pointer_type_data_ptr data_;
-        friend auto detail::data_access(const pointer_type&);
+        friend auto detail::data_access<pointer_type>(const pointer_type&);
     };
 
     class reference_type final {
@@ -400,7 +400,7 @@ namespace meta_hpp
         [[nodiscard]] any_type get_data_type() const noexcept;
     private:
         detail::reference_type_data_ptr data_;
-        friend auto detail::data_access(const reference_type&);
+        friend auto detail::data_access<reference_type>(const reference_type&);
     };
 
     class void_type final {
@@ -415,7 +415,7 @@ namespace meta_hpp
         [[nodiscard]] bitflags<void_flags> get_flags() const noexcept;
     private:
         detail::void_type_data_ptr data_;
-        friend auto detail::data_access(const void_type&);
+        friend auto detail::data_access<void_type>(const void_type&);
     };
 }
 
