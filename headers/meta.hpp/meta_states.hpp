@@ -153,6 +153,18 @@ namespace meta_hpp
 
         template < typename Instance, typename Value >
         void operator()(Instance&& instance, Value&& value) const;
+
+        template < typename Instance >
+        [[nodiscard]] bool is_gettable_with() const noexcept;
+
+        template < typename Instance >
+        [[nodiscard]] bool is_gettable_with(Instance&& instance) const noexcept;
+
+        template < typename Instance, typename Value >
+        [[nodiscard]] bool is_settable_with() const noexcept;
+
+        template < typename Instance, typename Value >
+        [[nodiscard]] bool is_settable_with(Instance&& instance, Value&& value) const noexcept;
     private:
         detail::member_state_ptr state_;
     };
@@ -234,6 +246,12 @@ namespace meta_hpp
 
         template < typename Value >
         void operator()(Value&& value) const;
+
+        template < typename Value >
+        [[nodiscard]] bool is_settable_with() const noexcept;
+
+        template < typename Value >
+        [[nodiscard]] bool is_settable_with(Value&& value) const noexcept;
     private:
         detail::variable_state_ptr state_;
     };
@@ -287,9 +305,14 @@ namespace meta_hpp::detail
         using getter_impl = std::function<value(const inst&)>;
         using setter_impl = std::function<void(const inst&, const arg&)>;
 
+        using is_gettable_with_impl = std::function<bool(const inst_base&)>;
+        using is_settable_with_impl = std::function<bool(const inst_base&, const arg_base&)>;
+
         const member_index index;
         const getter_impl getter;
         const setter_impl setter;
+        const is_gettable_with_impl is_gettable_with;
+        const is_settable_with_impl is_settable_with;
 
         template < member_kind Member >
         explicit member_state(member_index index, Member member);
@@ -330,10 +353,12 @@ namespace meta_hpp::detail
     struct variable_state final {
         using getter_impl = std::function<value()>;
         using setter_impl = std::function<void(const arg&)>;
+        using is_settable_with_impl = std::function<bool(const arg_base&)>;
 
         const variable_index index;
         const getter_impl getter;
         const setter_impl setter;
+        const is_settable_with_impl is_settable_with;
 
         template < pointer_kind Pointer >
         explicit variable_state(variable_index index, Pointer pointer);

@@ -35,15 +35,6 @@ namespace meta_hpp::detail
     }
 
     template < class_kind Class, typename... Args >
-    ctor_state::invoke_impl make_ctor_invoke() {
-        using namespace std::placeholders;
-        return std::bind(&raw_ctor_invoke<Class, Args...>, _1);
-    }
-}
-
-namespace meta_hpp::detail
-{
-    template < class_kind Class, typename... Args >
     bool raw_ctor_is_invocable_with(std::span<arg_base> args) {
         using ct = ctor_traits<Class, Args...>;
         using argument_types = typename ct::argument_types;
@@ -56,6 +47,15 @@ namespace meta_hpp::detail
         return std::invoke([&args]<std::size_t... Is>(std::index_sequence<Is...>){
             return (... && (args.data() + Is)->can_cast_to<type_list_at_t<Is, argument_types>>());
         }, std::make_index_sequence<ct::arity>());
+    }
+}
+
+namespace meta_hpp::detail
+{
+    template < class_kind Class, typename... Args >
+    ctor_state::invoke_impl make_ctor_invoke() {
+        using namespace std::placeholders;
+        return std::bind(&raw_ctor_invoke<Class, Args...>, _1);
     }
 
     template < class_kind Class, typename... Args >

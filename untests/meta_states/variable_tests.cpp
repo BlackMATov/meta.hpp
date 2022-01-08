@@ -60,6 +60,16 @@ TEST_CASE("meta/meta_states/variable") {
         CHECK(vm.get() == 1);
         CHECK(vm() == 1);
 
+        CHECK(vm.is_settable_with<int>());
+        CHECK(vm.is_settable_with<int&&>());
+        CHECK(vm.is_settable_with<const int&>());
+        CHECK(vm.is_settable_with(1));
+
+        CHECK_FALSE(vm.is_settable_with<float>());
+        CHECK_FALSE(vm.is_settable_with<float&&>());
+        CHECK_FALSE(vm.is_settable_with<const float&>());
+        CHECK_FALSE(vm.is_settable_with(1.0));
+
         CHECK_NOTHROW(vm.set(10)); CHECK(vm.get() == 10);
         CHECK_NOTHROW(vm(11)); CHECK(vm() == 11);
     }
@@ -73,6 +83,16 @@ TEST_CASE("meta/meta_states/variable") {
 
         CHECK(vm.get() == 2);
         CHECK(vm() == 2);
+
+        CHECK_FALSE(vm.is_settable_with<int>());
+        CHECK_FALSE(vm.is_settable_with<int&&>());
+        CHECK_FALSE(vm.is_settable_with<const int&>());
+        CHECK_FALSE(vm.is_settable_with(1));
+
+        CHECK_FALSE(vm.is_settable_with<float>());
+        CHECK_FALSE(vm.is_settable_with<float&&>());
+        CHECK_FALSE(vm.is_settable_with<const float&>());
+        CHECK_FALSE(vm.is_settable_with(1.0));
 
         CHECK_THROWS(vm.set(10)); CHECK(vm.get() == 2);
         CHECK_THROWS(vm(10)); CHECK(vm() == 2);
@@ -88,6 +108,16 @@ TEST_CASE("meta/meta_states/variable") {
         CHECK(vm.get() == 11);
         CHECK(vm() == 11);
 
+        CHECK(vm.is_settable_with<int>());
+        CHECK(vm.is_settable_with<int&&>());
+        CHECK(vm.is_settable_with<const int&>());
+        CHECK(vm.is_settable_with(1));
+
+        CHECK_FALSE(vm.is_settable_with<float>());
+        CHECK_FALSE(vm.is_settable_with<float&&>());
+        CHECK_FALSE(vm.is_settable_with<const float&>());
+        CHECK_FALSE(vm.is_settable_with(1.0));
+
         CHECK_NOTHROW(vm.set(20)); CHECK(vm.get() == 20);
         CHECK_NOTHROW(vm(21)); CHECK(vm() == 21);
     }
@@ -101,6 +131,16 @@ TEST_CASE("meta/meta_states/variable") {
 
         CHECK(vm.get() == 2);
         CHECK(vm() == 2);
+
+        CHECK_FALSE(vm.is_settable_with<int>());
+        CHECK_FALSE(vm.is_settable_with<int&&>());
+        CHECK_FALSE(vm.is_settable_with<const int&>());
+        CHECK_FALSE(vm.is_settable_with(1));
+
+        CHECK_FALSE(vm.is_settable_with<float>());
+        CHECK_FALSE(vm.is_settable_with<float&&>());
+        CHECK_FALSE(vm.is_settable_with<const float&>());
+        CHECK_FALSE(vm.is_settable_with(1.0));
 
         CHECK_THROWS(vm.set(10)); CHECK(vm.get() == 2);
         CHECK_THROWS(vm(11)); CHECK(vm() == 2);

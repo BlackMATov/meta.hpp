@@ -51,15 +51,6 @@ namespace meta_hpp::detail
     }
 
     template < method_kind Method >
-    method_state::invoke_impl make_method_invoke(Method method) {
-        using namespace std::placeholders;
-        return std::bind(&raw_method_invoke<Method>, method, _1, _2);
-    }
-}
-
-namespace meta_hpp::detail
-{
-    template < method_kind Method >
     bool raw_method_is_invocable_with(const inst_base& inst, std::span<arg_base> args) {
         using mt = method_traits<Method>;
         using qualified_type = typename mt::qualified_type;
@@ -77,6 +68,15 @@ namespace meta_hpp::detail
         return std::invoke([&args]<std::size_t... Is>(std::index_sequence<Is...>){
             return (... && (args.data() + Is)->can_cast_to<type_list_at_t<Is, argument_types>>());
         }, std::make_index_sequence<mt::arity>());
+    }
+}
+
+namespace meta_hpp::detail
+{
+    template < method_kind Method >
+    method_state::invoke_impl make_method_invoke(Method method) {
+        using namespace std::placeholders;
+        return std::bind(&raw_method_invoke<Method>, method, _1, _2);
     }
 
     template < method_kind Method >

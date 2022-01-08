@@ -37,7 +37,9 @@ namespace meta_hpp::detail
 
         using qualified_type = class_type;
 
-        if constexpr ( !std::is_const_v<value_type> ) {
+        if constexpr ( std::is_const_v<value_type> ) {
+            throw std::logic_error("an attempt to set a constant member");
+        } else {
             if ( inst.is_const() ) {
                 throw std::logic_error("an attempt to set a member with an const instance type");
             }
@@ -51,9 +53,31 @@ namespace meta_hpp::detail
             }
 
             std::invoke(member, inst.cast<qualified_type>()) = arg.cast<value_type>();
-        } else {
-            throw std::logic_error("an attempt to set a constant member");
         }
+    }
+
+    template < member_kind Member >
+    bool raw_member_is_gettable_with(const inst_base& inst) {
+        using mt = member_traits<Member>;
+        using class_type = typename mt::class_type;
+
+        using qualified_type = const class_type;
+
+        return inst.can_cast_to<qualified_type>();
+    }
+
+    template < member_kind Member >
+    bool raw_member_is_settable_with(const inst_base& inst, const arg_base& arg) {
+        using mt = member_traits<Member>;
+        using class_type = typename mt::class_type;
+        using value_type = typename mt::value_type;
+
+        using qualified_type = class_type;
+
+        return !std::is_const_v<value_type>
+            && !inst.is_const()
+            && inst.can_cast_to<qualified_type>()
+            && arg.can_cast_to<value_type>();
     }
 }
 
@@ -70,6 +94,18 @@ namespace meta_hpp::detail
         using namespace std::placeholders;
         return std::bind(&raw_member_setter<Member>, member, _1, _2);
     }
+
+    template < member_kind Member >
+    member_state::is_gettable_with_impl make_member_is_gettable_with() {
+        using namespace std::placeholders;
+        return std::bind(&raw_member_is_gettable_with<Member>, _1);
+    }
+
+    template < member_kind Member >
+    member_state::is_settable_with_impl make_member_is_settable_with() {
+        using namespace std::placeholders;
+        return std::bind(&raw_member_is_settable_with<Member>, _1, _2);
+    }
 }
 
 namespace meta_hpp::detail
@@ -78,7 +114,9 @@ namespace meta_hpp::detail
     member_state::member_state(member_index index, Member member)
     : index{std::move(index)}
     , getter{make_member_getter(member)}
-    , setter{make_member_setter(member)} {}
+    , setter{make_member_setter(member)}
+    , is_gettable_with{make_member_is_gettable_with<Member>()}
+    , is_settable_with{make_member_is_settable_with<Member>()} {}
 
     template < member_kind Member >
     member_state_ptr member_state::make(std::string name, Member member) {
@@ -132,5 +170,29 @@ namespace meta_hpp
     template < typename Instance, typename Value >
     void member::operator()(Instance&& instance, Value&& value) const {
         set(std::forward<Instance>(instance), std::forward<Value>(value));
+    }
+
+    template < typename Instance >
+    [[nodiscard]] bool member::is_gettable_with() const noexcept {
+        using namespace detail;
+        return state_->is_gettable_with(inst_base{type_list<Instance>{}});
+    }
+
+    template < typename Instance >
+    [[nodiscard]] bool member::is_gettable_with(Instance&& instance) const noexcept {
+        using namespace detail;
+        return state_->is_gettable_with(inst{std::forward<Instance>(instance)});
+    }
+
+    template < typename Instance, typename Value >
+    [[nodiscard]] bool member::is_settable_with() const noexcept {
+        using namespace detail;
+        return state_->is_settable_with(inst_base{type_list<Instance>{}}, arg_base{type_list<Value>{}});
+    }
+
+    template < typename Instance, typename Value >
+    [[nodiscard]] bool member::is_settable_with(Instance&& instance, Value&& value) const noexcept {
+        using namespace detail;
+        return state_->is_settable_with(inst{std::forward<Instance>(instance)}, arg{std::forward<Value>(value)});
     }
 }

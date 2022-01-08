@@ -44,15 +44,6 @@ namespace meta_hpp::detail
     }
 
     template < function_kind Function >
-    function_state::invoke_impl make_function_invoke(Function function) {
-        using namespace std::placeholders;
-        return std::bind(&raw_function_invoke<Function>, function, _1);
-    }
-}
-
-namespace meta_hpp::detail
-{
-    template < function_kind Function >
     bool raw_function_is_invocable_with(std::span<arg_base> args) {
         using ft = function_traits<Function>;
         using argument_types = typename ft::argument_types;
@@ -65,6 +56,15 @@ namespace meta_hpp::detail
         return std::invoke([&args]<std::size_t... Is>(std::index_sequence<Is...>){
             return (... && (args.data() + Is)->can_cast_to<type_list_at_t<Is, argument_types>>());
         }, std::make_index_sequence<ft::arity>());
+    }
+}
+
+namespace meta_hpp::detail
+{
+    template < function_kind Function >
+    function_state::invoke_impl make_function_invoke(Function function) {
+        using namespace std::placeholders;
+        return std::bind(&raw_function_invoke<Function>, function, _1);
     }
 
     template < function_kind Function >

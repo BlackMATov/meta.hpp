@@ -27,15 +27,24 @@ namespace meta_hpp::detail
         using pt = pointer_traits<Pointer>;
         using data_type = typename pt::data_type;
 
-        if constexpr ( !std::is_const_v<data_type> ) {
+        if constexpr ( std::is_const_v<data_type> ) {
+            throw std::logic_error("an attempt to set a constant variable");
+        } else {
             if ( !arg.can_cast_to<data_type>() ) {
                 throw std::logic_error("an attempt to set a variable with an incorrect argument type");
             }
 
             *pointer = arg.cast<data_type>();
-        } else {
-            throw std::logic_error("an attempt to set a constant variable");
         }
+    }
+
+    template < pointer_kind Pointer >
+    bool raw_variable_is_settable_with(const arg_base& arg) {
+        using pt = pointer_traits<Pointer>;
+        using data_type = typename pt::data_type;
+
+        return !std::is_const_v<data_type>
+            && arg.can_cast_to<data_type>();;
     }
 }
 
@@ -52,6 +61,12 @@ namespace meta_hpp::detail
         using namespace std::placeholders;
         return std::bind(&raw_variable_setter<Pointer>, pointer, _1);
     }
+
+    template < pointer_kind Pointer >
+    variable_state::is_settable_with_impl make_variable_is_settable_with() {
+        using namespace std::placeholders;
+        return std::bind(&raw_variable_is_settable_with<Pointer>, _1);
+    }
 }
 
 namespace meta_hpp::detail
@@ -60,7 +75,8 @@ namespace meta_hpp::detail
     variable_state::variable_state(variable_index index, Pointer pointer)
     : index{std::move(index)}
     , getter{make_variable_getter(pointer)}
-    , setter{make_variable_setter(pointer)} {}
+    , setter{make_variable_setter(pointer)}
+    , is_settable_with{make_variable_is_settable_with<Pointer>()} {}
 
     template < pointer_kind Pointer >
     variable_state_ptr variable_state::make(std::string name, Pointer pointer) {
@@ -111,5 +127,17 @@ namespace meta_hpp
     template < typename Value >
     void variable::operator()(Value&& value) const {
         set(std::forward<Value>(value));
+    }
+
+    template < typename Value >
+    bool variable::is_settable_with() const noexcept {
+        using namespace detail;
+        return state_->is_settable_with(arg_base{type_list<Value>{}});
+    }
+
+    template < typename Value >
+    bool variable::is_settable_with(Value&& value) const noexcept {
+        using namespace detail;
+        return state_->is_settable_with(arg{std::forward<Value>(value)});
     }
 }
