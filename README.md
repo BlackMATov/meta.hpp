@@ -1,6 +1,6 @@
 # meta.hpp
 
-> C++20 tiny reflection library
+> C++20 tiny dynamic reflection library
 
 [![linux][badge.linux]][linux]
 [![darwin][badge.darwin]][darwin]

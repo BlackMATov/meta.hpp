@@ -16,15 +16,15 @@ namespace
         ivec2(int v) : x{v}, y{v} {}
         ivec2(int x, int y) : x{x}, y{y} {}
 
-        [[nodiscard]] int dot(const ivec2& other) const noexcept {
+        int dot(const ivec2& other) const {
             return x * other.x + y * other.y;
         }
 
-        [[nodiscard]] int length2() const noexcept {
+        int length2() const {
             return dot(*this);
         }
 
-        [[nodiscard]] friend bool operator==(const ivec2& l, const ivec2& r) noexcept {
+        friend bool operator==(const ivec2& l, const ivec2& r) {
             return l.x == r.x && l.y == r.y;
         }
     };
@@ -51,49 +51,49 @@ TEST_CASE("meta/examples/complex") {
     const meta::method ivec2_length2 = ivec2_type.get_method("length2");
 
     {
-        const ivec2 v = ivec2_type.get_ctor_with<>().invoke().cast<ivec2>();
+        const ivec2 v = ivec2_type()->cast<ivec2>();
         CHECK(v == ivec2{});
 
-        CHECK(ivec2_x.get(v) == 0);
-        CHECK(ivec2_y.get(v) == 0);
+        CHECK(ivec2_x(v) == 0);
+        CHECK(ivec2_y(v) == 0);
     }
 
     {
-        const ivec2 v = ivec2_type.get_ctor_with<int>().invoke(3).cast<ivec2>();
+        const ivec2 v = ivec2_type(3)->cast<ivec2>();
         CHECK(v == ivec2{3});
 
-        CHECK(ivec2_x.get(v) == 3);
-        CHECK(ivec2_y.get(v) == 3);
+        CHECK(ivec2_x(v) == 3);
+        CHECK(ivec2_y(v) == 3);
     }
 
     {
-        const meta::value v = ivec2_type.get_ctor_with<int, int>().invoke(1, 2);
+        const meta::value v = ivec2_type(1, 2).value();
         CHECK(v == ivec2{1, 2});
 
-        CHECK(ivec2_x.get(v) == 1);
-        CHECK(ivec2_y.get(v) == 2);
+        CHECK(ivec2_x(v) == 1);
+        CHECK(ivec2_y(v) == 2);
     }
 
     {
-        meta::value v = ivec2_type.get_ctor_with<int, int>().invoke(1, 2);
+        meta::value v = ivec2_type(1, 2).value();
 
-        ivec2_x.set(v, 10);
-        ivec2_y.set(v, 20);
+        ivec2_x(v, 10);
+        ivec2_y(v, 20);
 
-        CHECK(ivec2_x.get(v) == 10);
-        CHECK(ivec2_y.get(v) == 20);
+        CHECK(ivec2_x(v) == 10);
+        CHECK(ivec2_y(v) == 20);
     }
 
     {
-        const meta::value v0 = ivec2_type.get_ctor_with<int, int>().invoke(1, 2);
-        const meta::value v1 = ivec2_type.get_ctor_with<int, int>().invoke(3, 4);
+        const meta::value v0 = ivec2_type(1, 2).value();
+        const meta::value v1 = ivec2_type(3, 4).value();
 
-        CHECK(ivec2_dot.invoke(v0, v1) == 1 * 3 + 2 * 4);
+        CHECK(ivec2_dot(v0, v1) == 1 * 3 + 2 * 4);
     }
 
     {
-        const meta::value v = ivec2_type.get_ctor_with<int, int>().invoke(3, 4);
+        const meta::value v = ivec2_type(3, 4).value();
 
-        CHECK(ivec2_length2.invoke(v) == 3 * 3 + 4 * 4);
+        CHECK(ivec2_length2(v) == 3 * 3 + 4 * 4);
     }
 }

@@ -8,15 +8,15 @@
 
 namespace
 {
-    struct ivec2 final {
+    struct ivec2 {
         int x{};
         int y{};
 
-        [[nodiscard]] int dot(const ivec2& other) const noexcept {
+        int dot(const ivec2& other) const {
             return x * other.x + y * other.y;
         }
 
-        [[nodiscard]] int length2() const noexcept {
+        int length2() const {
             return dot(*this);
         }
     };
@@ -32,17 +32,17 @@ TEST_CASE("meta/examples/method") {
         .method_("length2", &ivec2::length2);
 
     const meta::class_type ivec2_type = meta::resolve_type<ivec2>();
-    REQUIRE(ivec2_type);
 
     CHECK(ivec2_type.get_methods().size() == 2);
 
-    const meta::method ivec2_dot = ivec2_type.get_method("dot");
-    REQUIRE(ivec2_dot);
+    {
+        const meta::method ivec2_dot = ivec2_type.get_method("dot");
 
-    CHECK(ivec2_dot.get_index().name == "dot");
-    CHECK(ivec2_dot.get_type() == meta::resolve_type<decltype(&ivec2::dot)>());
+        CHECK(ivec2_dot.get_name() == "dot");
+        CHECK(ivec2_dot.get_type() == meta::resolve_type<decltype(&ivec2::dot)>());
 
-    CHECK(ivec2_dot.get_type().get_arity() == 1);
-    CHECK(ivec2_dot.get_type().get_return_type() == meta::resolve_type<int>());
-    CHECK(ivec2_dot.get_type().get_argument_type(0) == meta::resolve_type<const ivec2&>());
+        CHECK(ivec2_dot.get_type().get_arity() == 1);
+        CHECK(ivec2_dot.get_type().get_return_type() == meta::resolve_type<int>());
+        CHECK(ivec2_dot.get_type().get_argument_type(0) == meta::resolve_type<const ivec2&>());
+    }
 }

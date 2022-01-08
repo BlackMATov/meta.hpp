@@ -8,7 +8,7 @@
 
 namespace
 {
-    struct ivec2 final {
+    struct ivec2 {
         int x{};
         int y{};
     };
@@ -22,16 +22,16 @@ TEST_CASE("meta/examples/member") {
         .member_("y", &ivec2::y);
 
     const meta::class_type ivec2_type = meta::resolve_type<ivec2>();
-    REQUIRE(ivec2_type);
 
     CHECK(ivec2_type.get_members().size() == 2);
 
-    const meta::member ivec2_x = ivec2_type.get_member("x");
-    REQUIRE(ivec2_x);
+    {
+        const meta::member ivec2_x = ivec2_type.get_member("x");
 
-    CHECK(ivec2_x.get_index().name == "x");
-    CHECK(ivec2_x.get_type() == meta::resolve_type<decltype(&ivec2::x)>());
+        CHECK(ivec2_x.get_name() == "x");
+        CHECK(ivec2_x.get_type() == meta::resolve_type<decltype(&ivec2::x)>());
 
-    CHECK(ivec2_x.get_type().get_owner_type() == meta::resolve_type<ivec2>());
-    CHECK(ivec2_x.get_type().get_value_type() == meta::resolve_type<int>());
+        CHECK(ivec2_x.get_type().get_owner_type() == meta::resolve_type<ivec2>());
+        CHECK(ivec2_x.get_type().get_value_type() == meta::resolve_type<int>());
+    }
 }

@@ -11,6 +11,7 @@ Checks: '-*,
         -cppcoreguidelines-special-member-functions,
 
         modernize-*,
+        -modernize-use-nodiscard,
         -modernize-use-trailing-return-type,
 
         portability-*,

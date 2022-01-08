@@ -26,11 +26,25 @@ TEST_CASE("meta/examples/enum") {
         .evalue_("white", color::white);
 
     meta::enum_type color_type = meta::resolve_type<color>();
-    REQUIRE(color_type);
 
-    CHECK(color_type.get_underlying_type() == meta::resolve_type<unsigned>());
+    {
+        meta::number_type color_underlying_type = color_type.get_underlying_type();
 
-    CHECK(color_type.get_evalue("green").get_index().name == "green");
-    CHECK(color_type.get_evalue("green").get_value() == color::green);
-    CHECK_FALSE(color_type.get_evalue("yellow"));
+        CHECK(color_underlying_type.get_size() == 4);
+        CHECK(color_underlying_type.get_flags().has(meta::number_flags::is_unsigned));
+    }
+
+    {
+        meta::evalue green_evalue = color_type.get_evalue("green");
+
+        CHECK(green_evalue.get_name() == "green");
+        CHECK(green_evalue.get_type() == color_type);
+
+        CHECK(green_evalue.get_value() == color::green);
+    }
+
+    {
+        CHECK(color_type.value_to_name(color::blue) == "blue");
+        CHECK(color_type.name_to_value("white") == color::white);
+    }
 }

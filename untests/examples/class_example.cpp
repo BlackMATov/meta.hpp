@@ -8,14 +8,12 @@
 
 namespace
 {
-    constexpr double pi_v = 3.1415926536;
-
     class shape {
     public:
         shape() = default;
         virtual ~shape() = default;
 
-        [[nodiscard]] virtual double area() const = 0;
+        virtual double area() const = 0;
     };
 
     class circle : public shape {
@@ -23,11 +21,11 @@ namespace
         explicit circle(double radius)
         : radius_{radius} {}
 
-        [[nodiscard]] double area() const override {
-            return pi_v * radius_ * radius_;
+        double area() const override {
+            return std::numbers::pi * radius_ * radius_;
         }
 
-        [[nodiscard]] double radius() const {
+        double radius() const {
             return radius_;
         }
     private:
@@ -40,15 +38,15 @@ namespace
         : width_{width}
         , height_{height} {}
 
-        [[nodiscard]] double area() const override {
+        double area() const override {
             return width_ * height_;
         }
 
-        [[nodiscard]] double width() const {
+        double width() const {
             return width_;
         }
 
-        [[nodiscard]] double height() const {
+        double height() const {
             return height_;
         }
     private:
@@ -84,7 +82,6 @@ TEST_CASE("meta/examples/class") {
 
     {
         const meta::class_type circle_type = geometry.get_class("circle");
-
         const meta::method radius_method = circle_type.get_method("radius");
 
         const meta::value circle_v = circle_type.create(5.0).value();
@@ -98,11 +95,10 @@ TEST_CASE("meta/examples/class") {
 
     {
         const meta::class_type rectangle_type = geometry.get_class("rectangle");
-
         const meta::method width_method = rectangle_type.get_method("width");
         const meta::method height_method = rectangle_type.get_method("height");
 
-        const meta::value rectangle_v = rectangle_type(10.0, 20.0).value();
+        const meta::value rectangle_v = rectangle_type.create(10.0, 20.0).value();
 
         const meta::value rectangle_area_v = area_method(rectangle_v).value();
         const meta::value rectangle_width_v = width_method(rectangle_v).value();
