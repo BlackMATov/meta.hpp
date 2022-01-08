@@ -1,6 +1,8 @@
 # meta.hpp
 
-- add debug type names;
+- add type names;
+- add argument names
+- add variable and member readonly flags
 - add meta exception class;
 - add conversion of nullptr to any pointers;
 - add conversion of any pointers to void pointer ( identically cv-qualified );

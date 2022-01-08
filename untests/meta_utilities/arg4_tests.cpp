@@ -4,9 +4,9 @@
  * Copyright (C) 2021, by Matvey Cherevko (blackmatov@gmail.com)
  ******************************************************************************/
 
-#include "../meta_tests.hpp"
+#include "../meta_untests.hpp"
 
-TEST_CASE("features/meta_utilities/arg4/cast") {
+TEST_CASE("meta/meta_utilities/arg4/cast") {
     namespace meta = meta_hpp;
     using meta::detail::arg;
 

@@ -4,7 +4,7 @@
  * Copyright (C) 2021, by Matvey Cherevko (blackmatov@gmail.com)
  ******************************************************************************/
 
-#include "../meta_tests.hpp"
+#include "../meta_untests.hpp"
 
 namespace
 {
@@ -44,7 +44,7 @@ namespace
     };
 }
 
-TEST_CASE("features/meta_utilities/arg2") {
+TEST_CASE("meta/meta_utilities/arg2") {
     namespace meta = meta_hpp;
 
     //  * <- B <- *
@@ -57,7 +57,7 @@ TEST_CASE("features/meta_utilities/arg2") {
     meta::class_<D>().base_<B>().base_<C>();
 }
 
-TEST_CASE("features/meta_utilities/arg2/cast") {
+TEST_CASE("meta/meta_utilities/arg2/cast") {
     namespace meta = meta_hpp;
     using meta::detail::arg;
 

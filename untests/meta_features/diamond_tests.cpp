@@ -4,7 +4,7 @@
  * Copyright (C) 2021, by Matvey Cherevko (blackmatov@gmail.com)
  ******************************************************************************/
 
-#include "../meta_tests.hpp"
+#include "../meta_untests.hpp"
 
 namespace
 {
@@ -26,7 +26,7 @@ namespace
     struct E {};
 }
 
-TEST_CASE("features/features/diamond_inheritance") {
+TEST_CASE("meta/meta_features/diamond") {
     namespace meta = meta_hpp;
 
     meta::class_<A>();

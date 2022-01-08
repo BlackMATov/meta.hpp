@@ -1,0 +1,19 @@
+---
+Checks: '-*,
+
+        clang-analyzer-*,
+
+        concurrency-*,
+
+        cppcoreguidelines-*,
+        -cppcoreguidelines-avoid-magic-numbers,
+        -cppcoreguidelines-avoid-non-const-global-variables,
+        -cppcoreguidelines-special-member-functions,
+
+        modernize-*,
+        -modernize-use-nodiscard,
+        -modernize-use-trailing-return-type,
+
+        portability-*,
+        '
+...

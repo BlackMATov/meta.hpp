@@ -4,7 +4,7 @@
  * Copyright (C) 2021, by Matvey Cherevko (blackmatov@gmail.com)
  ******************************************************************************/
 
-#include "../meta_tests.hpp"
+#include "../meta_untests.hpp"
 
 namespace
 {
@@ -107,7 +107,7 @@ namespace
         }\
     }
 
-TEST_CASE("features/meta_utilities/arg") {
+TEST_CASE("meta/meta_utilities/arg") {
     namespace meta = meta_hpp;
 
     meta::class_<fake>();
@@ -115,7 +115,7 @@ TEST_CASE("features/meta_utilities/arg") {
     meta::class_<dclazz>().base_<fake>().base_<clazz>();
 }
 
-TEST_CASE("features/meta_utilities/arg/refs") {
+TEST_CASE("meta/meta_utilities/arg/refs") {
     namespace meta = meta_hpp;
 
     {
@@ -303,7 +303,7 @@ TEST_CASE("features/meta_utilities/arg/refs") {
     }
 }
 
-TEST_CASE("features/meta_utilities/arg/ptrs") {
+TEST_CASE("meta/meta_utilities/arg/ptrs") {
     namespace meta = meta_hpp;
 
     {
@@ -837,7 +837,7 @@ TEST_CASE("features/meta_utilities/arg/ptrs") {
     }
 }
 
-TEST_CASE("features/meta_utilities/arg/values") {
+TEST_CASE("meta/meta_utilities/arg/values") {
     namespace meta = meta_hpp;
 
     {
@@ -1027,7 +1027,7 @@ TEST_CASE("features/meta_utilities/arg/values") {
     }
 }
 
-TEST_CASE("features/meta_utilities/arg/ptr_values") {
+TEST_CASE("meta/meta_utilities/arg/ptr_values") {
     namespace meta = meta_hpp;
 
     {

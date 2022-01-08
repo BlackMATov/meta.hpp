@@ -1,4 +1,4 @@
-project(meta.hpp.untests)
+project(meta.hpp.manuals)
 
 #
 # coverage
@@ -16,8 +16,8 @@ endif()
 # executable
 #
 
-file(GLOB_RECURSE UNTESTS_SOURCES "*.cpp" "*.hpp")
-add_executable(${PROJECT_NAME} ${UNTESTS_SOURCES})
+file(GLOB_RECURSE MANUALS_SOURCES "*.cpp" "*.hpp")
+add_executable(${PROJECT_NAME} ${MANUALS_SOURCES})
 target_link_libraries(${PROJECT_NAME} PRIVATE meta.hpp doctest_with_main fmt)
 
 target_compile_options(${PROJECT_NAME}

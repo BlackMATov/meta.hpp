@@ -4,12 +4,8 @@
  * Copyright (C) 2021, by Matvey Cherevko (blackmatov@gmail.com)
  ******************************************************************************/
 
-#pragma once
-
 #include <meta.hpp/meta_all.hpp>
 #include <doctest/doctest.h>
 
-#include <cstring>
 #include <iostream>
-#include <numbers>
 #include <sstream>

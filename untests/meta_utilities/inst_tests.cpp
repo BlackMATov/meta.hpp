@@ -4,7 +4,7 @@
  * Copyright (C) 2021, by Matvey Cherevko (blackmatov@gmail.com)
  ******************************************************************************/
 
-#include "../meta_tests.hpp"
+#include "../meta_untests.hpp"
 
 namespace
 {
@@ -67,7 +67,7 @@ namespace
         }\
     }
 
-TEST_CASE("features/meta_utilities/inst2") {
+TEST_CASE("meta/meta_utilities/inst2") {
     namespace meta = meta_hpp;
 
     meta::class_<fake>();
@@ -75,7 +75,7 @@ TEST_CASE("features/meta_utilities/inst2") {
     meta::class_<dclazz>().base_<fake>().base_<clazz>();
 }
 
-TEST_CASE("features/meta_utilities/inst2/refs") {
+TEST_CASE("meta/meta_utilities/inst2/refs") {
     namespace meta = meta_hpp;
 
     {
@@ -235,7 +235,7 @@ TEST_CASE("features/meta_utilities/inst2/refs") {
     }
 }
 
-TEST_CASE("features/meta_utilities/inst2/values") {
+TEST_CASE("meta/meta_utilities/inst2/values") {
     namespace meta = meta_hpp;
 
     {

@@ -4,7 +4,7 @@
  * Copyright (C) 2021, by Matvey Cherevko (blackmatov@gmail.com)
  ******************************************************************************/
 
-#include "../meta_tests.hpp"
+#include "../meta_untests.hpp"
 
 namespace
 {
@@ -90,10 +90,10 @@ TEST_CASE("meta/meta_utilities/value") {
 
         CHECK(val.get_type() == meta::resolve_type<ivec2>());
 
-        CHECK(!std::memcmp(val.data(), &vr, sizeof(ivec2)));
-        CHECK(!std::memcmp(val.cdata(), &vr, sizeof(ivec2)));
-        CHECK(!std::memcmp(std::as_const(val).data(), &vr, sizeof(ivec2)));
-        CHECK(!std::memcmp(std::as_const(val).cdata(), &vr, sizeof(ivec2)));
+        CHECK(*static_cast<const ivec2*>(val.data()) == vr);
+        CHECK(*static_cast<const ivec2*>(val.cdata()) == vr);
+        CHECK(*static_cast<const ivec2*>(std::as_const(val).data()) == vr);
+        CHECK(*static_cast<const ivec2*>(std::as_const(val).cdata()) == vr);
 
         CHECK(val == ivec2{1,2});
         CHECK(val == meta::value{ivec2{1,2}});
@@ -115,10 +115,10 @@ TEST_CASE("meta/meta_utilities/value") {
 
         CHECK(val.get_type() == meta::resolve_type<ivec2>());
 
-        CHECK(!std::memcmp(val.data(), &vr, sizeof(ivec2)));
-        CHECK(!std::memcmp(val.cdata(), &vr, sizeof(ivec2)));
-        CHECK(!std::memcmp(std::as_const(val).data(), &vr, sizeof(ivec2)));
-        CHECK(!std::memcmp(std::as_const(val).cdata(), &vr, sizeof(ivec2)));
+        CHECK(*static_cast<const ivec2*>(val.data()) == vr);
+        CHECK(*static_cast<const ivec2*>(val.cdata()) == vr);
+        CHECK(*static_cast<const ivec2*>(std::as_const(val).data()) == vr);
+        CHECK(*static_cast<const ivec2*>(std::as_const(val).cdata()) == vr);
 
         CHECK(val == ivec2{1,2});
         CHECK(val == meta::value{ivec2{1,2}});
