@@ -73,6 +73,7 @@ namespace meta_hpp
     };
 
     enum class member_flags : std::uint32_t {
+        is_readonly = 1 << 0,
     };
 
     enum class method_flags : std::uint32_t {

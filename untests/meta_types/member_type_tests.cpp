@@ -39,7 +39,7 @@ TEST_CASE("meta/meta_types/member_type") {
         REQUIRE(type);
 
         CHECK(type.get_id() == meta::resolve_type(&clazz_1::const_int_member).get_id());
-        CHECK(type.get_flags() == meta::member_flags{});
+        CHECK(type.get_flags() == meta::member_flags::is_readonly);
 
         CHECK(type.get_owner_type() == meta::resolve_type<clazz_1>());
         CHECK(type.get_value_type() == meta::resolve_type<int>());
