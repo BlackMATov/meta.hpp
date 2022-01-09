@@ -69,4 +69,10 @@ TEST_CASE("meta/meta_examples/functions/usage") {
 
     // here is our typed result
     CHECK(sub_function_typed_result == 42);
+
+    // prints all functions in the scope
+    fmt::print("* {}:\n", math_scope.get_name());
+    for ( auto&& [index, function] : math_scope.get_functions() ) {
+        fmt::print("  + {}/{}\n", index.name, function.get_type().get_arity());
+    }
 }

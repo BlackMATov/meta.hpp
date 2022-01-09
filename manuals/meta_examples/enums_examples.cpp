@@ -36,7 +36,7 @@ TEST_CASE("meta/meta_examples/enums/type") {
     // prints all enumerators
     fmt::print("* align:\n");
     for ( auto&& [index, evalue] : align_type.get_evalues() ) {
-        fmt::print("  - {} = {}\n", index.name, evalue.get_underlying_value());
+        fmt::print("  - {}:{}\n", index.name, evalue.get_underlying_value());
     }
 }
 
