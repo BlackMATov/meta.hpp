@@ -119,6 +119,12 @@ namespace meta_hpp
             : class_type{};
     }
 
+    inline ctor_type any_type::as_ctor() const noexcept {
+        return is_ctor()
+            ? ctor_type{std::static_pointer_cast<detail::ctor_type_data>(data_)}
+            : ctor_type{};
+    }
+
     inline enum_type any_type::as_enum() const noexcept {
         return is_enum()
             ? enum_type{std::static_pointer_cast<detail::enum_type_data>(data_)}
