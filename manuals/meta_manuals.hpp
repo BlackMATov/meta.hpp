@@ -7,5 +7,20 @@
 #include <meta.hpp/meta_all.hpp>
 #include <doctest/doctest.h>
 
+#ifdef __clang__
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wdocumentation-unknown-command"
+#pragma clang diagnostic ignored "-Wsigned-enum-bitfield"
+#pragma clang diagnostic ignored "-Wswitch-enum"
+#pragma clang diagnostic ignored "-Wundefined-func-template"
+#endif
+
+#include <fmt/core.h>
+#include <fmt/ostream.h>
+
+#ifdef __clang__
+#pragma clang diagnostic pop
+#endif
+
 #include <iostream>
 #include <sstream>
