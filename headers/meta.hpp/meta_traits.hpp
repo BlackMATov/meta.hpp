@@ -100,9 +100,6 @@ namespace meta_hpp
         is_rvalue = 1 << 2,
     };
 
-    enum class void_flags : std::uint32_t {
-    };
-
     ENUM_HPP_OPERATORS_DECL(array_flags)
     ENUM_HPP_OPERATORS_DECL(class_flags)
     ENUM_HPP_OPERATORS_DECL(ctor_flags)
@@ -113,5 +110,4 @@ namespace meta_hpp
     ENUM_HPP_OPERATORS_DECL(number_flags)
     ENUM_HPP_OPERATORS_DECL(pointer_flags)
     ENUM_HPP_OPERATORS_DECL(reference_flags)
-    ENUM_HPP_OPERATORS_DECL(void_flags)
 }

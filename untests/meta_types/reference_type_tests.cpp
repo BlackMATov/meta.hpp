@@ -23,9 +23,8 @@ TEST_CASE("meta/meta_types/reference_type") {
         const meta::reference_type type = meta::resolve_type<int&>();
         REQUIRE(type);
 
-        CHECK(type.get_flags() == (meta::reference_flags::is_lvalue));
-
         CHECK(type.get_id() == meta::resolve_type<int&>().get_id());
+        CHECK(type.get_flags() == (meta::reference_flags::is_lvalue));
         CHECK(type.get_data_type() == meta::resolve_type<int>());
     }
 
@@ -33,19 +32,17 @@ TEST_CASE("meta/meta_types/reference_type") {
         const meta::reference_type type = meta::resolve_type<const int&>();
         REQUIRE(type);
 
-        CHECK(type.get_flags() == (meta::reference_flags::is_readonly | meta::reference_flags::is_lvalue));
-
         CHECK(type.get_id() == meta::resolve_type<const int&>().get_id());
-        CHECK(type.get_data_type() == meta::resolve_type<const int>());
+        CHECK(type.get_flags() == (meta::reference_flags::is_readonly | meta::reference_flags::is_lvalue));
+        CHECK(type.get_data_type() == meta::resolve_type<int>());
     }
 
     SUBCASE("int&&") {
         const meta::reference_type type = meta::resolve_type<int&&>();
         REQUIRE(type);
 
-        CHECK(type.get_flags() == (meta::reference_flags::is_rvalue));
-
         CHECK(type.get_id() == meta::resolve_type<int&&>().get_id());
+        CHECK(type.get_flags() == (meta::reference_flags::is_rvalue));
         CHECK(type.get_data_type() == meta::resolve_type<int>());
     }
 
@@ -53,9 +50,8 @@ TEST_CASE("meta/meta_types/reference_type") {
         const meta::reference_type type = meta::resolve_type<const int&&>();
         REQUIRE(type);
 
-        CHECK(type.get_flags() == (meta::reference_flags::is_readonly | meta::reference_flags::is_rvalue));
-
         CHECK(type.get_id() == meta::resolve_type<const int&&>().get_id());
-        CHECK(type.get_data_type() == meta::resolve_type<const int>());
+        CHECK(type.get_flags() == (meta::reference_flags::is_readonly | meta::reference_flags::is_rvalue));
+        CHECK(type.get_data_type() == meta::resolve_type<int>());
     }
 }

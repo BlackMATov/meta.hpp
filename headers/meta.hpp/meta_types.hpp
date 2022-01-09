@@ -412,7 +412,6 @@ namespace meta_hpp
         [[nodiscard]] explicit operator bool() const noexcept;
 
         [[nodiscard]] type_id get_id() const noexcept;
-        [[nodiscard]] bitflags<void_flags> get_flags() const noexcept;
     private:
         detail::void_type_data_ptr data_;
         friend auto detail::data_access<void_type>(const void_type&);
@@ -565,8 +564,6 @@ namespace meta_hpp::detail
     };
 
     struct void_type_data final : type_data_base {
-        const bitflags<void_flags> flags;
-
         template < void_kind Void >
         explicit void_type_data(type_list<Void>);
 

@@ -9,8 +9,6 @@
 #include "../meta_base.hpp"
 #include "../meta_types.hpp"
 
-#include "../meta_traits/void_traits.hpp"
-
 namespace meta_hpp::detail
 {
     template < void_kind Void >
@@ -19,8 +17,7 @@ namespace meta_hpp::detail
     template < void_kind Void >
     // NOLINTNEXTLINE(readability-named-parameter)
     void_type_data::void_type_data(type_list<Void>)
-    : type_data_base{type_id{type_list<void_tag<Void>>{}}, type_kind::void_}
-    , flags{void_traits<Void>::make_flags()} {}
+    : type_data_base{type_id{type_list<void_tag<Void>>{}}, type_kind::void_} {}
 
     template < void_kind Void >
     void_type_data_ptr void_type_data::get_static() {
@@ -44,9 +41,5 @@ namespace meta_hpp
 
     inline type_id void_type::get_id() const noexcept {
         return data_->id;
-    }
-
-    inline bitflags<void_flags> void_type::get_flags() const noexcept {
-        return data_->flags;
     }
 }

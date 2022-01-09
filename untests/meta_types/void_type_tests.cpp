@@ -24,6 +24,21 @@ TEST_CASE("meta/meta_types/void_type") {
         REQUIRE(type);
 
         CHECK(type.get_id() == meta::resolve_type<void>().get_id());
-        CHECK(type.get_flags() == meta::void_flags{});
+    }
+
+    SUBCASE("void*") {
+        void* ptr{};
+        const meta::pointer_type ptr_type = meta::resolve_type(ptr);
+        CHECK(ptr_type == meta::resolve_type<void*>());
+        CHECK_FALSE(ptr_type.get_flags().has(meta::pointer_flags::is_readonly));
+        CHECK(ptr_type.get_data_type() == meta::resolve_type<void>());
+    }
+
+    SUBCASE("const void*") {
+        const void* ptr{};
+        const meta::pointer_type ptr_type = meta::resolve_type(ptr);
+        CHECK(ptr_type == meta::resolve_type<const void*>());
+        CHECK(ptr_type.get_flags().has(meta::pointer_flags::is_readonly));
+        CHECK(ptr_type.get_data_type() == meta::resolve_type<void>());
     }
 }

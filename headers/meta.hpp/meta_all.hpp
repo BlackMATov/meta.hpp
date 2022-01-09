@@ -35,7 +35,6 @@
 #include "meta_traits/number_traits.hpp"
 #include "meta_traits/pointer_traits.hpp"
 #include "meta_traits/reference_traits.hpp"
-#include "meta_traits/void_traits.hpp"
 
 #include "meta_types.hpp"
 #include "meta_types/any_type.hpp"
