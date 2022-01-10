@@ -8,8 +8,8 @@
 
 namespace
 {
-    const double pi_v = 3.1415926536;
-    const double sqrt2_v = 1.4142135624;
+    const double pi_v{3.1415926536};
+    const double sqrt2_v{1.4142135624};
 }
 
 TEST_CASE("meta/meta_examples/variables/usage") {

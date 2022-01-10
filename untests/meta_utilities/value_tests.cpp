@@ -12,9 +12,9 @@ namespace
         int x{};
         int y{};
 
-        [[maybe_unused]] ivec2() = default;
-        [[maybe_unused]] explicit ivec2(int v): x{v}, y{v} {}
-        [[maybe_unused]] ivec2(int x, int y): x{x}, y{y} {}
+        ivec2() = default;
+        explicit ivec2(int v): x{v}, y{v} {}
+        ivec2(int x, int y): x{x}, y{y} {}
 
         ivec2(ivec2&& other) noexcept
         : x{other.x}
@@ -40,13 +40,30 @@ namespace
     int ivec2::move_ctor_counter{0};
     int ivec2::copy_ctor_counter{0};
 
-    [[maybe_unused]] bool operator<(const ivec2& l, const ivec2& r) noexcept {
+    ivec2 iadd2(ivec2 l, ivec2 r) {
+        return {l.x + r.x, l.y + r.y};
+    }
+
+    bool operator<(const ivec2& l, const ivec2& r) noexcept {
         return (l.x < r.x) || (l.x == r.x && l.y < r.y);
     }
 
-    [[maybe_unused]] bool operator==(const ivec2& l, const ivec2& r) noexcept {
+    bool operator==(const ivec2& l, const ivec2& r) noexcept {
         return l.x == r.x && l.y == r.y;
     }
+}
+
+TEST_CASE("meta/meta_utilities/value/ivec2") {
+    namespace meta = meta_hpp;
+
+    meta::class_<ivec2>()
+        .ctor_<>()
+        .ctor_<int>()
+        .ctor_<int, int>()
+        .ctor_<ivec2&&>()
+        .ctor_<const ivec2&>()
+        .member_("x", &ivec2::x)
+        .member_("y", &ivec2::y);
 }
 
 TEST_CASE("meta/meta_utilities/value") {
@@ -303,7 +320,8 @@ TEST_CASE("meta/meta_utilities/value") {
             class empty_class1 {};
             class empty_class2 {};
 
-            CHECK((operator<(meta::value{empty_class1{}}, meta::value{empty_class2{}}) || operator<(meta::value{empty_class2{}}, meta::value{empty_class1{}})));
+            CHECK((operator<(meta::value{empty_class1{}}, meta::value{empty_class2{}})
+                || operator<(meta::value{empty_class2{}}, meta::value{empty_class1{}})));
             CHECK_THROWS(std::ignore = operator<(meta::value{empty_class1{}}, meta::value{empty_class1{}}));
         }
     }
@@ -324,6 +342,23 @@ TEST_CASE("meta/meta_utilities/value") {
 
             CHECK_FALSE(operator==(meta::value{empty_class1{}}, meta::value{empty_class2{}}));
             CHECK_THROWS(std::ignore = operator==(meta::value{empty_class1{}}, meta::value{empty_class1{}}));
+        }
+    }
+}
+
+TEST_CASE("meta/meta_utilities/value/functions") {
+    namespace meta = meta_hpp;
+
+    SUBCASE("iadd2") {
+        {
+            const meta::value v{iadd2};
+            CHECK(v.get_type() == meta::resolve_type<ivec2(*)(ivec2, ivec2)>());
+            CHECK(v.cast<decltype(iadd2)>()(ivec2{1,2}, ivec2{3,4}) == ivec2{4,6});
+        }
+        {
+            const meta::value v{&iadd2};
+            CHECK(v.get_type() == meta::resolve_type<ivec2(*)(ivec2, ivec2)>());
+            CHECK(v.cast<decltype(&iadd2)>()(ivec2{1,2}, ivec2{3,4}) == ivec2{4,6});
         }
     }
 }
