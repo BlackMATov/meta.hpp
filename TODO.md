@@ -10,3 +10,5 @@
 - add return value policy
 - add is_invocable_with by dynamic types
 - add metadata to every type and state
+- add integral implicit conversions
+- add meta::invoke function

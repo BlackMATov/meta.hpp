@@ -53,11 +53,11 @@ namespace meta_hpp
     };
 
     enum class class_flags : std::uint32_t {
-        is_empty = 1 << 1,
-        is_final = 1 << 2,
-        is_abstract = 1 << 3,
-        is_polymorphic = 1 << 4,
-        is_template_instantiation = 1 << 5,
+        is_empty = 1 << 0,
+        is_final = 1 << 1,
+        is_abstract = 1 << 2,
+        is_polymorphic = 1 << 3,
+        is_template_instantiation = 1 << 4,
     };
 
     enum class ctor_flags : std::uint32_t {
@@ -79,15 +79,15 @@ namespace meta_hpp
     enum class method_flags : std::uint32_t {
         is_const = 1 << 0,
         is_noexcept = 1 << 1,
-        is_lvalue_qualified = 1 << 3,
-        is_rvalue_qualified = 1 << 4,
+        is_lvalue_qualified = 1 << 2,
+        is_rvalue_qualified = 1 << 3,
     };
 
     enum class number_flags : std::uint32_t {
-        is_signed = 1 << 1,
-        is_unsigned = 1 << 2,
-        is_integral = 1 << 3,
-        is_floating_point = 1 << 4,
+        is_signed = 1 << 0,
+        is_unsigned = 1 << 1,
+        is_integral = 1 << 2,
+        is_floating_point = 1 << 3,
     };
 
     enum class pointer_flags : std::uint32_t {
