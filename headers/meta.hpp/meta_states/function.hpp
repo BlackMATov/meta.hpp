@@ -14,7 +14,7 @@
 namespace meta_hpp::detail
 {
     template < function_kind Function >
-    std::optional<value> raw_function_invoke(Function function, std::span<arg> args) {
+    std::optional<value> vargs_invoke(Function function, std::span<const arg> args) {
         using ft = function_traits<Function>;
         using return_type = typename ft::return_type;
         using argument_types = typename ft::argument_types;
@@ -24,7 +24,7 @@ namespace meta_hpp::detail
         }
 
         // NOLINTNEXTLINE(readability-named-parameter)
-        return std::invoke([&function, &args]<std::size_t... Is>(std::index_sequence<Is...>){
+        return std::invoke([function = std::move(function), &args]<std::size_t... Is>(std::index_sequence<Is...>){
             if ( !(... && (args.data() + Is)->can_cast_to<type_list_at_t<Is, argument_types>>()) ) {
                 throw std::logic_error("an attempt to call a function with incorrect argument types");
             }
@@ -44,7 +44,7 @@ namespace meta_hpp::detail
     }
 
     template < function_kind Function >
-    bool raw_function_is_invocable_with(std::span<arg_base> args) {
+    bool vargs_is_invocable_with(std::span<const arg_base> args) {
         using ft = function_traits<Function>;
         using argument_types = typename ft::argument_types;
 
@@ -64,13 +64,13 @@ namespace meta_hpp::detail
     template < function_kind Function >
     function_state::invoke_impl make_function_invoke(Function function) {
         using namespace std::placeholders;
-        return std::bind(&raw_function_invoke<Function>, function, _1);
+        return std::bind(&vargs_invoke<Function>, std::move(function), _1);
     }
 
     template < function_kind Function >
     function_state::is_invocable_with_impl make_function_is_invocable_with() {
         using namespace std::placeholders;
-        return std::bind(&raw_function_is_invocable_with<Function>, _1);
+        return std::bind(&vargs_is_invocable_with<Function>, _1);
     }
 }
 
@@ -79,7 +79,7 @@ namespace meta_hpp::detail
     template < function_kind Function >
     function_state::function_state(function_index index, Function function)
     : index{std::move(index)}
-    , invoke{make_function_invoke(function)}
+    , invoke{make_function_invoke(std::move(function))}
     , is_invocable_with{make_function_is_invocable_with<Function>()} {}
 
     template < function_kind Function >
@@ -116,9 +116,9 @@ namespace meta_hpp
 
     template < typename... Args >
     std::optional<value> function::invoke(Args&&... args) const {
-        using namespace detail;
         if constexpr ( sizeof...(Args) > 0 ) {
-            std::array<arg, sizeof...(Args)> vargs{arg{std::forward<Args>(args)}...};
+            using namespace detail;
+            const std::array<arg, sizeof...(Args)> vargs{arg{std::forward<Args>(args)}...};
             return state_->invoke(vargs);
         } else {
             return state_->invoke({});
@@ -132,9 +132,9 @@ namespace meta_hpp
 
     template < typename... Args >
     bool function::is_invocable_with() const noexcept {
-        using namespace detail;
         if constexpr ( sizeof...(Args) > 0 ) {
-            std::array<arg_base, sizeof...(Args)> vargs{arg_base{type_list<Args>{}}...};
+            using namespace detail;
+            const std::array<arg_base, sizeof...(Args)> vargs{arg_base{type_list<Args>{}}...};
             return state_->is_invocable_with(vargs);
         } else {
             return state_->is_invocable_with({});
@@ -143,9 +143,9 @@ namespace meta_hpp
 
     template < typename... Args >
     bool function::is_invocable_with(Args&&... args) const noexcept {
-        using namespace detail;
         if constexpr ( sizeof...(Args) > 0 ) {
-            std::array<arg_base, sizeof...(Args)> vargs{arg{std::forward<Args>(args)}...};
+            using namespace detail;
+            const std::array<arg_base, sizeof...(Args)> vargs{arg_base{std::forward<Args>(args)}...};
             return state_->is_invocable_with(vargs);
         } else {
             return state_->is_invocable_with({});

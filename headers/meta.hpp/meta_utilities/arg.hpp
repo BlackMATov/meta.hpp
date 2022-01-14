@@ -11,6 +11,16 @@
 
 namespace meta_hpp::detail
 {
+    template < decay_value_kind T >
+    // NOLINTNEXTLINE(readability-named-parameter)
+    arg_base::arg_base(T&&)
+    : arg_base{type_list<T&&>{}} {}
+
+    template < decay_non_uvalue_kind T >
+    // NOLINTNEXTLINE(readability-named-parameter)
+    arg_base::arg_base(T&&)
+    : arg_base{type_list<T&&>{}} {}
+
     template < arg_lvalue_ref_kind T >
         requires decay_non_uvalue_kind<T>
     // NOLINTNEXTLINE(readability-named-parameter)
@@ -174,7 +184,7 @@ namespace meta_hpp::detail
 
     template < decay_non_uvalue_kind T >
     arg::arg(T&& v)
-    : arg_base{type_list<T&&>{}}
+    : arg_base{std::forward<T>(v)}
     // NOLINTNEXTLINE(cppcoreguidelines-pro-type-const-cast)
     , data_{const_cast<std::remove_cvref_t<T>*>(std::addressof(v))} {}
 

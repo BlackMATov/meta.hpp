@@ -236,6 +236,12 @@ namespace meta_hpp::detail
 
         virtual ~arg_base() = default;
 
+        template < decay_value_kind T >
+        explicit arg_base(T&& v);
+
+        template < decay_non_uvalue_kind T >
+        explicit arg_base(T&& v);
+
         template < arg_lvalue_ref_kind T >
             requires decay_non_uvalue_kind<T>
         explicit arg_base(type_list<T>);
@@ -312,6 +318,12 @@ namespace meta_hpp::detail
         inst_base& operator=(const inst_base&) = delete;
 
         virtual ~inst_base() = default;
+
+        template < decay_value_kind T >
+        explicit inst_base(T&& v);
+
+        template < decay_non_uvalue_kind T >
+        explicit inst_base(T&& v);
 
         template < inst_class_lvalue_ref_kind T >
         explicit inst_base(type_list<T>);

@@ -39,8 +39,6 @@ TEST_CASE("meta/meta_utilities/arg6") {
         .function_("func_with_method", &func_with_method);
 
     SUBCASE("int_member") {
-        static_assert(sizeof(int_member_t) == 8);
-
         const meta::function f = scope.get_function("func_with_member");
         REQUIRE(f);
 
@@ -55,8 +53,6 @@ TEST_CASE("meta/meta_utilities/arg6") {
     }
 
     SUBCASE("int_method") {
-        static_assert(sizeof(int_method_t) == 16);
-
         const meta::function f = scope.get_function("func_with_method");
         REQUIRE(f);
 

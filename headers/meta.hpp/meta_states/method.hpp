@@ -14,7 +14,7 @@
 namespace meta_hpp::detail
 {
     template < method_kind Method >
-    std::optional<value> raw_method_invoke(Method method, const inst& inst, std::span<arg> args) {
+    std::optional<value> vargs_invoke(Method method, const inst& inst, std::span<const arg> args) {
         using mt = method_traits<Method>;
         using return_type = typename mt::return_type;
         using qualified_type = typename mt::qualified_type;
@@ -29,7 +29,7 @@ namespace meta_hpp::detail
         }
 
         // NOLINTNEXTLINE(readability-named-parameter)
-        return std::invoke([&method, &inst, &args]<std::size_t... Is>(std::index_sequence<Is...>){
+        return std::invoke([method = std::move(method), &inst, &args]<std::size_t... Is>(std::index_sequence<Is...>){
             if ( !(... && (args.data() + Is)->can_cast_to<type_list_at_t<Is, argument_types>>()) ) {
                 throw std::logic_error("an attempt to call a method with incorrect argument types");
             }
@@ -51,7 +51,7 @@ namespace meta_hpp::detail
     }
 
     template < method_kind Method >
-    bool raw_method_is_invocable_with(const inst_base& inst, std::span<arg_base> args) {
+    bool vargs_is_invocable_with(const inst_base& inst, std::span<const arg_base> args) {
         using mt = method_traits<Method>;
         using qualified_type = typename mt::qualified_type;
         using argument_types = typename mt::argument_types;
@@ -76,13 +76,13 @@ namespace meta_hpp::detail
     template < method_kind Method >
     method_state::invoke_impl make_method_invoke(Method method) {
         using namespace std::placeholders;
-        return std::bind(&raw_method_invoke<Method>, method, _1, _2);
+        return std::bind(&vargs_invoke<Method>, std::move(method), _1, _2);
     }
 
     template < method_kind Method >
     method_state::is_invocable_with_impl make_method_is_invocable_with() {
         using namespace std::placeholders;
-        return std::bind(&raw_method_is_invocable_with<Method>, _1, _2);
+        return std::bind(&vargs_is_invocable_with<Method>, _1, _2);
     }
 }
 
@@ -91,7 +91,7 @@ namespace meta_hpp::detail
     template < method_kind Method >
     method_state::method_state(method_index index, Method method)
     : index{std::move(index)}
-    , invoke{make_method_invoke(method)}
+    , invoke{make_method_invoke(std::move(method))}
     , is_invocable_with{make_method_is_invocable_with<Method>()} {}
 
     template < method_kind Method >
@@ -129,11 +129,12 @@ namespace meta_hpp
     template < typename Instance, typename... Args >
     std::optional<value> method::invoke(Instance&& instance, Args&&... args) const {
         using namespace detail;
+        const inst vinst{std::forward<Instance>(instance)};
         if constexpr ( sizeof...(Args) > 0 ) {
-            std::array<arg, sizeof...(Args)> vargs{arg{std::forward<Args>(args)}...};
-            return state_->invoke(inst{std::forward<Instance>(instance)}, vargs);
+            const std::array<arg, sizeof...(Args)> vargs{arg{std::forward<Args>(args)}...};
+            return state_->invoke(vinst, vargs);
         } else {
-            return state_->invoke(inst{std::forward<Instance>(instance)}, {});
+            return state_->invoke(vinst, {});
         }
     }
 
@@ -145,22 +146,24 @@ namespace meta_hpp
     template < typename Instance, typename... Args >
     bool method::is_invocable_with() const noexcept {
         using namespace detail;
+        const inst_base vinst{type_list<Instance>{}};
         if constexpr ( sizeof...(Args) > 0 ) {
-            std::array<arg_base, sizeof...(Args)> vargs{arg_base{type_list<Args>{}}...};
-            return state_->is_invocable_with(inst_base{type_list<Instance>{}}, vargs);
+            const std::array<arg_base, sizeof...(Args)> vargs{arg_base{type_list<Args>{}}...};
+            return state_->is_invocable_with(vinst, vargs);
         } else {
-            return state_->is_invocable_with(inst_base{type_list<Instance>{}}, {});
+            return state_->is_invocable_with(vinst, {});
         }
     }
 
     template < typename Instance, typename... Args >
     bool method::is_invocable_with(Instance&& instance, Args&&... args) const noexcept {
         using namespace detail;
+        const inst_base vinst{std::forward<Instance>(instance)};
         if constexpr ( sizeof...(Args) > 0 ) {
-            std::array<arg_base, sizeof...(Args)> vargs{arg{std::forward<Args>(args)}...};
-            return state_->is_invocable_with(inst{std::forward<Instance>(instance)}, vargs);
+            const std::array<arg_base, sizeof...(Args)> vargs{arg_base{std::forward<Args>(args)}...};
+            return state_->is_invocable_with(vinst, vargs);
         } else {
-            return state_->is_invocable_with(inst{std::forward<Instance>(instance)}, {});
+            return state_->is_invocable_with(vinst, {});
         }
     }
 }

@@ -62,6 +62,16 @@ namespace meta_hpp::detail
 
 namespace meta_hpp::detail
 {
+    template < decay_value_kind T >
+    // NOLINTNEXTLINE(readability-named-parameter)
+    inst_base::inst_base(T&&)
+    : inst_base{type_list<T&&>{}} {}
+
+    template < decay_non_uvalue_kind T >
+    // NOLINTNEXTLINE(readability-named-parameter)
+    inst_base::inst_base(T&&)
+    : inst_base{type_list<T&&>{}} {}
+
     template < inst_class_lvalue_ref_kind T >
     // NOLINTNEXTLINE(readability-named-parameter)
     inst_base::inst_base(type_list<T>)
@@ -174,7 +184,7 @@ namespace meta_hpp::detail
 
     template < decay_non_uvalue_kind T >
     inst::inst(T&& v)
-    : inst_base{type_list<T&&>{}}
+    : inst_base{std::forward<T>(v)}
     // NOLINTNEXTLINE(cppcoreguidelines-pro-type-const-cast)
     , data_{const_cast<std::remove_cvref_t<T>*>(std::addressof(v))} {}
 

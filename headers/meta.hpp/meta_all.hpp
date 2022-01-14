@@ -54,3 +54,4 @@
 #include "meta_utilities/arg.hpp"
 #include "meta_utilities/inst.hpp"
 #include "meta_utilities/value.hpp"
+#include "meta_utilities/vinvoke.hpp"

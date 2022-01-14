@@ -117,7 +117,8 @@ namespace meta_hpp
     template < typename Value >
     void variable::set(Value&& value) const {
         using namespace detail;
-        state_->setter(arg{std::forward<Value>(value)});
+        const arg vvalue{std::forward<Value>(value)};
+        state_->setter(vvalue);
     }
 
     inline value variable::operator()() const {
@@ -132,12 +133,14 @@ namespace meta_hpp
     template < typename Value >
     bool variable::is_settable_with() const noexcept {
         using namespace detail;
-        return state_->is_settable_with(arg_base{type_list<Value>{}});
+        const arg_base vvalue{type_list<Value>{}};
+        return state_->is_settable_with(vvalue);
     }
 
     template < typename Value >
     bool variable::is_settable_with(Value&& value) const noexcept {
         using namespace detail;
-        return state_->is_settable_with(arg{std::forward<Value>(value)});
+        const arg vvalue{std::forward<Value>(value)};
+        return state_->is_settable_with(vvalue);
     }
 }
