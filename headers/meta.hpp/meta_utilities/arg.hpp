@@ -200,8 +200,7 @@ namespace meta_hpp::detail
                 const any_type& from_data_type = from_type_array.get_data_type();
 
                 if ( to_data_type == from_data_type ) {
-                    void* to_ptr = static_cast<void*>(data_);
-                    return static_cast<to_raw_type_cv>(to_ptr);
+                    return static_cast<to_raw_type_cv>(data_);
                 }
 
                 if ( to_data_type.is_class() && from_data_type.is_class() ) {
@@ -223,30 +222,27 @@ namespace meta_hpp::detail
                 void** from_data_ptr = static_cast<void**>(data_);
 
                 if ( to_data_type == from_data_type ) {
-                    void* to_data_ptr = *from_data_ptr;
-                    return static_cast<to_raw_type_cv>(to_data_ptr);
+                    return static_cast<to_raw_type_cv>(*from_data_ptr);
                 }
 
                 if ( to_data_type.is_class() && from_data_type.is_class() ) {
                     const class_type& to_data_class = to_data_type.as_class();
                     const class_type& from_data_class = from_data_type.as_class();
 
-                    void* to_data_ptr = detail::pointer_upcast(*from_data_ptr, from_data_class, to_data_class);
-                    return static_cast<to_raw_type_cv>(to_data_ptr);
+                    void* to_ptr = detail::pointer_upcast(*from_data_ptr, from_data_class, to_data_class);
+                    return static_cast<to_raw_type_cv>(to_ptr);
                 }
             }
         }
 
         if constexpr ( std::is_reference_v<To> ) {
             if ( to_type == from_type ) {
-                void* to_ptr = static_cast<void*>(data_);
-
                 if constexpr ( std::is_lvalue_reference_v<To> ) {
-                    return *static_cast<to_raw_type_cv*>(to_ptr);
+                    return *static_cast<to_raw_type_cv*>(data_);
                 }
 
                 if constexpr ( std::is_rvalue_reference_v<To> ) {
-                    return std::move(*static_cast<to_raw_type_cv*>(to_ptr));
+                    return std::move(*static_cast<to_raw_type_cv*>(data_));
                 }
             }
 

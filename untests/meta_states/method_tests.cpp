@@ -8,7 +8,12 @@
 
 namespace
 {
-    struct clazz {
+    struct base {
+        virtual ~base() = default;
+        virtual int pure_virtual_method() = 0;
+    };
+
+    struct clazz : base {
         clazz() = default;
 
         clazz(clazz&&) = delete;
@@ -36,10 +41,14 @@ namespace
 
         int const_method_rref() const && { return 11; }
         int const_method_noexcept_rref() const && noexcept { return 12; }
+
+        //
+
+        int pure_virtual_method() override { return -1; }
     };
 
     struct derived_clazz : clazz {
-        [[maybe_unused]] derived_clazz() = default;
+        int pure_virtual_method() override { return -2; }
     };
 
     struct clazz2 {};
@@ -48,10 +57,12 @@ namespace
 TEST_CASE("meta/meta_states/method") {
     namespace meta = meta_hpp;
 
-    meta::class_<derived_clazz>()
-        .base_<clazz>();
+    meta::class_<base>()
+        .method_("pure_virtual_method", &base::pure_virtual_method);
 
     meta::class_<clazz>()
+        .base_<base>()
+
         .method_("non_const_method", &clazz::non_const_method)
         .method_("non_const_method_noexcept", &clazz::non_const_method_noexcept)
 
@@ -69,6 +80,9 @@ TEST_CASE("meta/meta_states/method") {
 
         .method_("const_method_rref", &clazz::const_method_rref)
         .method_("const_method_noexcept_rref", &clazz::const_method_noexcept_rref);
+
+    meta::class_<derived_clazz>()
+        .base_<clazz>();
 
     const meta::class_type ct = meta::resolve_type<clazz>();
     REQUIRE(ct);
@@ -626,5 +640,31 @@ TEST_CASE("meta/meta_states/method") {
         static_assert(!std::is_invocable_v<decltype(&clazz::const_method_noexcept_rref), const derived_clazz&>);
         static_assert(std::is_invocable_v<decltype(&clazz::const_method_noexcept_rref), derived_clazz&&>);
         static_assert(std::is_invocable_v<decltype(&clazz::const_method_noexcept_rref), const derived_clazz&&>);
+    }
+
+    SUBCASE("pure_virtual_method") {
+        const meta::method mi = ct.get_method("pure_virtual_method");
+        REQUIRE(mi);
+
+        CHECK(mi.get_name() == "pure_virtual_method");
+
+        {
+            CHECK(mi.get_type().get_arity() == 0);
+            CHECK(mi.get_type().get_owner_type() == meta::resolve_type<base>());
+            CHECK(mi.get_type().get_return_type() == meta::resolve_type<int>());
+            CHECK(mi.get_type().get_flags() == meta::method_flags{});
+        }
+
+        {
+            clazz cl;
+            CHECK(mi.is_invocable_with<clazz&>());
+            CHECK(mi.invoke(cl) == -1);
+        }
+
+        {
+            derived_clazz dcl;
+            CHECK(mi.is_invocable_with<derived_clazz&>());
+            CHECK(mi.invoke(dcl) == -2);
+        }
     }
 }
