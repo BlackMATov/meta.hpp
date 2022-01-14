@@ -87,6 +87,21 @@ namespace meta_hpp::detail
         };
 
         if constexpr ( std::is_pointer_v<To> ) {
+            if ( to_type.is_pointer() && from_type.is_array() ) {
+                const pointer_type& to_type_ptr = to_type.as_pointer();
+                const bool to_type_ptr_readonly = to_type_ptr.get_flags().has(pointer_flags::is_readonly);
+
+                const array_type& from_type_array = from_type.as_array();
+                const bool from_type_array_readonly = is_const();
+
+                const any_type& to_data_type = to_type_ptr.get_data_type();
+                const any_type& from_data_type = from_type_array.get_data_type();
+
+                if ( is_a(to_data_type, from_data_type) && to_type_ptr_readonly >= from_type_array_readonly ) {
+                    return true;
+                }
+            }
+
             if ( to_type.is_pointer() && from_type.is_pointer() ) {
                 const pointer_type& to_type_ptr = to_type.as_pointer();
                 const bool to_type_ptr_readonly = to_type_ptr.get_flags().has(pointer_flags::is_readonly);
@@ -177,6 +192,27 @@ namespace meta_hpp::detail
         const any_type& to_type = resolve_type<to_raw_type>();
 
         if constexpr ( std::is_pointer_v<To> ) {
+            if ( to_type.is_pointer() && from_type.is_array() ) {
+                const pointer_type& to_type_ptr = to_type.as_pointer();
+                const array_type& from_type_array = from_type.as_array();
+
+                const any_type& to_data_type = to_type_ptr.get_data_type();
+                const any_type& from_data_type = from_type_array.get_data_type();
+
+                if ( to_data_type == from_data_type ) {
+                    void* to_ptr = static_cast<void*>(data_);
+                    return static_cast<to_raw_type_cv>(to_ptr);
+                }
+
+                if ( to_data_type.is_class() && from_data_type.is_class() ) {
+                    const class_type& to_data_class = to_data_type.as_class();
+                    const class_type& from_data_class = from_data_type.as_class();
+
+                    void* to_ptr = detail::pointer_upcast(data_, from_data_class, to_data_class);
+                    return static_cast<to_raw_type_cv>(to_ptr);
+                }
+            }
+
             if ( to_type.is_pointer() && from_type.is_pointer() ) {
                 const pointer_type& to_type_ptr = to_type.as_pointer();
                 const pointer_type& from_type_ptr = from_type.as_pointer();

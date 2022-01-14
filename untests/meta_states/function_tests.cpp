@@ -19,6 +19,11 @@ namespace
         static int ilength2(const ivec2& v) noexcept {
             return v.x * v.x + v.y * v.y;
         }
+
+        static int arg_bounded_arr(ivec2 vs[2]) { return vs[0].x + vs[0].y + vs[1].x + vs[1].y; }
+        static int arg_unbounded_arr(ivec2 vs[]) { return vs[0].x + vs[0].y + vs[1].x + vs[1].y; }
+        static int arg_bounded_const_arr(const ivec2 vs[2]) { return vs[0].x + vs[0].y + vs[1].x + vs[1].y; }
+        static int arg_unbounded_const_arr(const ivec2 vs[]) { return vs[0].x + vs[0].y + vs[1].x + vs[1].y; }
     };
 
     bool operator==(const ivec2& l, const ivec2& r) noexcept {
@@ -31,7 +36,11 @@ TEST_CASE("meta/meta_states/function") {
 
     meta::class_<ivec2>()
         .function_("iadd", &ivec2::iadd)
-        .function_("ilength2", &ivec2::ilength2);
+        .function_("ilength2", &ivec2::ilength2)
+        .function_("arg_bounded_arr", &ivec2::arg_bounded_arr)
+        .function_("arg_unbounded_arr", &ivec2::arg_unbounded_arr)
+        .function_("arg_bounded_const_arr", &ivec2::arg_bounded_const_arr)
+        .function_("arg_unbounded_const_arr", &ivec2::arg_unbounded_const_arr);
 
     const meta::class_type ivec2_type = meta::resolve_type<ivec2>();
     REQUIRE(ivec2_type);
@@ -103,5 +112,121 @@ TEST_CASE("meta/meta_states/function") {
 
         CHECK(func.invoke(ivec2{2,3}));
         CHECK(func.invoke(ivec2{2,3}).value() == 13);
+    }
+
+    SUBCASE("arg_arr") {
+        ivec2 bounded_arr[2]{{1,2},{3,4}};
+        ivec2* unbounded_arr = bounded_arr;
+
+        const ivec2 bounded_const_arr[2]{{1,2},{3,4}};
+        const ivec2* unbounded_const_arr = bounded_const_arr;
+
+        {
+            const meta::function func1 = ivec2_type.get_function("arg_bounded_arr");
+            REQUIRE(func1);
+
+            CHECK(func1.is_invocable_with<ivec2*>());
+            CHECK(func1.is_invocable_with<ivec2* const>());
+            CHECK_FALSE(func1.is_invocable_with<const ivec2*>());
+            CHECK_FALSE(func1.is_invocable_with<const ivec2* const>());
+
+            CHECK(func1.invoke(bounded_arr) == 10);
+            CHECK(func1.invoke(unbounded_arr) == 10);
+            CHECK_THROWS(func1.invoke(bounded_const_arr));
+            CHECK_THROWS(func1.invoke(unbounded_const_arr));
+
+            CHECK(func1.invoke(meta::value{bounded_arr}) == 10);
+            CHECK(func1.invoke(meta::value{unbounded_arr}) == 10);
+            CHECK_THROWS(func1.invoke(meta::value{bounded_const_arr}));
+            CHECK_THROWS(func1.invoke(meta::value{unbounded_const_arr}));
+
+            static_assert(std::is_invocable_v<decltype(&ivec2::arg_bounded_arr), decltype(bounded_arr)>);
+            static_assert(std::is_invocable_v<decltype(&ivec2::arg_bounded_arr), decltype(unbounded_arr)>);
+            static_assert(!std::is_invocable_v<decltype(&ivec2::arg_bounded_arr), decltype(bounded_const_arr)>);
+            static_assert(!std::is_invocable_v<decltype(&ivec2::arg_bounded_arr), decltype(unbounded_const_arr)>);
+        }
+
+        {
+            const meta::function func2 = ivec2_type.get_function("arg_unbounded_arr");
+            REQUIRE(func2);
+
+            CHECK(func2.is_invocable_with<ivec2*>());
+            CHECK(func2.is_invocable_with<ivec2* const>());
+            CHECK_FALSE(func2.is_invocable_with<const ivec2*>());
+            CHECK_FALSE(func2.is_invocable_with<const ivec2* const>());
+
+            CHECK(func2.invoke(bounded_arr) == 10);
+            CHECK(func2.invoke(unbounded_arr) == 10);
+            CHECK_THROWS(func2.invoke(bounded_const_arr));
+            CHECK_THROWS(func2.invoke(unbounded_const_arr));
+
+            CHECK(func2.invoke(meta::value{bounded_arr}) == 10);
+            CHECK(func2.invoke(meta::value{unbounded_arr}) == 10);
+            CHECK_THROWS(func2.invoke(meta::value{bounded_const_arr}));
+            CHECK_THROWS(func2.invoke(meta::value{unbounded_const_arr}));
+
+            static_assert(std::is_invocable_v<decltype(&ivec2::arg_unbounded_arr), decltype(bounded_arr)>);
+            static_assert(std::is_invocable_v<decltype(&ivec2::arg_unbounded_arr), decltype(unbounded_arr)>);
+            static_assert(!std::is_invocable_v<decltype(&ivec2::arg_unbounded_arr), decltype(bounded_const_arr)>);
+            static_assert(!std::is_invocable_v<decltype(&ivec2::arg_unbounded_arr), decltype(unbounded_const_arr)>);
+        }
+    }
+
+    SUBCASE("arg_const_arr") {
+        ivec2 bounded_arr[2]{{1,2},{3,4}};
+        ivec2* unbounded_arr = bounded_arr;
+
+        const ivec2 bounded_const_arr[2]{{1,2},{3,4}};
+        const ivec2* unbounded_const_arr = bounded_const_arr;
+
+        {
+            const meta::function func1 = ivec2_type.get_function("arg_bounded_const_arr");
+            REQUIRE(func1);
+
+            CHECK(func1.is_invocable_with<ivec2*>());
+            CHECK(func1.is_invocable_with<ivec2* const>());
+            CHECK(func1.is_invocable_with<const ivec2*>());
+            CHECK(func1.is_invocable_with<const ivec2* const>());
+
+            CHECK(func1.invoke(bounded_arr) == 10);
+            CHECK(func1.invoke(unbounded_arr) == 10);
+            CHECK(func1.invoke(bounded_const_arr) == 10);
+            CHECK(func1.invoke(unbounded_const_arr) == 10);
+
+            CHECK(func1.invoke(meta::value{bounded_arr}) == 10);
+            CHECK(func1.invoke(meta::value{unbounded_arr}) == 10);
+            CHECK(func1.invoke(meta::value{bounded_const_arr}) == 10);
+            CHECK(func1.invoke(meta::value{unbounded_const_arr}) == 10);
+
+            static_assert(std::is_invocable_v<decltype(&ivec2::arg_bounded_const_arr), decltype(bounded_arr)>);
+            static_assert(std::is_invocable_v<decltype(&ivec2::arg_bounded_const_arr), decltype(unbounded_arr)>);
+            static_assert(std::is_invocable_v<decltype(&ivec2::arg_bounded_const_arr), decltype(bounded_const_arr)>);
+            static_assert(std::is_invocable_v<decltype(&ivec2::arg_bounded_const_arr), decltype(unbounded_const_arr)>);
+        }
+
+        {
+            const meta::function func2 = ivec2_type.get_function("arg_unbounded_const_arr");
+            REQUIRE(func2);
+
+            CHECK(func2.is_invocable_with<ivec2*>());
+            CHECK(func2.is_invocable_with<ivec2* const>());
+            CHECK(func2.is_invocable_with<const ivec2*>());
+            CHECK(func2.is_invocable_with<const ivec2* const>());
+
+            CHECK(func2.invoke(bounded_arr) == 10);
+            CHECK(func2.invoke(unbounded_arr) == 10);
+            CHECK(func2.invoke(bounded_const_arr) == 10);
+            CHECK(func2.invoke(unbounded_const_arr) == 10);
+
+            CHECK(func2.invoke(meta::value{bounded_arr}) == 10);
+            CHECK(func2.invoke(meta::value{unbounded_arr}) == 10);
+            CHECK(func2.invoke(meta::value{bounded_const_arr}) == 10);
+            CHECK(func2.invoke(meta::value{unbounded_const_arr}) == 10);
+
+            static_assert(std::is_invocable_v<decltype(&ivec2::arg_unbounded_const_arr), decltype(bounded_arr)>);
+            static_assert(std::is_invocable_v<decltype(&ivec2::arg_unbounded_const_arr), decltype(unbounded_arr)>);
+            static_assert(std::is_invocable_v<decltype(&ivec2::arg_unbounded_const_arr), decltype(bounded_const_arr)>);
+            static_assert(std::is_invocable_v<decltype(&ivec2::arg_unbounded_const_arr), decltype(unbounded_const_arr)>);
+        }
     }
 }
