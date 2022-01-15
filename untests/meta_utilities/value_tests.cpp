@@ -30,6 +30,12 @@ namespace
             ++copy_ctor_counter;
         }
 
+        ivec2& add(const ivec2& other) {
+            x += other.x;
+            y += other.y;
+            return *this;
+        }
+
         ivec2& operator=(ivec2&& other) = delete;
         ivec2& operator=(const ivec2& other) = delete;
     public:
@@ -344,21 +350,85 @@ TEST_CASE("meta/meta_utilities/value") {
             CHECK_THROWS(std::ignore = operator==(meta::value{empty_class1{}}, meta::value{empty_class1{}}));
         }
     }
+
+    SUBCASE("deref") {
+        {
+            int i{42};
+            const meta::value v{meta::value{&i}.deref()};
+            CHECK(v.get_type() == meta::resolve_type<int>());
+            CHECK(v.data() != &i);
+        }
+        {
+            const char i{42};
+            const meta::value v{meta::value{&i}.deref()};
+            CHECK(v.get_type() == meta::resolve_type<char>());
+            CHECK(v.data() != &i);
+        }
+        {
+            const int i{42};
+            const int* const pi = &i;
+            const meta::value v{meta::value{&pi}.deref()};
+            CHECK(v.get_type() == meta::resolve_type<const int*>() );
+            CHECK(v.cast<const int*>() == pi);
+        }
+        {
+            int i{42};
+
+            void* p1 = &i;
+            const void* p2 = &i;
+            void* const& p3 = &i;
+            const void* const& p4 = &i;
+
+            CHECK_THROWS(std::ignore = meta::value(p1).deref());
+            CHECK_THROWS(std::ignore = meta::value(p2).deref());
+            CHECK_THROWS(std::ignore = meta::value(p3).deref());
+            CHECK_THROWS(std::ignore = meta::value(p4).deref());
+        }
+        {
+            ivec2 v{1,2};
+            meta::value vp{&v};
+            CHECK(ivec2::move_ctor_counter == 0);
+            CHECK(ivec2::copy_ctor_counter == 0);
+
+            meta::value vv1{vp.deref()};
+            CHECK(ivec2::move_ctor_counter == 0);
+            CHECK(ivec2::copy_ctor_counter == 1);
+
+            meta::value vv2{std::move(vp).deref()};
+            CHECK(ivec2::move_ctor_counter == 0);
+            CHECK(ivec2::copy_ctor_counter == 2);
+
+            meta::value vv3{vp.cderef()};
+            CHECK(ivec2::move_ctor_counter == 0);
+            CHECK(ivec2::copy_ctor_counter == 3);
+        }
+    }
 }
 
 TEST_CASE("meta/meta_utilities/value/functions") {
     namespace meta = meta_hpp;
 
+    SUBCASE("add") {
+        {
+            const meta::value v{&ivec2::add};
+            CHECK(v.get_type() == meta::resolve_type<ivec2&(ivec2::*)(const ivec2&)>());
+            CHECK(std::invoke(v.cast<decltype(&ivec2::add)>(), ivec2{1,2}, ivec2{3,4}) == ivec2{4,6});
+            CHECK(std::invoke(*v.try_cast<decltype(&ivec2::add)>(), ivec2{1,2}, ivec2{3,4}) == ivec2{4,6});
+        }
+    }
+
     SUBCASE("iadd2") {
         {
             const meta::value v{iadd2};
             CHECK(v.get_type() == meta::resolve_type<ivec2(*)(ivec2, ivec2)>());
-            CHECK(v.cast<decltype(iadd2)>()(ivec2{1,2}, ivec2{3,4}) == ivec2{4,6});
+            CHECK(std::invoke(v.cast<decltype(iadd2)>(), ivec2{1,2}, ivec2{3,4}) == ivec2{4,6});
+            CHECK(std::invoke(*v.try_cast<decltype(iadd2)>(), ivec2{1,2}, ivec2{3,4}) == ivec2{4,6});
         }
         {
             const meta::value v{&iadd2};
             CHECK(v.get_type() == meta::resolve_type<ivec2(*)(ivec2, ivec2)>());
-            CHECK(v.cast<decltype(&iadd2)>()(ivec2{1,2}, ivec2{3,4}) == ivec2{4,6});
+            CHECK(std::invoke(v.cast<decltype(&iadd2)>(), ivec2{1,2}, ivec2{3,4}) == ivec2{4,6});
+            CHECK(std::invoke(*v.try_cast<decltype(&iadd2)>(), ivec2{1,2}, ivec2{3,4}) == ivec2{4,6});
         }
     }
 }

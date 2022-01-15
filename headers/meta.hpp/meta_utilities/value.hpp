@@ -17,6 +17,9 @@ namespace meta_hpp
         void* (*const data)(value&) noexcept;
         const void* (*const cdata)(const value&) noexcept;
 
+        value (*const deref)(value&);
+        value (*const cderef)(const value&);
+
         bool (*const less)(const value&, const value&);
         bool (*const equals)(const value&, const value&);
 
@@ -32,6 +35,8 @@ namespace meta_hpp
 
     template < typename T >
     const value::traits* value::traits::get() noexcept {
+        static_assert(std::is_same_v<T, std::decay_t<T>>);
+
         static const traits traits{
             .type = resolve_type<T>(),
 
@@ -41,6 +46,22 @@ namespace meta_hpp
 
             .cdata = +[](const value& v) noexcept -> const void* {
                 return v.try_cast<T>();
+            },
+
+            .deref = +[]([[maybe_unused]] value& v) -> value {
+                if constexpr ( detail::has_deref_op_kind<T> ) {
+                    return value{*v.cast<T>()};
+                } else {
+                    throw std::logic_error("value type doesn't have deref operator");
+                }
+            },
+
+            .cderef = +[]([[maybe_unused]] const value& v) -> value {
+                if constexpr ( detail::has_deref_op_kind<T> ) {
+                    return value{*v.cast<T>()};
+                } else {
+                    throw std::logic_error("value type doesn't have deref operator");
+                }
             },
 
             .less = +[]([[maybe_unused]] const value& l, [[maybe_unused]] const value& r) -> bool {
@@ -91,6 +112,7 @@ namespace meta_hpp
                 }
             },
         };
+
         return &traits;
     }
 }
@@ -157,6 +179,18 @@ namespace meta_hpp
 
     inline const void* value::cdata() const noexcept {
         return traits_->cdata(*this);
+    }
+
+    inline value value::deref() {
+        return traits_->deref(*this);
+    }
+
+    inline value value::deref() const {
+        return traits_->cderef(*this);
+    }
+
+    inline value value::cderef() const {
+        return traits_->cderef(*this);
     }
 
     template < typename T, typename Tp >

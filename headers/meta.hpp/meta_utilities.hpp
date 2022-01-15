@@ -117,6 +117,11 @@ namespace meta_hpp::detail
 namespace meta_hpp::detail
 {
     template < typename T >
+    concept has_deref_op_kind = requires(const T& v) {
+        { *v } -> convertible_to<std::remove_pointer_t<T>>;
+    };
+
+    template < typename T >
     concept has_less_op_kind = requires(const T& v) {
         { v < v } -> convertible_to<bool>;
     };
@@ -181,6 +186,10 @@ namespace meta_hpp
         [[nodiscard]] void* data() noexcept;
         [[nodiscard]] const void* data() const noexcept;
         [[nodiscard]] const void* cdata() const noexcept;
+
+        [[nodiscard]] value deref();
+        [[nodiscard]] value deref() const;
+        [[nodiscard]] value cderef() const;
 
         template < typename T, typename Tp = std::decay_t<T> >
         [[nodiscard]] Tp& cast() &;

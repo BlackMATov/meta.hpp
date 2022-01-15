@@ -1,14 +1,16 @@
 # meta.hpp
 
-- add type names;
-- add argument names
-- add variable and member readonly flags
+- add array value access
+- add return value policy
 - add meta exception class;
 - add conversion of nullptr to any pointers;
 - add conversion of any pointers to void pointer ( identically cv-qualified );
-- add enum_type::create, number_type::create, and so on.
-- add return value policy
-- add is_invocable_with by dynamic types
-- add metadata to every type and state
-- add integral implicit conversions
-- add meta::invoke function
+
+* argument names
+* argument defaults
+* type conversions
+* states and types metadata
+
+? add type names;
+? add enum_type::create, number_type::create, and so on.
+? add invoke and is_invocable_with by dynamic types
