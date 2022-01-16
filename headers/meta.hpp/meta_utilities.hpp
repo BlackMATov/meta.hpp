@@ -93,7 +93,6 @@ namespace meta_hpp::detail
     public:
         noncopyable(noncopyable&&) = delete;
         noncopyable(const noncopyable&) = delete;
-
         noncopyable& operator=(noncopyable&&) = delete;
         noncopyable& operator=(const noncopyable&) = delete;
     };
@@ -115,10 +114,12 @@ namespace meta_hpp
 
         ~value() = default;
 
-        template < detail::decay_non_uvalue_kind T >
+        template < detail::decay_non_uvalue_kind T, typename Tp = std::decay_t<T> >
+            requires detail::stdex::copy_constructible<Tp>
         explicit value(T&& val);
 
-        template < detail::decay_non_uvalue_kind T >
+        template < detail::decay_non_uvalue_kind T, typename Tp = std::decay_t<T> >
+            requires detail::stdex::copy_constructible<Tp>
         value& operator=(T&& val);
 
         void swap(value& other) noexcept;
