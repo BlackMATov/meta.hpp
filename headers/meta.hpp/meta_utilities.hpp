@@ -37,36 +37,6 @@ namespace meta_hpp::detail
 namespace meta_hpp::detail
 {
     template < typename T >
-    concept destructible =
-        std::is_nothrow_destructible_v<T>;
-
-    template < typename T, typename... Args >
-    concept constructible_from =
-        destructible<T> &&
-        std::is_constructible_v<T, Args...>;
-
-    template < typename Derived, typename Base >
-    concept derived_from =
-        std::is_base_of_v<Base, Derived> &&
-        std::is_convertible_v<const volatile Derived*, const volatile Base*>;
-
-    template < typename From, typename To >
-    concept convertible_to =
-        std::is_convertible_v<From, To> &&
-        requires { static_cast<To>(std::declval<From>()); };
-}
-
-namespace meta_hpp::detail
-{
-    template < typename T >
-    [[nodiscard]] constexpr std::underlying_type_t<T> to_underlying(T v) noexcept {
-        return static_cast<std::underlying_type_t<T>>(v);
-    }
-}
-
-namespace meta_hpp::detail
-{
-    template < typename T >
     concept value_kind =
         std::is_same_v<T, value>;
 
@@ -116,34 +86,6 @@ namespace meta_hpp::detail
 
 namespace meta_hpp::detail
 {
-    template < typename T >
-    concept has_deref_op_kind = requires(const T& v) {
-        { *v } -> convertible_to<std::remove_pointer_t<T>>;
-    };
-
-    template < typename T >
-    concept has_less_op_kind = requires(const T& v) {
-        { v < v } -> convertible_to<bool>;
-    };
-
-    template < typename T >
-    concept has_equals_op_kind = requires(const T& v) {
-        { v == v } -> convertible_to<bool>;
-    };
-
-    template < typename T >
-    concept has_istream_op_kind = requires(std::istream& is, T& v) {
-        { is >> v } -> convertible_to<std::istream&>;
-    };
-
-    template < typename T >
-    concept has_ostream_op_kind = requires(std::ostream& os, const T& v) {
-        { os << v } -> convertible_to<std::ostream&>;
-    };
-}
-
-namespace meta_hpp::detail
-{
     class noncopyable {
     protected:
         noncopyable() = default;
@@ -187,9 +129,8 @@ namespace meta_hpp
         [[nodiscard]] const void* data() const noexcept;
         [[nodiscard]] const void* cdata() const noexcept;
 
-        [[nodiscard]] value deref();
-        [[nodiscard]] value deref() const;
-        [[nodiscard]] value cderef() const;
+        [[nodiscard]] value operator*() const;
+        [[nodiscard]] value operator[](std::size_t index) const;
 
         template < typename T, typename Tp = std::decay_t<T> >
         [[nodiscard]] Tp& cast() &;

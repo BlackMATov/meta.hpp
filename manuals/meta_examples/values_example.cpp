@@ -10,6 +10,6 @@ namespace
 {
 }
 
-TEST_CASE("meta/meta_examples/references") {
+TEST_CASE("meta/meta_examples/values") {
     namespace meta = meta_hpp;
 }

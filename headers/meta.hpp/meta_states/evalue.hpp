@@ -17,7 +17,7 @@ namespace meta_hpp::detail
     evalue_state::evalue_state(evalue_index index, Enum value)
     : index{std::move(index)}
     , enum_value{value}
-    , underlying_value{to_underlying(value)} {}
+    , underlying_value{stdex::to_underlying(value)} {}
 
     template < enum_kind Enum >
     evalue_state_ptr evalue_state::make(std::string name, Enum value) {

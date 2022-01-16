@@ -354,20 +354,20 @@ TEST_CASE("meta/meta_utilities/value") {
     SUBCASE("deref") {
         {
             int i{42};
-            const meta::value v{meta::value{&i}.deref()};
+            const meta::value v{*meta::value{&i}};
             CHECK(v.get_type() == meta::resolve_type<int>());
             CHECK(v.data() != &i);
         }
         {
             const char i{42};
-            const meta::value v{meta::value{&i}.deref()};
+            const meta::value v{*meta::value{&i}};
             CHECK(v.get_type() == meta::resolve_type<char>());
             CHECK(v.data() != &i);
         }
         {
             const int i{42};
             const int* const pi = &i;
-            const meta::value v{meta::value{&pi}.deref()};
+            const meta::value v{*meta::value{&pi}};
             CHECK(v.get_type() == meta::resolve_type<const int*>() );
             CHECK(v.cast<const int*>() == pi);
         }
@@ -379,10 +379,10 @@ TEST_CASE("meta/meta_utilities/value") {
             void* const& p3 = &i;
             const void* const& p4 = &i;
 
-            CHECK_THROWS(std::ignore = meta::value(p1).deref());
-            CHECK_THROWS(std::ignore = meta::value(p2).deref());
-            CHECK_THROWS(std::ignore = meta::value(p3).deref());
-            CHECK_THROWS(std::ignore = meta::value(p4).deref());
+            CHECK_THROWS(std::ignore = *meta::value(p1));
+            CHECK_THROWS(std::ignore = *meta::value(p2));
+            CHECK_THROWS(std::ignore = *meta::value(p3));
+            CHECK_THROWS(std::ignore = *meta::value(p4));
         }
         {
             ivec2 v{1,2};
@@ -390,18 +390,77 @@ TEST_CASE("meta/meta_utilities/value") {
             CHECK(ivec2::move_ctor_counter == 0);
             CHECK(ivec2::copy_ctor_counter == 0);
 
-            meta::value vv1{vp.deref()};
+            meta::value vv1{*vp};
             CHECK(ivec2::move_ctor_counter == 0);
             CHECK(ivec2::copy_ctor_counter == 1);
 
-            meta::value vv2{std::move(vp).deref()};
+            meta::value vv2{*std::move(vp)};
             CHECK(ivec2::move_ctor_counter == 0);
             CHECK(ivec2::copy_ctor_counter == 2);
 
-            meta::value vv3{vp.cderef()};
+            meta::value vv3{*std::as_const(vp)};
             CHECK(ivec2::move_ctor_counter == 0);
             CHECK(ivec2::copy_ctor_counter == 3);
         }
+        {
+            meta::value v{std::make_shared<int>(42)};
+            CHECK(*v == 42);
+        }
+    }
+}
+
+TEST_CASE("meta/meta_utilities/value/arrays") {
+    namespace meta = meta_hpp;
+
+    SUBCASE("int[3]") {
+        int arr[3]{1,2,3};
+        meta::value v{arr};
+        CHECK(v.get_type() == meta::resolve_type<int*>());
+        CHECK(v[0] == 1);
+        CHECK(v[1] == 2);
+        CHECK(v[2] == 3);
+    }
+
+    SUBCASE("const int[3]") {
+        const int arr[3]{1,2,3};
+        meta::value v{arr};
+        CHECK(v.get_type() == meta::resolve_type<const int*>());
+        CHECK(v[0] == 1);
+        CHECK(v[1] == 2);
+        CHECK(v[2] == 3);
+    }
+
+    SUBCASE("std::array") {
+        meta::value v{std::array{1,2,3}};
+        CHECK(v.get_type() == meta::resolve_type<std::array<int, 3>>());
+        CHECK(v[0] == 1);
+        CHECK(v[1] == 2);
+        CHECK(v[2] == 3);
+    }
+
+    SUBCASE("std::string") {
+        meta::value v{std::string{"hi!"}};
+        CHECK(v.get_type() == meta::resolve_type<std::string>());
+        CHECK(v[0] == 'h');
+        CHECK(v[1] == 'i');
+        CHECK(v[2] == '!');
+    }
+
+    SUBCASE("std::span") {
+        std::vector arr{1,2,3};
+        meta::value v{std::span{arr}};
+        CHECK(v.get_type() == meta::resolve_type<std::span<int>>());
+        CHECK(v[0] == 1);
+        CHECK(v[1] == 2);
+        CHECK(v[2] == 3);
+    }
+
+    SUBCASE("std::vector") {
+        const meta::value v{std::vector{1,2,3}};
+        CHECK(v.get_type() == meta::resolve_type<std::vector<int>>());
+        CHECK(v[0] == 1);
+        CHECK(v[1] == 2);
+        CHECK(v[2] == 3);
     }
 }
 

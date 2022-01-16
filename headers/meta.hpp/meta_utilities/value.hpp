@@ -9,6 +9,13 @@
 #include "../meta_base.hpp"
 #include "../meta_utilities.hpp"
 
+#include "value_traits/deref_traits.hpp"
+#include "value_traits/equals_traits.hpp"
+#include "value_traits/index_traits.hpp"
+#include "value_traits/istream_traits.hpp"
+#include "value_traits/less_traits.hpp"
+#include "value_traits/ostream_traits.hpp"
+
 namespace meta_hpp
 {
     struct value::traits final {
@@ -17,8 +24,8 @@ namespace meta_hpp
         void* (*const data)(value&) noexcept;
         const void* (*const cdata)(const value&) noexcept;
 
-        value (*const deref)(value&);
-        value (*const cderef)(const value&);
+        value (*const deref)(const value&);
+        value (*const index)(const value&, std::size_t);
 
         bool (*const less)(const value&, const value&);
         bool (*const equals)(const value&, const value&);
@@ -48,35 +55,35 @@ namespace meta_hpp
                 return v.try_cast<T>();
             },
 
-            .deref = +[]([[maybe_unused]] value& v) -> value {
-                if constexpr ( detail::has_deref_op_kind<T> ) {
+            .deref = +[]([[maybe_unused]] const value& v) -> value {
+                if constexpr ( detail::has_value_deref_traits<T> ) {
                     return value{*v.cast<T>()};
                 } else {
-                    throw std::logic_error("value type doesn't have deref operator");
+                    throw std::logic_error("value type doesn't have value deref traits");
                 }
             },
 
-            .cderef = +[]([[maybe_unused]] const value& v) -> value {
-                if constexpr ( detail::has_deref_op_kind<T> ) {
-                    return value{*v.cast<T>()};
+            .index = +[]([[maybe_unused]] const value& v, [[maybe_unused]] std::size_t index) -> value {
+                if constexpr ( detail::has_value_index_traits<T> ) {
+                    return detail::value_index_traits<T>{}(v.cast<T>(), index);
                 } else {
-                    throw std::logic_error("value type doesn't have deref operator");
+                    throw std::logic_error("value type doesn't have value index traits");
                 }
             },
 
             .less = +[]([[maybe_unused]] const value& l, [[maybe_unused]] const value& r) -> bool {
-                if constexpr ( detail::has_less_op_kind<T> ) {
-                    return l.cast<T>() < r.cast<T>();
+                if constexpr ( detail::has_value_less_traits<T> ) {
+                    return detail::value_less_traits<T>{}(l.cast<T>(), r.cast<T>());
                 } else {
-                    throw std::logic_error("value type doesn't have less operator");
+                    throw std::logic_error("value type doesn't have value less traits");
                 }
             },
 
             .equals = +[]([[maybe_unused]] const value& l, [[maybe_unused]] const value& r) -> bool {
-                if constexpr ( detail::has_equals_op_kind<T> ) {
-                    return l.cast<T>() == r.cast<T>();
+                if constexpr ( detail::has_value_equals_traits<T> ) {
+                    return detail::value_equals_traits<T>{}(l.cast<T>(), r.cast<T>());
                 } else {
-                    throw std::logic_error("value type doesn't have equality operator");
+                    throw std::logic_error("value type doesn't have value equals traits");
                 }
             },
 
@@ -97,18 +104,18 @@ namespace meta_hpp
             },
 
             .istream = +[]([[maybe_unused]] std::istream& is, [[maybe_unused]] value& v) -> std::istream& {
-                if constexpr ( detail::has_istream_op_kind<T> ) {
-                    return is >> v.cast<T>();
+                if constexpr ( detail::has_value_istream_traits<T> ) {
+                    return detail::value_istream_traits<T>{}(is, v.cast<T>());
                 } else {
-                    throw std::logic_error("value type doesn't have istream operator");
+                    throw std::logic_error("value type doesn't have value istream traits");
                 }
             },
 
             .ostream = +[]([[maybe_unused]] std::ostream& os, [[maybe_unused]] const value& v) -> std::ostream& {
-                if constexpr ( detail::has_ostream_op_kind<T> ) {
-                    return os << v.cast<T>();
+                if constexpr ( detail::has_value_ostream_traits<T> ) {
+                    return detail::value_ostream_traits<T>{}(os, v.cast<T>());
                 } else {
-                    throw std::logic_error("value type doesn't have ostream operator");
+                    throw std::logic_error("value type doesn't have value ostream traits");
                 }
             },
         };
@@ -181,16 +188,12 @@ namespace meta_hpp
         return traits_->cdata(*this);
     }
 
-    inline value value::deref() {
+    inline value value::operator*() const {
         return traits_->deref(*this);
     }
 
-    inline value value::deref() const {
-        return traits_->cderef(*this);
-    }
-
-    inline value value::cderef() const {
-        return traits_->cderef(*this);
+    inline value value::operator[](std::size_t index) const {
+        return traits_->index(*this, index);
     }
 
     template < typename T, typename Tp >

@@ -23,7 +23,7 @@ namespace meta_hpp
     template < detail::class_kind Class >
     template < typename... Args >
     class_bind<Class>& class_bind<Class>::ctor_() {
-        static_assert(detail::constructible_from<Class, Args...>);
+        static_assert(detail::stdex::constructible_from<Class, Args...>);
         auto ctor_state = detail::ctor_state::make<Class, Args...>();
         data_->ctors.emplace(ctor_state->index, std::move(ctor_state));
         return *this;
@@ -32,7 +32,7 @@ namespace meta_hpp
     template < detail::class_kind Class >
     template < detail::class_kind Base >
     class_bind<Class>& class_bind<Class>::base_() {
-        static_assert(detail::derived_from<Class, Base>);
+        static_assert(detail::stdex::derived_from<Class, Base>);
         data_->bases.emplace(resolve_type<Base>());
         data_->bases_info.emplace(resolve_type<Base>(), detail::class_type_data::base_info{
             .upcast = +[](void* derived) -> void* {
