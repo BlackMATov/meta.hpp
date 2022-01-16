@@ -47,7 +47,7 @@ namespace meta_hpp
     }
 
     template < typename Signature, typename Class >
-    constexpr auto select(Signature Class::*func) -> decltype(func) {
+    constexpr auto select(Signature Class::*func) noexcept -> Signature Class::* {
         return func;
     }
 

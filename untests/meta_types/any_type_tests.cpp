@@ -174,8 +174,8 @@ TEST_CASE("meta/meta_types/any_type") {
         const meta::any_type& type = meta::resolve_type(nullptr);
 
         REQUIRE(type);
-        REQUIRE(type == meta::resolve_type<nullptr_t>());
-        REQUIRE(type.get_id() == meta::resolve_type<nullptr_t>().get_id());
+        REQUIRE(type == meta::resolve_type<std::nullptr_t>());
+        REQUIRE(type.get_id() == meta::resolve_type<std::nullptr_t>().get_id());
 
         CHECK(type.is_nullptr());
         CHECK(type.get_kind() == meta::type_kind::nullptr_);

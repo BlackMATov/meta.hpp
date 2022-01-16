@@ -122,7 +122,7 @@ TEST_CASE("meta/meta_states/function") {
 
         CHECK(func.is_invocable_with<int*>());
         CHECK(func.is_invocable_with<const int*>());
-        CHECK(func.is_invocable_with<nullptr_t>());
+        CHECK(func.is_invocable_with<std::nullptr_t>());
 
         int i{42};
         CHECK(func.invoke(&i) == false);

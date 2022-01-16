@@ -134,22 +134,22 @@ TEST_CASE("meta/meta_utilities/arg7/cast/from_nullptr") {
     using meta::detail::arg;
 
     SUBCASE("nullptr -> *") {
-        static_assert(std::is_invocable_v<void(int*), nullptr_t>);
-        static_assert(std::is_invocable_v<void(int*), nullptr_t&>);
-        static_assert(std::is_invocable_v<void(int*), nullptr_t&&>);
-        static_assert(std::is_invocable_v<void(int*), const nullptr_t>);
-        static_assert(std::is_invocable_v<void(int*), const nullptr_t&>);
-        static_assert(std::is_invocable_v<void(int*), const nullptr_t&&>);
+        static_assert(std::is_invocable_v<void(int*), std::nullptr_t>);
+        static_assert(std::is_invocable_v<void(int*), std::nullptr_t&>);
+        static_assert(std::is_invocable_v<void(int*), std::nullptr_t&&>);
+        static_assert(std::is_invocable_v<void(int*), const std::nullptr_t>);
+        static_assert(std::is_invocable_v<void(int*), const std::nullptr_t&>);
+        static_assert(std::is_invocable_v<void(int*), const std::nullptr_t&&>);
 
-        static_assert(std::is_invocable_v<void(const D*), nullptr_t>);
-        static_assert(std::is_invocable_v<void(const D*), nullptr_t&>);
-        static_assert(std::is_invocable_v<void(const D*), nullptr_t&&>);
-        static_assert(std::is_invocable_v<void(const D*), const nullptr_t>);
-        static_assert(std::is_invocable_v<void(const D*), const nullptr_t&>);
-        static_assert(std::is_invocable_v<void(const D*), const nullptr_t&&>);
+        static_assert(std::is_invocable_v<void(const D*), std::nullptr_t>);
+        static_assert(std::is_invocable_v<void(const D*), std::nullptr_t&>);
+        static_assert(std::is_invocable_v<void(const D*), std::nullptr_t&&>);
+        static_assert(std::is_invocable_v<void(const D*), const std::nullptr_t>);
+        static_assert(std::is_invocable_v<void(const D*), const std::nullptr_t&>);
+        static_assert(std::is_invocable_v<void(const D*), const std::nullptr_t&&>);
 
-        nullptr_t n1{nullptr};
-        const nullptr_t n2{nullptr};
+        std::nullptr_t n1{nullptr};
+        const std::nullptr_t n2{nullptr};
 
         CHECK(arg{n1}.can_cast_to<int*>());
         CHECK(arg{std::move(n1)}.can_cast_to<int*>());
