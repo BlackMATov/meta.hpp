@@ -18,6 +18,7 @@ namespace meta_hpp
         function_,
         member_,
         method_,
+        nullptr_,
         number_,
         pointer_,
         reference_,
@@ -46,6 +47,9 @@ namespace meta_hpp::detail
     concept method_kind = std::is_member_function_pointer_v<T>;
 
     template < typename T >
+    concept nullptr_kind = std::is_null_pointer_v<T>;
+
+    template < typename T >
     concept number_kind = std::is_arithmetic_v<T>;
 
     template < typename T >
@@ -65,6 +69,7 @@ namespace meta_hpp::detail
         if constexpr ( function_kind<T> ) { return type_kind::function_; }
         if constexpr ( member_kind<T> ) { return type_kind::member_; }
         if constexpr ( method_kind<T> ) { return type_kind::method_; }
+        if constexpr ( nullptr_kind<T> ) { return type_kind::nullptr_; }
         if constexpr ( number_kind<T> ) { return type_kind::number_; }
         if constexpr ( pointer_kind<T> ) { return type_kind::pointer_; }
         if constexpr ( reference_kind<T> ) { return type_kind::reference_; }
@@ -117,6 +122,12 @@ namespace meta_hpp::detail
     struct type_kind_traits<type_kind::method_> {
         using kind_type = method_type;
         using kind_type_data = method_type_data;
+    };
+
+    template <>
+    struct type_kind_traits<type_kind::nullptr_> {
+        using kind_type = nullptr_type;
+        using kind_type_data = nullptr_type_data;
     };
 
     template <>

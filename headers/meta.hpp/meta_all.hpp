@@ -45,6 +45,7 @@
 #include "meta_types/function_type.hpp"
 #include "meta_types/member_type.hpp"
 #include "meta_types/method_type.hpp"
+#include "meta_types/nullptr_type.hpp"
 #include "meta_types/number_type.hpp"
 #include "meta_types/pointer_type.hpp"
 #include "meta_types/reference_type.hpp"

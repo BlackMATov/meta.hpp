@@ -46,12 +46,15 @@ TEST_CASE("meta/meta_utilities/arg7") {
     meta::class_<D>().base_<B>().base_<C>();
 }
 
-TEST_CASE("meta/meta_utilities/arg7/cast") {
+TEST_CASE("meta/meta_utilities/arg7/cast/to_void") {
     namespace meta = meta_hpp;
     using meta::detail::arg;
 
-    SUBCASE("int*") {
+    SUBCASE("int* -> void*") {
         int i{42};
+
+        static_assert(std::is_invocable_v<void(void*), int*>);
+        static_assert(std::is_invocable_v<void(const void*), int*>);
 
         CHECK(arg{&i}.can_cast_to<void*>());
         CHECK(arg{&i}.can_cast_to<const void*>());
@@ -60,8 +63,11 @@ TEST_CASE("meta/meta_utilities/arg7/cast") {
         CHECK(arg{&i}.cast<const void*>() == &i);
     }
 
-    SUBCASE("const int*") {
+    SUBCASE("const int* -> void*") {
         const int i{42};
+
+        static_assert(!std::is_invocable_v<void(void*), const int*>);
+        static_assert(std::is_invocable_v<void(const void*), const int*>);
 
         CHECK_FALSE(arg{&i}.can_cast_to<void*>());
         CHECK(arg{&i}.can_cast_to<const void*>());
@@ -70,7 +76,7 @@ TEST_CASE("meta/meta_utilities/arg7/cast") {
         CHECK(arg{&i}.cast<const void*>() == &i);
     }
 
-    SUBCASE("D*") {
+    SUBCASE("D* -> void*") {
         D d;
 
         static_assert(std::is_invocable_v<void(void*), D*>);
@@ -83,7 +89,7 @@ TEST_CASE("meta/meta_utilities/arg7/cast") {
         CHECK(arg{&d}.cast<const void*>() == &d);
     }
 
-    SUBCASE("const D*") {
+    SUBCASE("const D* -> void*") {
         const D d;
 
         static_assert(!std::is_invocable_v<void(void*), const D*>);
@@ -96,7 +102,7 @@ TEST_CASE("meta/meta_utilities/arg7/cast") {
         CHECK(arg{&d}.cast<const void*>() == &d);
     }
 
-    SUBCASE("D[2]") {
+    SUBCASE("D[2] -> void*") {
         D arr[2];
 
         static_assert(std::is_invocable_v<void(void*), D (&) [2]>);
@@ -109,7 +115,7 @@ TEST_CASE("meta/meta_utilities/arg7/cast") {
         CHECK(arg{arr}.cast<const void*>() == &arr);
     }
 
-    SUBCASE("const D[2]") {
+    SUBCASE("const D[2] -> void*") {
         const D arr[2];
 
         static_assert(!std::is_invocable_v<void(void*), const D (&) [2]>);
@@ -120,5 +126,71 @@ TEST_CASE("meta/meta_utilities/arg7/cast") {
 
         CHECK_THROWS(std::ignore = arg{arr}.cast<void*>());
         CHECK(arg{arr}.cast<const void*>() == &arr);
+    }
+}
+
+TEST_CASE("meta/meta_utilities/arg7/cast/from_nullptr") {
+    namespace meta = meta_hpp;
+    using meta::detail::arg;
+
+    SUBCASE("nullptr -> *") {
+        static_assert(std::is_invocable_v<void(int*), nullptr_t>);
+        static_assert(std::is_invocable_v<void(int*), nullptr_t&>);
+        static_assert(std::is_invocable_v<void(int*), nullptr_t&&>);
+        static_assert(std::is_invocable_v<void(int*), const nullptr_t>);
+        static_assert(std::is_invocable_v<void(int*), const nullptr_t&>);
+        static_assert(std::is_invocable_v<void(int*), const nullptr_t&&>);
+
+        static_assert(std::is_invocable_v<void(const D*), nullptr_t>);
+        static_assert(std::is_invocable_v<void(const D*), nullptr_t&>);
+        static_assert(std::is_invocable_v<void(const D*), nullptr_t&&>);
+        static_assert(std::is_invocable_v<void(const D*), const nullptr_t>);
+        static_assert(std::is_invocable_v<void(const D*), const nullptr_t&>);
+        static_assert(std::is_invocable_v<void(const D*), const nullptr_t&&>);
+
+        nullptr_t n1{nullptr};
+        const nullptr_t n2{nullptr};
+
+        CHECK(arg{n1}.can_cast_to<int*>());
+        CHECK(arg{std::move(n1)}.can_cast_to<int*>());
+        CHECK(arg{n2}.can_cast_to<int*>());
+        CHECK(arg{std::move(n2)}.can_cast_to<int*>());
+
+        CHECK(arg{n1}.can_cast_to<const int*>());
+        CHECK(arg{std::move(n1)}.can_cast_to<const int*>());
+        CHECK(arg{n2}.can_cast_to<const int*>());
+        CHECK(arg{std::move(n2)}.can_cast_to<const int*>());
+
+        CHECK(arg{n1}.can_cast_to<D*>());
+        CHECK(arg{std::move(n1)}.can_cast_to<D*>());
+        CHECK(arg{n2}.can_cast_to<D*>());
+        CHECK(arg{std::move(n2)}.can_cast_to<D*>());
+
+        CHECK(arg{n1}.can_cast_to<const D*>());
+        CHECK(arg{std::move(n1)}.can_cast_to<const D*>());
+        CHECK(arg{n2}.can_cast_to<const D*>());
+        CHECK(arg{std::move(n2)}.can_cast_to<const D*>());
+
+        //
+
+        CHECK(arg{n1}.cast<int*>() == nullptr);
+        CHECK(arg{std::move(n1)}.cast<int*>() == nullptr);
+        CHECK(arg{n2}.cast<int*>() == nullptr);
+        CHECK(arg{std::move(n2)}.cast<int*>() == nullptr);
+
+        CHECK(arg{n1}.cast<const int*>() == nullptr);
+        CHECK(arg{std::move(n1)}.cast<const int*>() == nullptr);
+        CHECK(arg{n2}.cast<const int*>() == nullptr);
+        CHECK(arg{std::move(n2)}.cast<const int*>() == nullptr);
+
+        CHECK(arg{n1}.cast<D*>() == nullptr);
+        CHECK(arg{std::move(n1)}.cast<D*>() == nullptr);
+        CHECK(arg{n2}.cast<D*>() == nullptr);
+        CHECK(arg{std::move(n2)}.cast<D*>() == nullptr);
+
+        CHECK(arg{n1}.cast<const D*>() == nullptr);
+        CHECK(arg{std::move(n1)}.cast<const D*>() == nullptr);
+        CHECK(arg{n2}.cast<const D*>() == nullptr);
+        CHECK(arg{std::move(n2)}.cast<const D*>() == nullptr);
     }
 }

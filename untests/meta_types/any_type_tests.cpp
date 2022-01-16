@@ -162,10 +162,28 @@ TEST_CASE("meta/meta_types/any_type") {
         CHECK(type.is_method());
         CHECK(type.get_kind() == meta::type_kind::method_);
 
+        CHECK_FALSE(type.is_nullptr());
+        CHECK_FALSE(type.as_nullptr());
+
+        const meta::method_type& specific_type = type.as_method();
+        REQUIRE(specific_type);
+        CHECK(specific_type.get_id() == type.get_id());
+    }
+
+    SUBCASE("nullptr") {
+        const meta::any_type& type = meta::resolve_type(nullptr);
+
+        REQUIRE(type);
+        REQUIRE(type == meta::resolve_type<nullptr_t>());
+        REQUIRE(type.get_id() == meta::resolve_type<nullptr_t>().get_id());
+
+        CHECK(type.is_nullptr());
+        CHECK(type.get_kind() == meta::type_kind::nullptr_);
+
         CHECK_FALSE(type.is_number());
         CHECK_FALSE(type.as_number());
 
-        const meta::method_type& specific_type = type.as_method();
+        const meta::nullptr_type& specific_type = type.as_nullptr();
         REQUIRE(specific_type);
         CHECK(specific_type.get_id() == type.get_id());
     }

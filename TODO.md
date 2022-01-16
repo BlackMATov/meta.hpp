@@ -3,7 +3,6 @@
 - add array value access
 - add return value policy
 - add meta exception class;
-- add conversion of nullptr to any pointers;
 - void value?
 - all string to hash?
 

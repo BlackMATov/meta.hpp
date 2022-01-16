@@ -40,9 +40,6 @@ namespace meta_hpp::detail
 
     template < reference_kind Reference >
     struct reference_traits;
-
-    template < void_kind Void >
-    struct void_traits;
 }
 
 namespace meta_hpp

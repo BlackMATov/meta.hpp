@@ -123,6 +123,7 @@ namespace meta_hpp
     class function_type;
     class member_type;
     class method_type;
+    class nullptr_type;
     class number_type;
     class pointer_type;
     class reference_type;
@@ -138,6 +139,7 @@ namespace meta_hpp
         struct function_type_data;
         struct member_type_data;
         struct method_type_data;
+        struct nullptr_type_data;
         struct number_type_data;
         struct pointer_type_data;
         struct reference_type_data;
@@ -151,6 +153,7 @@ namespace meta_hpp
         using function_type_data_ptr = std::shared_ptr<function_type_data>;
         using member_type_data_ptr = std::shared_ptr<member_type_data>;
         using method_type_data_ptr = std::shared_ptr<method_type_data>;
+        using nullptr_type_data_ptr = std::shared_ptr<nullptr_type_data>;
         using number_type_data_ptr = std::shared_ptr<number_type_data>;
         using pointer_type_data_ptr = std::shared_ptr<pointer_type_data>;
         using reference_type_data_ptr = std::shared_ptr<reference_type_data>;

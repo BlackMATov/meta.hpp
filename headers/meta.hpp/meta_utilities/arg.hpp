@@ -97,6 +97,10 @@ namespace meta_hpp::detail
         };
 
         if constexpr ( std::is_pointer_v<To> ) {
+            if ( to_type.is_pointer() && from_type.is_nullptr() ) {
+                return true;
+            }
+
             if ( to_type.is_pointer() && from_type.is_array() ) {
                 const pointer_type& to_type_ptr = to_type.as_pointer();
                 const bool to_type_ptr_readonly = to_type_ptr.get_flags().has(pointer_flags::is_readonly);
@@ -206,6 +210,10 @@ namespace meta_hpp::detail
         const any_type& to_type = resolve_type<to_raw_type>();
 
         if constexpr ( std::is_pointer_v<To> ) {
+            if ( to_type.is_pointer() && from_type.is_nullptr() ) {
+                return static_cast<to_raw_type_cv>(nullptr);
+            }
+
             if ( to_type.is_pointer() && from_type.is_array() ) {
                 const pointer_type& to_type_ptr = to_type.as_pointer();
                 const array_type& from_type_array = from_type.as_array();

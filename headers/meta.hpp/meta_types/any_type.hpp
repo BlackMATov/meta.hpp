@@ -51,6 +51,9 @@ namespace meta_hpp
     inline any_type::any_type(const method_type& other) noexcept
     : data_{detail::data_access(other)} {}
 
+    inline any_type::any_type(const nullptr_type& other) noexcept
+    : data_{detail::data_access(other)} {}
+
     inline any_type::any_type(const number_type& other) noexcept
     : data_{detail::data_access(other)} {}
 
@@ -89,6 +92,10 @@ namespace meta_hpp
 
     inline bool any_type::is_method() const noexcept {
         return data_ && data_->kind == type_kind::method_;
+    }
+
+    inline bool any_type::is_nullptr() const noexcept {
+        return data_ && data_->kind == type_kind::nullptr_;
     }
 
     inline bool any_type::is_number() const noexcept {
@@ -147,6 +154,12 @@ namespace meta_hpp
         return is_method()
             ? method_type{std::static_pointer_cast<detail::method_type_data>(data_)}
             : method_type{};
+    }
+
+    inline nullptr_type any_type::as_nullptr() const noexcept {
+        return is_nullptr()
+            ? nullptr_type{std::static_pointer_cast<detail::nullptr_type_data>(data_)}
+            : nullptr_type{};
     }
 
     inline number_type any_type::as_number() const noexcept {

@@ -20,6 +20,7 @@ namespace
             return v.x * v.x + v.y * v.y;
         }
 
+        static bool arg_nullptr(const void* ptr) { return ptr == nullptr; }
         static int arg_bounded_arr(ivec2 vs[2]) { return vs[0].x + vs[0].y + vs[1].x + vs[1].y; }
         static int arg_unbounded_arr(ivec2 vs[]) { return vs[0].x + vs[0].y + vs[1].x + vs[1].y; }
         static int arg_bounded_const_arr(const ivec2 vs[2]) { return vs[0].x + vs[0].y + vs[1].x + vs[1].y; }
@@ -37,6 +38,7 @@ TEST_CASE("meta/meta_states/function") {
     meta::class_<ivec2>()
         .function_("iadd", &ivec2::iadd)
         .function_("ilength2", &ivec2::ilength2)
+        .function_("arg_nullptr", &ivec2::arg_nullptr)
         .function_("arg_bounded_arr", &ivec2::arg_bounded_arr)
         .function_("arg_unbounded_arr", &ivec2::arg_unbounded_arr)
         .function_("arg_bounded_const_arr", &ivec2::arg_bounded_const_arr)
@@ -112,6 +114,19 @@ TEST_CASE("meta/meta_states/function") {
 
         CHECK(func.invoke(ivec2{2,3}));
         CHECK(func.invoke(ivec2{2,3}).value() == 13);
+    }
+
+    SUBCASE("arg_null") {
+        const meta::function func = ivec2_type.get_function("arg_nullptr");
+        REQUIRE(func);
+
+        CHECK(func.is_invocable_with<int*>());
+        CHECK(func.is_invocable_with<const int*>());
+        CHECK(func.is_invocable_with<nullptr_t>());
+
+        int i{42};
+        CHECK(func.invoke(&i) == false);
+        CHECK(func.invoke(nullptr) == true);
     }
 
     SUBCASE("arg_arr") {

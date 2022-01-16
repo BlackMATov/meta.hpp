@@ -72,6 +72,7 @@ namespace meta_hpp
             std::is_same_v<T, function_type> ||
             std::is_same_v<T, member_type> ||
             std::is_same_v<T, method_type> ||
+            std::is_same_v<T, nullptr_type> ||
             std::is_same_v<T, number_type> ||
             std::is_same_v<T, pointer_type> ||
             std::is_same_v<T, reference_type> ||
@@ -135,6 +136,7 @@ namespace meta_hpp
         any_type(const function_type& other) noexcept;
         any_type(const member_type& other) noexcept;
         any_type(const method_type& other) noexcept;
+        any_type(const nullptr_type& other) noexcept;
         any_type(const number_type& other) noexcept;
         any_type(const pointer_type& other) noexcept;
         any_type(const reference_type& other) noexcept;
@@ -147,6 +149,7 @@ namespace meta_hpp
         [[nodiscard]] bool is_function() const noexcept;
         [[nodiscard]] bool is_member() const noexcept;
         [[nodiscard]] bool is_method() const noexcept;
+        [[nodiscard]] bool is_nullptr() const noexcept;
         [[nodiscard]] bool is_number() const noexcept;
         [[nodiscard]] bool is_pointer() const noexcept;
         [[nodiscard]] bool is_reference() const noexcept;
@@ -159,6 +162,7 @@ namespace meta_hpp
         [[nodiscard]] function_type as_function() const noexcept;
         [[nodiscard]] member_type as_member() const noexcept;
         [[nodiscard]] method_type as_method() const noexcept;
+        [[nodiscard]] nullptr_type as_nullptr() const noexcept;
         [[nodiscard]] number_type as_number() const noexcept;
         [[nodiscard]] pointer_type as_pointer() const noexcept;
         [[nodiscard]] reference_type as_reference() const noexcept;
@@ -352,6 +356,20 @@ namespace meta_hpp
         friend auto detail::data_access<method_type>(const method_type&);
     };
 
+    class nullptr_type final {
+    public:
+        nullptr_type() = default;
+        nullptr_type(detail::nullptr_type_data_ptr data);
+
+        [[nodiscard]] bool is_valid() const noexcept;
+        [[nodiscard]] explicit operator bool() const noexcept;
+
+        [[nodiscard]] type_id get_id() const noexcept;
+    private:
+        detail::nullptr_type_data_ptr data_;
+        friend auto detail::data_access<nullptr_type>(const nullptr_type&);
+    };
+
     class number_type final {
     public:
         number_type() = default;
@@ -528,6 +546,14 @@ namespace meta_hpp::detail
 
         template < method_kind Method >
         [[nodiscard]] static method_type_data_ptr get_static();
+    };
+
+    struct nullptr_type_data final : type_data_base {
+        template < nullptr_kind Nullptr >
+        explicit nullptr_type_data(type_list<Nullptr>);
+
+        template < nullptr_kind Nullptr >
+        [[nodiscard]] static nullptr_type_data_ptr get_static();
     };
 
     struct number_type_data final : type_data_base {
