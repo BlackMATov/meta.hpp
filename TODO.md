@@ -4,7 +4,6 @@
 - add return value policy
 - add meta exception class;
 - add conversion of nullptr to any pointers;
-- add conversion of any pointers to void pointer ( identically cv-qualified );
 - void value?
 - all string to hash?
 

@@ -107,8 +107,10 @@ namespace meta_hpp::detail
                 const any_type& to_data_type = to_type_ptr.get_data_type();
                 const any_type& from_data_type = from_type_array.get_data_type();
 
-                if ( is_a(to_data_type, from_data_type) && to_type_ptr_readonly >= from_type_array_readonly ) {
-                    return true;
+                if ( to_type_ptr_readonly >= from_type_array_readonly ) {
+                    if ( to_data_type.is_void() || is_a(to_data_type, from_data_type) ) {
+                        return true;
+                    }
                 }
             }
 
@@ -122,8 +124,10 @@ namespace meta_hpp::detail
                 const any_type& to_data_type = to_type_ptr.get_data_type();
                 const any_type& from_data_type = from_type_ptr.get_data_type();
 
-                if ( is_a(to_data_type, from_data_type) && to_type_ptr_readonly >= from_type_ptr_readonly ) {
-                    return true;
+                if ( to_type_ptr_readonly >= from_type_ptr_readonly ) {
+                    if ( to_data_type.is_void() || is_a(to_data_type, from_data_type) ) {
+                        return true;
+                    }
                 }
             }
         }
@@ -209,7 +213,7 @@ namespace meta_hpp::detail
                 const any_type& to_data_type = to_type_ptr.get_data_type();
                 const any_type& from_data_type = from_type_array.get_data_type();
 
-                if ( to_data_type == from_data_type ) {
+                if ( to_data_type.is_void() || to_data_type == from_data_type ) {
                     return static_cast<to_raw_type_cv>(data_);
                 }
 
@@ -231,7 +235,7 @@ namespace meta_hpp::detail
 
                 void** from_data_ptr = static_cast<void**>(data_);
 
-                if ( to_data_type == from_data_type ) {
+                if ( to_data_type.is_void() || to_data_type == from_data_type ) {
                     return static_cast<to_raw_type_cv>(*from_data_ptr);
                 }
 
