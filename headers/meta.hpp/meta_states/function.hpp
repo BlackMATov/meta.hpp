@@ -13,38 +13,59 @@
 
 namespace meta_hpp::detail
 {
-    template < function_kind Function >
-    std::optional<value> vargs_invoke(Function function, std::span<const arg> args) {
+    template < function_policy_kind Policy, function_kind Function >
+    std::optional<value> raw_function_invoke(Function function, std::span<const arg> args) {
         using ft = function_traits<Function>;
         using return_type = typename ft::return_type;
         using argument_types = typename ft::argument_types;
+
+        constexpr bool as_copy =
+            stdex::copy_constructible<return_type> &&
+            stdex::same_as<Policy, function_policy::as_copy>;
+
+        constexpr bool as_void =
+            std::is_void_v<return_type> ||
+            stdex::same_as<Policy, function_policy::discard_return>;
+
+        constexpr bool ref_as_ptr =
+            std::is_reference_v<return_type> &&
+            stdex::same_as<Policy, function_policy::return_reference_as_pointer>;
+
+        static_assert(as_copy || as_void || ref_as_ptr);
 
         if ( args.size() != ft::arity ) {
             throw std::logic_error("an attempt to call a function with an incorrect arity");
         }
 
+        return std::invoke([
+            args, function = std::move(function)
         // NOLINTNEXTLINE(readability-named-parameter)
-        return std::invoke([function = std::move(function), &args]<std::size_t... Is>(std::index_sequence<Is...>){
+        ]<std::size_t... Is>(std::index_sequence<Is...>) -> std::optional<value> {
             if ( !(... && (args.data() + Is)->can_cast_to<type_list_at_t<Is, argument_types>>()) ) {
                 throw std::logic_error("an attempt to call a function with incorrect argument types");
             }
 
-            if constexpr ( std::is_void_v<return_type> ) {
-                std::invoke(
+            if constexpr ( as_void ) {
+                std::ignore = std::invoke(
                     std::move(function),
                     (args.data() + Is)->cast<type_list_at_t<Is, argument_types>>()...);
                 return std::nullopt;
             } else {
-                return_type return_value{std::invoke(
+                return_type&& return_value = std::invoke(
                     std::move(function),
-                    (args.data() + Is)->cast<type_list_at_t<Is, argument_types>>()...)};
-                return value{std::forward<return_type>(return_value)};
+                    (args.data() + Is)->cast<type_list_at_t<Is, argument_types>>()...);
+
+                if constexpr ( ref_as_ptr ) {
+                    return value{std::addressof(return_value)};
+                } else {
+                    return value{std::forward<decltype(return_value)>(return_value)};
+                }
             }
         }, std::make_index_sequence<ft::arity>());
     }
 
     template < function_kind Function >
-    bool vargs_is_invocable_with(std::span<const arg_base> args) {
+    bool raw_function_is_invocable_with(std::span<const arg_base> args) {
         using ft = function_traits<Function>;
         using argument_types = typename ft::argument_types;
 
@@ -53,7 +74,7 @@ namespace meta_hpp::detail
         }
 
         // NOLINTNEXTLINE(readability-named-parameter)
-        return std::invoke([&args]<std::size_t... Is>(std::index_sequence<Is...>){
+        return std::invoke([args]<std::size_t... Is>(std::index_sequence<Is...>){
             return (... && (args.data() + Is)->can_cast_to<type_list_at_t<Is, argument_types>>());
         }, std::make_index_sequence<ft::arity>());
     }
@@ -61,31 +82,29 @@ namespace meta_hpp::detail
 
 namespace meta_hpp::detail
 {
-    template < function_kind Function >
+    template < function_policy_kind Policy, function_kind Function >
     function_state::invoke_impl make_function_invoke(Function function) {
         using namespace std::placeholders;
-        return std::bind(&vargs_invoke<Function>, std::move(function), _1);
+        return std::bind(&raw_function_invoke<Policy, Function>, std::move(function), _1);
     }
 
     template < function_kind Function >
     function_state::is_invocable_with_impl make_function_is_invocable_with() {
         using namespace std::placeholders;
-        return std::bind(&vargs_is_invocable_with<Function>, _1);
+        return std::bind(&raw_function_is_invocable_with<Function>, _1);
     }
 }
 
 namespace meta_hpp::detail
 {
-    template < function_kind Function >
-    function_state::function_state(function_index index, Function function)
-    : index{std::move(index)}
-    , invoke{make_function_invoke(std::move(function))}
-    , is_invocable_with{make_function_is_invocable_with<Function>()} {}
-
-    template < function_kind Function >
+    template < function_policy_kind Policy, function_kind Function >
     function_state_ptr function_state::make(std::string name, Function function) {
         function_index index{function_type_data::get_static<Function>(), std::move(name)};
-        return std::make_shared<function_state>(std::move(index), std::move(function));
+        return std::make_shared<function_state>(function_state{
+            .index{std::move(index)},
+            .invoke{make_function_invoke<Policy>(std::move(function))},
+            .is_invocable_with{make_function_is_invocable_with<Function>()},
+        });
     }
 }
 

@@ -13,30 +13,65 @@
 
 namespace meta_hpp::detail
 {
-    template < member_kind Member >
-    value vargs_invoke(Member member, const inst& inst) {
+    template < member_policy_kind Policy, member_kind Member >
+    value raw_member_getter(Member member, const inst& inst) {
         using mt = member_traits<Member>;
         using class_type = typename mt::class_type;
         using value_type = typename mt::value_type;
 
-        using qualified_type = const class_type;
+        constexpr bool as_copy =
+            stdex::copy_constructible<value_type> &&
+            stdex::same_as<Policy, member_policy::as_copy>;
 
-        if ( !inst.can_cast_to<qualified_type>() ) {
+        constexpr bool as_ptr =
+            stdex::same_as<Policy, member_policy::as_pointer>;
+
+        constexpr bool as_ref_wrap =
+            stdex::same_as<Policy, member_policy::as_reference_wrapper>;
+
+        static_assert(as_copy || as_ptr || as_ref_wrap);
+
+        if ( !inst.can_cast_to<const class_type>() ) {
             throw std::logic_error("an attempt to get a member with an incorrect instance type");
         }
 
-        value_type return_value{std::invoke(std::move(member), inst.cast<qualified_type>())};
-        return value{std::forward<value_type>(return_value)};
+        if ( inst.is_const() ) {
+            auto&& return_value = std::invoke(std::move(member), inst.cast<const class_type>());
+
+            if constexpr ( as_copy ) {
+                return value{std::forward<decltype(return_value)>(return_value)};
+            }
+
+            if constexpr ( as_ptr ) {
+                return value{std::addressof(return_value)};
+            }
+
+            if constexpr ( as_ref_wrap ) {
+                return value{std::ref(return_value)};
+            }
+        } else {
+            auto&& return_value = std::invoke(std::move(member), inst.cast<class_type>());
+
+            if constexpr ( as_copy ) {
+                return value{std::forward<decltype(return_value)>(return_value)};
+            }
+
+            if constexpr ( as_ptr ) {
+                return value{std::addressof(return_value)};
+            }
+
+            if constexpr ( as_ref_wrap ) {
+                return value{std::ref(return_value)};
+            }
+        }
     }
 
     template < member_kind Member >
-    bool vargs_is_invocable_with(const inst_base& inst) {
+    bool raw_member_is_gettable_with(const inst_base& inst) {
         using mt = member_traits<Member>;
         using class_type = typename mt::class_type;
 
-        using qualified_type = const class_type;
-
-        return inst.can_cast_to<qualified_type>();
+        return inst.can_cast_to<const class_type>();
     }
 }
 
@@ -48,8 +83,6 @@ namespace meta_hpp::detail
         using class_type = typename mt::class_type;
         using value_type = typename mt::value_type;
 
-        using qualified_type = class_type;
-
         if constexpr ( std::is_const_v<value_type> ) {
             throw std::logic_error("an attempt to set a constant member");
         } else {
@@ -57,7 +90,7 @@ namespace meta_hpp::detail
                 throw std::logic_error("an attempt to set a member with an const instance type");
             }
 
-            if ( !inst.can_cast_to<qualified_type>() ) {
+            if ( !inst.can_cast_to<class_type>() ) {
                 throw std::logic_error("an attempt to set a member with an incorrect instance type");
             }
 
@@ -65,7 +98,7 @@ namespace meta_hpp::detail
                 throw std::logic_error("an attempt to set a member with an incorrect argument type");
             }
 
-            std::invoke(std::move(member), inst.cast<qualified_type>()) = arg.cast<value_type>();
+            std::invoke(std::move(member), inst.cast<class_type>()) = arg.cast<value_type>();
         }
     }
 
@@ -75,27 +108,25 @@ namespace meta_hpp::detail
         using class_type = typename mt::class_type;
         using value_type = typename mt::value_type;
 
-        using qualified_type = class_type;
-
         return !std::is_const_v<value_type>
             && !inst.is_const()
-            && inst.can_cast_to<qualified_type>()
+            && inst.can_cast_to<class_type>()
             && arg.can_cast_to<value_type>();
     }
 }
 
 namespace meta_hpp::detail
 {
-    template < member_kind Member >
+    template < member_policy_kind Policy, member_kind Member >
     member_state::getter_impl make_member_getter(Member member) {
         using namespace std::placeholders;
-        return std::bind(&vargs_invoke<Member>, std::move(member), _1);
+        return std::bind(&raw_member_getter<Policy, Member>, std::move(member), _1);
     }
 
     template < member_kind Member >
     member_state::is_gettable_with_impl make_member_is_gettable_with() {
         using namespace std::placeholders;
-        return std::bind(&vargs_is_invocable_with<Member>, _1);
+        return std::bind(&raw_member_is_gettable_with<Member>, _1);
     }
 
     template < member_kind Member >
@@ -113,18 +144,16 @@ namespace meta_hpp::detail
 
 namespace meta_hpp::detail
 {
-    template < member_kind Member >
-    member_state::member_state(member_index index, Member member)
-    : index{std::move(index)}
-    , getter{make_member_getter(std::move(member))}
-    , setter{make_member_setter(std::move(member))}
-    , is_gettable_with{make_member_is_gettable_with<Member>()}
-    , is_settable_with{make_member_is_settable_with<Member>()} {}
-
-    template < member_kind Member >
+    template < member_policy_kind Policy, member_kind Member >
     member_state_ptr member_state::make(std::string name, Member member) {
         member_index index{member_type_data::get_static<Member>(), std::move(name)};
-        return std::make_shared<member_state>(std::move(index), std::move(member));
+        return std::make_shared<member_state>(member_state{
+            .index{std::move(index)},
+            .getter{make_member_getter<Policy>(std::move(member))},
+            .setter{make_member_setter(std::move(member))},
+            .is_gettable_with{make_member_is_gettable_with<Member>()},
+            .is_settable_with{make_member_is_settable_with<Member>()},
+        });
     }
 }
 

@@ -30,7 +30,7 @@ namespace
     {\
         using namespace meta::detail;\
         auto method_ptr = meta::select<int() Qualifiers>(&clazz::FName);\
-        meta::method m_state{method_state::make("", method_ptr)};\
+        meta::method m_state{method_state::make<meta::method_policy::as_copy>("", method_ptr)};\
         \
         if ( std::is_invocable_v<decltype(method_ptr), decltype(Inst)> ) {\
             CHECK(inst{Inst}.can_cast_to<clazz Qualifiers>());\
@@ -54,7 +54,7 @@ namespace
     {\
         using namespace meta::detail;\
         auto method_ptr = meta::select<int() ToQualifiers>(&clazz::FName);\
-        meta::method m_state{method_state::make("", method_ptr)};\
+        meta::method m_state{method_state::make<meta::method_policy::as_copy>("", method_ptr)};\
         \
         if ( std::is_invocable_v<decltype(method_ptr), FromType> ) {\
             CHECK(m_state.is_invocable_with<FromType>());\

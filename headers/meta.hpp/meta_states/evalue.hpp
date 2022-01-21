@@ -14,15 +14,13 @@
 namespace meta_hpp::detail
 {
     template < enum_kind Enum >
-    evalue_state::evalue_state(evalue_index index, Enum value)
-    : index{std::move(index)}
-    , enum_value{value}
-    , underlying_value{stdex::to_underlying(value)} {}
-
-    template < enum_kind Enum >
     evalue_state_ptr evalue_state::make(std::string name, Enum value) {
         evalue_index index{enum_type_data::get_static<Enum>(), std::move(name)};
-        return std::make_shared<evalue_state>(std::move(index), std::move(value));
+        return std::make_shared<evalue_state>(evalue_state{
+            .index{std::move(index)},
+            .enum_value{value},
+            .underlying_value{stdex::to_underlying(value)},
+        });
     }
 }
 

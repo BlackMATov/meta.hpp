@@ -13,29 +13,55 @@
 
 namespace meta_hpp::detail
 {
-    template < class_kind Class, typename... Args >
-    value vargs_invoke(std::span<const arg> args) {
+    template < ctor_policy_kind Policy, class_kind Class, typename... Args >
+    value raw_ctor_invoke(std::span<const arg> args) {
         using ct = ctor_traits<Class, Args...>;
         using class_type = typename ct::class_type;
         using argument_types = typename ct::argument_types;
+
+        constexpr bool as_object =
+            stdex::copy_constructible<class_type> &&
+            stdex::same_as<Policy, ctor_policy::as_object>;
+
+        constexpr bool as_raw_ptr =
+            stdex::same_as<Policy, ctor_policy::as_raw_pointer>;
+
+        constexpr bool as_shared_ptr =
+            stdex::same_as<Policy, ctor_policy::as_shared_pointer>;
+
+        static_assert(as_object || as_raw_ptr || as_shared_ptr);
 
         if ( args.size() != ct::arity ) {
             throw std::logic_error("an attempt to call a constructor with an incorrect arity");
         }
 
+        return std::invoke([
+            args
         // NOLINTNEXTLINE(readability-named-parameter)
-        return std::invoke([&args]<std::size_t... Is>(std::index_sequence<Is...>){
+        ]<std::size_t... Is>(std::index_sequence<Is...>) -> value {
             if ( !(... && (args.data() + Is)->can_cast_to<type_list_at_t<Is, argument_types>>()) ) {
                 throw std::logic_error("an attempt to call a constructor with incorrect argument types");
             }
 
-            class_type return_value{(args.data() + Is)->cast<type_list_at_t<Is, argument_types>>()...};
-            return value{std::forward<class_type>(return_value)};
+            if constexpr ( as_object ) {
+                class_type return_value{(args.data() + Is)->cast<type_list_at_t<Is, argument_types>>()...};
+                return value{std::move(return_value)};
+            }
+
+            if constexpr ( as_raw_ptr ) {
+                auto return_value{std::make_unique<class_type>((args.data() + Is)->cast<type_list_at_t<Is, argument_types>>()...)};
+                return value{return_value.release()};
+            }
+
+            if constexpr ( as_shared_ptr ) {
+                auto return_value{std::make_shared<class_type>((args.data() + Is)->cast<type_list_at_t<Is, argument_types>>()...)};
+                return value{std::move(return_value)};
+            }
         }, std::make_index_sequence<ct::arity>());
     }
 
     template < class_kind Class, typename... Args >
-    bool vargs_is_invocable_with(std::span<const arg_base> args) {
+    bool raw_ctor_is_invocable_with(std::span<const arg_base> args) {
         using ct = ctor_traits<Class, Args...>;
         using argument_types = typename ct::argument_types;
 
@@ -44,7 +70,7 @@ namespace meta_hpp::detail
         }
 
         // NOLINTNEXTLINE(readability-named-parameter)
-        return std::invoke([&args]<std::size_t... Is>(std::index_sequence<Is...>){
+        return std::invoke([args]<std::size_t... Is>(std::index_sequence<Is...>){
             return (... && (args.data() + Is)->can_cast_to<type_list_at_t<Is, argument_types>>());
         }, std::make_index_sequence<ct::arity>());
     }
@@ -52,32 +78,29 @@ namespace meta_hpp::detail
 
 namespace meta_hpp::detail
 {
-    template < class_kind Class, typename... Args >
+    template < ctor_policy_kind Policy, class_kind Class, typename... Args >
     ctor_state::invoke_impl make_ctor_invoke() {
         using namespace std::placeholders;
-        return std::bind(&vargs_invoke<Class, Args...>, _1);
+        return std::bind(&raw_ctor_invoke<Policy, Class, Args...>, _1);
     }
 
     template < class_kind Class, typename... Args >
     ctor_state::is_invocable_with_impl make_ctor_is_invocable_with() {
         using namespace std::placeholders;
-        return std::bind(&vargs_is_invocable_with<Class, Args...>, _1);
+        return std::bind(&raw_ctor_is_invocable_with<Class, Args...>, _1);
     }
 }
 
 namespace meta_hpp::detail
 {
-    template < class_kind Class, typename... Args >
-    // NOLINTNEXTLINE(readability-named-parameter)
-    ctor_state::ctor_state(ctor_index index, type_list<Class>, type_list<Args...>)
-    : index{std::move(index)}
-    , invoke{make_ctor_invoke<Class, Args...>()}
-    , is_invocable_with{make_ctor_is_invocable_with<Class, Args...>()} {}
-
-    template < class_kind Class, typename... Args >
+    template < ctor_policy_kind Policy, class_kind Class, typename... Args >
     ctor_state_ptr ctor_state::make() {
         ctor_index index{ctor_type_data::get_static<Class, Args...>()};
-        return std::make_shared<ctor_state>(std::move(index), type_list<Class>{}, type_list<Args...>{});
+        return std::make_shared<ctor_state>(ctor_state{
+            .index{std::move(index)},
+            .invoke{make_ctor_invoke<Policy, Class, Args...>()},
+            .is_invocable_with{make_ctor_is_invocable_with<Class, Args...>()},
+        });
     }
 }
 

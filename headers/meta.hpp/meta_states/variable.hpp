@@ -13,13 +13,36 @@
 
 namespace meta_hpp::detail
 {
-    template < pointer_kind Pointer >
+    template < variable_policy_kind Policy, pointer_kind Pointer >
     value raw_variable_getter(Pointer pointer) {
         using pt = pointer_traits<Pointer>;
         using data_type = typename pt::data_type;
 
-        data_type return_value{*pointer};
-        return value{std::forward<data_type>(return_value)};
+        constexpr bool as_copy =
+            stdex::copy_constructible<data_type> &&
+            stdex::same_as<Policy, variable_policy::as_copy>;
+
+        constexpr bool as_ptr =
+            stdex::same_as<Policy, variable_policy::as_pointer>;
+
+        constexpr bool as_ref_wrap =
+            stdex::same_as<Policy, variable_policy::as_reference_wrapper>;
+
+        static_assert(as_copy || as_ptr || as_ref_wrap);
+
+        auto&& return_value = *pointer;
+
+        if constexpr ( as_copy ) {
+            return value{std::forward<decltype(return_value)>(return_value)};
+        }
+
+        if constexpr ( as_ptr ) {
+            return value{std::addressof(return_value)};
+        }
+
+        if constexpr ( as_ref_wrap) {
+            return value{std::ref(return_value)};
+        }
     }
 
     template < pointer_kind Pointer >
@@ -33,7 +56,6 @@ namespace meta_hpp::detail
             if ( !arg.can_cast_to<data_type>() ) {
                 throw std::logic_error("an attempt to set a variable with an incorrect argument type");
             }
-
             *pointer = arg.cast<data_type>();
         }
     }
@@ -50,10 +72,10 @@ namespace meta_hpp::detail
 
 namespace meta_hpp::detail
 {
-    template < pointer_kind Pointer >
+    template < variable_policy_kind Policy, pointer_kind Pointer >
     variable_state::getter_impl make_variable_getter(Pointer pointer) {
         using namespace std::placeholders;
-        return std::bind(&raw_variable_getter<Pointer>, pointer);
+        return std::bind(&raw_variable_getter<Policy, Pointer>, pointer);
     }
 
     template < pointer_kind Pointer >
@@ -71,17 +93,15 @@ namespace meta_hpp::detail
 
 namespace meta_hpp::detail
 {
-    template < pointer_kind Pointer >
-    variable_state::variable_state(variable_index index, Pointer pointer)
-    : index{std::move(index)}
-    , getter{make_variable_getter(pointer)}
-    , setter{make_variable_setter(pointer)}
-    , is_settable_with{make_variable_is_settable_with<Pointer>()} {}
-
-    template < pointer_kind Pointer >
+    template < variable_policy_kind Policy, pointer_kind Pointer >
     variable_state_ptr variable_state::make(std::string name, Pointer pointer) {
         variable_index index{pointer_type_data::get_static<Pointer>(), std::move(name)};
-        return std::make_shared<variable_state>(index, pointer);
+        return std::make_shared<variable_state>(variable_state{
+            .index{std::move(index)},
+            .getter{make_variable_getter<Policy>(std::move(pointer))},
+            .setter{make_variable_setter(std::move(pointer))},
+            .is_settable_with{make_variable_is_settable_with<Pointer>()},
+        });
     }
 }
 

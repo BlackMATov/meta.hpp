@@ -59,6 +59,74 @@ namespace meta_hpp
 
 namespace meta_hpp
 {
+    namespace ctor_policy
+    {
+        struct as_object final {};
+        struct as_raw_pointer final {};
+        struct as_shared_pointer final {};
+    }
+
+    namespace function_policy
+    {
+        struct as_copy final {};
+        struct discard_return final {};
+        struct return_reference_as_pointer final {};
+    }
+
+    namespace member_policy
+    {
+        struct as_copy final {};
+        struct as_pointer final {};
+        struct as_reference_wrapper final {};
+    };
+
+    namespace method_policy
+    {
+        struct as_copy final {};
+        struct discard_return final {};
+        struct return_reference_as_pointer final {};
+    };
+
+    namespace variable_policy
+    {
+        struct as_copy final {};
+        struct as_pointer final {};
+        struct as_reference_wrapper final {};
+    };
+
+    template < typename Policy >
+    concept ctor_policy_kind =
+        detail::stdex::same_as<Policy, ctor_policy::as_object> ||
+        detail::stdex::same_as<Policy, ctor_policy::as_raw_pointer> ||
+        detail::stdex::same_as<Policy, ctor_policy::as_shared_pointer>;
+
+    template < typename Policy >
+    concept function_policy_kind =
+        detail::stdex::same_as<Policy, function_policy::as_copy> ||
+        detail::stdex::same_as<Policy, function_policy::discard_return> ||
+        detail::stdex::same_as<Policy, function_policy::return_reference_as_pointer>;
+
+    template < typename Policy >
+    concept member_policy_kind =
+        detail::stdex::same_as<Policy, member_policy::as_copy> ||
+        detail::stdex::same_as<Policy, member_policy::as_pointer> ||
+        detail::stdex::same_as<Policy, member_policy::as_reference_wrapper>;
+
+    template < typename Policy >
+    concept method_policy_kind =
+        detail::stdex::same_as<Policy, method_policy::as_copy> ||
+        detail::stdex::same_as<Policy, method_policy::discard_return> ||
+        detail::stdex::same_as<Policy, method_policy::return_reference_as_pointer>;
+
+    template < typename Policy >
+    concept variable_policy_kind =
+        detail::stdex::same_as<Policy, variable_policy::as_copy> ||
+        detail::stdex::same_as<Policy, variable_policy::as_pointer> ||
+        detail::stdex::same_as<Policy, variable_policy::as_reference_wrapper>;
+}
+
+namespace meta_hpp
+{
     class ctor final {
     public:
         explicit ctor() = default;
@@ -267,10 +335,7 @@ namespace meta_hpp::detail
         const invoke_impl invoke;
         const is_invocable_with_impl is_invocable_with;
 
-        template < class_kind Class, typename... Args >
-        explicit ctor_state(ctor_index index, type_list<Class>, type_list<Args...>);
-
-        template < class_kind Class, typename... Args >
+        template < ctor_policy_kind Policy, class_kind Class, typename... Args >
         [[nodiscard]] static ctor_state_ptr make();
     };
 
@@ -278,9 +343,6 @@ namespace meta_hpp::detail
         const evalue_index index;
         const value enum_value;
         const value underlying_value;
-
-        template < enum_kind Enum >
-        explicit evalue_state(evalue_index index, Enum value);
 
         template < enum_kind Enum >
         [[nodiscard]] static evalue_state_ptr make(std::string name, Enum value);
@@ -294,10 +356,7 @@ namespace meta_hpp::detail
         const invoke_impl invoke;
         const is_invocable_with_impl is_invocable_with;
 
-        template < function_kind Function >
-        explicit function_state(function_index index, Function function);
-
-        template < function_kind Function >
+        template < function_policy_kind Policy, function_kind Function >
         [[nodiscard]] static function_state_ptr make(std::string name, Function function);
     };
 
@@ -314,10 +373,7 @@ namespace meta_hpp::detail
         const is_gettable_with_impl is_gettable_with;
         const is_settable_with_impl is_settable_with;
 
-        template < member_kind Member >
-        explicit member_state(member_index index, Member member);
-
-        template < member_kind Member >
+        template < member_policy_kind Policy, member_kind Member >
         [[nodiscard]] static member_state_ptr make(std::string name, Member member);
     };
 
@@ -329,10 +385,7 @@ namespace meta_hpp::detail
         const invoke_impl invoke;
         const is_invocable_with_impl is_invocable_with;
 
-        template < method_kind Method >
-        explicit method_state(method_index index, Method method);
-
-        template < method_kind Method >
+        template < method_policy_kind Policy, method_kind Method >
         [[nodiscard]] static method_state_ptr make(std::string name, Method method);
     };
 
@@ -343,8 +396,6 @@ namespace meta_hpp::detail
         enum_map enums;
         function_map functions;
         variable_map variables;
-
-        explicit scope_state(scope_index index);
 
         [[nodiscard]] static scope_state_ptr make(std::string name);
         [[nodiscard]] static scope_state_ptr get_static(std::string_view name);
@@ -360,10 +411,7 @@ namespace meta_hpp::detail
         const setter_impl setter;
         const is_settable_with_impl is_settable_with;
 
-        template < pointer_kind Pointer >
-        explicit variable_state(variable_index index, Pointer pointer);
-
-        template < pointer_kind Pointer >
+        template < variable_policy_kind Policy, pointer_kind Pointer >
         [[nodiscard]] static variable_state_ptr make(std::string name, Pointer pointer);
     };
 }

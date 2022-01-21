@@ -22,9 +22,9 @@ namespace meta_hpp
         using namespace detail;
         if constexpr ( sizeof...(Args) > 0 ) {
             const std::array<arg, sizeof...(Args)> vargs{arg{std::forward<Args>(args)}...};
-            return vargs_invoke(std::forward<Function>(function), vargs);
+            return raw_function_invoke<function_policy::as_copy>(std::forward<Function>(function), vargs);
         } else {
-            return vargs_invoke(std::forward<Function>(function), {});
+            return raw_function_invoke<function_policy::as_copy>(std::forward<Function>(function), {});
         }
     }
 }
@@ -40,7 +40,7 @@ namespace meta_hpp
     std::optional<value> invoke(Member&& member, Instance&& instance) {
         using namespace detail;
         const inst vinst{std::forward<Instance>(instance)};
-        return vargs_invoke(std::forward<Member>(member), vinst);
+        return raw_member_getter<member_policy::as_copy>(std::forward<Member>(member), vinst);
     }
 }
 
@@ -57,9 +57,9 @@ namespace meta_hpp
         const inst vinst{std::forward<Instance>(instance)};
         if constexpr ( sizeof...(Args) > 0 ) {
             const std::array<arg, sizeof...(Args)> vargs{arg{std::forward<Args>(args)}...};
-            return vargs_invoke(std::forward<Method>(method), vinst, vargs);
+            return raw_method_invoke<method_policy::as_copy>(std::forward<Method>(method), vinst, vargs);
         } else {
-            return vargs_invoke(std::forward<Method>(method), vinst, {});
+            return raw_method_invoke<method_policy::as_copy>(std::forward<Method>(method), vinst, {});
         }
     }
 }
@@ -81,9 +81,9 @@ namespace meta_hpp
         if constexpr ( sizeof...(Args) > 0 ) {
             using namespace detail;
             const std::array<arg_base, sizeof...(Args)> vargs{arg_base{type_list<Args>{}}...};
-            return vargs_is_invocable_with<Function>(vargs);
+            return raw_function_is_invocable_with<Function>(vargs);
         } else {
-            return vargs_is_invocable_with<Function>({});
+            return raw_function_is_invocable_with<Function>({});
         }
     }
 
@@ -92,9 +92,9 @@ namespace meta_hpp
         if constexpr ( sizeof...(Args) > 0 ) {
             using namespace detail;
             const std::array<arg_base, sizeof...(Args)> vargs{arg_base{std::forward<Args>(args)}...};
-            return vargs_is_invocable_with<Function>(vargs);
+            return raw_function_is_invocable_with<Function>(vargs);
         } else {
-            return vargs_is_invocable_with<Function>({});
+            return raw_function_is_invocable_with<Function>({});
         }
     }
 }
@@ -131,14 +131,14 @@ namespace meta_hpp
     bool is_invocable_with() {
         using namespace detail;
         const inst_base vinst{type_list<Instance>{}};
-        return vargs_is_invocable_with<Member>(vinst);
+        return raw_member_is_gettable_with<Member>(vinst);
     }
 
     template < detail::member_kind Member, typename Instance >
     bool is_invocable_with(Instance&& instance) {
         using namespace detail;
         const inst_base vinst{std::forward<Instance>(instance)};
-        return vargs_is_invocable_with<Member>(vinst);
+        return raw_member_is_gettable_with<Member>(vinst);
     }
 }
 
@@ -150,9 +150,9 @@ namespace meta_hpp
         const inst_base vinst{type_list<Instance>{}};
         if constexpr ( sizeof...(Args) > 0 ) {
             const std::array<arg_base, sizeof...(Args)> vargs{arg_base{type_list<Args>{}}...};
-            return vargs_is_invocable_with<Method>(vinst, vargs);
+            return raw_method_is_invocable_with<Method>(vinst, vargs);
         } else {
-            return vargs_is_invocable_with<Method>(vinst, {});
+            return raw_method_is_invocable_with<Method>(vinst, {});
         }
     }
 
@@ -162,9 +162,9 @@ namespace meta_hpp
         const inst_base vinst{std::forward<Instance>(instance)};
         if constexpr ( sizeof...(Args) > 0 ) {
             const std::array<arg_base, sizeof...(Args)> vargs{arg_base{std::forward<Args>(args)}...};
-            return vargs_is_invocable_with<Method>(vinst, vargs);
+            return raw_method_is_invocable_with<Method>(vinst, vargs);
         } else {
-            return vargs_is_invocable_with<Method>(vinst, {});
+            return raw_method_is_invocable_with<Method>(vinst, {});
         }
     }
 }

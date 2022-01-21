@@ -31,6 +31,7 @@ target_compile_options(${PROJECT_NAME}
         -Wno-exit-time-destructors
         -Wno-extra-semi-stmt
         -Wno-float-equal
+        -Wno-global-constructors
         -Wno-padded
         -Wno-reserved-identifier
         -Wno-shadow-field

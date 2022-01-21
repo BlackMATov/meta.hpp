@@ -13,12 +13,26 @@
 
 namespace meta_hpp::detail
 {
-    template < method_kind Method >
-    std::optional<value> vargs_invoke(Method method, const inst& inst, std::span<const arg> args) {
+    template < method_policy_kind Policy, method_kind Method >
+    std::optional<value> raw_method_invoke(Method method, const inst& inst, std::span<const arg> args) {
         using mt = method_traits<Method>;
         using return_type = typename mt::return_type;
         using qualified_type = typename mt::qualified_type;
         using argument_types = typename mt::argument_types;
+
+        constexpr bool as_copy =
+            stdex::copy_constructible<return_type> &&
+            stdex::same_as<Policy, method_policy::as_copy>;
+
+        constexpr bool as_void =
+            std::is_void_v<return_type> ||
+            stdex::same_as<Policy, method_policy::discard_return>;
+
+        constexpr bool ref_as_ptr =
+            std::is_reference_v<return_type> &&
+            stdex::same_as<Policy, method_policy::return_reference_as_pointer>;
+
+        static_assert(as_copy || as_void || ref_as_ptr);
 
         if ( args.size() != mt::arity ) {
             throw std::logic_error("an attempt to call a method with an incorrect arity");
@@ -28,30 +42,38 @@ namespace meta_hpp::detail
             throw std::logic_error("an attempt to call a method with an incorrect instance type");
         }
 
+        return std::invoke([
+            &inst, &args,
+            method = std::move(method)
         // NOLINTNEXTLINE(readability-named-parameter)
-        return std::invoke([method = std::move(method), &inst, &args]<std::size_t... Is>(std::index_sequence<Is...>){
+        ]<std::size_t... Is>(std::index_sequence<Is...>) -> std::optional<value> {
             if ( !(... && (args.data() + Is)->can_cast_to<type_list_at_t<Is, argument_types>>()) ) {
                 throw std::logic_error("an attempt to call a method with incorrect argument types");
             }
 
-            if constexpr ( std::is_void_v<return_type> ) {
-                std::invoke(
+            if constexpr ( as_void ) {
+                std::ignore = std::invoke(
                     std::move(method),
                     inst.cast<qualified_type>(),
                     (args.data() + Is)->cast<type_list_at_t<Is, argument_types>>()...);
                 return std::nullopt;
             } else {
-                return_type return_value{std::invoke(
+                return_type&& return_value = std::invoke(
                     std::move(method),
                     inst.cast<qualified_type>(),
-                    (args.data() + Is)->cast<type_list_at_t<Is, argument_types>>()...)};
-                return value{std::forward<return_type>(return_value)};
+                    (args.data() + Is)->cast<type_list_at_t<Is, argument_types>>()...);
+
+                if constexpr ( ref_as_ptr ) {
+                    return value{std::addressof(return_value)};
+                } else {
+                    return value{std::forward<decltype(return_value)>(return_value)};
+                }
             }
         }, std::make_index_sequence<mt::arity>());
     }
 
     template < method_kind Method >
-    bool vargs_is_invocable_with(const inst_base& inst, std::span<const arg_base> args) {
+    bool raw_method_is_invocable_with(const inst_base& inst, std::span<const arg_base> args) {
         using mt = method_traits<Method>;
         using qualified_type = typename mt::qualified_type;
         using argument_types = typename mt::argument_types;
@@ -73,31 +95,29 @@ namespace meta_hpp::detail
 
 namespace meta_hpp::detail
 {
-    template < method_kind Method >
+    template < method_policy_kind Policy, method_kind Method >
     method_state::invoke_impl make_method_invoke(Method method) {
         using namespace std::placeholders;
-        return std::bind(&vargs_invoke<Method>, std::move(method), _1, _2);
+        return std::bind(&raw_method_invoke<Policy, Method>, std::move(method), _1, _2);
     }
 
     template < method_kind Method >
     method_state::is_invocable_with_impl make_method_is_invocable_with() {
         using namespace std::placeholders;
-        return std::bind(&vargs_is_invocable_with<Method>, _1, _2);
+        return std::bind(&raw_method_is_invocable_with<Method>, _1, _2);
     }
 }
 
 namespace meta_hpp::detail
 {
-    template < method_kind Method >
-    method_state::method_state(method_index index, Method method)
-    : index{std::move(index)}
-    , invoke{make_method_invoke(std::move(method))}
-    , is_invocable_with{make_method_is_invocable_with<Method>()} {}
-
-    template < method_kind Method >
+    template < method_policy_kind Policy, method_kind Method >
     method_state_ptr method_state::make(std::string name, Method method) {
         method_index index{method_type_data::get_static<Method>(), std::move(name)};
-        return std::make_shared<method_state>(std::move(index), std::move(method));
+        return std::make_shared<method_state>(method_state{
+            .index{std::move(index)},
+            .invoke{make_method_invoke<Policy>(std::move(method))},
+            .is_invocable_with{make_method_is_invocable_with<Method>()},
+        });
     }
 }
 

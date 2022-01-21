@@ -1,7 +1,6 @@
 # meta.hpp
 
-- add array value access
-- add return value policy
+- add dtors
 - add meta exception class;
 - void value?
 - all string to hash?

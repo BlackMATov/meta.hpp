@@ -11,6 +11,7 @@ namespace
     struct clazz_1 {
         int int_member = 1;
         const int const_int_member = 2;
+        std::unique_ptr<int> unique_int_member = std::make_unique<int>(42);
     };
 
     struct clazz_2 {};
@@ -21,7 +22,10 @@ TEST_CASE("meta/meta_states/member") {
 
     meta::class_<clazz_1>()
         .member_("int_member", &clazz_1::int_member)
-        .member_("const_int_member", &clazz_1::const_int_member);
+        .member_("const_int_member", &clazz_1::const_int_member)
+        // .member_("unique_int_member", &clazz_1::unique_int_member)
+        .member_("unique_int_member_as_ptr", &clazz_1::unique_int_member, meta::member_policy::as_pointer{})
+        .member_("unique_int_member_as_ref", &clazz_1::unique_int_member, meta::member_policy::as_reference_wrapper{});
 
     const meta::class_type clazz_1_type = meta::resolve_type<clazz_1>();
     REQUIRE(clazz_1_type);
@@ -209,6 +213,48 @@ TEST_CASE("meta/meta_states/member") {
             CHECK_THROWS(vm.set(v2, 17));
             CHECK_THROWS(vm(v2, 17));
             CHECK(vm(v) == 2);
+        }
+    }
+
+    SUBCASE("unique_int_member_as_ptr") {
+        meta::member vm = clazz_1_type.get_member("unique_int_member_as_ptr");
+        REQUIRE(vm);
+
+        CHECK(vm.get_type() == meta::resolve_type(&clazz_1::unique_int_member));
+        CHECK(vm.get_name() == "unique_int_member_as_ptr");
+
+        {
+            clazz_1 v;
+            CHECK(vm.get(v).get_type() == meta::resolve_type<std::unique_ptr<int>*>());
+            CHECK(vm.get(v) == std::addressof(v.unique_int_member));
+        }
+
+        {
+            const clazz_1 v;
+            CHECK(vm.get(v).get_type() == meta::resolve_type<const std::unique_ptr<int>*>());
+            CHECK(vm.get(v) == std::addressof(v.unique_int_member));
+        }
+    }
+
+    SUBCASE("unique_int_member_as_ref") {
+        meta::member vm = clazz_1_type.get_member("unique_int_member_as_ref");
+        REQUIRE(vm);
+
+        CHECK(vm.get_type() == meta::resolve_type(&clazz_1::unique_int_member));
+        CHECK(vm.get_name() == "unique_int_member_as_ref");
+
+        {
+            clazz_1 v;
+            using ref_t = std::reference_wrapper<std::unique_ptr<int>>;
+            CHECK(vm.get(v).get_type() == meta::resolve_type<ref_t>());
+            CHECK(vm.get(v).try_cast<ref_t>()->get() == v.unique_int_member);
+        }
+
+        {
+            const clazz_1 v;
+            using ref_t = std::reference_wrapper<const std::unique_ptr<int>>;
+            CHECK(vm.get(v).get_type() == meta::resolve_type<ref_t>());
+            CHECK(vm.get(v).try_cast<ref_t>()->get() == v.unique_int_member);
         }
     }
 }

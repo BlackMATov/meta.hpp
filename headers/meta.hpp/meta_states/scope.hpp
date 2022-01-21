@@ -11,12 +11,11 @@
 
 namespace meta_hpp::detail
 {
-    inline scope_state::scope_state(scope_index index)
-    : index{std::move(index)} {}
-
     inline scope_state_ptr scope_state::make(std::string name) {
         scope_index index{std::move(name)};
-        return std::make_shared<scope_state>(std::move(index));
+        return std::make_shared<scope_state>(scope_state{
+            .index{std::move(index)},
+        });
     }
 
     inline scope_state_ptr scope_state::get_static(std::string_view name) {

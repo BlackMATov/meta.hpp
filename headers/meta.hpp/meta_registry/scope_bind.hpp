@@ -35,16 +35,18 @@ namespace meta_hpp
         return *this;
     }
 
-    template < detail::function_kind Function >
-    scope_bind& scope_bind::function_(std::string name, Function function) {
-        auto function_state = detail::function_state::make<Function>(std::move(name), std::move(function));
+    template < detail::function_kind Function, function_policy_kind Policy >
+    // NOLINTNEXTLINE(readability-named-parameter)
+    scope_bind& scope_bind::function_(std::string name, Function function, Policy) {
+        auto function_state = detail::function_state::make<Policy>(std::move(name), std::move(function));
         state_->functions.emplace(function_state->index, std::move(function_state));
         return *this;
     }
 
-    template < detail::pointer_kind Pointer >
-    scope_bind& scope_bind::variable_(std::string name, Pointer pointer) {
-        auto variable_state = detail::variable_state::make<Pointer>(std::move(name), std::move(pointer));
+    template < detail::pointer_kind Pointer, variable_policy_kind Policy >
+    // NOLINTNEXTLINE(readability-named-parameter)
+    scope_bind& scope_bind::variable_(std::string name, Pointer pointer, Policy) {
+        auto variable_state = detail::variable_state::make<Policy>(std::move(name), std::move(pointer));
         state_->variables.emplace(variable_state->index, std::move(variable_state));
         return *this;
     }
