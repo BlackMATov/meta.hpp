@@ -17,6 +17,7 @@
 
 #include "meta_states.hpp"
 #include "meta_states/ctor.hpp"
+#include "meta_states/dtor.hpp"
 #include "meta_states/evalue.hpp"
 #include "meta_states/function.hpp"
 #include "meta_states/member.hpp"
@@ -28,6 +29,7 @@
 #include "meta_traits/array_traits.hpp"
 #include "meta_traits/class_traits.hpp"
 #include "meta_traits/ctor_traits.hpp"
+#include "meta_traits/dtor_traits.hpp"
 #include "meta_traits/enum_traits.hpp"
 #include "meta_traits/function_traits.hpp"
 #include "meta_traits/member_traits.hpp"
@@ -41,6 +43,7 @@
 #include "meta_types/array_type.hpp"
 #include "meta_types/class_type.hpp"
 #include "meta_types/ctor_type.hpp"
+#include "meta_types/dtor_type.hpp"
 #include "meta_types/enum_type.hpp"
 #include "meta_types/function_type.hpp"
 #include "meta_types/member_type.hpp"

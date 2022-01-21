@@ -14,6 +14,7 @@ namespace meta_hpp
         array_,
         class_,
         ctor_,
+        dtor_,
         enum_,
         function_,
         member_,
@@ -98,6 +99,12 @@ namespace meta_hpp::detail
     struct type_kind_traits<type_kind::ctor_> {
         using kind_type = ctor_type;
         using kind_type_data = ctor_type_data;
+    };
+
+    template <>
+    struct type_kind_traits<type_kind::dtor_> {
+        using kind_type = dtor_type;
+        using kind_type_data = dtor_type_data;
     };
 
     template <>

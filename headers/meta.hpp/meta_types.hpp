@@ -68,6 +68,7 @@ namespace meta_hpp
             std::is_same_v<T, array_type> ||
             std::is_same_v<T, class_type> ||
             std::is_same_v<T, ctor_type> ||
+            std::is_same_v<T, dtor_type> ||
             std::is_same_v<T, enum_type> ||
             std::is_same_v<T, function_type> ||
             std::is_same_v<T, member_type> ||
@@ -132,6 +133,7 @@ namespace meta_hpp
         any_type(const array_type& other) noexcept;
         any_type(const class_type& other) noexcept;
         any_type(const ctor_type& other) noexcept;
+        any_type(const dtor_type& other) noexcept;
         any_type(const enum_type& other) noexcept;
         any_type(const function_type& other) noexcept;
         any_type(const member_type& other) noexcept;
@@ -145,6 +147,7 @@ namespace meta_hpp
         [[nodiscard]] bool is_array() const noexcept;
         [[nodiscard]] bool is_class() const noexcept;
         [[nodiscard]] bool is_ctor() const noexcept;
+        [[nodiscard]] bool is_dtor() const noexcept;
         [[nodiscard]] bool is_enum() const noexcept;
         [[nodiscard]] bool is_function() const noexcept;
         [[nodiscard]] bool is_member() const noexcept;
@@ -158,6 +161,7 @@ namespace meta_hpp
         [[nodiscard]] array_type as_array() const noexcept;
         [[nodiscard]] class_type as_class() const noexcept;
         [[nodiscard]] ctor_type as_ctor() const noexcept;
+        [[nodiscard]] dtor_type as_dtor() const noexcept;
         [[nodiscard]] enum_type as_enum() const noexcept;
         [[nodiscard]] function_type as_function() const noexcept;
         [[nodiscard]] member_type as_member() const noexcept;
@@ -208,6 +212,7 @@ namespace meta_hpp
         [[nodiscard]] const std::vector<any_type>& get_argument_types() const noexcept;
 
         [[nodiscard]] const ctor_map& get_ctors() const noexcept;
+        [[nodiscard]] const dtor_map& get_dtors() const noexcept;
         [[nodiscard]] const class_set& get_bases() const noexcept;
         [[nodiscard]] const function_map& get_functions() const noexcept;
         [[nodiscard]] const member_map& get_members() const noexcept;
@@ -219,6 +224,9 @@ namespace meta_hpp
 
         template < typename... Args >
         [[nodiscard]] std::optional<value> operator()(Args&&... args) const;
+
+        template < typename Arg >
+        bool destroy(Arg&& ptr) const;
 
         template < detail::class_kind Derived >
         [[nodiscard]] bool is_base_of() const noexcept;
@@ -270,6 +278,23 @@ namespace meta_hpp
     private:
         detail::ctor_type_data_ptr data_;
         friend auto detail::data_access<ctor_type>(const ctor_type&);
+    };
+
+    class dtor_type final {
+    public:
+        dtor_type() = default;
+        dtor_type(detail::dtor_type_data_ptr data);
+
+        [[nodiscard]] bool is_valid() const noexcept;
+        [[nodiscard]] explicit operator bool() const noexcept;
+
+        [[nodiscard]] type_id get_id() const noexcept;
+        [[nodiscard]] bitflags<dtor_flags> get_flags() const noexcept;
+
+        [[nodiscard]] any_type get_class_type() const noexcept;
+    private:
+        detail::dtor_type_data_ptr data_;
+        friend auto detail::data_access<dtor_type>(const dtor_type&);
     };
 
     class enum_type final {
@@ -465,6 +490,7 @@ namespace meta_hpp::detail
         const std::vector<any_type> argument_types;
 
         ctor_map ctors;
+        dtor_map dtors;
         class_set bases;
         function_map functions;
         member_map members;
@@ -496,6 +522,17 @@ namespace meta_hpp::detail
 
         template < class_kind Class, typename... Args >
         [[nodiscard]] static ctor_type_data_ptr get_static();
+    };
+
+    struct dtor_type_data final : type_data_base {
+        const bitflags<dtor_flags> flags;
+        const any_type class_type;
+
+        template < class_kind Class >
+        explicit dtor_type_data(type_list<Class>);
+
+        template < class_kind Class >
+        [[nodiscard]] static dtor_type_data_ptr get_static();
     };
 
     struct enum_type_data final : type_data_base {
@@ -611,6 +648,21 @@ namespace meta_hpp
         }
 
         [[nodiscard]] friend bool operator==(const ctor_index& l, const ctor_index& r) noexcept {
+            return l.type == r.type;
+        }
+    };
+
+    struct dtor_index final {
+        const dtor_type type;
+
+        explicit dtor_index(dtor_type type)
+        : type{std::move(type)} {}
+
+        [[nodiscard]] friend bool operator<(const dtor_index& l, const dtor_index& r) noexcept {
+            return l.type < r.type;
+        }
+
+        [[nodiscard]] friend bool operator==(const dtor_index& l, const dtor_index& r) noexcept {
             return l.type == r.type;
         }
     };

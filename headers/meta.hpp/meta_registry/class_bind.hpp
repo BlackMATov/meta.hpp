@@ -32,6 +32,15 @@ namespace meta_hpp
     }
 
     template < detail::class_kind Class >
+    class_bind<Class>& class_bind<Class>::dtor_()
+        requires detail::class_bind_dtor_kind<Class>
+    {
+        auto dtor_state = detail::dtor_state::make<Class>();
+        data_->dtors.emplace(dtor_state->index, std::move(dtor_state));
+        return *this;
+    }
+
+    template < detail::class_kind Class >
     template < detail::class_kind Base >
     class_bind<Class>& class_bind<Class>::base_()
         requires detail::class_bind_base_kind<Class, Base>

@@ -62,12 +62,13 @@ namespace meta_hpp::detail
 
     template < typename T >
     concept arg_lvalue_ref_kind =
+        (decay_non_uvalue_kind<T>) &&
         (std::is_lvalue_reference_v<T>);
 
     template < typename T >
     concept arg_rvalue_ref_kind =
-        (!std::is_reference_v<T>) ||
-        (std::is_rvalue_reference_v<T>);
+        (decay_non_uvalue_kind<T>) &&
+        (!std::is_reference_v<T> || std::is_rvalue_reference_v<T>);
 
     template < typename T >
     concept inst_class_ref_kind =
@@ -76,12 +77,13 @@ namespace meta_hpp::detail
 
     template < typename T >
     concept inst_class_lvalue_ref_kind =
+        (decay_non_uvalue_kind<T>) &&
         (std::is_lvalue_reference_v<T> && std::is_class_v<std::remove_reference_t<T>>);
 
     template < typename T >
     concept inst_class_rvalue_ref_kind =
-        (std::is_class_v<T>) ||
-        (std::is_rvalue_reference_v<T> && std::is_class_v<std::remove_reference_t<T>>);
+        (decay_non_uvalue_kind<T>) &&
+        (std::is_class_v<T> || (std::is_rvalue_reference_v<T> && std::is_class_v<std::remove_reference_t<T>>));
 }
 
 namespace meta_hpp::detail
@@ -194,11 +196,9 @@ namespace meta_hpp::detail
         explicit arg_base(T&& v);
 
         template < arg_lvalue_ref_kind T >
-            requires decay_non_uvalue_kind<T>
         explicit arg_base(type_list<T>);
 
         template < arg_rvalue_ref_kind T >
-            requires decay_non_uvalue_kind<T>
         explicit arg_base(type_list<T>);
 
         explicit arg_base(value& v);
@@ -293,13 +293,13 @@ namespace meta_hpp::detail
         [[nodiscard]] bool is_rvalue() const noexcept;
 
         [[nodiscard]] ref_types get_ref_type() const noexcept;
-        [[nodiscard]] const class_type& get_raw_type() const noexcept;
+        [[nodiscard]] const any_type& get_raw_type() const noexcept;
 
         template < inst_class_ref_kind Q >
         [[nodiscard]] bool can_cast_to() const noexcept;
     private:
         ref_types ref_type_{};
-        class_type raw_type_{};
+        any_type raw_type_{};
     };
 }
 

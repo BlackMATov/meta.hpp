@@ -39,6 +39,9 @@ namespace meta_hpp
     inline any_type::any_type(const ctor_type& other) noexcept
     : data_{detail::data_access(other)} {}
 
+    inline any_type::any_type(const dtor_type& other) noexcept
+    : data_{detail::data_access(other)} {}
+
     inline any_type::any_type(const enum_type& other) noexcept
     : data_{detail::data_access(other)} {}
 
@@ -76,6 +79,10 @@ namespace meta_hpp
 
     inline bool any_type::is_ctor() const noexcept {
         return data_ && data_->kind == type_kind::ctor_;
+    }
+
+    inline bool any_type::is_dtor() const noexcept {
+        return data_ && data_->kind == type_kind::dtor_;
     }
 
     inline bool any_type::is_enum() const noexcept {
@@ -130,6 +137,12 @@ namespace meta_hpp
         return is_ctor()
             ? ctor_type{std::static_pointer_cast<detail::ctor_type_data>(data_)}
             : ctor_type{};
+    }
+
+    inline dtor_type any_type::as_dtor() const noexcept {
+        return is_dtor()
+            ? dtor_type{std::static_pointer_cast<detail::dtor_type_data>(data_)}
+            : dtor_type{};
     }
 
     inline enum_type any_type::as_enum() const noexcept {

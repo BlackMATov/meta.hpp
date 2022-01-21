@@ -17,6 +17,7 @@ namespace meta_hpp
         template < typename T >
         concept state_family =
             std::is_same_v<T, ctor> ||
+            std::is_same_v<T, dtor> ||
             std::is_same_v<T, evalue> ||
             std::is_same_v<T, function> ||
             std::is_same_v<T, member> ||
@@ -151,6 +152,32 @@ namespace meta_hpp
         [[nodiscard]] bool is_invocable_with(Args&&... args) const noexcept;
     private:
         detail::ctor_state_ptr state_;
+    };
+
+    class dtor final {
+    public:
+        explicit dtor() = default;
+        explicit dtor(detail::dtor_state_ptr state);
+
+        [[nodiscard]] bool is_valid() const noexcept;
+        [[nodiscard]] explicit operator bool() const noexcept;
+
+        [[nodiscard]] const dtor_index& get_index() const noexcept;
+        [[nodiscard]] const dtor_type& get_type() const noexcept;
+
+        template < typename Arg >
+        void invoke(Arg&& ptr) const;
+
+        template < typename Arg >
+        void operator()(Arg&& ptr) const;
+
+        template < typename Arg >
+        [[nodiscard]] bool is_invocable_with() const noexcept;
+
+        template < typename Arg >
+        [[nodiscard]] bool is_invocable_with(Arg&& ptr) const noexcept;
+    private:
+        detail::dtor_state_ptr state_;
     };
 
     class evalue final {
@@ -337,6 +364,18 @@ namespace meta_hpp::detail
 
         template < ctor_policy_kind Policy, class_kind Class, typename... Args >
         [[nodiscard]] static ctor_state_ptr make();
+    };
+
+    struct dtor_state final {
+        using invoke_impl = std::function<void(const arg&)>;
+        using is_invocable_with_impl = std::function<bool(const arg_base&)>;
+
+        const dtor_index index;
+        const invoke_impl invoke;
+        const is_invocable_with_impl is_invocable_with;
+
+        template < class_kind Class >
+        [[nodiscard]] static dtor_state_ptr make();
     };
 
     struct evalue_state final {

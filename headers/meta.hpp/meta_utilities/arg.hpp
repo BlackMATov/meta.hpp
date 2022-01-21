@@ -22,7 +22,6 @@ namespace meta_hpp::detail
     : arg_base{type_list<T&&>{}} {}
 
     template < arg_lvalue_ref_kind T >
-        requires decay_non_uvalue_kind<T>
     // NOLINTNEXTLINE(readability-named-parameter)
     arg_base::arg_base(type_list<T>)
     : ref_type_{std::is_const_v<std::remove_reference_t<T>>
@@ -31,7 +30,6 @@ namespace meta_hpp::detail
     , raw_type_{resolve_type<std::remove_cvref_t<T>>()} {}
 
     template < arg_rvalue_ref_kind T >
-        requires decay_non_uvalue_kind<T>
     // NOLINTNEXTLINE(readability-named-parameter)
     arg_base::arg_base(type_list<T>)
     : ref_type_{std::is_const_v<std::remove_reference_t<T>>

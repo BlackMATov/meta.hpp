@@ -90,35 +90,19 @@ namespace meta_hpp::detail
 
     inline inst_base::inst_base(value& v)
     : ref_type_{ref_types::lvalue}
-    , raw_type_{v.get_type().as_class()} {
-        if ( !v.get_type().is_class() ) {
-            throw std::logic_error("an attempt to create an instance with a non-class value type");
-        }
-    }
+    , raw_type_{v.get_type()} {}
 
     inline inst_base::inst_base(const value& v)
     : ref_type_{ref_types::const_lvalue}
-    , raw_type_{v.get_type().as_class()} {
-        if ( !v.get_type().is_class() ) {
-            throw std::logic_error("an attempt to create an instance with a non-class value type");
-        }
-    }
+    , raw_type_{v.get_type()} {}
 
     inline inst_base::inst_base(value&& v)
     : ref_type_{ref_types::rvalue}
-    , raw_type_{v.get_type().as_class()} {
-        if ( !v.get_type().is_class() ) {
-            throw std::logic_error("an attempt to create an instance with a non-class value type");
-        }
-    }
+    , raw_type_{v.get_type()} {}
 
     inline inst_base::inst_base(const value&& v)
     : ref_type_{ref_types::const_rvalue}
-    , raw_type_{v.get_type().as_class()} {
-        if ( !v.get_type().is_class() ) {
-            throw std::logic_error("an attempt to create an instance with a non-class value type");
-        }
-    }
+    , raw_type_{v.get_type()} {}
 
     inline bool inst_base::is_const() const noexcept {
         return ref_type_ == ref_types::const_lvalue
@@ -139,7 +123,7 @@ namespace meta_hpp::detail
         return ref_type_;
     }
 
-    inline const class_type& inst_base::get_raw_type() const noexcept {
+    inline const any_type& inst_base::get_raw_type() const noexcept {
         return raw_type_;
     }
 
@@ -148,11 +132,12 @@ namespace meta_hpp::detail
         using inst_class = typename inst_traits<Q>::class_type;
         using inst_method = typename inst_traits<Q>::method_type;
 
-        const class_type& from_type = get_raw_type();
-        const class_type& to_type = resolve_type<inst_class>();
+        const any_type& from_type = get_raw_type();
+        const any_type& to_type = resolve_type<inst_class>();
 
-        const auto is_a = [](const class_type& base, const class_type& derived){
-            return base == derived || base.is_base_of(derived);
+        const auto is_a = [](const any_type& base, const any_type& derived){
+            return (base == derived)
+                || (base.is_class() && derived.is_class() && base.as_class().is_base_of(derived.as_class()));
         };
 
         const auto is_invocable = [this](){
@@ -197,21 +182,28 @@ namespace meta_hpp::detail
         using inst_class_cv = std::remove_reference_t<Q>;
         using inst_class = std::remove_cv_t<inst_class_cv>;
 
-        const class_type& from_type = get_raw_type();
-        const class_type& to_type = resolve_type<inst_class>();
+        const any_type& from_type = get_raw_type();
+        const any_type& to_type = resolve_type<inst_class>();
 
-        void* to_ptr = detail::pointer_upcast(data_, from_type, to_type);
+        if ( from_type.is_class() && to_type.is_class() ) {
+            const class_type& from_class = from_type.as_class();
+            const class_type& to_class = to_type.as_class();
 
-        if constexpr ( !std::is_reference_v<Q> ) {
-            return *static_cast<inst_class_cv*>(to_ptr);
+            void* to_ptr = detail::pointer_upcast(data_, from_class, to_class);
+
+            if constexpr ( !std::is_reference_v<Q> ) {
+                return *static_cast<inst_class_cv*>(to_ptr);
+            }
+
+            if constexpr ( std::is_lvalue_reference_v<Q> ) {
+                return *static_cast<inst_class_cv*>(to_ptr);
+            }
+
+            if constexpr ( std::is_rvalue_reference_v<Q> ) {
+                return std::move(*static_cast<inst_class_cv*>(to_ptr));
+            }
         }
 
-        if constexpr ( std::is_lvalue_reference_v<Q> ) {
-            return *static_cast<inst_class_cv*>(to_ptr);
-        }
-
-        if constexpr ( std::is_rvalue_reference_v<Q> ) {
-            return std::move(*static_cast<inst_class_cv*>(to_ptr));
-        }
+        throw std::logic_error("bad instance cast");
     }
 }

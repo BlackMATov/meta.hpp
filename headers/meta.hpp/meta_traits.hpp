@@ -20,6 +20,9 @@ namespace meta_hpp::detail
     template < class_kind Class, typename... Args >
     struct ctor_traits;
 
+    template < class_kind Class >
+    struct dtor_traits;
+
     template < enum_kind Enum >
     struct enum_traits;
 
@@ -58,6 +61,10 @@ namespace meta_hpp
     };
 
     enum class ctor_flags : std::uint32_t {
+        is_noexcept = 1 << 0,
+    };
+
+    enum class dtor_flags : std::uint32_t {
         is_noexcept = 1 << 0,
     };
 
@@ -100,6 +107,7 @@ namespace meta_hpp
     ENUM_HPP_OPERATORS_DECL(array_flags)
     ENUM_HPP_OPERATORS_DECL(class_flags)
     ENUM_HPP_OPERATORS_DECL(ctor_flags)
+    ENUM_HPP_OPERATORS_DECL(dtor_flags)
     ENUM_HPP_OPERATORS_DECL(enum_flags)
     ENUM_HPP_OPERATORS_DECL(function_flags)
     ENUM_HPP_OPERATORS_DECL(member_flags)

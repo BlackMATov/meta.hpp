@@ -18,6 +18,11 @@ namespace meta_hpp
             class_kind<Class> &&
             requires(Args&&... args) { { Class{std::forward<Args>(args)...} }; };
 
+        template < typename Class >
+        concept class_bind_dtor_kind =
+            class_kind<Class> &&
+            requires(Class&& inst) { { inst.~Class() }; };
+
         template < typename Class, typename Base >
         concept class_bind_base_kind =
             class_kind<Class> && class_kind<Base> &&
@@ -44,6 +49,9 @@ namespace meta_hpp
                  , ctor_policy_kind Policy = ctor_policy::as_object >
         class_bind& ctor_(Policy = Policy{})
             requires detail::class_bind_ctor_kind<Class, Args...>;
+
+        class_bind& dtor_()
+            requires detail::class_bind_dtor_kind<Class>;
 
         template < detail::class_kind Base >
         class_bind& base_()

@@ -78,6 +78,10 @@ namespace meta_hpp
         return data_->ctors;
     }
 
+    inline const dtor_map& class_type::get_dtors() const noexcept {
+        return data_->dtors;
+    }
+
     inline const class_set& class_type::get_bases() const noexcept {
         return data_->bases;
     }
@@ -111,6 +115,17 @@ namespace meta_hpp
     template < typename... Args >
     std::optional<value> class_type::operator()(Args&&... args) const {
         return create(std::forward<Args>(args)...);
+    }
+
+    template < typename Arg >
+    bool class_type::destroy(Arg&& ptr) const {
+        for ( auto&& dtor : data_->dtors ) {
+            if ( dtor.second.is_invocable_with(std::forward<Arg>(ptr)) ) {
+                dtor.second.invoke(std::forward<Arg>(ptr));
+                return true;
+            }
+        }
+        return false;
     }
 
     template < detail::class_kind Derived >

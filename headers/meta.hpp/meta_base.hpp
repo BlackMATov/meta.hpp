@@ -86,6 +86,7 @@ namespace meta_hpp
 namespace meta_hpp
 {
     class ctor;
+    class dtor;
     class evalue;
     class function;
     class member;
@@ -96,6 +97,7 @@ namespace meta_hpp
     namespace detail
     {
         struct ctor_state;
+        struct dtor_state;
         struct evalue_state;
         struct function_state;
         struct member_state;
@@ -104,6 +106,7 @@ namespace meta_hpp
         struct variable_state;
 
         using ctor_state_ptr = std::shared_ptr<ctor_state>;
+        using dtor_state_ptr = std::shared_ptr<dtor_state>;
         using evalue_state_ptr = std::shared_ptr<evalue_state>;
         using function_state_ptr = std::shared_ptr<function_state>;
         using member_state_ptr = std::shared_ptr<member_state>;
@@ -119,6 +122,7 @@ namespace meta_hpp
     class array_type;
     class class_type;
     class ctor_type;
+    class dtor_type;
     class enum_type;
     class function_type;
     class member_type;
@@ -135,6 +139,7 @@ namespace meta_hpp
         struct array_type_data;
         struct class_type_data;
         struct ctor_type_data;
+        struct dtor_type_data;
         struct enum_type_data;
         struct function_type_data;
         struct member_type_data;
@@ -149,6 +154,7 @@ namespace meta_hpp
         using array_type_data_ptr = std::shared_ptr<array_type_data>;
         using class_type_data_ptr = std::shared_ptr<class_type_data>;
         using ctor_type_data_ptr = std::shared_ptr<ctor_type_data>;
+        using dtor_type_data_ptr = std::shared_ptr<dtor_type_data>;
         using enum_type_data_ptr = std::shared_ptr<enum_type_data>;
         using function_type_data_ptr = std::shared_ptr<function_type_data>;
         using member_type_data_ptr = std::shared_ptr<member_type_data>;
@@ -164,6 +170,7 @@ namespace meta_hpp
 namespace meta_hpp
 {
     struct ctor_index;
+    struct dtor_index;
     struct evalue_index;
     struct function_index;
     struct member_index;
@@ -178,6 +185,7 @@ namespace meta_hpp
     using enum_map = std::map<std::string, enum_type, std::less<>>;
 
     using ctor_map = std::map<ctor_index, ctor, std::less<>>;
+    using dtor_map = std::map<dtor_index, dtor, std::less<>>;
     using evalue_map = std::map<evalue_index, evalue, std::less<>>;
     using function_map = std::map<function_index, function, std::less<>>;
     using member_map = std::map<member_index, member, std::less<>>;
