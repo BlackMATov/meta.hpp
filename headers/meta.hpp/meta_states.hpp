@@ -79,21 +79,21 @@ namespace meta_hpp
         struct as_copy final {};
         struct as_pointer final {};
         struct as_reference_wrapper final {};
-    };
+    }
 
     namespace method_policy
     {
         struct as_copy final {};
         struct discard_return final {};
         struct return_reference_as_pointer final {};
-    };
+    }
 
     namespace variable_policy
     {
         struct as_copy final {};
         struct as_pointer final {};
         struct as_reference_wrapper final {};
-    };
+    }
 
     template < typename Policy >
     concept ctor_policy_kind =
@@ -384,7 +384,7 @@ namespace meta_hpp::detail
         const value underlying_value;
 
         template < enum_kind Enum >
-        [[nodiscard]] static evalue_state_ptr make(std::string name, Enum value);
+        [[nodiscard]] static evalue_state_ptr make(std::string name, Enum evalue);
     };
 
     struct function_state final {
@@ -431,10 +431,10 @@ namespace meta_hpp::detail
     struct scope_state final {
         const scope_index index;
 
-        class_map classes;
-        enum_map enums;
-        function_map functions;
-        variable_map variables;
+        class_map classes{};
+        enum_map enums{};
+        function_map functions{};
+        variable_map variables{};
 
         [[nodiscard]] static scope_state_ptr make(std::string name);
         [[nodiscard]] static scope_state_ptr get_static(std::string_view name);

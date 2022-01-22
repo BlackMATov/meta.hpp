@@ -243,14 +243,14 @@ namespace meta_hpp
 
 namespace meta_hpp
 {
-    template < detail::has_value_less_traits T >
+    template < typename T >
     [[nodiscard]] bool operator<(const value& l, const T& r) {
         const any_type& r_type = resolve_type<T>();
         return (l.get_type() < r_type)
             || (l.get_type() == r_type && std::less<>{}(l.cast<T>(), r));
     }
 
-    template < detail::has_value_less_traits T >
+    template < typename T >
     [[nodiscard]] bool operator<(const T& l, const value& r) {
         const any_type& l_type = resolve_type<T>();
         return (l_type < r.get_type())
@@ -265,13 +265,13 @@ namespace meta_hpp
 
 namespace meta_hpp
 {
-    template < detail::has_value_equals_traits T >
+    template < typename T >
     [[nodiscard]] bool operator==(const value& l, const T& r) {
         return l.get_type() == resolve_type<T>()
             && std::equal_to<>{}(l.cast<T>(), r);
     }
 
-    template < detail::has_value_equals_traits T >
+    template < typename T >
     [[nodiscard]] bool operator==(const T& l, const value& r) {
         return resolve_type<T>() == r.get_type()
             && std::equal_to<>{}(l, r.cast<T>());

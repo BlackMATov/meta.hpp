@@ -32,6 +32,7 @@ target_compile_options(${PROJECT_NAME}
         -Wno-extra-semi-stmt
         -Wno-float-equal
         -Wno-global-constructors
+        -Wno-ordered-compare-function-pointers
         -Wno-padded
         -Wno-reserved-identifier
         -Wno-shadow-field
