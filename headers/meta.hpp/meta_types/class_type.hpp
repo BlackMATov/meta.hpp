@@ -103,17 +103,17 @@ namespace meta_hpp
     }
 
     template < typename... Args >
-    std::optional<value> class_type::create(Args&&... args) const {
+    value class_type::create(Args&&... args) const {
         for ( auto&& ctor : data_->ctors ) {
             if ( ctor.second.is_invocable_with(std::forward<Args>(args)...) ) {
                 return ctor.second.invoke(std::forward<Args>(args)...);
             }
         }
-        return std::nullopt;
+        return {};
     }
 
     template < typename... Args >
-    std::optional<value> class_type::operator()(Args&&... args) const {
+    value class_type::operator()(Args&&... args) const {
         return create(std::forward<Args>(args)...);
     }
 

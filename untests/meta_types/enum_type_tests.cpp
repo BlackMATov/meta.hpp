@@ -120,42 +120,20 @@ TEST_CASE("meta/meta_types/enum_type") {
         const meta::enum_type color_type = meta::resolve_type<color>();
         REQUIRE(color_type);
 
-        {
-            REQUIRE(color_type.value_to_name(color::red));
-            CHECK(color_type.value_to_name(color::red) == "red");
-        }
-
-        {
-
-            REQUIRE(color_type.value_to_name(meta::value{color::blue}));
-            CHECK(color_type.value_to_name(color::blue) == "blue");
-        }
-
-        {
-            REQUIRE_FALSE(color_type.value_to_name(100500));
-            REQUIRE_FALSE(color_type.value_to_name(color{100500}));
-        }
+        CHECK(color_type.value_to_name(color::red) == "red");
+        CHECK(color_type.value_to_name(color::blue) == "blue");
+        CHECK(color_type.value_to_name(100500).empty());
+        CHECK(color_type.value_to_name(color{100500}).empty());
     }
 
     SUBCASE("ecolor/value_to_name") {
         const meta::enum_type ecolor_type = meta::resolve_type<ecolor>();
         REQUIRE(ecolor_type);
 
-        {
-            REQUIRE(ecolor_type.value_to_name(ecolor_red));
-            CHECK(ecolor_type.value_to_name(ecolor_red) == "red");
-        }
-
-        {
-
-            REQUIRE(ecolor_type.value_to_name(meta::value{ecolor_blue}));
-            CHECK(ecolor_type.value_to_name(ecolor_blue) == "blue");
-        }
-
-        {
-            REQUIRE_FALSE(ecolor_type.value_to_name(100500));
-            REQUIRE_FALSE(ecolor_type.value_to_name(ecolor{100500}));
-        }
+        CHECK(ecolor_type.value_to_name(ecolor_red) == "red");
+        CHECK(ecolor_type.value_to_name(meta::value{ecolor_blue}) == "blue");
+        CHECK(ecolor_type.value_to_name(100500).empty());
+        CHECK(ecolor_type.value_to_name(ecolor{100500}).empty());
     }
 
     SUBCASE("color/name_to_value") {

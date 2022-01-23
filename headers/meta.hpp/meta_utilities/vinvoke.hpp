@@ -13,12 +13,12 @@
 namespace meta_hpp
 {
     template < typename... Args >
-    std::optional<value> invoke(const function& function, Args&&... args) {
+    value invoke(const function& function, Args&&... args) {
         return function.invoke(std::forward<Args>(args)...);
     }
 
     template < detail::function_kind Function, typename... Args >
-    std::optional<value> invoke(Function&& function, Args&&... args) {
+    value invoke(Function&& function, Args&&... args) {
         using namespace detail;
         if constexpr ( sizeof...(Args) > 0 ) {
             const std::array<arg, sizeof...(Args)> vargs{arg{std::forward<Args>(args)}...};
@@ -32,12 +32,12 @@ namespace meta_hpp
 namespace meta_hpp
 {
     template < typename Instance >
-    std::optional<value> invoke(const member& member, Instance&& instance) {
+    value invoke(const member& member, Instance&& instance) {
         return member.get(std::forward<Instance>(instance));
     }
 
     template < detail::member_kind Member, typename Instance >
-    std::optional<value> invoke(Member&& member, Instance&& instance) {
+    value invoke(Member&& member, Instance&& instance) {
         using namespace detail;
         const inst vinst{std::forward<Instance>(instance)};
         return raw_member_getter<member_policy::as_copy>(std::forward<Member>(member), vinst);
@@ -47,12 +47,12 @@ namespace meta_hpp
 namespace meta_hpp
 {
     template < typename Instance, typename... Args >
-    std::optional<value> invoke(const method& method, Instance&& instance, Args&&... args) {
+    value invoke(const method& method, Instance&& instance, Args&&... args) {
         return method.invoke(std::forward<Instance>(instance), std::forward<Args>(args)...);
     }
 
     template < detail::method_kind Method, typename Instance, typename... Args >
-    std::optional<value> invoke(Method&& method, Instance&& instance, Args&&... args) {
+    value invoke(Method&& method, Instance&& instance, Args&&... args) {
         using namespace detail;
         const inst vinst{std::forward<Instance>(instance)};
         if constexpr ( sizeof...(Args) > 0 ) {

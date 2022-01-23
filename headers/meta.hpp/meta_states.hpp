@@ -211,10 +211,10 @@ namespace meta_hpp
         [[nodiscard]] const std::string& get_name() const noexcept;
 
         template < typename... Args >
-        std::optional<value> invoke(Args&&... args) const;
+        value invoke(Args&&... args) const;
 
         template < typename... Args >
-        std::optional<value> operator()(Args&&... args) const;
+        value operator()(Args&&... args) const;
 
         template < typename... Args >
         [[nodiscard]] bool is_invocable_with() const noexcept;
@@ -277,10 +277,10 @@ namespace meta_hpp
         [[nodiscard]] const std::string& get_name() const noexcept;
 
         template < typename Instance, typename... Args >
-        std::optional<value> invoke(Instance&& instance, Args&&... args) const;
+        value invoke(Instance&& instance, Args&&... args) const;
 
         template < typename Instance, typename... Args >
-        std::optional<value> operator()(Instance&& instance, Args&&... args) const;
+        value operator()(Instance&& instance, Args&&... args) const;
 
         template < typename Instance, typename... Args >
         [[nodiscard]] bool is_invocable_with() const noexcept;
@@ -388,7 +388,7 @@ namespace meta_hpp::detail
     };
 
     struct function_state final {
-        using invoke_impl = std::function<std::optional<value>(std::span<const arg>)>;
+        using invoke_impl = std::function<value(std::span<const arg>)>;
         using is_invocable_with_impl = std::function<bool(std::span<const arg_base>)>;
 
         const function_index index;
@@ -417,7 +417,7 @@ namespace meta_hpp::detail
     };
 
     struct method_state final {
-        using invoke_impl = std::function<std::optional<value>(const inst&, std::span<const arg>)>;
+        using invoke_impl = std::function<value(const inst&, std::span<const arg>)>;
         using is_invocable_with_impl = std::function<bool(const inst_base&, std::span<const arg_base>)>;
 
         const method_index index;

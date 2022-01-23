@@ -88,7 +88,7 @@ TEST_CASE("meta/meta_states/function") {
         CHECK_THROWS(func.invoke(ivec2{}, ivec2{}, 42));
 
         CHECK(func.invoke(ivec2{1,2}, ivec2{3,4}));
-        CHECK(func.invoke(ivec2{1,2}, ivec2{3,4}).value() == ivec2{4,6});
+        CHECK(func.invoke(ivec2{1,2}, ivec2{3,4}) == ivec2{4,6});
     }
 
     SUBCASE("ilength2") {
@@ -113,7 +113,7 @@ TEST_CASE("meta/meta_states/function") {
         CHECK_THROWS(func.invoke(ivec2{}, 42));
 
         CHECK(func.invoke(ivec2{2,3}));
-        CHECK(func.invoke(ivec2{2,3}).value() == 13);
+        CHECK(func.invoke(ivec2{2,3}) == 13);
     }
 
     SUBCASE("arg_null") {

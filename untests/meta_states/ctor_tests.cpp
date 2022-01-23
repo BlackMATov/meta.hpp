@@ -89,7 +89,8 @@ TEST_CASE("meta/meta_states/ctor") {
         REQUIRE(clazz_type);
 
         {
-            const meta::value v = clazz_type.create(10).value();
+            CHECK_FALSE(clazz_type.create(10, 20));
+            const meta::value v = clazz_type.create(10);
             CHECK(v.get_type() == meta::resolve_type<clazz<1>>());
             CHECK(v.cast<clazz<1>>().i == 10);
 
@@ -108,7 +109,8 @@ TEST_CASE("meta/meta_states/ctor") {
         REQUIRE(clazz_type);
 
         {
-            const meta::value v = clazz_type.create(20).value();
+            CHECK_FALSE(clazz_type.create(10, 20));
+            const meta::value v = clazz_type.create(20);
             CHECK(v.get_type() == meta::resolve_type<clazz<2>*>());
             CHECK(v.cast<clazz<2>*>()->i == 20);
             CHECK(clazz_type.destroy(v));
@@ -128,7 +130,8 @@ TEST_CASE("meta/meta_states/ctor") {
         REQUIRE(clazz_type);
 
         {
-            const meta::value v = clazz_type.create(30).value();
+            CHECK_FALSE(clazz_type.create(10, 20));
+            const meta::value v = clazz_type.create(30);
             CHECK(v.get_type() == meta::resolve_type<std::shared_ptr<clazz<3>>>());
             CHECK(v.cast<std::shared_ptr<clazz<3>>>()->i == 30);
 

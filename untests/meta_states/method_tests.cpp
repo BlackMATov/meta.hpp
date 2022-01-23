@@ -130,9 +130,9 @@ TEST_CASE("meta/meta_states/method") {
         {
             clazz cl;
 
-            CHECK(mi.invoke(cl).value() == 1);
+            CHECK(mi.invoke(cl) == 1);
             CHECK_THROWS(mi.invoke(std::as_const(cl)));
-            CHECK(mi.invoke(std::move(cl)).value() == 1);
+            CHECK(mi.invoke(std::move(cl)) == 1);
             CHECK_THROWS(mi.invoke(std::move(std::as_const(cl))));
         }
 
@@ -175,9 +175,9 @@ TEST_CASE("meta/meta_states/method") {
         {
             clazz cl;
 
-            CHECK(mi.invoke(cl).value() == 2);
+            CHECK(mi.invoke(cl) == 2);
             CHECK_THROWS(mi.invoke(std::as_const(cl)));
-            CHECK(mi.invoke(std::move(cl)).value() == 2);
+            CHECK(mi.invoke(std::move(cl)) == 2);
             CHECK_THROWS(mi.invoke(std::move(std::as_const(cl))));
         }
 
@@ -220,10 +220,10 @@ TEST_CASE("meta/meta_states/method") {
         {
             clazz cl;
 
-            CHECK(mi.invoke(cl).value() == 3);
-            CHECK(mi.invoke(std::as_const(cl)).value() == 3);
-            CHECK(mi.invoke(std::move(cl)).value() == 3);
-            CHECK(mi.invoke(std::move(std::as_const(cl))).value() == 3);
+            CHECK(mi.invoke(cl) == 3);
+            CHECK(mi.invoke(std::as_const(cl)) == 3);
+            CHECK(mi.invoke(std::move(cl)) == 3);
+            CHECK(mi.invoke(std::move(std::as_const(cl))) == 3);
         }
 
         static_assert(std::is_invocable_v<decltype(&clazz::const_method), clazz&>);
@@ -265,10 +265,10 @@ TEST_CASE("meta/meta_states/method") {
         {
             clazz cl;
 
-            CHECK(mi.invoke(cl).value() == 4);
-            CHECK(mi.invoke(std::as_const(cl)).value() == 4);
-            CHECK(mi.invoke(std::move(cl)).value() == 4);
-            CHECK(mi.invoke(std::move(std::as_const(cl))).value() == 4);
+            CHECK(mi.invoke(cl) == 4);
+            CHECK(mi.invoke(std::as_const(cl)) == 4);
+            CHECK(mi.invoke(std::move(cl)) == 4);
+            CHECK(mi.invoke(std::move(std::as_const(cl))) == 4);
         }
 
         static_assert(std::is_invocable_v<decltype(&clazz::const_method_noexcept), clazz&>);
@@ -310,7 +310,7 @@ TEST_CASE("meta/meta_states/method") {
         {
             clazz cl;
 
-            CHECK(mi.invoke(cl).value() == 5);
+            CHECK(mi.invoke(cl) == 5);
             CHECK_THROWS(mi.invoke(std::as_const(cl)));
             CHECK_THROWS(mi.invoke(std::move(cl)));
             CHECK_THROWS(mi.invoke(std::move(std::as_const(cl))));
@@ -355,7 +355,7 @@ TEST_CASE("meta/meta_states/method") {
         {
             clazz cl;
 
-            CHECK(mi.invoke(cl).value() == 6);
+            CHECK(mi.invoke(cl) == 6);
             CHECK_THROWS(mi.invoke(std::as_const(cl)));
             CHECK_THROWS(mi.invoke(std::move(cl)));
             CHECK_THROWS(mi.invoke(std::move(std::as_const(cl))));
@@ -400,8 +400,8 @@ TEST_CASE("meta/meta_states/method") {
         {
             clazz cl;
 
-            CHECK(mi.invoke(cl).value() == 7);
-            CHECK(mi.invoke(std::as_const(cl)).value() == 7);
+            CHECK(mi.invoke(cl) == 7);
+            CHECK(mi.invoke(std::as_const(cl)) == 7);
             CHECK(mi.invoke(std::move(cl)) == 7);
             CHECK(mi.invoke(std::move(std::as_const(cl))) == 7);
         }
@@ -445,8 +445,8 @@ TEST_CASE("meta/meta_states/method") {
         {
             clazz cl;
 
-            CHECK(mi.invoke(cl).value() == 8);
-            CHECK(mi.invoke(std::as_const(cl)).value() == 8);
+            CHECK(mi.invoke(cl) == 8);
+            CHECK(mi.invoke(std::as_const(cl)) == 8);
             CHECK(mi.invoke(std::move(cl)) == 8);
             CHECK(mi.invoke(std::move(std::as_const(cl))) == 8);
         }
@@ -492,7 +492,7 @@ TEST_CASE("meta/meta_states/method") {
 
             CHECK_THROWS(mi.invoke(cl));
             CHECK_THROWS(mi.invoke(std::as_const(cl)));
-            CHECK(mi.invoke(std::move(cl)).value() == 9);
+            CHECK(mi.invoke(std::move(cl)) == 9);
             CHECK_THROWS(mi.invoke(std::move(std::as_const(cl))));
         }
 
@@ -537,7 +537,7 @@ TEST_CASE("meta/meta_states/method") {
 
             CHECK_THROWS(mi.invoke(cl));
             CHECK_THROWS(mi.invoke(std::as_const(cl)));
-            CHECK(mi.invoke(std::move(cl)).value() == 10);
+            CHECK(mi.invoke(std::move(cl)) == 10);
             CHECK_THROWS(mi.invoke(std::move(std::as_const(cl))));
         }
 
@@ -582,8 +582,8 @@ TEST_CASE("meta/meta_states/method") {
 
             CHECK_THROWS(mi.invoke(cl));
             CHECK_THROWS(mi.invoke(std::as_const(cl)));
-            CHECK(mi.invoke(std::move(cl)).value() == 11);
-            CHECK(mi.invoke(std::move(std::as_const(cl))).value() == 11);
+            CHECK(mi.invoke(std::move(cl)) == 11);
+            CHECK(mi.invoke(std::move(std::as_const(cl))) == 11);
         }
 
         static_assert(!std::is_invocable_v<decltype(&clazz::const_method_rref), clazz&>);
@@ -627,8 +627,8 @@ TEST_CASE("meta/meta_states/method") {
 
             CHECK_THROWS(mi.invoke(cl));
             CHECK_THROWS(mi.invoke(std::as_const(cl)));
-            CHECK(mi.invoke(std::move(cl)).value() == 12);
-            CHECK(mi.invoke(std::move(std::as_const(cl))).value() == 12);
+            CHECK(mi.invoke(std::move(cl)) == 12);
+            CHECK(mi.invoke(std::move(std::as_const(cl))) == 12);
         }
 
         static_assert(!std::is_invocable_v<decltype(&clazz::const_method_noexcept_rref), clazz&>);

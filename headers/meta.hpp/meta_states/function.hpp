@@ -14,7 +14,7 @@
 namespace meta_hpp::detail
 {
     template < function_policy_kind Policy, function_kind Function >
-    std::optional<value> raw_function_invoke(Function function, std::span<const arg> args) {
+    value raw_function_invoke(Function function, std::span<const arg> args) {
         using ft = function_traits<Function>;
         using return_type = typename ft::return_type;
         using argument_types = typename ft::argument_types;
@@ -40,7 +40,7 @@ namespace meta_hpp::detail
         return std::invoke([
             args, function = std::move(function)
         // NOLINTNEXTLINE(readability-named-parameter)
-        ]<std::size_t... Is>(std::index_sequence<Is...>) -> std::optional<value> {
+        ]<std::size_t... Is>(std::index_sequence<Is...>) -> value {
             if ( !(... && (args.data() + Is)->can_cast_to<type_list_at_t<Is, argument_types>>()) ) {
                 throw std::logic_error("an attempt to call a function with incorrect argument types");
             }
@@ -49,7 +49,7 @@ namespace meta_hpp::detail
                 std::ignore = std::invoke(
                     std::move(function),
                     (args.data() + Is)->cast<type_list_at_t<Is, argument_types>>()...);
-                return std::nullopt;
+                return {};
             } else {
                 return_type&& return_value = std::invoke(
                     std::move(function),
@@ -134,7 +134,7 @@ namespace meta_hpp
     }
 
     template < typename... Args >
-    std::optional<value> function::invoke(Args&&... args) const {
+    value function::invoke(Args&&... args) const {
         if constexpr ( sizeof...(Args) > 0 ) {
             using namespace detail;
             const std::array<arg, sizeof...(Args)> vargs{arg{std::forward<Args>(args)}...};
@@ -145,7 +145,7 @@ namespace meta_hpp
     }
 
     template < typename... Args >
-    std::optional<value> function::operator()(Args&&... args) const {
+    value function::operator()(Args&&... args) const {
         return invoke(std::forward<Args>(args)...);
     }
 

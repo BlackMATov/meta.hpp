@@ -71,11 +71,11 @@ namespace meta_hpp
     }
 
     template < typename Value >
-    std::optional<std::string> enum_type::value_to_name(Value&& value) const noexcept {
+    std::string_view enum_type::value_to_name(Value&& value) const noexcept {
         const detail::arg value_arg{std::forward<Value>(value)};
 
         if ( value_arg.get_raw_type() != *this ) {
-            return std::nullopt;
+            return std::string_view{};
         }
 
         for ( auto&& evalue : data_->evalues ) {
@@ -84,13 +84,14 @@ namespace meta_hpp
             }
         }
 
-        return std::nullopt;
+        return std::string_view{};
     }
 
-    inline std::optional<value> enum_type::name_to_value(std::string_view name) const noexcept {
+    inline value enum_type::name_to_value(std::string_view name) const noexcept {
         if ( const evalue value = get_evalue(name); value ) {
             return value.get_value();
         }
-        return std::nullopt;
+
+        return value{};
     }
 }

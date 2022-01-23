@@ -14,7 +14,7 @@
 namespace meta_hpp::detail
 {
     template < method_policy_kind Policy, method_kind Method >
-    std::optional<value> raw_method_invoke(Method method, const inst& inst, std::span<const arg> args) {
+    value raw_method_invoke(Method method, const inst& inst, std::span<const arg> args) {
         using mt = method_traits<Method>;
         using return_type = typename mt::return_type;
         using qualified_type = typename mt::qualified_type;
@@ -46,7 +46,7 @@ namespace meta_hpp::detail
             &inst, &args,
             method = std::move(method)
         // NOLINTNEXTLINE(readability-named-parameter)
-        ]<std::size_t... Is>(std::index_sequence<Is...>) -> std::optional<value> {
+        ]<std::size_t... Is>(std::index_sequence<Is...>) -> value {
             if ( !(... && (args.data() + Is)->can_cast_to<type_list_at_t<Is, argument_types>>()) ) {
                 throw std::logic_error("an attempt to call a method with incorrect argument types");
             }
@@ -56,7 +56,7 @@ namespace meta_hpp::detail
                     std::move(method),
                     inst.cast<qualified_type>(),
                     (args.data() + Is)->cast<type_list_at_t<Is, argument_types>>()...);
-                return std::nullopt;
+                return {};
             } else {
                 return_type&& return_value = std::invoke(
                     std::move(method),
@@ -147,7 +147,7 @@ namespace meta_hpp
     }
 
     template < typename Instance, typename... Args >
-    std::optional<value> method::invoke(Instance&& instance, Args&&... args) const {
+    value method::invoke(Instance&& instance, Args&&... args) const {
         using namespace detail;
         const inst vinst{std::forward<Instance>(instance)};
         if constexpr ( sizeof...(Args) > 0 ) {
@@ -159,7 +159,7 @@ namespace meta_hpp
     }
 
     template < typename Instance, typename... Args >
-    std::optional<value> method::operator()(Instance&& instance, Args&&... args) const {
+    value method::operator()(Instance&& instance, Args&&... args) const {
         return invoke(std::forward<Instance>(instance), std::forward<Args>(args)...);
     }
 
