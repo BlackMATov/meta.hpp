@@ -107,22 +107,6 @@ namespace meta_hpp
 
 namespace meta_hpp
 {
-    inline value& value::operator=(value&& other) noexcept {
-        if ( this != &other ) {
-            value temp{std::move(other)};
-            swap(temp);
-        }
-        return *this;
-    }
-
-    inline value& value::operator=(const value& other) {
-        if ( this != &other ) {
-            value temp{other};
-            swap(temp);
-        }
-        return *this;
-    }
-
     template < detail::decay_non_uvalue_kind T >
         requires detail::stdex::copy_constructible<std::decay_t<T>>
     value::value(T&& val)

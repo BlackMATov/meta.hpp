@@ -105,14 +105,13 @@ namespace meta_hpp
     class value final {
     public:
         value() = default;
+        ~value() = default;
 
-        value(value&& other) noexcept = default;
+        value(value&& other) = default;
         value(const value& other) = default;
 
-        value& operator=(value&& other) noexcept;
-        value& operator=(const value& other);
-
-        ~value() = default;
+        value& operator=(value&& other) = default;
+        value& operator=(const value& other) = default;
 
         template < detail::decay_non_uvalue_kind T >
             requires detail::stdex::copy_constructible<std::decay_t<T>>

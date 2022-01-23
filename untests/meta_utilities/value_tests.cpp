@@ -12,7 +12,7 @@ namespace
         int x{};
         int y{};
 
-        ivec2() = default;
+        ivec2() = delete;
         explicit ivec2(int v): x{v}, y{v} {}
         ivec2(int x, int y): x{x}, y{y} {}
 
@@ -48,7 +48,7 @@ namespace
         int y{};
         int z{};
 
-        ivec3() = default;
+        ivec3() = delete;
         explicit ivec3(int v): x{v}, y{v}, z{v} {}
         ivec3(int x, int y, int z): x{x}, y{y}, z{z} {}
     };
@@ -73,7 +73,6 @@ TEST_CASE("meta/meta_utilities/value/ivec2") {
     namespace meta = meta_hpp;
 
     meta::class_<ivec2>()
-        .ctor_<>()
         .ctor_<int>()
         .ctor_<int, int>()
         .ctor_<ivec2&&>()
@@ -86,7 +85,6 @@ TEST_CASE("meta/meta_utilities/value/ivec3") {
     namespace meta = meta_hpp;
 
     meta::class_<ivec3>()
-        .ctor_<>()
         .ctor_<int>()
         .ctor_<int, int, int>()
         .ctor_<ivec3&&>()
@@ -362,7 +360,7 @@ TEST_CASE("meta/meta_utilities/value") {
 
         val_dst = std::move(val_src2);
         CHECK(val_dst == ivec2{1,2});
-        CHECK(ivec2::move_ctor_counter == 4);
+        CHECK(ivec2::move_ctor_counter == 3);
         CHECK(ivec2::copy_ctor_counter == 0);
     }
 
@@ -381,7 +379,7 @@ TEST_CASE("meta/meta_utilities/value") {
 
         val_dst = val_src2;
         CHECK(val_dst == ivec2{1,2});
-        CHECK(ivec2::move_ctor_counter == 3);
+        CHECK(ivec2::move_ctor_counter == 2);
         CHECK(ivec2::copy_ctor_counter == 1);
 
         CHECK(val_src2 == ivec2{1,2});
