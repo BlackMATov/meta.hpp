@@ -7,6 +7,7 @@
 #pragma once
 
 #include "../../meta_base.hpp"
+#include "../../meta_utilities.hpp"
 
 namespace meta_hpp::detail
 {
@@ -14,16 +15,16 @@ namespace meta_hpp::detail
     struct value_equals_traits;
 
     template < typename T >
-    concept has_value_equals_traits = requires(const T& v) {
-        { value_equals_traits<T>{}(v, v) } -> stdex::convertible_to<bool>;
+    concept has_value_equals_traits = requires(const T& l, const T& r) {
+        { value_equals_traits<T>{}(l, r) } -> stdex::convertible_to<bool>;
     };
 }
 
 namespace meta_hpp::detail
 {
     template < typename T >
-        requires requires(const T& v) {
-            { v == v } -> stdex::convertible_to<bool>;
+        requires requires(const T& l, const T& r) {
+            { l == r } -> stdex::convertible_to<bool>;
         }
     struct value_equals_traits<T> {
         bool operator()(const T& l, const T& r) const {

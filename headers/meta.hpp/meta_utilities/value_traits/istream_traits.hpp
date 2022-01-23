@@ -7,6 +7,7 @@
 #pragma once
 
 #include "../../meta_base.hpp"
+#include "../../meta_utilities.hpp"
 
 namespace meta_hpp::detail
 {

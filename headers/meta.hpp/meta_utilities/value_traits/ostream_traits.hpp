@@ -7,6 +7,7 @@
 #pragma once
 
 #include "../../meta_base.hpp"
+#include "../../meta_utilities.hpp"
 
 namespace meta_hpp::detail
 {
@@ -14,8 +15,8 @@ namespace meta_hpp::detail
     struct value_ostream_traits;
 
     template < typename T >
-    concept has_value_ostream_traits = requires(std::ostream& is, const T& v) {
-        { value_ostream_traits<T>{}(is, v) } -> stdex::convertible_to<std::ostream&>;
+    concept has_value_ostream_traits = requires(std::ostream& os, const T& v) {
+        { value_ostream_traits<T>{}(os, v) } -> stdex::convertible_to<std::ostream&>;
     };
 }
 
@@ -26,8 +27,8 @@ namespace meta_hpp::detail
             { os << v } -> stdex::convertible_to<std::ostream&>;
         }
     struct value_ostream_traits<T> {
-        std::ostream& operator()(std::ostream& is, const T& v) const {
-            return is << v;
+        std::ostream& operator()(std::ostream& os, const T& v) const {
+            return os << v;
         }
     };
 }

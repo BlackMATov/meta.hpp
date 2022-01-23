@@ -57,7 +57,7 @@ namespace meta_hpp
 
             .deref = +[]([[maybe_unused]] const value& v) -> value {
                 if constexpr ( detail::has_value_deref_traits<T> ) {
-                    return value{*v.cast<T>()};
+                    return detail::value_deref_traits<T>{}(v.cast<T>());
                 } else {
                     throw std::logic_error("value type doesn't have value deref traits");
                 }
