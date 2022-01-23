@@ -137,34 +137,44 @@ namespace meta_hpp
         return *this;
     }
 
+    inline bool value::is_valid() const noexcept {
+        return raw_.has_value();
+    }
+
+    inline value::operator bool() const noexcept {
+        return is_valid();
+    }
+
     inline void value::swap(value& other) noexcept {
         using std::swap;
         swap(raw_, other.raw_);
         swap(traits_, other.traits_);
     }
 
-    inline const any_type& value::get_type() const noexcept {
-        return traits_->type;
+    inline any_type value::get_type() const noexcept {
+        return traits_ != nullptr
+            ? traits_->type
+            : resolve_type<void>();
     }
 
     inline void* value::data() noexcept {
-        return traits_->data(*this);
+        return traits_ != nullptr ? traits_->data(*this) : nullptr;
     }
 
     inline const void* value::data() const noexcept {
-        return traits_->cdata(*this);
+        return traits_ != nullptr ? traits_->cdata(*this) : nullptr;
     }
 
     inline const void* value::cdata() const noexcept {
-        return traits_->cdata(*this);
+        return traits_ != nullptr ? traits_->cdata(*this) : nullptr;
     }
 
     inline value value::operator*() const {
-        return traits_->deref(*this);
+        return traits_ != nullptr ? traits_->deref(*this) : value{};
     }
 
     inline value value::operator[](std::size_t index) const {
-        return traits_->index(*this, index);
+        return traits_ != nullptr ? traits_->index(*this, index) : value{};
     }
 
     template < typename T >
@@ -208,6 +218,10 @@ namespace meta_hpp
 {
     template < typename T >
     [[nodiscard]] bool operator<(const value& l, const T& r) {
+        if ( !static_cast<bool>(l) ) {
+            return true;
+        }
+
         const any_type& r_type = resolve_type<T>();
         return (l.get_type() < r_type)
             || (l.get_type() == r_type && std::less<>{}(l.cast<T>(), r));
@@ -215,12 +229,24 @@ namespace meta_hpp
 
     template < typename T >
     [[nodiscard]] bool operator<(const T& l, const value& r) {
+        if ( !static_cast<bool>(r) ) {
+            return false;
+        }
+
         const any_type& l_type = resolve_type<T>();
         return (l_type < r.get_type())
             || (l_type == r.get_type() && std::less<>{}(l, r.cast<T>()));
     }
 
     [[nodiscard]] inline bool operator<(const value& l, const value& r) {
+        if ( !static_cast<bool>(r) ) {
+            return false;
+        }
+
+        if ( !static_cast<bool>(l) ) {
+            return true;
+        }
+
         return (l.get_type() < r.get_type())
             || (l.get_type() == r.get_type() && l.traits_->less(l, r));
     }
@@ -230,17 +256,33 @@ namespace meta_hpp
 {
     template < typename T >
     [[nodiscard]] bool operator==(const value& l, const T& r) {
+        if ( !static_cast<bool>(l) ) {
+            return false;
+        }
+
         return l.get_type() == resolve_type<T>()
             && std::equal_to<>{}(l.cast<T>(), r);
     }
 
     template < typename T >
     [[nodiscard]] bool operator==(const T& l, const value& r) {
+        if ( !static_cast<bool>(r) ) {
+            return false;
+        }
+
         return resolve_type<T>() == r.get_type()
             && std::equal_to<>{}(l, r.cast<T>());
     }
 
     [[nodiscard]] inline bool operator==(const value& l, const value& r) {
+        if ( static_cast<bool>(l) != static_cast<bool>(r) ) {
+            return false;
+        }
+
+        if ( !static_cast<bool>(l) ) {
+            return true;
+        }
+
         return l.get_type() == r.get_type()
             && l.traits_->equals(l, r);
     }

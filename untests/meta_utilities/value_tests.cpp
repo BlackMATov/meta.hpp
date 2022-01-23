@@ -127,6 +127,65 @@ TEST_CASE("meta/meta_utilities/value") {
             const ivec2*>);
     }
 
+    SUBCASE("ivec2{}") {
+        {
+            meta::value val{};
+
+            CHECK(!val);
+            CHECK_FALSE(val);
+
+            CHECK_FALSE(val.is_valid());
+            CHECK(val.data() == nullptr);
+            CHECK(std::as_const(val).data() == nullptr);
+            CHECK(std::as_const(val).cdata() == nullptr);
+
+            CHECK_FALSE(*val);
+            CHECK_FALSE(val[0]);
+
+            CHECK(val.try_cast<ivec2>() == nullptr);
+            CHECK(std::as_const(val).try_cast<ivec2>() == nullptr);
+
+            CHECK_THROWS(std::ignore = val.cast<int>());
+            CHECK_THROWS(std::ignore = std::as_const(val).cast<int>());
+            CHECK_THROWS(std::ignore = std::move(val).cast<int>());
+            CHECK_THROWS(std::ignore = std::move(std::as_const(val)).cast<int>());
+        }
+
+        {
+            CHECK_FALSE(meta::value{1} < meta::value{});
+            CHECK(meta::value{} < meta::value{1});
+            CHECK_FALSE(meta::value{} < meta::value{});
+
+            CHECK_FALSE(1 < meta::value{});
+            CHECK(meta::value{} < 1);
+            CHECK_FALSE(meta::value{} < meta::value{});
+        }
+
+        {
+            CHECK_FALSE(meta::value{1} == meta::value{});
+            CHECK_FALSE(meta::value{} == meta::value{1});
+            CHECK(meta::value{} == meta::value{});
+
+            CHECK_FALSE(1 == meta::value{});
+            CHECK_FALSE(meta::value{} == 1);
+            CHECK(meta::value{} == meta::value{});
+        }
+
+        {
+            CHECK(meta::value{1} != meta::value{});
+            CHECK(meta::value{} != meta::value{1});
+            CHECK_FALSE(meta::value{} != meta::value{});
+
+            CHECK(1 != meta::value{});
+            CHECK(meta::value{} != 1);
+            CHECK_FALSE(meta::value{} != meta::value{});
+        }
+
+        CHECK_FALSE(meta::value{} == 0);
+        CHECK_FALSE(meta::value{} == nullptr);
+        CHECK(meta::value{}.get_type() == meta::resolve_type<void>());
+    }
+
     SUBCASE("ivec2&") {
         ivec2 v{1,2};
         ivec2& vr = v;

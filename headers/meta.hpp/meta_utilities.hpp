@@ -104,7 +104,7 @@ namespace meta_hpp
 {
     class value final {
     public:
-        value() = delete;
+        value() = default;
 
         value(value&& other) noexcept = default;
         value(const value& other) = default;
@@ -122,9 +122,12 @@ namespace meta_hpp
             requires detail::stdex::copy_constructible<std::decay_t<T>>
         value& operator=(T&& val);
 
+        [[nodiscard]] bool is_valid() const noexcept;
+        [[nodiscard]] explicit operator bool() const noexcept;
+
         void swap(value& other) noexcept;
 
-        [[nodiscard]] const any_type& get_type() const noexcept;
+        [[nodiscard]] any_type get_type() const noexcept;
 
         [[nodiscard]] void* data() noexcept;
         [[nodiscard]] const void* data() const noexcept;
