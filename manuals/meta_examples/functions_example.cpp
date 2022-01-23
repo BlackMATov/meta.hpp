@@ -59,7 +59,7 @@ TEST_CASE("meta/meta_examples/functions/usage") {
     CHECK(sub_function.is_invocable_with<int, int>());
 
     // calls the function and retrieves a returned value
-    const meta::value sub_result_value = sub_function.invoke(60, 18).value();
+    const meta::value sub_result_value = sub_function.invoke(60, 18);
 
     // checks the type of the returned value
     CHECK(sub_result_value.get_type() == meta::resolve_type<int>());

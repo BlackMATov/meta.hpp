@@ -49,7 +49,7 @@ namespace meta_hpp::detail
                 std::ignore = std::invoke(
                     std::move(function),
                     (args.data() + Is)->cast<type_list_at_t<Is, argument_types>>()...);
-                return {};
+                return value{};
             } else {
                 return_type&& return_value = std::invoke(
                     std::move(function),

@@ -71,7 +71,7 @@ TEST_CASE("meta/meta_examples/classes/usage") {
     const meta::method rectangle_area = rectangle_type.get_method("get_area");
 
     // creates a rectangle instance by the registered constructor(int, int)
-    const meta::value rectangle_v = rectangle_type.create(10, 20).value();
+    const meta::value rectangle_v = rectangle_type.create(10, 20);
 
     // calls the method with the dynamic rectangle instance 'rectangle_v'
     CHECK(rectangle_area.invoke(rectangle_v) == 200);

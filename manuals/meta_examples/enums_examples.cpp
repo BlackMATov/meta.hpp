@@ -49,11 +49,11 @@ TEST_CASE("meta/meta_examples/enums/usage") {
     const meta::enum_type align_type = meta::resolve_type(e);
 
     // converts the enumerator to its name
-    CHECK(align_type.value_to_name(e).value() == "center");
+    CHECK(align_type.value_to_name(e) == "center");
 
     // also, it works with dynamic value types
-    CHECK(align_type.value_to_name(meta::value{e}).value() == "center");
+    CHECK(align_type.value_to_name(meta::value{e}) == "center");
 
     // ... and back again
-    CHECK(align_type.name_to_value("center").value() == e);
+    CHECK(align_type.name_to_value("center") == e);
 }

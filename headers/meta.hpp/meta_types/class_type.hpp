@@ -109,7 +109,7 @@ namespace meta_hpp
                 return ctor.second.invoke(std::forward<Args>(args)...);
             }
         }
-        return {};
+        return value{};
     }
 
     template < typename... Args >

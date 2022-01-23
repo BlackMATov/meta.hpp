@@ -56,7 +56,7 @@ namespace meta_hpp::detail
                     std::move(method),
                     inst.cast<qualified_type>(),
                     (args.data() + Is)->cast<type_list_at_t<Is, argument_types>>()...);
-                return {};
+                return value{};
             } else {
                 return_type&& return_value = std::invoke(
                     std::move(method),
