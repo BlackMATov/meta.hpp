@@ -30,9 +30,6 @@ namespace meta_hpp
         bool (*const less)(const value&, const value&);
         bool (*const equals)(const value&, const value&);
 
-        void (*const move_ctor)(std::any&, value&&);
-        void (*const copy_ctor)(std::any&, const value&);
-
         std::istream& (*const istream)(std::istream&, value&);
         std::ostream& (*const ostream)(std::ostream&, const value&);
 
@@ -87,22 +84,6 @@ namespace meta_hpp
                 }
             },
 
-            .move_ctor = +[]([[maybe_unused]] std::any& dst, [[maybe_unused]] value&& src) {
-                if constexpr ( std::is_move_constructible_v<T> ) {
-                    dst.emplace<T>(std::move(src).cast<T>());
-                } else {
-                    throw std::logic_error("value type is not move constructible");
-                }
-            },
-
-            .copy_ctor = +[]([[maybe_unused]] std::any& dst, [[maybe_unused]] const value& src) {
-                if constexpr ( std::is_copy_constructible_v<T> ) {
-                    dst.emplace<T>(src.cast<T>());
-                } else {
-                    throw std::logic_error("value type is not copy constructible");
-                }
-            },
-
             .istream = +[]([[maybe_unused]] std::istream& is, [[maybe_unused]] value& v) -> std::istream& {
                 if constexpr ( detail::has_value_istream_traits<T> ) {
                     return detail::value_istream_traits<T>{}(is, v.cast<T>());
@@ -126,42 +107,30 @@ namespace meta_hpp
 
 namespace meta_hpp
 {
-    // NOLINTNEXTLINE(performance-noexcept-move-constructor)
-    inline value::value(value&& other)
-    : traits_{other.traits_} {
-        traits_->move_ctor(raw_, std::move(other));
-    }
-
-    inline value::value(const value& other)
-    : traits_{other.traits_} {
-        traits_->copy_ctor(raw_, other);
-    }
-
-    // NOLINTNEXTLINE(performance-noexcept-move-constructor)
-    inline value& value::operator=(value&& other) {
+    inline value& value::operator=(value&& other) noexcept {
         if ( this != &other ) {
-            traits_ = other.traits_;
-            traits_->move_ctor(raw_, std::move(other));
+            value temp{std::move(other)};
+            swap(temp);
         }
         return *this;
     }
 
     inline value& value::operator=(const value& other) {
         if ( this != &other ) {
-            traits_ = other.traits_;
-            traits_->copy_ctor(raw_, other);
+            value temp{other};
+            swap(temp);
         }
         return *this;
     }
 
-    template < detail::decay_non_uvalue_kind T, typename Tp >
-        requires detail::stdex::copy_constructible<Tp>
+    template < detail::decay_non_uvalue_kind T >
+        requires detail::stdex::copy_constructible<std::decay_t<T>>
     value::value(T&& val)
     : raw_{std::forward<T>(val)}
     , traits_{traits::get<std::decay_t<T>>()} {}
 
-    template < detail::decay_non_uvalue_kind T, typename Tp >
-        requires detail::stdex::copy_constructible<Tp>
+    template < detail::decay_non_uvalue_kind T >
+        requires detail::stdex::copy_constructible<std::decay_t<T>>
     value& value::operator=(T&& val) {
         value temp{std::forward<T>(val)};
         swap(temp);
@@ -198,45 +167,39 @@ namespace meta_hpp
         return traits_->index(*this, index);
     }
 
-    template < typename T, typename Tp >
-    Tp& value::cast() & {
-        if ( get_type() != resolve_type<Tp>() ) {
-            throw std::logic_error("bad value cast");
-        }
+    template < typename T >
+    std::decay_t<T>& value::cast() & {
+        using Tp = std::decay_t<T>;
         return std::any_cast<Tp&>(raw_);
     }
 
-    template < typename T, typename Tp >
-    Tp&& value::cast() && {
-        if ( get_type() != resolve_type<Tp>() ) {
-            throw std::logic_error("bad value cast");
-        }
+    template < typename T >
+    std::decay_t<T>&& value::cast() && {
+        using Tp = std::decay_t<T>;
         return std::move(std::any_cast<Tp&>(raw_));
     }
 
-    template < typename T, typename Tp >
-    const Tp& value::cast() const & {
-        if ( get_type() != resolve_type<Tp>() ) {
-            throw std::logic_error("bad value cast");
-        }
+    template < typename T >
+    const std::decay_t<T>& value::cast() const & {
+        using Tp = std::decay_t<T>;
         return std::any_cast<const Tp&>(raw_);
     }
 
-    template < typename T, typename Tp >
-    const Tp&& value::cast() const && {
-        if ( get_type() != resolve_type<Tp>() ) {
-            throw std::logic_error("bad value cast");
-        }
+    template < typename T >
+    const std::decay_t<T>&& value::cast() const && {
+        using Tp = std::decay_t<T>;
         return std::move(std::any_cast<const Tp&>(raw_));
     }
 
-    template < typename T, typename Tp >
-    Tp* value::try_cast() noexcept {
+    template < typename T >
+    std::decay_t<T>* value::try_cast() noexcept {
+        using Tp = std::decay_t<T>;
         return std::any_cast<Tp>(&raw_);
     }
 
-    template < typename T, typename Tp >
-    const Tp* value::try_cast() const noexcept {
+    template < typename T >
+    const std::decay_t<T>* value::try_cast() const noexcept {
+        using Tp = std::decay_t<T>;
         return std::any_cast<Tp>(&raw_);
     }
 }

@@ -43,6 +43,16 @@ namespace
         static int copy_ctor_counter;
     };
 
+    struct ivec3 {
+        int x{};
+        int y{};
+        int z{};
+
+        ivec3() = default;
+        explicit ivec3(int v): x{v}, y{v}, z{v} {}
+        ivec3(int x, int y, int z): x{x}, y{y}, z{z} {}
+    };
+
     int ivec2::move_ctor_counter{0};
     int ivec2::copy_ctor_counter{0};
 
@@ -70,6 +80,20 @@ TEST_CASE("meta/meta_utilities/value/ivec2") {
         .ctor_<const ivec2&>()
         .member_("x", &ivec2::x)
         .member_("y", &ivec2::y);
+}
+
+TEST_CASE("meta/meta_utilities/value/ivec3") {
+    namespace meta = meta_hpp;
+
+    meta::class_<ivec3>()
+        .ctor_<>()
+        .ctor_<int>()
+        .ctor_<int, int, int>()
+        .ctor_<ivec3&&>()
+        .ctor_<const ivec3&>()
+        .member_("x", &ivec3::x)
+        .member_("y", &ivec3::y)
+        .member_("z", &ivec3::z);
 }
 
 TEST_CASE("meta/meta_utilities/value") {
@@ -123,9 +147,18 @@ TEST_CASE("meta/meta_utilities/value") {
 
         CHECK(val.cast<ivec2>() == ivec2{1,2});
         CHECK(std::as_const(val).cast<ivec2>() == ivec2{1,2});
+        CHECK(std::move(val).cast<ivec2>() == ivec2{1,2});
+        CHECK(std::move(std::as_const(val)).cast<ivec2>() == ivec2{1,2});
+
+        CHECK_THROWS(std::ignore = val.cast<ivec3>());
+        CHECK_THROWS(std::ignore = std::as_const(val).cast<ivec3>());
+        CHECK_THROWS(std::ignore = std::move(val).cast<ivec3>());
+        CHECK_THROWS(std::ignore = std::move(std::as_const(val)).cast<ivec3>());
 
         CHECK(*val.try_cast<ivec2>() == ivec2{1,2});
         CHECK(*std::as_const(val).try_cast<ivec2>() == ivec2{1,2});
+        CHECK(val.try_cast<ivec3>() == nullptr);
+        CHECK(std::as_const(val).try_cast<ivec3>() == nullptr);
     }
 
     SUBCASE("const ivec2&") {
@@ -148,9 +181,18 @@ TEST_CASE("meta/meta_utilities/value") {
 
         CHECK(val.cast<ivec2>() == ivec2{1,2});
         CHECK(std::as_const(val).cast<ivec2>() == ivec2{1,2});
+        CHECK(std::move(val).cast<ivec2>() == ivec2{1,2});
+        CHECK(std::move(std::as_const(val)).cast<ivec2>() == ivec2{1,2});
+
+        CHECK_THROWS(std::ignore = val.cast<ivec3>());
+        CHECK_THROWS(std::ignore = std::as_const(val).cast<ivec3>());
+        CHECK_THROWS(std::ignore = std::move(val).cast<ivec3>());
+        CHECK_THROWS(std::ignore = std::move(std::as_const(val)).cast<ivec3>());
 
         CHECK(*val.try_cast<ivec2>() == ivec2{1,2});
         CHECK(*std::as_const(val).try_cast<ivec2>() == ivec2{1,2});
+        CHECK(val.try_cast<ivec3>() == nullptr);
+        CHECK(std::as_const(val).try_cast<ivec3>() == nullptr);
     }
 
     SUBCASE("ivec2&&") {
@@ -167,9 +209,18 @@ TEST_CASE("meta/meta_utilities/value") {
 
         CHECK(val.cast<ivec2>() == ivec2{1,2});
         CHECK(std::as_const(val).cast<ivec2>() == ivec2{1,2});
+        CHECK(std::move(val).cast<ivec2>() == ivec2{1,2});
+        CHECK(std::move(std::as_const(val)).cast<ivec2>() == ivec2{1,2});
+
+        CHECK_THROWS(std::ignore = val.cast<ivec3>());
+        CHECK_THROWS(std::ignore = std::as_const(val).cast<ivec3>());
+        CHECK_THROWS(std::ignore = std::move(val).cast<ivec3>());
+        CHECK_THROWS(std::ignore = std::move(std::as_const(val)).cast<ivec3>());
 
         CHECK(*val.try_cast<ivec2>() == ivec2{1,2});
         CHECK(*std::as_const(val).try_cast<ivec2>() == ivec2{1,2});
+        CHECK(val.try_cast<ivec3>() == nullptr);
+        CHECK(std::as_const(val).try_cast<ivec3>() == nullptr);
     }
 
     SUBCASE("const ivec2&&") {
@@ -186,9 +237,18 @@ TEST_CASE("meta/meta_utilities/value") {
 
         CHECK(val.cast<ivec2>() == ivec2{1,2});
         CHECK(std::as_const(val).cast<ivec2>() == ivec2{1,2});
+        CHECK(std::move(val).cast<ivec2>() == ivec2{1,2});
+        CHECK(std::move(std::as_const(val)).cast<ivec2>() == ivec2{1,2});
+
+        CHECK_THROWS(std::ignore = val.cast<ivec3>());
+        CHECK_THROWS(std::ignore = std::as_const(val).cast<ivec3>());
+        CHECK_THROWS(std::ignore = std::move(val).cast<ivec3>());
+        CHECK_THROWS(std::ignore = std::move(std::as_const(val)).cast<ivec3>());
 
         CHECK(*val.try_cast<ivec2>() == ivec2{1,2});
         CHECK(*std::as_const(val).try_cast<ivec2>() == ivec2{1,2});
+        CHECK(val.try_cast<ivec3>() == nullptr);
+        CHECK(std::as_const(val).try_cast<ivec3>() == nullptr);
     }
 
     SUBCASE("value(value&&)") {
@@ -201,9 +261,6 @@ TEST_CASE("meta/meta_utilities/value") {
         CHECK(val_dst == ivec2{1,2});
         CHECK(ivec2::move_ctor_counter == 2);
         CHECK(ivec2::copy_ctor_counter == 0);
-
-        CHECK(val_src == ivec2{0,0});
-        CHECK(val_src.data() != val_dst.data());
     }
 
     SUBCASE("value(const meta::value&)") {
@@ -246,11 +303,8 @@ TEST_CASE("meta/meta_utilities/value") {
 
         val_dst = std::move(val_src2);
         CHECK(val_dst == ivec2{1,2});
-        CHECK(ivec2::move_ctor_counter == 2);
+        CHECK(ivec2::move_ctor_counter == 4);
         CHECK(ivec2::copy_ctor_counter == 0);
-
-        CHECK(val_src2 == ivec2{0,0});
-        CHECK(val_src2.data() != val_dst.data());
     }
 
     SUBCASE("value& operator=(const meta::value&)") {
@@ -268,7 +322,7 @@ TEST_CASE("meta/meta_utilities/value") {
 
         val_dst = val_src2;
         CHECK(val_dst == ivec2{1,2});
-        CHECK(ivec2::move_ctor_counter == 1);
+        CHECK(ivec2::move_ctor_counter == 3);
         CHECK(ivec2::copy_ctor_counter == 1);
 
         CHECK(val_src2 == ivec2{1,2});
@@ -284,7 +338,7 @@ TEST_CASE("meta/meta_utilities/value") {
         val1.swap(val2);
         CHECK(val1 == ivec2{1,2});
         CHECK(val2 == "world"s);
-        CHECK((ivec2::move_ctor_counter == 2 || ivec2::move_ctor_counter == 3));
+        CHECK(ivec2::move_ctor_counter == 3);
         CHECK(ivec2::copy_ctor_counter == 0);
 
         swap(val1, val2);

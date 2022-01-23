@@ -106,22 +106,20 @@ namespace meta_hpp
     public:
         value() = delete;
 
-        // NOLINTNEXTLINE(performance-noexcept-move-constructor)
-        value(value&& other);
-        value(const value& other);
+        value(value&& other) noexcept = default;
+        value(const value& other) = default;
 
-        // NOLINTNEXTLINE(performance-noexcept-move-constructor)
-        value& operator=(value&& other);
+        value& operator=(value&& other) noexcept;
         value& operator=(const value& other);
 
         ~value() = default;
 
-        template < detail::decay_non_uvalue_kind T, typename Tp = std::decay_t<T> >
-            requires detail::stdex::copy_constructible<Tp>
+        template < detail::decay_non_uvalue_kind T >
+            requires detail::stdex::copy_constructible<std::decay_t<T>>
         explicit value(T&& val);
 
-        template < detail::decay_non_uvalue_kind T, typename Tp = std::decay_t<T> >
-            requires detail::stdex::copy_constructible<Tp>
+        template < detail::decay_non_uvalue_kind T >
+            requires detail::stdex::copy_constructible<std::decay_t<T>>
         value& operator=(T&& val);
 
         void swap(value& other) noexcept;
@@ -135,23 +133,23 @@ namespace meta_hpp
         [[nodiscard]] value operator*() const;
         [[nodiscard]] value operator[](std::size_t index) const;
 
-        template < typename T, typename Tp = std::decay_t<T> >
-        [[nodiscard]] Tp& cast() &;
+        template < typename T >
+        [[nodiscard]] std::decay_t<T>& cast() &;
 
-        template < typename T, typename Tp = std::decay_t<T> >
-        [[nodiscard]] Tp&& cast() &&;
+        template < typename T >
+        [[nodiscard]] std::decay_t<T>&& cast() &&;
 
-        template < typename T, typename Tp = std::decay_t<T> >
-        [[nodiscard]] const Tp& cast() const &;
+        template < typename T >
+        [[nodiscard]] const std::decay_t<T>& cast() const &;
 
-        template < typename T, typename Tp = std::decay_t<T> >
-        [[nodiscard]] const Tp&& cast() const &&;
+        template < typename T >
+        [[nodiscard]] const std::decay_t<T>&& cast() const &&;
 
-        template < typename T, typename Tp = std::decay_t<T> >
-        [[nodiscard]] Tp* try_cast() noexcept;
+        template < typename T >
+        [[nodiscard]] std::decay_t<T>* try_cast() noexcept;
 
-        template < typename T, typename Tp = std::decay_t<T> >
-        [[nodiscard]] const Tp* try_cast() const noexcept;
+        template < typename T >
+        [[nodiscard]] const std::decay_t<T>* try_cast() const noexcept;
 
         friend bool operator<(const value& l, const value& r);
         friend bool operator==(const value& l, const value& r);
