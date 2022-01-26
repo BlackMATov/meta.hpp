@@ -502,15 +502,15 @@ TEST_CASE("meta/meta_utilities/value") {
             CHECK(ivec2::copy_ctor_counter == 0);
 
             [[maybe_unused]] meta::value vv1{*vp};
-            CHECK(ivec2::move_ctor_counter == 0);
+            CHECK((ivec2::move_ctor_counter == 0 || ivec2::move_ctor_counter == 2));
             CHECK(ivec2::copy_ctor_counter == 1);
 
             [[maybe_unused]] meta::value vv2{*std::move(vp)};
-            CHECK(ivec2::move_ctor_counter == 0);
+            CHECK((ivec2::move_ctor_counter == 0 || ivec2::move_ctor_counter == 4));
             CHECK(ivec2::copy_ctor_counter == 2);
 
             [[maybe_unused]] meta::value vv3{*std::as_const(vp)};
-            CHECK(ivec2::move_ctor_counter == 0);
+            CHECK((ivec2::move_ctor_counter == 0 || ivec2::move_ctor_counter == 6));
             CHECK(ivec2::copy_ctor_counter == 3);
         }
         {
