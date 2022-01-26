@@ -395,7 +395,7 @@ TEST_CASE("meta/meta_utilities/value") {
         val1.swap(val2);
         CHECK(val1 == ivec2{1,2});
         CHECK(val2 == "world"s);
-        CHECK(ivec2::move_ctor_counter == 3);
+        CHECK(ivec2::move_ctor_counter == 2);
         CHECK(ivec2::copy_ctor_counter == 0);
 
         swap(val1, val2);

@@ -18,14 +18,18 @@
 
 namespace meta_hpp
 {
-    struct value::traits final {
+    struct value::vtable_t final {
         const any_type type;
 
-        void* (*const data)(value&) noexcept;
-        const void* (*const cdata)(const value&) noexcept;
+        void* (*const data)(storage_u& from) noexcept;
+        const void* (*const cdata)(const storage_u& from) noexcept;
 
-        value (*const deref)(const value&);
-        value (*const index)(const value&, std::size_t);
+        void (*const move)(value& from, value& to) noexcept;
+        void (*const copy)(const value& from, value& to);
+        void (*const destroy)(value& self) noexcept;
+
+        value (*const deref)(const value& from);
+        value (*const index)(const value& from, std::size_t);
 
         bool (*const less)(const value&, const value&);
         bool (*const equals)(const value&, const value&);
@@ -34,167 +38,334 @@ namespace meta_hpp
         std::ostream& (*const ostream)(std::ostream&, const value&);
 
         template < typename T >
-        static const traits* get() noexcept;
+        static T* storage_cast(buffer_t& buffer) noexcept {
+            // NOLINTNEXTLINE(cppcoreguidelines-pro-type-reinterpret-cast)
+            return reinterpret_cast<T*>(&buffer);
+        }
+
+        template < typename T >
+        static const T* storage_cast(const buffer_t& buffer) noexcept {
+            // NOLINTNEXTLINE(cppcoreguidelines-pro-type-reinterpret-cast)
+            return reinterpret_cast<const T*>(&buffer);
+        }
+
+        template < typename T >
+        static T* storage_cast(storage_u& storage) noexcept {
+            return std::visit(detail::overloaded {
+                [](void* ptr) { return static_cast<T*>(ptr); },
+                [](buffer_t& buffer) { return storage_cast<T>(buffer); },
+                [](...) -> T* { return nullptr; },
+            }, storage);
+        }
+
+        template < typename T >
+        static const T* storage_cast(const storage_u& storage) noexcept {
+            return std::visit(detail::overloaded {
+                [](const void* ptr) { return static_cast<const T*>(ptr); },
+                [](const buffer_t& buffer) { return storage_cast<T>(buffer); },
+                [](...) -> const T* { return nullptr; },
+            }, storage);
+        }
+
+        template < typename T >
+        static void construct(value& dst, T&& val) {
+            using Tp = std::decay_t<T>;
+
+            constexpr bool in_buffer =
+                sizeof(Tp) <= sizeof(buffer_t) &&
+                alignof(Tp) <= alignof(buffer_t) &&
+                std::is_nothrow_move_constructible_v<Tp>;
+
+            if constexpr ( in_buffer ) {
+                dst.storage_.emplace<buffer_t>();
+                std::construct_at(storage_cast<Tp>(dst.storage_), std::forward<T>(val));
+            } else {
+                dst.storage_.emplace<void*>(std::make_unique<Tp>(std::forward<T>(val)).release());
+            }
+
+            dst.vtable_ = vtable_t::get<Tp>();
+        }
+
+        static void swap(value& l, value& r) noexcept {
+            if ( (&l == &r) || (!l && !r) ) {
+                return;
+            }
+
+            if ( l && r ) {
+                if ( std::holds_alternative<buffer_t>(l.storage_) ) {
+                    value temp;
+                    r.vtable_->move(r, temp);
+                    l.vtable_->move(l, r);
+                    temp.vtable_->move(temp, l);
+                } else {
+                    value temp;
+                    l.vtable_->move(l, temp);
+                    r.vtable_->move(r, l);
+                    temp.vtable_->move(temp, r);
+                }
+            } else {
+                if ( l ) {
+                    l.vtable_->move(l, r);
+                } else {
+                    r.vtable_->move(r, l);
+                }
+            }
+        }
+
+        template < typename Tp >
+        static vtable_t* get() {
+            static vtable_t table{
+                .type = resolve_type<Tp>(),
+
+                .data = [](storage_u& from) noexcept -> void* {
+                    return storage_cast<Tp>(from);
+                },
+
+                .cdata = [](const storage_u& from) noexcept -> const void* {
+                    return storage_cast<Tp>(from);
+                },
+
+                .move = [](value& from, value& to) noexcept {
+                    std::visit(detail::overloaded {
+                        [&to](void* ptr) {
+                            Tp* src = static_cast<Tp*>(ptr);
+                            to.storage_.emplace<void*>(src);
+                        },
+                        [&to](buffer_t& buffer) {
+                            to.storage_.emplace<buffer_t>();
+                            std::construct_at(storage_cast<Tp>(to.storage_), std::move(*storage_cast<Tp>(buffer)));
+                            std::destroy_at(storage_cast<Tp>(buffer));
+                        },
+                        [](...){}
+                    }, from.storage_);
+
+                    to.vtable_ = from.vtable_;
+                    from.vtable_ = nullptr;
+                },
+
+                .copy = [](const value& from, value& to){
+                    std::visit(detail::overloaded {
+                        [&to](void* ptr) {
+                            const Tp* src = static_cast<const Tp*>(ptr);
+                            to.storage_.emplace<void*>(new Tp{*src});
+                        },
+                        [&to](const buffer_t& buffer) {
+                            to.storage_.emplace<buffer_t>();
+                            std::construct_at(storage_cast<Tp>(to.storage_), *storage_cast<Tp>(buffer));
+                        },
+                        [](...){}
+                    }, from.storage_);
+
+                    to.vtable_ = from.vtable_;
+                },
+
+                .destroy = [](value& self) noexcept {
+                    std::visit(detail::overloaded {
+                        [](void* ptr) {
+                            Tp* src = static_cast<Tp*>(ptr);
+                            std::unique_ptr<Tp>{src}.reset();
+                        },
+                        [](buffer_t& buffer) {
+                            std::destroy_at(storage_cast<Tp>(buffer));
+                        },
+                        [](...){}
+                    }, self.storage_);
+
+                    self.vtable_ = nullptr;
+                },
+
+                .deref = +[]([[maybe_unused]] const value& v) -> value {
+                    if constexpr ( detail::has_value_deref_traits<Tp> ) {
+                        return detail::value_deref_traits<Tp>{}(v.cast<Tp>());
+                    } else {
+                        throw std::logic_error("value type doesn't have value deref traits");
+                    }
+                },
+
+                .index = +[]([[maybe_unused]] const value& v, [[maybe_unused]] std::size_t index) -> value {
+                    if constexpr ( detail::has_value_index_traits<Tp> ) {
+                        return detail::value_index_traits<Tp>{}(v.cast<Tp>(), index);
+                    } else {
+                        throw std::logic_error("value type doesn't have value index traits");
+                    }
+                },
+
+                .less = +[]([[maybe_unused]] const value& l, [[maybe_unused]] const value& r) -> bool {
+                    if constexpr ( detail::has_value_less_traits<Tp> ) {
+                        return detail::value_less_traits<Tp>{}(l.cast<Tp>(), r.cast<Tp>());
+                    } else {
+                        throw std::logic_error("value type doesn't have value less traits");
+                    }
+                },
+
+                .equals = +[]([[maybe_unused]] const value& l, [[maybe_unused]] const value& r) -> bool {
+                    if constexpr ( detail::has_value_equals_traits<Tp> ) {
+                        return detail::value_equals_traits<Tp>{}(l.cast<Tp>(), r.cast<Tp>());
+                    } else {
+                        throw std::logic_error("value type doesn't have value equals traits");
+                    }
+                },
+
+                .istream = +[]([[maybe_unused]] std::istream& is, [[maybe_unused]] value& v) -> std::istream& {
+                    if constexpr ( detail::has_value_istream_traits<Tp> ) {
+                        return detail::value_istream_traits<Tp>{}(is, v.cast<Tp>());
+                    } else {
+                        throw std::logic_error("value type doesn't have value istream traits");
+                    }
+                },
+
+                .ostream = +[]([[maybe_unused]] std::ostream& os, [[maybe_unused]] const value& v) -> std::ostream& {
+                    if constexpr ( detail::has_value_ostream_traits<Tp> ) {
+                        return detail::value_ostream_traits<Tp>{}(os, v.cast<Tp>());
+                    } else {
+                        throw std::logic_error("value type doesn't have value ostream traits");
+                    }
+                },
+            };
+
+            return &table;
+        }
     };
-
-    template < typename T >
-    const value::traits* value::traits::get() noexcept {
-        static_assert(std::is_same_v<T, std::decay_t<T>>);
-
-        static const traits traits{
-            .type = resolve_type<T>(),
-
-            .data = +[](value& v) noexcept -> void* {
-                return v.try_cast<T>();
-            },
-
-            .cdata = +[](const value& v) noexcept -> const void* {
-                return v.try_cast<T>();
-            },
-
-            .deref = +[]([[maybe_unused]] const value& v) -> value {
-                if constexpr ( detail::has_value_deref_traits<T> ) {
-                    return detail::value_deref_traits<T>{}(v.cast<T>());
-                } else {
-                    throw std::logic_error("value type doesn't have value deref traits");
-                }
-            },
-
-            .index = +[]([[maybe_unused]] const value& v, [[maybe_unused]] std::size_t index) -> value {
-                if constexpr ( detail::has_value_index_traits<T> ) {
-                    return detail::value_index_traits<T>{}(v.cast<T>(), index);
-                } else {
-                    throw std::logic_error("value type doesn't have value index traits");
-                }
-            },
-
-            .less = +[]([[maybe_unused]] const value& l, [[maybe_unused]] const value& r) -> bool {
-                if constexpr ( detail::has_value_less_traits<T> ) {
-                    return detail::value_less_traits<T>{}(l.cast<T>(), r.cast<T>());
-                } else {
-                    throw std::logic_error("value type doesn't have value less traits");
-                }
-            },
-
-            .equals = +[]([[maybe_unused]] const value& l, [[maybe_unused]] const value& r) -> bool {
-                if constexpr ( detail::has_value_equals_traits<T> ) {
-                    return detail::value_equals_traits<T>{}(l.cast<T>(), r.cast<T>());
-                } else {
-                    throw std::logic_error("value type doesn't have value equals traits");
-                }
-            },
-
-            .istream = +[]([[maybe_unused]] std::istream& is, [[maybe_unused]] value& v) -> std::istream& {
-                if constexpr ( detail::has_value_istream_traits<T> ) {
-                    return detail::value_istream_traits<T>{}(is, v.cast<T>());
-                } else {
-                    throw std::logic_error("value type doesn't have value istream traits");
-                }
-            },
-
-            .ostream = +[]([[maybe_unused]] std::ostream& os, [[maybe_unused]] const value& v) -> std::ostream& {
-                if constexpr ( detail::has_value_ostream_traits<T> ) {
-                    return detail::value_ostream_traits<T>{}(os, v.cast<T>());
-                } else {
-                    throw std::logic_error("value type doesn't have value ostream traits");
-                }
-            },
-        };
-
-        return &traits;
-    }
 }
 
 namespace meta_hpp
 {
+    inline value::~value() noexcept {
+        reset();
+    }
+
+    inline value::value(value&& other) noexcept {
+        if ( other.vtable_ != nullptr ) {
+            other.vtable_->move(other, *this);
+        }
+    }
+
+    inline value::value(const value& other) {
+        if ( other.vtable_ != nullptr ) {
+            other.vtable_->copy(other, *this);
+        }
+    }
+
+    inline value& value::operator=(value&& other) noexcept {
+        if ( this != &other ) {
+            value{std::move(other)}.swap(*this);
+        }
+        return *this;
+    }
+
+    inline value& value::operator=(const value& other) {
+        if ( this != &other ) {
+            value{other}.swap(*this);
+        }
+        return *this;
+    }
+
     template < detail::decay_non_uvalue_kind T >
         requires detail::stdex::copy_constructible<std::decay_t<T>>
-    value::value(T&& val)
-    : raw_{std::forward<T>(val)}
-    , traits_{traits::get<std::decay_t<T>>()} {}
+    value::value(T&& val) {
+        vtable_t::construct(*this, std::forward<T>(val));
+    }
 
     template < detail::decay_non_uvalue_kind T >
         requires detail::stdex::copy_constructible<std::decay_t<T>>
     value& value::operator=(T&& val) {
-        value temp{std::forward<T>(val)};
-        swap(temp);
+        value{std::forward<T>(val)}.swap(*this);
         return *this;
     }
 
     inline bool value::is_valid() const noexcept {
-        return raw_.has_value();
+        return vtable_ != nullptr;
     }
 
     inline value::operator bool() const noexcept {
         return is_valid();
     }
 
+    inline void value::reset() noexcept {
+        if ( vtable_ != nullptr ) {
+            vtable_->destroy(*this);
+            vtable_ = nullptr;
+        }
+    }
+
     inline void value::swap(value& other) noexcept {
-        using std::swap;
-        swap(raw_, other.raw_);
-        swap(traits_, other.traits_);
+        vtable_t::swap(*this, other);
     }
 
     inline any_type value::get_type() const noexcept {
-        return traits_ != nullptr
-            ? traits_->type
-            : resolve_type<void>();
+        return vtable_ != nullptr ? vtable_->type : resolve_type<void>();
     }
 
     inline void* value::data() noexcept {
-        return traits_ != nullptr ? traits_->data(*this) : nullptr;
+        return vtable_ != nullptr ? vtable_->data(storage_) : nullptr;
     }
 
     inline const void* value::data() const noexcept {
-        return traits_ != nullptr ? traits_->cdata(*this) : nullptr;
+        return vtable_ != nullptr ? vtable_->cdata(storage_) : nullptr;
     }
 
     inline const void* value::cdata() const noexcept {
-        return traits_ != nullptr ? traits_->cdata(*this) : nullptr;
+        return vtable_ != nullptr ? vtable_->cdata(storage_) : nullptr;
     }
 
     inline value value::operator*() const {
-        return traits_ != nullptr ? traits_->deref(*this) : value{};
+        return vtable_ != nullptr ? vtable_->deref(*this) : value{};
     }
 
     inline value value::operator[](std::size_t index) const {
-        return traits_ != nullptr ? traits_->index(*this, index) : value{};
+        return vtable_ != nullptr ? vtable_->index(*this, index) : value{};
     }
 
     template < typename T >
     std::decay_t<T>& value::cast() & {
         using Tp = std::decay_t<T>;
-        return std::any_cast<Tp&>(raw_);
+        if ( Tp* ptr = try_cast<Tp>() ) {
+            return *ptr;
+        }
+        throw std::logic_error("bad value cast");
     }
 
     template < typename T >
     std::decay_t<T>&& value::cast() && {
         using Tp = std::decay_t<T>;
-        return std::move(std::any_cast<Tp&>(raw_));
+        if ( Tp* ptr = try_cast<Tp>() ) {
+            return std::move(*ptr);
+        }
+        throw std::logic_error("bad value cast");
     }
 
     template < typename T >
     const std::decay_t<T>& value::cast() const & {
         using Tp = std::decay_t<T>;
-        return std::any_cast<const Tp&>(raw_);
+        if ( const Tp* ptr = try_cast<const Tp>() ) {
+            return *ptr;
+        }
+        throw std::logic_error("bad value cast");
     }
 
     template < typename T >
     const std::decay_t<T>&& value::cast() const && {
         using Tp = std::decay_t<T>;
-        return std::move(std::any_cast<const Tp&>(raw_));
+        if ( const Tp* ptr = try_cast<const Tp>() ) {
+            return std::move(*ptr);
+        }
+        throw std::logic_error("bad value cast");
     }
 
     template < typename T >
     std::decay_t<T>* value::try_cast() noexcept {
         using Tp = std::decay_t<T>;
-        return std::any_cast<Tp>(&raw_);
+        return get_type() == resolve_type<Tp>()
+            ? vtable_t::storage_cast<Tp>(storage_)
+            : nullptr;
     }
 
     template < typename T >
     const std::decay_t<T>* value::try_cast() const noexcept {
         using Tp = std::decay_t<T>;
-        return std::any_cast<Tp>(&raw_);
+        return get_type() == resolve_type<Tp>()
+            ? vtable_t::storage_cast<Tp>(storage_)
+            : nullptr;
     }
 }
 
@@ -232,7 +403,7 @@ namespace meta_hpp
         }
 
         return (l.get_type() < r.get_type())
-            || (l.get_type() == r.get_type() && l.traits_->less(l, r));
+            || (l.get_type() == r.get_type() && l.vtable_->less(l, r));
     }
 }
 
@@ -268,17 +439,17 @@ namespace meta_hpp
         }
 
         return l.get_type() == r.get_type()
-            && l.traits_->equals(l, r);
+            && l.vtable_->equals(l, r);
     }
 }
 
 namespace meta_hpp
 {
     inline std::istream& operator>>(std::istream& is, value& v) {
-        return v.traits_->istream(is, v);
+        return v.vtable_->istream(is, v);
     }
 
     inline std::ostream& operator<<(std::ostream& os, const value& v) {
-        return v.traits_->ostream(os, v);
+        return v.vtable_->ostream(os, v);
     }
 }

@@ -31,7 +31,12 @@ namespace meta_hpp::detail
     };
 
     template < typename From, typename To >
-    using copy_cvref_t = typename cvref_traits<From>::template copy_to<To>;
+    struct copy_cvref {
+        using type = typename cvref_traits<From>::template copy_to<To>;
+    };
+
+    template < typename From, typename To >
+    using copy_cvref_t = typename copy_cvref<From, To>::type;
 }
 
 namespace meta_hpp::detail
@@ -100,18 +105,29 @@ namespace meta_hpp::detail
     };
 }
 
+namespace meta_hpp::detail
+{
+    template < typename... Ts >
+    struct overloaded : Ts... {
+        using Ts::operator()...;
+    };
+
+    template < typename... Ts >
+    overloaded(Ts...) -> overloaded<Ts...>;
+}
+
 namespace meta_hpp
 {
     class value final {
     public:
         value() = default;
-        ~value() = default;
+        ~value() noexcept;
 
-        value(value&& other) = default;
-        value(const value& other) = default;
+        value(value&& other) noexcept;
+        value(const value& other);
 
-        value& operator=(value&& other) = default;
-        value& operator=(const value& other) = default;
+        value& operator=(value&& other) noexcept;
+        value& operator=(const value& other);
 
         template < detail::decay_non_uvalue_kind T >
             requires detail::stdex::copy_constructible<std::decay_t<T>>
@@ -124,6 +140,7 @@ namespace meta_hpp
         [[nodiscard]] bool is_valid() const noexcept;
         [[nodiscard]] explicit operator bool() const noexcept;
 
+        void reset() noexcept;
         void swap(value& other) noexcept;
 
         [[nodiscard]] any_type get_type() const noexcept;
@@ -158,9 +175,12 @@ namespace meta_hpp
         friend std::istream& operator>>(std::istream& is, value& v);
         friend std::ostream& operator<<(std::ostream& os, const value& v);
     private:
-        struct traits;
-        std::any raw_{};
-        const traits* traits_{};
+        struct vtable_t;
+        vtable_t* vtable_{};
+    private:
+        using buffer_t = std::aligned_storage_t<sizeof(void*) * 2, alignof(void*)>;
+        using storage_u = std::variant<std::monostate, void*, buffer_t>;
+        storage_u storage_{};
     };
 
     inline void swap(value& l, value& r) noexcept {

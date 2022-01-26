@@ -11,7 +11,6 @@
 #include <cstdint>
 
 #include <algorithm>
-#include <any>
 #include <array>
 #include <atomic>
 #include <functional>
@@ -27,6 +26,7 @@
 #include <tuple>
 #include <type_traits>
 #include <utility>
+#include <variant>
 #include <vector>
 
 #include <enum.hpp/enum.hpp>
