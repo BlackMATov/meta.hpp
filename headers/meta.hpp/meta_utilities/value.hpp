@@ -78,7 +78,7 @@ namespace meta_hpp
 
             if constexpr ( in_buffer ) {
                 dst.storage_.emplace<buffer_t>();
-                std::construct_at(storage_cast<Tp>(dst.storage_), std::forward<T>(val));
+                ::new (storage_cast<Tp>(dst.storage_)) Tp(std::forward<T>(val));
             } else {
                 dst.storage_.emplace<void*>(std::make_unique<Tp>(std::forward<T>(val)).release());
             }
@@ -132,9 +132,9 @@ namespace meta_hpp
                             to.storage_.emplace<void*>(src);
                         },
                         [&to](buffer_t& buffer) {
-                            to.storage_.emplace<buffer_t>();
-                            std::construct_at(storage_cast<Tp>(to.storage_), std::move(*storage_cast<Tp>(buffer)));
-                            std::destroy_at(storage_cast<Tp>(buffer));
+                            Tp* src = storage_cast<Tp>(buffer);
+                            ::new (&to.storage_.emplace<buffer_t>()) Tp(std::move(*src));
+                            src->~Tp();
                         },
                         [](...){}
                     }, from.storage_);
@@ -150,8 +150,8 @@ namespace meta_hpp
                             to.storage_.emplace<void*>(new Tp{*src});
                         },
                         [&to](const buffer_t& buffer) {
-                            to.storage_.emplace<buffer_t>();
-                            std::construct_at(storage_cast<Tp>(to.storage_), *storage_cast<Tp>(buffer));
+                            const Tp* src = storage_cast<Tp>(buffer);
+                            ::new (&to.storage_.emplace<buffer_t>()) Tp(*src);
                         },
                         [](...){}
                     }, from.storage_);
@@ -166,7 +166,7 @@ namespace meta_hpp
                             std::unique_ptr<Tp>{src}.reset();
                         },
                         [](buffer_t& buffer) {
-                            std::destroy_at(storage_cast<Tp>(buffer));
+                            storage_cast<Tp>(buffer)->~Tp();
                         },
                         [](...){}
                     }, self.storage_);
