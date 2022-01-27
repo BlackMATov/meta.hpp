@@ -7,7 +7,7 @@
 #pragma once
 
 #include "../meta_base.hpp"
-#include "../meta_registry.hpp"
+#include "../meta_binds.hpp"
 
 namespace meta_hpp
 {

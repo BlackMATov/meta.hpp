@@ -8,12 +8,12 @@
 
 #include "meta_base.hpp"
 
-#include "meta_kinds.hpp"
+#include "meta_binds.hpp"
+#include "meta_binds/class_bind.hpp"
+#include "meta_binds/enum_bind.hpp"
+#include "meta_binds/scope_bind.hpp"
 
-#include "meta_registry.hpp"
-#include "meta_registry/class_bind.hpp"
-#include "meta_registry/enum_bind.hpp"
-#include "meta_registry/scope_bind.hpp"
+#include "meta_kinds.hpp"
 
 #include "meta_states.hpp"
 #include "meta_states/ctor.hpp"
