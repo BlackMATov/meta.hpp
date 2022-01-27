@@ -6,6 +6,7 @@ Checks: '-*,
         concurrency-*,
 
         cppcoreguidelines-*,
+        -cppcoreguidelines-macro-usage,
 
         modernize-*,
         -modernize-use-trailing-return-type,

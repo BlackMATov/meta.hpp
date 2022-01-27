@@ -27,6 +27,7 @@ target_compile_options(${PROJECT_NAME}
     $<$<OR:$<CXX_COMPILER_ID:Clang>,$<CXX_COMPILER_ID:AppleClang>>:
         -Wno-c++98-compat
         -Wno-c++98-compat-pedantic
+        -Wno-covered-switch-default
         -Wno-ctad-maybe-unsupported
         -Wno-exit-time-destructors
         -Wno-extra-semi-stmt
@@ -38,14 +39,19 @@ target_compile_options(${PROJECT_NAME}
         -Wno-shadow-field
         -Wno-shadow-field-in-constructor
         -Wno-unknown-warning-option
+        -Wno-unused-macros
         -Wno-weak-vtables
         -Wno-zero-as-null-pointer-constant
         >)
 
 if(BUILD_AS_STANDALONE)
-    enable_testing()
+    set(DOCTEST_NO_INSTALL ON CACHE BOOL "Don't install doctest")
     add_subdirectory(vendors/doctest)
+
+    set(FMT_INSTALL OFF CACHE BOOL "Don't install fmtlib")
     add_subdirectory(vendors/fmtlib)
+
+    enable_testing()
     add_subdirectory(manuals)
     add_subdirectory(untests)
 endif()
