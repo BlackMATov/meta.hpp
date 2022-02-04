@@ -9,7 +9,8 @@
 #include "../meta_base.hpp"
 #include "../meta_types.hpp"
 
-#include "../meta_traits/pointer_traits.hpp"
+#include "../meta_detail/type_registry.hpp"
+#include "../meta_detail/type_traits/pointer_traits.hpp"
 
 namespace meta_hpp::detail
 {
@@ -22,12 +23,6 @@ namespace meta_hpp::detail
     : type_data_base{type_id{type_list<pointer_tag<Pointer>>{}}, type_kind::pointer_}
     , flags{pointer_traits<Pointer>::make_flags()}
     , data_type{resolve_type<typename pointer_traits<Pointer>::data_type>()} {}
-
-    template < pointer_kind Pointer >
-    pointer_type_data_ptr pointer_type_data::get_static() {
-        static pointer_type_data_ptr data = std::make_shared<pointer_type_data>(type_list<Pointer>{});
-        return data;
-    }
 }
 
 namespace meta_hpp

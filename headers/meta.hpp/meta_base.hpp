@@ -18,6 +18,7 @@
 #include <iosfwd>
 #include <map>
 #include <memory>
+#include <mutex>
 #include <set>
 #include <span>
 #include <stdexcept>
@@ -25,47 +26,34 @@
 #include <string>
 #include <tuple>
 #include <type_traits>
+#include <typeindex>
+#include <typeinfo>
 #include <utility>
 #include <variant>
 #include <vector>
 
-#include <enum.hpp/enum.hpp>
-#include <enum.hpp/enum_bitflags.hpp>
+#include "meta_base/cvref_traits.hpp"
+#include "meta_base/enum_bitflags.hpp"
+#include "meta_base/enum.hpp"
+#include "meta_base/noncopyable.hpp"
+#include "meta_base/overloaded.hpp"
+#include "meta_base/select_overload.hpp"
+#include "meta_base/stdex.hpp"
+#include "meta_base/type_id.hpp"
+#include "meta_base/type_kinds.hpp"
+#include "meta_base/type_list.hpp"
 
 namespace meta_hpp
 {
-    template < typename Enum >
-    using bitflags = enum_hpp::bitflags::bitflags<Enum>;
-}
+    using detail::select_const;
+    using detail::select_non_const;
+    using detail::select_overload;
 
-namespace meta_hpp
-{
-    template < typename Signature >
-    constexpr auto select(Signature* func) noexcept -> Signature* {
-        return func;
-    }
+    using detail::type_id;
+    using detail::type_kind;
+    using detail::type_list;
 
-    template < typename Signature, typename Class >
-    constexpr auto select(Signature Class::*func) noexcept -> Signature Class::* {
-        return func;
-    }
-
-    namespace detail
-    {
-        template < typename... Types >
-        struct type_list {};
-
-        template < std::size_t Index, typename TypeList >
-        struct type_list_at;
-
-        template < std::size_t Index, typename... Types >
-        struct type_list_at<Index, type_list<Types...>> {
-            using type = std::tuple_element_t<Index, std::tuple<Types...>>;
-        };
-
-        template < std::size_t Index, typename TypeList >
-        using type_list_at_t = typename type_list_at<Index, TypeList>::type;
-    }
+    using enum_hpp::bitflags::bitflags;
 }
 
 namespace meta_hpp
@@ -168,14 +156,14 @@ namespace meta_hpp
 
 namespace meta_hpp
 {
-    struct ctor_index;
-    struct dtor_index;
-    struct evalue_index;
-    struct function_index;
-    struct member_index;
-    struct method_index;
-    struct scope_index;
-    struct variable_index;
+    class ctor_index;
+    class dtor_index;
+    class evalue_index;
+    class function_index;
+    class member_index;
+    class method_index;
+    class scope_index;
+    class variable_index;
 
     using class_set = std::set<class_type, std::less<>>;
     using class_map = std::map<std::string, class_type, std::less<>>;
@@ -191,51 +179,4 @@ namespace meta_hpp
     using method_map = std::map<method_index, method, std::less<>>;
     using scope_map = std::map<scope_index, scope, std::less<>>;
     using variable_map = std::map<variable_index, variable, std::less<>>;
-}
-
-namespace meta_hpp::detail::stdex
-{
-    template < typename T >
-    [[nodiscard]] constexpr std::underlying_type_t<T> to_underlying(T v) noexcept {
-        return static_cast<std::underlying_type_t<T>>(v);
-    }
-}
-
-namespace meta_hpp::detail::stdex
-{
-    template < typename T, typename U >
-    concept same_as =
-        std::is_same_v<T, U> &&
-        std::is_same_v<U, T>;
-
-    template < typename Derived, typename Base >
-    concept derived_from =
-        std::is_base_of_v<Base, Derived> &&
-        std::is_convertible_v<const volatile Derived*, const volatile Base*>;
-
-    template < typename From, typename To >
-    concept convertible_to =
-        std::is_convertible_v<From, To> &&
-        requires { static_cast<To>(std::declval<From>()); };
-
-    template < typename T >
-    concept destructible =
-        std::is_nothrow_destructible_v<T>;
-
-    template < typename T, typename... Args >
-    concept constructible_from =
-        destructible<T> &&
-        std::is_constructible_v<T, Args...>;
-
-    template < typename T >
-    concept move_constructible =
-        constructible_from<T, T> &&
-        convertible_to<T, T>;
-
-    template<typename T>
-    concept copy_constructible =
-        move_constructible<T> &&
-        constructible_from<T, T&> && convertible_to<T&, T> &&
-        constructible_from<T, const T&> && convertible_to<const T&, T> &&
-        constructible_from<T, const T> && convertible_to<const T, T>;
 }

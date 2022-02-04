@@ -9,7 +9,8 @@
 #include "../meta_base.hpp"
 #include "../meta_types.hpp"
 
-#include "../meta_traits/array_traits.hpp"
+#include "../meta_detail/type_registry.hpp"
+#include "../meta_detail/type_traits/array_traits.hpp"
 
 namespace meta_hpp::detail
 {
@@ -23,12 +24,6 @@ namespace meta_hpp::detail
     , flags{array_traits<Array>::make_flags()}
     , extent{array_traits<Array>::extent}
     , data_type{resolve_type<typename array_traits<Array>::data_type>()} {}
-
-    template < array_kind Array >
-    array_type_data_ptr array_type_data::get_static() {
-        static array_type_data_ptr data = std::make_shared<array_type_data>(type_list<Array>{});
-        return data;
-    }
 }
 
 namespace meta_hpp

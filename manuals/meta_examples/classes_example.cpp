@@ -57,7 +57,7 @@ TEST_CASE("meta/meta_examples/classes/type") {
     // prints all class methods
     fmt::print("* rectangle:\n");
     for ( auto&& [index, method] : rectangle_type.get_methods() ) {
-        fmt::print("  + {}/{}\n", index.name, index.type.get_arity());
+        fmt::print("  + {}/{}\n", index.get_name(), index.get_type().get_arity());
     }
 }
 

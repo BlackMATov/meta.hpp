@@ -116,45 +116,46 @@ TEST_CASE("meta/meta_features/diamond") {
     }
 
     SUBCASE("pointer_upcast") {
+        using meta::detail::pointer_upcast;
         {
             A a;
-            CHECK(meta::pointer_upcast<A>(&a) == &a);
-            CHECK_FALSE(meta::pointer_upcast<B>(&a));
-            CHECK_FALSE(meta::pointer_upcast<C>(&a));
-            CHECK_FALSE(meta::pointer_upcast<D>(&a));
-            CHECK_FALSE(meta::pointer_upcast<E>(&a));
+            CHECK(pointer_upcast<A>(&a) == &a);
+            CHECK_FALSE(pointer_upcast<B>(&a));
+            CHECK_FALSE(pointer_upcast<C>(&a));
+            CHECK_FALSE(pointer_upcast<D>(&a));
+            CHECK_FALSE(pointer_upcast<E>(&a));
         }
         {
-            B b;
-            CHECK(meta::pointer_upcast<A>(&b) == &b);
-            CHECK(meta::pointer_upcast<B>(&b) == &b);
-            CHECK_FALSE(meta::pointer_upcast<C>(&b));
-            CHECK_FALSE(meta::pointer_upcast<D>(&b));
-            CHECK_FALSE(meta::pointer_upcast<E>(&b));
+            const B b;
+            CHECK(pointer_upcast<A>(&b) == &b);
+            CHECK(pointer_upcast<B>(&b) == &b);
+            CHECK_FALSE(pointer_upcast<C>(&b));
+            CHECK_FALSE(pointer_upcast<D>(&b));
+            CHECK_FALSE(pointer_upcast<E>(&b));
         }
         {
             C c;
-            CHECK(meta::pointer_upcast<A>(&c) == &c);
-            CHECK_FALSE(meta::pointer_upcast<B>(&c));
-            CHECK(meta::pointer_upcast<C>(&c) == &c);
-            CHECK_FALSE(meta::pointer_upcast<D>(&c));
-            CHECK_FALSE(meta::pointer_upcast<E>(&c));
+            CHECK(pointer_upcast<A>(&c) == &c);
+            CHECK_FALSE(pointer_upcast<B>(&c));
+            CHECK(pointer_upcast<C>(&c) == &c);
+            CHECK_FALSE(pointer_upcast<D>(&c));
+            CHECK_FALSE(pointer_upcast<E>(&c));
         }
         {
-            D d;
-            CHECK(meta::pointer_upcast<A>(&d) == &d);
-            CHECK(meta::pointer_upcast<B>(&d) == &d);
-            CHECK(meta::pointer_upcast<C>(&d) == &d);
-            CHECK(meta::pointer_upcast<D>(&d) == &d);
-            CHECK_FALSE(meta::pointer_upcast<E>(&d));
+            const D d;
+            CHECK(pointer_upcast<A>(&d) == &d);
+            CHECK(pointer_upcast<B>(&d) == &d);
+            CHECK(pointer_upcast<C>(&d) == &d);
+            CHECK(pointer_upcast<D>(&d) == &d);
+            CHECK_FALSE(pointer_upcast<E>(&d));
         }
         {
             E e;
-            CHECK_FALSE(meta::pointer_upcast<A>(&e));
-            CHECK_FALSE(meta::pointer_upcast<B>(&e));
-            CHECK_FALSE(meta::pointer_upcast<C>(&e));
-            CHECK_FALSE(meta::pointer_upcast<D>(&e));
-            CHECK(meta::pointer_upcast<E>(&e) == &e);
+            CHECK_FALSE(pointer_upcast<A>(&e));
+            CHECK_FALSE(pointer_upcast<B>(&e));
+            CHECK_FALSE(pointer_upcast<C>(&e));
+            CHECK_FALSE(pointer_upcast<D>(&e));
+            CHECK(pointer_upcast<E>(&e) == &e);
         }
     }
 
@@ -314,5 +315,24 @@ TEST_CASE("meta/meta_features/diamond") {
 
             CHECK(&e_inst.cast<E&>() == e_val.try_cast<E>());
         }
+    }
+
+    SUBCASE("resolve_polymorphic_type") {
+        const D d;
+
+        const A& ad = d;
+        const B& bd = d;
+        const C& cd = d;
+        const D& dd = d;
+
+        CHECK(meta::resolve_type(ad) == meta::resolve_type<A>());
+        CHECK(meta::resolve_type(bd) == meta::resolve_type<B>());
+        CHECK(meta::resolve_type(cd) == meta::resolve_type<C>());
+        CHECK(meta::resolve_type(dd) == meta::resolve_type<D>());
+
+        CHECK(meta::resolve_polymorphic_type(ad) == meta::resolve_type<D>());
+        CHECK(meta::resolve_polymorphic_type(bd) == meta::resolve_type<D>());
+        CHECK(meta::resolve_polymorphic_type(cd) == meta::resolve_type<D>());
+        CHECK(meta::resolve_polymorphic_type(dd) == meta::resolve_type<D>());
     }
 }

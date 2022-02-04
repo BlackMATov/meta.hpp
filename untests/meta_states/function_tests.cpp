@@ -66,8 +66,8 @@ TEST_CASE("meta/meta_states/function") {
         const meta::function func = ivec2_type.get_function("iadd");
         REQUIRE(func);
 
-        CHECK(func.get_index().type == func.get_type());
-        CHECK(func.get_index().name == "iadd");
+        CHECK(func.get_index().get_type() == func.get_type());
+        CHECK(func.get_index().get_name() == "iadd");
 
         CHECK(func.get_type() == meta::resolve_type(&ivec2::iadd));
         CHECK(func.get_name() == "iadd");
@@ -95,8 +95,8 @@ TEST_CASE("meta/meta_states/function") {
         const meta::function func = ivec2_type.get_function("ilength2");
         REQUIRE(func);
 
-        CHECK(func.get_index().type == func.get_type());
-        CHECK(func.get_index().name == "ilength2");
+        CHECK(func.get_index().get_type() == func.get_type());
+        CHECK(func.get_index().get_name() == "ilength2");
 
         CHECK(func.get_type() == meta::resolve_type(&ivec2::ilength2));
         CHECK(func.get_name() == "ilength2");

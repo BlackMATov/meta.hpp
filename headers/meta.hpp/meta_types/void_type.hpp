@@ -18,12 +18,6 @@ namespace meta_hpp::detail
     // NOLINTNEXTLINE(readability-named-parameter)
     void_type_data::void_type_data(type_list<Void>)
     : type_data_base{type_id{type_list<void_tag<Void>>{}}, type_kind::void_} {}
-
-    template < void_kind Void >
-    void_type_data_ptr void_type_data::get_static() {
-        static void_type_data_ptr data = std::make_shared<void_type_data>(type_list<Void>{});
-        return data;
-    }
 }
 
 namespace meta_hpp

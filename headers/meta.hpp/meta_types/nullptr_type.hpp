@@ -18,12 +18,6 @@ namespace meta_hpp::detail
     // NOLINTNEXTLINE(readability-named-parameter)
     nullptr_type_data::nullptr_type_data(type_list<Nullptr>)
     : type_data_base{type_id{type_list<nullptr_tag<Nullptr>>{}}, type_kind::nullptr_} {}
-
-    template < nullptr_kind Nullptr >
-    nullptr_type_data_ptr nullptr_type_data::get_static() {
-        static nullptr_type_data_ptr data = std::make_shared<nullptr_type_data>(type_list<Nullptr>{});
-        return data;
-    }
 }
 
 namespace meta_hpp

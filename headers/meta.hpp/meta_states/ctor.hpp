@@ -10,6 +10,7 @@
 #include "../meta_states.hpp"
 
 #include "../meta_types/ctor_type.hpp"
+#include "../meta_detail/value_utilities/arg.hpp"
 
 namespace meta_hpp::detail
 {
@@ -95,9 +96,8 @@ namespace meta_hpp::detail
 {
     template < ctor_policy_kind Policy, class_kind Class, typename... Args >
     ctor_state_ptr ctor_state::make() {
-        ctor_index index{ctor_type_data::get_static<Class, Args...>()};
         return std::make_shared<ctor_state>(ctor_state{
-            .index{std::move(index)},
+            .index{ctor_index::make<Class, Args...>()},
             .invoke{make_ctor_invoke<Policy, Class, Args...>()},
             .is_invocable_with{make_ctor_is_invocable_with<Class, Args...>()},
         });
@@ -122,7 +122,7 @@ namespace meta_hpp
     }
 
     inline const ctor_type& ctor::get_type() const noexcept {
-        return state_->index.type;
+        return state_->index.get_type();
     }
 
     template < typename... Args >

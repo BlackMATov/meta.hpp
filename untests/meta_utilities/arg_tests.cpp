@@ -69,7 +69,7 @@ namespace
 #define META_HPP_CHECK_INVOCABLE(FromValue, FName, ToType)\
     {\
         using namespace meta::detail;\
-        auto function_ptr = meta::select<int(ToType)>(&FName);\
+        auto function_ptr = meta::select_overload<int(ToType)>(&FName);\
         meta::function f_state{function_state::make<meta::function_policy::as_copy>("", function_ptr)};\
         \
         if ( std::is_invocable_v<decltype(function_ptr), decltype(FromValue)> ) {\
@@ -93,7 +93,7 @@ namespace
 #define META_HPP_CHECK_INVOCABLE_2(FromValue, FName, FromType, ToType)\
     {\
         using namespace meta::detail;\
-        auto function_ptr = meta::select<int(ToType)>(&FName);\
+        auto function_ptr = meta::select_overload<int(ToType)>(&FName);\
         meta::function f_state{function_state::make<meta::function_policy::as_copy>("", function_ptr)};\
         \
         if ( std::is_invocable_v<decltype(function_ptr), FromType> ) {\

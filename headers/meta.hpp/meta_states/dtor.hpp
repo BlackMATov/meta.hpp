@@ -10,6 +10,7 @@
 #include "../meta_states.hpp"
 
 #include "../meta_types/dtor_type.hpp"
+#include "../meta_detail/value_utilities/arg.hpp"
 
 namespace meta_hpp::detail
 {
@@ -56,9 +57,8 @@ namespace meta_hpp::detail
 {
     template < class_kind Class >
     dtor_state_ptr dtor_state::make() {
-        dtor_index index{dtor_type_data::get_static<Class>()};
         return std::make_shared<dtor_state>(dtor_state{
-            .index{std::move(index)},
+            .index{dtor_index::make<Class>()},
             .invoke{make_dtor_invoke<Class>()},
             .is_invocable_with{make_dtor_is_invocable_with<Class>()},
         });
@@ -83,7 +83,7 @@ namespace meta_hpp
     }
 
     inline const dtor_type& dtor::get_type() const noexcept {
-        return state_->index.type;
+        return state_->index.get_type();
     }
 
     template < typename Arg >

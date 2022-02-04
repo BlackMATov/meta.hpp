@@ -9,6 +9,9 @@
 #include "../meta_base.hpp"
 #include "../meta_binds.hpp"
 
+#include "../meta_detail/state_registry.hpp"
+#include "../meta_detail/type_registry.hpp"
+
 namespace meta_hpp
 {
     // NOLINTNEXTLINE(readability-named-parameter)
@@ -17,7 +20,7 @@ namespace meta_hpp
 
     // NOLINTNEXTLINE(readability-named-parameter)
     inline scope_bind::scope_bind(std::string_view name, static_tag)
-    : state_{detail::scope_state::get_static(name)} {}
+    : state_{detail::state_access(detail::resolve_scope(name))} {}
 
     inline scope_bind::operator scope() const noexcept {
         return scope{state_};
@@ -25,13 +28,13 @@ namespace meta_hpp
 
     template < detail::class_kind Class >
     scope_bind& scope_bind::class_(std::string name) {
-        state_->classes.emplace(std::move(name), resolve_type<Class>());
+        state_->classes.emplace(std::move(name), detail::resolve_type<Class>());
         return *this;
     }
 
     template < detail::enum_kind Enum >
     scope_bind& scope_bind::enum_(std::string name) {
-        state_->enums.emplace(std::move(name), resolve_type<Enum>());
+        state_->enums.emplace(std::move(name), detail::resolve_type<Enum>());
         return *this;
     }
 

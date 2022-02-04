@@ -11,7 +11,9 @@
 
 #include "../meta_states/evalue.hpp"
 
-#include "../meta_traits/enum_traits.hpp"
+#include "../meta_detail/type_registry.hpp"
+#include "../meta_detail/type_traits/enum_traits.hpp"
+#include "../meta_detail/value_utilities/arg.hpp"
 
 namespace meta_hpp::detail
 {
@@ -24,12 +26,6 @@ namespace meta_hpp::detail
     : type_data_base{type_id{type_list<enum_tag<Enum>>{}}, type_kind::enum_}
     , flags{enum_traits<Enum>::make_flags()}
     , underlying_type{resolve_type<typename enum_traits<Enum>::underlying_type>()} {}
-
-    template < enum_kind Enum >
-    enum_type_data_ptr enum_type_data::get_static() {
-        static enum_type_data_ptr data = std::make_shared<enum_type_data>(type_list<Enum>{});
-        return data;
-    }
 }
 
 namespace meta_hpp
@@ -63,7 +59,7 @@ namespace meta_hpp
 
     inline evalue enum_type::get_evalue(std::string_view name) const noexcept {
         for ( auto&& [index, evalue] : data_->evalues ) {
-            if ( index.name == name ) {
+            if ( index.get_name() == name ) {
                 return evalue;
             }
         }
@@ -80,7 +76,7 @@ namespace meta_hpp
 
         for ( auto&& evalue : data_->evalues ) {
             if ( evalue.second.get_value() == value ) {
-                return evalue.second.get_index().name;
+                return evalue.second.get_index().get_name();
             }
         }
 

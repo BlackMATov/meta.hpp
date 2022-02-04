@@ -10,6 +10,8 @@
 #include "../meta_states.hpp"
 
 #include "../meta_types/method_type.hpp"
+#include "../meta_detail/value_utilities/arg.hpp"
+#include "../meta_detail/value_utilities/inst.hpp"
 
 namespace meta_hpp::detail
 {
@@ -112,9 +114,8 @@ namespace meta_hpp::detail
 {
     template < method_policy_kind Policy, method_kind Method >
     method_state_ptr method_state::make(std::string name, Method method) {
-        method_index index{method_type_data::get_static<Method>(), std::move(name)};
         return std::make_shared<method_state>(method_state{
-            .index{std::move(index)},
+            .index{method_index::make<Method>(std::move(name))},
             .invoke{make_method_invoke<Policy>(std::move(method))},
             .is_invocable_with{make_method_is_invocable_with<Method>()},
         });
@@ -139,11 +140,11 @@ namespace meta_hpp
     }
 
     inline const method_type& method::get_type() const noexcept {
-        return state_->index.type;
+        return state_->index.get_type();
     }
 
     inline const std::string& method::get_name() const noexcept {
-        return state_->index.name;
+        return state_->index.get_name();
     }
 
     template < typename Instance, typename... Args >

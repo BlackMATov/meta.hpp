@@ -66,10 +66,10 @@ TEST_CASE("meta/meta_types/class_type") {
         .member_("base_member_1", &base_clazz_1::base_member_1)
         .method_("base_method_1", &base_clazz_1::base_method_1)
         .function_("base_function_1", &base_clazz_1::base_function_1)
-        .method_("base_method_1_overloaded", meta::select<int(int) const>(&base_clazz_1::base_method_1_overloaded))
-        .method_("base_method_1_overloaded", meta::select<int(float) const>(&base_clazz_1::base_method_1_overloaded))
-        .function_("base_function_1_overloaded", meta::select<int(int)>(&base_clazz_1::base_function_1_overloaded))
-        .function_("base_function_1_overloaded", meta::select<int(int,int)>(&base_clazz_1::base_function_1_overloaded))
+        .method_("base_method_1_overloaded", meta::select_overload<int(int) const>(&base_clazz_1::base_method_1_overloaded))
+        .method_("base_method_1_overloaded", meta::select_overload<int(float) const>(&base_clazz_1::base_method_1_overloaded))
+        .function_("base_function_1_overloaded", meta::select_overload<int(int)>(&base_clazz_1::base_function_1_overloaded))
+        .function_("base_function_1_overloaded", meta::select_overload<int(int,int)>(&base_clazz_1::base_function_1_overloaded))
         .variable_("base_variable_1", &base_clazz_1::base_variable_1);
 
     meta::class_<base_clazz_2>()

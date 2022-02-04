@@ -10,6 +10,7 @@
 #include "../meta_states.hpp"
 
 #include "../meta_types/pointer_type.hpp"
+#include "../meta_detail/value_utilities/arg.hpp"
 
 namespace meta_hpp::detail
 {
@@ -95,9 +96,8 @@ namespace meta_hpp::detail
 {
     template < variable_policy_kind Policy, pointer_kind Pointer >
     variable_state_ptr variable_state::make(std::string name, Pointer pointer) {
-        variable_index index{pointer_type_data::get_static<Pointer>(), std::move(name)};
         return std::make_shared<variable_state>(variable_state{
-            .index{std::move(index)},
+            .index{variable_index::make<Pointer>(std::move(name))},
             .getter{make_variable_getter<Policy>(std::move(pointer))},
             .setter{make_variable_setter(std::move(pointer))},
             .is_settable_with{make_variable_is_settable_with<Pointer>()},
@@ -123,11 +123,11 @@ namespace meta_hpp
     }
 
     inline const pointer_type& variable::get_type() const noexcept {
-        return state_->index.type;
+        return state_->index.get_type();
     }
 
     inline const std::string& variable::get_name() const noexcept {
-        return state_->index.name;
+        return state_->index.get_name();
     }
 
     inline value variable::get() const {

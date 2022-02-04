@@ -9,7 +9,8 @@
 #include "../meta_base.hpp"
 #include "../meta_types.hpp"
 
-#include "../meta_traits/method_traits.hpp"
+#include "../meta_detail/type_registry.hpp"
+#include "../meta_detail/type_traits/method_traits.hpp"
 
 namespace meta_hpp::detail
 {
@@ -23,13 +24,7 @@ namespace meta_hpp::detail
     , flags{method_traits<Method>::make_flags()}
     , owner_type{resolve_type<typename method_traits<Method>::class_type>()}
     , return_type{resolve_type<typename method_traits<Method>::return_type>()}
-    , argument_types{method_traits<Method>::make_argument_types()} {}
-
-    template < method_kind Method >
-    method_type_data_ptr method_type_data::get_static() {
-        static method_type_data_ptr data = std::make_shared<method_type_data>(type_list<Method>{});
-        return data;
-    }
+    , argument_types{resolve_types(typename method_traits<Method>::argument_types{})} {}
 }
 
 namespace meta_hpp

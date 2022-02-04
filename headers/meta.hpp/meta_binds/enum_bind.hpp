@@ -9,11 +9,13 @@
 #include "../meta_base.hpp"
 #include "../meta_binds.hpp"
 
+#include "../meta_detail/type_registry.hpp"
+
 namespace meta_hpp
 {
     template < detail::enum_kind Enum >
     enum_bind<Enum>::enum_bind()
-    : data_{detail::enum_type_data::get_static<Enum>()} {}
+    : data_{detail::type_access(detail::resolve_type<Enum>())} {}
 
     template < detail::enum_kind Enum >
     enum_bind<Enum>::operator enum_type() const noexcept {

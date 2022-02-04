@@ -1,0 +1,150 @@
+/*******************************************************************************
+ * This file is part of the "https://github.com/blackmatov/meta.hpp"
+ * For conditions of distribution and use, see copyright notice in LICENSE.md
+ * Copyright (C) 2021, by Matvey Cherevko (blackmatov@gmail.com)
+ ******************************************************************************/
+
+#pragma once
+
+#include "meta_base.hpp"
+#include "meta_types.hpp"
+
+namespace meta_hpp
+{
+    class ctor_index final {
+    public:
+        ctor_index() = delete;
+
+        template < detail::class_kind Class, typename... Args >
+        [[nodiscard]] static ctor_index make();
+
+        [[nodiscard]] const ctor_type& get_type() const noexcept;
+    private:
+        explicit ctor_index(ctor_type type);
+        friend bool operator<(const ctor_index& l, const ctor_index& r) noexcept;
+        friend bool operator==(const ctor_index& l, const ctor_index& r) noexcept;
+    private:
+        ctor_type type_;
+    };
+
+    class dtor_index final {
+    public:
+        dtor_index() = delete;
+
+        template < detail::class_kind Class >
+        [[nodiscard]] static dtor_index make();
+
+        [[nodiscard]] const dtor_type& get_type() const noexcept;
+    private:
+        explicit dtor_index(dtor_type type);
+        friend bool operator<(const dtor_index& l, const dtor_index& r) noexcept;
+        friend bool operator==(const dtor_index& l, const dtor_index& r) noexcept;
+    private:
+        dtor_type type_;
+    };
+
+    class evalue_index final {
+    public:
+        evalue_index() = delete;
+
+        template < detail::enum_kind Enum >
+        [[nodiscard]] static evalue_index make(std::string name);
+
+        [[nodiscard]] const enum_type& get_type() const noexcept;
+        [[nodiscard]] const std::string& get_name() const noexcept;
+    private:
+        explicit evalue_index(enum_type type, std::string name);
+        friend bool operator<(const evalue_index& l, const evalue_index& r) noexcept;
+        friend bool operator==(const evalue_index& l, const evalue_index& r) noexcept;
+    private:
+        enum_type type_;
+        std::string name_;
+    };
+
+    class function_index final {
+    public:
+        function_index() = delete;
+
+        template < detail::function_kind Function >
+        [[nodiscard]] static function_index make(std::string name);
+
+        [[nodiscard]] const function_type& get_type() const noexcept;
+        [[nodiscard]] const std::string& get_name() const noexcept;
+    private:
+        explicit function_index(function_type type, std::string name);
+        friend bool operator<(const function_index& l, const function_index& r) noexcept;
+        friend bool operator==(const function_index& l, const function_index& r) noexcept;
+    private:
+        function_type type_;
+        std::string name_;
+    };
+
+    class member_index final {
+    public:
+        member_index() = delete;
+
+        template < detail::member_kind Member >
+        [[nodiscard]] static member_index make(std::string name);
+
+        [[nodiscard]] const member_type& get_type() const noexcept;
+        [[nodiscard]] const std::string& get_name() const noexcept;
+    private:
+        explicit member_index(member_type type, std::string name);
+        friend bool operator<(const member_index& l, const member_index& r) noexcept;
+        friend bool operator==(const member_index& l, const member_index& r) noexcept;
+    private:
+        member_type type_;
+        std::string name_;
+    };
+
+    class method_index final {
+    public:
+        method_index() = delete;
+
+        template < detail::method_kind Method >
+        [[nodiscard]] static method_index make(std::string name);
+
+        [[nodiscard]] const method_type& get_type() const noexcept;
+        [[nodiscard]] const std::string& get_name() const noexcept;
+    private:
+        explicit method_index(method_type type, std::string name);
+        friend bool operator<(const method_index& l, const method_index& r) noexcept;
+        friend bool operator==(const method_index& l, const method_index& r) noexcept;
+    private:
+        method_type type_;
+        std::string name_;
+    };
+
+    class scope_index final {
+    public:
+        scope_index() = delete;
+
+        [[nodiscard]] static scope_index make(std::string name);
+
+        [[nodiscard]] const std::string& get_name() const noexcept;
+    private:
+        explicit scope_index(std::string name);
+        friend bool operator<(const scope_index& l, const scope_index& r) noexcept;
+        friend bool operator==(const scope_index& l, const scope_index& r) noexcept;
+    private:
+        std::string name_;
+    };
+
+    class variable_index final {
+    public:
+        variable_index() = delete;
+
+        template < detail::pointer_kind Pointer >
+        [[nodiscard]] static variable_index make(std::string name);
+
+        [[nodiscard]] const pointer_type& get_type() const noexcept;
+        [[nodiscard]] const std::string& get_name() const noexcept;
+    private:
+        explicit variable_index(pointer_type type, std::string name);
+        friend bool operator<(const variable_index& l, const variable_index& r) noexcept;
+        friend bool operator==(const variable_index& l, const variable_index& r) noexcept;
+    private:
+        pointer_type type_;
+        std::string name_;
+    };
+}

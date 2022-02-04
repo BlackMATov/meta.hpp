@@ -7,56 +7,11 @@
 #pragma once
 
 #include "meta_base.hpp"
+#include "meta_indices.hpp"
 #include "meta_types.hpp"
-#include "meta_utilities.hpp"
+#include "meta_value.hpp"
 
-namespace meta_hpp
-{
-    namespace detail
-    {
-        template < typename T >
-        concept state_family =
-            std::is_same_v<T, ctor> ||
-            std::is_same_v<T, dtor> ||
-            std::is_same_v<T, evalue> ||
-            std::is_same_v<T, function> ||
-            std::is_same_v<T, member> ||
-            std::is_same_v<T, method> ||
-            std::is_same_v<T, scope> ||
-            std::is_same_v<T, variable>;
-    }
-
-    template < detail::state_family T, detail::state_family U >
-    [[nodiscard]] bool operator<(const T& l, const U& r) noexcept {
-        if ( !static_cast<bool>(r) ) {
-            return false;
-        }
-
-        if ( !static_cast<bool>(l) ) {
-            return true;
-        }
-
-        return l.get_index() < r.get_index();
-    }
-
-    template < detail::state_family T, detail::state_family U >
-    [[nodiscard]] bool operator==(const T& l, const U& r) noexcept {
-        if ( static_cast<bool>(l) != static_cast<bool>(r) ) {
-            return false;
-        }
-
-        if ( !static_cast<bool>(l) ) {
-            return true;
-        }
-
-        return l.get_index() == r.get_index();
-    }
-
-    template < detail::state_family T, detail::state_family U >
-    [[nodiscard]] bool operator!=(const T& l, const U& r) noexcept {
-        return !(l == r);
-    }
-}
+#include "meta_detail/state_family.hpp"
 
 namespace meta_hpp
 {
@@ -97,33 +52,33 @@ namespace meta_hpp
 
     template < typename Policy >
     concept ctor_policy_kind =
-        detail::stdex::same_as<Policy, ctor_policy::as_object> ||
-        detail::stdex::same_as<Policy, ctor_policy::as_raw_pointer> ||
-        detail::stdex::same_as<Policy, ctor_policy::as_shared_pointer>;
+        stdex::same_as<Policy, ctor_policy::as_object> ||
+        stdex::same_as<Policy, ctor_policy::as_raw_pointer> ||
+        stdex::same_as<Policy, ctor_policy::as_shared_pointer>;
 
     template < typename Policy >
     concept function_policy_kind =
-        detail::stdex::same_as<Policy, function_policy::as_copy> ||
-        detail::stdex::same_as<Policy, function_policy::discard_return> ||
-        detail::stdex::same_as<Policy, function_policy::return_reference_as_pointer>;
+        stdex::same_as<Policy, function_policy::as_copy> ||
+        stdex::same_as<Policy, function_policy::discard_return> ||
+        stdex::same_as<Policy, function_policy::return_reference_as_pointer>;
 
     template < typename Policy >
     concept member_policy_kind =
-        detail::stdex::same_as<Policy, member_policy::as_copy> ||
-        detail::stdex::same_as<Policy, member_policy::as_pointer> ||
-        detail::stdex::same_as<Policy, member_policy::as_reference_wrapper>;
+        stdex::same_as<Policy, member_policy::as_copy> ||
+        stdex::same_as<Policy, member_policy::as_pointer> ||
+        stdex::same_as<Policy, member_policy::as_reference_wrapper>;
 
     template < typename Policy >
     concept method_policy_kind =
-        detail::stdex::same_as<Policy, method_policy::as_copy> ||
-        detail::stdex::same_as<Policy, method_policy::discard_return> ||
-        detail::stdex::same_as<Policy, method_policy::return_reference_as_pointer>;
+        stdex::same_as<Policy, method_policy::as_copy> ||
+        stdex::same_as<Policy, method_policy::discard_return> ||
+        stdex::same_as<Policy, method_policy::return_reference_as_pointer>;
 
     template < typename Policy >
     concept variable_policy_kind =
-        detail::stdex::same_as<Policy, variable_policy::as_copy> ||
-        detail::stdex::same_as<Policy, variable_policy::as_pointer> ||
-        detail::stdex::same_as<Policy, variable_policy::as_reference_wrapper>;
+        stdex::same_as<Policy, variable_policy::as_copy> ||
+        stdex::same_as<Policy, variable_policy::as_pointer> ||
+        stdex::same_as<Policy, variable_policy::as_reference_wrapper>;
 }
 
 namespace meta_hpp
@@ -152,6 +107,7 @@ namespace meta_hpp
         [[nodiscard]] bool is_invocable_with(Args&&... args) const noexcept;
     private:
         detail::ctor_state_ptr state_;
+        friend auto detail::state_access<ctor>(const ctor&);
     };
 
     class dtor final {
@@ -178,6 +134,7 @@ namespace meta_hpp
         [[nodiscard]] bool is_invocable_with(Arg&& ptr) const noexcept;
     private:
         detail::dtor_state_ptr state_;
+        friend auto detail::state_access<dtor>(const dtor&);
     };
 
     class evalue final {
@@ -196,6 +153,7 @@ namespace meta_hpp
         [[nodiscard]] const value& get_underlying_value() const noexcept;
     private:
         detail::evalue_state_ptr state_;
+        friend auto detail::state_access<evalue>(const evalue&);
     };
 
     class function final {
@@ -223,6 +181,7 @@ namespace meta_hpp
         [[nodiscard]] bool is_invocable_with(Args&&... args) const noexcept;
     private:
         detail::function_state_ptr state_;
+        friend auto detail::state_access<function>(const function&);
     };
 
     class member final {
@@ -262,6 +221,7 @@ namespace meta_hpp
         [[nodiscard]] bool is_settable_with(Instance&& instance, Value&& value) const noexcept;
     private:
         detail::member_state_ptr state_;
+        friend auto detail::state_access<member>(const member&);
     };
 
     class method final {
@@ -289,6 +249,7 @@ namespace meta_hpp
         [[nodiscard]] bool is_invocable_with(Instance&& instance, Args&&... args) const noexcept;
     private:
         detail::method_state_ptr state_;
+        friend auto detail::state_access<method>(const method&);
     };
 
     class scope final {
@@ -318,6 +279,7 @@ namespace meta_hpp
         [[nodiscard]] function get_function_with(std::string_view name, std::initializer_list<any_type> args) const noexcept;
     private:
         detail::scope_state_ptr state_;
+        friend auto detail::state_access<scope>(const scope&);
     };
 
     class variable final {
@@ -349,7 +311,42 @@ namespace meta_hpp
         [[nodiscard]] bool is_settable_with(Value&& value) const noexcept;
     private:
         detail::variable_state_ptr state_;
+        friend auto detail::state_access<variable>(const variable&);
     };
+}
+
+namespace meta_hpp
+{
+    template < detail::state_family T, detail::state_family U >
+    [[nodiscard]] bool operator<(const T& l, const U& r) noexcept {
+        if ( !static_cast<bool>(r) ) {
+            return false;
+        }
+
+        if ( !static_cast<bool>(l) ) {
+            return true;
+        }
+
+        return l.get_index() < r.get_index();
+    }
+
+    template < detail::state_family T, detail::state_family U >
+    [[nodiscard]] bool operator==(const T& l, const U& r) noexcept {
+        if ( static_cast<bool>(l) != static_cast<bool>(r) ) {
+            return false;
+        }
+
+        if ( !static_cast<bool>(l) ) {
+            return true;
+        }
+
+        return l.get_index() == r.get_index();
+    }
+
+    template < detail::state_family T, detail::state_family U >
+    [[nodiscard]] bool operator!=(const T& l, const U& r) noexcept {
+        return !(l == r);
+    }
 }
 
 namespace meta_hpp::detail
@@ -437,7 +434,6 @@ namespace meta_hpp::detail
         variable_map variables{};
 
         [[nodiscard]] static scope_state_ptr make(std::string name);
-        [[nodiscard]] static scope_state_ptr get_static(std::string_view name);
     };
 
     struct variable_state final {
@@ -453,11 +449,4 @@ namespace meta_hpp::detail
         template < variable_policy_kind Policy, pointer_kind Pointer >
         [[nodiscard]] static variable_state_ptr make(std::string name, Pointer pointer);
     };
-}
-
-namespace meta_hpp
-{
-    [[nodiscard]] inline scope resolve_scope(std::string_view name) {
-        return scope{detail::scope_state::get_static(name)};
-    }
 }

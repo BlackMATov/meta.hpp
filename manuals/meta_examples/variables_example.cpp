@@ -42,6 +42,6 @@ TEST_CASE("meta/meta_examples/variables/usage") {
     // prints all variables in the scope
     fmt::print("* {}:\n", constants_scope.get_name());
     for ( auto&& [index, variable] : constants_scope.get_variables() ) {
-        fmt::print("  - {}:{}\n", index.name, variable.get());
+        fmt::print("  - {}:{}\n", index.get_name(), variable.get());
     }
 }

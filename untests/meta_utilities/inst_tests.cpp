@@ -29,7 +29,7 @@ namespace
 #define META_HPP_CHECK_INVOCABLE(Inst, FName, Qualifiers)\
     {\
         using namespace meta::detail;\
-        auto method_ptr = meta::select<int() Qualifiers>(&clazz::FName);\
+        auto method_ptr = meta::select_overload<int() Qualifiers>(&clazz::FName);\
         meta::method m_state{method_state::make<meta::method_policy::as_copy>("", method_ptr)};\
         \
         if ( std::is_invocable_v<decltype(method_ptr), decltype(Inst)> ) {\
@@ -53,7 +53,7 @@ namespace
 #define META_HPP_CHECK_INVOCABLE_2(FromValue, FName, FromType, ToQualifiers)\
     {\
         using namespace meta::detail;\
-        auto method_ptr = meta::select<int() ToQualifiers>(&clazz::FName);\
+        auto method_ptr = meta::select_overload<int() ToQualifiers>(&clazz::FName);\
         meta::method m_state{method_state::make<meta::method_policy::as_copy>("", method_ptr)};\
         \
         if ( std::is_invocable_v<decltype(method_ptr), FromType> ) {\

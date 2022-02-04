@@ -47,8 +47,8 @@ TEST_CASE("meta/meta_states/evalue") {
         const meta::evalue evalue = color_type.get_evalue("green");
         REQUIRE(evalue);
 
-        CHECK(evalue.get_index().type == evalue.get_type());
-        CHECK(evalue.get_index().name == "green");
+        CHECK(evalue.get_index().get_type() == evalue.get_type());
+        CHECK(evalue.get_index().get_name() == "green");
 
         CHECK(evalue.get_type() == meta::resolve_type<color>());
         CHECK(evalue.get_name() == "green");
@@ -56,7 +56,7 @@ TEST_CASE("meta/meta_states/evalue") {
         CHECK(evalue.get_value() == color::green);
         CHECK(evalue.get_value().get_type() == color_type);
 
-        CHECK(evalue.get_underlying_value() == meta::detail::stdex::to_underlying(color::green));
+        CHECK(evalue.get_underlying_value() == meta::stdex::to_underlying(color::green));
         CHECK(evalue.get_underlying_value().get_type() == color_type.get_underlying_type());
     }
 }

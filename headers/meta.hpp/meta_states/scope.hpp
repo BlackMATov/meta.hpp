@@ -8,24 +8,22 @@
 
 #include "../meta_base.hpp"
 #include "../meta_states.hpp"
+#include "../meta_types.hpp"
+
+#include "../meta_types/class_type.hpp"
+#include "../meta_types/enum_type.hpp"
+
+#include "../meta_states/function.hpp"
+#include "../meta_states/variable.hpp"
+
+#include "../meta_detail/type_registry.hpp"
 
 namespace meta_hpp::detail
 {
     inline scope_state_ptr scope_state::make(std::string name) {
-        scope_index index{std::move(name)};
         return std::make_shared<scope_state>(scope_state{
-            .index{std::move(index)},
+            .index{scope_index::make(std::move(name))},
         });
-    }
-
-    inline scope_state_ptr scope_state::get_static(std::string_view name) {
-        static std::map<std::string, scope_state_ptr, std::less<>> states;
-
-        if ( auto iter = states.find(name); iter != states.end() ) {
-            return iter->second;
-        }
-
-        return states.emplace(std::string{name}, make(std::string{name})).first->second;
     }
 }
 
@@ -47,7 +45,7 @@ namespace meta_hpp
     }
 
     inline const std::string& scope::get_name() const noexcept {
-        return state_->index.name;
+        return state_->index.get_name();
     }
 
     inline const class_map& scope::get_classes() const noexcept {
@@ -82,7 +80,7 @@ namespace meta_hpp
 
     inline function scope::get_function(std::string_view name) const noexcept {
         for ( auto&& [index, function] : state_->functions ) {
-            if ( index.name == name ) {
+            if ( index.get_name() == name ) {
                 return function;
             }
         }
@@ -91,7 +89,7 @@ namespace meta_hpp
 
     inline variable scope::get_variable(std::string_view name) const noexcept {
         for ( auto&& [index, variable] : state_->variables ) {
-            if ( index.name == name ) {
+            if ( index.get_name() == name ) {
                 return variable;
             }
         }
@@ -100,12 +98,12 @@ namespace meta_hpp
 
     template < typename... Args >
     function scope::get_function_with(std::string_view name) const noexcept {
-        return get_function_with(name, {resolve_type<Args>()...});
+        return get_function_with(name, {detail::resolve_type<Args>()...});
     }
 
     inline function scope::get_function_with(std::string_view name, const std::vector<any_type>& args) const noexcept {
         for ( auto&& [index, function] : state_->functions ) {
-            if ( index.name != name ) {
+            if ( index.get_name() != name ) {
                 continue;
             }
 
@@ -123,7 +121,7 @@ namespace meta_hpp
 
     inline function scope::get_function_with(std::string_view name, std::initializer_list<any_type> args) const noexcept {
         for ( auto&& [index, function] : state_->functions ) {
-            if ( index.name != name ) {
+            if ( index.get_name() != name ) {
                 continue;
             }
 

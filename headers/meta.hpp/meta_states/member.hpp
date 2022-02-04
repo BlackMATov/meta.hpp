@@ -10,6 +10,8 @@
 #include "../meta_states.hpp"
 
 #include "../meta_types/member_type.hpp"
+#include "../meta_detail/value_utilities/arg.hpp"
+#include "../meta_detail/value_utilities/inst.hpp"
 
 namespace meta_hpp::detail
 {
@@ -146,9 +148,8 @@ namespace meta_hpp::detail
 {
     template < member_policy_kind Policy, member_kind Member >
     member_state_ptr member_state::make(std::string name, Member member) {
-        member_index index{member_type_data::get_static<Member>(), std::move(name)};
         return std::make_shared<member_state>(member_state{
-            .index{std::move(index)},
+            .index{member_index::make<Member>(std::move(name))},
             .getter{make_member_getter<Policy>(std::move(member))},
             .setter{make_member_setter(std::move(member))},
             .is_gettable_with{make_member_is_gettable_with<Member>()},
@@ -175,11 +176,11 @@ namespace meta_hpp
     }
 
     inline const member_type& member::get_type() const noexcept {
-        return state_->index.type;
+        return state_->index.get_type();
     }
 
     inline const std::string& member::get_name() const noexcept {
-        return state_->index.name;
+        return state_->index.get_name();
     }
 
     template < typename Instance >

@@ -9,7 +9,8 @@
 #include "../meta_base.hpp"
 #include "../meta_types.hpp"
 
-#include "../meta_traits/function_traits.hpp"
+#include "../meta_detail/type_registry.hpp"
+#include "../meta_detail/type_traits/function_traits.hpp"
 
 namespace meta_hpp::detail
 {
@@ -22,13 +23,7 @@ namespace meta_hpp::detail
     : type_data_base{type_id{type_list<function_tag<Function>>{}}, type_kind::function_}
     , flags{function_traits<Function>::make_flags()}
     , return_type{resolve_type<typename function_traits<Function>::return_type>()}
-    , argument_types{function_traits<Function>::make_argument_types()} {}
-
-    template < function_kind Function >
-    function_type_data_ptr function_type_data::get_static() {
-        static function_type_data_ptr data = std::make_shared<function_type_data>(type_list<Function>{});
-        return data;
-    }
+    , argument_types{resolve_types(typename function_traits<Function>::argument_types{})} {}
 }
 
 namespace meta_hpp

@@ -9,7 +9,8 @@
 #include "../meta_base.hpp"
 #include "../meta_types.hpp"
 
-#include "../meta_traits/member_traits.hpp"
+#include "../meta_detail/type_registry.hpp"
+#include "../meta_detail/type_traits/member_traits.hpp"
 
 namespace meta_hpp::detail
 {
@@ -23,12 +24,6 @@ namespace meta_hpp::detail
     , flags{member_traits<Member>::make_flags()}
     , owner_type{resolve_type<typename member_traits<Member>::class_type>()}
     , value_type{resolve_type<typename member_traits<Member>::value_type>()} {}
-
-    template < member_kind Member >
-    member_type_data_ptr member_type_data::get_static() {
-        static member_type_data_ptr data = std::make_shared<member_type_data>(type_list<Member>{});
-        return data;
-    }
 }
 
 namespace meta_hpp

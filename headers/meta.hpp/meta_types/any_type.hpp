@@ -11,9 +11,6 @@
 
 namespace meta_hpp
 {
-    inline any_type::any_type(detail::type_data_base_ptr data)
-    : data_{std::move(data)} {}
-
     inline bool any_type::is_valid() const noexcept {
         return !!data_;
     }
@@ -31,43 +28,43 @@ namespace meta_hpp
     }
 
     inline any_type::any_type(const array_type& other) noexcept
-    : data_{detail::data_access(other)} {}
+    : data_{detail::type_access(other)} {}
 
     inline any_type::any_type(const class_type& other) noexcept
-    : data_{detail::data_access(other)} {}
+    : data_{detail::type_access(other)} {}
 
     inline any_type::any_type(const ctor_type& other) noexcept
-    : data_{detail::data_access(other)} {}
+    : data_{detail::type_access(other)} {}
 
     inline any_type::any_type(const dtor_type& other) noexcept
-    : data_{detail::data_access(other)} {}
+    : data_{detail::type_access(other)} {}
 
     inline any_type::any_type(const enum_type& other) noexcept
-    : data_{detail::data_access(other)} {}
+    : data_{detail::type_access(other)} {}
 
     inline any_type::any_type(const function_type& other) noexcept
-    : data_{detail::data_access(other)} {}
+    : data_{detail::type_access(other)} {}
 
     inline any_type::any_type(const member_type& other) noexcept
-    : data_{detail::data_access(other)} {}
+    : data_{detail::type_access(other)} {}
 
     inline any_type::any_type(const method_type& other) noexcept
-    : data_{detail::data_access(other)} {}
+    : data_{detail::type_access(other)} {}
 
     inline any_type::any_type(const nullptr_type& other) noexcept
-    : data_{detail::data_access(other)} {}
+    : data_{detail::type_access(other)} {}
 
     inline any_type::any_type(const number_type& other) noexcept
-    : data_{detail::data_access(other)} {}
+    : data_{detail::type_access(other)} {}
 
     inline any_type::any_type(const pointer_type& other) noexcept
-    : data_{detail::data_access(other)} {}
+    : data_{detail::type_access(other)} {}
 
     inline any_type::any_type(const reference_type& other) noexcept
-    : data_{detail::data_access(other)} {}
+    : data_{detail::type_access(other)} {}
 
     inline any_type::any_type(const void_type& other) noexcept
-    : data_{detail::data_access(other)} {}
+    : data_{detail::type_access(other)} {}
 
     inline bool any_type::is_array() const noexcept {
         return data_ && data_->kind == type_kind::array_;

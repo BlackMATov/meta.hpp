@@ -15,7 +15,8 @@
 #include "../meta_states/method.hpp"
 #include "../meta_states/variable.hpp"
 
-#include "../meta_traits/class_traits.hpp"
+#include "../meta_detail/type_registry.hpp"
+#include "../meta_detail/type_traits/class_traits.hpp"
 
 namespace meta_hpp::detail
 {
@@ -28,13 +29,7 @@ namespace meta_hpp::detail
     : type_data_base{type_id{type_list<class_tag<Class>>{}}, type_kind::class_}
     , flags{class_traits<Class>::make_flags()}
     , size{class_traits<Class>::size}
-    , argument_types{class_traits<Class>::make_argument_types()} {}
-
-    template < class_kind Class >
-    class_type_data_ptr class_type_data::get_static() {
-        static class_type_data_ptr data = std::make_shared<class_type_data>(type_list<Class>{});
-        return data;
-    }
+    , argument_types{resolve_types(typename class_traits<Class>::argument_types{})} {}
 }
 
 namespace meta_hpp
@@ -130,7 +125,7 @@ namespace meta_hpp
 
     template < detail::class_kind Derived >
     bool class_type::is_base_of() const noexcept {
-        return is_base_of(resolve_type<Derived>());
+        return is_base_of(detail::resolve_type<Derived>());
     }
 
     inline bool class_type::is_base_of(const class_type& derived) const noexcept {
@@ -153,7 +148,7 @@ namespace meta_hpp
 
     template < detail::class_kind Base >
     bool class_type::is_derived_from() const noexcept {
-        return is_derived_from(resolve_type<Base>());
+        return is_derived_from(detail::resolve_type<Base>());
     }
 
     inline bool class_type::is_derived_from(const class_type& base) const noexcept {
@@ -176,7 +171,7 @@ namespace meta_hpp
 
     inline function class_type::get_function(std::string_view name) const noexcept {
         for ( auto&& [index, function] : data_->functions ) {
-            if ( index.name == name ) {
+            if ( index.get_name() == name ) {
                 return function;
             }
         }
@@ -192,7 +187,7 @@ namespace meta_hpp
 
     inline member class_type::get_member(std::string_view name) const noexcept {
         for ( auto&& [index, member] : data_->members ) {
-            if ( index.name == name ) {
+            if ( index.get_name() == name ) {
                 return member;
             }
         }
@@ -208,7 +203,7 @@ namespace meta_hpp
 
     inline method class_type::get_method(std::string_view name) const noexcept {
         for ( auto&& [index, method] : data_->methods ) {
-            if ( index.name == name ) {
+            if ( index.get_name() == name ) {
                 return method;
             }
         }
@@ -224,7 +219,7 @@ namespace meta_hpp
 
     inline variable class_type::get_variable(std::string_view name) const noexcept {
         for ( auto&& [index, variable] : data_->variables ) {
-            if ( index.name == name ) {
+            if ( index.get_name() == name ) {
                 return variable;
             }
         }
@@ -244,7 +239,7 @@ namespace meta_hpp
 
     template < typename... Args >
     ctor class_type::get_ctor_with() const noexcept {
-        return get_ctor_with({resolve_type<Args>()...});
+        return get_ctor_with({detail::resolve_type<Args>()...});
     }
 
     inline ctor class_type::get_ctor_with(const std::vector<any_type>& args) const noexcept {
@@ -283,12 +278,12 @@ namespace meta_hpp
 
     template < typename... Args >
     function class_type::get_function_with(std::string_view name) const noexcept {
-        return get_function_with(name, {resolve_type<Args>()...});
+        return get_function_with(name, {detail::resolve_type<Args>()...});
     }
 
     inline function class_type::get_function_with(std::string_view name, const std::vector<any_type>& args) const noexcept {
         for ( auto&& [index, function] : data_->functions ) {
-            if ( index.name != name ) {
+            if ( index.get_name() != name ) {
                 continue;
             }
 
@@ -313,7 +308,7 @@ namespace meta_hpp
 
     inline function class_type::get_function_with(std::string_view name, std::initializer_list<any_type> args) const noexcept {
         for ( auto&& [index, function] : data_->functions ) {
-            if ( index.name != name ) {
+            if ( index.get_name() != name ) {
                 continue;
             }
 
@@ -342,12 +337,12 @@ namespace meta_hpp
 
     template < typename... Args >
     method class_type::get_method_with(std::string_view name) const noexcept {
-        return get_method_with(name, {resolve_type<Args>()...});
+        return get_method_with(name, {detail::resolve_type<Args>()...});
     }
 
     inline method class_type::get_method_with(std::string_view name, const std::vector<any_type>& args) const noexcept {
         for ( auto&& [index, method] : data_->methods ) {
-            if ( index.name != name ) {
+            if ( index.get_name() != name ) {
                 continue;
             }
 
@@ -372,7 +367,7 @@ namespace meta_hpp
 
     inline method class_type::get_method_with(std::string_view name, std::initializer_list<any_type> args) const noexcept {
         for ( auto&& [index, method] : data_->methods ) {
-            if ( index.name != name ) {
+            if ( index.get_name() != name ) {
                 continue;
             }
 

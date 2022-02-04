@@ -10,6 +10,7 @@
 #include "../meta_states.hpp"
 
 #include "../meta_types/function_type.hpp"
+#include "../meta_detail/value_utilities/arg.hpp"
 
 namespace meta_hpp::detail
 {
@@ -99,9 +100,8 @@ namespace meta_hpp::detail
 {
     template < function_policy_kind Policy, function_kind Function >
     function_state_ptr function_state::make(std::string name, Function function) {
-        function_index index{function_type_data::get_static<Function>(), std::move(name)};
         return std::make_shared<function_state>(function_state{
-            .index{std::move(index)},
+            .index{function_index::make<Function>(std::move(name))},
             .invoke{make_function_invoke<Policy>(std::move(function))},
             .is_invocable_with{make_function_is_invocable_with<Function>()},
         });
@@ -126,11 +126,11 @@ namespace meta_hpp
     }
 
     inline const function_type& function::get_type() const noexcept {
-        return state_->index.type;
+        return state_->index.get_type();
     }
 
     inline const std::string& function::get_name() const noexcept {
-        return state_->index.name;
+        return state_->index.get_name();
     }
 
     template < typename... Args >

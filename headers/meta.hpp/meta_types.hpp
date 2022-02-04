@@ -7,114 +7,34 @@
 #pragma once
 
 #include "meta_base.hpp"
-#include "meta_traits.hpp"
+
+#include "meta_detail/type_family.hpp"
+
+#include "meta_detail/type_traits/array_traits.hpp"
+#include "meta_detail/type_traits/class_traits.hpp"
+#include "meta_detail/type_traits/ctor_traits.hpp"
+#include "meta_detail/type_traits/dtor_traits.hpp"
+#include "meta_detail/type_traits/enum_traits.hpp"
+#include "meta_detail/type_traits/function_traits.hpp"
+#include "meta_detail/type_traits/member_traits.hpp"
+#include "meta_detail/type_traits/method_traits.hpp"
+#include "meta_detail/type_traits/number_traits.hpp"
+#include "meta_detail/type_traits/pointer_traits.hpp"
+#include "meta_detail/type_traits/reference_traits.hpp"
 
 namespace meta_hpp
 {
-    class type_id final {
-    public:
-        template < typename T >
-        // NOLINTNEXTLINE(readability-named-parameter)
-        explicit type_id(detail::type_list<T>) noexcept
-        : id_{type_to_id<T>()} {}
-
-        type_id(type_id&&) = default;
-        type_id(const type_id&) = default;
-
-        type_id& operator=(type_id&&) = default;
-        type_id& operator=(const type_id&) = default;
-
-        ~type_id() = default;
-
-        [[nodiscard]] std::size_t get_hash() const noexcept {
-            return std::hash<underlying_type>{}(id_);
-        }
-
-        [[nodiscard]] friend bool operator<(type_id l, type_id r) noexcept {
-            return l.id_ < r.id_;
-        }
-
-        [[nodiscard]] friend bool operator==(type_id l, type_id r) noexcept {
-            return l.id_ == r.id_;
-        }
-
-        [[nodiscard]] friend bool operator!=(type_id l, type_id r) noexcept {
-            return l.id_ != r.id_;
-        }
-    private:
-        using underlying_type = std::uint32_t;
-        underlying_type id_{};
-    private:
-        [[nodiscard]] static underlying_type next() noexcept {
-            static std::atomic<underlying_type> id{};
-            return ++id;
-        }
-
-        template < typename T >
-        [[nodiscard]] static underlying_type type_to_id() noexcept {
-            static const underlying_type id{next()};
-            return id;
-        }
-    };
-}
-
-namespace meta_hpp
-{
-    namespace detail
-    {
-        template < typename T >
-        concept type_family =
-            std::is_same_v<T, any_type> ||
-            std::is_same_v<T, array_type> ||
-            std::is_same_v<T, class_type> ||
-            std::is_same_v<T, ctor_type> ||
-            std::is_same_v<T, dtor_type> ||
-            std::is_same_v<T, enum_type> ||
-            std::is_same_v<T, function_type> ||
-            std::is_same_v<T, member_type> ||
-            std::is_same_v<T, method_type> ||
-            std::is_same_v<T, nullptr_type> ||
-            std::is_same_v<T, number_type> ||
-            std::is_same_v<T, pointer_type> ||
-            std::is_same_v<T, reference_type> ||
-            std::is_same_v<T, void_type>;
-
-        template < type_family T >
-        [[nodiscard]] auto data_access(const T& type) {
-            return type.data_;
-        }
-    }
-
-    template < detail::type_family T, detail::type_family U >
-    [[nodiscard]] bool operator<(const T& l, const U& r) noexcept {
-        if ( !static_cast<bool>(r) ) {
-            return false;
-        }
-
-        if ( !static_cast<bool>(l) ) {
-            return true;
-        }
-
-        return l.get_id() < r.get_id();
-    }
-
-    template < detail::type_family T, detail::type_family U >
-    [[nodiscard]] bool operator==(const T& l, const U& r) noexcept {
-        if ( static_cast<bool>(l) != static_cast<bool>(r) ) {
-            return false;
-        }
-
-        if ( !static_cast<bool>(l) ) {
-            return true;
-        }
-
-        return l.get_id() == r.get_id();
-    }
-
-    template < detail::type_family T, detail::type_family U >
-    [[nodiscard]] bool operator!=(const T& l, const U& r) noexcept {
-        return !(l == r);
-    }
+    using array_flags = detail::array_flags;
+    using class_flags = detail::class_flags;
+    using ctor_flags = detail::ctor_flags;
+    using dtor_flags = detail::dtor_flags;
+    using enum_flags = detail::enum_flags;
+    using function_flags = detail::function_flags;
+    using member_flags = detail::member_flags;
+    using method_flags = detail::method_flags;
+    using number_flags = detail::number_flags;
+    using pointer_flags = detail::pointer_flags;
+    using reference_flags = detail::reference_flags;
 }
 
 namespace meta_hpp
@@ -122,7 +42,6 @@ namespace meta_hpp
     class any_type final {
     public:
         explicit any_type() = default;
-        explicit any_type(detail::type_data_base_ptr data);
 
         [[nodiscard]] bool is_valid() const noexcept;
         [[nodiscard]] explicit operator bool() const noexcept;
@@ -173,7 +92,7 @@ namespace meta_hpp
         [[nodiscard]] void_type as_void() const noexcept;
     private:
         detail::type_data_base_ptr data_;
-        friend auto detail::data_access<any_type>(const any_type&);
+        friend auto detail::type_access<any_type>(const any_type&);
     };
 
     class array_type final {
@@ -191,7 +110,7 @@ namespace meta_hpp
         [[nodiscard]] any_type get_data_type() const noexcept;
     private:
         detail::array_type_data_ptr data_;
-        friend auto detail::data_access<array_type>(const array_type&);
+        friend auto detail::type_access<array_type>(const array_type&);
     };
 
     class class_type final {
@@ -257,7 +176,7 @@ namespace meta_hpp
         [[nodiscard]] method get_method_with(std::string_view name, std::initializer_list<any_type> args) const noexcept;
     private:
         detail::class_type_data_ptr data_;
-        friend auto detail::data_access<class_type>(const class_type&);
+        friend auto detail::type_access<class_type>(const class_type&);
     };
 
     class ctor_type final {
@@ -277,7 +196,7 @@ namespace meta_hpp
         [[nodiscard]] const std::vector<any_type>& get_argument_types() const noexcept;
     private:
         detail::ctor_type_data_ptr data_;
-        friend auto detail::data_access<ctor_type>(const ctor_type&);
+        friend auto detail::type_access<ctor_type>(const ctor_type&);
     };
 
     class dtor_type final {
@@ -294,7 +213,7 @@ namespace meta_hpp
         [[nodiscard]] any_type get_class_type() const noexcept;
     private:
         detail::dtor_type_data_ptr data_;
-        friend auto detail::data_access<dtor_type>(const dtor_type&);
+        friend auto detail::type_access<dtor_type>(const dtor_type&);
     };
 
     class enum_type final {
@@ -319,7 +238,7 @@ namespace meta_hpp
         [[nodiscard]] value name_to_value(std::string_view name) const noexcept;
     private:
         detail::enum_type_data_ptr data_;
-        friend auto detail::data_access<enum_type>(const enum_type&);
+        friend auto detail::type_access<enum_type>(const enum_type&);
     };
 
     class function_type final {
@@ -339,7 +258,7 @@ namespace meta_hpp
         [[nodiscard]] const std::vector<any_type>& get_argument_types() const noexcept;
     private:
         detail::function_type_data_ptr data_;
-        friend auto detail::data_access<function_type>(const function_type&);
+        friend auto detail::type_access<function_type>(const function_type&);
     };
 
     class member_type final {
@@ -357,7 +276,7 @@ namespace meta_hpp
         [[nodiscard]] any_type get_value_type() const noexcept;
     private:
         detail::member_type_data_ptr data_;
-        friend auto detail::data_access<member_type>(const member_type&);
+        friend auto detail::type_access<member_type>(const member_type&);
     };
 
     class method_type final {
@@ -378,7 +297,7 @@ namespace meta_hpp
         [[nodiscard]] const std::vector<any_type>& get_argument_types() const noexcept;
     private:
         detail::method_type_data_ptr data_;
-        friend auto detail::data_access<method_type>(const method_type&);
+        friend auto detail::type_access<method_type>(const method_type&);
     };
 
     class nullptr_type final {
@@ -392,7 +311,7 @@ namespace meta_hpp
         [[nodiscard]] type_id get_id() const noexcept;
     private:
         detail::nullptr_type_data_ptr data_;
-        friend auto detail::data_access<nullptr_type>(const nullptr_type&);
+        friend auto detail::type_access<nullptr_type>(const nullptr_type&);
     };
 
     class number_type final {
@@ -409,7 +328,7 @@ namespace meta_hpp
         [[nodiscard]] std::size_t get_size() const noexcept;
     private:
         detail::number_type_data_ptr data_;
-        friend auto detail::data_access<number_type>(const number_type&);
+        friend auto detail::type_access<number_type>(const number_type&);
     };
 
     class pointer_type final {
@@ -426,7 +345,7 @@ namespace meta_hpp
         [[nodiscard]] any_type get_data_type() const noexcept;
     private:
         detail::pointer_type_data_ptr data_;
-        friend auto detail::data_access<pointer_type>(const pointer_type&);
+        friend auto detail::type_access<pointer_type>(const pointer_type&);
     };
 
     class reference_type final {
@@ -443,7 +362,7 @@ namespace meta_hpp
         [[nodiscard]] any_type get_data_type() const noexcept;
     private:
         detail::reference_type_data_ptr data_;
-        friend auto detail::data_access<reference_type>(const reference_type&);
+        friend auto detail::type_access<reference_type>(const reference_type&);
     };
 
     class void_type final {
@@ -457,8 +376,42 @@ namespace meta_hpp
         [[nodiscard]] type_id get_id() const noexcept;
     private:
         detail::void_type_data_ptr data_;
-        friend auto detail::data_access<void_type>(const void_type&);
+        friend auto detail::type_access<void_type>(const void_type&);
     };
+}
+
+namespace meta_hpp
+{
+    template < detail::type_family T, detail::type_family U >
+    [[nodiscard]] bool operator<(const T& l, const U& r) noexcept {
+        if ( !static_cast<bool>(r) ) {
+            return false;
+        }
+
+        if ( !static_cast<bool>(l) ) {
+            return true;
+        }
+
+        return l.get_id() < r.get_id();
+    }
+
+    template < detail::type_family T, detail::type_family U >
+    [[nodiscard]] bool operator==(const T& l, const U& r) noexcept {
+        if ( static_cast<bool>(l) != static_cast<bool>(r) ) {
+            return false;
+        }
+
+        if ( !static_cast<bool>(l) ) {
+            return true;
+        }
+
+        return l.get_id() == r.get_id();
+    }
+
+    template < detail::type_family T, detail::type_family U >
+    [[nodiscard]] bool operator!=(const T& l, const U& r) noexcept {
+        return !(l == r);
+    }
 }
 
 namespace meta_hpp::detail
@@ -479,9 +432,6 @@ namespace meta_hpp::detail
 
         template < array_kind Array >
         explicit array_type_data(type_list<Array>);
-
-        template < array_kind Array >
-        [[nodiscard]] static array_type_data_ptr get_static();
     };
 
     struct class_type_data final : type_data_base {
@@ -507,9 +457,6 @@ namespace meta_hpp::detail
 
         template < class_kind Class >
         explicit class_type_data(type_list<Class>);
-
-        template < class_kind Class >
-        [[nodiscard]] static class_type_data_ptr get_static();
     };
 
     struct ctor_type_data final : type_data_base {
@@ -519,9 +466,6 @@ namespace meta_hpp::detail
 
         template < class_kind Class, typename... Args >
         explicit ctor_type_data(type_list<Class>, type_list<Args...>);
-
-        template < class_kind Class, typename... Args >
-        [[nodiscard]] static ctor_type_data_ptr get_static();
     };
 
     struct dtor_type_data final : type_data_base {
@@ -530,9 +474,6 @@ namespace meta_hpp::detail
 
         template < class_kind Class >
         explicit dtor_type_data(type_list<Class>);
-
-        template < class_kind Class >
-        [[nodiscard]] static dtor_type_data_ptr get_static();
     };
 
     struct enum_type_data final : type_data_base {
@@ -543,9 +484,6 @@ namespace meta_hpp::detail
 
         template < enum_kind Enum >
         explicit enum_type_data(type_list<Enum>);
-
-        template < enum_kind Enum >
-        [[nodiscard]] static enum_type_data_ptr get_static();
     };
 
     struct function_type_data final : type_data_base {
@@ -555,9 +493,6 @@ namespace meta_hpp::detail
 
         template < function_kind Function >
         explicit function_type_data(type_list<Function>);
-
-        template < function_kind Function >
-        [[nodiscard]] static function_type_data_ptr get_static();
     };
 
     struct member_type_data final : type_data_base {
@@ -567,9 +502,6 @@ namespace meta_hpp::detail
 
         template < member_kind Member >
         explicit member_type_data(type_list<Member>);
-
-        template < member_kind Member >
-        [[nodiscard]] static member_type_data_ptr get_static();
     };
 
     struct method_type_data final : type_data_base {
@@ -580,17 +512,11 @@ namespace meta_hpp::detail
 
         template < method_kind Method >
         explicit method_type_data(type_list<Method>);
-
-        template < method_kind Method >
-        [[nodiscard]] static method_type_data_ptr get_static();
     };
 
     struct nullptr_type_data final : type_data_base {
         template < nullptr_kind Nullptr >
         explicit nullptr_type_data(type_list<Nullptr>);
-
-        template < nullptr_kind Nullptr >
-        [[nodiscard]] static nullptr_type_data_ptr get_static();
     };
 
     struct number_type_data final : type_data_base {
@@ -599,9 +525,6 @@ namespace meta_hpp::detail
 
         template < number_kind Number >
         explicit number_type_data(type_list<Number>);
-
-        template < number_kind Number >
-        [[nodiscard]] static number_type_data_ptr get_static();
     };
 
     struct pointer_type_data final : type_data_base {
@@ -610,9 +533,6 @@ namespace meta_hpp::detail
 
         template < pointer_kind Pointer >
         explicit pointer_type_data(type_list<Pointer>);
-
-        template < pointer_kind Pointer >
-        [[nodiscard]] static pointer_type_data_ptr get_static();
     };
 
     struct reference_type_data final : type_data_base {
@@ -621,209 +541,10 @@ namespace meta_hpp::detail
 
         template < reference_kind Reference >
         explicit reference_type_data(type_list<Reference>);
-
-        template < reference_kind Reference >
-        [[nodiscard]] static reference_type_data_ptr get_static();
     };
 
     struct void_type_data final : type_data_base {
         template < void_kind Void >
         explicit void_type_data(type_list<Void>);
-
-        template < void_kind Void >
-        [[nodiscard]] static void_type_data_ptr get_static();
     };
-}
-
-namespace meta_hpp
-{
-    struct ctor_index final {
-        const ctor_type type;
-
-        explicit ctor_index(ctor_type type)
-        : type{std::move(type)} {}
-
-        [[nodiscard]] friend bool operator<(const ctor_index& l, const ctor_index& r) noexcept {
-            return l.type < r.type;
-        }
-
-        [[nodiscard]] friend bool operator==(const ctor_index& l, const ctor_index& r) noexcept {
-            return l.type == r.type;
-        }
-    };
-
-    struct dtor_index final {
-        const dtor_type type;
-
-        explicit dtor_index(dtor_type type)
-        : type{std::move(type)} {}
-
-        [[nodiscard]] friend bool operator<(const dtor_index& l, const dtor_index& r) noexcept {
-            return l.type < r.type;
-        }
-
-        [[nodiscard]] friend bool operator==(const dtor_index& l, const dtor_index& r) noexcept {
-            return l.type == r.type;
-        }
-    };
-
-    struct evalue_index final {
-        const enum_type type;
-        const std::string name;
-
-        explicit evalue_index(enum_type type, std::string name)
-        : type{std::move(type)}
-        , name{std::move(name)} {}
-
-        [[nodiscard]] friend bool operator<(const evalue_index& l, const evalue_index& r) noexcept {
-            return (l.type < r.type) || (l.type == r.type && l.name < r.name);
-        }
-
-        [[nodiscard]] friend bool operator==(const evalue_index& l, const evalue_index& r) noexcept {
-            return l.type == r.type && l.name == r.name;
-        }
-    };
-
-    struct function_index final {
-        const function_type type;
-        const std::string name;
-
-        explicit function_index(function_type type, std::string name)
-        : type{std::move(type)}
-        , name{std::move(name)} {}
-
-        [[nodiscard]] friend bool operator<(const function_index& l, const function_index& r) noexcept {
-            return (l.type < r.type) || (l.type == r.type && l.name < r.name);
-        }
-
-        [[nodiscard]] friend bool operator==(const function_index& l, const function_index& r) noexcept {
-            return l.type == r.type && l.name == r.name;
-        }
-    };
-
-    struct member_index final {
-        const member_type type;
-        const std::string name;
-
-        explicit member_index(member_type type, std::string name)
-        : type{std::move(type)}
-        , name{std::move(name)} {}
-
-        [[nodiscard]] friend bool operator<(const member_index& l, const member_index& r) noexcept {
-            return (l.type < r.type) || (l.type == r.type && l.name < r.name);
-        }
-
-        [[nodiscard]] friend bool operator==(const member_index& l, const member_index& r) noexcept {
-            return l.type == r.type && l.name == r.name;
-        }
-    };
-
-    struct method_index final {
-        const method_type type;
-        const std::string name;
-
-        explicit method_index(method_type type, std::string name)
-        : type{std::move(type)}
-        , name{std::move(name)} {}
-
-        [[nodiscard]] friend bool operator<(const method_index& l, const method_index& r) noexcept {
-            return (l.type < r.type) || (l.type == r.type && l.name < r.name);
-        }
-
-        [[nodiscard]] friend bool operator==(const method_index& l, const method_index& r) noexcept {
-            return l.type == r.type && l.name == r.name;
-        }
-    };
-
-    struct scope_index final {
-        const std::string name;
-
-        explicit scope_index(std::string name)
-        : name{std::move(name)} {}
-
-        [[nodiscard]] friend bool operator<(const scope_index& l, const scope_index& r) noexcept {
-            return l.name < r.name;
-        }
-
-        [[nodiscard]] friend bool operator==(const scope_index& l, const scope_index& r) noexcept {
-            return l.name == r.name;
-        }
-    };
-
-    struct variable_index final {
-        const pointer_type type;
-        const std::string name;
-
-        explicit variable_index(pointer_type type, std::string name)
-        : type{std::move(type)}
-        , name{std::move(name)} {}
-
-        [[nodiscard]] friend bool operator<(const variable_index& l, const variable_index& r) noexcept {
-            return (l.type < r.type) || (l.type == r.type && l.name < r.name);
-        }
-
-        [[nodiscard]] friend bool operator==(const variable_index& l, const variable_index& r) noexcept {
-            return l.type == r.type && l.name == r.name;
-        }
-    };
-}
-
-namespace meta_hpp
-{
-    template < typename T >
-    [[nodiscard]] auto resolve_type() {
-        using raw_type = std::remove_cv_t<T>;
-
-        using kind_type = detail::kind_type<raw_type>;
-        using kind_type_data = detail::kind_type_data<raw_type>;
-
-        return kind_type{kind_type_data::template get_static<raw_type>()};
-    }
-
-    template < typename T >
-    // NOLINTNEXTLINE(readability-named-parameter)
-    [[nodiscard]] auto resolve_type(const T&) {
-        return resolve_type<std::remove_reference_t<T>>();
-    }
-}
-
-namespace meta_hpp
-{
-    namespace detail
-    {
-        [[nodiscard]] inline void* pointer_upcast(void* ptr, const class_type& from, const class_type& to) {
-            if ( nullptr == ptr || !from || !to ) {
-                return nullptr;
-            }
-
-            if ( from == to ) {
-                return ptr;
-            }
-
-            for ( auto&& [base, base_info] : data_access(from)->bases_info ) {
-                if ( base == to ) {
-                    return base_info.upcast(ptr);
-                }
-
-                if ( base.is_derived_from(to) ) {
-                    return pointer_upcast(base_info.upcast(ptr), base, to);
-                }
-            }
-
-            return nullptr;
-        }
-    }
-
-    template < detail::class_kind Base, detail::class_kind Derived >
-    [[nodiscard]] Base* pointer_upcast(Derived* ptr) {
-        const class_type& base = resolve_type<Base>();
-        const class_type& derived = resolve_type<Derived>();
-        return static_cast<Base*>(detail::pointer_upcast(ptr, derived, base));
-    }
-
-    template < detail::class_kind Base, detail::class_kind Derived >
-    [[nodiscard]] const Base* pointer_upcast(const Derived* ptr) {
-        // NOLINTNEXTLINE(cppcoreguidelines-pro-type-const-cast)
-        return pointer_upcast<Base>(const_cast<Derived*>(ptr));
-    }
 }

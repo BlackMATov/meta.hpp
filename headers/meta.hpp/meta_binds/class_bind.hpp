@@ -9,11 +9,13 @@
 #include "../meta_base.hpp"
 #include "../meta_binds.hpp"
 
+#include "../meta_detail/type_registry.hpp"
+
 namespace meta_hpp
 {
     template < detail::class_kind Class >
     class_bind<Class>::class_bind()
-    : data_{detail::class_type_data::get_static<Class>()} {}
+    : data_{detail::type_access(detail::resolve_type<Class>())} {}
 
     template < detail::class_kind Class >
     class_bind<Class>::operator class_type() const noexcept {
@@ -45,8 +47,8 @@ namespace meta_hpp
     class_bind<Class>& class_bind<Class>::base_()
         requires detail::class_bind_base_kind<Class, Base>
     {
-        data_->bases.emplace(resolve_type<Base>());
-        data_->bases_info.emplace(resolve_type<Base>(), detail::class_type_data::base_info{
+        data_->bases.emplace(detail::resolve_type<Base>());
+        data_->bases_info.emplace(detail::resolve_type<Base>(), detail::class_type_data::base_info{
             .upcast = +[](void* derived) -> void* {
                 return static_cast<Base*>(static_cast<Class*>(derived));
             }

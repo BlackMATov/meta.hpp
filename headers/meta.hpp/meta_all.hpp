@@ -13,7 +13,15 @@
 #include "meta_binds/enum_bind.hpp"
 #include "meta_binds/scope_bind.hpp"
 
-#include "meta_kinds.hpp"
+#include "meta_indices.hpp"
+#include "meta_indices/ctor_index.hpp"
+#include "meta_indices/dtor_index.hpp"
+#include "meta_indices/evalue_index.hpp"
+#include "meta_indices/function_index.hpp"
+#include "meta_indices/member_index.hpp"
+#include "meta_indices/method_index.hpp"
+#include "meta_indices/scope_index.hpp"
+#include "meta_indices/variable_index.hpp"
 
 #include "meta_states.hpp"
 #include "meta_states/ctor.hpp"
@@ -24,19 +32,6 @@
 #include "meta_states/method.hpp"
 #include "meta_states/scope.hpp"
 #include "meta_states/variable.hpp"
-
-#include "meta_traits.hpp"
-#include "meta_traits/array_traits.hpp"
-#include "meta_traits/class_traits.hpp"
-#include "meta_traits/ctor_traits.hpp"
-#include "meta_traits/dtor_traits.hpp"
-#include "meta_traits/enum_traits.hpp"
-#include "meta_traits/function_traits.hpp"
-#include "meta_traits/member_traits.hpp"
-#include "meta_traits/method_traits.hpp"
-#include "meta_traits/number_traits.hpp"
-#include "meta_traits/pointer_traits.hpp"
-#include "meta_traits/reference_traits.hpp"
 
 #include "meta_types.hpp"
 #include "meta_types/any_type.hpp"
@@ -54,8 +49,14 @@
 #include "meta_types/reference_type.hpp"
 #include "meta_types/void_type.hpp"
 
-#include "meta_utilities.hpp"
-#include "meta_utilities/arg.hpp"
-#include "meta_utilities/inst.hpp"
-#include "meta_utilities/value.hpp"
-#include "meta_utilities/vinvoke.hpp"
+#include "meta_value.hpp"
+#include "meta_value/value.hpp"
+#include "meta_value/vinvoke.hpp"
+
+namespace meta_hpp
+{
+    using detail::resolve_type;
+    using detail::resolve_polymorphic_type;
+
+    using detail::resolve_scope;
+}
