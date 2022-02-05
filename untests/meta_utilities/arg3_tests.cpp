@@ -22,18 +22,18 @@ namespace
     };
 
     struct B : virtual A {
-        int i = 2;
-        [[maybe_unused, nodiscard]] int f() const { return i; }
+        int bi = 2;
+        [[maybe_unused, nodiscard]] int f() const { return bi; }
     };
 
     struct C : virtual A {
-        int i = 3;
-        [[maybe_unused, nodiscard]] int f() const { return i; }
+        int ci = 3;
+        [[maybe_unused, nodiscard]] int f() const { return ci; }
     };
 
     struct D : B, C {
-        int i = 4;
-        [[maybe_unused, nodiscard]] int f() const { return i; }
+        int di = 4;
+        [[maybe_unused, nodiscard]] int f() const { return di; }
     };
 }
 

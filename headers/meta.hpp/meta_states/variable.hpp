@@ -67,7 +67,7 @@ namespace meta_hpp::detail
         using data_type = typename pt::data_type;
 
         return !std::is_const_v<data_type>
-            && arg.can_cast_to<data_type>();;
+            && arg.can_cast_to<data_type>();
     }
 }
 

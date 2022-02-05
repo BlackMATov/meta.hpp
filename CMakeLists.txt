@@ -10,6 +10,8 @@ endif()
 project(meta.hpp)
 
 add_library(${PROJECT_NAME} INTERFACE)
+add_library(${PROJECT_NAME}::${PROJECT_NAME} ALIAS ${PROJECT_NAME})
+
 target_compile_features(${PROJECT_NAME} INTERFACE cxx_std_20)
 target_include_directories(${PROJECT_NAME} INTERFACE headers)
 
@@ -30,18 +32,13 @@ target_compile_options(${PROJECT_NAME}
         -Wno-covered-switch-default
         -Wno-ctad-maybe-unsupported
         -Wno-exit-time-destructors
-        -Wno-extra-semi-stmt
         -Wno-float-equal
         -Wno-global-constructors
-        -Wno-ordered-compare-function-pointers
         -Wno-padded
-        -Wno-reserved-identifier
-        -Wno-shadow-field
         -Wno-shadow-field-in-constructor
         -Wno-unknown-warning-option
         -Wno-unused-macros
         -Wno-weak-vtables
-        -Wno-zero-as-null-pointer-constant
         >)
 
 if(BUILD_AS_STANDALONE)

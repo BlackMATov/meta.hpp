@@ -21,15 +21,15 @@ namespace
     };
 
     struct B : virtual A {
-        int i = 2;
+        int bi = 2;
     };
 
     struct C : virtual A {
-        int i = 3;
+        int ci = 3;
     };
 
     struct D : B, C {
-        int i = 4;
+        int di = 4;
     };
 }
 
