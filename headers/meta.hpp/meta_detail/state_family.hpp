@@ -11,15 +11,18 @@
 namespace meta_hpp::detail
 {
     template < typename T >
-    concept state_family =
-        stdex::same_as<T, ctor> ||
-        stdex::same_as<T, dtor> ||
-        stdex::same_as<T, evalue> ||
-        stdex::same_as<T, function> ||
-        stdex::same_as<T, member> ||
-        stdex::same_as<T, method> ||
-        stdex::same_as<T, scope> ||
-        stdex::same_as<T, variable>;
+    inline constexpr bool is_state_family_v =
+        std::is_same_v<T, ctor> ||
+        std::is_same_v<T, dtor> ||
+        std::is_same_v<T, evalue> ||
+        std::is_same_v<T, function> ||
+        std::is_same_v<T, member> ||
+        std::is_same_v<T, method> ||
+        std::is_same_v<T, scope> ||
+        std::is_same_v<T, variable>;
+
+    template < typename T >
+    concept state_family = is_state_family_v<T>;
 
     template < state_family T >
     [[nodiscard]] auto state_access(const T& state) {

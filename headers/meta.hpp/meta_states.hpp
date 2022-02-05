@@ -51,34 +51,49 @@ namespace meta_hpp
     }
 
     template < typename Policy >
-    concept ctor_policy_kind =
-        stdex::same_as<Policy, ctor_policy::as_object> ||
-        stdex::same_as<Policy, ctor_policy::as_raw_pointer> ||
-        stdex::same_as<Policy, ctor_policy::as_shared_pointer>;
+    inline constexpr bool is_ctor_policy_v =
+        std::is_same_v<Policy, ctor_policy::as_object> ||
+        std::is_same_v<Policy, ctor_policy::as_raw_pointer> ||
+        std::is_same_v<Policy, ctor_policy::as_shared_pointer>;
 
     template < typename Policy >
-    concept function_policy_kind =
-        stdex::same_as<Policy, function_policy::as_copy> ||
-        stdex::same_as<Policy, function_policy::discard_return> ||
-        stdex::same_as<Policy, function_policy::return_reference_as_pointer>;
+    inline constexpr bool is_function_policy_v =
+        std::is_same_v<Policy, function_policy::as_copy> ||
+        std::is_same_v<Policy, function_policy::discard_return> ||
+        std::is_same_v<Policy, function_policy::return_reference_as_pointer>;
 
     template < typename Policy >
-    concept member_policy_kind =
-        stdex::same_as<Policy, member_policy::as_copy> ||
-        stdex::same_as<Policy, member_policy::as_pointer> ||
-        stdex::same_as<Policy, member_policy::as_reference_wrapper>;
+    inline constexpr bool is_member_policy_v =
+        std::is_same_v<Policy, member_policy::as_copy> ||
+        std::is_same_v<Policy, member_policy::as_pointer> ||
+        std::is_same_v<Policy, member_policy::as_reference_wrapper>;
 
     template < typename Policy >
-    concept method_policy_kind =
-        stdex::same_as<Policy, method_policy::as_copy> ||
-        stdex::same_as<Policy, method_policy::discard_return> ||
-        stdex::same_as<Policy, method_policy::return_reference_as_pointer>;
+    inline constexpr bool is_method_policy_v =
+        std::is_same_v<Policy, method_policy::as_copy> ||
+        std::is_same_v<Policy, method_policy::discard_return> ||
+        std::is_same_v<Policy, method_policy::return_reference_as_pointer>;
 
     template < typename Policy >
-    concept variable_policy_kind =
-        stdex::same_as<Policy, variable_policy::as_copy> ||
-        stdex::same_as<Policy, variable_policy::as_pointer> ||
-        stdex::same_as<Policy, variable_policy::as_reference_wrapper>;
+    inline constexpr bool is_variable_policy_v =
+        std::is_same_v<Policy, variable_policy::as_copy> ||
+        std::is_same_v<Policy, variable_policy::as_pointer> ||
+        std::is_same_v<Policy, variable_policy::as_reference_wrapper>;
+
+    template < typename Policy >
+    concept ctor_policy_kind = is_ctor_policy_v<Policy>;
+
+    template < typename Policy >
+    concept function_policy_kind = is_function_policy_v<Policy>;
+
+    template < typename Policy >
+    concept member_policy_kind = is_member_policy_v<Policy>;
+
+    template < typename Policy >
+    concept method_policy_kind = is_method_policy_v<Policy>;
+
+    template < typename Policy >
+    concept variable_policy_kind = is_variable_policy_v<Policy>;
 }
 
 namespace meta_hpp

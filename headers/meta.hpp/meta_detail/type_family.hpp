@@ -11,21 +11,24 @@
 namespace meta_hpp::detail
 {
     template < typename T >
-    concept type_family =
-        stdex::same_as<T, any_type> ||
-        stdex::same_as<T, array_type> ||
-        stdex::same_as<T, class_type> ||
-        stdex::same_as<T, ctor_type> ||
-        stdex::same_as<T, dtor_type> ||
-        stdex::same_as<T, enum_type> ||
-        stdex::same_as<T, function_type> ||
-        stdex::same_as<T, member_type> ||
-        stdex::same_as<T, method_type> ||
-        stdex::same_as<T, nullptr_type> ||
-        stdex::same_as<T, number_type> ||
-        stdex::same_as<T, pointer_type> ||
-        stdex::same_as<T, reference_type> ||
-        stdex::same_as<T, void_type>;
+    inline constexpr bool is_type_family_v =
+        std::is_same_v<T, any_type> ||
+        std::is_same_v<T, array_type> ||
+        std::is_same_v<T, class_type> ||
+        std::is_same_v<T, ctor_type> ||
+        std::is_same_v<T, dtor_type> ||
+        std::is_same_v<T, enum_type> ||
+        std::is_same_v<T, function_type> ||
+        std::is_same_v<T, member_type> ||
+        std::is_same_v<T, method_type> ||
+        std::is_same_v<T, nullptr_type> ||
+        std::is_same_v<T, number_type> ||
+        std::is_same_v<T, pointer_type> ||
+        std::is_same_v<T, reference_type> ||
+        std::is_same_v<T, void_type>;
+
+    template < typename T >
+    concept type_family = is_type_family_v<T>;
 
     template < type_family T >
     [[nodiscard]] auto type_access(const T& type) {
