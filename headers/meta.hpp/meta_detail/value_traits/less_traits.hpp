@@ -24,11 +24,11 @@ namespace meta_hpp::detail
 {
     template < typename T >
         requires requires(const T& l, const T& r) {
-            { l < r } -> stdex::convertible_to<bool>;
+            { std::less<>{}(l, r) } -> stdex::convertible_to<bool>;
         }
     struct less_traits<T> {
         bool operator()(const T& l, const T& r) const {
-            return l < r;
+            return std::less<>{}(l, r);
         }
     };
 }

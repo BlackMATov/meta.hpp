@@ -30,9 +30,7 @@ target_compile_options(${PROJECT_NAME}
         -Wno-c++98-compat
         -Wno-c++98-compat-pedantic
         -Wno-covered-switch-default
-        -Wno-ctad-maybe-unsupported
         -Wno-exit-time-destructors
-        -Wno-float-equal
         -Wno-global-constructors
         -Wno-padded
         -Wno-shadow-field-in-constructor

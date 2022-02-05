@@ -24,11 +24,11 @@ namespace meta_hpp::detail
 {
     template < typename T >
         requires requires(const T& l, const T& r) {
-            { l == r } -> stdex::convertible_to<bool>;
+            { std::equal_to<>{}(l, r) } -> stdex::convertible_to<bool>;
         }
     struct equals_traits<T> {
         bool operator()(const T& l, const T& r) const {
-            return l == r;
+            return std::equal_to<>{}(l, r);
         }
     };
 }

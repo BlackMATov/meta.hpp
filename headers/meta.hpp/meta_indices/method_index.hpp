@@ -32,10 +32,10 @@ namespace meta_hpp
     }
 
     inline bool operator<(const method_index& l, const method_index& r) noexcept {
-        return l.type_ < r.type_ || (l.type_ == r.type_ && l.name_ < r.name_);
+        return l.type_ < r.type_ || (l.type_ == r.type_ && std::less<>{}(l.name_, r.name_));
     }
 
     inline bool operator==(const method_index& l, const method_index& r) noexcept {
-        return l.type_ == r.type_ && l.name_ == r.name_;
+        return l.type_ == r.type_ && std::equal_to<>{}(l.name_, r.name_);
     }
 }

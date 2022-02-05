@@ -133,7 +133,7 @@ namespace enum_hpp::bitflags
         }\
         template < typename Enum >\
         constexpr bitflags<Enum> operator op (bitflags<Enum> l, Enum r) noexcept {\
-            return l op bitflags{r};\
+            return l op bitflags<Enum>{r};\
         }\
         template < typename Enum >\
         constexpr bitflags<Enum> operator op (bitflags<Enum> l, bitflags<Enum> r) noexcept {\
@@ -141,7 +141,7 @@ namespace enum_hpp::bitflags
         }\
         template < typename Enum >\
         constexpr bitflags<Enum>& operator op##= (bitflags<Enum>& l, Enum r) noexcept {\
-            return l = l op bitflags{r};\
+            return l = l op bitflags<Enum>{r};\
         }\
         template < typename Enum >\
         constexpr bitflags<Enum>& operator op##= (bitflags<Enum>& l, bitflags<Enum> r) noexcept {\
@@ -319,14 +319,14 @@ namespace enum_hpp::bitflags
 
 #define ENUM_HPP_OPERATORS_DECL(Enum)\
     constexpr ::enum_hpp::bitflags::bitflags<Enum> operator~ [[maybe_unused]] (Enum l) noexcept {\
-        return ~::enum_hpp::bitflags::bitflags(l);\
+        return ~::enum_hpp::bitflags::bitflags<Enum>(l);\
     }\
     constexpr ::enum_hpp::bitflags::bitflags<Enum> operator| [[maybe_unused]] (Enum l, Enum r) noexcept {\
-        return ::enum_hpp::bitflags::bitflags(l) | ::enum_hpp::bitflags::bitflags(r);\
+        return ::enum_hpp::bitflags::bitflags<Enum>(l) | ::enum_hpp::bitflags::bitflags<Enum>(r);\
     }\
     constexpr ::enum_hpp::bitflags::bitflags<Enum> operator& [[maybe_unused]] (Enum l, Enum r) noexcept {\
-        return ::enum_hpp::bitflags::bitflags(l) & ::enum_hpp::bitflags::bitflags(r);\
+        return ::enum_hpp::bitflags::bitflags<Enum>(l) & ::enum_hpp::bitflags::bitflags<Enum>(r);\
     }\
     constexpr ::enum_hpp::bitflags::bitflags<Enum> operator^ [[maybe_unused]] (Enum l, Enum r) noexcept {\
-        return ::enum_hpp::bitflags::bitflags(l) ^ ::enum_hpp::bitflags::bitflags(r);\
+        return ::enum_hpp::bitflags::bitflags<Enum>(l) ^ ::enum_hpp::bitflags::bitflags<Enum>(r);\
     }
