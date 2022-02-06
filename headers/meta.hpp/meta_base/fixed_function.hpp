@@ -6,6 +6,7 @@
 
 #pragma once
 
+#include <cassert>
 #include <cstddef>
 #include <functional>
 #include <type_traits>
@@ -60,9 +61,8 @@ namespace meta_hpp::detail
         }
 
         R operator()(Args... args) const {
-            return vtable_
-                ? vtable_->call(*this, std::forward<Args>(args)...)
-                : throw std::bad_function_call();
+            assert(vtable_ && "bad function call");
+            return vtable_->call(*this, std::forward<Args>(args)...);
         }
 
         void reset() noexcept {

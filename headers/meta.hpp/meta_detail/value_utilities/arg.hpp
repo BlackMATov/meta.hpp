@@ -250,7 +250,7 @@ namespace meta_hpp::detail
     // NOLINTNEXTLINE(readability-function-cognitive-complexity)
     To arg::cast() const {
         if ( !can_cast_to<To>() ) {
-            throw std::logic_error("bad argument cast");
+            throw_exception_with("bad argument cast");
         }
 
         using to_raw_type_cv = std::remove_reference_t<To>;
@@ -360,6 +360,6 @@ namespace meta_hpp::detail
             }
         }
 
-        throw std::logic_error("bad argument cast");
+        throw_exception_with("bad argument cast");
     }
 }

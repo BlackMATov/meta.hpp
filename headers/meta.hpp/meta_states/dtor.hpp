@@ -20,7 +20,7 @@ namespace meta_hpp::detail
         using class_type = typename dt::class_type;
 
         if ( !ptr.can_cast_to<class_type*>() ) {
-            throw std::logic_error("an attempt to call a destructor with an incorrect argument type");
+            throw_exception_with("an attempt to call a destructor with an incorrect argument type");
         }
 
         class_type* raw_ptr = ptr.cast<class_type*>();

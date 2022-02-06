@@ -188,7 +188,7 @@ namespace meta_hpp
                     if constexpr ( detail::has_deref_traits<Tp> ) {
                         return detail::deref_traits<Tp>{}(v.cast<Tp>());
                     } else {
-                        throw std::logic_error("value type doesn't have value deref traits");
+                        detail::throw_exception_with("value type doesn't have value deref traits");
                     }
                 },
 
@@ -196,7 +196,7 @@ namespace meta_hpp
                     if constexpr ( detail::has_index_traits<Tp> ) {
                         return detail::index_traits<Tp>{}(v.cast<Tp>(), i);
                     } else {
-                        throw std::logic_error("value type doesn't have value index traits");
+                        detail::throw_exception_with("value type doesn't have value index traits");
                     }
                 },
 
@@ -204,7 +204,7 @@ namespace meta_hpp
                     if constexpr ( detail::has_less_traits<Tp> ) {
                         return detail::less_traits<Tp>{}(l.cast<Tp>(), r.cast<Tp>());
                     } else {
-                        throw std::logic_error("value type doesn't have value less traits");
+                        detail::throw_exception_with("value type doesn't have value less traits");
                     }
                 },
 
@@ -212,7 +212,7 @@ namespace meta_hpp
                     if constexpr ( detail::has_equals_traits<Tp> ) {
                         return detail::equals_traits<Tp>{}(l.cast<Tp>(), r.cast<Tp>());
                     } else {
-                        throw std::logic_error("value type doesn't have value equals traits");
+                        detail::throw_exception_with("value type doesn't have value equals traits");
                     }
                 },
 
@@ -220,7 +220,7 @@ namespace meta_hpp
                     if constexpr ( detail::has_istream_traits<Tp> ) {
                         return detail::istream_traits<Tp>{}(is, v.cast<Tp>());
                     } else {
-                        throw std::logic_error("value type doesn't have value istream traits");
+                        detail::throw_exception_with("value type doesn't have value istream traits");
                     }
                 },
 
@@ -228,7 +228,7 @@ namespace meta_hpp
                     if constexpr ( detail::has_ostream_traits<Tp> ) {
                         return detail::ostream_traits<Tp>{}(os, v.cast<Tp>());
                     } else {
-                        throw std::logic_error("value type doesn't have value ostream traits");
+                        detail::throw_exception_with("value type doesn't have value ostream traits");
                     }
                 },
             };
@@ -332,7 +332,7 @@ namespace meta_hpp
         if ( Tp* ptr = try_cast<Tp>() ) {
             return *ptr;
         }
-        throw std::logic_error("bad value cast");
+        detail::throw_exception_with("bad value cast");
     }
 
     template < typename T >
@@ -341,7 +341,7 @@ namespace meta_hpp
         if ( Tp* ptr = try_cast<Tp>() ) {
             return std::move(*ptr);
         }
-        throw std::logic_error("bad value cast");
+        detail::throw_exception_with("bad value cast");
     }
 
     template < typename T >
@@ -350,7 +350,7 @@ namespace meta_hpp
         if ( const Tp* ptr = try_cast<const Tp>() ) {
             return *ptr;
         }
-        throw std::logic_error("bad value cast");
+        detail::throw_exception_with("bad value cast");
     }
 
     template < typename T >
@@ -359,7 +359,7 @@ namespace meta_hpp
         if ( const Tp* ptr = try_cast<const Tp>() ) {
             return std::move(*ptr);
         }
-        throw std::logic_error("bad value cast");
+        detail::throw_exception_with("bad value cast");
     }
 
     template < typename T >

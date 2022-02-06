@@ -9,6 +9,7 @@
 #include <cassert>
 #include <cstddef>
 #include <cstdint>
+#include <cstdlib>
 
 #include <algorithm>
 #include <array>
@@ -44,6 +45,10 @@
 #include "meta_base/type_kinds.hpp"
 #include "meta_base/type_list.hpp"
 
+#if !defined(__cpp_exceptions)
+#  define META_HPP_NO_EXCEPTIONS
+#endif
+
 namespace meta_hpp
 {
     using detail::select_const;
@@ -55,6 +60,27 @@ namespace meta_hpp
     using detail::type_list;
 
     using enum_hpp::bitflags::bitflags;
+}
+
+namespace meta_hpp
+{
+    class exception final : public std::runtime_error {
+    public:
+        explicit exception(const char* what)
+        : std::runtime_error(what) {}
+    };
+
+    namespace detail
+    {
+        inline void throw_exception_with [[noreturn]] (const char* what) {
+        #ifndef META_HPP_NO_EXCEPTIONS
+            throw ::meta_hpp::exception(what);
+        #else
+            (void)what;
+            std::abort();
+        #endif
+        }
+    }
 }
 
 namespace meta_hpp

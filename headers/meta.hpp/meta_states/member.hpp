@@ -34,7 +34,7 @@ namespace meta_hpp::detail
         static_assert(as_copy || as_ptr || as_ref_wrap);
 
         if ( !inst.can_cast_to<const class_type>() ) {
-            throw std::logic_error("an attempt to get a member with an incorrect instance type");
+            throw_exception_with("an attempt to get a member with an incorrect instance type");
         }
 
         if ( inst.is_const() ) {
@@ -86,18 +86,18 @@ namespace meta_hpp::detail
         using value_type = typename mt::value_type;
 
         if constexpr ( std::is_const_v<value_type> ) {
-            throw std::logic_error("an attempt to set a constant member");
+            throw_exception_with("an attempt to set a constant member");
         } else {
             if ( inst.is_const() ) {
-                throw std::logic_error("an attempt to set a member with an const instance type");
+                throw_exception_with("an attempt to set a member with an const instance type");
             }
 
             if ( !inst.can_cast_to<class_type>() ) {
-                throw std::logic_error("an attempt to set a member with an incorrect instance type");
+                throw_exception_with("an attempt to set a member with an incorrect instance type");
             }
 
             if ( !arg.can_cast_to<value_type>() ) {
-                throw std::logic_error("an attempt to set a member with an incorrect argument type");
+                throw_exception_with("an attempt to set a member with an incorrect argument type");
             }
 
             std::invoke(member, inst.cast<class_type>()) = arg.cast<value_type>();

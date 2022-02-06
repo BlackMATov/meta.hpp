@@ -177,7 +177,7 @@ namespace meta_hpp::detail
     template < inst_class_ref_kind Q >
     decltype(auto) inst::cast() const {
         if ( !can_cast_to<Q>() ) {
-            throw std::logic_error("bad instance cast");
+            throw_exception_with("bad instance cast");
         }
 
         using inst_class_cv = std::remove_reference_t<Q>;
@@ -205,6 +205,6 @@ namespace meta_hpp::detail
             }
         }
 
-        throw std::logic_error("bad instance cast");
+        throw_exception_with("bad instance cast");
     }
 }

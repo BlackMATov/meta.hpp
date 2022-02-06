@@ -35,7 +35,7 @@ namespace meta_hpp::detail
         static_assert(as_copy || as_void || ref_as_ptr);
 
         if ( args.size() != ft::arity ) {
-            throw std::logic_error("an attempt to call a function with an incorrect arity");
+            throw_exception_with("an attempt to call a function with an incorrect arity");
         }
 
         return std::invoke([
@@ -43,7 +43,7 @@ namespace meta_hpp::detail
         // NOLINTNEXTLINE(readability-named-parameter)
         ]<std::size_t... Is>(std::index_sequence<Is...>) -> value {
             if ( !(... && (args.data() + Is)->can_cast_to<type_list_at_t<Is, argument_types>>()) ) {
-                throw std::logic_error("an attempt to call a function with incorrect argument types");
+                throw_exception_with("an attempt to call a function with incorrect argument types");
             }
 
             if constexpr ( as_void ) {
