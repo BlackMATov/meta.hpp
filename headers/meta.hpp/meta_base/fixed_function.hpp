@@ -13,12 +13,14 @@
 
 namespace meta_hpp::detail
 {
-    template < typename Function, std::size_t MaxFunctorSize = sizeof(void*) * 3 >
+    template < typename Function, std::size_t MaxFunctorSize = sizeof(void*) * 2 >
     class fixed_function;
 
     template < typename R, typename... Args, std::size_t MaxFunctorSize >
     class fixed_function<R(Args...), MaxFunctorSize> final {
     public:
+        using result_type = R;
+
         fixed_function() = default;
         ~fixed_function() { reset(); }
 
@@ -39,12 +41,12 @@ namespace meta_hpp::detail
         }
 
         template < typename Functor >
-	    fixed_function(Functor&& functor) {
+        fixed_function(Functor&& functor) {
             vtable_t::construct(*this, std::forward<Functor>(functor));
         }
 
         template < typename Functor >
-	    fixed_function& operator=(Functor&& functor) {
+        fixed_function& operator=(Functor&& functor) {
             fixed_function{std::forward<Functor>(functor)}.swap(*this);
             return *this;
         }

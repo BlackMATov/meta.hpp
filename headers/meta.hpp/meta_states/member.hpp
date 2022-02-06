@@ -16,7 +16,7 @@
 namespace meta_hpp::detail
 {
     template < member_policy_kind Policy, member_kind Member >
-    value raw_member_getter(Member member, const inst& inst) {
+    value raw_member_getter(const Member& member, const inst& inst) {
         using mt = member_traits<Member>;
         using class_type = typename mt::class_type;
         using value_type = typename mt::value_type;
@@ -38,7 +38,7 @@ namespace meta_hpp::detail
         }
 
         if ( inst.is_const() ) {
-            auto&& return_value = std::invoke(std::move(member), inst.cast<const class_type>());
+            auto&& return_value = std::invoke(member, inst.cast<const class_type>());
 
             if constexpr ( as_copy ) {
                 return value{std::forward<decltype(return_value)>(return_value)};
@@ -52,7 +52,7 @@ namespace meta_hpp::detail
                 return value{std::ref(return_value)};
             }
         } else {
-            auto&& return_value = std::invoke(std::move(member), inst.cast<class_type>());
+            auto&& return_value = std::invoke(member, inst.cast<class_type>());
 
             if constexpr ( as_copy ) {
                 return value{std::forward<decltype(return_value)>(return_value)};
@@ -80,7 +80,7 @@ namespace meta_hpp::detail
 namespace meta_hpp::detail
 {
     template < member_kind Member >
-    void raw_member_setter([[maybe_unused]] Member member, const inst& inst, const arg& arg) {
+    void raw_member_setter([[maybe_unused]] const Member& member, const inst& inst, const arg& arg) {
         using mt = member_traits<Member>;
         using class_type = typename mt::class_type;
         using value_type = typename mt::value_type;
@@ -100,7 +100,7 @@ namespace meta_hpp::detail
                 throw std::logic_error("an attempt to set a member with an incorrect argument type");
             }
 
-            std::invoke(std::move(member), inst.cast<class_type>()) = arg.cast<value_type>();
+            std::invoke(member, inst.cast<class_type>()) = arg.cast<value_type>();
         }
     }
 
@@ -150,8 +150,8 @@ namespace meta_hpp::detail
     member_state_ptr member_state::make(std::string name, Member member) {
         return std::make_shared<member_state>(member_state{
             .index{member_index::make<Member>(std::move(name))},
-            .getter{make_member_getter<Policy>(std::move(member))},
-            .setter{make_member_setter(std::move(member))},
+            .getter{make_member_getter<Policy>(member)},
+            .setter{make_member_setter(member)},
             .is_gettable_with{make_member_is_gettable_with<Member>()},
             .is_settable_with{make_member_is_settable_with<Member>()},
         });

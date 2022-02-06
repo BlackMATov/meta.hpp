@@ -16,7 +16,7 @@
 namespace meta_hpp::detail
 {
     template < method_policy_kind Policy, method_kind Method >
-    value raw_method_invoke(Method method, const inst& inst, std::span<const arg> args) {
+    value raw_method_invoke(const Method& method, const inst& inst, std::span<const arg> args) {
         using mt = method_traits<Method>;
         using return_type = typename mt::return_type;
         using qualified_type = typename mt::qualified_type;
@@ -45,8 +45,7 @@ namespace meta_hpp::detail
         }
 
         return std::invoke([
-            &inst, &args,
-            method = std::move(method)
+            &method, &inst, args
         // NOLINTNEXTLINE(readability-named-parameter)
         ]<std::size_t... Is>(std::index_sequence<Is...>) -> value {
             if ( !(... && (args.data() + Is)->can_cast_to<type_list_at_t<Is, argument_types>>()) ) {
@@ -55,13 +54,13 @@ namespace meta_hpp::detail
 
             if constexpr ( as_void ) {
                 std::ignore = std::invoke(
-                    std::move(method),
+                    method,
                     inst.cast<qualified_type>(),
                     (args.data() + Is)->cast<type_list_at_t<Is, argument_types>>()...);
                 return value{};
             } else {
                 return_type&& return_value = std::invoke(
-                    std::move(method),
+                    method,
                     inst.cast<qualified_type>(),
                     (args.data() + Is)->cast<type_list_at_t<Is, argument_types>>()...);
 
@@ -89,7 +88,7 @@ namespace meta_hpp::detail
         }
 
         // NOLINTNEXTLINE(readability-named-parameter)
-        return std::invoke([&args]<std::size_t... Is>(std::index_sequence<Is...>){
+        return std::invoke([args]<std::size_t... Is>(std::index_sequence<Is...>){
             return (... && (args.data() + Is)->can_cast_to<type_list_at_t<Is, argument_types>>());
         }, std::make_index_sequence<mt::arity>());
     }

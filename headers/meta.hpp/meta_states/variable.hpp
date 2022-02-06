@@ -15,7 +15,7 @@
 namespace meta_hpp::detail
 {
     template < variable_policy_kind Policy, pointer_kind Pointer >
-    value raw_variable_getter(Pointer pointer) {
+    value raw_variable_getter(const Pointer& pointer) {
         using pt = pointer_traits<Pointer>;
         using data_type = typename pt::data_type;
 
@@ -47,7 +47,7 @@ namespace meta_hpp::detail
     }
 
     template < pointer_kind Pointer >
-    void raw_variable_setter([[maybe_unused]] Pointer pointer, const arg& arg) {
+    void raw_variable_setter([[maybe_unused]] const Pointer& pointer, const arg& arg) {
         using pt = pointer_traits<Pointer>;
         using data_type = typename pt::data_type;
 
@@ -76,13 +76,13 @@ namespace meta_hpp::detail
     template < variable_policy_kind Policy, pointer_kind Pointer >
     variable_state::getter_impl make_variable_getter(Pointer pointer) {
         using namespace std::placeholders;
-        return std::bind(&raw_variable_getter<Policy, Pointer>, pointer);
+        return std::bind(&raw_variable_getter<Policy, Pointer>, std::move(pointer));
     }
 
     template < pointer_kind Pointer >
     variable_state::setter_impl make_variable_setter(Pointer pointer) {
         using namespace std::placeholders;
-        return std::bind(&raw_variable_setter<Pointer>, pointer, _1);
+        return std::bind(&raw_variable_setter<Pointer>, std::move(pointer), _1);
     }
 
     template < pointer_kind Pointer >
@@ -98,8 +98,8 @@ namespace meta_hpp::detail
     variable_state_ptr variable_state::make(std::string name, Pointer pointer) {
         return std::make_shared<variable_state>(variable_state{
             .index{variable_index::make<Pointer>(std::move(name))},
-            .getter{make_variable_getter<Policy>(std::move(pointer))},
-            .setter{make_variable_setter(std::move(pointer))},
+            .getter{make_variable_getter<Policy>(pointer)},
+            .setter{make_variable_setter(pointer)},
             .is_settable_with{make_variable_is_settable_with<Pointer>()},
         });
     }

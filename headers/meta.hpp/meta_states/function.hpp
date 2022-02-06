@@ -15,7 +15,7 @@
 namespace meta_hpp::detail
 {
     template < function_policy_kind Policy, function_kind Function >
-    value raw_function_invoke(Function function, std::span<const arg> args) {
+    value raw_function_invoke(const Function& function, std::span<const arg> args) {
         using ft = function_traits<Function>;
         using return_type = typename ft::return_type;
         using argument_types = typename ft::argument_types;
@@ -39,7 +39,7 @@ namespace meta_hpp::detail
         }
 
         return std::invoke([
-            args, function = std::move(function)
+            &function, args
         // NOLINTNEXTLINE(readability-named-parameter)
         ]<std::size_t... Is>(std::index_sequence<Is...>) -> value {
             if ( !(... && (args.data() + Is)->can_cast_to<type_list_at_t<Is, argument_types>>()) ) {
@@ -48,12 +48,12 @@ namespace meta_hpp::detail
 
             if constexpr ( as_void ) {
                 std::ignore = std::invoke(
-                    std::move(function),
+                    function,
                     (args.data() + Is)->cast<type_list_at_t<Is, argument_types>>()...);
                 return value{};
             } else {
                 return_type&& return_value = std::invoke(
-                    std::move(function),
+                    function,
                     (args.data() + Is)->cast<type_list_at_t<Is, argument_types>>()...);
 
                 if constexpr ( ref_as_ptr ) {
