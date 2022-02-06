@@ -78,7 +78,7 @@ namespace meta_hpp::detail
         struct vtable_t;
         vtable_t* vtable_{};
     private:
-        using storage_t = std::aligned_storage_t<MaxFunctorSize, alignof(void*)>;
+        using storage_t = std::aligned_storage_t<MaxFunctorSize>;
         storage_t storage_{};
     };
 
@@ -142,11 +142,10 @@ namespace meta_hpp::detail
         static void construct(fixed_function& dst, Functor&& functor) {
             using Fp = std::decay_t<Functor>;
 
-            static_assert(
-                sizeof(Fp) <= MaxFunctorSize &&
-                alignof(Fp) <= alignof(storage_t) &&
-                std::is_invocable_r_v<R, Fp, Args...> &&
-                std::is_nothrow_move_constructible_v<Fp>);
+            static_assert(sizeof(Fp) <= MaxFunctorSize);
+            static_assert(alignof(Fp) <= alignof(storage_t));
+            static_assert(std::is_invocable_r_v<R, Fp, Args...>);
+            static_assert(std::is_nothrow_move_constructible_v<Fp>);
 
             ::new (&dst.storage_) Fp(std::forward<Functor>(functor));
             dst.vtable_ = vtable_t::get<Fp>();

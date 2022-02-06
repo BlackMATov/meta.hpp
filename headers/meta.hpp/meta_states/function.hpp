@@ -85,14 +85,14 @@ namespace meta_hpp::detail
 {
     template < function_policy_kind Policy, function_kind Function >
     function_state::invoke_impl make_function_invoke(Function function) {
-        using namespace std::placeholders;
-        return std::bind(&raw_function_invoke<Policy, Function>, std::move(function), _1);
+        return [function = std::move(function)](std::span<const arg> args){
+            return raw_function_invoke<Policy>(function, args);
+        };
     }
 
     template < function_kind Function >
     function_state::is_invocable_with_impl make_function_is_invocable_with() {
-        using namespace std::placeholders;
-        return std::bind(&raw_function_is_invocable_with<Function>, _1);
+        return &raw_function_is_invocable_with<Function>;
     }
 }
 

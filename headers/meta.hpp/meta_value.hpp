@@ -86,7 +86,7 @@ namespace meta_hpp
         struct vtable_t;
         vtable_t* vtable_{};
     private:
-        using buffer_t = std::aligned_storage_t<sizeof(void*) * 2, alignof(void*)>;
+        using buffer_t = std::aligned_storage_t<sizeof(void*) * 2>;
         using storage_u = std::variant<std::monostate, void*, buffer_t>;
         storage_u storage_{};
     };

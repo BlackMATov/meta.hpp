@@ -98,14 +98,14 @@ namespace meta_hpp::detail
 {
     template < method_policy_kind Policy, method_kind Method >
     method_state::invoke_impl make_method_invoke(Method method) {
-        using namespace std::placeholders;
-        return std::bind(&raw_method_invoke<Policy, Method>, std::move(method), _1, _2);
+        return [method = std::move(method)](const inst& inst, std::span<const arg> args){
+            return raw_method_invoke<Policy>(method, inst, args);
+        };
     }
 
     template < method_kind Method >
     method_state::is_invocable_with_impl make_method_is_invocable_with() {
-        using namespace std::placeholders;
-        return std::bind(&raw_method_is_invocable_with<Method>, _1, _2);
+        return &raw_method_is_invocable_with<Method>;
     }
 }
 

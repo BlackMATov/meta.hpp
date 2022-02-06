@@ -81,14 +81,12 @@ namespace meta_hpp::detail
 {
     template < ctor_policy_kind Policy, class_kind Class, typename... Args >
     ctor_state::invoke_impl make_ctor_invoke() {
-        using namespace std::placeholders;
-        return std::bind(&raw_ctor_invoke<Policy, Class, Args...>, _1);
+        return &raw_ctor_invoke<Policy, Class, Args...>;
     }
 
     template < class_kind Class, typename... Args >
     ctor_state::is_invocable_with_impl make_ctor_is_invocable_with() {
-        using namespace std::placeholders;
-        return std::bind(&raw_ctor_is_invocable_with<Class, Args...>, _1);
+        return &raw_ctor_is_invocable_with<Class, Args...>;
     }
 }
 

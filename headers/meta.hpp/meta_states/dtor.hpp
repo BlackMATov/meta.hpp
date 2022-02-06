@@ -42,14 +42,12 @@ namespace meta_hpp::detail
 {
     template < class_kind Class >
     dtor_state::invoke_impl make_dtor_invoke() {
-        using namespace std::placeholders;
-        return std::bind(&raw_dtor_invoke<Class>, _1);
+        return &raw_dtor_invoke<Class>;
     }
 
     template < class_kind Class >
     dtor_state::is_invocable_with_impl make_dtor_is_invocable_with() {
-        using namespace std::placeholders;
-        return std::bind(&raw_dtor_is_invocable_with<Class>, _1);
+        return &raw_dtor_is_invocable_with<Class>;
     }
 }
 

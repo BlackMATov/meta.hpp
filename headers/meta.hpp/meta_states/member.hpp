@@ -121,26 +121,26 @@ namespace meta_hpp::detail
 {
     template < member_policy_kind Policy, member_kind Member >
     member_state::getter_impl make_member_getter(Member member) {
-        using namespace std::placeholders;
-        return std::bind(&raw_member_getter<Policy, Member>, std::move(member), _1);
+        return [member = std::move(member)](const inst& inst){
+            return raw_member_getter<Policy>(member, inst);
+        };
     }
 
     template < member_kind Member >
     member_state::is_gettable_with_impl make_member_is_gettable_with() {
-        using namespace std::placeholders;
-        return std::bind(&raw_member_is_gettable_with<Member>, _1);
+        return &raw_member_is_gettable_with<Member>;
     }
 
     template < member_kind Member >
     member_state::setter_impl make_member_setter(Member member) {
-        using namespace std::placeholders;
-        return std::bind(&raw_member_setter<Member>, std::move(member), _1, _2);
+        return [member = std::move(member)](const inst& inst, const arg& arg){
+            return raw_member_setter(member, inst, arg);
+        };
     }
 
     template < member_kind Member >
     member_state::is_settable_with_impl make_member_is_settable_with() {
-        using namespace std::placeholders;
-        return std::bind(&raw_member_is_settable_with<Member>, _1, _2);
+        return &raw_member_is_settable_with<Member>;
     }
 }
 

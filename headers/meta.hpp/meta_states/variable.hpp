@@ -75,20 +75,21 @@ namespace meta_hpp::detail
 {
     template < variable_policy_kind Policy, pointer_kind Pointer >
     variable_state::getter_impl make_variable_getter(Pointer pointer) {
-        using namespace std::placeholders;
-        return std::bind(&raw_variable_getter<Policy, Pointer>, std::move(pointer));
+        return [pointer = std::move(pointer)](){
+            return raw_variable_getter<Policy>(pointer);
+        };
     }
 
     template < pointer_kind Pointer >
     variable_state::setter_impl make_variable_setter(Pointer pointer) {
-        using namespace std::placeholders;
-        return std::bind(&raw_variable_setter<Pointer>, std::move(pointer), _1);
+        return [pointer = std::move(pointer)](const arg& arg){
+            return raw_variable_setter(pointer, arg);
+        };
     }
 
     template < pointer_kind Pointer >
     variable_state::is_settable_with_impl make_variable_is_settable_with() {
-        using namespace std::placeholders;
-        return std::bind(&raw_variable_is_settable_with<Pointer>, _1);
+        return &raw_variable_is_settable_with<Pointer>;
     }
 }
 
