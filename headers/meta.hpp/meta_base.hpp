@@ -49,6 +49,10 @@
 #  define META_HPP_NO_EXCEPTIONS
 #endif
 
+#if !defined(__cpp_rtti)
+#  define META_HPP_NO_RTTI
+#endif
+
 namespace meta_hpp
 {
     using detail::select_const;

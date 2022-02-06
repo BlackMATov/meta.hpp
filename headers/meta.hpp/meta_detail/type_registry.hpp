@@ -19,6 +19,7 @@ namespace meta_hpp::detail
         }
 
         [[nodiscard]] any_type get_type_by_id(type_id id) const noexcept {
+            const std::lock_guard lock{mutex_};
             if ( auto iter = type_by_id_.find(id); iter != type_by_id_.end() ) {
                 return iter->second;
             }
@@ -26,6 +27,7 @@ namespace meta_hpp::detail
         }
 
         [[nodiscard]] any_type get_type_by_rtti(const std::type_index& index) const noexcept {
+            const std::lock_guard lock{mutex_};
             if ( auto iter = type_by_rtti_.find(index); iter != type_by_rtti_.end() ) {
                 return iter->second;
             }
@@ -200,12 +202,16 @@ namespace meta_hpp::detail
         TypeData ensure_type(const TypeData& type_data) {
             static std::once_flag init_flag{};
             std::call_once(init_flag, [this, &type_data](){
+                const std::lock_guard lock{mutex_};
                 type_by_id_[type_data->id] = any_type{type_data};
+            #ifndef META_HPP_NO_RTTI
                 type_by_rtti_[typeid(Type)] = any_type{type_data};
+            #endif
             });
             return type_data;
         }
     private:
+        mutable std::mutex mutex_;
         std::map<type_id, any_type, std::less<>> type_by_id_;
         std::map<std::type_index, any_type, std::less<>> type_by_rtti_;
     };
@@ -259,7 +265,12 @@ namespace meta_hpp::detail
 {
     template < typename T >
     [[nodiscard]] any_type resolve_polymorphic_type(T&& v) noexcept {
+    #ifndef META_HPP_NO_RTTI
         type_registry& registry = type_registry::instance();
         return registry.get_type_by_rtti(typeid(v));
+    #else
+        (void)v;
+        return any_type{};
+    #endif
     }
 }
