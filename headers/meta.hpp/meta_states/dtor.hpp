@@ -25,7 +25,7 @@ namespace meta_hpp::detail
 
         class_type* raw_ptr = ptr.cast<class_type*>();
         if ( raw_ptr ) {
-            raw_ptr->~Class();
+            std::unique_ptr<class_type>{raw_ptr}.reset();
         }
     }
 
