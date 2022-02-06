@@ -19,7 +19,7 @@ namespace meta_hpp::detail
         }
 
         [[nodiscard]] any_type get_type_by_id(type_id id) const noexcept {
-            const std::lock_guard lock{mutex_};
+            const std::lock_guard<std::mutex> lock{mutex_};
             if ( auto iter = type_by_id_.find(id); iter != type_by_id_.end() ) {
                 return iter->second;
             }
@@ -27,7 +27,7 @@ namespace meta_hpp::detail
         }
 
         [[nodiscard]] any_type get_type_by_rtti(const std::type_index& index) const noexcept {
-            const std::lock_guard lock{mutex_};
+            const std::lock_guard<std::mutex> lock{mutex_};
             if ( auto iter = type_by_rtti_.find(index); iter != type_by_rtti_.end() ) {
                 return iter->second;
             }
@@ -202,7 +202,7 @@ namespace meta_hpp::detail
         TypeData ensure_type(const TypeData& type_data) {
             static std::once_flag init_flag{};
             std::call_once(init_flag, [this, &type_data](){
-                const std::lock_guard lock{mutex_};
+                const std::lock_guard<std::mutex> lock{mutex_};
                 type_by_id_[type_data->id] = any_type{type_data};
             #ifndef META_HPP_NO_RTTI
                 type_by_rtti_[typeid(Type)] = any_type{type_data};
