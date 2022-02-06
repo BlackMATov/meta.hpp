@@ -37,6 +37,11 @@ TEST_CASE("meta/meta_base/fixed_function") {
             ff = std::move(f2);
             CHECK(ff() == 2);
         }
+        {
+            auto f1 = []() noexcept {return 1;};
+            fixed_function ff{f1};
+            CHECK(ff() == 1);
+        }
     }
 
     SUBCASE("reset") {

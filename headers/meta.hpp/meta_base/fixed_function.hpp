@@ -178,17 +178,23 @@ namespace meta_hpp::detail
         template < typename F >
         struct strip_signature_impl;
 
-        template < typename R, typename C, bool NoExcept, typename... Args >
-        struct strip_signature_impl<R(C::*)(Args...) noexcept(NoExcept)> { using type = R(Args...); };
+        template < typename R, typename C, typename... Args >
+        struct strip_signature_impl<R(C::*)(Args...)> { using type = R(Args...); };
+        template < typename R, typename C, typename... Args >
+        struct strip_signature_impl<R(C::*)(Args...) const> { using type = R(Args...); };
+        template < typename R, typename C, typename... Args >
+        struct strip_signature_impl<R(C::*)(Args...) &> { using type = R(Args...); };
+        template < typename R, typename C, typename... Args >
+        struct strip_signature_impl<R(C::*)(Args...) const &> { using type = R(Args...); };
 
-        template < typename R, typename C, bool NoExcept, typename... Args >
-        struct strip_signature_impl<R(C::*)(Args...) const noexcept(NoExcept)> { using type = R(Args...); };
-
-        template < typename R, typename C, bool NoExcept, typename... Args >
-        struct strip_signature_impl<R(C::*)(Args...) & noexcept(NoExcept)> { using type = R(Args...); };
-
-        template < typename R, typename C, bool NoExcept, typename... Args >
-        struct strip_signature_impl<R(C::*)(Args...) const & noexcept(NoExcept)> { using type = R(Args...); };
+        template < typename R, typename C, typename... Args >
+        struct strip_signature_impl<R(C::*)(Args...) noexcept> { using type = R(Args...); };
+        template < typename R, typename C, typename... Args >
+        struct strip_signature_impl<R(C::*)(Args...) const noexcept> { using type = R(Args...); };
+        template < typename R, typename C, typename... Args >
+        struct strip_signature_impl<R(C::*)(Args...) & noexcept> { using type = R(Args...); };
+        template < typename R, typename C, typename... Args >
+        struct strip_signature_impl<R(C::*)(Args...) const & noexcept> { using type = R(Args...); };
 
         template < typename F >
         using strip_signature_impl_t = typename strip_signature_impl<F>::type;
