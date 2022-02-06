@@ -367,81 +367,81 @@ namespace meta_hpp
 namespace meta_hpp::detail
 {
     struct ctor_state final {
-        using invoke_impl = std::function<value(std::span<const arg>)>;
-        using is_invocable_with_impl = std::function<bool(std::span<const arg_base>)>;
+        using invoke_impl = fixed_function<value(std::span<const arg>)>;
+        using is_invocable_with_impl = fixed_function<bool(std::span<const arg_base>)>;
 
-        const ctor_index index;
-        const invoke_impl invoke;
-        const is_invocable_with_impl is_invocable_with;
+        ctor_index index;
+        invoke_impl invoke;
+        is_invocable_with_impl is_invocable_with;
 
         template < ctor_policy_kind Policy, class_kind Class, typename... Args >
         [[nodiscard]] static ctor_state_ptr make();
     };
 
     struct dtor_state final {
-        using invoke_impl = std::function<void(const arg&)>;
-        using is_invocable_with_impl = std::function<bool(const arg_base&)>;
+        using invoke_impl = fixed_function<void(const arg&)>;
+        using is_invocable_with_impl = fixed_function<bool(const arg_base&)>;
 
-        const dtor_index index;
-        const invoke_impl invoke;
-        const is_invocable_with_impl is_invocable_with;
+        dtor_index index;
+        invoke_impl invoke;
+        is_invocable_with_impl is_invocable_with;
 
         template < class_kind Class >
         [[nodiscard]] static dtor_state_ptr make();
     };
 
     struct evalue_state final {
-        const evalue_index index;
-        const value enum_value;
-        const value underlying_value;
+        evalue_index index;
+        value enum_value;
+        value underlying_value;
 
         template < enum_kind Enum >
         [[nodiscard]] static evalue_state_ptr make(std::string name, Enum evalue);
     };
 
     struct function_state final {
-        using invoke_impl = std::function<value(std::span<const arg>)>;
-        using is_invocable_with_impl = std::function<bool(std::span<const arg_base>)>;
+        using invoke_impl = fixed_function<value(std::span<const arg>)>;
+        using is_invocable_with_impl = fixed_function<bool(std::span<const arg_base>)>;
 
-        const function_index index;
-        const invoke_impl invoke;
-        const is_invocable_with_impl is_invocable_with;
+        function_index index;
+        invoke_impl invoke;
+        is_invocable_with_impl is_invocable_with;
 
         template < function_policy_kind Policy, function_kind Function >
         [[nodiscard]] static function_state_ptr make(std::string name, Function function);
     };
 
     struct member_state final {
-        using getter_impl = std::function<value(const inst&)>;
-        using setter_impl = std::function<void(const inst&, const arg&)>;
+        using getter_impl = fixed_function<value(const inst&)>;
+        using setter_impl = fixed_function<void(const inst&, const arg&)>;
 
-        using is_gettable_with_impl = std::function<bool(const inst_base&)>;
-        using is_settable_with_impl = std::function<bool(const inst_base&, const arg_base&)>;
+        using is_gettable_with_impl = fixed_function<bool(const inst_base&)>;
+        using is_settable_with_impl = fixed_function<bool(const inst_base&, const arg_base&)>;
 
-        const member_index index;
-        const getter_impl getter;
-        const setter_impl setter;
-        const is_gettable_with_impl is_gettable_with;
-        const is_settable_with_impl is_settable_with;
+        member_index index;
+        getter_impl getter;
+        setter_impl setter;
+        is_gettable_with_impl is_gettable_with;
+        is_settable_with_impl is_settable_with;
 
         template < member_policy_kind Policy, member_kind Member >
         [[nodiscard]] static member_state_ptr make(std::string name, Member member);
     };
 
     struct method_state final {
-        using invoke_impl = std::function<value(const inst&, std::span<const arg>)>;
-        using is_invocable_with_impl = std::function<bool(const inst_base&, std::span<const arg_base>)>;
+        using invoke_impl = fixed_function<value(const inst&, std::span<const arg>)>;
+        using is_invocable_with_impl = fixed_function<bool(const inst_base&, std::span<const arg_base>)>;
 
-        const method_index index;
-        const invoke_impl invoke;
-        const is_invocable_with_impl is_invocable_with;
+        method_index index;
+        invoke_impl invoke;
+        is_invocable_with_impl is_invocable_with;
 
         template < method_policy_kind Policy, method_kind Method >
         [[nodiscard]] static method_state_ptr make(std::string name, Method method);
     };
 
     struct scope_state final {
-        const scope_index index;
+        scope_index index;
 
         class_map classes{};
         enum_map enums{};
@@ -452,14 +452,14 @@ namespace meta_hpp::detail
     };
 
     struct variable_state final {
-        using getter_impl = std::function<value()>;
-        using setter_impl = std::function<void(const arg&)>;
-        using is_settable_with_impl = std::function<bool(const arg_base&)>;
+        using getter_impl = fixed_function<value()>;
+        using setter_impl = fixed_function<void(const arg&)>;
+        using is_settable_with_impl = fixed_function<bool(const arg_base&)>;
 
-        const variable_index index;
-        const getter_impl getter;
-        const setter_impl setter;
-        const is_settable_with_impl is_settable_with;
+        variable_index index;
+        getter_impl getter;
+        setter_impl setter;
+        is_settable_with_impl is_settable_with;
 
         template < variable_policy_kind Policy, pointer_kind Pointer >
         [[nodiscard]] static variable_state_ptr make(std::string name, Pointer pointer);

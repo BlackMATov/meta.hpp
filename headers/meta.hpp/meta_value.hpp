@@ -12,7 +12,10 @@
 namespace meta_hpp::detail
 {
     template < typename T >
-    concept value_kind = stdex::same_as<T, value>;
+    inline constexpr bool is_value_kind_v = std::is_same_v<T, value>;
+
+    template < typename T >
+    concept value_kind = is_value_kind_v<T>;
 
     template < typename T >
     concept decay_value_kind = value_kind<std::decay_t<T>>;
@@ -26,7 +29,7 @@ namespace meta_hpp
     class value final {
     public:
         value() = default;
-        ~value() noexcept;
+        ~value();
 
         value(value&& other) noexcept;
         value(const value& other);
@@ -45,7 +48,7 @@ namespace meta_hpp
         [[nodiscard]] bool is_valid() const noexcept;
         [[nodiscard]] explicit operator bool() const noexcept;
 
-        void reset() noexcept;
+        void reset();
         void swap(value& other) noexcept;
 
         [[nodiscard]] const any_type& get_type() const noexcept;

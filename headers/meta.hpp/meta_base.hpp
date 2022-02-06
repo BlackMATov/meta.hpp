@@ -35,6 +35,7 @@
 #include "meta_base/cvref_traits.hpp"
 #include "meta_base/enum_bitflags.hpp"
 #include "meta_base/enum.hpp"
+#include "meta_base/fixed_function.hpp"
 #include "meta_base/noncopyable.hpp"
 #include "meta_base/overloaded.hpp"
 #include "meta_base/select_overload.hpp"

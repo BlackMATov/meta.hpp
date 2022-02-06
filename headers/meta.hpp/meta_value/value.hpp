@@ -40,13 +40,13 @@ namespace meta_hpp
         std::ostream& (*const ostream)(std::ostream&, const value&);
 
         template < typename T >
-        static T* storage_cast(buffer_t& buffer) noexcept {
+        static T* buffer_cast(buffer_t& buffer) noexcept {
             // NOLINTNEXTLINE(cppcoreguidelines-pro-type-reinterpret-cast)
             return reinterpret_cast<T*>(&buffer);
         }
 
         template < typename T >
-        static const T* storage_cast(const buffer_t& buffer) noexcept {
+        static const T* buffer_cast(const buffer_t& buffer) noexcept {
             // NOLINTNEXTLINE(cppcoreguidelines-pro-type-reinterpret-cast)
             return reinterpret_cast<const T*>(&buffer);
         }
@@ -55,7 +55,7 @@ namespace meta_hpp
         static T* storage_cast(storage_u& storage) noexcept {
             return std::visit(detail::overloaded {
                 [](void* ptr) { return static_cast<T*>(ptr); },
-                [](buffer_t& buffer) { return storage_cast<T>(buffer); },
+                [](buffer_t& buffer) { return buffer_cast<T>(buffer); },
                 [](...) -> T* { return nullptr; },
             }, storage);
         }
@@ -64,7 +64,7 @@ namespace meta_hpp
         static const T* storage_cast(const storage_u& storage) noexcept {
             return std::visit(detail::overloaded {
                 [](const void* ptr) { return static_cast<const T*>(ptr); },
-                [](const buffer_t& buffer) { return storage_cast<T>(buffer); },
+                [](const buffer_t& buffer) { return buffer_cast<T>(buffer); },
                 [](...) -> const T* { return nullptr; },
             }, storage);
         }
@@ -115,6 +115,7 @@ namespace meta_hpp
         }
 
         template < typename Tp >
+        // NOLINTNEXTLINE(readability-function-cognitive-complexity)
         static vtable_t* get() {
             static vtable_t table{
                 .type = detail::resolve_type<Tp>(),
@@ -128,15 +129,17 @@ namespace meta_hpp
                 },
 
                 .move = [](value& from, value& to) noexcept {
+                    assert(from && !to);
+
                     std::visit(detail::overloaded {
                         [&to](void* ptr) {
                             Tp* src = static_cast<Tp*>(ptr);
                             to.storage_.emplace<void*>(src);
                         },
                         [&to](buffer_t& buffer) {
-                            Tp* src = storage_cast<Tp>(buffer);
-                            ::new (&to.storage_.emplace<buffer_t>()) Tp(std::move(*src));
-                            src->~Tp();
+                            Tp& src = *buffer_cast<Tp>(buffer);
+                            ::new (&to.storage_.emplace<buffer_t>()) Tp(std::move(src));
+                            src.~Tp();
                         },
                         [](...){}
                     }, from.storage_);
@@ -146,14 +149,16 @@ namespace meta_hpp
                 },
 
                 .copy = [](const value& from, value& to){
+                    assert(from && !to);
+
                     std::visit(detail::overloaded {
                         [&to](void* ptr) {
-                            const Tp* src = static_cast<const Tp*>(ptr);
-                            to.storage_.emplace<void*>(new Tp{*src});
+                            const Tp& src = *static_cast<const Tp*>(ptr);
+                            to.storage_.emplace<void*>(new Tp(src));
                         },
                         [&to](const buffer_t& buffer) {
-                            const Tp* src = storage_cast<Tp>(buffer);
-                            ::new (&to.storage_.emplace<buffer_t>()) Tp(*src);
+                            const Tp& src = *buffer_cast<Tp>(buffer);
+                            ::new (&to.storage_.emplace<buffer_t>()) Tp(src);
                         },
                         [](...){}
                     }, from.storage_);
@@ -162,13 +167,16 @@ namespace meta_hpp
                 },
 
                 .destroy = [](value& self) noexcept {
+                    assert(self);
+
                     std::visit(detail::overloaded {
                         [](void* ptr) {
                             Tp* src = static_cast<Tp*>(ptr);
                             std::unique_ptr<Tp>{src}.reset();
                         },
                         [](buffer_t& buffer) {
-                            storage_cast<Tp>(buffer)->~Tp();
+                            Tp& src = *buffer_cast<Tp>(buffer);
+                            src.~Tp();
                         },
                         [](...){}
                     }, self.storage_);
@@ -232,7 +240,7 @@ namespace meta_hpp
 
 namespace meta_hpp
 {
-    inline value::~value() noexcept {
+    inline value::~value() {
         reset();
     }
 
@@ -283,10 +291,9 @@ namespace meta_hpp
         return is_valid();
     }
 
-    inline void value::reset() noexcept {
+    inline void value::reset() {
         if ( vtable_ != nullptr ) {
             vtable_->destroy(*this);
-            vtable_ = nullptr;
         }
     }
 
