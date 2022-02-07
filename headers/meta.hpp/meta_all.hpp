@@ -31,6 +31,7 @@
 #include "meta_states/function.hpp"
 #include "meta_states/member.hpp"
 #include "meta_states/method.hpp"
+#include "meta_states/parameter.hpp"
 #include "meta_states/scope.hpp"
 #include "meta_states/variable.hpp"
 

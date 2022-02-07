@@ -18,6 +18,7 @@ namespace meta_hpp::detail
         std::is_same_v<T, function> ||
         std::is_same_v<T, member> ||
         std::is_same_v<T, method> ||
+        std::is_same_v<T, parameter> ||
         std::is_same_v<T, scope> ||
         std::is_same_v<T, variable>;
 

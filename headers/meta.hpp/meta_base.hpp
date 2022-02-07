@@ -109,6 +109,7 @@ namespace meta_hpp
     class function;
     class member;
     class method;
+    class parameter;
     class scope;
     class variable;
 
@@ -120,6 +121,7 @@ namespace meta_hpp
         struct function_state;
         struct member_state;
         struct method_state;
+        struct parameter_state;
         struct scope_state;
         struct variable_state;
 
@@ -129,6 +131,7 @@ namespace meta_hpp
         using function_state_ptr = std::shared_ptr<function_state>;
         using member_state_ptr = std::shared_ptr<member_state>;
         using method_state_ptr = std::shared_ptr<method_state>;
+        using parameter_state_ptr = std::shared_ptr<parameter_state>;
         using scope_state_ptr = std::shared_ptr<scope_state>;
         using variable_state_ptr = std::shared_ptr<variable_state>;
     }

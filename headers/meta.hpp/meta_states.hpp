@@ -267,6 +267,22 @@ namespace meta_hpp
         friend auto detail::state_access<method>(const method&);
     };
 
+    class parameter final {
+    public:
+        explicit parameter() = default;
+        explicit parameter(detail::parameter_state_ptr state);
+
+        [[nodiscard]] bool is_valid() const noexcept;
+        [[nodiscard]] explicit operator bool() const noexcept;
+
+        [[nodiscard]] const parameter_index& get_index() const noexcept;
+        [[nodiscard]] const any_type& get_type() const noexcept;
+        [[nodiscard]] const std::string& get_name() const noexcept;
+    private:
+        detail::parameter_state_ptr state_;
+        friend auto detail::state_access<parameter>(const parameter&);
+    };
+
     class scope final {
     public:
         explicit scope() = default;
@@ -438,6 +454,13 @@ namespace meta_hpp::detail
 
         template < method_policy_kind Policy, method_kind Method >
         [[nodiscard]] static method_state_ptr make(std::string name, Method method);
+    };
+
+    struct parameter_state final {
+        parameter_index index;
+
+        template < typename Parameter >
+        [[nodiscard]] static parameter_state_ptr make(std::string name);
     };
 
     struct scope_state final {
