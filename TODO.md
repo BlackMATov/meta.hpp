@@ -1,6 +1,8 @@
 # meta.hpp
 
 - metadata
+- add policy tests
+- rebind types support
 
 * argument defaults
 * argument names

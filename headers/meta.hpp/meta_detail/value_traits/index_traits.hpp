@@ -25,14 +25,14 @@ namespace meta_hpp::detail
     template < stdex::copy_constructible T >
     struct index_traits<T*> {
         value operator()(T* v, std::size_t i) const {
-            return value{*(v + i)};
+            return value{v[i]};
         }
     };
 
     template < stdex::copy_constructible T >
     struct index_traits<const T*> {
         value operator()(const T* v, std::size_t i) const {
-            return value{*(v + i)};
+            return value{v[i]};
         }
     };
 

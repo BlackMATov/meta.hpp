@@ -40,22 +40,22 @@ namespace meta_hpp::detail
             args
         // NOLINTNEXTLINE(readability-named-parameter)
         ]<std::size_t... Is>(std::index_sequence<Is...>) -> value {
-            if ( !(... && (args.data() + Is)->can_cast_to<type_list_at_t<Is, argument_types>>()) ) {
+            if ( !(... && args[Is].can_cast_to<type_list_at_t<Is, argument_types>>()) ) {
                 throw_exception_with("an attempt to call a constructor with incorrect argument types");
             }
 
             if constexpr ( as_object ) {
-                class_type return_value{(args.data() + Is)->cast<type_list_at_t<Is, argument_types>>()...};
+                class_type return_value{args[Is].cast<type_list_at_t<Is, argument_types>>()...};
                 return value{std::move(return_value)};
             }
 
             if constexpr ( as_raw_ptr ) {
-                auto return_value{std::make_unique<class_type>((args.data() + Is)->cast<type_list_at_t<Is, argument_types>>()...)};
+                auto return_value{std::make_unique<class_type>(args[Is].cast<type_list_at_t<Is, argument_types>>()...)};
                 return value{return_value.release()};
             }
 
             if constexpr ( as_shared_ptr ) {
-                auto return_value{std::make_shared<class_type>((args.data() + Is)->cast<type_list_at_t<Is, argument_types>>()...)};
+                auto return_value{std::make_shared<class_type>(args[Is].cast<type_list_at_t<Is, argument_types>>()...)};
                 return value{std::move(return_value)};
             }
         }, std::make_index_sequence<ct::arity>());
@@ -72,7 +72,7 @@ namespace meta_hpp::detail
 
         // NOLINTNEXTLINE(readability-named-parameter)
         return std::invoke([args]<std::size_t... Is>(std::index_sequence<Is...>){
-            return (... && (args.data() + Is)->can_cast_to<type_list_at_t<Is, argument_types>>());
+            return (... && args[Is].can_cast_to<type_list_at_t<Is, argument_types>>());
         }, std::make_index_sequence<ct::arity>());
     }
 }
