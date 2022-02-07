@@ -25,16 +25,37 @@
 namespace meta_hpp
 {
     using array_flags = detail::array_flags;
+    using array_bitflags = detail::array_bitflags;
+
     using class_flags = detail::class_flags;
+    using class_bitflags = detail::class_bitflags;
+
     using ctor_flags = detail::ctor_flags;
+    using ctor_bitflags = detail::ctor_bitflags;
+
     using dtor_flags = detail::dtor_flags;
+    using dtor_bitflags = detail::dtor_bitflags;
+
     using enum_flags = detail::enum_flags;
+    using enum_bitflags = detail::enum_bitflags;
+
     using function_flags = detail::function_flags;
+    using function_bitflags = detail::function_bitflags;
+
     using member_flags = detail::member_flags;
+    using member_bitflags = detail::member_bitflags;
+
     using method_flags = detail::method_flags;
+    using method_bitflags = detail::method_bitflags;
+
     using number_flags = detail::number_flags;
+    using number_bitflags = detail::number_bitflags;
+
     using pointer_flags = detail::pointer_flags;
+    using pointer_bitflags = detail::pointer_bitflags;
+
     using reference_flags = detail::reference_flags;
+    using reference_bitflags = detail::reference_bitflags;
 }
 
 namespace meta_hpp
@@ -104,7 +125,7 @@ namespace meta_hpp
         [[nodiscard]] explicit operator bool() const noexcept;
 
         [[nodiscard]] type_id get_id() const noexcept;
-        [[nodiscard]] bitflags<array_flags> get_flags() const noexcept;
+        [[nodiscard]] array_bitflags get_flags() const noexcept;
 
         [[nodiscard]] std::size_t get_extent() const noexcept;
         [[nodiscard]] any_type get_data_type() const noexcept;
@@ -122,7 +143,7 @@ namespace meta_hpp
         [[nodiscard]] explicit operator bool() const noexcept;
 
         [[nodiscard]] type_id get_id() const noexcept;
-        [[nodiscard]] bitflags<class_flags> get_flags() const noexcept;
+        [[nodiscard]] class_bitflags get_flags() const noexcept;
 
         [[nodiscard]] std::size_t get_size() const noexcept;
 
@@ -188,7 +209,7 @@ namespace meta_hpp
         [[nodiscard]] explicit operator bool() const noexcept;
 
         [[nodiscard]] type_id get_id() const noexcept;
-        [[nodiscard]] bitflags<ctor_flags> get_flags() const noexcept;
+        [[nodiscard]] ctor_bitflags get_flags() const noexcept;
 
         [[nodiscard]] std::size_t get_arity() const noexcept;
         [[nodiscard]] any_type get_class_type() const noexcept;
@@ -208,7 +229,7 @@ namespace meta_hpp
         [[nodiscard]] explicit operator bool() const noexcept;
 
         [[nodiscard]] type_id get_id() const noexcept;
-        [[nodiscard]] bitflags<dtor_flags> get_flags() const noexcept;
+        [[nodiscard]] dtor_bitflags get_flags() const noexcept;
 
         [[nodiscard]] any_type get_class_type() const noexcept;
     private:
@@ -225,7 +246,7 @@ namespace meta_hpp
         [[nodiscard]] explicit operator bool() const noexcept;
 
         [[nodiscard]] type_id get_id() const noexcept;
-        [[nodiscard]] bitflags<enum_flags> get_flags() const noexcept;
+        [[nodiscard]] enum_bitflags get_flags() const noexcept;
 
         [[nodiscard]] number_type get_underlying_type() const noexcept;
 
@@ -250,7 +271,7 @@ namespace meta_hpp
         [[nodiscard]] explicit operator bool() const noexcept;
 
         [[nodiscard]] type_id get_id() const noexcept;
-        [[nodiscard]] bitflags<function_flags> get_flags() const noexcept;
+        [[nodiscard]] function_bitflags get_flags() const noexcept;
 
         [[nodiscard]] std::size_t get_arity() const noexcept;
         [[nodiscard]] any_type get_return_type() const noexcept;
@@ -270,7 +291,7 @@ namespace meta_hpp
         [[nodiscard]] explicit operator bool() const noexcept;
 
         [[nodiscard]] type_id get_id() const noexcept;
-        [[nodiscard]] bitflags<member_flags> get_flags() const noexcept;
+        [[nodiscard]] member_bitflags get_flags() const noexcept;
 
         [[nodiscard]] class_type get_owner_type() const noexcept;
         [[nodiscard]] any_type get_value_type() const noexcept;
@@ -288,7 +309,7 @@ namespace meta_hpp
         [[nodiscard]] explicit operator bool() const noexcept;
 
         [[nodiscard]] type_id get_id() const noexcept;
-        [[nodiscard]] bitflags<method_flags> get_flags() const noexcept;
+        [[nodiscard]] method_bitflags get_flags() const noexcept;
 
         [[nodiscard]] std::size_t get_arity() const noexcept;
         [[nodiscard]] class_type get_owner_type() const noexcept;
@@ -323,7 +344,7 @@ namespace meta_hpp
         [[nodiscard]] explicit operator bool() const noexcept;
 
         [[nodiscard]] type_id get_id() const noexcept;
-        [[nodiscard]] bitflags<number_flags> get_flags() const noexcept;
+        [[nodiscard]] number_bitflags get_flags() const noexcept;
 
         [[nodiscard]] std::size_t get_size() const noexcept;
     private:
@@ -340,7 +361,7 @@ namespace meta_hpp
         [[nodiscard]] explicit operator bool() const noexcept;
 
         [[nodiscard]] type_id get_id() const noexcept;
-        [[nodiscard]] bitflags<pointer_flags> get_flags() const noexcept;
+        [[nodiscard]] pointer_bitflags get_flags() const noexcept;
 
         [[nodiscard]] any_type get_data_type() const noexcept;
     private:
@@ -357,7 +378,7 @@ namespace meta_hpp
         [[nodiscard]] explicit operator bool() const noexcept;
 
         [[nodiscard]] type_id get_id() const noexcept;
-        [[nodiscard]] bitflags<reference_flags> get_flags() const noexcept;
+        [[nodiscard]] reference_bitflags get_flags() const noexcept;
 
         [[nodiscard]] any_type get_data_type() const noexcept;
     private:
@@ -426,7 +447,7 @@ namespace meta_hpp::detail
     };
 
     struct array_type_data final : type_data_base {
-        const bitflags<array_flags> flags;
+        const array_bitflags flags;
         const std::size_t extent;
         const any_type data_type;
 
@@ -435,7 +456,7 @@ namespace meta_hpp::detail
     };
 
     struct class_type_data final : type_data_base {
-        const bitflags<class_flags> flags;
+        const class_bitflags flags;
         const std::size_t size;
         const std::vector<any_type> argument_types;
 
@@ -460,7 +481,7 @@ namespace meta_hpp::detail
     };
 
     struct ctor_type_data final : type_data_base {
-        const bitflags<ctor_flags> flags;
+        const ctor_bitflags flags;
         const any_type class_type;
         const std::vector<any_type> argument_types;
 
@@ -469,7 +490,7 @@ namespace meta_hpp::detail
     };
 
     struct dtor_type_data final : type_data_base {
-        const bitflags<dtor_flags> flags;
+        const dtor_bitflags flags;
         const any_type class_type;
 
         template < class_kind Class >
@@ -477,7 +498,7 @@ namespace meta_hpp::detail
     };
 
     struct enum_type_data final : type_data_base {
-        const bitflags<enum_flags> flags;
+        const enum_bitflags flags;
         const number_type underlying_type;
 
         evalue_map evalues;
@@ -487,7 +508,7 @@ namespace meta_hpp::detail
     };
 
     struct function_type_data final : type_data_base {
-        const bitflags<function_flags> flags;
+        const function_bitflags flags;
         const any_type return_type;
         const std::vector<any_type> argument_types;
 
@@ -496,7 +517,7 @@ namespace meta_hpp::detail
     };
 
     struct member_type_data final : type_data_base {
-        const bitflags<member_flags> flags;
+        const member_bitflags flags;
         const class_type owner_type;
         const any_type value_type;
 
@@ -505,7 +526,7 @@ namespace meta_hpp::detail
     };
 
     struct method_type_data final : type_data_base {
-        const bitflags<method_flags> flags;
+        const method_bitflags flags;
         const class_type owner_type;
         const any_type return_type;
         const std::vector<any_type> argument_types;
@@ -520,7 +541,7 @@ namespace meta_hpp::detail
     };
 
     struct number_type_data final : type_data_base {
-        const bitflags<number_flags> flags;
+        const number_bitflags flags;
         const std::size_t size;
 
         template < number_kind Number >
@@ -528,7 +549,7 @@ namespace meta_hpp::detail
     };
 
     struct pointer_type_data final : type_data_base {
-        const bitflags<pointer_flags> flags;
+        const pointer_bitflags flags;
         const any_type data_type;
 
         template < pointer_kind Pointer >
@@ -536,7 +557,7 @@ namespace meta_hpp::detail
     };
 
     struct reference_type_data final : type_data_base {
-        const bitflags<reference_flags> flags;
+        const reference_bitflags flags;
         const any_type data_type;
 
         template < reference_kind Reference >

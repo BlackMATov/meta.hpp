@@ -18,6 +18,7 @@ namespace meta_hpp::detail
     };
 
     ENUM_HPP_OPERATORS_DECL(number_flags)
+    using number_bitflags = bitflags<number_flags>;
 }
 
 namespace meta_hpp::detail
@@ -26,8 +27,8 @@ namespace meta_hpp::detail
     struct number_traits {
         static constexpr std::size_t size{sizeof(Number)};
 
-        [[nodiscard]] static constexpr bitflags<number_flags> make_flags() noexcept {
-            bitflags<number_flags> flags;
+        [[nodiscard]] static constexpr number_bitflags make_flags() noexcept {
+            number_bitflags flags{};
 
             if constexpr ( std::is_signed_v<Number> ) {
                 flags.set(number_flags::is_signed);

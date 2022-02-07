@@ -45,7 +45,7 @@ namespace meta_hpp
         return data_->id;
     }
 
-    inline bitflags<enum_flags> enum_type::get_flags() const noexcept {
+    inline enum_bitflags enum_type::get_flags() const noexcept {
         return data_->flags;
     }
 

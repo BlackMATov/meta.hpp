@@ -15,6 +15,7 @@ namespace meta_hpp::detail
     };
 
     ENUM_HPP_OPERATORS_DECL(ctor_flags)
+    using ctor_bitflags = bitflags<ctor_flags>;
 }
 
 namespace meta_hpp::detail
@@ -26,8 +27,8 @@ namespace meta_hpp::detail
         using class_type = Class;
         using argument_types = type_list<Args...>;
 
-        [[nodiscard]] static constexpr bitflags<ctor_flags> make_flags() noexcept {
-            bitflags<ctor_flags> flags;
+        [[nodiscard]] static constexpr ctor_bitflags make_flags() noexcept {
+            ctor_bitflags flags{};
 
             if constexpr ( std::is_nothrow_constructible_v<Class, Args...> ) {
                 flags.set(ctor_flags::is_noexcept);

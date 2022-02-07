@@ -16,6 +16,7 @@ namespace meta_hpp::detail
     };
 
     ENUM_HPP_OPERATORS_DECL(array_flags)
+    using array_bitflags = bitflags<array_flags>;
 }
 
 namespace meta_hpp::detail
@@ -26,8 +27,8 @@ namespace meta_hpp::detail
 
         using data_type = std::remove_extent_t<Array>;
 
-        [[nodiscard]] static constexpr bitflags<array_flags> make_flags() noexcept {
-            bitflags<array_flags> flags;
+        [[nodiscard]] static constexpr array_bitflags make_flags() noexcept {
+            array_bitflags flags{};
 
             if constexpr ( std::is_bounded_array_v<Array> ) {
                 flags.set(array_flags::is_bounded);

@@ -15,6 +15,7 @@ namespace meta_hpp::detail
     };
 
     ENUM_HPP_OPERATORS_DECL(dtor_flags)
+    using dtor_bitflags = bitflags<dtor_flags>;
 }
 
 namespace meta_hpp::detail
@@ -23,8 +24,8 @@ namespace meta_hpp::detail
     struct dtor_traits {
         using class_type = Class;
 
-        [[nodiscard]] static constexpr bitflags<dtor_flags> make_flags() noexcept {
-            bitflags<dtor_flags> flags;
+        [[nodiscard]] static constexpr dtor_bitflags make_flags() noexcept {
+            dtor_bitflags flags{};
 
             if constexpr ( std::is_nothrow_destructible_v<Class> ) {
                 flags.set(dtor_flags::is_noexcept);

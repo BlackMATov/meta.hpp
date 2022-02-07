@@ -15,6 +15,7 @@ namespace meta_hpp::detail
     };
 
     ENUM_HPP_OPERATORS_DECL(function_flags)
+    using function_bitflags = bitflags<function_flags>;
 }
 
 namespace meta_hpp::detail
@@ -29,14 +30,14 @@ namespace meta_hpp::detail
         using return_type = R;
         using argument_types = type_list<Args...>;
 
-        [[nodiscard]] static constexpr bitflags<function_flags> make_flags() noexcept {
+        [[nodiscard]] static constexpr function_bitflags make_flags() noexcept {
             return {};
         }
     };
 
     template < typename R, typename... Args >
     struct function_traits<R(*)(Args...) noexcept> : function_traits<R(*)(Args...)> {
-        [[nodiscard]] static constexpr bitflags<function_flags> make_flags() noexcept {
+        [[nodiscard]] static constexpr function_bitflags make_flags() noexcept {
             return function_flags::is_noexcept;
         }
     };

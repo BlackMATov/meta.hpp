@@ -19,6 +19,7 @@ namespace meta_hpp::detail
     };
 
     ENUM_HPP_OPERATORS_DECL(class_flags)
+    using class_bitflags = bitflags<class_flags>;
 }
 
 namespace meta_hpp::detail
@@ -31,7 +32,7 @@ namespace meta_hpp::detail
 
             using argument_types = type_list<>;
 
-            [[nodiscard]] static constexpr bitflags<class_flags> make_flags() noexcept {
+            [[nodiscard]] static constexpr class_bitflags make_flags() noexcept {
                 return {};
             }
         };
@@ -42,7 +43,7 @@ namespace meta_hpp::detail
 
             using argument_types = type_list<Args...>;
 
-            [[nodiscard]] static constexpr bitflags<class_flags> make_flags() noexcept {
+            [[nodiscard]] static constexpr class_bitflags make_flags() noexcept {
                 return class_flags::is_template_instantiation;
             }
         };
@@ -52,8 +53,8 @@ namespace meta_hpp::detail
     struct class_traits : impl::class_traits_base<Class> {
         static constexpr std::size_t size{sizeof(Class)};
 
-        [[nodiscard]] static constexpr bitflags<class_flags> make_flags() noexcept {
-            bitflags<class_flags> flags;
+        [[nodiscard]] static constexpr class_bitflags make_flags() noexcept {
+            class_bitflags flags{};
 
             if constexpr ( std::is_empty_v<Class> ) {
                 flags.set(class_flags::is_empty);

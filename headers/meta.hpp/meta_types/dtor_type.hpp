@@ -42,7 +42,7 @@ namespace meta_hpp
         return data_->id;
     }
 
-    inline bitflags<dtor_flags> dtor_type::get_flags() const noexcept {
+    inline dtor_bitflags dtor_type::get_flags() const noexcept {
         return data_->flags;
     }
 

@@ -17,6 +17,7 @@ namespace meta_hpp::detail
     };
 
     ENUM_HPP_OPERATORS_DECL(reference_flags)
+    using reference_bitflags = bitflags<reference_flags>;
 }
 
 namespace meta_hpp::detail
@@ -25,8 +26,8 @@ namespace meta_hpp::detail
     struct reference_traits {
         using data_type = std::remove_reference_t<Reference>;
 
-        [[nodiscard]] static constexpr bitflags<reference_flags> make_flags() noexcept {
-            bitflags<reference_flags> flags;
+        [[nodiscard]] static constexpr reference_bitflags make_flags() noexcept {
+            reference_bitflags flags{};
 
             if constexpr ( std::is_const_v<data_type> ) {
                 flags.set(reference_flags::is_readonly);

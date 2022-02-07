@@ -15,6 +15,7 @@ namespace meta_hpp::detail
     };
 
     ENUM_HPP_OPERATORS_DECL(pointer_flags)
+    using pointer_bitflags = bitflags<pointer_flags>;
 }
 
 namespace meta_hpp::detail
@@ -23,8 +24,8 @@ namespace meta_hpp::detail
     struct pointer_traits {
         using data_type = std::remove_pointer_t<Pointer>;
 
-        [[nodiscard]] static constexpr bitflags<pointer_flags> make_flags() noexcept {
-            bitflags<pointer_flags> flags;
+        [[nodiscard]] static constexpr pointer_bitflags make_flags() noexcept {
+            pointer_bitflags flags{};
 
             if constexpr ( std::is_const_v<data_type> ) {
                 flags.set(pointer_flags::is_readonly);

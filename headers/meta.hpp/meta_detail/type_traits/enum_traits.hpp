@@ -15,6 +15,7 @@ namespace meta_hpp::detail
     };
 
     ENUM_HPP_OPERATORS_DECL(enum_flags)
+    using enum_bitflags = bitflags<enum_flags>;
 }
 
 namespace meta_hpp::detail
@@ -23,8 +24,8 @@ namespace meta_hpp::detail
     struct enum_traits {
         using underlying_type = std::underlying_type_t<Enum>;
 
-        [[nodiscard]] static constexpr bitflags<enum_flags> make_flags() noexcept {
-            bitflags<enum_flags> flags;
+        [[nodiscard]] static constexpr enum_bitflags make_flags() noexcept {
+            enum_bitflags flags{};
 
             if constexpr ( !std::is_convertible_v<Enum, underlying_type> ) {
                 flags.set(enum_flags::is_scoped);

@@ -43,7 +43,7 @@ namespace meta_hpp
         return data_->id;
     }
 
-    inline bitflags<ctor_flags> ctor_type::get_flags() const noexcept {
+    inline ctor_bitflags ctor_type::get_flags() const noexcept {
         return data_->flags;
     }
 

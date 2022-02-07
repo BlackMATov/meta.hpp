@@ -15,6 +15,7 @@ namespace meta_hpp::detail
     };
 
     ENUM_HPP_OPERATORS_DECL(member_flags)
+    using member_bitflags = bitflags<member_flags>;
 }
 
 namespace meta_hpp::detail
@@ -27,8 +28,8 @@ namespace meta_hpp::detail
         using class_type = C;
         using value_type = V;
 
-        [[nodiscard]] static constexpr bitflags<member_flags> make_flags() noexcept {
-            bitflags<member_flags> flags;
+        [[nodiscard]] static constexpr member_bitflags make_flags() noexcept {
+            member_bitflags flags{};
 
             if constexpr ( std::is_const_v<value_type> ) {
                 flags.set(member_flags::is_readonly);

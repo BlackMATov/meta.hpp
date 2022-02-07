@@ -43,7 +43,7 @@ namespace meta_hpp
         return data_->id;
     }
 
-    inline bitflags<member_flags> member_type::get_flags() const noexcept {
+    inline member_bitflags member_type::get_flags() const noexcept {
         return data_->flags;
     }
 
