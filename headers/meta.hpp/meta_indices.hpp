@@ -115,6 +115,24 @@ namespace meta_hpp
         std::string name_;
     };
 
+    class parameter_index final {
+    public:
+        parameter_index() = delete;
+        [[nodiscard]] const any_type& get_type() const noexcept;
+        [[nodiscard]] const std::string& get_name() const noexcept;
+    private:
+        friend detail::parameter_state;
+        template < typename Parameter >
+        [[nodiscard]] static parameter_index make(std::string name);
+    private:
+        explicit parameter_index(any_type type, std::string name);
+        friend bool operator<(const parameter_index& l, const parameter_index& r) noexcept;
+        friend bool operator==(const parameter_index& l, const parameter_index& r) noexcept;
+    private:
+        any_type type_;
+        std::string name_;
+    };
+
     class scope_index final {
     public:
         scope_index() = delete;

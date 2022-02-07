@@ -193,6 +193,7 @@ namespace meta_hpp
     class function_index;
     class member_index;
     class method_index;
+    class parameter_index;
     class scope_index;
     class variable_index;
 

@@ -20,6 +20,7 @@
 #include "meta_indices/function_index.hpp"
 #include "meta_indices/member_index.hpp"
 #include "meta_indices/method_index.hpp"
+#include "meta_indices/parameter_index.hpp"
 #include "meta_indices/scope_index.hpp"
 #include "meta_indices/variable_index.hpp"
 
