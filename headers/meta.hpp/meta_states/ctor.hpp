@@ -88,6 +88,24 @@ namespace meta_hpp::detail
     ctor_state::is_invocable_with_impl make_ctor_is_invocable_with() {
         return &raw_ctor_is_invocable_with<Class, Args...>;
     }
+
+    template < class_kind Class, typename... Args >
+    parameter_list make_ctor_parameters() {
+        using ct = detail::ctor_traits<Class, Args...>;
+
+        parameter_list parameters;
+        parameters.reserve(ct::arity);
+
+        // NOLINTNEXTLINE(readability-named-parameter)
+        [&parameters]<std::size_t... Is>(std::index_sequence<Is...>) mutable {
+            (parameters.push_back([]<std::size_t I>(){
+                using P = detail::type_list_at_t<I, typename ct::argument_types>;
+                return parameter{detail::parameter_state::make<P>(I)};
+            }.template operator()<Is>()), ...);
+        }(std::make_index_sequence<ct::arity>());
+
+        return parameters;
+    }
 }
 
 namespace meta_hpp::detail
@@ -98,6 +116,7 @@ namespace meta_hpp::detail
             .index{ctor_index::make<Class, Args...>()},
             .invoke{make_ctor_invoke<Policy, Class, Args...>()},
             .is_invocable_with{make_ctor_is_invocable_with<Class, Args...>()},
+            .parameters{make_ctor_parameters<Class, Args...>()},
         });
     }
 }
@@ -159,5 +178,13 @@ namespace meta_hpp
         } else {
             return state_->is_invocable_with({});
         }
+    }
+
+    inline parameter ctor::get_parameter(std::size_t position) const noexcept {
+        return position < state_->parameters.size() ? state_->parameters[position] : parameter{};
+    }
+
+    inline const parameter_list& ctor::get_parameters() const noexcept {
+        return state_->parameters;
     }
 }

@@ -199,7 +199,10 @@ namespace meta_hpp
     class parameter_index;
     class scope_index;
     class variable_index;
+}
 
+namespace meta_hpp
+{
     using class_set = std::set<class_type, std::less<>>;
     using class_map = std::map<std::string, class_type, std::less<>>;
 
@@ -214,4 +217,6 @@ namespace meta_hpp
     using method_map = std::map<method_index, method, std::less<>>;
     using scope_map = std::map<scope_index, scope, std::less<>>;
     using variable_map = std::map<variable_index, variable, std::less<>>;
+
+    using parameter_list = std::vector<parameter>;
 }

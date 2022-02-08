@@ -148,7 +148,7 @@ namespace meta_hpp
         [[nodiscard]] std::size_t get_size() const noexcept;
 
         [[nodiscard]] std::size_t get_arity() const noexcept;
-        [[nodiscard]] any_type get_argument_type(std::size_t index) const noexcept;
+        [[nodiscard]] any_type get_argument_type(std::size_t position) const noexcept;
         [[nodiscard]] const std::vector<any_type>& get_argument_types() const noexcept;
 
         [[nodiscard]] const ctor_map& get_ctors() const noexcept;
@@ -219,7 +219,7 @@ namespace meta_hpp
 
         [[nodiscard]] std::size_t get_arity() const noexcept;
         [[nodiscard]] any_type get_class_type() const noexcept;
-        [[nodiscard]] any_type get_argument_type(std::size_t index) const noexcept;
+        [[nodiscard]] any_type get_argument_type(std::size_t position) const noexcept;
         [[nodiscard]] const std::vector<any_type>& get_argument_types() const noexcept;
     private:
         detail::ctor_type_data_ptr data_;
@@ -281,7 +281,7 @@ namespace meta_hpp
 
         [[nodiscard]] std::size_t get_arity() const noexcept;
         [[nodiscard]] any_type get_return_type() const noexcept;
-        [[nodiscard]] any_type get_argument_type(std::size_t index) const noexcept;
+        [[nodiscard]] any_type get_argument_type(std::size_t position) const noexcept;
         [[nodiscard]] const std::vector<any_type>& get_argument_types() const noexcept;
     private:
         detail::function_type_data_ptr data_;
@@ -320,7 +320,7 @@ namespace meta_hpp
         [[nodiscard]] std::size_t get_arity() const noexcept;
         [[nodiscard]] class_type get_owner_type() const noexcept;
         [[nodiscard]] any_type get_return_type() const noexcept;
-        [[nodiscard]] any_type get_argument_type(std::size_t index) const noexcept;
+        [[nodiscard]] any_type get_argument_type(std::size_t position) const noexcept;
         [[nodiscard]] const std::vector<any_type>& get_argument_types() const noexcept;
     private:
         detail::method_type_data_ptr data_;

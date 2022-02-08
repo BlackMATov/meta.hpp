@@ -94,6 +94,24 @@ namespace meta_hpp::detail
     function_state::is_invocable_with_impl make_function_is_invocable_with() {
         return &raw_function_is_invocable_with<Function>;
     }
+
+    template < function_kind Function >
+    parameter_list make_function_parameters() {
+        using ft = detail::function_traits<Function>;
+
+        parameter_list parameters;
+        parameters.reserve(ft::arity);
+
+        // NOLINTNEXTLINE(readability-named-parameter)
+        [&parameters]<std::size_t... Is>(std::index_sequence<Is...>) mutable {
+            (parameters.push_back([]<std::size_t I>(){
+                using P = detail::type_list_at_t<I, typename ft::argument_types>;
+                return parameter{detail::parameter_state::make<P>(I)};
+            }.template operator()<Is>()), ...);
+        }(std::make_index_sequence<ft::arity>());
+
+        return parameters;
+    }
 }
 
 namespace meta_hpp::detail
@@ -104,6 +122,7 @@ namespace meta_hpp::detail
             .index{function_index::make<Function>(std::move(name))},
             .invoke{make_function_invoke<Policy>(std::move(function))},
             .is_invocable_with{make_function_is_invocable_with<Function>()},
+            .parameters{make_function_parameters<Function>()},
         });
     }
 }
@@ -169,5 +188,13 @@ namespace meta_hpp
         } else {
             return state_->is_invocable_with({});
         }
+    }
+
+    inline parameter function::get_parameter(std::size_t position) const noexcept {
+        return position < state_->parameters.size() ? state_->parameters[position] : parameter{};
+    }
+
+    inline const parameter_list& function::get_parameters() const noexcept {
+        return state_->parameters;
     }
 }

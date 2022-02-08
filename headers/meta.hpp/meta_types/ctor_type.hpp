@@ -55,8 +55,8 @@ namespace meta_hpp
         return data_->class_type;
     }
 
-    inline any_type ctor_type::get_argument_type(std::size_t index) const noexcept {
-        return index < data_->argument_types.size() ? data_->argument_types[index] : any_type{};
+    inline any_type ctor_type::get_argument_type(std::size_t position) const noexcept {
+        return position < data_->argument_types.size() ? data_->argument_types[position] : any_type{};
     }
 
     inline const std::vector<any_type>& ctor_type::get_argument_types() const noexcept {

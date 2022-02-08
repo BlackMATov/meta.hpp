@@ -120,6 +120,9 @@ namespace meta_hpp
 
         template < typename... Args >
         [[nodiscard]] bool is_invocable_with(Args&&... args) const noexcept;
+
+        [[nodiscard]] parameter get_parameter(std::size_t position) const noexcept;
+        [[nodiscard]] const parameter_list& get_parameters() const noexcept;
     private:
         detail::ctor_state_ptr state_;
         friend auto detail::state_access<ctor>(const ctor&);
@@ -194,6 +197,9 @@ namespace meta_hpp
 
         template < typename... Args >
         [[nodiscard]] bool is_invocable_with(Args&&... args) const noexcept;
+
+        [[nodiscard]] parameter get_parameter(std::size_t position) const noexcept;
+        [[nodiscard]] const parameter_list& get_parameters() const noexcept;
     private:
         detail::function_state_ptr state_;
         friend auto detail::state_access<function>(const function&);
@@ -262,6 +268,9 @@ namespace meta_hpp
 
         template < typename Instance, typename... Args >
         [[nodiscard]] bool is_invocable_with(Instance&& instance, Args&&... args) const noexcept;
+
+        [[nodiscard]] parameter get_parameter(std::size_t position) const noexcept;
+        [[nodiscard]] const parameter_list& get_parameters() const noexcept;
     private:
         detail::method_state_ptr state_;
         friend auto detail::state_access<method>(const method&);
@@ -277,6 +286,7 @@ namespace meta_hpp
 
         [[nodiscard]] const parameter_index& get_index() const noexcept;
         [[nodiscard]] const any_type& get_type() const noexcept;
+        [[nodiscard]] std::size_t get_position() const noexcept;
         [[nodiscard]] const std::string& get_name() const noexcept;
     private:
         detail::parameter_state_ptr state_;
@@ -392,6 +402,8 @@ namespace meta_hpp::detail
         invoke_impl invoke;
         is_invocable_with_impl is_invocable_with;
 
+        parameter_list parameters;
+
         template < ctor_policy_kind Policy, class_kind Class, typename... Args >
         [[nodiscard]] static ctor_state_ptr make();
     };
@@ -425,6 +437,8 @@ namespace meta_hpp::detail
         invoke_impl invoke;
         is_invocable_with_impl is_invocable_with;
 
+        parameter_list parameters;
+
         template < function_policy_kind Policy, function_kind Function >
         [[nodiscard]] static function_state_ptr make(std::string name, Function function);
     };
@@ -453,6 +467,8 @@ namespace meta_hpp::detail
         method_index index;
         invoke_impl invoke;
         is_invocable_with_impl is_invocable_with;
+
+        parameter_list parameters;
 
         template < method_policy_kind Policy, method_kind Method >
         [[nodiscard]] static method_state_ptr make(std::string name, Method method);
