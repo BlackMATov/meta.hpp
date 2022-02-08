@@ -10,43 +10,43 @@
 #include "../meta_types.hpp"
 
 #include "../meta_detail/type_registry.hpp"
-#include "../meta_detail/type_traits/dtor_traits.hpp"
+#include "../meta_detail/type_traits/destructor_traits.hpp"
 
 namespace meta_hpp::detail
 {
     template < class_kind Class >
-    struct dtor_tag {};
+    struct destructor_tag {};
 
     template < class_kind Class >
     // NOLINTNEXTLINE(readability-named-parameter)
-    dtor_type_data::dtor_type_data(type_list<Class>)
-    : type_data_base{type_id{type_list<dtor_tag<Class>>{}}, type_kind::dtor_}
-    , flags{dtor_traits<Class>::make_flags()}
-    , class_type{resolve_type<typename dtor_traits<Class>::class_type>()} {}
+    destructor_type_data::destructor_type_data(type_list<Class>)
+    : type_data_base{type_id{type_list<destructor_tag<Class>>{}}, type_kind::destructor_}
+    , flags{destructor_traits<Class>::make_flags()}
+    , class_type{resolve_type<typename destructor_traits<Class>::class_type>()} {}
 }
 
 namespace meta_hpp
 {
-    inline dtor_type::dtor_type(detail::dtor_type_data_ptr data)
+    inline destructor_type::destructor_type(detail::destructor_type_data_ptr data)
     : data_{std::move(data)} {}
 
-    inline bool dtor_type::is_valid() const noexcept {
+    inline bool destructor_type::is_valid() const noexcept {
         return !!data_;
     }
 
-    inline dtor_type::operator bool() const noexcept {
+    inline destructor_type::operator bool() const noexcept {
         return is_valid();
     }
 
-    inline type_id dtor_type::get_id() const noexcept {
+    inline type_id destructor_type::get_id() const noexcept {
         return data_->id;
     }
 
-    inline dtor_bitflags dtor_type::get_flags() const noexcept {
+    inline destructor_bitflags destructor_type::get_flags() const noexcept {
         return data_->flags;
     }
 
-    inline any_type dtor_type::get_class_type() const noexcept {
+    inline any_type destructor_type::get_class_type() const noexcept {
         return data_->class_type;
     }
 }

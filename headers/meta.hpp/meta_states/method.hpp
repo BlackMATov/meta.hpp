@@ -109,21 +109,21 @@ namespace meta_hpp::detail
     }
 
     template < method_kind Method >
-    parameter_list make_method_parameters() {
+    argument_list make_method_arguments() {
         using mt = detail::method_traits<Method>;
 
-        parameter_list parameters;
-        parameters.reserve(mt::arity);
+        argument_list arguments;
+        arguments.reserve(mt::arity);
 
         // NOLINTNEXTLINE(readability-named-parameter)
-        [&parameters]<std::size_t... Is>(std::index_sequence<Is...>) mutable {
-            (parameters.push_back([]<std::size_t I>(){
+        [&arguments]<std::size_t... Is>(std::index_sequence<Is...>) mutable {
+            (arguments.push_back([]<std::size_t I>(){
                 using P = detail::type_list_at_t<I, typename mt::argument_types>;
-                return parameter{detail::parameter_state::make<P>(I)};
+                return argument{detail::argument_state::make<P>(I)};
             }.template operator()<Is>()), ...);
         }(std::make_index_sequence<mt::arity>());
 
-        return parameters;
+        return arguments;
     }
 }
 
@@ -135,7 +135,7 @@ namespace meta_hpp::detail
             .index{method_index::make<Method>(std::move(name))},
             .invoke{make_method_invoke<Policy>(std::move(method))},
             .is_invocable_with{make_method_is_invocable_with<Method>()},
-            .parameters{make_method_parameters<Method>()},
+            .arguments{make_method_arguments<Method>()},
         });
     }
 }
@@ -206,11 +206,11 @@ namespace meta_hpp
         }
     }
 
-    inline parameter method::get_parameter(std::size_t position) const noexcept {
-        return position < state_->parameters.size() ? state_->parameters[position] : parameter{};
+    inline argument method::get_argument(std::size_t position) const noexcept {
+        return position < state_->arguments.size() ? state_->arguments[position] : argument{};
     }
 
-    inline const parameter_list& method::get_parameters() const noexcept {
-        return state_->parameters;
+    inline const argument_list& method::get_arguments() const noexcept {
+        return state_->arguments;
     }
 }

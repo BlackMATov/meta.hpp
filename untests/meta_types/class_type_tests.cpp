@@ -62,7 +62,7 @@ TEST_CASE("meta/meta_types/class_type") {
     namespace meta = meta_hpp;
 
     meta::class_<base_clazz_1>()
-        .ctor_<int>()
+        .constructor_<int>()
         .member_("base_member_1", &base_clazz_1::base_member_1)
         .method_("base_method_1", &base_clazz_1::base_method_1)
         .function_("base_function_1", &base_clazz_1::base_function_1)
@@ -73,14 +73,14 @@ TEST_CASE("meta/meta_types/class_type") {
         .variable_("base_variable_1", &base_clazz_1::base_variable_1);
 
     meta::class_<base_clazz_2>()
-        .ctor_<float>()
+        .constructor_<float>()
         .member_("base_member_2", &base_clazz_2::base_member_2)
         .method_("base_method_2", &base_clazz_2::base_method_2)
         .function_("base_function_2", &base_clazz_2::base_function_2)
         .variable_("base_variable_2", &base_clazz_2::base_variable_2);
 
     meta::class_<derived_clazz>()
-        .ctor_<int, float>()
+        .constructor_<int, float>()
         .base_<base_clazz_1>()
         .base_<base_clazz_2>()
         .member_("derived_member", &derived_clazz::derived_member)
@@ -89,7 +89,7 @@ TEST_CASE("meta/meta_types/class_type") {
         .variable_("derived_variable", &derived_clazz::derived_variable);
 
     meta::class_<final_derived_clazz>()
-        .ctor_<int, float>()
+        .constructor_<int, float>()
         .base_<derived_clazz>();
 
     const meta::class_type base_clazz_1_type = meta::resolve_type<base_clazz_1>();
@@ -368,23 +368,23 @@ TEST_CASE("meta/meta_types/class_type") {
         CHECK(derived_clazz_type.get_variable("derived_variable"));
     }
 
-    SUBCASE("get_ctor_with") {
+    SUBCASE("get_constructor_with") {
         {
-            CHECK_FALSE(base_clazz_1_type.get_ctor_with<>());
-            CHECK(base_clazz_1_type.get_ctor_with<int>());
-            CHECK_FALSE(base_clazz_1_type.get_ctor_with<float>());
+            CHECK_FALSE(base_clazz_1_type.get_constructor_with<>());
+            CHECK(base_clazz_1_type.get_constructor_with<int>());
+            CHECK_FALSE(base_clazz_1_type.get_constructor_with<float>());
         }
         {
-            CHECK_FALSE(base_clazz_2_type.get_ctor_with<>());
-            CHECK_FALSE(base_clazz_2_type.get_ctor_with<int>());
-            CHECK(base_clazz_2_type.get_ctor_with<float>());
+            CHECK_FALSE(base_clazz_2_type.get_constructor_with<>());
+            CHECK_FALSE(base_clazz_2_type.get_constructor_with<int>());
+            CHECK(base_clazz_2_type.get_constructor_with<float>());
         }
         {
-            CHECK_FALSE(derived_clazz_type.get_ctor_with<>());
-            CHECK_FALSE(derived_clazz_type.get_ctor_with<int>());
-            CHECK_FALSE(derived_clazz_type.get_ctor_with<float>());
-            CHECK(derived_clazz_type.get_ctor_with<int, float>());
-            CHECK_FALSE(derived_clazz_type.get_ctor_with<float, int>());
+            CHECK_FALSE(derived_clazz_type.get_constructor_with<>());
+            CHECK_FALSE(derived_clazz_type.get_constructor_with<int>());
+            CHECK_FALSE(derived_clazz_type.get_constructor_with<float>());
+            CHECK(derived_clazz_type.get_constructor_with<int, float>());
+            CHECK_FALSE(derived_clazz_type.get_constructor_with<float, int>());
         }
     }
 

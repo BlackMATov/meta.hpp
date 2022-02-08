@@ -14,23 +14,23 @@
 
 namespace meta_hpp
 {
-    inline dtor_index::dtor_index(dtor_type type)
+    inline constructor_index::constructor_index(constructor_type type)
     : type_{std::move(type)} {}
 
-    template < detail::class_kind Class >
-    dtor_index dtor_index::make() {
-        return dtor_index{detail::resolve_dtor_type<Class>()};
+    template < detail::class_kind Class, typename... Args >
+    constructor_index constructor_index::make() {
+        return constructor_index{detail::resolve_constructor_type<Class, Args...>()};
     }
 
-    inline const dtor_type& dtor_index::get_type() const noexcept {
+    inline const constructor_type& constructor_index::get_type() const noexcept {
         return type_;
     }
 
-    inline bool operator<(const dtor_index& l, const dtor_index& r) noexcept {
+    inline bool operator<(const constructor_index& l, const constructor_index& r) noexcept {
         return l.type_ < r.type_;
     }
 
-    inline bool operator==(const dtor_index& l, const dtor_index& r) noexcept {
+    inline bool operator==(const constructor_index& l, const constructor_index& r) noexcept {
         return l.type_ == r.type_;
     }
 }

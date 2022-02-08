@@ -97,38 +97,38 @@ TEST_CASE("meta/meta_states/scope") {
         REQUIRE(iadd2_func);
 
         {
-            CHECK(iadd2_func.get_parameters().size() == 2);
+            CHECK(iadd2_func.get_arguments().size() == 2);
 
-            REQUIRE(iadd2_func.get_parameter(0));
-            CHECK(iadd2_func.get_parameter(0).get_type() == meta::resolve_type<const ivec2&>());
-            CHECK(iadd2_func.get_parameter(0).get_position() == 0);
-            CHECK(iadd2_func.get_parameter(0).get_name() == "l");
+            REQUIRE(iadd2_func.get_argument(0));
+            CHECK(iadd2_func.get_argument(0).get_type() == meta::resolve_type<const ivec2&>());
+            CHECK(iadd2_func.get_argument(0).get_position() == 0);
+            CHECK(iadd2_func.get_argument(0).get_name() == "l");
 
-            REQUIRE(iadd2_func.get_parameter(1));
-            CHECK(iadd2_func.get_parameter(1).get_type() == meta::resolve_type<const ivec2&>());
-            CHECK(iadd2_func.get_parameter(1).get_position() == 1);
-            CHECK(iadd2_func.get_parameter(1).get_name() == "r");
+            REQUIRE(iadd2_func.get_argument(1));
+            CHECK(iadd2_func.get_argument(1).get_type() == meta::resolve_type<const ivec2&>());
+            CHECK(iadd2_func.get_argument(1).get_position() == 1);
+            CHECK(iadd2_func.get_argument(1).get_name() == "r");
 
-            CHECK_FALSE(iadd2_func.get_parameter(2));
+            CHECK_FALSE(iadd2_func.get_argument(2));
         }
 
         const meta::function iadd3_func = math_scope.get_function("iadd3");
         REQUIRE(iadd3_func);
 
         {
-            CHECK(iadd3_func.get_parameters().size() == 2);
+            CHECK(iadd3_func.get_arguments().size() == 2);
 
-            REQUIRE(iadd3_func.get_parameter(0));
-            CHECK(iadd3_func.get_parameter(0).get_type() == meta::resolve_type<const ivec3&>());
-            CHECK(iadd3_func.get_parameter(0).get_position() == 0);
-            CHECK(iadd3_func.get_parameter(0).get_name() == "l");
+            REQUIRE(iadd3_func.get_argument(0));
+            CHECK(iadd3_func.get_argument(0).get_type() == meta::resolve_type<const ivec3&>());
+            CHECK(iadd3_func.get_argument(0).get_position() == 0);
+            CHECK(iadd3_func.get_argument(0).get_name() == "l");
 
-            REQUIRE(iadd3_func.get_parameter(1));
-            CHECK(iadd3_func.get_parameter(1).get_type() == meta::resolve_type<const ivec3&>());
-            CHECK(iadd3_func.get_parameter(1).get_position() == 1);
-            CHECK(iadd3_func.get_parameter(1).get_name() == "");
+            REQUIRE(iadd3_func.get_argument(1));
+            CHECK(iadd3_func.get_argument(1).get_type() == meta::resolve_type<const ivec3&>());
+            CHECK(iadd3_func.get_argument(1).get_position() == 1);
+            CHECK(iadd3_func.get_argument(1).get_name() == "");
 
-            CHECK_FALSE(iadd3_func.get_parameter(2));
+            CHECK_FALSE(iadd3_func.get_argument(2));
         }
     }
 

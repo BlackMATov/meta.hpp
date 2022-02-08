@@ -47,18 +47,18 @@ namespace meta_hpp
     scope_bind& scope_bind::function_(
         std::string name,
         Function function,
-        std::initializer_list<std::string_view> pnames,
+        std::initializer_list<std::string_view> anames,
         [[maybe_unused]] Policy policy)
     {
         auto function_state = detail::function_state::make<Policy>(std::move(name), std::move(function));
 
-        if ( pnames.size() > function_state->parameters.size() ) {
-            detail::throw_exception_with("provided parameter names don't match function argument count");
+        if ( anames.size() > function_state->arguments.size() ) {
+            detail::throw_exception_with("provided argument names don't match function argument count");
         }
 
-        for ( std::size_t i = 0; i < pnames.size(); ++i ) {
-            parameter& param = function_state->parameters[i];
-            detail::state_access(param)->name = std::string{std::data(pnames)[i]};
+        for ( std::size_t i = 0; i < anames.size(); ++i ) {
+            argument& arg = function_state->arguments[i];
+            detail::state_access(arg)->name = std::string{std::data(anames)[i]};
         }
 
         state_->functions.emplace(function_state->index, std::move(function_state));

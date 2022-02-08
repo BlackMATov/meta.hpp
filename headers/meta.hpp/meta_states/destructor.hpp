@@ -9,14 +9,14 @@
 #include "../meta_base.hpp"
 #include "../meta_states.hpp"
 
-#include "../meta_types/dtor_type.hpp"
+#include "../meta_types/destructor_type.hpp"
 #include "../meta_detail/value_utilities/uarg.hpp"
 
 namespace meta_hpp::detail
 {
     template < class_kind Class >
-    void raw_dtor_invoke(const uarg& ptr) {
-        using dt = dtor_traits<Class>;
+    void raw_destructor_invoke(const uarg& ptr) {
+        using dt = destructor_traits<Class>;
         using class_type = typename dt::class_type;
 
         if ( !ptr.can_cast_to<class_type*>() ) {
@@ -30,8 +30,8 @@ namespace meta_hpp::detail
     }
 
     template < class_kind Class >
-    bool raw_dtor_is_invocable_with(const uarg_base& ptr) {
-        using dt = dtor_traits<Class>;
+    bool raw_destructor_is_invocable_with(const uarg_base& ptr) {
+        using dt = destructor_traits<Class>;
         using class_type = typename dt::class_type;
 
         return ptr.can_cast_to<class_type*>();
@@ -41,70 +41,70 @@ namespace meta_hpp::detail
 namespace meta_hpp::detail
 {
     template < class_kind Class >
-    dtor_state::invoke_impl make_dtor_invoke() {
-        return &raw_dtor_invoke<Class>;
+    destructor_state::invoke_impl make_destructor_invoke() {
+        return &raw_destructor_invoke<Class>;
     }
 
     template < class_kind Class >
-    dtor_state::is_invocable_with_impl make_dtor_is_invocable_with() {
-        return &raw_dtor_is_invocable_with<Class>;
+    destructor_state::is_invocable_with_impl make_destructor_is_invocable_with() {
+        return &raw_destructor_is_invocable_with<Class>;
     }
 }
 
 namespace meta_hpp::detail
 {
     template < class_kind Class >
-    dtor_state_ptr dtor_state::make() {
-        return std::make_shared<dtor_state>(dtor_state{
-            .index{dtor_index::make<Class>()},
-            .invoke{make_dtor_invoke<Class>()},
-            .is_invocable_with{make_dtor_is_invocable_with<Class>()},
+    destructor_state_ptr destructor_state::make() {
+        return std::make_shared<destructor_state>(destructor_state{
+            .index{destructor_index::make<Class>()},
+            .invoke{make_destructor_invoke<Class>()},
+            .is_invocable_with{make_destructor_is_invocable_with<Class>()},
         });
     }
 }
 
 namespace meta_hpp
 {
-    inline dtor::dtor(detail::dtor_state_ptr state)
+    inline destructor::destructor(detail::destructor_state_ptr state)
     : state_{std::move(state)} {}
 
-    inline bool dtor::is_valid() const noexcept {
+    inline bool destructor::is_valid() const noexcept {
         return !!state_;
     }
 
-    inline dtor::operator bool() const noexcept {
+    inline destructor::operator bool() const noexcept {
         return is_valid();
     }
 
-    inline const dtor_index& dtor::get_index() const noexcept {
+    inline const destructor_index& destructor::get_index() const noexcept {
         return state_->index;
     }
 
-    inline const dtor_type& dtor::get_type() const noexcept {
+    inline const destructor_type& destructor::get_type() const noexcept {
         return state_->index.get_type();
     }
 
     template < typename Arg >
-    void dtor::invoke(Arg&& ptr) const {
+    void destructor::invoke(Arg&& ptr) const {
         using namespace detail;
         const uarg varg{std::forward<Arg>(ptr)};
         state_->invoke(varg);
     }
 
     template < typename Arg >
-    void dtor::operator()(Arg&& ptr) const {
+    void destructor::operator()(Arg&& ptr) const {
         invoke(std::forward<Arg>(ptr));
     }
 
     template < typename Arg >
-    bool dtor::is_invocable_with() const noexcept {
+    bool destructor::is_invocable_with() const noexcept {
         using namespace detail;
         const uarg_base varg{type_list<Arg>{}};
         return state_->is_invocable_with(varg);
     }
 
     template < typename Arg >
-    bool dtor::is_invocable_with(Arg&& ptr) const noexcept {
+    bool destructor::is_invocable_with(Arg&& ptr) const noexcept {
         using namespace detail;
         const uarg_base varg{std::forward<Arg>(ptr)};
         return state_->is_invocable_with(varg);

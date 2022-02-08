@@ -64,7 +64,7 @@ TEST_CASE("meta/meta_examples/methods/usage") {
     // checks the type of the method 'add'
     CHECK(ivec2_add.get_type() == meta::resolve_type<ivec2&(ivec2::*)(const ivec2&)>());
 
-    // checks the ability to call the method with specific parameters
+    // checks the ability to call the method with specific arguments
     CHECK(ivec2_add.is_invocable_with(v, ivec2{22, 11}));
     CHECK(ivec2_add.is_invocable_with<ivec2&, ivec2>());
 

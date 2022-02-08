@@ -11,10 +11,10 @@
 
 namespace meta_hpp::detail
 {
-    template < typename Parameter >
-    inline parameter_state_ptr parameter_state::make(std::size_t position) {
-        return std::make_shared<parameter_state>(parameter_state{
-            .index{parameter_index::make<Parameter>(position)},
+    template < typename Argument >
+    inline argument_state_ptr argument_state::make(std::size_t position) {
+        return std::make_shared<argument_state>(argument_state{
+            .index{argument_index::make<Argument>(position)},
         });
     }
 }
@@ -22,30 +22,30 @@ namespace meta_hpp::detail
 namespace meta_hpp
 {
 
-    inline parameter::parameter(detail::parameter_state_ptr state)
+    inline argument::argument(detail::argument_state_ptr state)
     : state_{std::move(state)} {}
 
-    inline bool parameter::is_valid() const noexcept {
+    inline bool argument::is_valid() const noexcept {
         return !!state_;
     }
 
-    inline parameter::operator bool() const noexcept {
+    inline argument::operator bool() const noexcept {
         return is_valid();
     }
 
-    inline const parameter_index& parameter::get_index() const noexcept {
+    inline const argument_index& argument::get_index() const noexcept {
         return state_->index;
     }
 
-    inline const any_type& parameter::get_type() const noexcept {
+    inline const any_type& argument::get_type() const noexcept {
         return state_->index.get_type();
     }
 
-    inline std::size_t parameter::get_position() const noexcept {
+    inline std::size_t argument::get_position() const noexcept {
         return state_->index.get_position();
     }
 
-    inline const std::string& parameter::get_name() const noexcept {
+    inline const std::string& argument::get_name() const noexcept {
         return state_->name;
     }
 }

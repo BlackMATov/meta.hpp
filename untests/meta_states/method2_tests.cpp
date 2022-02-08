@@ -33,13 +33,13 @@ TEST_CASE("meta/meta_states/method2") {
         const meta::method add_m = ivec2_type.get_method("add");
         REQUIRE(add_m);
 
-        CHECK(add_m.get_parameters().size() == 1);
+        CHECK(add_m.get_arguments().size() == 1);
 
-        REQUIRE(add_m.get_parameter(0));
-        CHECK(add_m.get_parameter(0).get_type() == meta::resolve_type<const ivec2&>());
-        CHECK(add_m.get_parameter(0).get_position() == 0);
-        CHECK(add_m.get_parameter(0).get_name() == "other");
+        REQUIRE(add_m.get_argument(0));
+        CHECK(add_m.get_argument(0).get_type() == meta::resolve_type<const ivec2&>());
+        CHECK(add_m.get_argument(0).get_position() == 0);
+        CHECK(add_m.get_argument(0).get_name() == "other");
 
-        CHECK_FALSE(add_m.get_parameter(1));
+        CHECK_FALSE(add_m.get_argument(1));
     }
 }

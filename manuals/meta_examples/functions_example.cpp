@@ -54,7 +54,7 @@ TEST_CASE("meta/meta_examples/functions/usage") {
     // checks a type of the founded function
     CHECK(sub_function.get_type() == meta::resolve_type<int(*)(int, int)>());
 
-    // checks the ability to call the function with specific parameters
+    // checks the ability to call the function with specific arguments
     CHECK(sub_function.is_invocable_with(60, 18));
     CHECK(sub_function.is_invocable_with<int, int>());
 

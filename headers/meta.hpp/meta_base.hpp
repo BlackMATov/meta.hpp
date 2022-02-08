@@ -103,35 +103,35 @@ namespace meta_hpp
 
 namespace meta_hpp
 {
-    class ctor;
-    class dtor;
+    class argument;
+    class constructor;
+    class destructor;
     class evalue;
     class function;
     class member;
     class method;
-    class parameter;
     class scope;
     class variable;
 
     namespace detail
     {
-        struct ctor_state;
-        struct dtor_state;
+        struct argument_state;
+        struct constructor_state;
+        struct destructor_state;
         struct evalue_state;
         struct function_state;
         struct member_state;
         struct method_state;
-        struct parameter_state;
         struct scope_state;
         struct variable_state;
 
-        using ctor_state_ptr = std::shared_ptr<ctor_state>;
-        using dtor_state_ptr = std::shared_ptr<dtor_state>;
+        using argument_state_ptr = std::shared_ptr<argument_state>;
+        using constructor_state_ptr = std::shared_ptr<constructor_state>;
+        using destructor_state_ptr = std::shared_ptr<destructor_state>;
         using evalue_state_ptr = std::shared_ptr<evalue_state>;
         using function_state_ptr = std::shared_ptr<function_state>;
         using member_state_ptr = std::shared_ptr<member_state>;
         using method_state_ptr = std::shared_ptr<method_state>;
-        using parameter_state_ptr = std::shared_ptr<parameter_state>;
         using scope_state_ptr = std::shared_ptr<scope_state>;
         using variable_state_ptr = std::shared_ptr<variable_state>;
     }
@@ -142,8 +142,8 @@ namespace meta_hpp
     class any_type;
     class array_type;
     class class_type;
-    class ctor_type;
-    class dtor_type;
+    class constructor_type;
+    class destructor_type;
     class enum_type;
     class function_type;
     class member_type;
@@ -159,8 +159,8 @@ namespace meta_hpp
         struct type_data_base;
         struct array_type_data;
         struct class_type_data;
-        struct ctor_type_data;
-        struct dtor_type_data;
+        struct constructor_type_data;
+        struct destructor_type_data;
         struct enum_type_data;
         struct function_type_data;
         struct member_type_data;
@@ -174,8 +174,8 @@ namespace meta_hpp
         using type_data_base_ptr = std::shared_ptr<type_data_base>;
         using array_type_data_ptr = std::shared_ptr<array_type_data>;
         using class_type_data_ptr = std::shared_ptr<class_type_data>;
-        using ctor_type_data_ptr = std::shared_ptr<ctor_type_data>;
-        using dtor_type_data_ptr = std::shared_ptr<dtor_type_data>;
+        using constructor_type_data_ptr = std::shared_ptr<constructor_type_data>;
+        using destructor_type_data_ptr = std::shared_ptr<destructor_type_data>;
         using enum_type_data_ptr = std::shared_ptr<enum_type_data>;
         using function_type_data_ptr = std::shared_ptr<function_type_data>;
         using member_type_data_ptr = std::shared_ptr<member_type_data>;
@@ -190,33 +190,33 @@ namespace meta_hpp
 
 namespace meta_hpp
 {
-    class ctor_index;
-    class dtor_index;
+    class argument_index;
+    class constructor_index;
+    class destructor_index;
     class evalue_index;
     class function_index;
     class member_index;
     class method_index;
-    class parameter_index;
     class scope_index;
     class variable_index;
 }
 
 namespace meta_hpp
 {
+    using argument_list = std::vector<argument>;
+
     using class_set = std::set<class_type, std::less<>>;
     using class_map = std::map<std::string, class_type, std::less<>>;
 
     using enum_set = std::set<enum_type, std::less<>>;
     using enum_map = std::map<std::string, enum_type, std::less<>>;
 
-    using ctor_map = std::map<ctor_index, ctor, std::less<>>;
-    using dtor_map = std::map<dtor_index, dtor, std::less<>>;
+    using constructor_map = std::map<constructor_index, constructor, std::less<>>;
+    using destructor_map = std::map<destructor_index, destructor, std::less<>>;
     using evalue_map = std::map<evalue_index, evalue, std::less<>>;
     using function_map = std::map<function_index, function, std::less<>>;
     using member_map = std::map<member_index, member, std::less<>>;
     using method_map = std::map<method_index, method, std::less<>>;
     using scope_map = std::map<scope_index, scope, std::less<>>;
     using variable_map = std::map<variable_index, variable, std::less<>>;
-
-    using parameter_list = std::vector<parameter>;
 }

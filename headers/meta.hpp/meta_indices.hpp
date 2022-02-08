@@ -11,36 +11,54 @@
 
 namespace meta_hpp
 {
-    class ctor_index final {
+    class argument_index final {
     public:
-        ctor_index() = delete;
-        [[nodiscard]] const ctor_type& get_type() const noexcept;
+        argument_index() = delete;
+        [[nodiscard]] const any_type& get_type() const noexcept;
+        [[nodiscard]] std::size_t get_position() const noexcept;
     private:
-        friend detail::ctor_state;
-        template < detail::class_kind Class, typename... Args >
-        [[nodiscard]] static ctor_index make();
+        friend detail::argument_state;
+        template < typename Argument >
+        [[nodiscard]] static argument_index make(std::size_t position);
     private:
-        explicit ctor_index(ctor_type type);
-        friend bool operator<(const ctor_index& l, const ctor_index& r) noexcept;
-        friend bool operator==(const ctor_index& l, const ctor_index& r) noexcept;
+        explicit argument_index(any_type type, std::size_t position);
+        friend bool operator<(const argument_index& l, const argument_index& r) noexcept;
+        friend bool operator==(const argument_index& l, const argument_index& r) noexcept;
     private:
-        ctor_type type_;
+        any_type type_;
+        std::size_t position_{};
     };
 
-    class dtor_index final {
+    class constructor_index final {
     public:
-        dtor_index() = delete;
-        [[nodiscard]] const dtor_type& get_type() const noexcept;
+        constructor_index() = delete;
+        [[nodiscard]] const constructor_type& get_type() const noexcept;
     private:
-        friend detail::dtor_state;
+        friend detail::constructor_state;
+        template < detail::class_kind Class, typename... Args >
+        [[nodiscard]] static constructor_index make();
+    private:
+        explicit constructor_index(constructor_type type);
+        friend bool operator<(const constructor_index& l, const constructor_index& r) noexcept;
+        friend bool operator==(const constructor_index& l, const constructor_index& r) noexcept;
+    private:
+        constructor_type type_;
+    };
+
+    class destructor_index final {
+    public:
+        destructor_index() = delete;
+        [[nodiscard]] const destructor_type& get_type() const noexcept;
+    private:
+        friend detail::destructor_state;
         template < detail::class_kind Class >
-        [[nodiscard]] static dtor_index make();
+        [[nodiscard]] static destructor_index make();
     private:
-        explicit dtor_index(dtor_type type);
-        friend bool operator<(const dtor_index& l, const dtor_index& r) noexcept;
-        friend bool operator==(const dtor_index& l, const dtor_index& r) noexcept;
+        explicit destructor_index(destructor_type type);
+        friend bool operator<(const destructor_index& l, const destructor_index& r) noexcept;
+        friend bool operator==(const destructor_index& l, const destructor_index& r) noexcept;
     private:
-        dtor_type type_;
+        destructor_type type_;
     };
 
     class evalue_index final {
@@ -113,24 +131,6 @@ namespace meta_hpp
     private:
         method_type type_;
         std::string name_;
-    };
-
-    class parameter_index final {
-    public:
-        parameter_index() = delete;
-        [[nodiscard]] const any_type& get_type() const noexcept;
-        [[nodiscard]] std::size_t get_position() const noexcept;
-    private:
-        friend detail::parameter_state;
-        template < typename Parameter >
-        [[nodiscard]] static parameter_index make(std::size_t position);
-    private:
-        explicit parameter_index(any_type type, std::size_t position);
-        friend bool operator<(const parameter_index& l, const parameter_index& r) noexcept;
-        friend bool operator==(const parameter_index& l, const parameter_index& r) noexcept;
-    private:
-        any_type type_;
-        std::size_t position_{};
     };
 
     class scope_index final {

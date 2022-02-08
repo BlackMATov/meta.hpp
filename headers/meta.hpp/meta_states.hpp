@@ -15,7 +15,7 @@
 
 namespace meta_hpp
 {
-    namespace ctor_policy
+    namespace constructor_policy
     {
         struct as_object final {};
         struct as_raw_pointer final {};
@@ -51,10 +51,10 @@ namespace meta_hpp
     }
 
     template < typename Policy >
-    inline constexpr bool is_ctor_policy_v =
-        std::is_same_v<Policy, ctor_policy::as_object> ||
-        std::is_same_v<Policy, ctor_policy::as_raw_pointer> ||
-        std::is_same_v<Policy, ctor_policy::as_shared_pointer>;
+    inline constexpr bool is_constructor_policy_v =
+        std::is_same_v<Policy, constructor_policy::as_object> ||
+        std::is_same_v<Policy, constructor_policy::as_raw_pointer> ||
+        std::is_same_v<Policy, constructor_policy::as_shared_pointer>;
 
     template < typename Policy >
     inline constexpr bool is_function_policy_v =
@@ -81,7 +81,7 @@ namespace meta_hpp
         std::is_same_v<Policy, variable_policy::as_reference_wrapper>;
 
     template < typename Policy >
-    concept ctor_policy_kind = is_ctor_policy_v<Policy>;
+    concept constructor_policy_kind = is_constructor_policy_v<Policy>;
 
     template < typename Policy >
     concept function_policy_kind = is_function_policy_v<Policy>;
@@ -98,16 +98,33 @@ namespace meta_hpp
 
 namespace meta_hpp
 {
-    class ctor final {
+    class argument final {
     public:
-        explicit ctor() = default;
-        explicit ctor(detail::ctor_state_ptr state);
+        explicit argument() = default;
+        explicit argument(detail::argument_state_ptr state);
 
         [[nodiscard]] bool is_valid() const noexcept;
         [[nodiscard]] explicit operator bool() const noexcept;
 
-        [[nodiscard]] const ctor_index& get_index() const noexcept;
-        [[nodiscard]] const ctor_type& get_type() const noexcept;
+        [[nodiscard]] const argument_index& get_index() const noexcept;
+        [[nodiscard]] const any_type& get_type() const noexcept;
+        [[nodiscard]] std::size_t get_position() const noexcept;
+        [[nodiscard]] const std::string& get_name() const noexcept;
+    private:
+        detail::argument_state_ptr state_;
+        friend auto detail::state_access<argument>(const argument&);
+    };
+
+    class constructor final {
+    public:
+        explicit constructor() = default;
+        explicit constructor(detail::constructor_state_ptr state);
+
+        [[nodiscard]] bool is_valid() const noexcept;
+        [[nodiscard]] explicit operator bool() const noexcept;
+
+        [[nodiscard]] const constructor_index& get_index() const noexcept;
+        [[nodiscard]] const constructor_type& get_type() const noexcept;
 
         template < typename... Args >
         uvalue invoke(Args&&... args) const;
@@ -121,23 +138,23 @@ namespace meta_hpp
         template < typename... Args >
         [[nodiscard]] bool is_invocable_with(Args&&... args) const noexcept;
 
-        [[nodiscard]] parameter get_parameter(std::size_t position) const noexcept;
-        [[nodiscard]] const parameter_list& get_parameters() const noexcept;
+        [[nodiscard]] argument get_argument(std::size_t position) const noexcept;
+        [[nodiscard]] const argument_list& get_arguments() const noexcept;
     private:
-        detail::ctor_state_ptr state_;
-        friend auto detail::state_access<ctor>(const ctor&);
+        detail::constructor_state_ptr state_;
+        friend auto detail::state_access<constructor>(const constructor&);
     };
 
-    class dtor final {
+    class destructor final {
     public:
-        explicit dtor() = default;
-        explicit dtor(detail::dtor_state_ptr state);
+        explicit destructor() = default;
+        explicit destructor(detail::destructor_state_ptr state);
 
         [[nodiscard]] bool is_valid() const noexcept;
         [[nodiscard]] explicit operator bool() const noexcept;
 
-        [[nodiscard]] const dtor_index& get_index() const noexcept;
-        [[nodiscard]] const dtor_type& get_type() const noexcept;
+        [[nodiscard]] const destructor_index& get_index() const noexcept;
+        [[nodiscard]] const destructor_type& get_type() const noexcept;
 
         template < typename Arg >
         void invoke(Arg&& ptr) const;
@@ -151,8 +168,8 @@ namespace meta_hpp
         template < typename Arg >
         [[nodiscard]] bool is_invocable_with(Arg&& ptr) const noexcept;
     private:
-        detail::dtor_state_ptr state_;
-        friend auto detail::state_access<dtor>(const dtor&);
+        detail::destructor_state_ptr state_;
+        friend auto detail::state_access<destructor>(const destructor&);
     };
 
     class evalue final {
@@ -198,8 +215,8 @@ namespace meta_hpp
         template < typename... Args >
         [[nodiscard]] bool is_invocable_with(Args&&... args) const noexcept;
 
-        [[nodiscard]] parameter get_parameter(std::size_t position) const noexcept;
-        [[nodiscard]] const parameter_list& get_parameters() const noexcept;
+        [[nodiscard]] argument get_argument(std::size_t position) const noexcept;
+        [[nodiscard]] const argument_list& get_arguments() const noexcept;
     private:
         detail::function_state_ptr state_;
         friend auto detail::state_access<function>(const function&);
@@ -269,28 +286,11 @@ namespace meta_hpp
         template < typename Instance, typename... Args >
         [[nodiscard]] bool is_invocable_with(Instance&& instance, Args&&... args) const noexcept;
 
-        [[nodiscard]] parameter get_parameter(std::size_t position) const noexcept;
-        [[nodiscard]] const parameter_list& get_parameters() const noexcept;
+        [[nodiscard]] argument get_argument(std::size_t position) const noexcept;
+        [[nodiscard]] const argument_list& get_arguments() const noexcept;
     private:
         detail::method_state_ptr state_;
         friend auto detail::state_access<method>(const method&);
-    };
-
-    class parameter final {
-    public:
-        explicit parameter() = default;
-        explicit parameter(detail::parameter_state_ptr state);
-
-        [[nodiscard]] bool is_valid() const noexcept;
-        [[nodiscard]] explicit operator bool() const noexcept;
-
-        [[nodiscard]] const parameter_index& get_index() const noexcept;
-        [[nodiscard]] const any_type& get_type() const noexcept;
-        [[nodiscard]] std::size_t get_position() const noexcept;
-        [[nodiscard]] const std::string& get_name() const noexcept;
-    private:
-        detail::parameter_state_ptr state_;
-        friend auto detail::state_access<parameter>(const parameter&);
     };
 
     class scope final {
@@ -394,30 +394,30 @@ namespace meta_hpp
 
 namespace meta_hpp::detail
 {
-    struct ctor_state final {
+    struct constructor_state final {
         using invoke_impl = fixed_function<uvalue(std::span<const uarg>)>;
         using is_invocable_with_impl = fixed_function<bool(std::span<const uarg_base>)>;
 
-        ctor_index index;
+        constructor_index index;
         invoke_impl invoke;
         is_invocable_with_impl is_invocable_with;
 
-        parameter_list parameters;
+        argument_list arguments;
 
-        template < ctor_policy_kind Policy, class_kind Class, typename... Args >
-        [[nodiscard]] static ctor_state_ptr make();
+        template < constructor_policy_kind Policy, class_kind Class, typename... Args >
+        [[nodiscard]] static constructor_state_ptr make();
     };
 
-    struct dtor_state final {
+    struct destructor_state final {
         using invoke_impl = fixed_function<void(const uarg&)>;
         using is_invocable_with_impl = fixed_function<bool(const uarg_base&)>;
 
-        dtor_index index;
+        destructor_index index;
         invoke_impl invoke;
         is_invocable_with_impl is_invocable_with;
 
         template < class_kind Class >
-        [[nodiscard]] static dtor_state_ptr make();
+        [[nodiscard]] static destructor_state_ptr make();
     };
 
     struct evalue_state final {
@@ -437,7 +437,7 @@ namespace meta_hpp::detail
         invoke_impl invoke;
         is_invocable_with_impl is_invocable_with;
 
-        parameter_list parameters;
+        argument_list arguments;
 
         template < function_policy_kind Policy, function_kind Function >
         [[nodiscard]] static function_state_ptr make(std::string name, Function function);
@@ -468,19 +468,19 @@ namespace meta_hpp::detail
         invoke_impl invoke;
         is_invocable_with_impl is_invocable_with;
 
-        parameter_list parameters;
+        argument_list arguments;
 
         template < method_policy_kind Policy, method_kind Method >
         [[nodiscard]] static method_state_ptr make(std::string name, Method method);
     };
 
-    struct parameter_state final {
-        parameter_index index;
+    struct argument_state final {
+        argument_index index;
 
         std::string name{};
 
-        template < typename Parameter >
-        [[nodiscard]] static parameter_state_ptr make(std::size_t position);
+        template < typename Argument >
+        [[nodiscard]] static argument_state_ptr make(std::size_t position);
     };
 
     struct scope_state final {

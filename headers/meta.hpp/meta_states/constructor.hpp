@@ -9,26 +9,26 @@
 #include "../meta_base.hpp"
 #include "../meta_states.hpp"
 
-#include "../meta_types/ctor_type.hpp"
+#include "../meta_types/constructor_type.hpp"
 #include "../meta_detail/value_utilities/uarg.hpp"
 
 namespace meta_hpp::detail
 {
-    template < ctor_policy_kind Policy, class_kind Class, typename... Args >
-    uvalue raw_ctor_invoke(std::span<const uarg> args) {
-        using ct = ctor_traits<Class, Args...>;
+    template < constructor_policy_kind Policy, class_kind Class, typename... Args >
+    uvalue raw_constructor_invoke(std::span<const uarg> args) {
+        using ct = constructor_traits<Class, Args...>;
         using class_type = typename ct::class_type;
         using argument_types = typename ct::argument_types;
 
         constexpr bool as_object =
             stdex::copy_constructible<class_type> &&
-            stdex::same_as<Policy, ctor_policy::as_object>;
+            stdex::same_as<Policy, constructor_policy::as_object>;
 
         constexpr bool as_raw_ptr =
-            stdex::same_as<Policy, ctor_policy::as_raw_pointer>;
+            stdex::same_as<Policy, constructor_policy::as_raw_pointer>;
 
         constexpr bool as_shared_ptr =
-            stdex::same_as<Policy, ctor_policy::as_shared_pointer>;
+            stdex::same_as<Policy, constructor_policy::as_shared_pointer>;
 
         static_assert(as_object || as_raw_ptr || as_shared_ptr);
 
@@ -62,8 +62,8 @@ namespace meta_hpp::detail
     }
 
     template < class_kind Class, typename... Args >
-    bool raw_ctor_is_invocable_with(std::span<const uarg_base> args) {
-        using ct = ctor_traits<Class, Args...>;
+    bool raw_constructor_is_invocable_with(std::span<const uarg_base> args) {
+        using ct = constructor_traits<Class, Args...>;
         using argument_types = typename ct::argument_types;
 
         if ( args.size() != ct::arity ) {
@@ -79,71 +79,71 @@ namespace meta_hpp::detail
 
 namespace meta_hpp::detail
 {
-    template < ctor_policy_kind Policy, class_kind Class, typename... Args >
-    ctor_state::invoke_impl make_ctor_invoke() {
-        return &raw_ctor_invoke<Policy, Class, Args...>;
+    template < constructor_policy_kind Policy, class_kind Class, typename... Args >
+    constructor_state::invoke_impl make_constructor_invoke() {
+        return &raw_constructor_invoke<Policy, Class, Args...>;
     }
 
     template < class_kind Class, typename... Args >
-    ctor_state::is_invocable_with_impl make_ctor_is_invocable_with() {
-        return &raw_ctor_is_invocable_with<Class, Args...>;
+    constructor_state::is_invocable_with_impl make_constructor_is_invocable_with() {
+        return &raw_constructor_is_invocable_with<Class, Args...>;
     }
 
     template < class_kind Class, typename... Args >
-    parameter_list make_ctor_parameters() {
-        using ct = detail::ctor_traits<Class, Args...>;
+    argument_list make_constructor_arguments() {
+        using ct = detail::constructor_traits<Class, Args...>;
 
-        parameter_list parameters;
-        parameters.reserve(ct::arity);
+        argument_list arguments;
+        arguments.reserve(ct::arity);
 
         // NOLINTNEXTLINE(readability-named-parameter)
-        [&parameters]<std::size_t... Is>(std::index_sequence<Is...>) mutable {
-            (parameters.push_back([]<std::size_t I>(){
+        [&arguments]<std::size_t... Is>(std::index_sequence<Is...>) mutable {
+            (arguments.push_back([]<std::size_t I>(){
                 using P = detail::type_list_at_t<I, typename ct::argument_types>;
-                return parameter{detail::parameter_state::make<P>(I)};
+                return argument{detail::argument_state::make<P>(I)};
             }.template operator()<Is>()), ...);
         }(std::make_index_sequence<ct::arity>());
 
-        return parameters;
+        return arguments;
     }
 }
 
 namespace meta_hpp::detail
 {
-    template < ctor_policy_kind Policy, class_kind Class, typename... Args >
-    ctor_state_ptr ctor_state::make() {
-        return std::make_shared<ctor_state>(ctor_state{
-            .index{ctor_index::make<Class, Args...>()},
-            .invoke{make_ctor_invoke<Policy, Class, Args...>()},
-            .is_invocable_with{make_ctor_is_invocable_with<Class, Args...>()},
-            .parameters{make_ctor_parameters<Class, Args...>()},
+    template < constructor_policy_kind Policy, class_kind Class, typename... Args >
+    constructor_state_ptr constructor_state::make() {
+        return std::make_shared<constructor_state>(constructor_state{
+            .index{constructor_index::make<Class, Args...>()},
+            .invoke{make_constructor_invoke<Policy, Class, Args...>()},
+            .is_invocable_with{make_constructor_is_invocable_with<Class, Args...>()},
+            .arguments{make_constructor_arguments<Class, Args...>()},
         });
     }
 }
 
 namespace meta_hpp
 {
-    inline ctor::ctor(detail::ctor_state_ptr state)
+    inline constructor::constructor(detail::constructor_state_ptr state)
     : state_{std::move(state)} {}
 
-    inline bool ctor::is_valid() const noexcept {
+    inline bool constructor::is_valid() const noexcept {
         return !!state_;
     }
 
-    inline ctor::operator bool() const noexcept {
+    inline constructor::operator bool() const noexcept {
         return is_valid();
     }
 
-    inline const ctor_index& ctor::get_index() const noexcept {
+    inline const constructor_index& constructor::get_index() const noexcept {
         return state_->index;
     }
 
-    inline const ctor_type& ctor::get_type() const noexcept {
+    inline const constructor_type& constructor::get_type() const noexcept {
         return state_->index.get_type();
     }
 
     template < typename... Args >
-    uvalue ctor::invoke(Args&&... args) const {
+    uvalue constructor::invoke(Args&&... args) const {
         if constexpr ( sizeof...(Args) > 0 ) {
             using namespace detail;
             const std::array<uarg, sizeof...(Args)> vargs{uarg{std::forward<Args>(args)}...};
@@ -154,12 +154,12 @@ namespace meta_hpp
     }
 
     template < typename... Args >
-    uvalue ctor::operator()(Args&&... args) const {
+    uvalue constructor::operator()(Args&&... args) const {
         return invoke(std::forward<Args>(args)...);
     }
 
     template < typename... Args >
-    bool ctor::is_invocable_with() const noexcept {
+    bool constructor::is_invocable_with() const noexcept {
         if constexpr ( sizeof...(Args) > 0 ) {
             using namespace detail;
             const std::array<uarg_base, sizeof...(Args)> vargs{uarg_base{type_list<Args>{}}...};
@@ -170,7 +170,7 @@ namespace meta_hpp
     }
 
     template < typename... Args >
-    bool ctor::is_invocable_with(Args&&... args) const noexcept {
+    bool constructor::is_invocable_with(Args&&... args) const noexcept {
         if constexpr ( sizeof...(Args) > 0 ) {
             using namespace detail;
             const std::array<uarg_base, sizeof...(Args)> vargs{uarg_base{std::forward<Args>(args)}...};
@@ -180,11 +180,11 @@ namespace meta_hpp
         }
     }
 
-    inline parameter ctor::get_parameter(std::size_t position) const noexcept {
-        return position < state_->parameters.size() ? state_->parameters[position] : parameter{};
+    inline argument constructor::get_argument(std::size_t position) const noexcept {
+        return position < state_->arguments.size() ? state_->arguments[position] : argument{};
     }
 
-    inline const parameter_list& ctor::get_parameters() const noexcept {
-        return state_->parameters;
+    inline const argument_list& constructor::get_arguments() const noexcept {
+        return state_->arguments;
     }
 }

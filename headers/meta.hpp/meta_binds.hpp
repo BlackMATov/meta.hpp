@@ -14,12 +14,12 @@ namespace meta_hpp
     namespace detail
     {
         template < typename Class, typename... Args >
-        concept class_bind_ctor_kind =
+        concept class_bind_constructor_kind =
             class_kind<Class> &&
             requires(Args&&... args) { { Class{std::forward<Args>(args)...} }; };
 
         template < typename Class >
-        concept class_bind_dtor_kind =
+        concept class_bind_destructor_kind =
             class_kind<Class> &&
             requires(Class&& inst) { { inst.~Class() }; };
 
@@ -46,19 +46,19 @@ namespace meta_hpp
         operator class_type() const noexcept;
 
         template < typename... Args
-                 , ctor_policy_kind Policy = ctor_policy::as_object >
-        class_bind& ctor_(Policy = Policy{})
-            requires detail::class_bind_ctor_kind<Class, Args...>;
+                 , constructor_policy_kind Policy = constructor_policy::as_object >
+        class_bind& constructor_(Policy = Policy{})
+            requires detail::class_bind_constructor_kind<Class, Args...>;
 
         template < typename... Args
-                 , ctor_policy_kind Policy = ctor_policy::as_object >
-        class_bind& ctor_(
-            std::initializer_list<std::string_view> pnames,
+                 , constructor_policy_kind Policy = constructor_policy::as_object >
+        class_bind& constructor_(
+            std::initializer_list<std::string_view> anames,
             Policy = Policy{})
-            requires detail::class_bind_ctor_kind<Class, Args...>;
+            requires detail::class_bind_constructor_kind<Class, Args...>;
 
-        class_bind& dtor_()
-            requires detail::class_bind_dtor_kind<Class>;
+        class_bind& destructor_()
+            requires detail::class_bind_destructor_kind<Class>;
 
         template < detail::class_kind Base >
         class_bind& base_()
@@ -73,7 +73,7 @@ namespace meta_hpp
         class_bind& function_(
             std::string name,
             Function function,
-            std::initializer_list<std::string_view> pnames,
+            std::initializer_list<std::string_view> anames,
             Policy = Policy{});
 
         template < detail::member_kind Member
@@ -91,7 +91,7 @@ namespace meta_hpp
         class_bind& method_(
             std::string name,
             Method method,
-            std::initializer_list<std::string_view> pnames,
+            std::initializer_list<std::string_view> anames,
             Policy = Policy{})
             requires detail::class_bind_method_kind<Class, Method>;
 
@@ -143,7 +143,7 @@ namespace meta_hpp
         scope_bind& function_(
             std::string name,
             Function function,
-            std::initializer_list<std::string_view> pnames,
+            std::initializer_list<std::string_view> anames,
             Policy = Policy{});
 
         template < detail::pointer_kind Pointer

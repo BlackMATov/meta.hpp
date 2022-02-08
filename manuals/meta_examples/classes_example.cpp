@@ -47,7 +47,7 @@ TEST_CASE("meta/meta_examples/classes/type") {
     // 'rectangle' class type registration
     meta::class_<rectangle>()
         .base_<shape>()
-        .ctor_<int, int>()
+        .constructor_<int, int>()
         .method_("get_width", &rectangle::get_width)
         .method_("get_height", &rectangle::get_height);
 

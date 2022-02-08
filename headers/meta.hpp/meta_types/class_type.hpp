@@ -9,7 +9,7 @@
 #include "../meta_base.hpp"
 #include "../meta_types.hpp"
 
-#include "../meta_states/ctor.hpp"
+#include "../meta_states/constructor.hpp"
 #include "../meta_states/function.hpp"
 #include "../meta_states/member.hpp"
 #include "../meta_states/method.hpp"
@@ -69,12 +69,12 @@ namespace meta_hpp
         return data_->argument_types;
     }
 
-    inline const ctor_map& class_type::get_ctors() const noexcept {
-        return data_->ctors;
+    inline const constructor_map& class_type::get_ctors() const noexcept {
+        return data_->constructors;
     }
 
-    inline const dtor_map& class_type::get_dtors() const noexcept {
-        return data_->dtors;
+    inline const destructor_map& class_type::get_dtors() const noexcept {
+        return data_->destructors;
     }
 
     inline const class_set& class_type::get_bases() const noexcept {
@@ -99,7 +99,7 @@ namespace meta_hpp
 
     template < typename... Args >
     uvalue class_type::create(Args&&... args) const {
-        for ( auto&& ctor : data_->ctors ) {
+        for ( auto&& ctor : data_->constructors ) {
             if ( ctor.second.is_invocable_with(std::forward<Args>(args)...) ) {
                 return ctor.second.invoke(std::forward<Args>(args)...);
             }
@@ -114,7 +114,7 @@ namespace meta_hpp
 
     template < typename Arg >
     bool class_type::destroy(Arg&& ptr) const {
-        for ( auto&& dtor : data_->dtors ) {
+        for ( auto&& dtor : data_->destructors ) {
             if ( dtor.second.is_invocable_with(std::forward<Arg>(ptr)) ) {
                 dtor.second.invoke(std::forward<Arg>(ptr));
                 return true;
@@ -234,31 +234,31 @@ namespace meta_hpp
     }
 
     //
-    // get_ctor_with
+    // get_constructor_with
     //
 
     template < typename... Args >
-    ctor class_type::get_ctor_with() const noexcept {
-        return get_ctor_with({detail::resolve_type<Args>()...});
+    constructor class_type::get_constructor_with() const noexcept {
+        return get_constructor_with({detail::resolve_type<Args>()...});
     }
 
     template < typename Iter >
-    ctor class_type::get_ctor_with(Iter first, Iter last) const noexcept {
-        for ( auto&& [index, ctor] : data_->ctors ) {
+    constructor class_type::get_constructor_with(Iter first, Iter last) const noexcept {
+        for ( auto&& [index, ctor] : data_->constructors ) {
             const std::vector<any_type>& args = ctor.get_type().get_argument_types();
             if ( std::equal(first, last, args.begin(), args.end()) ) {
                 return ctor;
             }
         }
-        return ctor{};
+        return constructor{};
     }
 
-    inline ctor class_type::get_ctor_with(const std::vector<any_type>& args) const noexcept {
-        return get_ctor_with(args.begin(), args.end());
+    inline constructor class_type::get_constructor_with(const std::vector<any_type>& args) const noexcept {
+        return get_constructor_with(args.begin(), args.end());
     }
 
-    inline ctor class_type::get_ctor_with(std::initializer_list<any_type> args) const noexcept {
-        return get_ctor_with(args.begin(), args.end());
+    inline constructor class_type::get_constructor_with(std::initializer_list<any_type> args) const noexcept {
+        return get_constructor_with(args.begin(), args.end());
     }
 
     //

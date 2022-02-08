@@ -82,10 +82,10 @@ namespace meta_hpp::detail
         [[nodiscard]] class_type resolve_class_type() { return class_type{resolve_class_type_data<Class>()}; }
 
         template < class_kind Class, typename... Args >
-        [[nodiscard]] ctor_type resolve_ctor_type() { return ctor_type{resolve_ctor_type_data<Class, Args...>()}; }
+        [[nodiscard]] constructor_type resolve_constructor_type() { return constructor_type{resolve_constructor_type_data<Class, Args...>()}; }
 
         template < class_kind Class >
-        [[nodiscard]] dtor_type resolve_dtor_type() { return dtor_type{resolve_dtor_type_data<Class>()}; }
+        [[nodiscard]] destructor_type resolve_destructor_type() { return destructor_type{resolve_destructor_type_data<Class>()}; }
 
         template < enum_kind Enum >
         [[nodiscard]] enum_type resolve_enum_type() { return enum_type{resolve_enum_type_data<Enum>()}; }
@@ -131,14 +131,14 @@ namespace meta_hpp::detail
         }
 
         template < class_kind Class, typename... Args >
-        [[nodiscard]] ctor_type_data_ptr resolve_ctor_type_data() {
-            static ctor_type_data_ptr data{std::make_shared<ctor_type_data>(type_list<Class>{}, type_list<Args...>{})};
+        [[nodiscard]] constructor_type_data_ptr resolve_constructor_type_data() {
+            static constructor_type_data_ptr data{std::make_shared<constructor_type_data>(type_list<Class>{}, type_list<Args...>{})};
             return data;
         }
 
         template < class_kind Class >
-        [[nodiscard]] dtor_type_data_ptr resolve_dtor_type_data() {
-            static dtor_type_data_ptr data{std::make_shared<dtor_type_data>(type_list<Class>{})};
+        [[nodiscard]] destructor_type_data_ptr resolve_destructor_type_data() {
+            static destructor_type_data_ptr data{std::make_shared<destructor_type_data>(type_list<Class>{})};
             return data;
         }
 
@@ -234,15 +234,15 @@ namespace meta_hpp::detail
 namespace meta_hpp::detail
 {
     template < class_kind Class, typename... Args >
-    ctor_type resolve_ctor_type() {
+    constructor_type resolve_constructor_type() {
         type_registry& registry = type_registry::instance();
-        return registry.resolve_ctor_type<Class, Args...>();
+        return registry.resolve_constructor_type<Class, Args...>();
     }
 
     template < class_kind Class >
-    dtor_type resolve_dtor_type() {
+    destructor_type resolve_destructor_type() {
         type_registry& registry = type_registry::instance();
-        return registry.resolve_dtor_type<Class>();
+        return registry.resolve_destructor_type<Class>();
     }
 }
 

@@ -23,41 +23,41 @@ namespace meta_hpp
     }
 
     template < detail::class_kind Class >
-    template < typename... Args, ctor_policy_kind Policy >
-    class_bind<Class>& class_bind<Class>::ctor_(Policy policy)
-        requires detail::class_bind_ctor_kind<Class, Args...>
+    template < typename... Args, constructor_policy_kind Policy >
+    class_bind<Class>& class_bind<Class>::constructor_(Policy policy)
+        requires detail::class_bind_constructor_kind<Class, Args...>
     {
-        return ctor_<Args...>({}, policy);
+        return constructor_<Args...>({}, policy);
     }
 
     template < detail::class_kind Class >
-    template < typename... Args, ctor_policy_kind Policy >
-    class_bind<Class>& class_bind<Class>::ctor_(
-        std::initializer_list<std::string_view> pnames,
+    template < typename... Args, constructor_policy_kind Policy >
+    class_bind<Class>& class_bind<Class>::constructor_(
+        std::initializer_list<std::string_view> anames,
         [[maybe_unused]] Policy policy)
-        requires detail::class_bind_ctor_kind<Class, Args...>
+        requires detail::class_bind_constructor_kind<Class, Args...>
     {
-        auto ctor_state = detail::ctor_state::make<Policy, Class, Args...>();
+        auto constructor_state = detail::constructor_state::make<Policy, Class, Args...>();
 
-        if ( pnames.size() > ctor_state->parameters.size() ) {
-            detail::throw_exception_with("provided parameter names don't match constructor argument count");
+        if ( anames.size() > constructor_state->arguments.size() ) {
+            detail::throw_exception_with("provided argument names don't match constructor argument count");
         }
 
-        for ( std::size_t i = 0; i < pnames.size(); ++i ) {
-            parameter& param = ctor_state->parameters[i];
-            detail::state_access(param)->name = std::string{std::data(pnames)[i]};
+        for ( std::size_t i = 0; i < anames.size(); ++i ) {
+            argument& arg = constructor_state->arguments[i];
+            detail::state_access(arg)->name = std::string{std::data(anames)[i]};
         }
 
-        data_->ctors.emplace(ctor_state->index, std::move(ctor_state));
+        data_->constructors.emplace(constructor_state->index, std::move(constructor_state));
         return *this;
     }
 
     template < detail::class_kind Class >
-    class_bind<Class>& class_bind<Class>::dtor_()
-        requires detail::class_bind_dtor_kind<Class>
+    class_bind<Class>& class_bind<Class>::destructor_()
+        requires detail::class_bind_destructor_kind<Class>
     {
-        auto dtor_state = detail::dtor_state::make<Class>();
-        data_->dtors.emplace(dtor_state->index, std::move(dtor_state));
+        auto destructor_state = detail::destructor_state::make<Class>();
+        data_->destructors.emplace(destructor_state->index, std::move(destructor_state));
         return *this;
     }
 
@@ -86,18 +86,18 @@ namespace meta_hpp
     class_bind<Class>& class_bind<Class>::function_(
         std::string name,
         Function function,
-        std::initializer_list<std::string_view> pnames,
+        std::initializer_list<std::string_view> anames,
         [[maybe_unused]] Policy policy)
     {
         auto function_state = detail::function_state::make<Policy>(std::move(name), std::move(function));
 
-        if ( pnames.size() > function_state->parameters.size() ) {
-            detail::throw_exception_with("provided parameter names don't match function argument count");
+        if ( anames.size() > function_state->arguments.size() ) {
+            detail::throw_exception_with("provided argument names don't match function argument count");
         }
 
-        for ( std::size_t i = 0; i < pnames.size(); ++i ) {
-            parameter& param = function_state->parameters[i];
-            detail::state_access(param)->name = std::string{std::data(pnames)[i]};
+        for ( std::size_t i = 0; i < anames.size(); ++i ) {
+            argument& arg = function_state->arguments[i];
+            detail::state_access(arg)->name = std::string{std::data(anames)[i]};
         }
 
         data_->functions.emplace(function_state->index, std::move(function_state));
@@ -127,19 +127,19 @@ namespace meta_hpp
     class_bind<Class>& class_bind<Class>::method_(
         std::string name,
         Method method,
-        std::initializer_list<std::string_view> pnames,
+        std::initializer_list<std::string_view> anames,
         [[maybe_unused]] Policy policy)
         requires detail::class_bind_method_kind<Class, Method>
     {
         auto method_state = detail::method_state::make<Policy>(std::move(name), std::move(method));
 
-        if ( pnames.size() > method_state->parameters.size() ) {
-            detail::throw_exception_with("provided parameter names don't match method argument count");
+        if ( anames.size() > method_state->arguments.size() ) {
+            detail::throw_exception_with("provided argument names don't match method argument count");
         }
 
-        for ( std::size_t i = 0; i < pnames.size(); ++i ) {
-            parameter& param = method_state->parameters[i];
-            detail::state_access(param)->name = std::string{std::data(pnames)[i]};
+        for ( std::size_t i = 0; i < anames.size(); ++i ) {
+            argument& arg = method_state->arguments[i];
+            detail::state_access(arg)->name = std::string{std::data(anames)[i]};
         }
 
         data_->methods.emplace(method_state->index, std::move(method_state));

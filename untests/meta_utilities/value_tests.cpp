@@ -21,13 +21,13 @@ namespace
         , y{other.y} {
             other.x = 0;
             other.y = 0;
-            ++move_ctor_counter;
+            ++move_constructor_counter;
         }
 
         ivec2(const ivec2& other) noexcept
         : x{other.x}
         , y{other.y} {
-            ++copy_ctor_counter;
+            ++copy_constructor_counter;
         }
 
         ivec2& add(const ivec2& other) {
@@ -39,8 +39,8 @@ namespace
         ivec2& operator=(ivec2&& other) = delete;
         ivec2& operator=(const ivec2& other) = delete;
     public:
-        static int move_ctor_counter;
-        static int copy_ctor_counter;
+        static int move_constructor_counter;
+        static int copy_constructor_counter;
     };
 
     struct ivec3 {
@@ -53,8 +53,8 @@ namespace
         ivec3(int x, int y, int z): x{x}, y{y}, z{z} {}
     };
 
-    int ivec2::move_ctor_counter{0};
-    int ivec2::copy_ctor_counter{0};
+    int ivec2::move_constructor_counter{0};
+    int ivec2::copy_constructor_counter{0};
 
     ivec2 iadd2(ivec2 l, ivec2 r) {
         return {l.x + r.x, l.y + r.y};
@@ -73,10 +73,10 @@ TEST_CASE("meta/meta_utilities/value/ivec2") {
     namespace meta = meta_hpp;
 
     meta::class_<ivec2>()
-        .ctor_<int>()
-        .ctor_<int, int>()
-        .ctor_<ivec2&&>()
-        .ctor_<const ivec2&>()
+        .constructor_<int>()
+        .constructor_<int, int>()
+        .constructor_<ivec2&&>()
+        .constructor_<const ivec2&>()
         .member_("x", &ivec2::x)
         .member_("y", &ivec2::y);
 }
@@ -85,10 +85,10 @@ TEST_CASE("meta/meta_utilities/value/ivec3") {
     namespace meta = meta_hpp;
 
     meta::class_<ivec3>()
-        .ctor_<int>()
-        .ctor_<int, int, int>()
-        .ctor_<ivec3&&>()
-        .ctor_<const ivec3&>()
+        .constructor_<int>()
+        .constructor_<int, int, int>()
+        .constructor_<ivec3&&>()
+        .constructor_<const ivec3&>()
         .member_("x", &ivec3::x)
         .member_("y", &ivec3::y)
         .member_("z", &ivec3::z);
@@ -98,8 +98,8 @@ TEST_CASE("meta/meta_utilities/value") {
     namespace meta = meta_hpp;
     using namespace std::string_literals;
 
-    ivec2::move_ctor_counter = 0;
-    ivec2::copy_ctor_counter = 0;
+    ivec2::move_constructor_counter = 0;
+    ivec2::copy_constructor_counter = 0;
 
     SUBCASE("cast types") {
         static_assert(std::is_same_v<
@@ -189,8 +189,8 @@ TEST_CASE("meta/meta_utilities/value") {
         ivec2& vr = v;
 
         meta::uvalue val{vr};
-        CHECK(ivec2::move_ctor_counter == 0);
-        CHECK(ivec2::copy_ctor_counter == 1);
+        CHECK(ivec2::move_constructor_counter == 0);
+        CHECK(ivec2::copy_constructor_counter == 1);
 
         CHECK(val.get_type() == meta::resolve_type<ivec2>());
 
@@ -223,8 +223,8 @@ TEST_CASE("meta/meta_utilities/value") {
         const ivec2& vr = v;
 
         meta::uvalue val{vr};
-        CHECK(ivec2::move_ctor_counter == 0);
-        CHECK(ivec2::copy_ctor_counter == 1);
+        CHECK(ivec2::move_constructor_counter == 0);
+        CHECK(ivec2::copy_constructor_counter == 1);
 
         CHECK(val.get_type() == meta::resolve_type<ivec2>());
 
@@ -256,8 +256,8 @@ TEST_CASE("meta/meta_utilities/value") {
         ivec2 v{1,2};
 
         meta::uvalue val{std::move(v)};
-        CHECK(ivec2::move_ctor_counter == 1);
-        CHECK(ivec2::copy_ctor_counter == 0);
+        CHECK(ivec2::move_constructor_counter == 1);
+        CHECK(ivec2::copy_constructor_counter == 0);
 
         CHECK(val.get_type() == meta::resolve_type<ivec2>());
 
@@ -284,8 +284,8 @@ TEST_CASE("meta/meta_utilities/value") {
         const ivec2 v{1,2};
 
         meta::uvalue val{std::move(v)};
-        CHECK(ivec2::move_ctor_counter == 0);
-        CHECK(ivec2::copy_ctor_counter == 1);
+        CHECK(ivec2::move_constructor_counter == 0);
+        CHECK(ivec2::copy_constructor_counter == 1);
 
         CHECK(val.get_type() == meta::resolve_type<ivec2>());
 
@@ -311,25 +311,25 @@ TEST_CASE("meta/meta_utilities/value") {
     SUBCASE("value(value&&)") {
         ivec2 v{1,2};
         meta::uvalue val_src{std::move(v)};
-        CHECK(ivec2::move_ctor_counter == 1);
-        CHECK(ivec2::copy_ctor_counter == 0);
+        CHECK(ivec2::move_constructor_counter == 1);
+        CHECK(ivec2::copy_constructor_counter == 0);
 
         meta::uvalue val_dst{std::move(val_src)};
         CHECK(val_dst == ivec2{1,2});
-        CHECK(ivec2::move_ctor_counter == 2);
-        CHECK(ivec2::copy_ctor_counter == 0);
+        CHECK(ivec2::move_constructor_counter == 2);
+        CHECK(ivec2::copy_constructor_counter == 0);
     }
 
     SUBCASE("value(const meta::value&)") {
         const ivec2 v{1,2};
         meta::uvalue val_src{v};
-        CHECK(ivec2::move_ctor_counter == 0);
-        CHECK(ivec2::copy_ctor_counter == 1);
+        CHECK(ivec2::move_constructor_counter == 0);
+        CHECK(ivec2::copy_constructor_counter == 1);
 
         meta::uvalue val_dst{val_src};
         CHECK(val_dst == ivec2{1,2});
-        CHECK(ivec2::move_ctor_counter == 0);
-        CHECK(ivec2::copy_ctor_counter == 2);
+        CHECK(ivec2::move_constructor_counter == 0);
+        CHECK(ivec2::copy_constructor_counter == 2);
 
         CHECK(val_src == ivec2{1,2});
         CHECK(val_src.data() != val_dst.data());
@@ -348,39 +348,39 @@ TEST_CASE("meta/meta_utilities/value") {
     SUBCASE("value& operator=(value&&)") {
         meta::uvalue val_src1{"world"s};
         meta::uvalue val_src2{ivec2{1,2}};
-        CHECK(ivec2::move_ctor_counter == 1);
-        CHECK(ivec2::copy_ctor_counter == 0);
+        CHECK(ivec2::move_constructor_counter == 1);
+        CHECK(ivec2::copy_constructor_counter == 0);
 
         meta::uvalue val_dst{"hello"s};
 
         val_dst = std::move(val_src1);
         CHECK(val_dst == "world"s);
-        CHECK(ivec2::move_ctor_counter == 1);
-        CHECK(ivec2::copy_ctor_counter == 0);
+        CHECK(ivec2::move_constructor_counter == 1);
+        CHECK(ivec2::copy_constructor_counter == 0);
 
         val_dst = std::move(val_src2);
         CHECK(val_dst == ivec2{1,2});
-        CHECK(ivec2::move_ctor_counter == 3);
-        CHECK(ivec2::copy_ctor_counter == 0);
+        CHECK(ivec2::move_constructor_counter == 3);
+        CHECK(ivec2::copy_constructor_counter == 0);
     }
 
     SUBCASE("value& operator=(const meta::value&)") {
         meta::uvalue val_src1{"world"s};
         meta::uvalue val_src2{ivec2{1,2}};
-        CHECK(ivec2::move_ctor_counter == 1);
-        CHECK(ivec2::copy_ctor_counter == 0);
+        CHECK(ivec2::move_constructor_counter == 1);
+        CHECK(ivec2::copy_constructor_counter == 0);
 
         meta::uvalue val_dst{"hello"s};
 
         val_dst = val_src1;
         CHECK(val_dst == "world"s);
-        CHECK(ivec2::move_ctor_counter == 1);
-        CHECK(ivec2::copy_ctor_counter == 0);
+        CHECK(ivec2::move_constructor_counter == 1);
+        CHECK(ivec2::copy_constructor_counter == 0);
 
         val_dst = val_src2;
         CHECK(val_dst == ivec2{1,2});
-        CHECK(ivec2::move_ctor_counter == 2);
-        CHECK(ivec2::copy_ctor_counter == 1);
+        CHECK(ivec2::move_constructor_counter == 2);
+        CHECK(ivec2::copy_constructor_counter == 1);
 
         CHECK(val_src2 == ivec2{1,2});
         CHECK(val_src2.data() != val_dst.data());
@@ -389,14 +389,14 @@ TEST_CASE("meta/meta_utilities/value") {
     SUBCASE("swap") {
         meta::uvalue val1{"world"s};
         meta::uvalue val2{ivec2{1,2}};
-        CHECK(ivec2::move_ctor_counter == 1);
-        CHECK(ivec2::copy_ctor_counter == 0);
+        CHECK(ivec2::move_constructor_counter == 1);
+        CHECK(ivec2::copy_constructor_counter == 0);
 
         val1.swap(val2);
         CHECK(val1 == ivec2{1,2});
         CHECK(val2 == "world"s);
-        CHECK(ivec2::move_ctor_counter == 2);
-        CHECK(ivec2::copy_ctor_counter == 0);
+        CHECK(ivec2::move_constructor_counter == 2);
+        CHECK(ivec2::copy_constructor_counter == 0);
 
         swap(val1, val2);
         CHECK(val1 == "world"s);
@@ -498,20 +498,20 @@ TEST_CASE("meta/meta_utilities/value") {
         {
             ivec2 v{1,2};
             meta::uvalue vp{&v};
-            CHECK(ivec2::move_ctor_counter == 0);
-            CHECK(ivec2::copy_ctor_counter == 0);
+            CHECK(ivec2::move_constructor_counter == 0);
+            CHECK(ivec2::copy_constructor_counter == 0);
 
             [[maybe_unused]] meta::uvalue vv1{*vp};
-            CHECK((ivec2::move_ctor_counter == 0 || ivec2::move_ctor_counter == 2));
-            CHECK(ivec2::copy_ctor_counter == 1);
+            CHECK((ivec2::move_constructor_counter == 0 || ivec2::move_constructor_counter == 2));
+            CHECK(ivec2::copy_constructor_counter == 1);
 
             [[maybe_unused]] meta::uvalue vv2{*std::move(vp)};
-            CHECK((ivec2::move_ctor_counter == 0 || ivec2::move_ctor_counter == 4));
-            CHECK(ivec2::copy_ctor_counter == 2);
+            CHECK((ivec2::move_constructor_counter == 0 || ivec2::move_constructor_counter == 4));
+            CHECK(ivec2::copy_constructor_counter == 2);
 
             [[maybe_unused]] meta::uvalue vv3{*std::as_const(vp)};
-            CHECK((ivec2::move_ctor_counter == 0 || ivec2::move_ctor_counter == 6));
-            CHECK(ivec2::copy_ctor_counter == 3);
+            CHECK((ivec2::move_constructor_counter == 0 || ivec2::move_constructor_counter == 6));
+            CHECK(ivec2::copy_constructor_counter == 3);
         }
         {
             meta::uvalue v{std::make_shared<int>(42)};

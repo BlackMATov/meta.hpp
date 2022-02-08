@@ -36,37 +36,37 @@ TEST_CASE("meta/meta_states/function2") {
         const meta::function func = ivec2_type.get_function("iadd");
         REQUIRE(func);
 
-        CHECK(func.get_parameters().size() == 2);
+        CHECK(func.get_arguments().size() == 2);
 
-        REQUIRE(func.get_parameter(0));
-        CHECK(func.get_parameter(0).get_type() == meta::resolve_type<const ivec2&>());
-        CHECK(func.get_parameter(0).get_position() == 0);
-        CHECK(func.get_parameter(0).get_name() == "l");
+        REQUIRE(func.get_argument(0));
+        CHECK(func.get_argument(0).get_type() == meta::resolve_type<const ivec2&>());
+        CHECK(func.get_argument(0).get_position() == 0);
+        CHECK(func.get_argument(0).get_name() == "l");
 
-        REQUIRE(func.get_parameter(1));
-        CHECK(func.get_parameter(1).get_type() == meta::resolve_type<const ivec2&>());
-        CHECK(func.get_parameter(1).get_position() == 1);
-        CHECK(func.get_parameter(1).get_name() == "");
+        REQUIRE(func.get_argument(1));
+        CHECK(func.get_argument(1).get_type() == meta::resolve_type<const ivec2&>());
+        CHECK(func.get_argument(1).get_position() == 1);
+        CHECK(func.get_argument(1).get_name() == "");
 
-        CHECK_FALSE(func.get_parameter(2));
+        CHECK_FALSE(func.get_argument(2));
     }
 
     SUBCASE("isub2") {
         const meta::function func = ivec2_type.get_function("isub");
         REQUIRE(func);
 
-        REQUIRE(func.get_parameters().size() == 2);
+        REQUIRE(func.get_arguments().size() == 2);
 
-        REQUIRE(func.get_parameter(0));
-        CHECK(func.get_parameter(0).get_type() == meta::resolve_type<const ivec2&>());
-        CHECK(func.get_parameter(0).get_position() == 0);
-        CHECK(func.get_parameter(0).get_name() == "l");
+        REQUIRE(func.get_argument(0));
+        CHECK(func.get_argument(0).get_type() == meta::resolve_type<const ivec2&>());
+        CHECK(func.get_argument(0).get_position() == 0);
+        CHECK(func.get_argument(0).get_name() == "l");
 
-        REQUIRE(func.get_parameter(1));
-        CHECK(func.get_parameter(1).get_type() == meta::resolve_type<const ivec2&>());
-        CHECK(func.get_parameter(1).get_position() == 1);
-        CHECK(func.get_parameter(1).get_name() == "r");
+        REQUIRE(func.get_argument(1));
+        CHECK(func.get_argument(1).get_type() == meta::resolve_type<const ivec2&>());
+        CHECK(func.get_argument(1).get_position() == 1);
+        CHECK(func.get_argument(1).get_name() == "r");
 
-        CHECK_FALSE(func.get_parameter(2));
+        CHECK_FALSE(func.get_argument(2));
     }
 }
