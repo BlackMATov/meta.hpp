@@ -50,8 +50,8 @@ namespace meta_hpp::detail
     enum class type_kind : std::uint32_t {
         array_,
         class_,
-        ctor_,
-        dtor_,
+        constructor_,
+        destructor_,
         enum_,
         function_,
         member_,

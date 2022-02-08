@@ -20,24 +20,24 @@
 
 namespace meta_hpp
 {
-    struct value::vtable_t final {
+    struct uvalue::vtable_t final {
         const any_type type;
 
         void* (*const data)(storage_u& from) noexcept;
         const void* (*const cdata)(const storage_u& from) noexcept;
 
-        void (*const move)(value& from, value& to) noexcept;
-        void (*const copy)(const value& from, value& to);
-        void (*const destroy)(value& self) noexcept;
+        void (*const move)(uvalue& from, uvalue& to) noexcept;
+        void (*const copy)(const uvalue& from, uvalue& to);
+        void (*const destroy)(uvalue& self) noexcept;
 
-        value (*const deref)(const value& from);
-        value (*const index)(const value& from, std::size_t);
+        uvalue (*const deref)(const uvalue& from);
+        uvalue (*const index)(const uvalue& from, std::size_t);
 
-        bool (*const less)(const value&, const value&);
-        bool (*const equals)(const value&, const value&);
+        bool (*const less)(const uvalue&, const uvalue&);
+        bool (*const equals)(const uvalue&, const uvalue&);
 
-        std::istream& (*const istream)(std::istream&, value&);
-        std::ostream& (*const ostream)(std::ostream&, const value&);
+        std::istream& (*const istream)(std::istream&, uvalue&);
+        std::ostream& (*const ostream)(std::ostream&, const uvalue&);
 
         template < typename T >
         static T* buffer_cast(buffer_t& buffer) noexcept {
@@ -70,7 +70,7 @@ namespace meta_hpp
         }
 
         template < typename T >
-        static void construct(value& dst, T&& val) {
+        static void construct(uvalue& dst, T&& val) {
             using Tp = std::decay_t<T>;
 
             constexpr bool in_buffer =
@@ -88,19 +88,19 @@ namespace meta_hpp
             dst.vtable_ = vtable_t::get<Tp>();
         }
 
-        static void swap(value& l, value& r) noexcept {
+        static void swap(uvalue& l, uvalue& r) noexcept {
             if ( (&l == &r) || (!l && !r) ) {
                 return;
             }
 
             if ( l && r ) {
                 if ( std::holds_alternative<buffer_t>(l.storage_) ) {
-                    value temp;
+                    uvalue temp;
                     r.vtable_->move(r, temp);
                     l.vtable_->move(l, r);
                     temp.vtable_->move(temp, l);
                 } else {
-                    value temp;
+                    uvalue temp;
                     l.vtable_->move(l, temp);
                     r.vtable_->move(r, l);
                     temp.vtable_->move(temp, r);
@@ -128,7 +128,7 @@ namespace meta_hpp
                     return storage_cast<Tp>(from);
                 },
 
-                .move = [](value& from, value& to) noexcept {
+                .move = [](uvalue& from, uvalue& to) noexcept {
                     assert(from && !to);
 
                     std::visit(detail::overloaded {
@@ -148,7 +148,7 @@ namespace meta_hpp
                     from.vtable_ = nullptr;
                 },
 
-                .copy = [](const value& from, value& to){
+                .copy = [](const uvalue& from, uvalue& to){
                     assert(from && !to);
 
                     std::visit(detail::overloaded {
@@ -166,7 +166,7 @@ namespace meta_hpp
                     to.vtable_ = from.vtable_;
                 },
 
-                .destroy = [](value& self) noexcept {
+                .destroy = [](uvalue& self) noexcept {
                     assert(self);
 
                     std::visit(detail::overloaded {
@@ -184,7 +184,7 @@ namespace meta_hpp
                     self.vtable_ = nullptr;
                 },
 
-                .deref = +[]([[maybe_unused]] const value& v) -> value {
+                .deref = +[]([[maybe_unused]] const uvalue& v) -> uvalue {
                     if constexpr ( detail::has_deref_traits<Tp> ) {
                         return detail::deref_traits<Tp>{}(v.cast<Tp>());
                     } else {
@@ -192,7 +192,7 @@ namespace meta_hpp
                     }
                 },
 
-                .index = +[]([[maybe_unused]] const value& v, [[maybe_unused]] std::size_t i) -> value {
+                .index = +[]([[maybe_unused]] const uvalue& v, [[maybe_unused]] std::size_t i) -> uvalue {
                     if constexpr ( detail::has_index_traits<Tp> ) {
                         return detail::index_traits<Tp>{}(v.cast<Tp>(), i);
                     } else {
@@ -200,7 +200,7 @@ namespace meta_hpp
                     }
                 },
 
-                .less = +[]([[maybe_unused]] const value& l, [[maybe_unused]] const value& r) -> bool {
+                .less = +[]([[maybe_unused]] const uvalue& l, [[maybe_unused]] const uvalue& r) -> bool {
                     if constexpr ( detail::has_less_traits<Tp> ) {
                         return detail::less_traits<Tp>{}(l.cast<Tp>(), r.cast<Tp>());
                     } else {
@@ -208,7 +208,7 @@ namespace meta_hpp
                     }
                 },
 
-                .equals = +[]([[maybe_unused]] const value& l, [[maybe_unused]] const value& r) -> bool {
+                .equals = +[]([[maybe_unused]] const uvalue& l, [[maybe_unused]] const uvalue& r) -> bool {
                     if constexpr ( detail::has_equals_traits<Tp> ) {
                         return detail::equals_traits<Tp>{}(l.cast<Tp>(), r.cast<Tp>());
                     } else {
@@ -216,7 +216,7 @@ namespace meta_hpp
                     }
                 },
 
-                .istream = +[]([[maybe_unused]] std::istream& is, [[maybe_unused]] value& v) -> std::istream& {
+                .istream = +[]([[maybe_unused]] std::istream& is, [[maybe_unused]] uvalue& v) -> std::istream& {
                     if constexpr ( detail::has_istream_traits<Tp> ) {
                         return detail::istream_traits<Tp>{}(is, v.cast<Tp>());
                     } else {
@@ -224,7 +224,7 @@ namespace meta_hpp
                     }
                 },
 
-                .ostream = +[]([[maybe_unused]] std::ostream& os, [[maybe_unused]] const value& v) -> std::ostream& {
+                .ostream = +[]([[maybe_unused]] std::ostream& os, [[maybe_unused]] const uvalue& v) -> std::ostream& {
                     if constexpr ( detail::has_ostream_traits<Tp> ) {
                         return detail::ostream_traits<Tp>{}(os, v.cast<Tp>());
                     } else {
@@ -240,94 +240,94 @@ namespace meta_hpp
 
 namespace meta_hpp
 {
-    inline value::~value() {
+    inline uvalue::~uvalue() {
         reset();
     }
 
-    inline value::value(value&& other) noexcept {
+    inline uvalue::uvalue(uvalue&& other) noexcept {
         if ( other.vtable_ != nullptr ) {
             other.vtable_->move(other, *this);
         }
     }
 
-    inline value::value(const value& other) {
+    inline uvalue::uvalue(const uvalue& other) {
         if ( other.vtable_ != nullptr ) {
             other.vtable_->copy(other, *this);
         }
     }
 
-    inline value& value::operator=(value&& other) noexcept {
+    inline uvalue& uvalue::operator=(uvalue&& other) noexcept {
         if ( this != &other ) {
-            value{std::move(other)}.swap(*this);
+            uvalue{std::move(other)}.swap(*this);
         }
         return *this;
     }
 
-    inline value& value::operator=(const value& other) {
+    inline uvalue& uvalue::operator=(const uvalue& other) {
         if ( this != &other ) {
-            value{other}.swap(*this);
+            uvalue{other}.swap(*this);
         }
         return *this;
     }
 
     template < detail::decay_non_value_kind T >
         requires stdex::copy_constructible<std::decay_t<T>>
-    value::value(T&& val) {
+    uvalue::uvalue(T&& val) {
         vtable_t::construct(*this, std::forward<T>(val));
     }
 
     template < detail::decay_non_value_kind T >
         requires stdex::copy_constructible<std::decay_t<T>>
-    value& value::operator=(T&& val) {
-        value{std::forward<T>(val)}.swap(*this);
+    uvalue& uvalue::operator=(T&& val) {
+        uvalue{std::forward<T>(val)}.swap(*this);
         return *this;
     }
 
-    inline bool value::is_valid() const noexcept {
+    inline bool uvalue::is_valid() const noexcept {
         return vtable_ != nullptr;
     }
 
-    inline value::operator bool() const noexcept {
+    inline uvalue::operator bool() const noexcept {
         return is_valid();
     }
 
-    inline void value::reset() {
+    inline void uvalue::reset() {
         if ( vtable_ != nullptr ) {
             vtable_->destroy(*this);
         }
     }
 
-    inline void value::swap(value& other) noexcept {
+    inline void uvalue::swap(uvalue& other) noexcept {
         vtable_t::swap(*this, other);
     }
 
-    inline const any_type& value::get_type() const noexcept {
+    inline const any_type& uvalue::get_type() const noexcept {
         static any_type void_type = detail::resolve_type<void>();
         return vtable_ != nullptr ? vtable_->type : void_type;
     }
 
-    inline void* value::data() noexcept {
+    inline void* uvalue::data() noexcept {
         return vtable_ != nullptr ? vtable_->data(storage_) : nullptr;
     }
 
-    inline const void* value::data() const noexcept {
+    inline const void* uvalue::data() const noexcept {
         return vtable_ != nullptr ? vtable_->cdata(storage_) : nullptr;
     }
 
-    inline const void* value::cdata() const noexcept {
+    inline const void* uvalue::cdata() const noexcept {
         return vtable_ != nullptr ? vtable_->cdata(storage_) : nullptr;
     }
 
-    inline value value::operator*() const {
-        return vtable_ != nullptr ? vtable_->deref(*this) : value{};
+    inline uvalue uvalue::operator*() const {
+        return vtable_ != nullptr ? vtable_->deref(*this) : uvalue{};
     }
 
-    inline value value::operator[](std::size_t index) const {
-        return vtable_ != nullptr ? vtable_->index(*this, index) : value{};
+    inline uvalue uvalue::operator[](std::size_t index) const {
+        return vtable_ != nullptr ? vtable_->index(*this, index) : uvalue{};
     }
 
     template < typename T >
-    std::decay_t<T>& value::cast() & {
+    std::decay_t<T>& uvalue::cast() & {
         using Tp = std::decay_t<T>;
         if ( Tp* ptr = try_cast<Tp>() ) {
             return *ptr;
@@ -336,7 +336,7 @@ namespace meta_hpp
     }
 
     template < typename T >
-    std::decay_t<T>&& value::cast() && {
+    std::decay_t<T>&& uvalue::cast() && {
         using Tp = std::decay_t<T>;
         if ( Tp* ptr = try_cast<Tp>() ) {
             return std::move(*ptr);
@@ -345,7 +345,7 @@ namespace meta_hpp
     }
 
     template < typename T >
-    const std::decay_t<T>& value::cast() const & {
+    const std::decay_t<T>& uvalue::cast() const & {
         using Tp = std::decay_t<T>;
         if ( const Tp* ptr = try_cast<const Tp>() ) {
             return *ptr;
@@ -354,7 +354,7 @@ namespace meta_hpp
     }
 
     template < typename T >
-    const std::decay_t<T>&& value::cast() const && {
+    const std::decay_t<T>&& uvalue::cast() const && {
         using Tp = std::decay_t<T>;
         if ( const Tp* ptr = try_cast<const Tp>() ) {
             return std::move(*ptr);
@@ -363,7 +363,7 @@ namespace meta_hpp
     }
 
     template < typename T >
-    std::decay_t<T>* value::try_cast() noexcept {
+    std::decay_t<T>* uvalue::try_cast() noexcept {
         using Tp = std::decay_t<T>;
         return get_type() == detail::resolve_type<Tp>()
             ? vtable_t::storage_cast<Tp>(storage_)
@@ -371,7 +371,7 @@ namespace meta_hpp
     }
 
     template < typename T >
-    const std::decay_t<T>* value::try_cast() const noexcept {
+    const std::decay_t<T>* uvalue::try_cast() const noexcept {
         using Tp = std::decay_t<T>;
         return get_type() == detail::resolve_type<Tp>()
             ? vtable_t::storage_cast<Tp>(storage_)
@@ -382,7 +382,7 @@ namespace meta_hpp
 namespace meta_hpp
 {
     template < typename T >
-    [[nodiscard]] bool operator<(const value& l, const T& r) {
+    [[nodiscard]] bool operator<(const uvalue& l, const T& r) {
         if ( !static_cast<bool>(l) ) {
             return true;
         }
@@ -394,7 +394,7 @@ namespace meta_hpp
     }
 
     template < typename T >
-    [[nodiscard]] bool operator<(const T& l, const value& r) {
+    [[nodiscard]] bool operator<(const T& l, const uvalue& r) {
         if ( !static_cast<bool>(r) ) {
             return false;
         }
@@ -405,7 +405,7 @@ namespace meta_hpp
         return (l_type < r_type) || (l_type == r_type && l < r.cast<T>());
     }
 
-    [[nodiscard]] inline bool operator<(const value& l, const value& r) {
+    [[nodiscard]] inline bool operator<(const uvalue& l, const uvalue& r) {
         if ( !static_cast<bool>(r) ) {
             return false;
         }
@@ -424,7 +424,7 @@ namespace meta_hpp
 namespace meta_hpp
 {
     template < typename T >
-    [[nodiscard]] bool operator==(const value& l, const T& r) {
+    [[nodiscard]] bool operator==(const uvalue& l, const T& r) {
         if ( !static_cast<bool>(l) ) {
             return false;
         }
@@ -436,7 +436,7 @@ namespace meta_hpp
     }
 
     template < typename T >
-    [[nodiscard]] bool operator==(const T& l, const value& r) {
+    [[nodiscard]] bool operator==(const T& l, const uvalue& r) {
         if ( !static_cast<bool>(r) ) {
             return false;
         }
@@ -447,7 +447,7 @@ namespace meta_hpp
         return l_type == r_type && l == r.cast<T>();
     }
 
-    [[nodiscard]] inline bool operator==(const value& l, const value& r) {
+    [[nodiscard]] inline bool operator==(const uvalue& l, const uvalue& r) {
         if ( static_cast<bool>(l) != static_cast<bool>(r) ) {
             return false;
         }
@@ -465,11 +465,11 @@ namespace meta_hpp
 
 namespace meta_hpp
 {
-    inline std::istream& operator>>(std::istream& is, value& v) {
+    inline std::istream& operator>>(std::istream& is, uvalue& v) {
         return v.vtable_->istream(is, v);
     }
 
-    inline std::ostream& operator<<(std::ostream& os, const value& v) {
+    inline std::ostream& operator<<(std::ostream& os, const uvalue& v) {
         return v.vtable_->ostream(os, v);
     }
 }

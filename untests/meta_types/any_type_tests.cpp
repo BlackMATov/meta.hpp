@@ -32,8 +32,8 @@ TEST_CASE("meta/meta_types/any_type") {
     namespace meta = meta_hpp;
 
     meta::class_<class_t>()
-        .ctor_<>()
-        .ctor_<int>();
+        .constructor_<>()
+        .constructor_<int>();
 
     SUBCASE("") {
         const meta::any_type type{};
@@ -72,8 +72,8 @@ TEST_CASE("meta/meta_types/any_type") {
         CHECK(type.is_class());
         CHECK(type.get_kind() == meta::type_kind::class_);
 
-        CHECK_FALSE(type.is_ctor());
-        CHECK_FALSE(type.as_ctor());
+        CHECK_FALSE(type.is_constructor());
+        CHECK_FALSE(type.as_constructor());
 
         const meta::class_type& specific_type = type.as_class();
         REQUIRE(specific_type);
@@ -82,18 +82,18 @@ TEST_CASE("meta/meta_types/any_type") {
 
     SUBCASE("ctor") {
         const meta::any_type& type = meta::resolve_type<class_t>()
-            .get_ctor_with<>()
+            .get_constructor_with<>()
             .get_type();
 
         REQUIRE(type);
 
-        CHECK(type.is_ctor());
-        CHECK(type.get_kind() == meta::type_kind::ctor_);
+        CHECK(type.is_constructor());
+        CHECK(type.get_kind() == meta::type_kind::constructor_);
 
         CHECK_FALSE(type.is_enum());
         CHECK_FALSE(type.as_enum());
 
-        const meta::ctor_type& specific_type = type.as_ctor();
+        const meta::constructor_type& specific_type = type.as_constructor();
         REQUIRE(specific_type);
         CHECK(specific_type.get_id() == type.get_id());
     }

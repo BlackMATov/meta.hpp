@@ -9,7 +9,7 @@
 #include "../meta_base.hpp"
 #include "../meta_types.hpp"
 
-#include "../meta_states/ctor.hpp"
+#include "../meta_states/constructor.hpp"
 #include "../meta_states/function.hpp"
 #include "../meta_states/member.hpp"
 #include "../meta_states/method.hpp"
@@ -61,20 +61,20 @@ namespace meta_hpp
         return data_->argument_types.size();
     }
 
-    inline any_type class_type::get_argument_type(std::size_t index) const noexcept {
-        return index < data_->argument_types.size() ? data_->argument_types[index] : any_type{};
+    inline any_type class_type::get_argument_type(std::size_t position) const noexcept {
+        return position < data_->argument_types.size() ? data_->argument_types[position] : any_type{};
     }
 
     inline const std::vector<any_type>& class_type::get_argument_types() const noexcept {
         return data_->argument_types;
     }
 
-    inline const ctor_map& class_type::get_ctors() const noexcept {
-        return data_->ctors;
+    inline const constructor_map& class_type::get_ctors() const noexcept {
+        return data_->constructors;
     }
 
-    inline const dtor_map& class_type::get_dtors() const noexcept {
-        return data_->dtors;
+    inline const destructor_map& class_type::get_dtors() const noexcept {
+        return data_->destructors;
     }
 
     inline const class_set& class_type::get_bases() const noexcept {
@@ -98,23 +98,23 @@ namespace meta_hpp
     }
 
     template < typename... Args >
-    value class_type::create(Args&&... args) const {
-        for ( auto&& ctor : data_->ctors ) {
+    uvalue class_type::create(Args&&... args) const {
+        for ( auto&& ctor : data_->constructors ) {
             if ( ctor.second.is_invocable_with(std::forward<Args>(args)...) ) {
                 return ctor.second.invoke(std::forward<Args>(args)...);
             }
         }
-        return value{};
+        return uvalue{};
     }
 
     template < typename... Args >
-    value class_type::operator()(Args&&... args) const {
+    uvalue class_type::operator()(Args&&... args) const {
         return create(std::forward<Args>(args)...);
     }
 
     template < typename Arg >
     bool class_type::destroy(Arg&& ptr) const {
-        for ( auto&& dtor : data_->dtors ) {
+        for ( auto&& dtor : data_->destructors ) {
             if ( dtor.second.is_invocable_with(std::forward<Arg>(ptr)) ) {
                 dtor.second.invoke(std::forward<Arg>(ptr));
                 return true;
@@ -234,42 +234,31 @@ namespace meta_hpp
     }
 
     //
-    // get_ctor_with
+    // get_constructor_with
     //
 
     template < typename... Args >
-    ctor class_type::get_ctor_with() const noexcept {
-        return get_ctor_with({detail::resolve_type<Args>()...});
+    constructor class_type::get_constructor_with() const noexcept {
+        return get_constructor_with({detail::resolve_type<Args>()...});
     }
 
-    inline ctor class_type::get_ctor_with(const std::vector<any_type>& args) const noexcept {
-        for ( auto&& [index, ctor] : data_->ctors ) {
-            if ( ctor.get_type().get_arity() != args.size() ) {
-                continue;
-            }
-
-            const std::vector<any_type>& ctor_args = ctor.get_type().get_argument_types();
-            if ( std::equal(args.begin(), args.end(), ctor_args.begin(), ctor_args.end()) ) {
+    template < typename Iter >
+    constructor class_type::get_constructor_with(Iter first, Iter last) const noexcept {
+        for ( auto&& [index, ctor] : data_->constructors ) {
+            const std::vector<any_type>& args = ctor.get_type().get_argument_types();
+            if ( std::equal(first, last, args.begin(), args.end()) ) {
                 return ctor;
             }
         }
-
-        return ctor{};
+        return constructor{};
     }
 
-    inline ctor class_type::get_ctor_with(std::initializer_list<any_type> args) const noexcept {
-        for ( auto&& [index, ctor] : data_->ctors ) {
-            if ( ctor.get_type().get_arity() != args.size() ) {
-                continue;
-            }
+    inline constructor class_type::get_constructor_with(const std::vector<any_type>& args) const noexcept {
+        return get_constructor_with(args.begin(), args.end());
+    }
 
-            const std::vector<any_type>& ctor_args = ctor.get_type().get_argument_types();
-            if ( std::equal(args.begin(), args.end(), ctor_args.begin(), ctor_args.end()) ) {
-                return ctor;
-            }
-        }
-
-        return ctor{};
+    inline constructor class_type::get_constructor_with(std::initializer_list<any_type> args) const noexcept {
+        return get_constructor_with(args.begin(), args.end());
     }
 
     //
@@ -281,24 +270,21 @@ namespace meta_hpp
         return get_function_with(name, {detail::resolve_type<Args>()...});
     }
 
-    inline function class_type::get_function_with(std::string_view name, const std::vector<any_type>& args) const noexcept {
+    template < typename Iter >
+    function class_type::get_function_with(std::string_view name, Iter first, Iter last) const noexcept {
         for ( auto&& [index, function] : data_->functions ) {
             if ( index.get_name() != name ) {
                 continue;
             }
 
-            if ( function.get_type().get_arity() != args.size() ) {
-                continue;
-            }
-
-            const std::vector<any_type>& function_args = function.get_type().get_argument_types();
-            if ( std::equal(args.begin(), args.end(), function_args.begin(), function_args.end()) ) {
+            const std::vector<any_type>& args = function.get_type().get_argument_types();
+            if ( std::equal(first, last, args.begin(), args.end()) ) {
                 return function;
             }
         }
 
         for ( auto&& base : data_->bases ) {
-            if ( function function = base.get_function_with(name, args); function ) {
+            if ( function function = base.get_function_with(name, first, last); function ) {
                 return function;
             }
         }
@@ -306,29 +292,12 @@ namespace meta_hpp
         return function{};
     }
 
+    inline function class_type::get_function_with(std::string_view name, const std::vector<any_type>& args) const noexcept {
+        return get_function_with(name, args.begin(), args.end());
+    }
+
     inline function class_type::get_function_with(std::string_view name, std::initializer_list<any_type> args) const noexcept {
-        for ( auto&& [index, function] : data_->functions ) {
-            if ( index.get_name() != name ) {
-                continue;
-            }
-
-            if ( function.get_type().get_arity() != args.size() ) {
-                continue;
-            }
-
-            const std::vector<any_type>& function_args = function.get_type().get_argument_types();
-            if ( std::equal(args.begin(), args.end(), function_args.begin(), function_args.end()) ) {
-                return function;
-            }
-        }
-
-        for ( auto&& base : data_->bases ) {
-            if ( function function = base.get_function_with(name, args); function ) {
-                return function;
-            }
-        }
-
-        return function{};
+        return get_function_with(name, args.begin(), args.end());
     }
 
     //
@@ -340,24 +309,21 @@ namespace meta_hpp
         return get_method_with(name, {detail::resolve_type<Args>()...});
     }
 
-    inline method class_type::get_method_with(std::string_view name, const std::vector<any_type>& args) const noexcept {
+    template < typename Iter >
+    method class_type::get_method_with(std::string_view name, Iter first, Iter last) const noexcept {
         for ( auto&& [index, method] : data_->methods ) {
             if ( index.get_name() != name ) {
                 continue;
             }
 
-            if ( method.get_type().get_arity() != args.size() ) {
-                continue;
-            }
-
-            const std::vector<any_type>& method_args = method.get_type().get_argument_types();
-            if ( std::equal(args.begin(), args.end(), method_args.begin(), method_args.end()) ) {
+            const std::vector<any_type>& args = method.get_type().get_argument_types();
+            if ( std::equal(first, last, args.begin(), args.end()) ) {
                 return method;
             }
         }
 
         for ( auto&& base : data_->bases ) {
-            if ( method method = base.get_method_with(name, args); method ) {
+            if ( method method = base.get_method_with(name, first, last); method ) {
                 return method;
             }
         }
@@ -365,28 +331,11 @@ namespace meta_hpp
         return method{};
     }
 
+    inline method class_type::get_method_with(std::string_view name, const std::vector<any_type>& args) const noexcept {
+        return get_method_with(name, args.begin(), args.end());
+    }
+
     inline method class_type::get_method_with(std::string_view name, std::initializer_list<any_type> args) const noexcept {
-        for ( auto&& [index, method] : data_->methods ) {
-            if ( index.get_name() != name ) {
-                continue;
-            }
-
-            if ( method.get_type().get_arity() != args.size() ) {
-                continue;
-            }
-
-            const std::vector<any_type>& method_args = method.get_type().get_argument_types();
-            if ( std::equal(args.begin(), args.end(), method_args.begin(), method_args.end()) ) {
-                return method;
-            }
-        }
-
-        for ( auto&& base : data_->bases ) {
-            if ( method method = base.get_method_with(name, args); method ) {
-                return method;
-            }
-        }
-
-        return method{};
+        return get_method_with(name, args.begin(), args.end());
     }
 }

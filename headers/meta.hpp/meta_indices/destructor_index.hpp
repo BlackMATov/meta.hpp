@@ -14,23 +14,23 @@
 
 namespace meta_hpp
 {
-    inline ctor_index::ctor_index(ctor_type type)
+    inline destructor_index::destructor_index(destructor_type type)
     : type_{std::move(type)} {}
 
-    template < detail::class_kind Class, typename... Args >
-    ctor_index ctor_index::make() {
-        return ctor_index{detail::resolve_ctor_type<Class, Args...>()};
+    template < detail::class_kind Class >
+    destructor_index destructor_index::make() {
+        return destructor_index{detail::resolve_destructor_type<Class>()};
     }
 
-    inline const ctor_type& ctor_index::get_type() const noexcept {
+    inline const destructor_type& destructor_index::get_type() const noexcept {
         return type_;
     }
 
-    inline bool operator<(const ctor_index& l, const ctor_index& r) noexcept {
+    inline bool operator<(const destructor_index& l, const destructor_index& r) noexcept {
         return l.type_ < r.type_;
     }
 
-    inline bool operator==(const ctor_index& l, const ctor_index& r) noexcept {
+    inline bool operator==(const destructor_index& l, const destructor_index& r) noexcept {
         return l.type_ == r.type_;
     }
 }

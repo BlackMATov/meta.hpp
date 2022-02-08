@@ -13,7 +13,7 @@
 
 #include "../meta_detail/type_registry.hpp"
 #include "../meta_detail/type_traits/enum_traits.hpp"
-#include "../meta_detail/value_utilities/arg.hpp"
+#include "../meta_detail/value_utilities/uarg.hpp"
 
 namespace meta_hpp::detail
 {
@@ -68,7 +68,7 @@ namespace meta_hpp
 
     template < typename Value >
     std::string_view enum_type::value_to_name(Value&& value) const noexcept {
-        const detail::arg value_arg{std::forward<Value>(value)};
+        const detail::uarg value_arg{std::forward<Value>(value)};
 
         if ( value_arg.get_raw_type() != *this ) {
             return std::string_view{};
@@ -83,11 +83,11 @@ namespace meta_hpp
         return std::string_view{};
     }
 
-    inline value enum_type::name_to_value(std::string_view name) const noexcept {
+    inline uvalue enum_type::name_to_value(std::string_view name) const noexcept {
         if ( const evalue value = get_evalue(name); value ) {
             return value.get_value();
         }
 
-        return value{};
+        return uvalue{};
     }
 }

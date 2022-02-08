@@ -10,28 +10,28 @@
 
 namespace meta_hpp::detail
 {
-    enum class ctor_flags : std::uint32_t {
+    enum class constructor_flags : std::uint32_t {
         is_noexcept = 1 << 0,
     };
 
-    ENUM_HPP_OPERATORS_DECL(ctor_flags)
-    using ctor_bitflags = bitflags<ctor_flags>;
+    ENUM_HPP_OPERATORS_DECL(constructor_flags)
+    using constructor_bitflags = bitflags<constructor_flags>;
 }
 
 namespace meta_hpp::detail
 {
     template < class_kind Class, typename... Args >
-    struct ctor_traits {
+    struct constructor_traits {
         static constexpr std::size_t arity{sizeof...(Args)};
 
         using class_type = Class;
         using argument_types = type_list<Args...>;
 
-        [[nodiscard]] static constexpr ctor_bitflags make_flags() noexcept {
-            ctor_bitflags flags{};
+        [[nodiscard]] static constexpr constructor_bitflags make_flags() noexcept {
+            constructor_bitflags flags{};
 
             if constexpr ( std::is_nothrow_constructible_v<Class, Args...> ) {
-                flags.set(ctor_flags::is_noexcept);
+                flags.set(constructor_flags::is_noexcept);
             }
 
             return flags;

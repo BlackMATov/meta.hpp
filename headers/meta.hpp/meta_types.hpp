@@ -12,8 +12,8 @@
 
 #include "meta_detail/type_traits/array_traits.hpp"
 #include "meta_detail/type_traits/class_traits.hpp"
-#include "meta_detail/type_traits/ctor_traits.hpp"
-#include "meta_detail/type_traits/dtor_traits.hpp"
+#include "meta_detail/type_traits/constructor_traits.hpp"
+#include "meta_detail/type_traits/destructor_traits.hpp"
 #include "meta_detail/type_traits/enum_traits.hpp"
 #include "meta_detail/type_traits/function_traits.hpp"
 #include "meta_detail/type_traits/member_traits.hpp"
@@ -30,11 +30,11 @@ namespace meta_hpp
     using class_flags = detail::class_flags;
     using class_bitflags = detail::class_bitflags;
 
-    using ctor_flags = detail::ctor_flags;
-    using ctor_bitflags = detail::ctor_bitflags;
+    using constructor_flags = detail::constructor_flags;
+    using constructor_bitflags = detail::constructor_bitflags;
 
-    using dtor_flags = detail::dtor_flags;
-    using dtor_bitflags = detail::dtor_bitflags;
+    using destructor_flags = detail::destructor_flags;
+    using destructor_bitflags = detail::destructor_bitflags;
 
     using enum_flags = detail::enum_flags;
     using enum_bitflags = detail::enum_bitflags;
@@ -72,8 +72,8 @@ namespace meta_hpp
 
         any_type(const array_type& other) noexcept;
         any_type(const class_type& other) noexcept;
-        any_type(const ctor_type& other) noexcept;
-        any_type(const dtor_type& other) noexcept;
+        any_type(const constructor_type& other) noexcept;
+        any_type(const destructor_type& other) noexcept;
         any_type(const enum_type& other) noexcept;
         any_type(const function_type& other) noexcept;
         any_type(const member_type& other) noexcept;
@@ -86,8 +86,8 @@ namespace meta_hpp
 
         [[nodiscard]] bool is_array() const noexcept;
         [[nodiscard]] bool is_class() const noexcept;
-        [[nodiscard]] bool is_ctor() const noexcept;
-        [[nodiscard]] bool is_dtor() const noexcept;
+        [[nodiscard]] bool is_constructor() const noexcept;
+        [[nodiscard]] bool is_destructor() const noexcept;
         [[nodiscard]] bool is_enum() const noexcept;
         [[nodiscard]] bool is_function() const noexcept;
         [[nodiscard]] bool is_member() const noexcept;
@@ -100,8 +100,8 @@ namespace meta_hpp
 
         [[nodiscard]] array_type as_array() const noexcept;
         [[nodiscard]] class_type as_class() const noexcept;
-        [[nodiscard]] ctor_type as_ctor() const noexcept;
-        [[nodiscard]] dtor_type as_dtor() const noexcept;
+        [[nodiscard]] constructor_type as_constructor() const noexcept;
+        [[nodiscard]] destructor_type as_destructor() const noexcept;
         [[nodiscard]] enum_type as_enum() const noexcept;
         [[nodiscard]] function_type as_function() const noexcept;
         [[nodiscard]] member_type as_member() const noexcept;
@@ -148,11 +148,11 @@ namespace meta_hpp
         [[nodiscard]] std::size_t get_size() const noexcept;
 
         [[nodiscard]] std::size_t get_arity() const noexcept;
-        [[nodiscard]] any_type get_argument_type(std::size_t index) const noexcept;
+        [[nodiscard]] any_type get_argument_type(std::size_t position) const noexcept;
         [[nodiscard]] const std::vector<any_type>& get_argument_types() const noexcept;
 
-        [[nodiscard]] const ctor_map& get_ctors() const noexcept;
-        [[nodiscard]] const dtor_map& get_dtors() const noexcept;
+        [[nodiscard]] const constructor_map& get_ctors() const noexcept;
+        [[nodiscard]] const destructor_map& get_dtors() const noexcept;
         [[nodiscard]] const class_set& get_bases() const noexcept;
         [[nodiscard]] const function_map& get_functions() const noexcept;
         [[nodiscard]] const member_map& get_members() const noexcept;
@@ -160,10 +160,10 @@ namespace meta_hpp
         [[nodiscard]] const variable_map& get_variables() const noexcept;
 
         template < typename... Args >
-        [[nodiscard]] value create(Args&&... args) const;
+        [[nodiscard]] uvalue create(Args&&... args) const;
 
         template < typename... Args >
-        [[nodiscard]] value operator()(Args&&... args) const;
+        [[nodiscard]] uvalue operator()(Args&&... args) const;
 
         template < typename Arg >
         bool destroy(Arg&& ptr) const;
@@ -182,17 +182,23 @@ namespace meta_hpp
         [[nodiscard]] variable get_variable(std::string_view name) const noexcept;
 
         template < typename... Args >
-        [[nodiscard]] ctor get_ctor_with() const noexcept;
-        [[nodiscard]] ctor get_ctor_with(const std::vector<any_type>& args) const noexcept;
-        [[nodiscard]] ctor get_ctor_with(std::initializer_list<any_type> args) const noexcept;
+        [[nodiscard]] constructor get_constructor_with() const noexcept;
+        template < typename Iter >
+        [[nodiscard]] constructor get_constructor_with(Iter first, Iter last) const noexcept;
+        [[nodiscard]] constructor get_constructor_with(const std::vector<any_type>& args) const noexcept;
+        [[nodiscard]] constructor get_constructor_with(std::initializer_list<any_type> args) const noexcept;
 
         template < typename... Args >
         [[nodiscard]] function get_function_with(std::string_view name) const noexcept;
+        template < typename Iter >
+        [[nodiscard]] function get_function_with(std::string_view name, Iter first, Iter last) const noexcept;
         [[nodiscard]] function get_function_with(std::string_view name, const std::vector<any_type>& args) const noexcept;
         [[nodiscard]] function get_function_with(std::string_view name, std::initializer_list<any_type> args) const noexcept;
 
         template < typename... Args >
         [[nodiscard]] method get_method_with(std::string_view name) const noexcept;
+        template < typename Iter >
+        [[nodiscard]] method get_method_with(std::string_view name, Iter first, Iter last) const noexcept;
         [[nodiscard]] method get_method_with(std::string_view name, const std::vector<any_type>& args) const noexcept;
         [[nodiscard]] method get_method_with(std::string_view name, std::initializer_list<any_type> args) const noexcept;
     private:
@@ -200,41 +206,41 @@ namespace meta_hpp
         friend auto detail::type_access<class_type>(const class_type&);
     };
 
-    class ctor_type final {
+    class constructor_type final {
     public:
-        ctor_type() = default;
-        ctor_type(detail::ctor_type_data_ptr data);
+        constructor_type() = default;
+        constructor_type(detail::constructor_type_data_ptr data);
 
         [[nodiscard]] bool is_valid() const noexcept;
         [[nodiscard]] explicit operator bool() const noexcept;
 
         [[nodiscard]] type_id get_id() const noexcept;
-        [[nodiscard]] ctor_bitflags get_flags() const noexcept;
+        [[nodiscard]] constructor_bitflags get_flags() const noexcept;
 
         [[nodiscard]] std::size_t get_arity() const noexcept;
         [[nodiscard]] any_type get_class_type() const noexcept;
-        [[nodiscard]] any_type get_argument_type(std::size_t index) const noexcept;
+        [[nodiscard]] any_type get_argument_type(std::size_t position) const noexcept;
         [[nodiscard]] const std::vector<any_type>& get_argument_types() const noexcept;
     private:
-        detail::ctor_type_data_ptr data_;
-        friend auto detail::type_access<ctor_type>(const ctor_type&);
+        detail::constructor_type_data_ptr data_;
+        friend auto detail::type_access<constructor_type>(const constructor_type&);
     };
 
-    class dtor_type final {
+    class destructor_type final {
     public:
-        dtor_type() = default;
-        dtor_type(detail::dtor_type_data_ptr data);
+        destructor_type() = default;
+        destructor_type(detail::destructor_type_data_ptr data);
 
         [[nodiscard]] bool is_valid() const noexcept;
         [[nodiscard]] explicit operator bool() const noexcept;
 
         [[nodiscard]] type_id get_id() const noexcept;
-        [[nodiscard]] dtor_bitflags get_flags() const noexcept;
+        [[nodiscard]] destructor_bitflags get_flags() const noexcept;
 
         [[nodiscard]] any_type get_class_type() const noexcept;
     private:
-        detail::dtor_type_data_ptr data_;
-        friend auto detail::type_access<dtor_type>(const dtor_type&);
+        detail::destructor_type_data_ptr data_;
+        friend auto detail::type_access<destructor_type>(const destructor_type&);
     };
 
     class enum_type final {
@@ -256,7 +262,7 @@ namespace meta_hpp
 
         template < typename Value >
         [[nodiscard]] std::string_view value_to_name(Value&& value) const noexcept;
-        [[nodiscard]] value name_to_value(std::string_view name) const noexcept;
+        [[nodiscard]] uvalue name_to_value(std::string_view name) const noexcept;
     private:
         detail::enum_type_data_ptr data_;
         friend auto detail::type_access<enum_type>(const enum_type&);
@@ -275,7 +281,7 @@ namespace meta_hpp
 
         [[nodiscard]] std::size_t get_arity() const noexcept;
         [[nodiscard]] any_type get_return_type() const noexcept;
-        [[nodiscard]] any_type get_argument_type(std::size_t index) const noexcept;
+        [[nodiscard]] any_type get_argument_type(std::size_t position) const noexcept;
         [[nodiscard]] const std::vector<any_type>& get_argument_types() const noexcept;
     private:
         detail::function_type_data_ptr data_;
@@ -314,7 +320,7 @@ namespace meta_hpp
         [[nodiscard]] std::size_t get_arity() const noexcept;
         [[nodiscard]] class_type get_owner_type() const noexcept;
         [[nodiscard]] any_type get_return_type() const noexcept;
-        [[nodiscard]] any_type get_argument_type(std::size_t index) const noexcept;
+        [[nodiscard]] any_type get_argument_type(std::size_t position) const noexcept;
         [[nodiscard]] const std::vector<any_type>& get_argument_types() const noexcept;
     private:
         detail::method_type_data_ptr data_;
@@ -460,8 +466,8 @@ namespace meta_hpp::detail
         const std::size_t size;
         const std::vector<any_type> argument_types;
 
-        ctor_map ctors;
-        dtor_map dtors;
+        constructor_map constructors;
+        destructor_map destructors;
         class_set bases;
         function_map functions;
         member_map members;
@@ -480,21 +486,21 @@ namespace meta_hpp::detail
         explicit class_type_data(type_list<Class>);
     };
 
-    struct ctor_type_data final : type_data_base {
-        const ctor_bitflags flags;
+    struct constructor_type_data final : type_data_base {
+        const constructor_bitflags flags;
         const any_type class_type;
         const std::vector<any_type> argument_types;
 
         template < class_kind Class, typename... Args >
-        explicit ctor_type_data(type_list<Class>, type_list<Args...>);
+        explicit constructor_type_data(type_list<Class>, type_list<Args...>);
     };
 
-    struct dtor_type_data final : type_data_base {
-        const dtor_bitflags flags;
+    struct destructor_type_data final : type_data_base {
+        const destructor_bitflags flags;
         const any_type class_type;
 
         template < class_kind Class >
-        explicit dtor_type_data(type_list<Class>);
+        explicit destructor_type_data(type_list<Class>);
     };
 
     struct enum_type_data final : type_data_base {

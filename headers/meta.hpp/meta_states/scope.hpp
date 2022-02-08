@@ -101,39 +101,26 @@ namespace meta_hpp
         return get_function_with(name, {detail::resolve_type<Args>()...});
     }
 
-    inline function scope::get_function_with(std::string_view name, const std::vector<any_type>& args) const noexcept {
+    template < typename Iter >
+    function scope::get_function_with(std::string_view name, Iter first, Iter last) const noexcept {
         for ( auto&& [index, function] : state_->functions ) {
             if ( index.get_name() != name ) {
                 continue;
             }
 
-            if ( function.get_type().get_arity() != args.size() ) {
-                continue;
-            }
-
-            const std::vector<any_type>& function_args = function.get_type().get_argument_types();
-            if ( std::equal(args.begin(), args.end(), function_args.begin(), function_args.end()) ) {
+            const std::vector<any_type>& args = function.get_type().get_argument_types();
+            if ( std::equal(first, last, args.begin(), args.end()) ) {
                 return function;
             }
         }
         return function{};
     }
 
+    inline function scope::get_function_with(std::string_view name, const std::vector<any_type>& args) const noexcept {
+        return get_function_with(name, args.begin(), args.end());
+    }
+
     inline function scope::get_function_with(std::string_view name, std::initializer_list<any_type> args) const noexcept {
-        for ( auto&& [index, function] : state_->functions ) {
-            if ( index.get_name() != name ) {
-                continue;
-            }
-
-            if ( function.get_type().get_arity() != args.size() ) {
-                continue;
-            }
-
-            const std::vector<any_type>& function_args = function.get_type().get_argument_types();
-            if ( std::equal(args.begin(), args.end(), function_args.begin(), function_args.end()) ) {
-                return function;
-            }
-        }
-        return function{};
+        return get_function_with(name, args.begin(), args.end());
     }
 }

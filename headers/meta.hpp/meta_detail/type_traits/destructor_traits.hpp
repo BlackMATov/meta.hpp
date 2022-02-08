@@ -10,25 +10,25 @@
 
 namespace meta_hpp::detail
 {
-    enum class dtor_flags : std::uint32_t {
+    enum class destructor_flags : std::uint32_t {
         is_noexcept = 1 << 0,
     };
 
-    ENUM_HPP_OPERATORS_DECL(dtor_flags)
-    using dtor_bitflags = bitflags<dtor_flags>;
+    ENUM_HPP_OPERATORS_DECL(destructor_flags)
+    using destructor_bitflags = bitflags<destructor_flags>;
 }
 
 namespace meta_hpp::detail
 {
     template < class_kind Class >
-    struct dtor_traits {
+    struct destructor_traits {
         using class_type = Class;
 
-        [[nodiscard]] static constexpr dtor_bitflags make_flags() noexcept {
-            dtor_bitflags flags{};
+        [[nodiscard]] static constexpr destructor_bitflags make_flags() noexcept {
+            destructor_bitflags flags{};
 
             if constexpr ( std::is_nothrow_destructible_v<Class> ) {
-                flags.set(dtor_flags::is_noexcept);
+                flags.set(destructor_flags::is_noexcept);
             }
 
             return flags;

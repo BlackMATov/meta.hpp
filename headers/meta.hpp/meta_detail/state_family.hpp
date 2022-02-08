@@ -12,8 +12,9 @@ namespace meta_hpp::detail
 {
     template < typename T >
     inline constexpr bool is_state_family_v =
-        std::is_same_v<T, ctor> ||
-        std::is_same_v<T, dtor> ||
+        std::is_same_v<T, argument> ||
+        std::is_same_v<T, constructor> ||
+        std::is_same_v<T, destructor> ||
         std::is_same_v<T, evalue> ||
         std::is_same_v<T, function> ||
         std::is_same_v<T, member> ||

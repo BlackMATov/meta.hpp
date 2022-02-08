@@ -44,8 +44,8 @@ TEST_CASE("meta/meta_states/scope") {
         .enum_<color>("color")
         .class_<ivec2>("ivec2")
         .class_<ivec3>("ivec3")
-        .function_("iadd2", &iadd2)
-        .function_("iadd3", &iadd3)
+        .function_("iadd2", &iadd2, {"l", "r"})
+        .function_("iadd3", &iadd3, {"l"})
         .variable_("static_ivec2", &static_ivec2)
         .variable_("static_const_ivec3", &static_const_ivec3);
 
@@ -96,8 +96,40 @@ TEST_CASE("meta/meta_states/scope") {
         const meta::function iadd2_func = math_scope.get_function("iadd2");
         REQUIRE(iadd2_func);
 
+        {
+            CHECK(iadd2_func.get_arguments().size() == 2);
+
+            REQUIRE(iadd2_func.get_argument(0));
+            CHECK(iadd2_func.get_argument(0).get_type() == meta::resolve_type<const ivec2&>());
+            CHECK(iadd2_func.get_argument(0).get_position() == 0);
+            CHECK(iadd2_func.get_argument(0).get_name() == "l");
+
+            REQUIRE(iadd2_func.get_argument(1));
+            CHECK(iadd2_func.get_argument(1).get_type() == meta::resolve_type<const ivec2&>());
+            CHECK(iadd2_func.get_argument(1).get_position() == 1);
+            CHECK(iadd2_func.get_argument(1).get_name() == "r");
+
+            CHECK_FALSE(iadd2_func.get_argument(2));
+        }
+
         const meta::function iadd3_func = math_scope.get_function("iadd3");
         REQUIRE(iadd3_func);
+
+        {
+            CHECK(iadd3_func.get_arguments().size() == 2);
+
+            REQUIRE(iadd3_func.get_argument(0));
+            CHECK(iadd3_func.get_argument(0).get_type() == meta::resolve_type<const ivec3&>());
+            CHECK(iadd3_func.get_argument(0).get_position() == 0);
+            CHECK(iadd3_func.get_argument(0).get_name() == "l");
+
+            REQUIRE(iadd3_func.get_argument(1));
+            CHECK(iadd3_func.get_argument(1).get_type() == meta::resolve_type<const ivec3&>());
+            CHECK(iadd3_func.get_argument(1).get_position() == 1);
+            CHECK(iadd3_func.get_argument(1).get_name() == "");
+
+            CHECK_FALSE(iadd3_func.get_argument(2));
+        }
     }
 
     SUBCASE("variables") {

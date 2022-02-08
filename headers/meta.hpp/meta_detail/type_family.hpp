@@ -15,8 +15,8 @@ namespace meta_hpp::detail
         std::is_same_v<T, any_type> ||
         std::is_same_v<T, array_type> ||
         std::is_same_v<T, class_type> ||
-        std::is_same_v<T, ctor_type> ||
-        std::is_same_v<T, dtor_type> ||
+        std::is_same_v<T, constructor_type> ||
+        std::is_same_v<T, destructor_type> ||
         std::is_same_v<T, enum_type> ||
         std::is_same_v<T, function_type> ||
         std::is_same_v<T, member_type> ||

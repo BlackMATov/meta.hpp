@@ -1,6 +1,9 @@
 # meta.hpp
 
 - metadata
+- add policy tests
+- rebind types support
+- rewrite ctor/dtor system
 
 * argument defaults
 * argument names

@@ -54,12 +54,12 @@ TEST_CASE("meta/meta_examples/functions/usage") {
     // checks a type of the founded function
     CHECK(sub_function.get_type() == meta::resolve_type<int(*)(int, int)>());
 
-    // checks the ability to call the function with specific parameters
+    // checks the ability to call the function with specific arguments
     CHECK(sub_function.is_invocable_with(60, 18));
     CHECK(sub_function.is_invocable_with<int, int>());
 
     // calls the function and retrieves a returned value
-    const meta::value sub_result_value = sub_function.invoke(60, 18);
+    const meta::uvalue sub_result_value = sub_function.invoke(60, 18);
 
     // checks the type of the returned value
     CHECK(sub_result_value.get_type() == meta::resolve_type<int>());

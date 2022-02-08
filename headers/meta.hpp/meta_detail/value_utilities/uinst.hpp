@@ -13,7 +13,7 @@
 
 namespace meta_hpp::detail
 {
-    class inst_base {
+    class uinst_base {
     public:
         enum class ref_types {
             lvalue,
@@ -22,29 +22,29 @@ namespace meta_hpp::detail
             const_rvalue,
         };
     public:
-        inst_base() = delete;
+        uinst_base() = delete;
 
-        inst_base(inst_base&&) = default;
-        inst_base(const inst_base&) = default;
+        uinst_base(uinst_base&&) = default;
+        uinst_base(const uinst_base&) = default;
 
-        inst_base& operator=(inst_base&&) = delete;
-        inst_base& operator=(const inst_base&) = delete;
+        uinst_base& operator=(uinst_base&&) = delete;
+        uinst_base& operator=(const uinst_base&) = delete;
 
-        virtual ~inst_base() = default;
+        virtual ~uinst_base() = default;
 
         template < decay_value_kind T >
         // NOLINTNEXTLINE(readability-named-parameter)
-        explicit inst_base(T&&)
-        : inst_base{type_list<T&&>{}} {}
+        explicit uinst_base(T&&)
+        : uinst_base{type_list<T&&>{}} {}
 
         template < decay_non_uvalue_kind T >
         // NOLINTNEXTLINE(readability-named-parameter)
-        explicit inst_base(T&&)
-        : inst_base{type_list<T&&>{}} {}
+        explicit uinst_base(T&&)
+        : uinst_base{type_list<T&&>{}} {}
 
         template < inst_class_lvalue_ref_kind T >
         // NOLINTNEXTLINE(readability-named-parameter)
-        explicit inst_base(type_list<T>)
+        explicit uinst_base(type_list<T>)
         : ref_type_{std::is_const_v<std::remove_reference_t<T>>
             ? ref_types::const_lvalue
             : ref_types::lvalue}
@@ -52,25 +52,25 @@ namespace meta_hpp::detail
 
         template < inst_class_rvalue_ref_kind T >
         // NOLINTNEXTLINE(readability-named-parameter)
-        explicit inst_base(type_list<T>)
+        explicit uinst_base(type_list<T>)
         : ref_type_{std::is_const_v<std::remove_reference_t<T>>
             ? ref_types::const_rvalue
             : ref_types::rvalue}
         , raw_type_{resolve_type<std::remove_cvref_t<T>>()} {}
 
-        explicit inst_base(value& v)
+        explicit uinst_base(uvalue& v)
         : ref_type_{ref_types::lvalue}
         , raw_type_{v.get_type()} {}
 
-        explicit inst_base(const value& v)
+        explicit uinst_base(const uvalue& v)
         : ref_type_{ref_types::const_lvalue}
         , raw_type_{v.get_type()} {}
 
-        explicit inst_base(value&& v)
+        explicit uinst_base(uvalue&& v)
         : ref_type_{ref_types::rvalue}
         , raw_type_{v.get_type()} {}
 
-        explicit inst_base(const value&& v)
+        explicit uinst_base(const uvalue&& v)
         : ref_type_{ref_types::const_rvalue}
         , raw_type_{v.get_type()} {}
 
@@ -107,27 +107,27 @@ namespace meta_hpp::detail
 
 namespace meta_hpp::detail
 {
-    class inst final : public inst_base {
+    class uinst final : public uinst_base {
     public:
-        inst() = delete;
+        uinst() = delete;
 
-        inst(inst&&) = default;
-        inst(const inst&) = default;
+        uinst(uinst&&) = default;
+        uinst(const uinst&) = default;
 
-        inst& operator=(inst&&) = delete;
-        inst& operator=(const inst&) = delete;
+        uinst& operator=(uinst&&) = delete;
+        uinst& operator=(const uinst&) = delete;
 
-        ~inst() override = default;
+        ~uinst() override = default;
 
         template < decay_value_kind T >
-        explicit inst(T&& v)
-        : inst_base{std::forward<T>(v)}
+        explicit uinst(T&& v)
+        : uinst_base{std::forward<T>(v)}
         // NOLINTNEXTLINE(cppcoreguidelines-pro-type-const-cast)
         , data_{const_cast<void*>(v.data())} {}
 
         template < decay_non_uvalue_kind T >
-        explicit inst(T&& v)
-        : inst_base{std::forward<T>(v)}
+        explicit uinst(T&& v)
+        : uinst_base{std::forward<T>(v)}
         // NOLINTNEXTLINE(cppcoreguidelines-pro-type-const-cast)
         , data_{const_cast<std::remove_cvref_t<T>*>(std::addressof(v))} {}
 
@@ -141,7 +141,7 @@ namespace meta_hpp::detail
 namespace meta_hpp::detail
 {
     template < inst_class_ref_kind Q >
-    bool inst_base::can_cast_to() const noexcept {
+    bool uinst_base::can_cast_to() const noexcept {
         using inst_class = typename inst_traits<Q>::class_type;
         using inst_method = typename inst_traits<Q>::method_type;
 
@@ -175,7 +175,7 @@ namespace meta_hpp::detail
 namespace meta_hpp::detail
 {
     template < inst_class_ref_kind Q >
-    decltype(auto) inst::cast() const {
+    decltype(auto) uinst::cast() const {
         if ( !can_cast_to<Q>() ) {
             throw_exception_with("bad instance cast");
         }

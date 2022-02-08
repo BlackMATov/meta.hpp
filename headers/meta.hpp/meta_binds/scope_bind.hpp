@@ -39,16 +39,34 @@ namespace meta_hpp
     }
 
     template < detail::function_kind Function, function_policy_kind Policy >
-    // NOLINTNEXTLINE(readability-named-parameter)
-    scope_bind& scope_bind::function_(std::string name, Function function, Policy) {
+    scope_bind& scope_bind::function_(std::string name, Function function, Policy policy) {
+        return function_(std::move(name), std::move(function), {}, policy);
+    }
+
+    template < detail::function_kind Function, function_policy_kind Policy >
+    scope_bind& scope_bind::function_(
+        std::string name,
+        Function function,
+        std::initializer_list<std::string_view> anames,
+        [[maybe_unused]] Policy policy)
+    {
         auto function_state = detail::function_state::make<Policy>(std::move(name), std::move(function));
+
+        if ( anames.size() > function_state->arguments.size() ) {
+            detail::throw_exception_with("provided argument names don't match function argument count");
+        }
+
+        for ( std::size_t i = 0; i < anames.size(); ++i ) {
+            argument& arg = function_state->arguments[i];
+            detail::state_access(arg)->name = std::string{std::data(anames)[i]};
+        }
+
         state_->functions.emplace(function_state->index, std::move(function_state));
         return *this;
     }
 
     template < detail::pointer_kind Pointer, variable_policy_kind Policy >
-    // NOLINTNEXTLINE(readability-named-parameter)
-    scope_bind& scope_bind::variable_(std::string name, Pointer pointer, Policy) {
+    scope_bind& scope_bind::variable_(std::string name, Pointer pointer, [[maybe_unused]] Policy policy) {
         auto variable_state = detail::variable_state::make<Policy>(std::move(name), std::move(pointer));
         state_->variables.emplace(variable_state->index, std::move(variable_state));
         return *this;

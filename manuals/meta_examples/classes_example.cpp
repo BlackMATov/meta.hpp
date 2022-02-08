@@ -47,7 +47,7 @@ TEST_CASE("meta/meta_examples/classes/type") {
     // 'rectangle' class type registration
     meta::class_<rectangle>()
         .base_<shape>()
-        .ctor_<int, int>()
+        .constructor_<int, int>()
         .method_("get_width", &rectangle::get_width)
         .method_("get_height", &rectangle::get_height);
 
@@ -71,7 +71,7 @@ TEST_CASE("meta/meta_examples/classes/usage") {
     const meta::method rectangle_area = rectangle_type.get_method("get_area");
 
     // creates a rectangle instance by the registered constructor(int, int)
-    const meta::value rectangle_v = rectangle_type.create(10, 20);
+    const meta::uvalue rectangle_v = rectangle_type.create(10, 20);
 
     // calls the method with the dynamic rectangle instance 'rectangle_v'
     CHECK(rectangle_area.invoke(rectangle_v) == 200);

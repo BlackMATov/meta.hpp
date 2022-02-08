@@ -14,12 +14,12 @@ namespace meta_hpp
     namespace detail
     {
         template < typename Class, typename... Args >
-        concept class_bind_ctor_kind =
+        concept class_bind_constructor_kind =
             class_kind<Class> &&
             requires(Args&&... args) { { Class{std::forward<Args>(args)...} }; };
 
         template < typename Class >
-        concept class_bind_dtor_kind =
+        concept class_bind_destructor_kind =
             class_kind<Class> &&
             requires(Class&& inst) { { inst.~Class() }; };
 
@@ -46,12 +46,19 @@ namespace meta_hpp
         operator class_type() const noexcept;
 
         template < typename... Args
-                 , ctor_policy_kind Policy = ctor_policy::as_object >
-        class_bind& ctor_(Policy = Policy{})
-            requires detail::class_bind_ctor_kind<Class, Args...>;
+                 , constructor_policy_kind Policy = constructor_policy::as_object >
+        class_bind& constructor_(Policy = Policy{})
+            requires detail::class_bind_constructor_kind<Class, Args...>;
 
-        class_bind& dtor_()
-            requires detail::class_bind_dtor_kind<Class>;
+        template < typename... Args
+                 , constructor_policy_kind Policy = constructor_policy::as_object >
+        class_bind& constructor_(
+            std::initializer_list<std::string_view> anames,
+            Policy = Policy{})
+            requires detail::class_bind_constructor_kind<Class, Args...>;
+
+        class_bind& destructor_()
+            requires detail::class_bind_destructor_kind<Class>;
 
         template < detail::class_kind Base >
         class_bind& base_()
@@ -61,6 +68,14 @@ namespace meta_hpp
                  , function_policy_kind Policy = function_policy::as_copy >
         class_bind& function_(std::string name, Function function, Policy = Policy{});
 
+        template < detail::function_kind Function
+                 , function_policy_kind Policy = function_policy::as_copy >
+        class_bind& function_(
+            std::string name,
+            Function function,
+            std::initializer_list<std::string_view> anames,
+            Policy = Policy{});
+
         template < detail::member_kind Member
                  , member_policy_kind Policy = member_policy::as_copy >
         class_bind& member_(std::string name, Member member, Policy = Policy{})
@@ -69,6 +84,15 @@ namespace meta_hpp
         template < detail::method_kind Method
                  , method_policy_kind Policy = method_policy::as_copy >
         class_bind& method_(std::string name, Method method, Policy = Policy{})
+            requires detail::class_bind_method_kind<Class, Method>;
+
+        template < detail::method_kind Method
+                 , method_policy_kind Policy = method_policy::as_copy >
+        class_bind& method_(
+            std::string name,
+            Method method,
+            std::initializer_list<std::string_view> anames,
+            Policy = Policy{})
             requires detail::class_bind_method_kind<Class, Method>;
 
         template < detail::pointer_kind Pointer
@@ -113,6 +137,14 @@ namespace meta_hpp
         template < detail::function_kind Function
                  , function_policy_kind Policy = function_policy::as_copy >
         scope_bind& function_(std::string name, Function function, Policy = Policy{});
+
+        template < detail::function_kind Function
+                 , function_policy_kind Policy = function_policy::as_copy >
+        scope_bind& function_(
+            std::string name,
+            Function function,
+            std::initializer_list<std::string_view> anames,
+            Policy = Policy{});
 
         template < detail::pointer_kind Pointer
                  , variable_policy_kind Policy = variable_policy::as_copy >

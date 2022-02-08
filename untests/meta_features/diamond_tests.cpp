@@ -162,10 +162,10 @@ TEST_CASE("meta/meta_features/diamond") {
     SUBCASE("arg/cast") {
         {
             A a;
-            meta::value a_val{&a};
+            meta::uvalue a_val{&a};
             CHECK(*static_cast<A**>(a_val.data()) == &a);
 
-            meta::detail::arg a_arg{a_val};
+            meta::detail::uarg a_arg{a_val};
 
             CHECK(a_arg.can_cast_to<A*>());
             CHECK(!a_arg.can_cast_to<B*>());
@@ -177,10 +177,10 @@ TEST_CASE("meta/meta_features/diamond") {
         }
         {
             B b;
-            meta::value b_val{&b};
+            meta::uvalue b_val{&b};
             CHECK(*static_cast<B**>(b_val.data()) == &b);
 
-            meta::detail::arg b_arg{b_val};
+            meta::detail::uarg b_arg{b_val};
 
             CHECK(b_arg.can_cast_to<A*>());
             CHECK(b_arg.can_cast_to<B*>());
@@ -193,10 +193,10 @@ TEST_CASE("meta/meta_features/diamond") {
         }
         {
             C c;
-            meta::value c_val{&c};
+            meta::uvalue c_val{&c};
             CHECK(*static_cast<C**>(c_val.data()) == &c);
 
-            meta::detail::arg c_arg{c_val};
+            meta::detail::uarg c_arg{c_val};
 
             CHECK(c_arg.can_cast_to<A*>());
             CHECK(!c_arg.can_cast_to<B*>());
@@ -209,10 +209,10 @@ TEST_CASE("meta/meta_features/diamond") {
         }
         {
             D d;
-            meta::value d_val{&d};
+            meta::uvalue d_val{&d};
             CHECK(*static_cast<D**>(d_val.data()) == &d);
 
-            meta::detail::arg d_arg{d_val};
+            meta::detail::uarg d_arg{d_val};
 
             CHECK(d_arg.can_cast_to<A*>());
             CHECK(d_arg.can_cast_to<B*>());
@@ -227,10 +227,10 @@ TEST_CASE("meta/meta_features/diamond") {
         }
         {
             E e;
-            meta::value e_val{&e};
+            meta::uvalue e_val{&e};
             CHECK(*static_cast<E**>(e_val.data()) == &e);
 
-            meta::detail::arg e_arg{e_val};
+            meta::detail::uarg e_arg{e_val};
 
             CHECK(!e_arg.can_cast_to<A*>());
             CHECK(!e_arg.can_cast_to<B*>());
@@ -244,8 +244,8 @@ TEST_CASE("meta/meta_features/diamond") {
 
     SUBCASE("inst/cast") {
         {
-            meta::value a_val{A{}};
-            meta::detail::inst a_inst{a_val};
+            meta::uvalue a_val{A{}};
+            meta::detail::uinst a_inst{a_val};
 
             CHECK(a_inst.can_cast_to<A&>());
             CHECK_FALSE(a_inst.can_cast_to<B&>());
@@ -256,8 +256,8 @@ TEST_CASE("meta/meta_features/diamond") {
             CHECK(&a_inst.cast<A&>() == a_val.try_cast<A>());
         }
         {
-            meta::value b_val{B{}};
-            meta::detail::inst b_inst{b_val};
+            meta::uvalue b_val{B{}};
+            meta::detail::uinst b_inst{b_val};
 
             CHECK(b_inst.can_cast_to<A&>());
             CHECK(b_inst.can_cast_to<B&>());
@@ -271,8 +271,8 @@ TEST_CASE("meta/meta_features/diamond") {
             CHECK(&b_inst.cast<A&>() == b_val.try_cast<B>());
         }
         {
-            meta::value c_val{C{}};
-            meta::detail::inst c_inst{c_val};
+            meta::uvalue c_val{C{}};
+            meta::detail::uinst c_inst{c_val};
 
             CHECK(c_inst.can_cast_to<A&>());
             CHECK_FALSE(c_inst.can_cast_to<B&>());
@@ -284,8 +284,8 @@ TEST_CASE("meta/meta_features/diamond") {
             CHECK(&c_inst.cast<C&>() == c_val.try_cast<C>());
         }
         {
-            meta::value d_val{D{}};
-            meta::detail::inst d_inst{d_val};
+            meta::uvalue d_val{D{}};
+            meta::detail::uinst d_inst{d_val};
 
             CHECK(d_inst.can_cast_to<A&>());
             CHECK(d_inst.can_cast_to<B&>());
@@ -304,8 +304,8 @@ TEST_CASE("meta/meta_features/diamond") {
             CHECK(&d_inst.cast<D&>() == d_val.try_cast<D>());
         }
         {
-            meta::value e_val{E{}};
-            meta::detail::inst e_inst{e_val};
+            meta::uvalue e_val{E{}};
+            meta::detail::uinst e_inst{e_val};
 
             CHECK_FALSE(e_inst.can_cast_to<A&>());
             CHECK_FALSE(e_inst.can_cast_to<B&>());

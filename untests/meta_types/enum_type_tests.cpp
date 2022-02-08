@@ -131,7 +131,7 @@ TEST_CASE("meta/meta_types/enum_type") {
         REQUIRE(ecolor_type);
 
         CHECK(ecolor_type.value_to_name(ecolor_red) == "red");
-        CHECK(ecolor_type.value_to_name(meta::value{ecolor_blue}) == "blue");
+        CHECK(ecolor_type.value_to_name(meta::uvalue{ecolor_blue}) == "blue");
         CHECK(ecolor_type.value_to_name(100500).empty());
         CHECK(ecolor_type.value_to_name(ecolor{100500}).empty());
     }

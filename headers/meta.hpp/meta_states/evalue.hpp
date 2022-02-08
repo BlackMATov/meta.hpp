@@ -17,8 +17,8 @@ namespace meta_hpp::detail
     evalue_state_ptr evalue_state::make(std::string name, Enum evalue) {
         return std::make_shared<evalue_state>(evalue_state{
             .index{evalue_index::make<Enum>(std::move(name))},
-            .enum_value{value{evalue}},
-            .underlying_value{value{stdex::to_underlying(evalue)}},
+            .enum_value{uvalue{evalue}},
+            .underlying_value{uvalue{stdex::to_underlying(evalue)}},
         });
     }
 }
@@ -48,11 +48,11 @@ namespace meta_hpp
         return state_->index.get_name();
     }
 
-    inline const value& evalue::get_value() const noexcept {
+    inline const uvalue& evalue::get_value() const noexcept {
         return state_->enum_value;
     }
 
-    inline const value& evalue::get_underlying_value() const noexcept {
+    inline const uvalue& evalue::get_underlying_value() const noexcept {
         return state_->underlying_value;
     }
 }

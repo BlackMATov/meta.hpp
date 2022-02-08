@@ -73,16 +73,16 @@ namespace
         meta::function f_state{function_state::make<meta::function_policy::as_copy>("", function_ptr)};\
         \
         if ( std::is_invocable_v<decltype(function_ptr), decltype(FromValue)> ) {\
-            CHECK(arg{FromValue}.can_cast_to<ToType>());\
-            CHECK(arg_base{type_list<decltype(FromValue)>{}}.can_cast_to<ToType>());\
-            CHECK_NOTHROW(std::ignore = arg{FromValue}.cast<ToType>());\
+            CHECK(uarg{FromValue}.can_cast_to<ToType>());\
+            CHECK(uarg_base{type_list<decltype(FromValue)>{}}.can_cast_to<ToType>());\
+            CHECK_NOTHROW(std::ignore = uarg{FromValue}.cast<ToType>());\
             \
             CHECK(f_state.is_invocable_with<decltype(FromValue)>());\
             CHECK(f_state.invoke(FromValue) == 1);\
         } else {\
-            CHECK_FALSE(arg{FromValue}.can_cast_to<ToType>());\
-            CHECK_FALSE(arg_base{type_list<decltype(FromValue)>{}}.can_cast_to<ToType>());\
-            CHECK_THROWS(std::ignore = arg{FromValue}.cast<ToType>());\
+            CHECK_FALSE(uarg{FromValue}.can_cast_to<ToType>());\
+            CHECK_FALSE(uarg_base{type_list<decltype(FromValue)>{}}.can_cast_to<ToType>());\
+            CHECK_THROWS(std::ignore = uarg{FromValue}.cast<ToType>());\
             \
             CHECK_FALSE(f_state.is_invocable_with<decltype(FromValue)>());\
             CHECK_THROWS(f_state.invoke(FromValue));\
@@ -124,9 +124,9 @@ TEST_CASE("meta/meta_utilities/arg/refs") {
         auto LV2 = []() -> dclazz& { static dclazz v; return v; };
         auto LV3 = []() -> int& { static int v{1}; return v; };
 
-        meta::detail::arg a{LV()};
+        meta::detail::uarg a{LV()};
         CHECK(a.get_raw_type() == meta::resolve_type<clazz>());
-        CHECK(a.get_ref_type() == meta::detail::arg::ref_types::lvalue);
+        CHECK(a.get_ref_type() == meta::detail::uarg::ref_types::lvalue);
 
         META_HPP_CHECK_INVOCABLE(LV(), f1, clazz)
         META_HPP_CHECK_INVOCABLE(LV(), f2, const clazz)
@@ -156,9 +156,9 @@ TEST_CASE("meta/meta_utilities/arg/refs") {
         auto CLV2 = []() -> const dclazz& { static dclazz v; return v; };
         auto CLV3 = []() -> const int& { static int v{1}; return v; };
 
-        meta::detail::arg a{CLV()};
+        meta::detail::uarg a{CLV()};
         CHECK(a.get_raw_type() == meta::resolve_type<clazz>());
-        CHECK(a.get_ref_type() == meta::detail::arg::ref_types::const_lvalue);
+        CHECK(a.get_ref_type() == meta::detail::uarg::ref_types::const_lvalue);
 
         META_HPP_CHECK_INVOCABLE(CLV(), f1, clazz)
         META_HPP_CHECK_INVOCABLE(CLV(), f2, const clazz)
@@ -188,9 +188,9 @@ TEST_CASE("meta/meta_utilities/arg/refs") {
         auto XV2 = []() -> dclazz&& { static dclazz v; return std::move(v); };
         auto XV3 = []() -> int&& { static int v{1}; return std::move(v); };
 
-        meta::detail::arg a{XV()};
+        meta::detail::uarg a{XV()};
         CHECK(a.get_raw_type() == meta::resolve_type<clazz>());
-        CHECK(a.get_ref_type() == meta::detail::arg::ref_types::rvalue);
+        CHECK(a.get_ref_type() == meta::detail::uarg::ref_types::rvalue);
 
         META_HPP_CHECK_INVOCABLE(XV(), f1, clazz)
         META_HPP_CHECK_INVOCABLE(XV(), f2, const clazz)
@@ -220,9 +220,9 @@ TEST_CASE("meta/meta_utilities/arg/refs") {
         auto CXV2 = []() -> const dclazz&& { static dclazz v; return std::move(v); };
         auto CXV3 = []() -> const int&& { static int v{1}; return std::move(v); };
 
-        meta::detail::arg a{CXV()};
+        meta::detail::uarg a{CXV()};
         CHECK(a.get_raw_type() == meta::resolve_type<clazz>());
-        CHECK(a.get_ref_type() == meta::detail::arg::ref_types::const_rvalue);
+        CHECK(a.get_ref_type() == meta::detail::uarg::ref_types::const_rvalue);
 
         META_HPP_CHECK_INVOCABLE(CXV(), f1, clazz)
         META_HPP_CHECK_INVOCABLE(CXV(), f2, const clazz)
@@ -252,9 +252,9 @@ TEST_CASE("meta/meta_utilities/arg/refs") {
         auto PRV2 = []() -> dclazz { return dclazz{}; };
         auto PRV3 = []() -> int { return int{1}; };
 
-        meta::detail::arg a{PRV()};
+        meta::detail::uarg a{PRV()};
         CHECK(a.get_raw_type() == meta::resolve_type<clazz>());
-        CHECK(a.get_ref_type() == meta::detail::arg::ref_types::rvalue);
+        CHECK(a.get_ref_type() == meta::detail::uarg::ref_types::rvalue);
 
         META_HPP_CHECK_INVOCABLE(PRV(), f1, clazz)
         META_HPP_CHECK_INVOCABLE(PRV(), f2, const clazz)
@@ -283,9 +283,9 @@ TEST_CASE("meta/meta_utilities/arg/refs") {
         auto CPRV = []() -> const clazz { return clazz{}; };
         auto CPRV2 = []() -> const dclazz { return dclazz{}; };
 
-        meta::detail::arg a{CPRV()};
+        meta::detail::uarg a{CPRV()};
         CHECK(a.get_raw_type() == meta::resolve_type<clazz>());
-        CHECK(a.get_ref_type() == meta::detail::arg::ref_types::const_rvalue);
+        CHECK(a.get_ref_type() == meta::detail::uarg::ref_types::const_rvalue);
 
         META_HPP_CHECK_INVOCABLE(CPRV(), f1, clazz)
         META_HPP_CHECK_INVOCABLE(CPRV(), f2, const clazz)
@@ -313,9 +313,9 @@ TEST_CASE("meta/meta_utilities/arg/ptrs") {
             auto LV2_PTR = []() -> dclazz*& { static dclazz v; static dclazz* p{&v}; return p; };
             auto LV3_PTR = []() -> int*& { static int v{1}; static int* p{&v}; return p; };
 
-            meta::detail::arg a{LV_PTR()};
+            meta::detail::uarg a{LV_PTR()};
             CHECK(a.get_raw_type() == meta::resolve_type<clazz*>());
-            CHECK(a.get_ref_type() == meta::detail::arg::ref_types::lvalue);
+            CHECK(a.get_ref_type() == meta::detail::uarg::ref_types::lvalue);
 
             META_HPP_CHECK_INVOCABLE(LV_PTR(), f1, clazz*)
             META_HPP_CHECK_INVOCABLE(LV_PTR(), f2, clazz* const)
@@ -364,9 +364,9 @@ TEST_CASE("meta/meta_utilities/arg/ptrs") {
             auto LV2_CPTR = []() -> const dclazz*& { static dclazz v; static const dclazz* p{&v}; return p; };
             auto LV3_CPTR = []() -> const int*& { static int v{1}; static const int* p{&v}; return p; };
 
-            meta::detail::arg a{LV_CPTR()};
+            meta::detail::uarg a{LV_CPTR()};
             CHECK(a.get_raw_type() == meta::resolve_type<const clazz*>());
-            CHECK(a.get_ref_type() == meta::detail::arg::ref_types::lvalue);
+            CHECK(a.get_ref_type() == meta::detail::uarg::ref_types::lvalue);
 
             META_HPP_CHECK_INVOCABLE(LV_CPTR(), f1, clazz*)
             META_HPP_CHECK_INVOCABLE(LV_CPTR(), f2, clazz* const)
@@ -419,9 +419,9 @@ TEST_CASE("meta/meta_utilities/arg/ptrs") {
             auto CLV2_PTR = []() -> dclazz* const& { static dclazz v; static dclazz* p{&v}; return p; };
             auto CLV3_PTR = []() -> int* const& { static int v{1}; static int* p{&v}; return p; };
 
-            meta::detail::arg a{CLV_PTR()};
+            meta::detail::uarg a{CLV_PTR()};
             CHECK(a.get_raw_type() == meta::resolve_type<clazz*>());
-            CHECK(a.get_ref_type() == meta::detail::arg::ref_types::const_lvalue);
+            CHECK(a.get_ref_type() == meta::detail::uarg::ref_types::const_lvalue);
 
             META_HPP_CHECK_INVOCABLE(CLV_PTR(), f1, clazz*)
             META_HPP_CHECK_INVOCABLE(CLV_PTR(), f2, clazz* const)
@@ -470,9 +470,9 @@ TEST_CASE("meta/meta_utilities/arg/ptrs") {
             auto CLV2_CPTR = []() -> const dclazz* const& { static dclazz v; static const dclazz* p{&v}; return p; };
             auto CLV3_CPTR = []() -> const int* const& { static int v{1}; static const int* p{&v}; return p; };
 
-            meta::detail::arg a{CLV_CPTR()};
+            meta::detail::uarg a{CLV_CPTR()};
             CHECK(a.get_raw_type() == meta::resolve_type<const clazz*>());
-            CHECK(a.get_ref_type() == meta::detail::arg::ref_types::const_lvalue);
+            CHECK(a.get_ref_type() == meta::detail::uarg::ref_types::const_lvalue);
 
             META_HPP_CHECK_INVOCABLE(CLV_CPTR(), f1, clazz*)
             META_HPP_CHECK_INVOCABLE(CLV_CPTR(), f2, clazz* const)
@@ -525,9 +525,9 @@ TEST_CASE("meta/meta_utilities/arg/ptrs") {
             auto XV2_PTR = []() -> dclazz*&& { static dclazz v; static dclazz* p{&v}; return std::move(p); };
             auto XV3_PTR = []() -> int*&& { static int v{1}; static int* p{&v}; return std::move(p); };
 
-            meta::detail::arg a{XV_PTR()};
+            meta::detail::uarg a{XV_PTR()};
             CHECK(a.get_raw_type() == meta::resolve_type<clazz*>());
-            CHECK(a.get_ref_type() == meta::detail::arg::ref_types::rvalue);
+            CHECK(a.get_ref_type() == meta::detail::uarg::ref_types::rvalue);
 
             META_HPP_CHECK_INVOCABLE(XV_PTR(), f1, clazz*)
             META_HPP_CHECK_INVOCABLE(XV_PTR(), f2, clazz* const)
@@ -576,9 +576,9 @@ TEST_CASE("meta/meta_utilities/arg/ptrs") {
             auto XV2_CPTR = []() -> const dclazz*&& { static dclazz v; static const dclazz* p{&v}; return std::move(p); };
             auto XV3_CPTR = []() -> const int*&& { static int v{1}; static const int* p{&v}; return std::move(p); };
 
-            meta::detail::arg a{XV_CPTR()};
+            meta::detail::uarg a{XV_CPTR()};
             CHECK(a.get_raw_type() == meta::resolve_type<const clazz*>());
-            CHECK(a.get_ref_type() == meta::detail::arg::ref_types::rvalue);
+            CHECK(a.get_ref_type() == meta::detail::uarg::ref_types::rvalue);
 
             META_HPP_CHECK_INVOCABLE(XV_CPTR(), f1, clazz*)
             META_HPP_CHECK_INVOCABLE(XV_CPTR(), f2, clazz* const)
@@ -631,9 +631,9 @@ TEST_CASE("meta/meta_utilities/arg/ptrs") {
             auto CXV2_PTR = []() -> dclazz* const&& { static dclazz v; static dclazz* p{&v}; return std::move(p); };
             auto CXV3_PTR = []() -> int* const&& { static int v{1}; static int* p{&v}; return std::move(p); };
 
-            meta::detail::arg a{CXV_PTR()};
+            meta::detail::uarg a{CXV_PTR()};
             CHECK(a.get_raw_type() == meta::resolve_type<clazz*>());
-            CHECK(a.get_ref_type() == meta::detail::arg::ref_types::const_rvalue);
+            CHECK(a.get_ref_type() == meta::detail::uarg::ref_types::const_rvalue);
 
             META_HPP_CHECK_INVOCABLE(CXV_PTR(), f1, clazz*)
             META_HPP_CHECK_INVOCABLE(CXV_PTR(), f2, clazz* const)
@@ -682,9 +682,9 @@ TEST_CASE("meta/meta_utilities/arg/ptrs") {
             auto CXV2_CPTR = []() -> const dclazz* const&& { static dclazz v; static const dclazz* p{&v}; return std::move(p); };
             auto CXV3_CPTR = []() -> const int* const&& { static int v{1}; static const int* p{&v}; return std::move(p); };
 
-            meta::detail::arg a{CXV_CPTR()};
+            meta::detail::uarg a{CXV_CPTR()};
             CHECK(a.get_raw_type() == meta::resolve_type<const clazz*>());
-            CHECK(a.get_ref_type() == meta::detail::arg::ref_types::const_rvalue);
+            CHECK(a.get_ref_type() == meta::detail::uarg::ref_types::const_rvalue);
 
             META_HPP_CHECK_INVOCABLE(CXV_CPTR(), f1, clazz*)
             META_HPP_CHECK_INVOCABLE(CXV_CPTR(), f2, clazz* const)
@@ -737,9 +737,9 @@ TEST_CASE("meta/meta_utilities/arg/ptrs") {
             auto PRV2_PTR = []() -> dclazz* { static dclazz v; static dclazz* p{&v}; return p; };
             auto PRV3_PTR = []() -> int* { static int v{1}; static int* p{&v}; return p; };
 
-            meta::detail::arg a{PRV_PTR()};
+            meta::detail::uarg a{PRV_PTR()};
             CHECK(a.get_raw_type() == meta::resolve_type<clazz*>());
-            CHECK(a.get_ref_type() == meta::detail::arg::ref_types::rvalue);
+            CHECK(a.get_ref_type() == meta::detail::uarg::ref_types::rvalue);
 
             META_HPP_CHECK_INVOCABLE(PRV_PTR(), f1, clazz*)
             META_HPP_CHECK_INVOCABLE(PRV_PTR(), f2, clazz* const)
@@ -788,9 +788,9 @@ TEST_CASE("meta/meta_utilities/arg/ptrs") {
             auto PRV2_CPTR = []() -> const dclazz* { static dclazz v; static const dclazz* p{&v}; return p; };
             auto PRV3_CPTR = []() -> const int* { static int v{1}; static const int* p{&v}; return p; };
 
-            meta::detail::arg a{PRV_CPTR()};
+            meta::detail::uarg a{PRV_CPTR()};
             CHECK(a.get_raw_type() == meta::resolve_type<const clazz*>());
-            CHECK(a.get_ref_type() == meta::detail::arg::ref_types::rvalue);
+            CHECK(a.get_ref_type() == meta::detail::uarg::ref_types::rvalue);
 
             META_HPP_CHECK_INVOCABLE(PRV_CPTR(), f1, clazz*)
             META_HPP_CHECK_INVOCABLE(PRV_CPTR(), f2, clazz* const)
@@ -841,13 +841,13 @@ TEST_CASE("meta/meta_utilities/arg/values") {
     namespace meta = meta_hpp;
 
     {
-        auto LV = []() -> meta::value& { static meta::value v{clazz{}}; return v; };
-        auto LV2 = []() -> meta::value& { static meta::value v{dclazz{}}; return v; };
-        auto LV3 = []() -> meta::value& { static meta::value v{int{1}}; return v; };
+        auto LV = []() -> meta::uvalue& { static meta::uvalue v{clazz{}}; return v; };
+        auto LV2 = []() -> meta::uvalue& { static meta::uvalue v{dclazz{}}; return v; };
+        auto LV3 = []() -> meta::uvalue& { static meta::uvalue v{int{1}}; return v; };
 
-        meta::detail::arg a{LV()};
+        meta::detail::uarg a{LV()};
         CHECK(a.get_raw_type() == meta::resolve_type<clazz>());
-        CHECK(a.get_ref_type() == meta::detail::arg::ref_types::lvalue);
+        CHECK(a.get_ref_type() == meta::detail::uarg::ref_types::lvalue);
 
         META_HPP_CHECK_INVOCABLE_2(LV(), f1, clazz&, clazz)
         META_HPP_CHECK_INVOCABLE_2(LV(), f2, clazz&, const clazz)
@@ -872,13 +872,13 @@ TEST_CASE("meta/meta_utilities/arg/values") {
     }
 
     {
-        auto CLV = []() -> const meta::value& { static meta::value v{clazz{}}; return v; };
-        auto CLV2 = []() -> const meta::value& { static meta::value v{dclazz{}}; return v; };
-        auto CLV3 = []() -> const meta::value& { static meta::value v{int{1}}; return v; };
+        auto CLV = []() -> const meta::uvalue& { static meta::uvalue v{clazz{}}; return v; };
+        auto CLV2 = []() -> const meta::uvalue& { static meta::uvalue v{dclazz{}}; return v; };
+        auto CLV3 = []() -> const meta::uvalue& { static meta::uvalue v{int{1}}; return v; };
 
-        meta::detail::arg a{CLV()};
+        meta::detail::uarg a{CLV()};
         CHECK(a.get_raw_type() == meta::resolve_type<clazz>());
-        CHECK(a.get_ref_type() == meta::detail::arg::ref_types::const_lvalue);
+        CHECK(a.get_ref_type() == meta::detail::uarg::ref_types::const_lvalue);
 
         META_HPP_CHECK_INVOCABLE_2(CLV(), f1, const clazz&, clazz)
         META_HPP_CHECK_INVOCABLE_2(CLV(), f2, const clazz&, const clazz)
@@ -903,13 +903,13 @@ TEST_CASE("meta/meta_utilities/arg/values") {
     }
 
     {
-        auto XV = []() -> meta::value&& { static meta::value v{clazz{}}; return std::move(v); };
-        auto XV2 = []() -> meta::value&& { static meta::value v{dclazz{}}; return std::move(v); };
-        auto XV3 = []() -> meta::value&& { static meta::value v{int{1}}; return std::move(v); };
+        auto XV = []() -> meta::uvalue&& { static meta::uvalue v{clazz{}}; return std::move(v); };
+        auto XV2 = []() -> meta::uvalue&& { static meta::uvalue v{dclazz{}}; return std::move(v); };
+        auto XV3 = []() -> meta::uvalue&& { static meta::uvalue v{int{1}}; return std::move(v); };
 
-        meta::detail::arg a{XV()};
+        meta::detail::uarg a{XV()};
         CHECK(a.get_raw_type() == meta::resolve_type<clazz>());
-        CHECK(a.get_ref_type() == meta::detail::arg::ref_types::rvalue);
+        CHECK(a.get_ref_type() == meta::detail::uarg::ref_types::rvalue);
 
         META_HPP_CHECK_INVOCABLE_2(XV(), f1, clazz&&, clazz)
         META_HPP_CHECK_INVOCABLE_2(XV(), f2, clazz&&, const clazz)
@@ -934,13 +934,13 @@ TEST_CASE("meta/meta_utilities/arg/values") {
     }
 
     {
-        auto CXV = []() -> const meta::value&& { static meta::value v{clazz{}}; return std::move(v); };
-        auto CXV2 = []() -> const meta::value&& { static meta::value v{dclazz{}}; return std::move(v); };
-        auto CXV3 = []() -> const meta::value&& { static meta::value v{int{1}}; return std::move(v); };
+        auto CXV = []() -> const meta::uvalue&& { static meta::uvalue v{clazz{}}; return std::move(v); };
+        auto CXV2 = []() -> const meta::uvalue&& { static meta::uvalue v{dclazz{}}; return std::move(v); };
+        auto CXV3 = []() -> const meta::uvalue&& { static meta::uvalue v{int{1}}; return std::move(v); };
 
-        meta::detail::arg a{CXV()};
+        meta::detail::uarg a{CXV()};
         CHECK(a.get_raw_type() == meta::resolve_type<clazz>());
-        CHECK(a.get_ref_type() == meta::detail::arg::ref_types::const_rvalue);
+        CHECK(a.get_ref_type() == meta::detail::uarg::ref_types::const_rvalue);
 
         META_HPP_CHECK_INVOCABLE_2(CXV(), f1, const clazz&&, clazz)
         META_HPP_CHECK_INVOCABLE_2(CXV(), f2, const clazz&&, const clazz)
@@ -965,13 +965,13 @@ TEST_CASE("meta/meta_utilities/arg/values") {
     }
 
     {
-        auto PRV = []() -> meta::value { return meta::value{clazz{}}; };
-        auto PRV2 = []() -> meta::value { return meta::value{dclazz{}}; };
-        auto PRV3 = []() -> meta::value { return meta::value{int{1}}; };
+        auto PRV = []() -> meta::uvalue { return meta::uvalue{clazz{}}; };
+        auto PRV2 = []() -> meta::uvalue { return meta::uvalue{dclazz{}}; };
+        auto PRV3 = []() -> meta::uvalue { return meta::uvalue{int{1}}; };
 
-        meta::detail::arg a{PRV()};
+        meta::detail::uarg a{PRV()};
         CHECK(a.get_raw_type() == meta::resolve_type<clazz>());
-        CHECK(a.get_ref_type() == meta::detail::arg::ref_types::rvalue);
+        CHECK(a.get_ref_type() == meta::detail::uarg::ref_types::rvalue);
 
         META_HPP_CHECK_INVOCABLE_2(PRV(), f1, clazz, clazz)
         META_HPP_CHECK_INVOCABLE_2(PRV(), f2, clazz, const clazz)
@@ -996,13 +996,13 @@ TEST_CASE("meta/meta_utilities/arg/values") {
     }
 
     {
-        auto CPRV = []() -> const meta::value { return meta::value{clazz{}}; };
-        auto CPRV2 = []() -> const meta::value { return meta::value{dclazz{}}; };
-        auto CPRV3 = []() -> const meta::value { return meta::value{int{1}}; };
+        auto CPRV = []() -> const meta::uvalue { return meta::uvalue{clazz{}}; };
+        auto CPRV2 = []() -> const meta::uvalue { return meta::uvalue{dclazz{}}; };
+        auto CPRV3 = []() -> const meta::uvalue { return meta::uvalue{int{1}}; };
 
-        meta::detail::arg a{CPRV()};
+        meta::detail::uarg a{CPRV()};
         CHECK(a.get_raw_type() == meta::resolve_type<clazz>());
-        CHECK(a.get_ref_type() == meta::detail::arg::ref_types::const_rvalue);
+        CHECK(a.get_ref_type() == meta::detail::uarg::ref_types::const_rvalue);
 
         META_HPP_CHECK_INVOCABLE_2(CPRV(), f1, const clazz, clazz)
         META_HPP_CHECK_INVOCABLE_2(CPRV(), f2, const clazz, const clazz)
@@ -1031,12 +1031,12 @@ TEST_CASE("meta/meta_utilities/arg/ptr_values") {
     namespace meta = meta_hpp;
 
     {
-        auto LV_PTR = []() -> meta::value& { static clazz v; static clazz* p{&v}; static meta::value vv{p}; return vv; };
-        auto LV2_PTR = []() -> meta::value& { static dclazz v; static dclazz* p{&v}; static meta::value vv{p}; return vv; };
+        auto LV_PTR = []() -> meta::uvalue& { static clazz v; static clazz* p{&v}; static meta::uvalue vv{p}; return vv; };
+        auto LV2_PTR = []() -> meta::uvalue& { static dclazz v; static dclazz* p{&v}; static meta::uvalue vv{p}; return vv; };
 
-        meta::detail::arg a{LV_PTR()};
+        meta::detail::uarg a{LV_PTR()};
         CHECK(a.get_raw_type() == meta::resolve_type<clazz*>());
-        CHECK(a.get_ref_type() == meta::detail::arg::ref_types::lvalue);
+        CHECK(a.get_ref_type() == meta::detail::uarg::ref_types::lvalue);
 
         META_HPP_CHECK_INVOCABLE_2(LV_PTR(), f1, clazz*&, clazz*)
         META_HPP_CHECK_INVOCABLE_2(LV_PTR(), f2, clazz*&, clazz* const)
@@ -1068,12 +1068,12 @@ TEST_CASE("meta/meta_utilities/arg/ptr_values") {
     }
 
     {
-        auto LV_CPTR = []() -> meta::value& { static clazz v; static const clazz* p{&v}; static meta::value vv{p}; return vv; };
-        auto LV2_CPTR = []() -> meta::value& { static dclazz v; static const dclazz* p{&v}; static meta::value vv{p}; return vv; };
+        auto LV_CPTR = []() -> meta::uvalue& { static clazz v; static const clazz* p{&v}; static meta::uvalue vv{p}; return vv; };
+        auto LV2_CPTR = []() -> meta::uvalue& { static dclazz v; static const dclazz* p{&v}; static meta::uvalue vv{p}; return vv; };
 
-        meta::detail::arg a{LV_CPTR()};
+        meta::detail::uarg a{LV_CPTR()};
         CHECK(a.get_raw_type() == meta::resolve_type<const clazz*>());
-        CHECK(a.get_ref_type() == meta::detail::arg::ref_types::lvalue);
+        CHECK(a.get_ref_type() == meta::detail::uarg::ref_types::lvalue);
 
         META_HPP_CHECK_INVOCABLE_2(LV_CPTR(), f1, const clazz*&, clazz*)
         META_HPP_CHECK_INVOCABLE_2(LV_CPTR(), f2, const clazz*&, clazz* const)
@@ -1105,12 +1105,12 @@ TEST_CASE("meta/meta_utilities/arg/ptr_values") {
     }
 
     {
-        auto CLV_PTR = []() -> const meta::value& { static clazz v; static clazz* p{&v}; static meta::value vv{p}; return vv; };
-        auto CLV2_PTR = []() -> const meta::value& { static dclazz v; static dclazz* p{&v}; static meta::value vv{p}; return vv; };
+        auto CLV_PTR = []() -> const meta::uvalue& { static clazz v; static clazz* p{&v}; static meta::uvalue vv{p}; return vv; };
+        auto CLV2_PTR = []() -> const meta::uvalue& { static dclazz v; static dclazz* p{&v}; static meta::uvalue vv{p}; return vv; };
 
-        meta::detail::arg a{CLV_PTR()};
+        meta::detail::uarg a{CLV_PTR()};
         CHECK(a.get_raw_type() == meta::resolve_type<clazz*>());
-        CHECK(a.get_ref_type() == meta::detail::arg::ref_types::const_lvalue);
+        CHECK(a.get_ref_type() == meta::detail::uarg::ref_types::const_lvalue);
 
         META_HPP_CHECK_INVOCABLE_2(CLV_PTR(), f1, clazz* const&, clazz*)
         META_HPP_CHECK_INVOCABLE_2(CLV_PTR(), f2, clazz* const&, clazz* const)
@@ -1142,12 +1142,12 @@ TEST_CASE("meta/meta_utilities/arg/ptr_values") {
     }
 
     {
-        auto CLV_CPTR = []() -> const meta::value& { static clazz v; static const clazz* p{&v}; static meta::value vv{p}; return vv; };
-        auto CLV2_CPTR = []() -> const meta::value& { static dclazz v; static const dclazz* p{&v}; static meta::value vv{p}; return vv; };
+        auto CLV_CPTR = []() -> const meta::uvalue& { static clazz v; static const clazz* p{&v}; static meta::uvalue vv{p}; return vv; };
+        auto CLV2_CPTR = []() -> const meta::uvalue& { static dclazz v; static const dclazz* p{&v}; static meta::uvalue vv{p}; return vv; };
 
-        meta::detail::arg a{CLV_CPTR()};
+        meta::detail::uarg a{CLV_CPTR()};
         CHECK(a.get_raw_type() == meta::resolve_type<const clazz*>());
-        CHECK(a.get_ref_type() == meta::detail::arg::ref_types::const_lvalue);
+        CHECK(a.get_ref_type() == meta::detail::uarg::ref_types::const_lvalue);
 
         META_HPP_CHECK_INVOCABLE_2(CLV_CPTR(), f1, const clazz* const&, clazz*)
         META_HPP_CHECK_INVOCABLE_2(CLV_CPTR(), f2, const clazz* const&, clazz* const)
@@ -1179,12 +1179,12 @@ TEST_CASE("meta/meta_utilities/arg/ptr_values") {
     }
 
     {
-        auto XV_PTR = []() -> meta::value&& { static clazz v; static clazz* p{&v}; static meta::value vv{std::move(p)}; return std::move(vv); };
-        auto XV2_PTR = []() -> meta::value&& { static dclazz v; static dclazz* p{&v}; static meta::value vv{std::move(p)}; return std::move(vv); };
+        auto XV_PTR = []() -> meta::uvalue&& { static clazz v; static clazz* p{&v}; static meta::uvalue vv{std::move(p)}; return std::move(vv); };
+        auto XV2_PTR = []() -> meta::uvalue&& { static dclazz v; static dclazz* p{&v}; static meta::uvalue vv{std::move(p)}; return std::move(vv); };
 
-        meta::detail::arg a{XV_PTR()};
+        meta::detail::uarg a{XV_PTR()};
         CHECK(a.get_raw_type() == meta::resolve_type<clazz*>());
-        CHECK(a.get_ref_type() == meta::detail::arg::ref_types::rvalue);
+        CHECK(a.get_ref_type() == meta::detail::uarg::ref_types::rvalue);
 
         META_HPP_CHECK_INVOCABLE_2(XV_PTR(), f1, clazz*&&, clazz*)
         META_HPP_CHECK_INVOCABLE_2(XV_PTR(), f2, clazz*&&, clazz* const)
@@ -1216,12 +1216,12 @@ TEST_CASE("meta/meta_utilities/arg/ptr_values") {
     }
 
     {
-        auto XV_CPTR = []() -> meta::value&& { static clazz v; static const clazz* p{&v}; static meta::value vv{std::move(p)}; return std::move(vv); };
-        auto XV2_CPTR = []() -> meta::value&& { static dclazz v; static const dclazz* p{&v}; static meta::value vv{std::move(p)}; return std::move(vv); };
+        auto XV_CPTR = []() -> meta::uvalue&& { static clazz v; static const clazz* p{&v}; static meta::uvalue vv{std::move(p)}; return std::move(vv); };
+        auto XV2_CPTR = []() -> meta::uvalue&& { static dclazz v; static const dclazz* p{&v}; static meta::uvalue vv{std::move(p)}; return std::move(vv); };
 
-        meta::detail::arg a{XV_CPTR()};
+        meta::detail::uarg a{XV_CPTR()};
         CHECK(a.get_raw_type() == meta::resolve_type<const clazz*>());
-        CHECK(a.get_ref_type() == meta::detail::arg::ref_types::rvalue);
+        CHECK(a.get_ref_type() == meta::detail::uarg::ref_types::rvalue);
 
         META_HPP_CHECK_INVOCABLE_2(XV_CPTR(), f1, const clazz*&&, clazz*)
         META_HPP_CHECK_INVOCABLE_2(XV_CPTR(), f2, const clazz*&&, clazz* const)
@@ -1253,12 +1253,12 @@ TEST_CASE("meta/meta_utilities/arg/ptr_values") {
     }
 
     {
-        auto CXV_PTR = []() -> const meta::value&& { static clazz v; static clazz* p{&v}; static meta::value vv{std::move(p)}; return std::move(vv); };
-        auto CXV2_PTR = []() -> const meta::value&& { static dclazz v; static dclazz* p{&v}; static meta::value vv{std::move(p)}; return std::move(vv); };
+        auto CXV_PTR = []() -> const meta::uvalue&& { static clazz v; static clazz* p{&v}; static meta::uvalue vv{std::move(p)}; return std::move(vv); };
+        auto CXV2_PTR = []() -> const meta::uvalue&& { static dclazz v; static dclazz* p{&v}; static meta::uvalue vv{std::move(p)}; return std::move(vv); };
 
-        meta::detail::arg a{CXV_PTR()};
+        meta::detail::uarg a{CXV_PTR()};
         CHECK(a.get_raw_type() == meta::resolve_type<clazz*>());
-        CHECK(a.get_ref_type() == meta::detail::arg::ref_types::const_rvalue);
+        CHECK(a.get_ref_type() == meta::detail::uarg::ref_types::const_rvalue);
 
         META_HPP_CHECK_INVOCABLE_2(CXV_PTR(), f1, clazz* const&&, clazz*)
         META_HPP_CHECK_INVOCABLE_2(CXV_PTR(), f2, clazz* const&&, clazz* const)
@@ -1290,12 +1290,12 @@ TEST_CASE("meta/meta_utilities/arg/ptr_values") {
     }
 
     {
-        auto CXV_CPTR = []() -> const meta::value&& { static clazz v; static const clazz* p{&v}; static meta::value vv{std::move(p)}; return std::move(vv); };
-        auto CXV2_CPTR = []() -> const meta::value&& { static dclazz v; static const dclazz* p{&v}; static meta::value vv{std::move(p)}; return std::move(vv); };
+        auto CXV_CPTR = []() -> const meta::uvalue&& { static clazz v; static const clazz* p{&v}; static meta::uvalue vv{std::move(p)}; return std::move(vv); };
+        auto CXV2_CPTR = []() -> const meta::uvalue&& { static dclazz v; static const dclazz* p{&v}; static meta::uvalue vv{std::move(p)}; return std::move(vv); };
 
-        meta::detail::arg a{CXV_CPTR()};
+        meta::detail::uarg a{CXV_CPTR()};
         CHECK(a.get_raw_type() == meta::resolve_type<const clazz*>());
-        CHECK(a.get_ref_type() == meta::detail::arg::ref_types::const_rvalue);
+        CHECK(a.get_ref_type() == meta::detail::uarg::ref_types::const_rvalue);
 
         META_HPP_CHECK_INVOCABLE_2(CXV_CPTR(), f1, const clazz* const&&, clazz*)
         META_HPP_CHECK_INVOCABLE_2(CXV_CPTR(), f2, const clazz* const&&, clazz* const)
@@ -1327,12 +1327,12 @@ TEST_CASE("meta/meta_utilities/arg/ptr_values") {
     }
 
     {
-        auto PRV_PTR = []() -> meta::value { static clazz v; static clazz* p{&v}; static meta::value vv{p}; return vv; };
-        auto PRV2_PTR = []() -> meta::value { static dclazz v; static dclazz* p{&v}; static meta::value vv{p}; return vv; };
+        auto PRV_PTR = []() -> meta::uvalue { static clazz v; static clazz* p{&v}; static meta::uvalue vv{p}; return vv; };
+        auto PRV2_PTR = []() -> meta::uvalue { static dclazz v; static dclazz* p{&v}; static meta::uvalue vv{p}; return vv; };
 
-        meta::detail::arg a{PRV_PTR()};
+        meta::detail::uarg a{PRV_PTR()};
         CHECK(a.get_raw_type() == meta::resolve_type<clazz*>());
-        CHECK(a.get_ref_type() == meta::detail::arg::ref_types::rvalue);
+        CHECK(a.get_ref_type() == meta::detail::uarg::ref_types::rvalue);
 
         META_HPP_CHECK_INVOCABLE_2(PRV_PTR(), f1, clazz*, clazz*)
         META_HPP_CHECK_INVOCABLE_2(PRV_PTR(), f2, clazz*, clazz* const)
@@ -1364,12 +1364,12 @@ TEST_CASE("meta/meta_utilities/arg/ptr_values") {
     }
 
     {
-        auto PRV_CPTR = []() -> meta::value { static clazz v; static const clazz* p{&v}; static meta::value vv{p}; return vv; };
-        auto PRV2_CPTR = []() -> meta::value { static dclazz v; static const dclazz* p{&v}; static meta::value vv{p}; return vv; };
+        auto PRV_CPTR = []() -> meta::uvalue { static clazz v; static const clazz* p{&v}; static meta::uvalue vv{p}; return vv; };
+        auto PRV2_CPTR = []() -> meta::uvalue { static dclazz v; static const dclazz* p{&v}; static meta::uvalue vv{p}; return vv; };
 
-        meta::detail::arg a{PRV_CPTR()};
+        meta::detail::uarg a{PRV_CPTR()};
         CHECK(a.get_raw_type() == meta::resolve_type<const clazz*>());
-        CHECK(a.get_ref_type() == meta::detail::arg::ref_types::rvalue);
+        CHECK(a.get_ref_type() == meta::detail::uarg::ref_types::rvalue);
 
         META_HPP_CHECK_INVOCABLE_2(PRV_CPTR(), f1, const clazz*, clazz*)
         META_HPP_CHECK_INVOCABLE_2(PRV_CPTR(), f2, const clazz*, clazz* const)
@@ -1401,12 +1401,12 @@ TEST_CASE("meta/meta_utilities/arg/ptr_values") {
     }
 
     {
-        auto CPRV_PTR = []() -> const meta::value { static clazz v; static clazz* p{&v}; static meta::value vv{p}; return vv; };
-        auto CPRV2_PTR = []() -> const meta::value { static dclazz v; static dclazz* p{&v}; static meta::value vv{p}; return vv; };
+        auto CPRV_PTR = []() -> const meta::uvalue { static clazz v; static clazz* p{&v}; static meta::uvalue vv{p}; return vv; };
+        auto CPRV2_PTR = []() -> const meta::uvalue { static dclazz v; static dclazz* p{&v}; static meta::uvalue vv{p}; return vv; };
 
-        meta::detail::arg a{CPRV_PTR()};
+        meta::detail::uarg a{CPRV_PTR()};
         CHECK(a.get_raw_type() == meta::resolve_type<clazz*>());
-        CHECK(a.get_ref_type() == meta::detail::arg::ref_types::const_rvalue);
+        CHECK(a.get_ref_type() == meta::detail::uarg::ref_types::const_rvalue);
 
         META_HPP_CHECK_INVOCABLE_2(CPRV_PTR(), f1, clazz* const, clazz*)
         META_HPP_CHECK_INVOCABLE_2(CPRV_PTR(), f2, clazz* const, clazz* const)
@@ -1438,12 +1438,12 @@ TEST_CASE("meta/meta_utilities/arg/ptr_values") {
     }
 
     {
-        auto CPRV_CPTR = []() -> const meta::value { static clazz v; static const clazz* p{&v}; static meta::value vv{p}; return vv; };
-        auto CPRV2_CPTR = []() -> const meta::value { static dclazz v; static const dclazz* p{&v}; static meta::value vv{p}; return vv; };
+        auto CPRV_CPTR = []() -> const meta::uvalue { static clazz v; static const clazz* p{&v}; static meta::uvalue vv{p}; return vv; };
+        auto CPRV2_CPTR = []() -> const meta::uvalue { static dclazz v; static const dclazz* p{&v}; static meta::uvalue vv{p}; return vv; };
 
-        meta::detail::arg a{CPRV_CPTR()};
+        meta::detail::uarg a{CPRV_CPTR()};
         CHECK(a.get_raw_type() == meta::resolve_type<const clazz*>());
-        CHECK(a.get_ref_type() == meta::detail::arg::ref_types::const_rvalue);
+        CHECK(a.get_ref_type() == meta::detail::uarg::ref_types::const_rvalue);
 
         META_HPP_CHECK_INVOCABLE_2(CPRV_CPTR(), f1, const clazz* const, clazz*)
         META_HPP_CHECK_INVOCABLE_2(CPRV_CPTR(), f2, const clazz* const, clazz* const)

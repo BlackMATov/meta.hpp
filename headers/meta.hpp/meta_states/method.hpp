@@ -10,13 +10,13 @@
 #include "../meta_states.hpp"
 
 #include "../meta_types/method_type.hpp"
-#include "../meta_detail/value_utilities/arg.hpp"
-#include "../meta_detail/value_utilities/inst.hpp"
+#include "../meta_detail/value_utilities/uarg.hpp"
+#include "../meta_detail/value_utilities/uinst.hpp"
 
 namespace meta_hpp::detail
 {
     template < method_policy_kind Policy, method_kind Method >
-    value raw_method_invoke(const Method& method, const inst& inst, std::span<const arg> args) {
+    uvalue raw_method_invoke(const Method& method, const uinst& inst, std::span<const uarg> args) {
         using mt = method_traits<Method>;
         using return_type = typename mt::return_type;
         using qualified_type = typename mt::qualified_type;
@@ -47,8 +47,8 @@ namespace meta_hpp::detail
         return std::invoke([
             &method, &inst, args
         // NOLINTNEXTLINE(readability-named-parameter)
-        ]<std::size_t... Is>(std::index_sequence<Is...>) -> value {
-            if ( !(... && (args.data() + Is)->can_cast_to<type_list_at_t<Is, argument_types>>()) ) {
+        ]<std::size_t... Is>(std::index_sequence<Is...>) -> uvalue {
+            if ( !(... && args[Is].can_cast_to<type_list_at_t<Is, argument_types>>()) ) {
                 throw_exception_with("an attempt to call a method with incorrect argument types");
             }
 
@@ -56,25 +56,25 @@ namespace meta_hpp::detail
                 std::ignore = std::invoke(
                     method,
                     inst.cast<qualified_type>(),
-                    (args.data() + Is)->cast<type_list_at_t<Is, argument_types>>()...);
-                return value{};
+                    args[Is].cast<type_list_at_t<Is, argument_types>>()...);
+                return uvalue{};
             } else {
                 return_type&& return_value = std::invoke(
                     method,
                     inst.cast<qualified_type>(),
-                    (args.data() + Is)->cast<type_list_at_t<Is, argument_types>>()...);
+                    args[Is].cast<type_list_at_t<Is, argument_types>>()...);
 
                 if constexpr ( ref_as_ptr ) {
-                    return value{std::addressof(return_value)};
+                    return uvalue{std::addressof(return_value)};
                 } else {
-                    return value{std::forward<decltype(return_value)>(return_value)};
+                    return uvalue{std::forward<decltype(return_value)>(return_value)};
                 }
             }
         }, std::make_index_sequence<mt::arity>());
     }
 
     template < method_kind Method >
-    bool raw_method_is_invocable_with(const inst_base& inst, std::span<const arg_base> args) {
+    bool raw_method_is_invocable_with(const uinst_base& inst, std::span<const uarg_base> args) {
         using mt = method_traits<Method>;
         using qualified_type = typename mt::qualified_type;
         using argument_types = typename mt::argument_types;
@@ -89,7 +89,7 @@ namespace meta_hpp::detail
 
         // NOLINTNEXTLINE(readability-named-parameter)
         return std::invoke([args]<std::size_t... Is>(std::index_sequence<Is...>){
-            return (... && (args.data() + Is)->can_cast_to<type_list_at_t<Is, argument_types>>());
+            return (... && args[Is].can_cast_to<type_list_at_t<Is, argument_types>>());
         }, std::make_index_sequence<mt::arity>());
     }
 }
@@ -98,7 +98,7 @@ namespace meta_hpp::detail
 {
     template < method_policy_kind Policy, method_kind Method >
     method_state::invoke_impl make_method_invoke(Method method) {
-        return [method = std::move(method)](const inst& inst, std::span<const arg> args){
+        return [method = std::move(method)](const uinst& inst, std::span<const uarg> args){
             return raw_method_invoke<Policy>(method, inst, args);
         };
     }
@@ -106,6 +106,24 @@ namespace meta_hpp::detail
     template < method_kind Method >
     method_state::is_invocable_with_impl make_method_is_invocable_with() {
         return &raw_method_is_invocable_with<Method>;
+    }
+
+    template < method_kind Method >
+    argument_list make_method_arguments() {
+        using mt = detail::method_traits<Method>;
+
+        argument_list arguments;
+        arguments.reserve(mt::arity);
+
+        // NOLINTNEXTLINE(readability-named-parameter)
+        [&arguments]<std::size_t... Is>(std::index_sequence<Is...>) mutable {
+            (arguments.push_back([]<std::size_t I>(){
+                using P = detail::type_list_at_t<I, typename mt::argument_types>;
+                return argument{detail::argument_state::make<P>(I)};
+            }.template operator()<Is>()), ...);
+        }(std::make_index_sequence<mt::arity>());
+
+        return arguments;
     }
 }
 
@@ -117,6 +135,7 @@ namespace meta_hpp::detail
             .index{method_index::make<Method>(std::move(name))},
             .invoke{make_method_invoke<Policy>(std::move(method))},
             .is_invocable_with{make_method_is_invocable_with<Method>()},
+            .arguments{make_method_arguments<Method>()},
         });
     }
 }
@@ -147,11 +166,11 @@ namespace meta_hpp
     }
 
     template < typename Instance, typename... Args >
-    value method::invoke(Instance&& instance, Args&&... args) const {
+    uvalue method::invoke(Instance&& instance, Args&&... args) const {
         using namespace detail;
-        const inst vinst{std::forward<Instance>(instance)};
+        const uinst vinst{std::forward<Instance>(instance)};
         if constexpr ( sizeof...(Args) > 0 ) {
-            const std::array<arg, sizeof...(Args)> vargs{arg{std::forward<Args>(args)}...};
+            const std::array<uarg, sizeof...(Args)> vargs{uarg{std::forward<Args>(args)}...};
             return state_->invoke(vinst, vargs);
         } else {
             return state_->invoke(vinst, {});
@@ -159,16 +178,16 @@ namespace meta_hpp
     }
 
     template < typename Instance, typename... Args >
-    value method::operator()(Instance&& instance, Args&&... args) const {
+    uvalue method::operator()(Instance&& instance, Args&&... args) const {
         return invoke(std::forward<Instance>(instance), std::forward<Args>(args)...);
     }
 
     template < typename Instance, typename... Args >
     bool method::is_invocable_with() const noexcept {
         using namespace detail;
-        const inst_base vinst{type_list<Instance>{}};
+        const uinst_base vinst{type_list<Instance>{}};
         if constexpr ( sizeof...(Args) > 0 ) {
-            const std::array<arg_base, sizeof...(Args)> vargs{arg_base{type_list<Args>{}}...};
+            const std::array<uarg_base, sizeof...(Args)> vargs{uarg_base{type_list<Args>{}}...};
             return state_->is_invocable_with(vinst, vargs);
         } else {
             return state_->is_invocable_with(vinst, {});
@@ -178,12 +197,20 @@ namespace meta_hpp
     template < typename Instance, typename... Args >
     bool method::is_invocable_with(Instance&& instance, Args&&... args) const noexcept {
         using namespace detail;
-        const inst_base vinst{std::forward<Instance>(instance)};
+        const uinst_base vinst{std::forward<Instance>(instance)};
         if constexpr ( sizeof...(Args) > 0 ) {
-            const std::array<arg_base, sizeof...(Args)> vargs{arg_base{std::forward<Args>(args)}...};
+            const std::array<uarg_base, sizeof...(Args)> vargs{uarg_base{std::forward<Args>(args)}...};
             return state_->is_invocable_with(vinst, vargs);
         } else {
             return state_->is_invocable_with(vinst, {});
         }
+    }
+
+    inline argument method::get_argument(std::size_t position) const noexcept {
+        return position < state_->arguments.size() ? state_->arguments[position] : argument{};
+    }
+
+    inline const argument_list& method::get_arguments() const noexcept {
+        return state_->arguments;
     }
 }
