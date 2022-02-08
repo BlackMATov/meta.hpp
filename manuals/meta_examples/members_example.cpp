@@ -50,7 +50,7 @@ TEST_CASE("meta/meta_examples/members/usage") {
     CHECK(ivec2_x.get_type() == meta::resolve_type<int ivec2::*>());
 
     // retrieves a member value of the class instance 'v'
-    const meta::value ivec2_x_value = ivec2_x.get(v);
+    const meta::uvalue ivec2_x_value = ivec2_x.get(v);
 
     // checks the type of the retrieved value
     CHECK(ivec2_x_value.get_type() == meta::resolve_type<int>());

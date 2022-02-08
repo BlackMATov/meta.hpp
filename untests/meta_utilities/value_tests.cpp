@@ -103,31 +103,31 @@ TEST_CASE("meta/meta_utilities/value") {
 
     SUBCASE("cast types") {
         static_assert(std::is_same_v<
-            decltype(std::declval<meta::value&>().cast<ivec2>()),
+            decltype(std::declval<meta::uvalue&>().cast<ivec2>()),
             ivec2&>);
         static_assert(std::is_same_v<
-            decltype(std::declval<meta::value&&>().cast<ivec2>()),
+            decltype(std::declval<meta::uvalue&&>().cast<ivec2>()),
             ivec2&&>);
         static_assert(std::is_same_v<
-            decltype(std::declval<const meta::value&>().cast<ivec2>()),
+            decltype(std::declval<const meta::uvalue&>().cast<ivec2>()),
             const ivec2&>);
         static_assert(std::is_same_v<
-            decltype(std::declval<const meta::value&&>().cast<ivec2>()),
+            decltype(std::declval<const meta::uvalue&&>().cast<ivec2>()),
             const ivec2&&>);
     }
 
     SUBCASE("try_cast types") {
         static_assert(std::is_same_v<
-            decltype(std::declval<meta::value>().try_cast<ivec2>()),
+            decltype(std::declval<meta::uvalue>().try_cast<ivec2>()),
             ivec2*>);
         static_assert(std::is_same_v<
-            decltype(std::declval<const meta::value>().try_cast<ivec2>()),
+            decltype(std::declval<const meta::uvalue>().try_cast<ivec2>()),
             const ivec2*>);
     }
 
     SUBCASE("ivec2{}") {
         {
-            meta::value val{};
+            meta::uvalue val{};
 
             CHECK(!val);
             CHECK_FALSE(val);
@@ -150,45 +150,45 @@ TEST_CASE("meta/meta_utilities/value") {
         }
 
         {
-            CHECK_FALSE(meta::value{1} < meta::value{});
-            CHECK(meta::value{} < meta::value{1});
-            CHECK_FALSE(meta::value{} < meta::value{});
+            CHECK_FALSE(meta::uvalue{1} < meta::uvalue{});
+            CHECK(meta::uvalue{} < meta::uvalue{1});
+            CHECK_FALSE(meta::uvalue{} < meta::uvalue{});
 
-            CHECK_FALSE(1 < meta::value{});
-            CHECK(meta::value{} < 1);
-            CHECK_FALSE(meta::value{} < meta::value{});
+            CHECK_FALSE(1 < meta::uvalue{});
+            CHECK(meta::uvalue{} < 1);
+            CHECK_FALSE(meta::uvalue{} < meta::uvalue{});
         }
 
         {
-            CHECK_FALSE(meta::value{1} == meta::value{});
-            CHECK_FALSE(meta::value{} == meta::value{1});
-            CHECK(meta::value{} == meta::value{});
+            CHECK_FALSE(meta::uvalue{1} == meta::uvalue{});
+            CHECK_FALSE(meta::uvalue{} == meta::uvalue{1});
+            CHECK(meta::uvalue{} == meta::uvalue{});
 
-            CHECK_FALSE(1 == meta::value{});
-            CHECK_FALSE(meta::value{} == 1);
-            CHECK(meta::value{} == meta::value{});
+            CHECK_FALSE(1 == meta::uvalue{});
+            CHECK_FALSE(meta::uvalue{} == 1);
+            CHECK(meta::uvalue{} == meta::uvalue{});
         }
 
         {
-            CHECK(meta::value{1} != meta::value{});
-            CHECK(meta::value{} != meta::value{1});
-            CHECK_FALSE(meta::value{} != meta::value{});
+            CHECK(meta::uvalue{1} != meta::uvalue{});
+            CHECK(meta::uvalue{} != meta::uvalue{1});
+            CHECK_FALSE(meta::uvalue{} != meta::uvalue{});
 
-            CHECK(1 != meta::value{});
-            CHECK(meta::value{} != 1);
-            CHECK_FALSE(meta::value{} != meta::value{});
+            CHECK(1 != meta::uvalue{});
+            CHECK(meta::uvalue{} != 1);
+            CHECK_FALSE(meta::uvalue{} != meta::uvalue{});
         }
 
-        CHECK_FALSE(meta::value{} == 0);
-        CHECK_FALSE(meta::value{} == nullptr);
-        CHECK(meta::value{}.get_type() == meta::resolve_type<void>());
+        CHECK_FALSE(meta::uvalue{} == 0);
+        CHECK_FALSE(meta::uvalue{} == nullptr);
+        CHECK(meta::uvalue{}.get_type() == meta::resolve_type<void>());
     }
 
     SUBCASE("ivec2&") {
         ivec2 v{1,2};
         ivec2& vr = v;
 
-        meta::value val{vr};
+        meta::uvalue val{vr};
         CHECK(ivec2::move_ctor_counter == 0);
         CHECK(ivec2::copy_ctor_counter == 1);
 
@@ -200,7 +200,7 @@ TEST_CASE("meta/meta_utilities/value") {
         CHECK(*static_cast<const ivec2*>(std::as_const(val).cdata()) == vr);
 
         CHECK(val == ivec2{1,2});
-        CHECK(val == meta::value{ivec2{1,2}});
+        CHECK(val == meta::uvalue{ivec2{1,2}});
 
         CHECK(val.cast<ivec2>() == ivec2{1,2});
         CHECK(std::as_const(val).cast<ivec2>() == ivec2{1,2});
@@ -222,7 +222,7 @@ TEST_CASE("meta/meta_utilities/value") {
         const ivec2 v{1,2};
         const ivec2& vr = v;
 
-        meta::value val{vr};
+        meta::uvalue val{vr};
         CHECK(ivec2::move_ctor_counter == 0);
         CHECK(ivec2::copy_ctor_counter == 1);
 
@@ -234,7 +234,7 @@ TEST_CASE("meta/meta_utilities/value") {
         CHECK(*static_cast<const ivec2*>(std::as_const(val).cdata()) == vr);
 
         CHECK(val == ivec2{1,2});
-        CHECK(val == meta::value{ivec2{1,2}});
+        CHECK(val == meta::uvalue{ivec2{1,2}});
 
         CHECK(val.cast<ivec2>() == ivec2{1,2});
         CHECK(std::as_const(val).cast<ivec2>() == ivec2{1,2});
@@ -255,14 +255,14 @@ TEST_CASE("meta/meta_utilities/value") {
     SUBCASE("ivec2&&") {
         ivec2 v{1,2};
 
-        meta::value val{std::move(v)};
+        meta::uvalue val{std::move(v)};
         CHECK(ivec2::move_ctor_counter == 1);
         CHECK(ivec2::copy_ctor_counter == 0);
 
         CHECK(val.get_type() == meta::resolve_type<ivec2>());
 
         CHECK(val == ivec2{1,2});
-        CHECK(val == meta::value{ivec2{1,2}});
+        CHECK(val == meta::uvalue{ivec2{1,2}});
 
         CHECK(val.cast<ivec2>() == ivec2{1,2});
         CHECK(std::as_const(val).cast<ivec2>() == ivec2{1,2});
@@ -283,14 +283,14 @@ TEST_CASE("meta/meta_utilities/value") {
     SUBCASE("const ivec2&&") {
         const ivec2 v{1,2};
 
-        meta::value val{std::move(v)};
+        meta::uvalue val{std::move(v)};
         CHECK(ivec2::move_ctor_counter == 0);
         CHECK(ivec2::copy_ctor_counter == 1);
 
         CHECK(val.get_type() == meta::resolve_type<ivec2>());
 
         CHECK(val == ivec2{1,2});
-        CHECK(val == meta::value{ivec2{1,2}});
+        CHECK(val == meta::uvalue{ivec2{1,2}});
 
         CHECK(val.cast<ivec2>() == ivec2{1,2});
         CHECK(std::as_const(val).cast<ivec2>() == ivec2{1,2});
@@ -310,11 +310,11 @@ TEST_CASE("meta/meta_utilities/value") {
 
     SUBCASE("value(value&&)") {
         ivec2 v{1,2};
-        meta::value val_src{std::move(v)};
+        meta::uvalue val_src{std::move(v)};
         CHECK(ivec2::move_ctor_counter == 1);
         CHECK(ivec2::copy_ctor_counter == 0);
 
-        meta::value val_dst{std::move(val_src)};
+        meta::uvalue val_dst{std::move(val_src)};
         CHECK(val_dst == ivec2{1,2});
         CHECK(ivec2::move_ctor_counter == 2);
         CHECK(ivec2::copy_ctor_counter == 0);
@@ -322,11 +322,11 @@ TEST_CASE("meta/meta_utilities/value") {
 
     SUBCASE("value(const meta::value&)") {
         const ivec2 v{1,2};
-        meta::value val_src{v};
+        meta::uvalue val_src{v};
         CHECK(ivec2::move_ctor_counter == 0);
         CHECK(ivec2::copy_ctor_counter == 1);
 
-        meta::value val_dst{val_src};
+        meta::uvalue val_dst{val_src};
         CHECK(val_dst == ivec2{1,2});
         CHECK(ivec2::move_ctor_counter == 0);
         CHECK(ivec2::copy_ctor_counter == 2);
@@ -336,7 +336,7 @@ TEST_CASE("meta/meta_utilities/value") {
     }
 
     SUBCASE("value& operator=(T&&)") {
-        meta::value val{10};
+        meta::uvalue val{10};
 
         val = 20;
         CHECK(val == 20);
@@ -346,12 +346,12 @@ TEST_CASE("meta/meta_utilities/value") {
     }
 
     SUBCASE("value& operator=(value&&)") {
-        meta::value val_src1{"world"s};
-        meta::value val_src2{ivec2{1,2}};
+        meta::uvalue val_src1{"world"s};
+        meta::uvalue val_src2{ivec2{1,2}};
         CHECK(ivec2::move_ctor_counter == 1);
         CHECK(ivec2::copy_ctor_counter == 0);
 
-        meta::value val_dst{"hello"s};
+        meta::uvalue val_dst{"hello"s};
 
         val_dst = std::move(val_src1);
         CHECK(val_dst == "world"s);
@@ -365,12 +365,12 @@ TEST_CASE("meta/meta_utilities/value") {
     }
 
     SUBCASE("value& operator=(const meta::value&)") {
-        meta::value val_src1{"world"s};
-        meta::value val_src2{ivec2{1,2}};
+        meta::uvalue val_src1{"world"s};
+        meta::uvalue val_src2{ivec2{1,2}};
         CHECK(ivec2::move_ctor_counter == 1);
         CHECK(ivec2::copy_ctor_counter == 0);
 
-        meta::value val_dst{"hello"s};
+        meta::uvalue val_dst{"hello"s};
 
         val_dst = val_src1;
         CHECK(val_dst == "world"s);
@@ -387,8 +387,8 @@ TEST_CASE("meta/meta_utilities/value") {
     }
 
     SUBCASE("swap") {
-        meta::value val1{"world"s};
-        meta::value val2{ivec2{1,2}};
+        meta::uvalue val1{"world"s};
+        meta::uvalue val2{ivec2{1,2}};
         CHECK(ivec2::move_ctor_counter == 1);
         CHECK(ivec2::copy_ctor_counter == 0);
 
@@ -405,18 +405,18 @@ TEST_CASE("meta/meta_utilities/value") {
 
     SUBCASE("ostream") {
         std::stringstream str_stream;
-        CHECK_NOTHROW(str_stream << meta::value{21} << " " << meta::value{42});
-        CHECK_THROWS((str_stream << meta::value{ivec2{1,2}}));
+        CHECK_NOTHROW(str_stream << meta::uvalue{21} << " " << meta::uvalue{42});
+        CHECK_THROWS((str_stream << meta::uvalue{ivec2{1,2}}));
         REQUIRE(str_stream.str() == "21 42");
     }
 
     SUBCASE("istream") {
         std::stringstream str_stream{"21 42"};
 
-        meta::value v{ivec2{1,2}};
+        meta::uvalue v{ivec2{1,2}};
         CHECK_THROWS(str_stream >> v);
 
-        v = meta::value{0};
+        v = meta::uvalue{0};
         CHECK_NOTHROW(str_stream >> v);
         CHECK(v == 21);
         CHECK_NOTHROW(str_stream >> v);
@@ -424,61 +424,61 @@ TEST_CASE("meta/meta_utilities/value") {
     }
 
     SUBCASE("operator<") {
-        CHECK(meta::value{ivec2{1,2}} < ivec2{1,3});
-        CHECK_FALSE(meta::value{ivec2{1,3}} < ivec2{1,2});
+        CHECK(meta::uvalue{ivec2{1,2}} < ivec2{1,3});
+        CHECK_FALSE(meta::uvalue{ivec2{1,3}} < ivec2{1,2});
 
-        CHECK(ivec2{1,2} < meta::value{ivec2{1,3}});
-        CHECK_FALSE(ivec2{1,3} < meta::value{ivec2{1,2}});
+        CHECK(ivec2{1,2} < meta::uvalue{ivec2{1,3}});
+        CHECK_FALSE(ivec2{1,3} < meta::uvalue{ivec2{1,2}});
 
-        CHECK(meta::value{ivec2{1,2}} < meta::value{ivec2{1,3}});
-        CHECK_FALSE(meta::value{ivec2{1,3}} < meta::value{ivec2{1,2}});
+        CHECK(meta::uvalue{ivec2{1,2}} < meta::uvalue{ivec2{1,3}});
+        CHECK_FALSE(meta::uvalue{ivec2{1,3}} < meta::uvalue{ivec2{1,2}});
 
         {
             class empty_class1 {};
             class empty_class2 {};
 
-            CHECK((operator<(meta::value{empty_class1{}}, meta::value{empty_class2{}})
-                || operator<(meta::value{empty_class2{}}, meta::value{empty_class1{}})));
-            CHECK_THROWS(std::ignore = operator<(meta::value{empty_class1{}}, meta::value{empty_class1{}}));
+            CHECK((operator<(meta::uvalue{empty_class1{}}, meta::uvalue{empty_class2{}})
+                || operator<(meta::uvalue{empty_class2{}}, meta::uvalue{empty_class1{}})));
+            CHECK_THROWS(std::ignore = operator<(meta::uvalue{empty_class1{}}, meta::uvalue{empty_class1{}}));
         }
     }
 
     SUBCASE("operator==") {
-        CHECK(meta::value{ivec2{1,2}} == ivec2{1,2});
-        CHECK_FALSE(meta::value{ivec2{1,2}} == ivec2{1,3});
+        CHECK(meta::uvalue{ivec2{1,2}} == ivec2{1,2});
+        CHECK_FALSE(meta::uvalue{ivec2{1,2}} == ivec2{1,3});
 
-        CHECK(ivec2{1,2} == meta::value{ivec2{1,2}});
-        CHECK_FALSE(ivec2{1,3} == meta::value{ivec2{1,2}});
+        CHECK(ivec2{1,2} == meta::uvalue{ivec2{1,2}});
+        CHECK_FALSE(ivec2{1,3} == meta::uvalue{ivec2{1,2}});
 
-        CHECK(meta::value{ivec2{1,2}} == meta::value{ivec2{1,2}});
-        CHECK_FALSE(meta::value{ivec2{1,2}} == meta::value{ivec2{1,3}});
+        CHECK(meta::uvalue{ivec2{1,2}} == meta::uvalue{ivec2{1,2}});
+        CHECK_FALSE(meta::uvalue{ivec2{1,2}} == meta::uvalue{ivec2{1,3}});
 
         {
             class empty_class1 {};
             class empty_class2 {};
 
-            CHECK_FALSE(operator==(meta::value{empty_class1{}}, meta::value{empty_class2{}}));
-            CHECK_THROWS(std::ignore = operator==(meta::value{empty_class1{}}, meta::value{empty_class1{}}));
+            CHECK_FALSE(operator==(meta::uvalue{empty_class1{}}, meta::uvalue{empty_class2{}}));
+            CHECK_THROWS(std::ignore = operator==(meta::uvalue{empty_class1{}}, meta::uvalue{empty_class1{}}));
         }
     }
 
     SUBCASE("deref") {
         {
             int i{42};
-            const meta::value v{*meta::value{&i}};
+            const meta::uvalue v{*meta::uvalue{&i}};
             CHECK(v.get_type() == meta::resolve_type<int>());
             CHECK(v.data() != &i);
         }
         {
             const char i{42};
-            const meta::value v{*meta::value{&i}};
+            const meta::uvalue v{*meta::uvalue{&i}};
             CHECK(v.get_type() == meta::resolve_type<char>());
             CHECK(v.data() != &i);
         }
         {
             const int i{42};
             const int* const pi = &i;
-            const meta::value v{*meta::value{&pi}};
+            const meta::uvalue v{*meta::uvalue{&pi}};
             CHECK(v.get_type() == meta::resolve_type<const int*>() );
             CHECK(v.cast<const int*>() == pi);
         }
@@ -490,31 +490,31 @@ TEST_CASE("meta/meta_utilities/value") {
             void* const& p3 = &i;
             const void* const& p4 = &i;
 
-            CHECK_THROWS(std::ignore = *meta::value(p1));
-            CHECK_THROWS(std::ignore = *meta::value(p2));
-            CHECK_THROWS(std::ignore = *meta::value(p3));
-            CHECK_THROWS(std::ignore = *meta::value(p4));
+            CHECK_THROWS(std::ignore = *meta::uvalue(p1));
+            CHECK_THROWS(std::ignore = *meta::uvalue(p2));
+            CHECK_THROWS(std::ignore = *meta::uvalue(p3));
+            CHECK_THROWS(std::ignore = *meta::uvalue(p4));
         }
         {
             ivec2 v{1,2};
-            meta::value vp{&v};
+            meta::uvalue vp{&v};
             CHECK(ivec2::move_ctor_counter == 0);
             CHECK(ivec2::copy_ctor_counter == 0);
 
-            [[maybe_unused]] meta::value vv1{*vp};
+            [[maybe_unused]] meta::uvalue vv1{*vp};
             CHECK((ivec2::move_ctor_counter == 0 || ivec2::move_ctor_counter == 2));
             CHECK(ivec2::copy_ctor_counter == 1);
 
-            [[maybe_unused]] meta::value vv2{*std::move(vp)};
+            [[maybe_unused]] meta::uvalue vv2{*std::move(vp)};
             CHECK((ivec2::move_ctor_counter == 0 || ivec2::move_ctor_counter == 4));
             CHECK(ivec2::copy_ctor_counter == 2);
 
-            [[maybe_unused]] meta::value vv3{*std::as_const(vp)};
+            [[maybe_unused]] meta::uvalue vv3{*std::as_const(vp)};
             CHECK((ivec2::move_ctor_counter == 0 || ivec2::move_ctor_counter == 6));
             CHECK(ivec2::copy_ctor_counter == 3);
         }
         {
-            meta::value v{std::make_shared<int>(42)};
+            meta::uvalue v{std::make_shared<int>(42)};
             CHECK(*v == 42);
         }
     }
@@ -525,7 +525,7 @@ TEST_CASE("meta/meta_utilities/value/arrays") {
 
     SUBCASE("int[3]") {
         int arr[3]{1,2,3};
-        meta::value v{arr};
+        meta::uvalue v{arr};
         CHECK(v.get_type() == meta::resolve_type<int*>());
         CHECK(v[0] == 1);
         CHECK(v[1] == 2);
@@ -534,7 +534,7 @@ TEST_CASE("meta/meta_utilities/value/arrays") {
 
     SUBCASE("const int[3]") {
         const int arr[3]{1,2,3};
-        meta::value v{arr};
+        meta::uvalue v{arr};
         CHECK(v.get_type() == meta::resolve_type<const int*>());
         CHECK(v[0] == 1);
         CHECK(v[1] == 2);
@@ -542,7 +542,7 @@ TEST_CASE("meta/meta_utilities/value/arrays") {
     }
 
     SUBCASE("std::array") {
-        meta::value v{std::array{1,2,3}};
+        meta::uvalue v{std::array{1,2,3}};
         CHECK(v.get_type() == meta::resolve_type<std::array<int, 3>>());
         CHECK(v[0] == 1);
         CHECK(v[1] == 2);
@@ -550,7 +550,7 @@ TEST_CASE("meta/meta_utilities/value/arrays") {
     }
 
     SUBCASE("std::string") {
-        meta::value v{std::string{"hi!"}};
+        meta::uvalue v{std::string{"hi!"}};
         CHECK(v.get_type() == meta::resolve_type<std::string>());
         CHECK(v[0] == 'h');
         CHECK(v[1] == 'i');
@@ -559,7 +559,7 @@ TEST_CASE("meta/meta_utilities/value/arrays") {
 
     SUBCASE("std::span") {
         std::vector arr{1,2,3};
-        meta::value v{std::span{arr}};
+        meta::uvalue v{std::span{arr}};
         CHECK(v.get_type() == meta::resolve_type<std::span<int>>());
         CHECK(v[0] == 1);
         CHECK(v[1] == 2);
@@ -567,7 +567,7 @@ TEST_CASE("meta/meta_utilities/value/arrays") {
     }
 
     SUBCASE("std::vector") {
-        const meta::value v{std::vector{1,2,3}};
+        const meta::uvalue v{std::vector{1,2,3}};
         CHECK(v.get_type() == meta::resolve_type<std::vector<int>>());
         CHECK(v[0] == 1);
         CHECK(v[1] == 2);
@@ -580,7 +580,7 @@ TEST_CASE("meta/meta_utilities/value/functions") {
 
     SUBCASE("add") {
         {
-            const meta::value v{&ivec2::add};
+            const meta::uvalue v{&ivec2::add};
             CHECK(v.get_type() == meta::resolve_type<ivec2&(ivec2::*)(const ivec2&)>());
             CHECK(std::invoke(v.cast<decltype(&ivec2::add)>(), ivec2{1,2}, ivec2{3,4}) == ivec2{4,6});
             CHECK(std::invoke(*v.try_cast<decltype(&ivec2::add)>(), ivec2{1,2}, ivec2{3,4}) == ivec2{4,6});
@@ -589,13 +589,13 @@ TEST_CASE("meta/meta_utilities/value/functions") {
 
     SUBCASE("iadd2") {
         {
-            const meta::value v{iadd2};
+            const meta::uvalue v{iadd2};
             CHECK(v.get_type() == meta::resolve_type<ivec2(*)(ivec2, ivec2)>());
             CHECK(std::invoke(v.cast<decltype(iadd2)>(), ivec2{1,2}, ivec2{3,4}) == ivec2{4,6});
             CHECK(std::invoke(*v.try_cast<decltype(iadd2)>(), ivec2{1,2}, ivec2{3,4}) == ivec2{4,6});
         }
         {
-            const meta::value v{&iadd2};
+            const meta::uvalue v{&iadd2};
             CHECK(v.get_type() == meta::resolve_type<ivec2(*)(ivec2, ivec2)>());
             CHECK(std::invoke(v.cast<decltype(&iadd2)>(), ivec2{1,2}, ivec2{3,4}) == ivec2{4,6});
             CHECK(std::invoke(*v.try_cast<decltype(&iadd2)>(), ivec2{1,2}, ivec2{3,4}) == ivec2{4,6});

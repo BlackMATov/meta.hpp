@@ -89,15 +89,15 @@ namespace meta_hpp
 
 namespace meta_hpp
 {
-    class value;
+    class uvalue;
 
     namespace detail
     {
-        class arg_base;
-        class arg;
+        class uarg_base;
+        class uarg;
 
-        class inst_base;
-        class inst;
+        class uinst_base;
+        class uinst;
     }
 }
 

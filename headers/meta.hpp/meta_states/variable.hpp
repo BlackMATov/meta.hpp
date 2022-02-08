@@ -10,12 +10,12 @@
 #include "../meta_states.hpp"
 
 #include "../meta_types/pointer_type.hpp"
-#include "../meta_detail/value_utilities/arg.hpp"
+#include "../meta_detail/value_utilities/uarg.hpp"
 
 namespace meta_hpp::detail
 {
     template < variable_policy_kind Policy, pointer_kind Pointer >
-    value raw_variable_getter(const Pointer& pointer) {
+    uvalue raw_variable_getter(const Pointer& pointer) {
         using pt = pointer_traits<Pointer>;
         using data_type = typename pt::data_type;
 
@@ -34,20 +34,20 @@ namespace meta_hpp::detail
         auto&& return_value = *pointer;
 
         if constexpr ( as_copy ) {
-            return value{std::forward<decltype(return_value)>(return_value)};
+            return uvalue{std::forward<decltype(return_value)>(return_value)};
         }
 
         if constexpr ( as_ptr ) {
-            return value{std::addressof(return_value)};
+            return uvalue{std::addressof(return_value)};
         }
 
         if constexpr ( as_ref_wrap) {
-            return value{std::ref(return_value)};
+            return uvalue{std::ref(return_value)};
         }
     }
 
     template < pointer_kind Pointer >
-    void raw_variable_setter([[maybe_unused]] const Pointer& pointer, const arg& arg) {
+    void raw_variable_setter([[maybe_unused]] const Pointer& pointer, const uarg& arg) {
         using pt = pointer_traits<Pointer>;
         using data_type = typename pt::data_type;
 
@@ -62,7 +62,7 @@ namespace meta_hpp::detail
     }
 
     template < pointer_kind Pointer >
-    bool raw_variable_is_settable_with(const arg_base& arg) {
+    bool raw_variable_is_settable_with(const uarg_base& arg) {
         using pt = pointer_traits<Pointer>;
         using data_type = typename pt::data_type;
 
@@ -82,7 +82,7 @@ namespace meta_hpp::detail
 
     template < pointer_kind Pointer >
     variable_state::setter_impl make_variable_setter(Pointer pointer) {
-        return [pointer = std::move(pointer)](const arg& arg){
+        return [pointer = std::move(pointer)](const uarg& arg){
             return raw_variable_setter(pointer, arg);
         };
     }
@@ -131,18 +131,18 @@ namespace meta_hpp
         return state_->index.get_name();
     }
 
-    inline value variable::get() const {
+    inline uvalue variable::get() const {
         return state_->getter();
     }
 
     template < typename Value >
     void variable::set(Value&& value) const {
         using namespace detail;
-        const arg vvalue{std::forward<Value>(value)};
+        const uarg vvalue{std::forward<Value>(value)};
         state_->setter(vvalue);
     }
 
-    inline value variable::operator()() const {
+    inline uvalue variable::operator()() const {
         return get();
     }
 
@@ -154,14 +154,14 @@ namespace meta_hpp
     template < typename Value >
     bool variable::is_settable_with() const noexcept {
         using namespace detail;
-        const arg_base vvalue{type_list<Value>{}};
+        const uarg_base vvalue{type_list<Value>{}};
         return state_->is_settable_with(vvalue);
     }
 
     template < typename Value >
     bool variable::is_settable_with(Value&& value) const noexcept {
         using namespace detail;
-        const arg vvalue{std::forward<Value>(value)};
+        const uarg vvalue{std::forward<Value>(value)};
         return state_->is_settable_with(vvalue);
     }
 }

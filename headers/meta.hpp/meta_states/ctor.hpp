@@ -10,12 +10,12 @@
 #include "../meta_states.hpp"
 
 #include "../meta_types/ctor_type.hpp"
-#include "../meta_detail/value_utilities/arg.hpp"
+#include "../meta_detail/value_utilities/uarg.hpp"
 
 namespace meta_hpp::detail
 {
     template < ctor_policy_kind Policy, class_kind Class, typename... Args >
-    value raw_ctor_invoke(std::span<const arg> args) {
+    uvalue raw_ctor_invoke(std::span<const uarg> args) {
         using ct = ctor_traits<Class, Args...>;
         using class_type = typename ct::class_type;
         using argument_types = typename ct::argument_types;
@@ -39,30 +39,30 @@ namespace meta_hpp::detail
         return std::invoke([
             args
         // NOLINTNEXTLINE(readability-named-parameter)
-        ]<std::size_t... Is>(std::index_sequence<Is...>) -> value {
+        ]<std::size_t... Is>(std::index_sequence<Is...>) -> uvalue {
             if ( !(... && args[Is].can_cast_to<type_list_at_t<Is, argument_types>>()) ) {
                 throw_exception_with("an attempt to call a constructor with incorrect argument types");
             }
 
             if constexpr ( as_object ) {
                 class_type return_value{args[Is].cast<type_list_at_t<Is, argument_types>>()...};
-                return value{std::move(return_value)};
+                return uvalue{std::move(return_value)};
             }
 
             if constexpr ( as_raw_ptr ) {
                 auto return_value{std::make_unique<class_type>(args[Is].cast<type_list_at_t<Is, argument_types>>()...)};
-                return value{return_value.release()};
+                return uvalue{return_value.release()};
             }
 
             if constexpr ( as_shared_ptr ) {
                 auto return_value{std::make_shared<class_type>(args[Is].cast<type_list_at_t<Is, argument_types>>()...)};
-                return value{std::move(return_value)};
+                return uvalue{std::move(return_value)};
             }
         }, std::make_index_sequence<ct::arity>());
     }
 
     template < class_kind Class, typename... Args >
-    bool raw_ctor_is_invocable_with(std::span<const arg_base> args) {
+    bool raw_ctor_is_invocable_with(std::span<const uarg_base> args) {
         using ct = ctor_traits<Class, Args...>;
         using argument_types = typename ct::argument_types;
 
@@ -143,10 +143,10 @@ namespace meta_hpp
     }
 
     template < typename... Args >
-    value ctor::invoke(Args&&... args) const {
+    uvalue ctor::invoke(Args&&... args) const {
         if constexpr ( sizeof...(Args) > 0 ) {
             using namespace detail;
-            const std::array<arg, sizeof...(Args)> vargs{arg{std::forward<Args>(args)}...};
+            const std::array<uarg, sizeof...(Args)> vargs{uarg{std::forward<Args>(args)}...};
             return state_->invoke(vargs);
         } else {
             return state_->invoke({});
@@ -154,7 +154,7 @@ namespace meta_hpp
     }
 
     template < typename... Args >
-    value ctor::operator()(Args&&... args) const {
+    uvalue ctor::operator()(Args&&... args) const {
         return invoke(std::forward<Args>(args)...);
     }
 
@@ -162,7 +162,7 @@ namespace meta_hpp
     bool ctor::is_invocable_with() const noexcept {
         if constexpr ( sizeof...(Args) > 0 ) {
             using namespace detail;
-            const std::array<arg_base, sizeof...(Args)> vargs{arg_base{type_list<Args>{}}...};
+            const std::array<uarg_base, sizeof...(Args)> vargs{uarg_base{type_list<Args>{}}...};
             return state_->is_invocable_with(vargs);
         } else {
             return state_->is_invocable_with({});
@@ -173,7 +173,7 @@ namespace meta_hpp
     bool ctor::is_invocable_with(Args&&... args) const noexcept {
         if constexpr ( sizeof...(Args) > 0 ) {
             using namespace detail;
-            const std::array<arg_base, sizeof...(Args)> vargs{arg_base{std::forward<Args>(args)}...};
+            const std::array<uarg_base, sizeof...(Args)> vargs{uarg_base{std::forward<Args>(args)}...};
             return state_->is_invocable_with(vargs);
         } else {
             return state_->is_invocable_with({});

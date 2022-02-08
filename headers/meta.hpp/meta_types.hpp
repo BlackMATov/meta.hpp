@@ -160,10 +160,10 @@ namespace meta_hpp
         [[nodiscard]] const variable_map& get_variables() const noexcept;
 
         template < typename... Args >
-        [[nodiscard]] value create(Args&&... args) const;
+        [[nodiscard]] uvalue create(Args&&... args) const;
 
         template < typename... Args >
-        [[nodiscard]] value operator()(Args&&... args) const;
+        [[nodiscard]] uvalue operator()(Args&&... args) const;
 
         template < typename Arg >
         bool destroy(Arg&& ptr) const;
@@ -262,7 +262,7 @@ namespace meta_hpp
 
         template < typename Value >
         [[nodiscard]] std::string_view value_to_name(Value&& value) const noexcept;
-        [[nodiscard]] value name_to_value(std::string_view name) const noexcept;
+        [[nodiscard]] uvalue name_to_value(std::string_view name) const noexcept;
     private:
         detail::enum_type_data_ptr data_;
         friend auto detail::type_access<enum_type>(const enum_type&);

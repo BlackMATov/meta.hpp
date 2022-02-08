@@ -28,7 +28,7 @@ TEST_CASE("meta/meta_examples/variables/usage") {
     CHECK(pi_variable.get_type().get_data_type() == meta::resolve_type<double>());
 
     // retrieves a variable value
-    const meta::value pi_variable_value = pi_variable.get();
+    const meta::uvalue pi_variable_value = pi_variable.get();
 
     // checks the type of the retrieved value
     CHECK(pi_variable_value.get_type() == meta::resolve_type<double>());

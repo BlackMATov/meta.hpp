@@ -48,86 +48,86 @@ TEST_CASE("meta/meta_utilities/arg5") {
 
 TEST_CASE("meta/meta_utilities/arg5/cast") {
     namespace meta = meta_hpp;
-    using meta::detail::arg;
+    using meta::detail::uarg;
 
     SUBCASE("int[2]") {
         int arr[2]{1,2};
-        CHECK(arg(arr).get_raw_type() == meta::resolve_type(arr));
+        CHECK(uarg(arr).get_raw_type() == meta::resolve_type(arr));
 
         static_assert(std::is_invocable_v<void(int*), int (&) [2]>);
         static_assert(std::is_invocable_v<void(const int*), int (&) [2]>);
         static_assert(std::is_invocable_v<void(int* const), int (&) [2]>);
         static_assert(std::is_invocable_v<void(const int* const), int (&) [2]>);
 
-        CHECK(arg(arr).can_cast_to<int*>());
-        CHECK(arg(arr).can_cast_to<const int*>());
-        CHECK(arg(arr).can_cast_to<int* const>());
-        CHECK(arg(arr).can_cast_to<const int* const>());
+        CHECK(uarg(arr).can_cast_to<int*>());
+        CHECK(uarg(arr).can_cast_to<const int*>());
+        CHECK(uarg(arr).can_cast_to<int* const>());
+        CHECK(uarg(arr).can_cast_to<const int* const>());
 
-        CHECK(arg(arr).cast<int*>() == static_cast<int*>(arr));
-        CHECK(arg(arr).cast<const int*>() == static_cast<const int*>(arr));
-        CHECK(arg(arr).cast<int* const>() == static_cast<int*>(arr));
-        CHECK(arg(arr).cast<const int* const>() == static_cast<const int*>(arr));
+        CHECK(uarg(arr).cast<int*>() == static_cast<int*>(arr));
+        CHECK(uarg(arr).cast<const int*>() == static_cast<const int*>(arr));
+        CHECK(uarg(arr).cast<int* const>() == static_cast<int*>(arr));
+        CHECK(uarg(arr).cast<const int* const>() == static_cast<const int*>(arr));
     }
 
     SUBCASE("const int[2]") {
         const int arr[2]{1,2};
-        CHECK(arg(arr).get_raw_type() == meta::resolve_type(arr));
+        CHECK(uarg(arr).get_raw_type() == meta::resolve_type(arr));
 
         static_assert(!std::is_invocable_v<void(int*), const int (&) [2]>);
         static_assert(std::is_invocable_v<void(const int*), const int (&) [2]>);
         static_assert(!std::is_invocable_v<void(int* const), const int (&) [2]>);
         static_assert(std::is_invocable_v<void(const int* const), const int (&) [2]>);
 
-        CHECK_FALSE(arg(arr).can_cast_to<int*>());
-        CHECK(arg(arr).can_cast_to<const int*>());
-        CHECK_FALSE(arg(arr).can_cast_to<int* const>());
-        CHECK(arg(arr).can_cast_to<const int* const>());
+        CHECK_FALSE(uarg(arr).can_cast_to<int*>());
+        CHECK(uarg(arr).can_cast_to<const int*>());
+        CHECK_FALSE(uarg(arr).can_cast_to<int* const>());
+        CHECK(uarg(arr).can_cast_to<const int* const>());
 
-        CHECK_THROWS(std::ignore = arg(arr).cast<int*>());
-        CHECK(arg(arr).cast<const int*>() == static_cast<const int*>(arr));
-        CHECK_THROWS(std::ignore = arg(arr).cast<int* const>());
-        CHECK(arg(arr).cast<const int* const>() == static_cast<const int*>(arr));
+        CHECK_THROWS(std::ignore = uarg(arr).cast<int*>());
+        CHECK(uarg(arr).cast<const int*>() == static_cast<const int*>(arr));
+        CHECK_THROWS(std::ignore = uarg(arr).cast<int* const>());
+        CHECK(uarg(arr).cast<const int* const>() == static_cast<const int*>(arr));
     }
 
     SUBCASE("D[2]") {
         D arr[2];
-        CHECK(arg(arr).get_raw_type() == meta::resolve_type(arr));
+        CHECK(uarg(arr).get_raw_type() == meta::resolve_type(arr));
 
         static_assert(std::is_invocable_v<void(A*), D (&) [2]>);
         static_assert(std::is_invocable_v<void(const A*), D (&) [2]>);
         static_assert(std::is_invocable_v<void(A* const), D (&) [2]>);
         static_assert(std::is_invocable_v<void(const A* const), D (&) [2]>);
 
-        CHECK(arg(arr).can_cast_to<A*>());
-        CHECK(arg(arr).can_cast_to<const A*>());
-        CHECK(arg(arr).can_cast_to<A* const>());
-        CHECK(arg(arr).can_cast_to<const A* const>());
+        CHECK(uarg(arr).can_cast_to<A*>());
+        CHECK(uarg(arr).can_cast_to<const A*>());
+        CHECK(uarg(arr).can_cast_to<A* const>());
+        CHECK(uarg(arr).can_cast_to<const A* const>());
 
-        CHECK(arg(arr).cast<A*>() == static_cast<A*>(arr));
-        CHECK(arg(arr).cast<const A*>() == static_cast<const A*>(arr));
-        CHECK(arg(arr).cast<A* const>() == static_cast<A*>(arr));
-        CHECK(arg(arr).cast<const A* const>() == static_cast<const A*>(arr));
+        CHECK(uarg(arr).cast<A*>() == static_cast<A*>(arr));
+        CHECK(uarg(arr).cast<const A*>() == static_cast<const A*>(arr));
+        CHECK(uarg(arr).cast<A* const>() == static_cast<A*>(arr));
+        CHECK(uarg(arr).cast<const A* const>() == static_cast<const A*>(arr));
     }
 
     SUBCASE("const D[2]") {
         const D arr[2];
-        CHECK(arg(arr).get_raw_type() == meta::resolve_type(arr));
+        CHECK(uarg(arr).get_raw_type() == meta::resolve_type(arr));
 
         static_assert(!std::is_invocable_v<void(A*), const D (&) [2]>);
         static_assert(std::is_invocable_v<void(const A*), const D (&) [2]>);
         static_assert(!std::is_invocable_v<void(A* const), const D (&) [2]>);
         static_assert(std::is_invocable_v<void(const A* const), const D (&) [2]>);
 
-        CHECK_FALSE(arg(arr).can_cast_to<A*>());
-        CHECK(arg(arr).can_cast_to<const A*>());
-        CHECK_FALSE(arg(arr).can_cast_to<A* const>());
-        CHECK(arg(arr).can_cast_to<const A* const>());
+        CHECK_FALSE(uarg(arr).can_cast_to<A*>());
+        CHECK(uarg(arr).can_cast_to<const A*>());
+        CHECK_FALSE(uarg(arr).can_cast_to<A* const>());
+        CHECK(uarg(arr).can_cast_to<const A* const>());
 
-        CHECK_THROWS(std::ignore = arg(arr).cast<A*>());
-        CHECK(arg(arr).cast<const A*>() == static_cast<const A*>(arr));
-        CHECK_THROWS(std::ignore = arg(arr).cast<A* const>());
-        CHECK(arg(arr).cast<const A* const>() == static_cast<const A*>(arr));
+        CHECK_THROWS(std::ignore = uarg(arr).cast<A*>());
+        CHECK(uarg(arr).cast<const A*>() == static_cast<const A*>(arr));
+        CHECK_THROWS(std::ignore = uarg(arr).cast<A* const>());
+        CHECK(uarg(arr).cast<const A* const>() == static_cast<const A*>(arr));
     }
 
     SUBCASE("&") {
@@ -136,7 +136,7 @@ TEST_CASE("meta/meta_utilities/arg5/cast") {
 
         {
             auto LV = []() -> T& { return src; };
-            CHECK(arg{LV()}.get_raw_type() == meta::resolve_type<D[2]>());
+            CHECK(uarg{LV()}.get_raw_type() == meta::resolve_type<D[2]>());
 
             static_assert(std::is_invocable_v<void(A*), decltype(LV())>);
             static_assert(std::is_invocable_v<void(const A*), decltype(LV())>);
@@ -148,55 +148,55 @@ TEST_CASE("meta/meta_utilities/arg5/cast") {
             CHECK_NOTHROW([](A* const){}(LV()));
             CHECK_NOTHROW([](const A* const){}(LV()));
 
-            CHECK(arg(LV()).cast<A*>() == static_cast<A*>(src));
-            CHECK(arg(LV()).cast<const A*>() == static_cast<const A*>(src));
-            CHECK(arg(LV()).cast<A* const>() == static_cast<A*>(src));
-            CHECK(arg(LV()).cast<const A* const>() == static_cast<const A*>(src));
+            CHECK(uarg(LV()).cast<A*>() == static_cast<A*>(src));
+            CHECK(uarg(LV()).cast<const A*>() == static_cast<const A*>(src));
+            CHECK(uarg(LV()).cast<A* const>() == static_cast<A*>(src));
+            CHECK(uarg(LV()).cast<const A* const>() == static_cast<const A*>(src));
         }
 
         {
             auto CLV = []() -> const T& { return src; };
-            CHECK(arg{CLV()}.get_raw_type() == meta::resolve_type<D[2]>());
+            CHECK(uarg{CLV()}.get_raw_type() == meta::resolve_type<D[2]>());
 
             static_assert(!std::is_invocable_v<void(A*), decltype(CLV())>);
             static_assert(std::is_invocable_v<void(const A*), decltype(CLV())>);
             static_assert(!std::is_invocable_v<void(A* const), decltype(CLV())>);
             static_assert(std::is_invocable_v<void(const A* const), decltype(CLV())>);
 
-            CHECK_THROWS(std::ignore = arg(CLV()).cast<A*>());
-            CHECK(arg(CLV()).cast<const A*>() == static_cast<const A*>(src));
-            CHECK_THROWS(std::ignore = arg(CLV()).cast<A* const>());
-            CHECK(arg(CLV()).cast<const A* const>() == static_cast<const A*>(src));
+            CHECK_THROWS(std::ignore = uarg(CLV()).cast<A*>());
+            CHECK(uarg(CLV()).cast<const A*>() == static_cast<const A*>(src));
+            CHECK_THROWS(std::ignore = uarg(CLV()).cast<A* const>());
+            CHECK(uarg(CLV()).cast<const A* const>() == static_cast<const A*>(src));
         }
 
         {
             auto XV = []() -> T&& { return std::move(src); };
-            CHECK(arg{XV()}.get_raw_type() == meta::resolve_type<D[2]>());
+            CHECK(uarg{XV()}.get_raw_type() == meta::resolve_type<D[2]>());
 
             static_assert(std::is_invocable_v<void(A*), decltype(XV())>);
             static_assert(std::is_invocable_v<void(const A*), decltype(XV())>);
             static_assert(std::is_invocable_v<void(A* const), decltype(XV())>);
             static_assert(std::is_invocable_v<void(const A* const), decltype(XV())>);
 
-            CHECK(arg(XV()).cast<A*>() == static_cast<A*>(src));
-            CHECK(arg(XV()).cast<const A*>() == static_cast<const A*>(src));
-            CHECK(arg(XV()).cast<A* const>() == static_cast<A*>(src));
-            CHECK(arg(XV()).cast<const A* const>() == static_cast<const A*>(src));
+            CHECK(uarg(XV()).cast<A*>() == static_cast<A*>(src));
+            CHECK(uarg(XV()).cast<const A*>() == static_cast<const A*>(src));
+            CHECK(uarg(XV()).cast<A* const>() == static_cast<A*>(src));
+            CHECK(uarg(XV()).cast<const A* const>() == static_cast<const A*>(src));
         }
 
         {
             auto CXV = []() -> const T&& { return std::move(src); };
-            CHECK(arg{CXV()}.get_raw_type() == meta::resolve_type<D[2]>());
+            CHECK(uarg{CXV()}.get_raw_type() == meta::resolve_type<D[2]>());
 
             static_assert(!std::is_invocable_v<void(A*), decltype(CXV())>);
             static_assert(std::is_invocable_v<void(const A*), decltype(CXV())>);
             static_assert(!std::is_invocable_v<void(A* const), decltype(CXV())>);
             static_assert(std::is_invocable_v<void(const A* const), decltype(CXV())>);
 
-            CHECK_THROWS(std::ignore = arg(CXV()).cast<A*>());
-            CHECK(arg(CXV()).cast<const A*>() == static_cast<const A*>(src));
-            CHECK_THROWS(std::ignore = arg(CXV()).cast<A* const>());
-            CHECK(arg(CXV()).cast<const A* const>() == static_cast<const A*>(src));
+            CHECK_THROWS(std::ignore = uarg(CXV()).cast<A*>());
+            CHECK(uarg(CXV()).cast<const A*>() == static_cast<const A*>(src));
+            CHECK_THROWS(std::ignore = uarg(CXV()).cast<A* const>());
+            CHECK(uarg(CXV()).cast<const A* const>() == static_cast<const A*>(src));
         }
     }
 
@@ -211,19 +211,19 @@ TEST_CASE("meta/meta_utilities/arg5/cast") {
             static_assert(std::is_invocable_v<void(D (* const) [2]), D (*) [2]>);
             static_assert(std::is_invocable_v<void(const D (* const) [2]), D (*) [2]>);
 
-            CHECK(arg{arr}.can_cast_to<D (&) [2]>());
-            CHECK(arg{arr}.can_cast_to<const D (&) [2]>());
-            CHECK(arg{&arr}.can_cast_to<D (*) [2]>());
-            CHECK(arg{&arr}.can_cast_to<const D (*) [2]>());
-            CHECK(arg{&arr}.can_cast_to<D (* const) [2]>());
-            CHECK(arg{&arr}.can_cast_to<const D (* const) [2]>());
+            CHECK(uarg{arr}.can_cast_to<D (&) [2]>());
+            CHECK(uarg{arr}.can_cast_to<const D (&) [2]>());
+            CHECK(uarg{&arr}.can_cast_to<D (*) [2]>());
+            CHECK(uarg{&arr}.can_cast_to<const D (*) [2]>());
+            CHECK(uarg{&arr}.can_cast_to<D (* const) [2]>());
+            CHECK(uarg{&arr}.can_cast_to<const D (* const) [2]>());
 
-            CHECK(&arg{arr}.cast<D (&) [2]>() == &arr);
-            CHECK(&arg{arr}.cast<const D (&) [2]>() == &arr);
-            CHECK(arg{&arr}.cast<D (*) [2]>() == &arr);
-            CHECK(arg{&arr}.cast<const D (*) [2]>() == &arr);
-            CHECK(arg{&arr}.cast<D (* const) [2]>() == &arr);
-            CHECK(arg{&arr}.cast<const D (* const) [2]>() == &arr);
+            CHECK(&uarg{arr}.cast<D (&) [2]>() == &arr);
+            CHECK(&uarg{arr}.cast<const D (&) [2]>() == &arr);
+            CHECK(uarg{&arr}.cast<D (*) [2]>() == &arr);
+            CHECK(uarg{&arr}.cast<const D (*) [2]>() == &arr);
+            CHECK(uarg{&arr}.cast<D (* const) [2]>() == &arr);
+            CHECK(uarg{&arr}.cast<const D (* const) [2]>() == &arr);
         }
 
         {
@@ -236,19 +236,19 @@ TEST_CASE("meta/meta_utilities/arg5/cast") {
             static_assert(!std::is_invocable_v<void(D (* const) [2]), const D (*) [2]>);
             static_assert(std::is_invocable_v<void(const D (* const) [2]), const D (*) [2]>);
 
-            CHECK_FALSE(arg{arr}.can_cast_to<D (&) [2]>());
-            CHECK(arg{arr}.can_cast_to<const D (&) [2]>());
-            CHECK_FALSE(arg{&arr}.can_cast_to<D (*) [2]>());
-            CHECK(arg{&arr}.can_cast_to<const D (*) [2]>());
-            CHECK_FALSE(arg{&arr}.can_cast_to<D (* const) [2]>());
-            CHECK(arg{&arr}.can_cast_to<const D (* const) [2]>());
+            CHECK_FALSE(uarg{arr}.can_cast_to<D (&) [2]>());
+            CHECK(uarg{arr}.can_cast_to<const D (&) [2]>());
+            CHECK_FALSE(uarg{&arr}.can_cast_to<D (*) [2]>());
+            CHECK(uarg{&arr}.can_cast_to<const D (*) [2]>());
+            CHECK_FALSE(uarg{&arr}.can_cast_to<D (* const) [2]>());
+            CHECK(uarg{&arr}.can_cast_to<const D (* const) [2]>());
 
-            CHECK_THROWS(std::ignore = &arg{arr}.cast<D (&) [2]>());
-            CHECK(&arg{arr}.cast<const D (&) [2]>() == &arr);
-            CHECK_THROWS(std::ignore = arg{&arr}.cast<D (*) [2]>());
-            CHECK(arg{&arr}.cast<const D (*) [2]>() == &arr);
-            CHECK_THROWS(std::ignore = arg{&arr}.cast<D (* const) [2]>());
-            CHECK(arg{&arr}.cast<const D (* const) [2]>() == &arr);
+            CHECK_THROWS(std::ignore = &uarg{arr}.cast<D (&) [2]>());
+            CHECK(&uarg{arr}.cast<const D (&) [2]>() == &arr);
+            CHECK_THROWS(std::ignore = uarg{&arr}.cast<D (*) [2]>());
+            CHECK(uarg{&arr}.cast<const D (*) [2]>() == &arr);
+            CHECK_THROWS(std::ignore = uarg{&arr}.cast<D (* const) [2]>());
+            CHECK(uarg{&arr}.cast<const D (* const) [2]>() == &arr);
         }
     }
 }

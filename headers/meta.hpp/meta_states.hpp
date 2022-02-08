@@ -110,10 +110,10 @@ namespace meta_hpp
         [[nodiscard]] const ctor_type& get_type() const noexcept;
 
         template < typename... Args >
-        value invoke(Args&&... args) const;
+        uvalue invoke(Args&&... args) const;
 
         template < typename... Args >
-        value operator()(Args&&... args) const;
+        uvalue operator()(Args&&... args) const;
 
         template < typename... Args >
         [[nodiscard]] bool is_invocable_with() const noexcept;
@@ -167,8 +167,8 @@ namespace meta_hpp
         [[nodiscard]] const enum_type& get_type() const noexcept;
         [[nodiscard]] const std::string& get_name() const noexcept;
 
-        [[nodiscard]] const value& get_value() const noexcept;
-        [[nodiscard]] const value& get_underlying_value() const noexcept;
+        [[nodiscard]] const uvalue& get_value() const noexcept;
+        [[nodiscard]] const uvalue& get_underlying_value() const noexcept;
     private:
         detail::evalue_state_ptr state_;
         friend auto detail::state_access<evalue>(const evalue&);
@@ -187,10 +187,10 @@ namespace meta_hpp
         [[nodiscard]] const std::string& get_name() const noexcept;
 
         template < typename... Args >
-        value invoke(Args&&... args) const;
+        uvalue invoke(Args&&... args) const;
 
         template < typename... Args >
-        value operator()(Args&&... args) const;
+        uvalue operator()(Args&&... args) const;
 
         template < typename... Args >
         [[nodiscard]] bool is_invocable_with() const noexcept;
@@ -218,13 +218,13 @@ namespace meta_hpp
         [[nodiscard]] const std::string& get_name() const noexcept;
 
         template < typename Instance >
-        [[nodiscard]] value get(Instance&& instance) const;
+        [[nodiscard]] uvalue get(Instance&& instance) const;
 
         template < typename Instance, typename Value >
         void set(Instance&& instance, Value&& value) const;
 
         template < typename Instance >
-        [[nodiscard]] value operator()(Instance&& instance) const;
+        [[nodiscard]] uvalue operator()(Instance&& instance) const;
 
         template < typename Instance, typename Value >
         void operator()(Instance&& instance, Value&& value) const;
@@ -258,10 +258,10 @@ namespace meta_hpp
         [[nodiscard]] const std::string& get_name() const noexcept;
 
         template < typename Instance, typename... Args >
-        value invoke(Instance&& instance, Args&&... args) const;
+        uvalue invoke(Instance&& instance, Args&&... args) const;
 
         template < typename Instance, typename... Args >
-        value operator()(Instance&& instance, Args&&... args) const;
+        uvalue operator()(Instance&& instance, Args&&... args) const;
 
         template < typename Instance, typename... Args >
         [[nodiscard]] bool is_invocable_with() const noexcept;
@@ -337,12 +337,12 @@ namespace meta_hpp
         [[nodiscard]] const pointer_type& get_type() const noexcept;
         [[nodiscard]] const std::string& get_name() const noexcept;
 
-        [[nodiscard]] value get() const;
+        [[nodiscard]] uvalue get() const;
 
         template < typename Value >
         void set(Value&& value) const;
 
-        [[nodiscard]] value operator()() const;
+        [[nodiscard]] uvalue operator()() const;
 
         template < typename Value >
         void operator()(Value&& value) const;
@@ -395,8 +395,8 @@ namespace meta_hpp
 namespace meta_hpp::detail
 {
     struct ctor_state final {
-        using invoke_impl = fixed_function<value(std::span<const arg>)>;
-        using is_invocable_with_impl = fixed_function<bool(std::span<const arg_base>)>;
+        using invoke_impl = fixed_function<uvalue(std::span<const uarg>)>;
+        using is_invocable_with_impl = fixed_function<bool(std::span<const uarg_base>)>;
 
         ctor_index index;
         invoke_impl invoke;
@@ -409,8 +409,8 @@ namespace meta_hpp::detail
     };
 
     struct dtor_state final {
-        using invoke_impl = fixed_function<void(const arg&)>;
-        using is_invocable_with_impl = fixed_function<bool(const arg_base&)>;
+        using invoke_impl = fixed_function<void(const uarg&)>;
+        using is_invocable_with_impl = fixed_function<bool(const uarg_base&)>;
 
         dtor_index index;
         invoke_impl invoke;
@@ -422,16 +422,16 @@ namespace meta_hpp::detail
 
     struct evalue_state final {
         evalue_index index;
-        value enum_value;
-        value underlying_value;
+        uvalue enum_value;
+        uvalue underlying_value;
 
         template < enum_kind Enum >
         [[nodiscard]] static evalue_state_ptr make(std::string name, Enum evalue);
     };
 
     struct function_state final {
-        using invoke_impl = fixed_function<value(std::span<const arg>)>;
-        using is_invocable_with_impl = fixed_function<bool(std::span<const arg_base>)>;
+        using invoke_impl = fixed_function<uvalue(std::span<const uarg>)>;
+        using is_invocable_with_impl = fixed_function<bool(std::span<const uarg_base>)>;
 
         function_index index;
         invoke_impl invoke;
@@ -444,11 +444,11 @@ namespace meta_hpp::detail
     };
 
     struct member_state final {
-        using getter_impl = fixed_function<value(const inst&)>;
-        using setter_impl = fixed_function<void(const inst&, const arg&)>;
+        using getter_impl = fixed_function<uvalue(const uinst&)>;
+        using setter_impl = fixed_function<void(const uinst&, const uarg&)>;
 
-        using is_gettable_with_impl = fixed_function<bool(const inst_base&)>;
-        using is_settable_with_impl = fixed_function<bool(const inst_base&, const arg_base&)>;
+        using is_gettable_with_impl = fixed_function<bool(const uinst_base&)>;
+        using is_settable_with_impl = fixed_function<bool(const uinst_base&, const uarg_base&)>;
 
         member_index index;
         getter_impl getter;
@@ -461,8 +461,8 @@ namespace meta_hpp::detail
     };
 
     struct method_state final {
-        using invoke_impl = fixed_function<value(const inst&, std::span<const arg>)>;
-        using is_invocable_with_impl = fixed_function<bool(const inst_base&, std::span<const arg_base>)>;
+        using invoke_impl = fixed_function<uvalue(const uinst&, std::span<const uarg>)>;
+        using is_invocable_with_impl = fixed_function<bool(const uinst_base&, std::span<const uarg_base>)>;
 
         method_index index;
         invoke_impl invoke;
@@ -495,9 +495,9 @@ namespace meta_hpp::detail
     };
 
     struct variable_state final {
-        using getter_impl = fixed_function<value()>;
-        using setter_impl = fixed_function<void(const arg&)>;
-        using is_settable_with_impl = fixed_function<bool(const arg_base&)>;
+        using getter_impl = fixed_function<uvalue()>;
+        using setter_impl = fixed_function<void(const uarg&)>;
+        using is_settable_with_impl = fixed_function<bool(const uarg_base&)>;
 
         variable_index index;
         getter_impl getter;

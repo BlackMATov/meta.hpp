@@ -10,12 +10,12 @@
 #include "../meta_states.hpp"
 
 #include "../meta_types/function_type.hpp"
-#include "../meta_detail/value_utilities/arg.hpp"
+#include "../meta_detail/value_utilities/uarg.hpp"
 
 namespace meta_hpp::detail
 {
     template < function_policy_kind Policy, function_kind Function >
-    value raw_function_invoke(const Function& function, std::span<const arg> args) {
+    uvalue raw_function_invoke(const Function& function, std::span<const uarg> args) {
         using ft = function_traits<Function>;
         using return_type = typename ft::return_type;
         using argument_types = typename ft::argument_types;
@@ -41,7 +41,7 @@ namespace meta_hpp::detail
         return std::invoke([
             &function, args
         // NOLINTNEXTLINE(readability-named-parameter)
-        ]<std::size_t... Is>(std::index_sequence<Is...>) -> value {
+        ]<std::size_t... Is>(std::index_sequence<Is...>) -> uvalue {
             if ( !(... && args[Is].can_cast_to<type_list_at_t<Is, argument_types>>()) ) {
                 throw_exception_with("an attempt to call a function with incorrect argument types");
             }
@@ -50,23 +50,23 @@ namespace meta_hpp::detail
                 std::ignore = std::invoke(
                     function,
                     args[Is].cast<type_list_at_t<Is, argument_types>>()...);
-                return value{};
+                return uvalue{};
             } else {
                 return_type&& return_value = std::invoke(
                     function,
                     args[Is].cast<type_list_at_t<Is, argument_types>>()...);
 
                 if constexpr ( ref_as_ptr ) {
-                    return value{std::addressof(return_value)};
+                    return uvalue{std::addressof(return_value)};
                 } else {
-                    return value{std::forward<decltype(return_value)>(return_value)};
+                    return uvalue{std::forward<decltype(return_value)>(return_value)};
                 }
             }
         }, std::make_index_sequence<ft::arity>());
     }
 
     template < function_kind Function >
-    bool raw_function_is_invocable_with(std::span<const arg_base> args) {
+    bool raw_function_is_invocable_with(std::span<const uarg_base> args) {
         using ft = function_traits<Function>;
         using argument_types = typename ft::argument_types;
 
@@ -85,7 +85,7 @@ namespace meta_hpp::detail
 {
     template < function_policy_kind Policy, function_kind Function >
     function_state::invoke_impl make_function_invoke(Function function) {
-        return [function = std::move(function)](std::span<const arg> args){
+        return [function = std::move(function)](std::span<const uarg> args){
             return raw_function_invoke<Policy>(function, args);
         };
     }
@@ -153,10 +153,10 @@ namespace meta_hpp
     }
 
     template < typename... Args >
-    value function::invoke(Args&&... args) const {
+    uvalue function::invoke(Args&&... args) const {
         if constexpr ( sizeof...(Args) > 0 ) {
             using namespace detail;
-            const std::array<arg, sizeof...(Args)> vargs{arg{std::forward<Args>(args)}...};
+            const std::array<uarg, sizeof...(Args)> vargs{uarg{std::forward<Args>(args)}...};
             return state_->invoke(vargs);
         } else {
             return state_->invoke({});
@@ -164,7 +164,7 @@ namespace meta_hpp
     }
 
     template < typename... Args >
-    value function::operator()(Args&&... args) const {
+    uvalue function::operator()(Args&&... args) const {
         return invoke(std::forward<Args>(args)...);
     }
 
@@ -172,7 +172,7 @@ namespace meta_hpp
     bool function::is_invocable_with() const noexcept {
         if constexpr ( sizeof...(Args) > 0 ) {
             using namespace detail;
-            const std::array<arg_base, sizeof...(Args)> vargs{arg_base{type_list<Args>{}}...};
+            const std::array<uarg_base, sizeof...(Args)> vargs{uarg_base{type_list<Args>{}}...};
             return state_->is_invocable_with(vargs);
         } else {
             return state_->is_invocable_with({});
@@ -183,7 +183,7 @@ namespace meta_hpp
     bool function::is_invocable_with(Args&&... args) const noexcept {
         if constexpr ( sizeof...(Args) > 0 ) {
             using namespace detail;
-            const std::array<arg_base, sizeof...(Args)> vargs{arg_base{std::forward<Args>(args)}...};
+            const std::array<uarg_base, sizeof...(Args)> vargs{uarg_base{std::forward<Args>(args)}...};
             return state_->is_invocable_with(vargs);
         } else {
             return state_->is_invocable_with({});

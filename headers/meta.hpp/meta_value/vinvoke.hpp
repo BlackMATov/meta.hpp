@@ -10,21 +10,21 @@
 #include "../meta_states.hpp"
 #include "../meta_value.hpp"
 
-#include "../meta_detail/value_utilities/arg.hpp"
-#include "../meta_detail/value_utilities/inst.hpp"
+#include "../meta_detail/value_utilities/uarg.hpp"
+#include "../meta_detail/value_utilities/uinst.hpp"
 
 namespace meta_hpp
 {
     template < typename... Args >
-    value invoke(const function& function, Args&&... args) {
+    uvalue invoke(const function& function, Args&&... args) {
         return function.invoke(std::forward<Args>(args)...);
     }
 
     template < detail::function_kind Function, typename... Args >
-    value invoke(Function&& function, Args&&... args) {
+    uvalue invoke(Function&& function, Args&&... args) {
         using namespace detail;
         if constexpr ( sizeof...(Args) > 0 ) {
-            const std::array<arg, sizeof...(Args)> vargs{arg{std::forward<Args>(args)}...};
+            const std::array<uarg, sizeof...(Args)> vargs{uarg{std::forward<Args>(args)}...};
             return raw_function_invoke<function_policy::as_copy>(std::forward<Function>(function), vargs);
         } else {
             return raw_function_invoke<function_policy::as_copy>(std::forward<Function>(function), {});
@@ -35,14 +35,14 @@ namespace meta_hpp
 namespace meta_hpp
 {
     template < typename Instance >
-    value invoke(const member& member, Instance&& instance) {
+    uvalue invoke(const member& member, Instance&& instance) {
         return member.get(std::forward<Instance>(instance));
     }
 
     template < detail::member_kind Member, typename Instance >
-    value invoke(Member&& member, Instance&& instance) {
+    uvalue invoke(Member&& member, Instance&& instance) {
         using namespace detail;
-        const inst vinst{std::forward<Instance>(instance)};
+        const uinst vinst{std::forward<Instance>(instance)};
         return raw_member_getter<member_policy::as_copy>(std::forward<Member>(member), vinst);
     }
 }
@@ -50,16 +50,16 @@ namespace meta_hpp
 namespace meta_hpp
 {
     template < typename Instance, typename... Args >
-    value invoke(const method& method, Instance&& instance, Args&&... args) {
+    uvalue invoke(const method& method, Instance&& instance, Args&&... args) {
         return method.invoke(std::forward<Instance>(instance), std::forward<Args>(args)...);
     }
 
     template < detail::method_kind Method, typename Instance, typename... Args >
-    value invoke(Method&& method, Instance&& instance, Args&&... args) {
+    uvalue invoke(Method&& method, Instance&& instance, Args&&... args) {
         using namespace detail;
-        const inst vinst{std::forward<Instance>(instance)};
+        const uinst vinst{std::forward<Instance>(instance)};
         if constexpr ( sizeof...(Args) > 0 ) {
-            const std::array<arg, sizeof...(Args)> vargs{arg{std::forward<Args>(args)}...};
+            const std::array<uarg, sizeof...(Args)> vargs{uarg{std::forward<Args>(args)}...};
             return raw_method_invoke<method_policy::as_copy>(std::forward<Method>(method), vinst, vargs);
         } else {
             return raw_method_invoke<method_policy::as_copy>(std::forward<Method>(method), vinst, {});
@@ -83,7 +83,7 @@ namespace meta_hpp
     bool is_invocable_with() {
         if constexpr ( sizeof...(Args) > 0 ) {
             using namespace detail;
-            const std::array<arg_base, sizeof...(Args)> vargs{arg_base{type_list<Args>{}}...};
+            const std::array<uarg_base, sizeof...(Args)> vargs{uarg_base{type_list<Args>{}}...};
             return raw_function_is_invocable_with<Function>(vargs);
         } else {
             return raw_function_is_invocable_with<Function>({});
@@ -94,7 +94,7 @@ namespace meta_hpp
     bool is_invocable_with(Args&&... args) {
         if constexpr ( sizeof...(Args) > 0 ) {
             using namespace detail;
-            const std::array<arg_base, sizeof...(Args)> vargs{arg_base{std::forward<Args>(args)}...};
+            const std::array<uarg_base, sizeof...(Args)> vargs{uarg_base{std::forward<Args>(args)}...};
             return raw_function_is_invocable_with<Function>(vargs);
         } else {
             return raw_function_is_invocable_with<Function>({});
@@ -133,14 +133,14 @@ namespace meta_hpp
     template < detail::member_kind Member, typename Instance >
     bool is_invocable_with() {
         using namespace detail;
-        const inst_base vinst{type_list<Instance>{}};
+        const uinst_base vinst{type_list<Instance>{}};
         return raw_member_is_gettable_with<Member>(vinst);
     }
 
     template < detail::member_kind Member, typename Instance >
     bool is_invocable_with(Instance&& instance) {
         using namespace detail;
-        const inst_base vinst{std::forward<Instance>(instance)};
+        const uinst_base vinst{std::forward<Instance>(instance)};
         return raw_member_is_gettable_with<Member>(vinst);
     }
 }
@@ -150,9 +150,9 @@ namespace meta_hpp
     template < detail::method_kind Method, typename Instance, typename... Args >
     bool is_invocable_with() {
         using namespace detail;
-        const inst_base vinst{type_list<Instance>{}};
+        const uinst_base vinst{type_list<Instance>{}};
         if constexpr ( sizeof...(Args) > 0 ) {
-            const std::array<arg_base, sizeof...(Args)> vargs{arg_base{type_list<Args>{}}...};
+            const std::array<uarg_base, sizeof...(Args)> vargs{uarg_base{type_list<Args>{}}...};
             return raw_method_is_invocable_with<Method>(vinst, vargs);
         } else {
             return raw_method_is_invocable_with<Method>(vinst, {});
@@ -162,9 +162,9 @@ namespace meta_hpp
     template < detail::method_kind Method, typename Instance, typename... Args >
     bool is_invocable_with(Instance&& instance, Args&&... args) {
         using namespace detail;
-        const inst_base vinst{std::forward<Instance>(instance)};
+        const uinst_base vinst{std::forward<Instance>(instance)};
         if constexpr ( sizeof...(Args) > 0 ) {
-            const std::array<arg_base, sizeof...(Args)> vargs{arg_base{std::forward<Args>(args)}...};
+            const std::array<uarg_base, sizeof...(Args)> vargs{uarg_base{std::forward<Args>(args)}...};
             return raw_method_is_invocable_with<Method>(vinst, vargs);
         } else {
             return raw_method_is_invocable_with<Method>(vinst, {});

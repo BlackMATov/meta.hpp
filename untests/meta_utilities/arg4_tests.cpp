@@ -8,7 +8,7 @@
 
 TEST_CASE("meta/meta_utilities/arg4/cast") {
     namespace meta = meta_hpp;
-    using meta::detail::arg;
+    using meta::detail::uarg;
 
     auto LV_PTR = []() -> int*& { static int v{42}; static int* p{&v}; return p; };
     auto CLV_PTR = []() -> int* const& { static int v{42}; static int* p{&v}; return p; };
@@ -23,122 +23,122 @@ TEST_CASE("meta/meta_utilities/arg4/cast") {
     auto PRV_CPTR = []() -> const int* { static int v{42}; static const int* p{&v}; return p; };
 
     SUBCASE("LV_PTR") {
-        CHECK(arg{LV_PTR()}.can_cast_to<int*>());
-        CHECK(arg{LV_PTR()}.can_cast_to<int* const>());
-        CHECK(arg{LV_PTR()}.can_cast_to<const int*>());
-        CHECK(arg{LV_PTR()}.can_cast_to<const int* const>());
+        CHECK(uarg{LV_PTR()}.can_cast_to<int*>());
+        CHECK(uarg{LV_PTR()}.can_cast_to<int* const>());
+        CHECK(uarg{LV_PTR()}.can_cast_to<const int*>());
+        CHECK(uarg{LV_PTR()}.can_cast_to<const int* const>());
 
-        CHECK(*arg{LV_PTR()}.cast<int*>() == 42);
-        CHECK(*arg{LV_PTR()}.cast<int* const>() == 42);
-        CHECK(*arg{LV_PTR()}.cast<const int*>() == 42);
-        CHECK(*arg{LV_PTR()}.cast<const int* const>() == 42);
+        CHECK(*uarg{LV_PTR()}.cast<int*>() == 42);
+        CHECK(*uarg{LV_PTR()}.cast<int* const>() == 42);
+        CHECK(*uarg{LV_PTR()}.cast<const int*>() == 42);
+        CHECK(*uarg{LV_PTR()}.cast<const int* const>() == 42);
     }
 
     SUBCASE("CLV_PTR") {
-        CHECK(arg{CLV_PTR()}.can_cast_to<int*>());
-        CHECK(arg{CLV_PTR()}.can_cast_to<int* const>());
-        CHECK(arg{CLV_PTR()}.can_cast_to<const int*>());
-        CHECK(arg{CLV_PTR()}.can_cast_to<const int* const>());
+        CHECK(uarg{CLV_PTR()}.can_cast_to<int*>());
+        CHECK(uarg{CLV_PTR()}.can_cast_to<int* const>());
+        CHECK(uarg{CLV_PTR()}.can_cast_to<const int*>());
+        CHECK(uarg{CLV_PTR()}.can_cast_to<const int* const>());
 
-        CHECK(*arg{CLV_PTR()}.cast<int*>() == 42);
-        CHECK(*arg{CLV_PTR()}.cast<int* const>() == 42);
-        CHECK(*arg{CLV_PTR()}.cast<const int*>() == 42);
-        CHECK(*arg{CLV_PTR()}.cast<const int* const>() == 42);
+        CHECK(*uarg{CLV_PTR()}.cast<int*>() == 42);
+        CHECK(*uarg{CLV_PTR()}.cast<int* const>() == 42);
+        CHECK(*uarg{CLV_PTR()}.cast<const int*>() == 42);
+        CHECK(*uarg{CLV_PTR()}.cast<const int* const>() == 42);
     }
 
     SUBCASE("XV_PTR") {
-        CHECK(arg{XV_PTR()}.can_cast_to<int*>());
-        CHECK(arg{XV_PTR()}.can_cast_to<int* const>());
-        CHECK(arg{XV_PTR()}.can_cast_to<const int*>());
-        CHECK(arg{XV_PTR()}.can_cast_to<const int* const>());
+        CHECK(uarg{XV_PTR()}.can_cast_to<int*>());
+        CHECK(uarg{XV_PTR()}.can_cast_to<int* const>());
+        CHECK(uarg{XV_PTR()}.can_cast_to<const int*>());
+        CHECK(uarg{XV_PTR()}.can_cast_to<const int* const>());
 
-        CHECK(*arg{XV_PTR()}.cast<int*>() == 42);
-        CHECK(*arg{XV_PTR()}.cast<int* const>() == 42);
-        CHECK(*arg{XV_PTR()}.cast<const int*>() == 42);
-        CHECK(*arg{XV_PTR()}.cast<const int* const>() == 42);
+        CHECK(*uarg{XV_PTR()}.cast<int*>() == 42);
+        CHECK(*uarg{XV_PTR()}.cast<int* const>() == 42);
+        CHECK(*uarg{XV_PTR()}.cast<const int*>() == 42);
+        CHECK(*uarg{XV_PTR()}.cast<const int* const>() == 42);
     }
 
     SUBCASE("CXV_PTR") {
-        CHECK(arg{CXV_PTR()}.can_cast_to<int*>());
-        CHECK(arg{CXV_PTR()}.can_cast_to<int* const>());
-        CHECK(arg{CXV_PTR()}.can_cast_to<const int*>());
-        CHECK(arg{CXV_PTR()}.can_cast_to<const int* const>());
+        CHECK(uarg{CXV_PTR()}.can_cast_to<int*>());
+        CHECK(uarg{CXV_PTR()}.can_cast_to<int* const>());
+        CHECK(uarg{CXV_PTR()}.can_cast_to<const int*>());
+        CHECK(uarg{CXV_PTR()}.can_cast_to<const int* const>());
 
-        CHECK(*arg{CXV_PTR()}.cast<int*>() == 42);
-        CHECK(*arg{CXV_PTR()}.cast<int* const>() == 42);
-        CHECK(*arg{CXV_PTR()}.cast<const int*>() == 42);
-        CHECK(*arg{CXV_PTR()}.cast<const int* const>() == 42);
+        CHECK(*uarg{CXV_PTR()}.cast<int*>() == 42);
+        CHECK(*uarg{CXV_PTR()}.cast<int* const>() == 42);
+        CHECK(*uarg{CXV_PTR()}.cast<const int*>() == 42);
+        CHECK(*uarg{CXV_PTR()}.cast<const int* const>() == 42);
     }
 
     SUBCASE("PRV_PTR") {
-        CHECK(arg{PRV_PTR()}.can_cast_to<int*>());
-        CHECK(arg{PRV_PTR()}.can_cast_to<int* const>());
-        CHECK(arg{PRV_PTR()}.can_cast_to<const int*>());
-        CHECK(arg{PRV_PTR()}.can_cast_to<const int* const>());
+        CHECK(uarg{PRV_PTR()}.can_cast_to<int*>());
+        CHECK(uarg{PRV_PTR()}.can_cast_to<int* const>());
+        CHECK(uarg{PRV_PTR()}.can_cast_to<const int*>());
+        CHECK(uarg{PRV_PTR()}.can_cast_to<const int* const>());
 
-        CHECK(*arg{PRV_PTR()}.cast<int*>() == 42);
-        CHECK(*arg{PRV_PTR()}.cast<int* const>() == 42);
-        CHECK(*arg{PRV_PTR()}.cast<const int*>() == 42);
-        CHECK(*arg{PRV_PTR()}.cast<const int* const>() == 42);
+        CHECK(*uarg{PRV_PTR()}.cast<int*>() == 42);
+        CHECK(*uarg{PRV_PTR()}.cast<int* const>() == 42);
+        CHECK(*uarg{PRV_PTR()}.cast<const int*>() == 42);
+        CHECK(*uarg{PRV_PTR()}.cast<const int* const>() == 42);
     }
 
     SUBCASE("LV_CPTR") {
-        CHECK_FALSE(arg{LV_CPTR()}.can_cast_to<int*>());
-        CHECK_FALSE(arg{LV_CPTR()}.can_cast_to<int* const>());
-        CHECK(arg{LV_CPTR()}.can_cast_to<const int*>());
-        CHECK(arg{LV_CPTR()}.can_cast_to<const int* const>());
+        CHECK_FALSE(uarg{LV_CPTR()}.can_cast_to<int*>());
+        CHECK_FALSE(uarg{LV_CPTR()}.can_cast_to<int* const>());
+        CHECK(uarg{LV_CPTR()}.can_cast_to<const int*>());
+        CHECK(uarg{LV_CPTR()}.can_cast_to<const int* const>());
 
-        CHECK_THROWS(std::ignore = arg{LV_CPTR()}.cast<int*>());
-        CHECK_THROWS(std::ignore = arg{LV_CPTR()}.cast<int* const>());
-        CHECK(*arg{LV_CPTR()}.cast<const int*>() == 42);
-        CHECK(*arg{LV_CPTR()}.cast<const int* const>() == 42);
+        CHECK_THROWS(std::ignore = uarg{LV_CPTR()}.cast<int*>());
+        CHECK_THROWS(std::ignore = uarg{LV_CPTR()}.cast<int* const>());
+        CHECK(*uarg{LV_CPTR()}.cast<const int*>() == 42);
+        CHECK(*uarg{LV_CPTR()}.cast<const int* const>() == 42);
     }
 
     SUBCASE("CLV_CPTR") {
-        CHECK_FALSE(arg{CLV_CPTR()}.can_cast_to<int*>());
-        CHECK_FALSE(arg{CLV_CPTR()}.can_cast_to<int* const>());
-        CHECK(arg{CLV_CPTR()}.can_cast_to<const int*>());
-        CHECK(arg{CLV_CPTR()}.can_cast_to<const int* const>());
+        CHECK_FALSE(uarg{CLV_CPTR()}.can_cast_to<int*>());
+        CHECK_FALSE(uarg{CLV_CPTR()}.can_cast_to<int* const>());
+        CHECK(uarg{CLV_CPTR()}.can_cast_to<const int*>());
+        CHECK(uarg{CLV_CPTR()}.can_cast_to<const int* const>());
 
-        CHECK_THROWS(std::ignore = arg{CLV_CPTR()}.cast<int*>());
-        CHECK_THROWS(std::ignore = arg{CLV_CPTR()}.cast<int* const>());
-        CHECK(*arg{CLV_CPTR()}.cast<const int*>() == 42);
-        CHECK(*arg{CLV_CPTR()}.cast<const int* const>() == 42);
+        CHECK_THROWS(std::ignore = uarg{CLV_CPTR()}.cast<int*>());
+        CHECK_THROWS(std::ignore = uarg{CLV_CPTR()}.cast<int* const>());
+        CHECK(*uarg{CLV_CPTR()}.cast<const int*>() == 42);
+        CHECK(*uarg{CLV_CPTR()}.cast<const int* const>() == 42);
     }
 
     SUBCASE("XV_CPTR") {
-        CHECK_FALSE(arg{XV_CPTR()}.can_cast_to<int*>());
-        CHECK_FALSE(arg{XV_CPTR()}.can_cast_to<int* const>());
-        CHECK(arg{XV_CPTR()}.can_cast_to<const int*>());
-        CHECK(arg{XV_CPTR()}.can_cast_to<const int* const>());
+        CHECK_FALSE(uarg{XV_CPTR()}.can_cast_to<int*>());
+        CHECK_FALSE(uarg{XV_CPTR()}.can_cast_to<int* const>());
+        CHECK(uarg{XV_CPTR()}.can_cast_to<const int*>());
+        CHECK(uarg{XV_CPTR()}.can_cast_to<const int* const>());
 
-        CHECK_THROWS(std::ignore = arg{XV_CPTR()}.cast<int*>());
-        CHECK_THROWS(std::ignore = arg{XV_CPTR()}.cast<int* const>());
-        CHECK(*arg{XV_CPTR()}.cast<const int*>() == 42);
-        CHECK(*arg{XV_CPTR()}.cast<const int* const>() == 42);
+        CHECK_THROWS(std::ignore = uarg{XV_CPTR()}.cast<int*>());
+        CHECK_THROWS(std::ignore = uarg{XV_CPTR()}.cast<int* const>());
+        CHECK(*uarg{XV_CPTR()}.cast<const int*>() == 42);
+        CHECK(*uarg{XV_CPTR()}.cast<const int* const>() == 42);
     }
 
     SUBCASE("CXV_CPTR") {
-        CHECK_FALSE(arg{CXV_CPTR()}.can_cast_to<int*>());
-        CHECK_FALSE(arg{CXV_CPTR()}.can_cast_to<int* const>());
-        CHECK(arg{CXV_CPTR()}.can_cast_to<const int*>());
-        CHECK(arg{CXV_CPTR()}.can_cast_to<const int* const>());
+        CHECK_FALSE(uarg{CXV_CPTR()}.can_cast_to<int*>());
+        CHECK_FALSE(uarg{CXV_CPTR()}.can_cast_to<int* const>());
+        CHECK(uarg{CXV_CPTR()}.can_cast_to<const int*>());
+        CHECK(uarg{CXV_CPTR()}.can_cast_to<const int* const>());
 
-        CHECK_THROWS(std::ignore = arg{CXV_CPTR()}.cast<int*>());
-        CHECK_THROWS(std::ignore = arg{CXV_CPTR()}.cast<int* const>());
-        CHECK(*arg{CXV_CPTR()}.cast<const int*>() == 42);
-        CHECK(*arg{CXV_CPTR()}.cast<const int* const>() == 42);
+        CHECK_THROWS(std::ignore = uarg{CXV_CPTR()}.cast<int*>());
+        CHECK_THROWS(std::ignore = uarg{CXV_CPTR()}.cast<int* const>());
+        CHECK(*uarg{CXV_CPTR()}.cast<const int*>() == 42);
+        CHECK(*uarg{CXV_CPTR()}.cast<const int* const>() == 42);
     }
 
     SUBCASE("PRV_CPTR") {
-        CHECK_FALSE(arg{PRV_CPTR()}.can_cast_to<int*>());
-        CHECK_FALSE(arg{PRV_CPTR()}.can_cast_to<int* const>());
-        CHECK(arg{PRV_CPTR()}.can_cast_to<const int*>());
-        CHECK(arg{PRV_CPTR()}.can_cast_to<const int* const>());
+        CHECK_FALSE(uarg{PRV_CPTR()}.can_cast_to<int*>());
+        CHECK_FALSE(uarg{PRV_CPTR()}.can_cast_to<int* const>());
+        CHECK(uarg{PRV_CPTR()}.can_cast_to<const int*>());
+        CHECK(uarg{PRV_CPTR()}.can_cast_to<const int* const>());
 
-        CHECK_THROWS(std::ignore = arg{PRV_CPTR()}.cast<int*>());
-        CHECK_THROWS(std::ignore = arg{PRV_CPTR()}.cast<int* const>());
-        CHECK(*arg{PRV_CPTR()}.cast<const int*>() == 42);
-        CHECK(*arg{PRV_CPTR()}.cast<const int* const>() == 42);
+        CHECK_THROWS(std::ignore = uarg{PRV_CPTR()}.cast<int*>());
+        CHECK_THROWS(std::ignore = uarg{PRV_CPTR()}.cast<int* const>());
+        CHECK(*uarg{PRV_CPTR()}.cast<const int*>() == 42);
+        CHECK(*uarg{PRV_CPTR()}.cast<const int* const>() == 42);
     }
 }

@@ -90,12 +90,12 @@ TEST_CASE("meta/meta_states/ctor") {
 
         {
             CHECK_FALSE(clazz_type.create(10, 20));
-            const meta::value v = clazz_type.create(10);
+            const meta::uvalue v = clazz_type.create(10);
             CHECK(v.get_type() == meta::resolve_type<clazz<1>>());
             CHECK(v.cast<clazz<1>>().i == 10);
 
             CHECK(clazz_type.destroy(nullptr));
-            CHECK(clazz_type.destroy(meta::value{nullptr}));
+            CHECK(clazz_type.destroy(meta::uvalue{nullptr}));
         }
 
         CHECK(clazz<1>::ctor_counter == 1);
@@ -110,13 +110,13 @@ TEST_CASE("meta/meta_states/ctor") {
 
         {
             CHECK_FALSE(clazz_type.create(10, 20));
-            const meta::value v = clazz_type.create(20);
+            const meta::uvalue v = clazz_type.create(20);
             CHECK(v.get_type() == meta::resolve_type<clazz<2>*>());
             CHECK(v.cast<clazz<2>*>()->i == 20);
             CHECK(clazz_type.destroy(v));
 
             CHECK(clazz_type.destroy(nullptr));
-            CHECK(clazz_type.destroy(meta::value{nullptr}));
+            CHECK(clazz_type.destroy(meta::uvalue{nullptr}));
         }
 
         CHECK(clazz<2>::ctor_counter == 1);
@@ -131,12 +131,12 @@ TEST_CASE("meta/meta_states/ctor") {
 
         {
             CHECK_FALSE(clazz_type.create(10, 20));
-            const meta::value v = clazz_type.create(30);
+            const meta::uvalue v = clazz_type.create(30);
             CHECK(v.get_type() == meta::resolve_type<std::shared_ptr<clazz<3>>>());
             CHECK(v.cast<std::shared_ptr<clazz<3>>>()->i == 30);
 
             CHECK(clazz_type.destroy(nullptr));
-            CHECK(clazz_type.destroy(meta::value{nullptr}));
+            CHECK(clazz_type.destroy(meta::uvalue{nullptr}));
         }
 
         CHECK(clazz<3>::ctor_counter == 1);

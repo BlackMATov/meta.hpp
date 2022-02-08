@@ -150,10 +150,10 @@ TEST_CASE("meta/meta_states/function") {
             CHECK_THROWS(func1.invoke(bounded_const_arr));
             CHECK_THROWS(func1.invoke(unbounded_const_arr));
 
-            CHECK(func1.invoke(meta::value{bounded_arr}) == 10);
-            CHECK(func1.invoke(meta::value{unbounded_arr}) == 10);
-            CHECK_THROWS(func1.invoke(meta::value{bounded_const_arr}));
-            CHECK_THROWS(func1.invoke(meta::value{unbounded_const_arr}));
+            CHECK(func1.invoke(meta::uvalue{bounded_arr}) == 10);
+            CHECK(func1.invoke(meta::uvalue{unbounded_arr}) == 10);
+            CHECK_THROWS(func1.invoke(meta::uvalue{bounded_const_arr}));
+            CHECK_THROWS(func1.invoke(meta::uvalue{unbounded_const_arr}));
 
             static_assert(std::is_invocable_v<decltype(&ivec2::arg_bounded_arr), decltype(bounded_arr)>);
             static_assert(std::is_invocable_v<decltype(&ivec2::arg_bounded_arr), decltype(unbounded_arr)>);
@@ -175,10 +175,10 @@ TEST_CASE("meta/meta_states/function") {
             CHECK_THROWS(func2.invoke(bounded_const_arr));
             CHECK_THROWS(func2.invoke(unbounded_const_arr));
 
-            CHECK(func2.invoke(meta::value{bounded_arr}) == 10);
-            CHECK(func2.invoke(meta::value{unbounded_arr}) == 10);
-            CHECK_THROWS(func2.invoke(meta::value{bounded_const_arr}));
-            CHECK_THROWS(func2.invoke(meta::value{unbounded_const_arr}));
+            CHECK(func2.invoke(meta::uvalue{bounded_arr}) == 10);
+            CHECK(func2.invoke(meta::uvalue{unbounded_arr}) == 10);
+            CHECK_THROWS(func2.invoke(meta::uvalue{bounded_const_arr}));
+            CHECK_THROWS(func2.invoke(meta::uvalue{unbounded_const_arr}));
 
             static_assert(std::is_invocable_v<decltype(&ivec2::arg_unbounded_arr), decltype(bounded_arr)>);
             static_assert(std::is_invocable_v<decltype(&ivec2::arg_unbounded_arr), decltype(unbounded_arr)>);
@@ -208,10 +208,10 @@ TEST_CASE("meta/meta_states/function") {
             CHECK(func1.invoke(bounded_const_arr) == 10);
             CHECK(func1.invoke(unbounded_const_arr) == 10);
 
-            CHECK(func1.invoke(meta::value{bounded_arr}) == 10);
-            CHECK(func1.invoke(meta::value{unbounded_arr}) == 10);
-            CHECK(func1.invoke(meta::value{bounded_const_arr}) == 10);
-            CHECK(func1.invoke(meta::value{unbounded_const_arr}) == 10);
+            CHECK(func1.invoke(meta::uvalue{bounded_arr}) == 10);
+            CHECK(func1.invoke(meta::uvalue{unbounded_arr}) == 10);
+            CHECK(func1.invoke(meta::uvalue{bounded_const_arr}) == 10);
+            CHECK(func1.invoke(meta::uvalue{unbounded_const_arr}) == 10);
 
             static_assert(std::is_invocable_v<decltype(&ivec2::arg_bounded_const_arr), decltype(bounded_arr)>);
             static_assert(std::is_invocable_v<decltype(&ivec2::arg_bounded_const_arr), decltype(unbounded_arr)>);
@@ -233,10 +233,10 @@ TEST_CASE("meta/meta_states/function") {
             CHECK(func2.invoke(bounded_const_arr) == 10);
             CHECK(func2.invoke(unbounded_const_arr) == 10);
 
-            CHECK(func2.invoke(meta::value{bounded_arr}) == 10);
-            CHECK(func2.invoke(meta::value{unbounded_arr}) == 10);
-            CHECK(func2.invoke(meta::value{bounded_const_arr}) == 10);
-            CHECK(func2.invoke(meta::value{unbounded_const_arr}) == 10);
+            CHECK(func2.invoke(meta::uvalue{bounded_arr}) == 10);
+            CHECK(func2.invoke(meta::uvalue{unbounded_arr}) == 10);
+            CHECK(func2.invoke(meta::uvalue{bounded_const_arr}) == 10);
+            CHECK(func2.invoke(meta::uvalue{unbounded_const_arr}) == 10);
 
             static_assert(std::is_invocable_v<decltype(&ivec2::arg_unbounded_const_arr), decltype(bounded_arr)>);
             static_assert(std::is_invocable_v<decltype(&ivec2::arg_unbounded_const_arr), decltype(unbounded_arr)>);

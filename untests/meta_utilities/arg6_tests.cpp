@@ -32,7 +32,7 @@ namespace
 
 TEST_CASE("meta/meta_utilities/arg6") {
     namespace meta = meta_hpp;
-    using meta::detail::arg;
+    using meta::detail::uarg;
 
     const meta::scope scope = meta::local_scope_("scope")
         .function_("func_with_member", &func_with_member)
@@ -48,8 +48,8 @@ TEST_CASE("meta/meta_utilities/arg6") {
         CHECK(f.is_invocable_with(cl, &clazz::int_member));
         CHECK(f.invoke(cl, &clazz::int_member) == 42);
 
-        CHECK(f.is_invocable_with(meta::value{cl}, meta::value{&clazz::int_member}));
-        CHECK(f.invoke(meta::value{cl}, meta::value{&clazz::int_member}) == 42);
+        CHECK(f.is_invocable_with(meta::uvalue{cl}, meta::uvalue{&clazz::int_member}));
+        CHECK(f.invoke(meta::uvalue{cl}, meta::uvalue{&clazz::int_member}) == 42);
     }
 
     SUBCASE("int_method") {
@@ -62,7 +62,7 @@ TEST_CASE("meta/meta_utilities/arg6") {
         CHECK(f.is_invocable_with(cl, &clazz::int_method));
         CHECK(f.invoke(cl, &clazz::int_method) == 42);
 
-        CHECK(f.is_invocable_with(meta::value{cl}, meta::value{&clazz::int_method}));
-        CHECK(f.invoke(meta::value{cl}, meta::value{&clazz::int_method}) == 42);
+        CHECK(f.is_invocable_with(meta::uvalue{cl}, meta::uvalue{&clazz::int_method}));
+        CHECK(f.invoke(meta::uvalue{cl}, meta::uvalue{&clazz::int_method}) == 42);
     }
 }

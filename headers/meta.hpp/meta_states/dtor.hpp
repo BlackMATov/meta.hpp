@@ -10,12 +10,12 @@
 #include "../meta_states.hpp"
 
 #include "../meta_types/dtor_type.hpp"
-#include "../meta_detail/value_utilities/arg.hpp"
+#include "../meta_detail/value_utilities/uarg.hpp"
 
 namespace meta_hpp::detail
 {
     template < class_kind Class >
-    void raw_dtor_invoke(const arg& ptr) {
+    void raw_dtor_invoke(const uarg& ptr) {
         using dt = dtor_traits<Class>;
         using class_type = typename dt::class_type;
 
@@ -30,7 +30,7 @@ namespace meta_hpp::detail
     }
 
     template < class_kind Class >
-    bool raw_dtor_is_invocable_with(const arg_base& ptr) {
+    bool raw_dtor_is_invocable_with(const uarg_base& ptr) {
         using dt = dtor_traits<Class>;
         using class_type = typename dt::class_type;
 
@@ -87,7 +87,7 @@ namespace meta_hpp
     template < typename Arg >
     void dtor::invoke(Arg&& ptr) const {
         using namespace detail;
-        const arg varg{std::forward<Arg>(ptr)};
+        const uarg varg{std::forward<Arg>(ptr)};
         state_->invoke(varg);
     }
 
@@ -99,14 +99,14 @@ namespace meta_hpp
     template < typename Arg >
     bool dtor::is_invocable_with() const noexcept {
         using namespace detail;
-        const arg_base varg{type_list<Arg>{}};
+        const uarg_base varg{type_list<Arg>{}};
         return state_->is_invocable_with(varg);
     }
 
     template < typename Arg >
     bool dtor::is_invocable_with(Arg&& ptr) const noexcept {
         using namespace detail;
-        const arg_base varg{std::forward<Arg>(ptr)};
+        const uarg_base varg{std::forward<Arg>(ptr)};
         return state_->is_invocable_with(varg);
     }
 }

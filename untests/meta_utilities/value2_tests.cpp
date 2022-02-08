@@ -124,7 +124,7 @@ TEST_CASE("meta/meta_utilities/value2/counters/small") {
 
     SUBCASE("def ctor") {
         {
-            meta::value v{};
+            meta::uvalue v{};
             CHECK(ivec2::dtor_counter == 0);
             CHECK(ivec2::move_ctor_counter == 0);
             CHECK(ivec2::copy_ctor_counter == 0);
@@ -136,7 +136,7 @@ TEST_CASE("meta/meta_utilities/value2/counters/small") {
 
     SUBCASE("val ctor") {
         {
-            meta::value v{ivec2{1,2}};
+            meta::uvalue v{ivec2{1,2}};
             CHECK(ivec2::dtor_counter == 1);
             CHECK(ivec2::move_ctor_counter == 1);
             CHECK(ivec2::copy_ctor_counter == 0);
@@ -148,8 +148,8 @@ TEST_CASE("meta/meta_utilities/value2/counters/small") {
 
     SUBCASE("move ctor") {
         {
-            meta::value v1{ivec2{1,2}};
-            meta::value v2{std::move(v1)};
+            meta::uvalue v1{ivec2{1,2}};
+            meta::uvalue v2{std::move(v1)};
 
             CHECK_FALSE(v1);
             CHECK(v2.cast<ivec2>().x == 1);
@@ -165,8 +165,8 @@ TEST_CASE("meta/meta_utilities/value2/counters/small") {
 
     SUBCASE("copy ctor") {
         {
-            meta::value v1{ivec2{1,2}};
-            meta::value v2{std::as_const(v1)};
+            meta::uvalue v1{ivec2{1,2}};
+            meta::uvalue v2{std::as_const(v1)};
 
             CHECK(v1.cast<ivec2>().x == 1);
             CHECK(v2.cast<ivec2>().y == 2);
@@ -182,8 +182,8 @@ TEST_CASE("meta/meta_utilities/value2/counters/small") {
 
     SUBCASE("swap") {
         {
-            meta::value v1{ivec2{1,2}};
-            meta::value v2{ivec2{3,4}};
+            meta::uvalue v1{ivec2{1,2}};
+            meta::uvalue v2{ivec2{3,4}};
             CHECK(ivec2::dtor_counter == 2);
             CHECK(ivec2::move_ctor_counter == 2);
             CHECK(ivec2::copy_ctor_counter == 0);
@@ -211,7 +211,7 @@ TEST_CASE("meta/meta_utilities/value2/counters/big") {
 
     SUBCASE("def ctor") {
         {
-            meta::value v{};
+            meta::uvalue v{};
             CHECK(ivec2_big::dtor_counter == 0);
             CHECK(ivec2_big::move_ctor_counter == 0);
             CHECK(ivec2_big::copy_ctor_counter == 0);
@@ -223,7 +223,7 @@ TEST_CASE("meta/meta_utilities/value2/counters/big") {
 
     SUBCASE("val ctor") {
         {
-            meta::value v{ivec2_big{1,2}};
+            meta::uvalue v{ivec2_big{1,2}};
             CHECK(ivec2_big::dtor_counter == 1);
             CHECK(ivec2_big::move_ctor_counter == 1);
             CHECK(ivec2_big::copy_ctor_counter == 0);
@@ -235,8 +235,8 @@ TEST_CASE("meta/meta_utilities/value2/counters/big") {
 
     SUBCASE("move ctor") {
         {
-            meta::value v1{ivec2_big{1,2}};
-            meta::value v2{std::move(v1)};
+            meta::uvalue v1{ivec2_big{1,2}};
+            meta::uvalue v2{std::move(v1)};
 
             CHECK_FALSE(v1);
             CHECK(v2.cast<ivec2_big>().x == 1);
@@ -252,8 +252,8 @@ TEST_CASE("meta/meta_utilities/value2/counters/big") {
 
     SUBCASE("copy ctor") {
         {
-            meta::value v1{ivec2_big{1,2}};
-            meta::value v2{std::as_const(v1)};
+            meta::uvalue v1{ivec2_big{1,2}};
+            meta::uvalue v2{std::as_const(v1)};
 
             CHECK(v1.cast<ivec2_big>().x == 1);
             CHECK(v2.cast<ivec2_big>().y == 2);
@@ -269,8 +269,8 @@ TEST_CASE("meta/meta_utilities/value2/counters/big") {
 
     SUBCASE("swap") {
         {
-            meta::value v1{ivec2_big{1,2}};
-            meta::value v2{ivec2_big{3,4}};
+            meta::uvalue v1{ivec2_big{1,2}};
+            meta::uvalue v2{ivec2_big{3,4}};
             CHECK(ivec2_big::dtor_counter == 2);
             CHECK(ivec2_big::move_ctor_counter == 2);
             CHECK(ivec2_big::copy_ctor_counter == 0);
@@ -302,8 +302,8 @@ TEST_CASE("meta/meta_utilities/value2/counters/swap") {
 
     SUBCASE("empty/small") {
         {
-            meta::value v1{};
-            meta::value v2{ivec2{1,2}};
+            meta::uvalue v1{};
+            meta::uvalue v2{ivec2{1,2}};
 
             CHECK(ivec2::dtor_counter == 1);
             CHECK(ivec2::move_ctor_counter == 1);
@@ -333,8 +333,8 @@ TEST_CASE("meta/meta_utilities/value2/counters/swap") {
 
     SUBCASE("empty/big") {
         {
-            meta::value v1{};
-            meta::value v2{ivec2_big{3,4}};
+            meta::uvalue v1{};
+            meta::uvalue v2{ivec2_big{3,4}};
 
             CHECK(ivec2_big::dtor_counter == 1);
             CHECK(ivec2_big::move_ctor_counter == 1);
@@ -364,8 +364,8 @@ TEST_CASE("meta/meta_utilities/value2/counters/swap") {
 
     SUBCASE("small/big") {
         {
-            meta::value v1{ivec2{1,2}};
-            meta::value v2{ivec2_big{3,4}};
+            meta::uvalue v1{ivec2{1,2}};
+            meta::uvalue v2{ivec2_big{3,4}};
 
             CHECK(ivec2::dtor_counter == 1);
             CHECK(ivec2::move_ctor_counter == 1);
