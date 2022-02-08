@@ -14,28 +14,28 @@
 
 namespace meta_hpp
 {
-    inline parameter_index::parameter_index(any_type type, std::string name)
+    inline parameter_index::parameter_index(any_type type, std::size_t position)
     : type_{std::move(type)}
-    , name_{std::move(name)} {}
+    , position_{position} {}
 
     template < typename Parameter >
-    inline parameter_index parameter_index::make(std::string name) {
-        return parameter_index{detail::resolve_type<Parameter>(), std::move(name)};
+    inline parameter_index parameter_index::make(std::size_t position) {
+        return parameter_index{detail::resolve_type<Parameter>(), position};
     }
 
     inline const any_type& parameter_index::get_type() const noexcept {
         return type_;
     }
 
-    inline const std::string& parameter_index::get_name() const noexcept {
-        return name_;
+    inline std::size_t parameter_index::get_position() const noexcept {
+        return position_;
     }
 
     inline bool operator<(const parameter_index& l, const parameter_index& r) noexcept {
-        return l.type_ < r.type_ || (l.type_ == r.type_ && std::less<>{}(l.name_, r.name_));
+        return l.type_ < r.type_ || (l.type_ == r.type_ && l.position_ < r.position_);
     }
 
     inline bool operator==(const parameter_index& l, const parameter_index& r) noexcept {
-        return l.type_ == r.type_ && std::equal_to<>{}(l.name_, r.name_);
+        return l.type_ == r.type_ && l.position_ == r.position_;
     }
 }

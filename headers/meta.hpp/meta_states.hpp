@@ -461,8 +461,10 @@ namespace meta_hpp::detail
     struct parameter_state final {
         parameter_index index;
 
+        std::string name{};
+
         template < typename Parameter >
-        [[nodiscard]] static parameter_state_ptr make(std::string name);
+        [[nodiscard]] static parameter_state_ptr make(std::size_t position);
     };
 
     struct scope_state final {

@@ -119,18 +119,18 @@ namespace meta_hpp
     public:
         parameter_index() = delete;
         [[nodiscard]] const any_type& get_type() const noexcept;
-        [[nodiscard]] const std::string& get_name() const noexcept;
+        [[nodiscard]] std::size_t get_position() const noexcept;
     private:
         friend detail::parameter_state;
         template < typename Parameter >
-        [[nodiscard]] static parameter_index make(std::string name);
+        [[nodiscard]] static parameter_index make(std::size_t position);
     private:
-        explicit parameter_index(any_type type, std::string name);
+        explicit parameter_index(any_type type, std::size_t position);
         friend bool operator<(const parameter_index& l, const parameter_index& r) noexcept;
         friend bool operator==(const parameter_index& l, const parameter_index& r) noexcept;
     private:
         any_type type_;
-        std::string name_;
+        std::size_t position_{};
     };
 
     class scope_index final {

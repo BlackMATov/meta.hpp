@@ -12,9 +12,9 @@
 namespace meta_hpp::detail
 {
     template < typename Parameter >
-    inline parameter_state_ptr parameter_state::make(std::string name) {
+    inline parameter_state_ptr parameter_state::make(std::size_t position) {
         return std::make_shared<parameter_state>(parameter_state{
-            .index{parameter_index::make<Parameter>(std::move(name))},
+            .index{parameter_index::make<Parameter>(position)},
         });
     }
 }
@@ -41,7 +41,11 @@ namespace meta_hpp
         return state_->index.get_type();
     }
 
+    inline std::size_t parameter::get_position() const noexcept {
+        return state_->index.get_position();
+    }
+
     inline const std::string& parameter::get_name() const noexcept {
-        return state_->index.get_name();
+        return state_->name;
     }
 }
