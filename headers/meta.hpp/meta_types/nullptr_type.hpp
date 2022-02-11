@@ -36,4 +36,8 @@ namespace meta_hpp
     inline type_id nullptr_type::get_id() const noexcept {
         return data_->id;
     }
+
+    inline const metadata_map& nullptr_type::get_metadata() const noexcept {
+        return data_->metadata;
+    }
 }

@@ -46,6 +46,10 @@ namespace meta_hpp
         return data_->flags;
     }
 
+    inline const metadata_map& pointer_type::get_metadata() const noexcept {
+        return data_->metadata;
+    }
+
     inline any_type pointer_type::get_data_type() const noexcept {
         return data_->data_type;
     }
