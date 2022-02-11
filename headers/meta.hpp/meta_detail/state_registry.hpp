@@ -19,28 +19,29 @@ namespace meta_hpp::detail
         }
 
         [[nodiscard]] scope get_scope_by_name(std::string_view name) const noexcept {
+            const std::lock_guard<std::mutex> lock{mutex_};
+
             if ( auto iter = scopes_.find(name); iter != scopes_.end() ) {
                 return iter->second;
             }
+
             return scope{};
         }
 
         [[nodiscard]] scope resolve_scope(std::string_view name) {
-            return ensure_scope(name);
-        }
-    private:
-        state_registry() = default;
+            const std::lock_guard<std::mutex> lock{mutex_};
 
-        scope ensure_scope(std::string_view name) {
             if ( auto iter = scopes_.find(name); iter != scopes_.end() ) {
                 return iter->second;
             }
 
-            return scopes_.emplace(
-                std::string{name},
-                scope_state::make(std::string{name})).first->second;
+            auto state = scope_state::make(std::string{name}, metadata_map{});
+            return scopes_.emplace(std::string{name}, std::move(state)).first->second;
         }
     private:
+        state_registry() = default;
+    private:
+        mutable std::mutex mutex_;
         std::map<std::string, scope, std::less<>> scopes_;
     };
 }

@@ -20,17 +20,21 @@ namespace meta_hpp::detail
 
         [[nodiscard]] any_type get_type_by_id(type_id id) const noexcept {
             const std::lock_guard<std::mutex> lock{mutex_};
+
             if ( auto iter = type_by_id_.find(id); iter != type_by_id_.end() ) {
                 return iter->second;
             }
+
             return any_type{};
         }
 
         [[nodiscard]] any_type get_type_by_rtti(const std::type_index& index) const noexcept {
             const std::lock_guard<std::mutex> lock{mutex_};
+
             if ( auto iter = type_by_rtti_.find(index); iter != type_by_rtti_.end() ) {
                 return iter->second;
             }
+
             return any_type{};
         }
 
