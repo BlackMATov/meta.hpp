@@ -54,9 +54,10 @@ namespace meta_hpp::detail
 namespace meta_hpp::detail
 {
     template < class_kind Class >
-    destructor_state_ptr destructor_state::make() {
+    destructor_state_ptr destructor_state::make(metadata_map metadata) {
         return std::make_shared<destructor_state>(destructor_state{
             .index{destructor_index::make<Class>()},
+            .metadata{std::move(metadata)},
             .invoke{make_destructor_invoke<Class>()},
             .is_invocable_with{make_destructor_is_invocable_with<Class>()},
         });
@@ -65,8 +66,13 @@ namespace meta_hpp::detail
 
 namespace meta_hpp
 {
-    inline destructor::destructor(detail::destructor_state_ptr state)
+    inline destructor::destructor(detail::destructor_state_ptr state) noexcept
     : state_{std::move(state)} {}
+
+    inline destructor& destructor::operator=(detail::destructor_state_ptr state) noexcept {
+        state_ = std::move(state);
+        return *this;
+    }
 
     inline bool destructor::is_valid() const noexcept {
         return !!state_;
@@ -78,6 +84,10 @@ namespace meta_hpp
 
     inline const destructor_index& destructor::get_index() const noexcept {
         return state_->index;
+    }
+
+    inline const metadata_map& destructor::get_metadata() const noexcept {
+        return state_->metadata;
     }
 
     inline const destructor_type& destructor::get_type() const noexcept {

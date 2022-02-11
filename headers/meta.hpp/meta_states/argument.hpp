@@ -12,9 +12,10 @@
 namespace meta_hpp::detail
 {
     template < typename Argument >
-    inline argument_state_ptr argument_state::make(std::size_t position) {
+    inline argument_state_ptr argument_state::make(std::size_t position, metadata_map metadata) {
         return std::make_shared<argument_state>(argument_state{
             .index{argument_index::make<Argument>(position)},
+            .metadata{std::move(metadata)},
         });
     }
 }
@@ -22,8 +23,13 @@ namespace meta_hpp::detail
 namespace meta_hpp
 {
 
-    inline argument::argument(detail::argument_state_ptr state)
+    inline argument::argument(detail::argument_state_ptr state) noexcept
     : state_{std::move(state)} {}
+
+    inline argument& argument::operator=(detail::argument_state_ptr state) noexcept {
+        state_ = std::move(state);
+        return *this;
+    }
 
     inline bool argument::is_valid() const noexcept {
         return !!state_;
@@ -35,6 +41,10 @@ namespace meta_hpp
 
     inline const argument_index& argument::get_index() const noexcept {
         return state_->index;
+    }
+
+    inline const metadata_map& argument::get_metadata() const noexcept {
+        return state_->metadata;
     }
 
     inline const any_type& argument::get_type() const noexcept {
