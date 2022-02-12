@@ -9,9 +9,19 @@
 #include "meta_base.hpp"
 
 #include "meta_binds.hpp"
+
+#include "meta_binds/array_bind.hpp"
 #include "meta_binds/class_bind.hpp"
 #include "meta_binds/enum_bind.hpp"
+#include "meta_binds/function_bind.hpp"
+#include "meta_binds/member_bind.hpp"
+#include "meta_binds/method_bind.hpp"
+#include "meta_binds/nullptr_bind.hpp"
+#include "meta_binds/number_bind.hpp"
+#include "meta_binds/pointer_bind.hpp"
+#include "meta_binds/reference_bind.hpp"
 #include "meta_binds/scope_bind.hpp"
+#include "meta_binds/void_bind.hpp"
 
 #include "meta_indices.hpp"
 #include "meta_indices/argument_index.hpp"

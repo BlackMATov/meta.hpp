@@ -14,7 +14,7 @@
 namespace meta_hpp
 {
     template < detail::class_kind Class >
-    class_bind<Class>::class_bind(class_opts opts)
+    class_bind<Class>::class_bind(type_opts opts)
     : data_{detail::type_access(detail::resolve_type<Class>())} {
         data_->metadata.swap(opts.metadata);
         data_->metadata.merge(opts.metadata);

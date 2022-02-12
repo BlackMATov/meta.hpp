@@ -244,3 +244,89 @@ TEST_CASE("meta/meta_states/metadata/class") {
         CHECK(ivec2_iadd.get_argument(1).get_metadata().at("desc") == "r-arg"s);
     }
 }
+
+TEST_CASE("meta/meta_states/metadata/other") {
+    namespace meta = meta_hpp;
+    using namespace std::string_literals;
+
+    SUBCASE("array") {
+        meta::array_<int[]>({
+            .metadata{
+                {"desc", meta::uvalue{"int[]-type"s}}
+            }
+        });
+        CHECK(meta::resolve_type<int[]>().get_metadata().at("desc") == "int[]-type"s);
+    }
+
+    SUBCASE("function") {
+        meta::function_<int(*)(int)>({
+            .metadata{
+                {"desc", meta::uvalue{"int->int"s}}
+            }
+        });
+        CHECK(meta::resolve_type<int(*)(int)>().get_metadata().at("desc") == "int->int"s);
+    }
+
+    SUBCASE("member") {
+        meta::member_<int ivec2::*>({
+            .metadata{
+                {"desc", meta::uvalue{"ivec2::int"s}}
+            }
+        });
+        CHECK(meta::resolve_type<int ivec2::*>().get_metadata().at("desc") == "ivec2::int"s);
+    }
+
+    SUBCASE("method") {
+        meta::method_<int (ivec2::*)(int)>({
+            .metadata{
+                {"desc", meta::uvalue{"ivec2(int -> int)"s}}
+            }
+        });
+        CHECK(meta::resolve_type<int (ivec2::*)(int)>().get_metadata().at("desc") == "ivec2(int -> int)"s);
+    }
+
+    SUBCASE("nullptr") {
+        meta::nullptr_<nullptr_t>({
+            .metadata{
+                {"desc", meta::uvalue{"nullptr_t"s}}
+            }
+        });
+        CHECK(meta::resolve_type<nullptr_t>().get_metadata().at("desc") == "nullptr_t"s);
+    }
+
+    SUBCASE("number") {
+        meta::number_<int>({
+            .metadata{
+                {"desc", meta::uvalue{"int-type"s}}
+            }
+        });
+        CHECK(meta::resolve_type<int>().get_metadata().at("desc") == "int-type"s);
+    }
+
+    SUBCASE("pointer") {
+        meta::pointer_<int*>({
+            .metadata{
+                {"desc", meta::uvalue{"int*-type"s}}
+            }
+        });
+        CHECK(meta::resolve_type<int*>().get_metadata().at("desc") == "int*-type"s);
+    }
+
+    SUBCASE("reference") {
+        meta::reference_<int&>({
+            .metadata{
+                {"desc", meta::uvalue{"int&-type"s}}
+            }
+        });
+        CHECK(meta::resolve_type<int&>().get_metadata().at("desc") == "int&-type"s);
+    }
+
+    SUBCASE("void") {
+        meta::void_<void>({
+            .metadata{
+                {"desc", meta::uvalue{"void-type"s}}
+            }
+        });
+        CHECK(meta::resolve_type<void>().get_metadata().at("desc") == "void-type"s);
+    }
+}

@@ -14,7 +14,7 @@
 namespace meta_hpp
 {
     template < detail::enum_kind Enum >
-    enum_bind<Enum>::enum_bind(enum_opts opts)
+    enum_bind<Enum>::enum_bind(type_opts opts)
     : data_{detail::type_access(detail::resolve_type<Enum>())} {
         data_->metadata.swap(opts.metadata);
         data_->metadata.merge(opts.metadata);
