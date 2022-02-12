@@ -36,7 +36,7 @@ namespace meta_hpp::detail
             }
 
             auto state = scope_state::make(std::string{name}, metadata_map{});
-            return scopes_.emplace(std::string{name}, std::move(state)).first->second;
+            return scopes_.insert_or_assign(std::string{name}, std::move(state)).first->second;
         }
     public:
         class locker : noncopyable {

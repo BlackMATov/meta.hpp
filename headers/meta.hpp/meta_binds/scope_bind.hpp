@@ -29,15 +29,23 @@ namespace meta_hpp
         return scope{state_};
     }
 
+    //
+    // class_
+    //
+
     template < detail::class_kind Class >
     scope_bind& scope_bind::class_(std::string name) {
-        state_->classes.emplace(std::move(name), detail::resolve_type<Class>());
+        state_->classes.insert_or_assign(std::move(name), detail::resolve_type<Class>());
         return *this;
     }
 
+    //
+    // enum_
+    //
+
     template < detail::enum_kind Enum >
     scope_bind& scope_bind::enum_(std::string name) {
-        state_->enums.emplace(std::move(name), detail::resolve_type<Enum>());
+        state_->enums.insert_or_assign(std::move(name), detail::resolve_type<Enum>());
         return *this;
     }
 

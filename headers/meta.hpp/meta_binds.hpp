@@ -100,6 +100,17 @@ namespace meta_hpp
         explicit class_bind(metadata_map metadata);
         operator class_type() const noexcept;
 
+        // class_
+
+        template < detail::class_kind InternalClass >
+        class_bind& class_(std::string name);
+
+        // base_
+
+        template < detail::class_kind Base >
+        class_bind& base_()
+            requires detail::class_bind_base_kind<Class, Base>;
+
         // constructor_
 
         template < typename... Args
@@ -120,11 +131,10 @@ namespace meta_hpp
         class_bind& destructor_(destructor_opts opts)
             requires detail::class_bind_destructor_kind<Class>;
 
-        // base_
+        // enum_
 
-        template < detail::class_kind Base >
-        class_bind& base_()
-            requires detail::class_bind_base_kind<Class, Base>;
+        template < detail::enum_kind InternalEnum >
+        class_bind& enum_(std::string name);
 
         // function_
 

@@ -25,6 +25,39 @@ namespace meta_hpp
         return class_type{data_};
     }
 
+    // class_
+
+    template < detail::class_kind Class >
+    template < detail::class_kind InternalClass >
+    class_bind<Class>& class_bind<Class>::class_(std::string name) {
+        data_->classes.insert_or_assign(std::move(name), detail::resolve_type<InternalClass>());
+        return *this;
+    }
+
+    //
+    // base_
+    //
+
+    template < detail::class_kind Class >
+    template < detail::class_kind Base >
+    class_bind<Class>& class_bind<Class>::base_()
+        requires detail::class_bind_base_kind<Class, Base>
+    {
+        const class_type base_type = detail::resolve_type<Base>();
+        if ( data_->bases.contains(base_type) ) {
+            return *this;
+        }
+
+        data_->bases.emplace(base_type);
+        data_->bases_info.emplace(base_type, detail::class_type_data::base_info{
+            .upcast = +[](void* derived) -> void* {
+                return static_cast<Base*>(static_cast<Class*>(derived));
+            }
+        });
+
+        return *this;
+    }
+
     //
     // constructor_
     //
@@ -81,20 +114,13 @@ namespace meta_hpp
     }
 
     //
-    // base_
+    // enum_
     //
 
     template < detail::class_kind Class >
-    template < detail::class_kind Base >
-    class_bind<Class>& class_bind<Class>::base_()
-        requires detail::class_bind_base_kind<Class, Base>
-    {
-        data_->bases.emplace(detail::resolve_type<Base>());
-        data_->bases_info.emplace(detail::resolve_type<Base>(), detail::class_type_data::base_info{
-            .upcast = +[](void* derived) -> void* {
-                return static_cast<Base*>(static_cast<Class*>(derived));
-            }
-        });
+    template < detail::enum_kind InternalEnum >
+    class_bind<Class>& class_bind<Class>::enum_(std::string name) {
+        data_->enums.insert_or_assign(std::move(name), detail::resolve_type<InternalEnum>());
         return *this;
     }
 

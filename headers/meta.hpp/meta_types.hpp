@@ -155,9 +155,11 @@ namespace meta_hpp
         [[nodiscard]] any_type get_argument_type(std::size_t position) const noexcept;
         [[nodiscard]] const std::vector<any_type>& get_argument_types() const noexcept;
 
+        [[nodiscard]] const class_map& get_classes() const noexcept;
+        [[nodiscard]] const class_set& get_bases() const noexcept;
         [[nodiscard]] const constructor_map& get_ctors() const noexcept;
         [[nodiscard]] const destructor_map& get_dtors() const noexcept;
-        [[nodiscard]] const class_set& get_bases() const noexcept;
+        [[nodiscard]] const enum_map& get_enums() const noexcept;
         [[nodiscard]] const function_map& get_functions() const noexcept;
         [[nodiscard]] const member_map& get_members() const noexcept;
         [[nodiscard]] const method_map& get_methods() const noexcept;
@@ -180,6 +182,8 @@ namespace meta_hpp
         [[nodiscard]] bool is_derived_from() const noexcept;
         [[nodiscard]] bool is_derived_from(const class_type& base) const noexcept;
 
+        [[nodiscard]] class_type get_class(std::string_view name) const noexcept;
+        [[nodiscard]] enum_type get_enum(std::string_view name) const noexcept;
         [[nodiscard]] function get_function(std::string_view name) const noexcept;
         [[nodiscard]] member get_member(std::string_view name) const noexcept;
         [[nodiscard]] method get_method(std::string_view name) const noexcept;
@@ -483,9 +487,11 @@ namespace meta_hpp::detail
         const std::size_t size;
         const std::vector<any_type> argument_types;
 
+        class_map classes;
+        class_set bases;
         constructor_map constructors;
         destructor_map destructors;
-        class_set bases;
+        enum_map enums;
         function_map functions;
         member_map members;
         method_map methods;
