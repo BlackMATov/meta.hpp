@@ -14,10 +14,10 @@
 namespace meta_hpp
 {
     template < detail::void_kind Void >
-    void_bind<Void>::void_bind(type_opts opts)
+    void_bind<Void>::void_bind(metadata_map metadata)
     : data_{detail::type_access(detail::resolve_type<void>())} {
-        data_->metadata.swap(opts.metadata);
-        data_->metadata.merge(opts.metadata);
+        data_->metadata.swap(metadata);
+        data_->metadata.merge(metadata);
     }
 
     template < detail::void_kind Void >

@@ -14,10 +14,10 @@
 namespace meta_hpp
 {
     template < detail::pointer_kind Pointer >
-    pointer_bind<Pointer>::pointer_bind(type_opts opts)
+    pointer_bind<Pointer>::pointer_bind(metadata_map metadata)
     : data_{detail::type_access(detail::resolve_type<Pointer>())} {
-        data_->metadata.swap(opts.metadata);
-        data_->metadata.merge(opts.metadata);
+        data_->metadata.swap(metadata);
+        data_->metadata.merge(metadata);
     }
 
     template < detail::pointer_kind Pointer >

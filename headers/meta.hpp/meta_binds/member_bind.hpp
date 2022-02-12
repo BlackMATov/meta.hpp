@@ -14,10 +14,10 @@
 namespace meta_hpp
 {
     template < detail::member_kind Member >
-    member_bind<Member>::member_bind(type_opts opts)
+    member_bind<Member>::member_bind(metadata_map metadata)
     : data_{detail::type_access(detail::resolve_type<Member>())} {
-        data_->metadata.swap(opts.metadata);
-        data_->metadata.merge(opts.metadata);
+        data_->metadata.swap(metadata);
+        data_->metadata.merge(metadata);
     }
 
     template < detail::member_kind Member >

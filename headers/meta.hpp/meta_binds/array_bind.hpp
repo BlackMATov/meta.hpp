@@ -14,10 +14,10 @@
 namespace meta_hpp
 {
     template < detail::array_kind Array >
-    array_bind<Array>::array_bind(type_opts opts)
+    array_bind<Array>::array_bind(metadata_map metadata)
     : data_{detail::type_access(detail::resolve_type<Array>())} {
-        data_->metadata.swap(opts.metadata);
-        data_->metadata.merge(opts.metadata);
+        data_->metadata.swap(metadata);
+        data_->metadata.merge(metadata);
     }
 
     template < detail::array_kind Array >

@@ -14,10 +14,10 @@
 namespace meta_hpp
 {
     template < detail::reference_kind Reference >
-    reference_bind<Reference>::reference_bind(type_opts opts)
+    reference_bind<Reference>::reference_bind(metadata_map metadata)
     : data_{detail::type_access(detail::resolve_type<Reference>())} {
-        data_->metadata.swap(opts.metadata);
-        data_->metadata.merge(opts.metadata);
+        data_->metadata.swap(metadata);
+        data_->metadata.merge(metadata);
     }
 
     template < detail::reference_kind Reference >

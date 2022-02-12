@@ -38,10 +38,8 @@ TEST_CASE("meta/meta_states/metadata/enum") {
     using namespace std::string_literals;
 
     meta::enum_<color>({
-        .metadata{
-            {"desc1", meta::uvalue{"enum-desc1"s}},
-            {"desc2", meta::uvalue{"enum-desc2"s}},
-        }
+        {"desc1", meta::uvalue{"enum-desc1"s}},
+        {"desc2", meta::uvalue{"enum-desc2"s}},
     })
     .evalue_("red", color::red, {
         .metadata{{"desc1", meta::uvalue{"red-color"s}}}
@@ -56,10 +54,8 @@ TEST_CASE("meta/meta_states/metadata/enum") {
     // metadata override
 
     meta::enum_<color>({
-        .metadata{
-            {"desc2", meta::uvalue{"new-enum-desc2"s}},
-            {"desc3", meta::uvalue{"new-enum-desc3"s}},
-        }
+        {"desc2", meta::uvalue{"new-enum-desc2"s}},
+        {"desc3", meta::uvalue{"new-enum-desc3"s}},
     });
 
     meta::enum_<color>()
@@ -93,10 +89,8 @@ TEST_CASE("meta/meta_states/metadata/class") {
     using namespace std::string_literals;
 
     meta::class_<ivec2>({
-        .metadata{
-            {"desc1", meta::uvalue{"class-desc1"s}},
-            {"desc2", meta::uvalue{"class-desc2"s}},
-        },
+        {"desc1", meta::uvalue{"class-desc1"s}},
+        {"desc2", meta::uvalue{"class-desc2"s}},
     })
     .constructor_<int>({
         .arguments{{
@@ -142,10 +136,8 @@ TEST_CASE("meta/meta_states/metadata/class") {
     // metadata override
 
     meta::class_<ivec2>({
-        .metadata{
-            {"desc2", meta::uvalue{"new-class-desc2"s}},
-            {"desc3", meta::uvalue{"new-class-desc3"s}},
-        }
+        {"desc2", meta::uvalue{"new-class-desc2"s}},
+        {"desc3", meta::uvalue{"new-class-desc3"s}},
     });
 
     //
@@ -245,87 +237,88 @@ TEST_CASE("meta/meta_states/metadata/class") {
     }
 }
 
+TEST_CASE("meta/meta_states/metadata/scope") {
+    namespace meta = meta_hpp;
+    using namespace std::string_literals;
+
+    SUBCASE("local_scope") {
+        const meta::scope lscope = meta::local_scope_("local-scope", {
+            {"desc", meta::uvalue{"scope-desc"s}}
+        });
+        CHECK(lscope.get_metadata().at("desc") == "scope-desc"s);
+    }
+
+    SUBCASE("static_scope") {
+        meta::static_scope_("meta/meta_states/metadata/scope/static-scope", {
+            {"desc", meta::uvalue{"scope-desc"s}}
+        });
+        CHECK(meta::resolve_scope("meta/meta_states/metadata/scope/static-scope").get_metadata().at("desc") == "scope-desc"s);
+    }
+}
+
 TEST_CASE("meta/meta_states/metadata/other") {
     namespace meta = meta_hpp;
     using namespace std::string_literals;
 
     SUBCASE("array") {
         meta::array_<int[]>({
-            .metadata{
-                {"desc", meta::uvalue{"int[]-type"s}}
-            }
+            {"desc", meta::uvalue{"int[]-type"s}}
         });
         CHECK(meta::resolve_type<int[]>().get_metadata().at("desc") == "int[]-type"s);
     }
 
     SUBCASE("function") {
         meta::function_<int(*)(int)>({
-            .metadata{
-                {"desc", meta::uvalue{"int->int"s}}
-            }
+            {"desc", meta::uvalue{"int->int"s}}
         });
         CHECK(meta::resolve_type<int(*)(int)>().get_metadata().at("desc") == "int->int"s);
     }
 
     SUBCASE("member") {
         meta::member_<int ivec2::*>({
-            .metadata{
-                {"desc", meta::uvalue{"ivec2::int"s}}
-            }
+            {"desc", meta::uvalue{"ivec2::int"s}}
         });
         CHECK(meta::resolve_type<int ivec2::*>().get_metadata().at("desc") == "ivec2::int"s);
     }
 
     SUBCASE("method") {
         meta::method_<int (ivec2::*)(int)>({
-            .metadata{
-                {"desc", meta::uvalue{"ivec2(int -> int)"s}}
-            }
+            {"desc", meta::uvalue{"ivec2(int -> int)"s}}
         });
         CHECK(meta::resolve_type<int (ivec2::*)(int)>().get_metadata().at("desc") == "ivec2(int -> int)"s);
     }
 
     SUBCASE("nullptr") {
         meta::nullptr_<std::nullptr_t>({
-            .metadata{
-                {"desc", meta::uvalue{"nullptr_t"s}}
-            }
+            {"desc", meta::uvalue{"nullptr_t"s}}
         });
         CHECK(meta::resolve_type<std::nullptr_t>().get_metadata().at("desc") == "nullptr_t"s);
     }
 
     SUBCASE("number") {
         meta::number_<int>({
-            .metadata{
-                {"desc", meta::uvalue{"int-type"s}}
-            }
+            {"desc", meta::uvalue{"int-type"s}}
         });
         CHECK(meta::resolve_type<int>().get_metadata().at("desc") == "int-type"s);
     }
 
     SUBCASE("pointer") {
         meta::pointer_<int*>({
-            .metadata{
-                {"desc", meta::uvalue{"int*-type"s}}
-            }
+            {"desc", meta::uvalue{"int*-type"s}}
         });
         CHECK(meta::resolve_type<int*>().get_metadata().at("desc") == "int*-type"s);
     }
 
     SUBCASE("reference") {
         meta::reference_<int&>({
-            .metadata{
-                {"desc", meta::uvalue{"int&-type"s}}
-            }
+            {"desc", meta::uvalue{"int&-type"s}}
         });
         CHECK(meta::resolve_type<int&>().get_metadata().at("desc") == "int&-type"s);
     }
 
     SUBCASE("void") {
         meta::void_<void>({
-            .metadata{
-                {"desc", meta::uvalue{"void-type"s}}
-            }
+            {"desc", meta::uvalue{"void-type"s}}
         });
         CHECK(meta::resolve_type<void>().get_metadata().at("desc") == "void-type"s);
     }

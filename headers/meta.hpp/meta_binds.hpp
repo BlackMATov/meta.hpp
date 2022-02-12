@@ -39,10 +39,6 @@ namespace meta_hpp::detail
 
 namespace meta_hpp
 {
-    struct type_opts final {
-        metadata_map metadata{};
-    };
-
     struct argument_opts final {
         std::string name{};
         metadata_map metadata{};
@@ -75,10 +71,6 @@ namespace meta_hpp
         metadata_map metadata{};
     };
 
-    struct scope_opts final {
-        metadata_map metadata{};
-    };
-
     struct variable_opts final {
         metadata_map metadata{};
     };
@@ -89,7 +81,7 @@ namespace meta_hpp
     template < detail::array_kind Array >
     class array_bind final {
     public:
-        explicit array_bind(type_opts opts);
+        explicit array_bind(metadata_map metadata);
         operator array_type() const noexcept;
     private:
         detail::array_type_data_ptr data_;
@@ -101,7 +93,7 @@ namespace meta_hpp
     template < detail::class_kind Class >
     class class_bind final {
     public:
-        explicit class_bind(type_opts opts);
+        explicit class_bind(metadata_map metadata);
         operator class_type() const noexcept;
 
         // constructor_
@@ -228,7 +220,7 @@ namespace meta_hpp
     template < detail::enum_kind Enum >
     class enum_bind final {
     public:
-        explicit enum_bind(type_opts opts);
+        explicit enum_bind(metadata_map metadata);
         operator enum_type() const noexcept;
 
         enum_bind& evalue_(std::string name, Enum value);
@@ -243,7 +235,7 @@ namespace meta_hpp
     template < detail::function_kind Function >
     class function_bind final {
     public:
-        explicit function_bind(type_opts opts);
+        explicit function_bind(metadata_map metadata);
         operator function_type() const noexcept;
     private:
         detail::function_type_data_ptr data_;
@@ -255,7 +247,7 @@ namespace meta_hpp
     template < detail::member_kind Member >
     class member_bind final {
     public:
-        explicit member_bind(type_opts opts);
+        explicit member_bind(metadata_map metadata);
         operator member_type() const noexcept;
     private:
         detail::member_type_data_ptr data_;
@@ -267,7 +259,7 @@ namespace meta_hpp
     template < detail::method_kind Method >
     class method_bind final {
     public:
-        explicit method_bind(type_opts opts);
+        explicit method_bind(metadata_map metadata);
         operator method_type() const noexcept;
     private:
         detail::method_type_data_ptr data_;
@@ -279,7 +271,7 @@ namespace meta_hpp
     template < detail::nullptr_kind Nullptr >
     class nullptr_bind final {
     public:
-        explicit nullptr_bind(type_opts opts);
+        explicit nullptr_bind(metadata_map metadata);
         operator nullptr_type() const noexcept;
     private:
         detail::nullptr_type_data_ptr data_;
@@ -291,7 +283,7 @@ namespace meta_hpp
     template < detail::number_kind Number >
     class number_bind final {
     public:
-        explicit number_bind(type_opts opts);
+        explicit number_bind(metadata_map metadata);
         operator number_type() const noexcept;
     private:
         detail::number_type_data_ptr data_;
@@ -303,7 +295,7 @@ namespace meta_hpp
     template < detail::pointer_kind Pointer >
     class pointer_bind final {
     public:
-        explicit pointer_bind(type_opts opts);
+        explicit pointer_bind(metadata_map metadata);
         operator pointer_type() const noexcept;
     private:
         detail::pointer_type_data_ptr data_;
@@ -315,7 +307,7 @@ namespace meta_hpp
     template < detail::reference_kind Reference >
     class reference_bind final {
     public:
-        explicit reference_bind(type_opts opts);
+        explicit reference_bind(metadata_map metadata);
         operator reference_type() const noexcept;
     private:
         detail::reference_type_data_ptr data_;
@@ -327,7 +319,7 @@ namespace meta_hpp
     template < detail::void_kind Void >
     class void_bind final {
     public:
-        explicit void_bind(type_opts opts);
+        explicit void_bind(metadata_map metadata);
         operator void_type() const noexcept;
     private:
         detail::void_type_data_ptr data_;
@@ -341,8 +333,8 @@ namespace meta_hpp
         struct local_tag {};
         struct static_tag {};
 
-        explicit scope_bind(std::string name, scope_opts opts, local_tag);
-        explicit scope_bind(std::string_view name, scope_opts opts, static_tag);
+        explicit scope_bind(std::string name, metadata_map metadata, local_tag);
+        explicit scope_bind(std::string_view name, metadata_map metadata, static_tag);
         operator scope() const noexcept;
 
         template < detail::class_kind Class >
@@ -400,68 +392,68 @@ namespace meta_hpp
 namespace meta_hpp
 {
     template < detail::array_kind Array >
-    array_bind<Array> array_(type_opts opts = {}) {
-        return array_bind<Array>{std::move(opts)};
+    array_bind<Array> array_(metadata_map metadata = {}) {
+        return array_bind<Array>{std::move(metadata)};
     }
 
     template < detail::class_kind Class >
-    class_bind<Class> class_(type_opts opts = {}) {
-        return class_bind<Class>{std::move(opts)};
+    class_bind<Class> class_(metadata_map metadata = {}) {
+        return class_bind<Class>{std::move(metadata)};
     }
 
     template < detail::enum_kind Enum >
-    enum_bind<Enum> enum_(type_opts opts = {}) {
-        return enum_bind<Enum>{std::move(opts)};
+    enum_bind<Enum> enum_(metadata_map metadata = {}) {
+        return enum_bind<Enum>{std::move(metadata)};
     }
 
     template < detail::function_kind Function >
-    function_bind<Function> function_(type_opts opts = {}) {
-        return function_bind<Function>{std::move(opts)};
+    function_bind<Function> function_(metadata_map metadata = {}) {
+        return function_bind<Function>{std::move(metadata)};
     }
 
     template < detail::member_kind Member >
-    member_bind<Member> member_(type_opts opts = {}) {
-        return member_bind<Member>{std::move(opts)};
+    member_bind<Member> member_(metadata_map metadata = {}) {
+        return member_bind<Member>{std::move(metadata)};
     }
 
     template < detail::method_kind Method >
-    method_bind<Method> method_(type_opts opts = {}) {
-        return method_bind<Method>{std::move(opts)};
+    method_bind<Method> method_(metadata_map metadata = {}) {
+        return method_bind<Method>{std::move(metadata)};
     }
 
     template < detail::nullptr_kind Nullptr >
-    nullptr_bind<Nullptr> nullptr_(type_opts opts = {}) {
-        return nullptr_bind<Nullptr>{std::move(opts)};
+    nullptr_bind<Nullptr> nullptr_(metadata_map metadata = {}) {
+        return nullptr_bind<Nullptr>{std::move(metadata)};
     }
 
     template < detail::number_kind Number >
-    number_bind<Number> number_(type_opts opts = {}) {
-        return number_bind<Number>{std::move(opts)};
+    number_bind<Number> number_(metadata_map metadata = {}) {
+        return number_bind<Number>{std::move(metadata)};
     }
 
     template < detail::pointer_kind Pointer >
-    pointer_bind<Pointer> pointer_(type_opts opts = {}) {
-        return pointer_bind<Pointer>{std::move(opts)};
+    pointer_bind<Pointer> pointer_(metadata_map metadata = {}) {
+        return pointer_bind<Pointer>{std::move(metadata)};
     }
 
     template < detail::reference_kind Reference >
-    reference_bind<Reference> reference_(type_opts opts = {}) {
-        return reference_bind<Reference>{std::move(opts)};
+    reference_bind<Reference> reference_(metadata_map metadata = {}) {
+        return reference_bind<Reference>{std::move(metadata)};
     }
 
     template < detail::void_kind Void >
-    void_bind<Void> void_(type_opts opts = {}) {
-        return void_bind<Void>{std::move(opts)};
+    void_bind<Void> void_(metadata_map metadata = {}) {
+        return void_bind<Void>{std::move(metadata)};
     }
 }
 
 namespace meta_hpp
 {
-    inline scope_bind local_scope_(std::string name, scope_opts opts = {}) {
-        return scope_bind{std::move(name), std::move(opts), scope_bind::local_tag()};
+    inline scope_bind local_scope_(std::string name, metadata_map metadata = {}) {
+        return scope_bind{std::move(name), std::move(metadata), scope_bind::local_tag()};
     }
 
-    inline scope_bind static_scope_(std::string_view name, scope_opts opts = {}) {
-        return scope_bind{name, std::move(opts), scope_bind::static_tag()};
+    inline scope_bind static_scope_(std::string_view name, metadata_map metadata = {}) {
+        return scope_bind{name, std::move(metadata), scope_bind::static_tag()};
     }
 }

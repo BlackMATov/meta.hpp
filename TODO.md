@@ -13,3 +13,5 @@
 - (?) move-only value type support
 - (?) type names
 - (?) properties
+
+(???) Why does local scope have a name?

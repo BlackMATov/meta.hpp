@@ -14,10 +14,10 @@
 namespace meta_hpp
 {
     template < detail::function_kind Function >
-    function_bind<Function>::function_bind(type_opts opts)
+    function_bind<Function>::function_bind(metadata_map metadata)
     : data_{detail::type_access(detail::resolve_type<Function>())} {
-        data_->metadata.swap(opts.metadata);
-        data_->metadata.merge(opts.metadata);
+        data_->metadata.swap(metadata);
+        data_->metadata.merge(metadata);
     }
 
     template < detail::function_kind Function >

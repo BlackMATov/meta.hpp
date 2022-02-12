@@ -14,10 +14,10 @@
 namespace meta_hpp
 {
     template < detail::enum_kind Enum >
-    enum_bind<Enum>::enum_bind(type_opts opts)
+    enum_bind<Enum>::enum_bind(metadata_map metadata)
     : data_{detail::type_access(detail::resolve_type<Enum>())} {
-        data_->metadata.swap(opts.metadata);
-        data_->metadata.merge(opts.metadata);
+        data_->metadata.swap(metadata);
+        data_->metadata.merge(metadata);
     }
 
     template < detail::enum_kind Enum >

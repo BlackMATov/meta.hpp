@@ -14,10 +14,10 @@
 namespace meta_hpp
 {
     template < detail::number_kind Number >
-    number_bind<Number>::number_bind(type_opts opts)
+    number_bind<Number>::number_bind(metadata_map metadata)
     : data_{detail::type_access(detail::resolve_type<Number>())} {
-        data_->metadata.swap(opts.metadata);
-        data_->metadata.merge(opts.metadata);
+        data_->metadata.swap(metadata);
+        data_->metadata.merge(metadata);
     }
 
     template < detail::number_kind Number >

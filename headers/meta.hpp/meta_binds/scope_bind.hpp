@@ -15,14 +15,14 @@
 namespace meta_hpp
 {
     // NOLINTNEXTLINE(readability-named-parameter)
-    inline scope_bind::scope_bind(std::string name, scope_opts opts, local_tag)
-    : state_{detail::scope_state::make(std::move(name), std::move(opts.metadata))} {}
+    inline scope_bind::scope_bind(std::string name, metadata_map metadata, local_tag)
+    : state_{detail::scope_state::make(std::move(name), std::move(metadata))} {}
 
     // NOLINTNEXTLINE(readability-named-parameter)
-    inline scope_bind::scope_bind(std::string_view name, scope_opts opts, static_tag)
+    inline scope_bind::scope_bind(std::string_view name, metadata_map metadata, static_tag)
     : state_{detail::state_access(detail::resolve_scope(name))} {
-        state_->metadata.swap(opts.metadata);
-        state_->metadata.merge(opts.metadata);
+        state_->metadata.swap(metadata);
+        state_->metadata.merge(metadata);
     }
 
     inline scope_bind::operator scope() const noexcept {

@@ -14,10 +14,10 @@
 namespace meta_hpp
 {
     template < detail::method_kind Method >
-    method_bind<Method>::method_bind(type_opts opts)
+    method_bind<Method>::method_bind(metadata_map metadata)
     : data_{detail::type_access(detail::resolve_type<Method>())} {
-        data_->metadata.swap(opts.metadata);
-        data_->metadata.merge(opts.metadata);
+        data_->metadata.swap(metadata);
+        data_->metadata.merge(metadata);
     }
 
     template < detail::method_kind Method >
