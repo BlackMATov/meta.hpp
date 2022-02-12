@@ -53,6 +53,10 @@ namespace meta_hpp
         return data_->flags;
     }
 
+    inline const metadata_map& class_type::get_metadata() const noexcept {
+        return data_->metadata;
+    }
+
     inline std::size_t class_type::get_size() const noexcept {
         return data_->size;
     }
@@ -69,6 +73,14 @@ namespace meta_hpp
         return data_->argument_types;
     }
 
+    inline const class_map& class_type::get_classes() const noexcept {
+        return data_->classes;
+    }
+
+    inline const class_set& class_type::get_bases() const noexcept {
+        return data_->bases;
+    }
+
     inline const constructor_map& class_type::get_ctors() const noexcept {
         return data_->constructors;
     }
@@ -77,8 +89,8 @@ namespace meta_hpp
         return data_->destructors;
     }
 
-    inline const class_set& class_type::get_bases() const noexcept {
-        return data_->bases;
+    inline const enum_map& class_type::get_enums() const noexcept {
+        return data_->enums;
     }
 
     inline const function_map& class_type::get_functions() const noexcept {
@@ -167,6 +179,20 @@ namespace meta_hpp
         }
 
         return false;
+    }
+
+    inline class_type class_type::get_class(std::string_view name) const noexcept {
+        if ( auto iter = data_->classes.find(name); iter != data_->classes.end() ) {
+            return iter->second;
+        }
+        return class_type{};
+    }
+
+    inline enum_type class_type::get_enum(std::string_view name) const noexcept {
+        if ( auto iter = data_->enums.find(name); iter != data_->enums.end() ) {
+            return iter->second;
+        }
+        return enum_type{};
     }
 
     inline function class_type::get_function(std::string_view name) const noexcept {

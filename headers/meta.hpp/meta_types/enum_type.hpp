@@ -49,6 +49,10 @@ namespace meta_hpp
         return data_->flags;
     }
 
+    inline const metadata_map& enum_type::get_metadata() const noexcept {
+        return data_->metadata;
+    }
+
     inline number_type enum_type::get_underlying_type() const noexcept {
         return data_->underlying_type;
     }

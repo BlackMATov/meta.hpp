@@ -106,7 +106,7 @@ namespace meta_hpp::detail
         [&arguments]<std::size_t... Is>(std::index_sequence<Is...>) mutable {
             (arguments.push_back([]<std::size_t I>(){
                 using P = detail::type_list_at_t<I, typename ft::argument_types>;
-                return argument{detail::argument_state::make<P>(I)};
+                return argument{detail::argument_state::make<P>(I, metadata_map{})};
             }.template operator()<Is>()), ...);
         }(std::make_index_sequence<ft::arity>());
 
@@ -117,9 +117,10 @@ namespace meta_hpp::detail
 namespace meta_hpp::detail
 {
     template < function_policy_kind Policy, function_kind Function >
-    function_state_ptr function_state::make(std::string name, Function function) {
+    function_state_ptr function_state::make(std::string name, Function function, metadata_map metadata) {
         return std::make_shared<function_state>(function_state{
             .index{function_index::make<Function>(std::move(name))},
+            .metadata{std::move(metadata)},
             .invoke{make_function_invoke<Policy>(std::move(function))},
             .is_invocable_with{make_function_is_invocable_with<Function>()},
             .arguments{make_function_arguments<Function>()},
@@ -129,8 +130,13 @@ namespace meta_hpp::detail
 
 namespace meta_hpp
 {
-    inline function::function(detail::function_state_ptr state)
+    inline function::function(detail::function_state_ptr state) noexcept
     : state_{std::move(state)} {}
+
+    inline function& function::operator=(detail::function_state_ptr state) noexcept {
+        state_ = std::move(state);
+        return *this;
+    }
 
     inline bool function::is_valid() const noexcept {
         return !!state_;
@@ -142,6 +148,10 @@ namespace meta_hpp
 
     inline const function_index& function::get_index() const noexcept {
         return state_->index;
+    }
+
+    inline const metadata_map& function::get_metadata() const noexcept {
+        return state_->metadata;
     }
 
     inline const function_type& function::get_type() const noexcept {

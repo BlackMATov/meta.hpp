@@ -15,31 +15,50 @@
 namespace meta_hpp
 {
     // NOLINTNEXTLINE(readability-named-parameter)
-    inline scope_bind::scope_bind(std::string name, local_tag)
-    : state_{detail::scope_state::make(std::move(name))} {}
+    inline scope_bind::scope_bind(std::string name, metadata_map metadata, local_tag)
+    : state_{detail::scope_state::make(std::move(name), std::move(metadata))} {}
 
     // NOLINTNEXTLINE(readability-named-parameter)
-    inline scope_bind::scope_bind(std::string_view name, static_tag)
-    : state_{detail::state_access(detail::resolve_scope(name))} {}
+    inline scope_bind::scope_bind(std::string_view name, metadata_map metadata, static_tag)
+    : state_{detail::state_access(detail::resolve_scope(name))} {
+        state_->metadata.swap(metadata);
+        state_->metadata.merge(metadata);
+    }
 
     inline scope_bind::operator scope() const noexcept {
         return scope{state_};
     }
 
+    //
+    // class_
+    //
+
     template < detail::class_kind Class >
     scope_bind& scope_bind::class_(std::string name) {
-        state_->classes.emplace(std::move(name), detail::resolve_type<Class>());
+        state_->classes.insert_or_assign(std::move(name), detail::resolve_type<Class>());
         return *this;
     }
+
+    //
+    // enum_
+    //
 
     template < detail::enum_kind Enum >
     scope_bind& scope_bind::enum_(std::string name) {
-        state_->enums.emplace(std::move(name), detail::resolve_type<Enum>());
+        state_->enums.insert_or_assign(std::move(name), detail::resolve_type<Enum>());
         return *this;
     }
 
+    //
+    // function_
+    //
+
     template < detail::function_kind Function, function_policy_kind Policy >
-    scope_bind& scope_bind::function_(std::string name, Function function, Policy policy) {
+    scope_bind& scope_bind::function_(
+        std::string name,
+        Function function,
+        Policy policy)
+    {
         return function_(std::move(name), std::move(function), {}, policy);
     }
 
@@ -47,28 +66,78 @@ namespace meta_hpp
     scope_bind& scope_bind::function_(
         std::string name,
         Function function,
-        std::initializer_list<std::string_view> anames,
+        function_opts opts,
         [[maybe_unused]] Policy policy)
     {
-        auto function_state = detail::function_state::make<Policy>(std::move(name), std::move(function));
+        auto state = detail::function_state::make<Policy>(
+            std::move(name),
+            std::move(function),
+            std::move(opts.metadata));
 
-        if ( anames.size() > function_state->arguments.size() ) {
-            detail::throw_exception_with("provided argument names don't match function argument count");
+        if ( opts.arguments.size() > state->arguments.size() ) {
+            detail::throw_exception_with("provided arguments don't match function argument count");
         }
 
-        for ( std::size_t i = 0; i < anames.size(); ++i ) {
-            argument& arg = function_state->arguments[i];
-            detail::state_access(arg)->name = std::string{std::data(anames)[i]};
+        for ( std::size_t i = 0; i < opts.arguments.size(); ++i ) {
+            argument& arg = state->arguments[i];
+            detail::state_access(arg)->name = std::move(opts.arguments[i].name);
+            detail::state_access(arg)->metadata = std::move(opts.arguments[i].metadata);
         }
 
-        state_->functions.emplace(function_state->index, std::move(function_state));
+        state_->functions.insert_or_assign(state->index, std::move(state));
         return *this;
     }
 
+    template < detail::function_kind Function, function_policy_kind Policy >
+    scope_bind& scope_bind::function_(
+        std::string name,
+        Function function,
+        std::initializer_list<std::string_view> arguments,
+        [[maybe_unused]] Policy policy)
+    {
+        auto state = detail::function_state::make<Policy>(
+            std::move(name),
+            std::move(function),
+            {});
+
+        if ( arguments.size() > state->arguments.size() ) {
+            detail::throw_exception_with("provided argument names don't match function argument count");
+        }
+
+        for ( std::size_t i = 0; i < arguments.size(); ++i ) {
+            argument& arg = state->arguments[i];
+            detail::state_access(arg)->name = std::data(arguments)[i];
+        }
+
+        state_->functions.insert_or_assign(state->index, std::move(state));
+        return *this;
+    }
+
+    //
+    // variable_
+    //
+
     template < detail::pointer_kind Pointer, variable_policy_kind Policy >
-    scope_bind& scope_bind::variable_(std::string name, Pointer pointer, [[maybe_unused]] Policy policy) {
-        auto variable_state = detail::variable_state::make<Policy>(std::move(name), std::move(pointer));
-        state_->variables.emplace(variable_state->index, std::move(variable_state));
+    scope_bind& scope_bind::variable_(
+        std::string name,
+        Pointer pointer,
+        Policy policy)
+    {
+        return variable_(std::move(name), std::move(pointer), {}, policy);
+    }
+
+    template < detail::pointer_kind Pointer, variable_policy_kind Policy >
+    scope_bind& scope_bind::variable_(
+        std::string name,
+        Pointer pointer,
+        variable_opts opts,
+        [[maybe_unused]] Policy policy)
+    {
+        auto state = detail::variable_state::make<Policy>(
+            std::move(name),
+            std::move(pointer),
+            std::move(opts.metadata));
+        state_->variables.insert_or_assign(state->index, std::move(state));
         return *this;
     }
 }

@@ -100,7 +100,7 @@ namespace meta_hpp::detail
         [&arguments]<std::size_t... Is>(std::index_sequence<Is...>) mutable {
             (arguments.push_back([]<std::size_t I>(){
                 using P = detail::type_list_at_t<I, typename ct::argument_types>;
-                return argument{detail::argument_state::make<P>(I)};
+                return argument{detail::argument_state::make<P>(I, metadata_map{})};
             }.template operator()<Is>()), ...);
         }(std::make_index_sequence<ct::arity>());
 
@@ -111,9 +111,10 @@ namespace meta_hpp::detail
 namespace meta_hpp::detail
 {
     template < constructor_policy_kind Policy, class_kind Class, typename... Args >
-    constructor_state_ptr constructor_state::make() {
+    constructor_state_ptr constructor_state::make(metadata_map metadata) {
         return std::make_shared<constructor_state>(constructor_state{
             .index{constructor_index::make<Class, Args...>()},
+            .metadata{std::move(metadata)},
             .invoke{make_constructor_invoke<Policy, Class, Args...>()},
             .is_invocable_with{make_constructor_is_invocable_with<Class, Args...>()},
             .arguments{make_constructor_arguments<Class, Args...>()},
@@ -123,8 +124,13 @@ namespace meta_hpp::detail
 
 namespace meta_hpp
 {
-    inline constructor::constructor(detail::constructor_state_ptr state)
+    inline constructor::constructor(detail::constructor_state_ptr state) noexcept
     : state_{std::move(state)} {}
+
+    inline constructor& constructor::operator=(detail::constructor_state_ptr state) noexcept {
+        state_ = std::move(state);
+        return *this;
+    }
 
     inline bool constructor::is_valid() const noexcept {
         return !!state_;
@@ -136,6 +142,10 @@ namespace meta_hpp
 
     inline const constructor_index& constructor::get_index() const noexcept {
         return state_->index;
+    }
+
+    inline const metadata_map& constructor::get_metadata() const noexcept {
+        return state_->metadata;
     }
 
     inline const constructor_type& constructor::get_type() const noexcept {

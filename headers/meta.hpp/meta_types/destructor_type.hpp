@@ -46,6 +46,10 @@ namespace meta_hpp
         return data_->flags;
     }
 
+    inline const metadata_map& destructor_type::get_metadata() const noexcept {
+        return data_->metadata;
+    }
+
     inline any_type destructor_type::get_class_type() const noexcept {
         return data_->class_type;
     }

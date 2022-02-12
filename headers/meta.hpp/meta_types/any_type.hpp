@@ -27,6 +27,10 @@ namespace meta_hpp
         return data_->kind;
     }
 
+    inline const metadata_map& any_type::get_metadata() const noexcept {
+        return data_->metadata;
+    }
+
     inline any_type::any_type(const array_type& other) noexcept
     : data_{detail::type_access(other)} {}
 

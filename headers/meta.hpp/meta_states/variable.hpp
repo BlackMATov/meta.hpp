@@ -96,9 +96,10 @@ namespace meta_hpp::detail
 namespace meta_hpp::detail
 {
     template < variable_policy_kind Policy, pointer_kind Pointer >
-    variable_state_ptr variable_state::make(std::string name, Pointer pointer) {
+    variable_state_ptr variable_state::make(std::string name, Pointer pointer, metadata_map metadata) {
         return std::make_shared<variable_state>(variable_state{
             .index{variable_index::make<Pointer>(std::move(name))},
+            .metadata{std::move(metadata)},
             .getter{make_variable_getter<Policy>(pointer)},
             .setter{make_variable_setter(pointer)},
             .is_settable_with{make_variable_is_settable_with<Pointer>()},
@@ -108,8 +109,13 @@ namespace meta_hpp::detail
 
 namespace meta_hpp
 {
-    inline variable::variable(detail::variable_state_ptr state)
+    inline variable::variable(detail::variable_state_ptr state) noexcept
     : state_{std::move(state)} {}
+
+    inline variable& variable::operator=(detail::variable_state_ptr state) noexcept {
+        state_ = std::move(state);
+        return *this;
+    }
 
     inline bool variable::is_valid() const noexcept {
         return !!state_;
@@ -121,6 +127,10 @@ namespace meta_hpp
 
     inline const variable_index& variable::get_index() const noexcept {
         return state_->index;
+    }
+
+    inline const metadata_map& variable::get_metadata() const noexcept {
+        return state_->metadata;
     }
 
     inline const pointer_type& variable::get_type() const noexcept {

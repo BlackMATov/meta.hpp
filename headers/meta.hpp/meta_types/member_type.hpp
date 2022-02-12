@@ -47,6 +47,10 @@ namespace meta_hpp
         return data_->flags;
     }
 
+    inline const metadata_map& member_type::get_metadata() const noexcept {
+        return data_->metadata;
+    }
+
     inline class_type member_type::get_owner_type() const noexcept {
         return data_->owner_type;
     }

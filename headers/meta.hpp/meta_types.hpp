@@ -70,6 +70,8 @@ namespace meta_hpp
         [[nodiscard]] type_id get_id() const noexcept;
         [[nodiscard]] type_kind get_kind() const noexcept;
 
+        [[nodiscard]] const metadata_map& get_metadata() const noexcept;
+
         any_type(const array_type& other) noexcept;
         any_type(const class_type& other) noexcept;
         any_type(const constructor_type& other) noexcept;
@@ -126,6 +128,7 @@ namespace meta_hpp
 
         [[nodiscard]] type_id get_id() const noexcept;
         [[nodiscard]] array_bitflags get_flags() const noexcept;
+        [[nodiscard]] const metadata_map& get_metadata() const noexcept;
 
         [[nodiscard]] std::size_t get_extent() const noexcept;
         [[nodiscard]] any_type get_data_type() const noexcept;
@@ -144,6 +147,7 @@ namespace meta_hpp
 
         [[nodiscard]] type_id get_id() const noexcept;
         [[nodiscard]] class_bitflags get_flags() const noexcept;
+        [[nodiscard]] const metadata_map& get_metadata() const noexcept;
 
         [[nodiscard]] std::size_t get_size() const noexcept;
 
@@ -151,9 +155,11 @@ namespace meta_hpp
         [[nodiscard]] any_type get_argument_type(std::size_t position) const noexcept;
         [[nodiscard]] const std::vector<any_type>& get_argument_types() const noexcept;
 
+        [[nodiscard]] const class_map& get_classes() const noexcept;
+        [[nodiscard]] const class_set& get_bases() const noexcept;
         [[nodiscard]] const constructor_map& get_ctors() const noexcept;
         [[nodiscard]] const destructor_map& get_dtors() const noexcept;
-        [[nodiscard]] const class_set& get_bases() const noexcept;
+        [[nodiscard]] const enum_map& get_enums() const noexcept;
         [[nodiscard]] const function_map& get_functions() const noexcept;
         [[nodiscard]] const member_map& get_members() const noexcept;
         [[nodiscard]] const method_map& get_methods() const noexcept;
@@ -176,6 +182,8 @@ namespace meta_hpp
         [[nodiscard]] bool is_derived_from() const noexcept;
         [[nodiscard]] bool is_derived_from(const class_type& base) const noexcept;
 
+        [[nodiscard]] class_type get_class(std::string_view name) const noexcept;
+        [[nodiscard]] enum_type get_enum(std::string_view name) const noexcept;
         [[nodiscard]] function get_function(std::string_view name) const noexcept;
         [[nodiscard]] member get_member(std::string_view name) const noexcept;
         [[nodiscard]] method get_method(std::string_view name) const noexcept;
@@ -216,6 +224,7 @@ namespace meta_hpp
 
         [[nodiscard]] type_id get_id() const noexcept;
         [[nodiscard]] constructor_bitflags get_flags() const noexcept;
+        [[nodiscard]] const metadata_map& get_metadata() const noexcept;
 
         [[nodiscard]] std::size_t get_arity() const noexcept;
         [[nodiscard]] any_type get_class_type() const noexcept;
@@ -236,6 +245,7 @@ namespace meta_hpp
 
         [[nodiscard]] type_id get_id() const noexcept;
         [[nodiscard]] destructor_bitflags get_flags() const noexcept;
+        [[nodiscard]] const metadata_map& get_metadata() const noexcept;
 
         [[nodiscard]] any_type get_class_type() const noexcept;
     private:
@@ -253,6 +263,7 @@ namespace meta_hpp
 
         [[nodiscard]] type_id get_id() const noexcept;
         [[nodiscard]] enum_bitflags get_flags() const noexcept;
+        [[nodiscard]] const metadata_map& get_metadata() const noexcept;
 
         [[nodiscard]] number_type get_underlying_type() const noexcept;
 
@@ -278,6 +289,7 @@ namespace meta_hpp
 
         [[nodiscard]] type_id get_id() const noexcept;
         [[nodiscard]] function_bitflags get_flags() const noexcept;
+        [[nodiscard]] const metadata_map& get_metadata() const noexcept;
 
         [[nodiscard]] std::size_t get_arity() const noexcept;
         [[nodiscard]] any_type get_return_type() const noexcept;
@@ -298,6 +310,7 @@ namespace meta_hpp
 
         [[nodiscard]] type_id get_id() const noexcept;
         [[nodiscard]] member_bitflags get_flags() const noexcept;
+        [[nodiscard]] const metadata_map& get_metadata() const noexcept;
 
         [[nodiscard]] class_type get_owner_type() const noexcept;
         [[nodiscard]] any_type get_value_type() const noexcept;
@@ -316,6 +329,7 @@ namespace meta_hpp
 
         [[nodiscard]] type_id get_id() const noexcept;
         [[nodiscard]] method_bitflags get_flags() const noexcept;
+        [[nodiscard]] const metadata_map& get_metadata() const noexcept;
 
         [[nodiscard]] std::size_t get_arity() const noexcept;
         [[nodiscard]] class_type get_owner_type() const noexcept;
@@ -336,6 +350,7 @@ namespace meta_hpp
         [[nodiscard]] explicit operator bool() const noexcept;
 
         [[nodiscard]] type_id get_id() const noexcept;
+        [[nodiscard]] const metadata_map& get_metadata() const noexcept;
     private:
         detail::nullptr_type_data_ptr data_;
         friend auto detail::type_access<nullptr_type>(const nullptr_type&);
@@ -351,6 +366,7 @@ namespace meta_hpp
 
         [[nodiscard]] type_id get_id() const noexcept;
         [[nodiscard]] number_bitflags get_flags() const noexcept;
+        [[nodiscard]] const metadata_map& get_metadata() const noexcept;
 
         [[nodiscard]] std::size_t get_size() const noexcept;
     private:
@@ -368,6 +384,7 @@ namespace meta_hpp
 
         [[nodiscard]] type_id get_id() const noexcept;
         [[nodiscard]] pointer_bitflags get_flags() const noexcept;
+        [[nodiscard]] const metadata_map& get_metadata() const noexcept;
 
         [[nodiscard]] any_type get_data_type() const noexcept;
     private:
@@ -385,6 +402,7 @@ namespace meta_hpp
 
         [[nodiscard]] type_id get_id() const noexcept;
         [[nodiscard]] reference_bitflags get_flags() const noexcept;
+        [[nodiscard]] const metadata_map& get_metadata() const noexcept;
 
         [[nodiscard]] any_type get_data_type() const noexcept;
     private:
@@ -401,6 +419,7 @@ namespace meta_hpp
         [[nodiscard]] explicit operator bool() const noexcept;
 
         [[nodiscard]] type_id get_id() const noexcept;
+        [[nodiscard]] const metadata_map& get_metadata() const noexcept;
     private:
         detail::void_type_data_ptr data_;
         friend auto detail::type_access<void_type>(const void_type&);
@@ -447,6 +466,8 @@ namespace meta_hpp::detail
         const type_id id;
         const type_kind kind;
 
+        metadata_map metadata;
+
         explicit type_data_base(type_id id, type_kind kind)
         : id{id}
         , kind{kind} {}
@@ -466,9 +487,11 @@ namespace meta_hpp::detail
         const std::size_t size;
         const std::vector<any_type> argument_types;
 
+        class_map classes;
+        class_set bases;
         constructor_map constructors;
         destructor_map destructors;
-        class_set bases;
+        enum_map enums;
         function_map functions;
         member_map members;
         method_map methods;

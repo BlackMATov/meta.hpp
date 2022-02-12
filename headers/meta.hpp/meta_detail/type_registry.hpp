@@ -19,18 +19,22 @@ namespace meta_hpp::detail
         }
 
         [[nodiscard]] any_type get_type_by_id(type_id id) const noexcept {
-            const std::lock_guard<std::mutex> lock{mutex_};
+            const locker lock;
+
             if ( auto iter = type_by_id_.find(id); iter != type_by_id_.end() ) {
                 return iter->second;
             }
+
             return any_type{};
         }
 
         [[nodiscard]] any_type get_type_by_rtti(const std::type_index& index) const noexcept {
-            const std::lock_guard<std::mutex> lock{mutex_};
+            const locker lock;
+
             if ( auto iter = type_by_rtti_.find(index); iter != type_by_rtti_.end() ) {
                 return iter->second;
             }
+
             return any_type{};
         }
 
@@ -195,6 +199,14 @@ namespace meta_hpp::detail
             static void_type_data_ptr data{std::make_shared<void_type_data>(type_list<Void>{})};
             return ensure_type<Void>(data);
         }
+    public:
+        class locker : noncopyable {
+        public:
+            explicit locker()
+            : lock_{instance().mutex_} {}
+        private:
+            std::lock_guard<std::recursive_mutex> lock_;
+        };
     private:
         type_registry() = default;
 
@@ -202,7 +214,7 @@ namespace meta_hpp::detail
         TypeData ensure_type(const TypeData& type_data) {
             static std::once_flag init_flag{};
             std::call_once(init_flag, [this, &type_data](){
-                const std::lock_guard<std::mutex> lock{mutex_};
+                const locker lock;
                 type_by_id_[type_data->id] = any_type{type_data};
             #ifndef META_HPP_NO_RTTI
                 type_by_rtti_[typeid(Type)] = any_type{type_data};
@@ -211,7 +223,7 @@ namespace meta_hpp::detail
             return type_data;
         }
     private:
-        mutable std::mutex mutex_;
+        std::recursive_mutex mutex_;
         std::map<type_id, any_type, std::less<>> type_by_id_;
         std::map<std::type_index, any_type, std::less<>> type_by_rtti_;
     };

@@ -48,6 +48,10 @@ namespace meta_hpp
         return data_->flags;
     }
 
+    inline const metadata_map& method_type::get_metadata() const noexcept {
+        return data_->metadata;
+    }
+
     inline std::size_t method_type::get_arity() const noexcept {
         return data_->argument_types.size();
     }

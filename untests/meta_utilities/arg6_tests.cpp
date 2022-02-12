@@ -9,6 +9,8 @@
 namespace
 {
     struct base {
+        base() = default;
+        base(const base&) = default;
         virtual ~base() = default;
         virtual int int_method() const = 0;
     };

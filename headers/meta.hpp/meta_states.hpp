@@ -101,14 +101,18 @@ namespace meta_hpp
     class argument final {
     public:
         explicit argument() = default;
-        explicit argument(detail::argument_state_ptr state);
+        explicit argument(detail::argument_state_ptr state) noexcept;
+        argument& operator=(detail::argument_state_ptr state) noexcept;
 
         [[nodiscard]] bool is_valid() const noexcept;
         [[nodiscard]] explicit operator bool() const noexcept;
 
         [[nodiscard]] const argument_index& get_index() const noexcept;
+        [[nodiscard]] const metadata_map& get_metadata() const noexcept;
+
         [[nodiscard]] const any_type& get_type() const noexcept;
         [[nodiscard]] std::size_t get_position() const noexcept;
+
         [[nodiscard]] const std::string& get_name() const noexcept;
     private:
         detail::argument_state_ptr state_;
@@ -118,12 +122,15 @@ namespace meta_hpp
     class constructor final {
     public:
         explicit constructor() = default;
-        explicit constructor(detail::constructor_state_ptr state);
+        explicit constructor(detail::constructor_state_ptr state) noexcept;
+        constructor& operator=(detail::constructor_state_ptr state) noexcept;
 
         [[nodiscard]] bool is_valid() const noexcept;
         [[nodiscard]] explicit operator bool() const noexcept;
 
         [[nodiscard]] const constructor_index& get_index() const noexcept;
+        [[nodiscard]] const metadata_map& get_metadata() const noexcept;
+
         [[nodiscard]] const constructor_type& get_type() const noexcept;
 
         template < typename... Args >
@@ -148,12 +155,15 @@ namespace meta_hpp
     class destructor final {
     public:
         explicit destructor() = default;
-        explicit destructor(detail::destructor_state_ptr state);
+        explicit destructor(detail::destructor_state_ptr state) noexcept;
+        destructor& operator=(detail::destructor_state_ptr state) noexcept;
 
         [[nodiscard]] bool is_valid() const noexcept;
         [[nodiscard]] explicit operator bool() const noexcept;
 
         [[nodiscard]] const destructor_index& get_index() const noexcept;
+        [[nodiscard]] const metadata_map& get_metadata() const noexcept;
+
         [[nodiscard]] const destructor_type& get_type() const noexcept;
 
         template < typename Arg >
@@ -175,12 +185,15 @@ namespace meta_hpp
     class evalue final {
     public:
         explicit evalue() = default;
-        explicit evalue(detail::evalue_state_ptr state);
+        explicit evalue(detail::evalue_state_ptr state) noexcept;
+        evalue& operator=(detail::evalue_state_ptr state) noexcept;
 
         [[nodiscard]] bool is_valid() const noexcept;
         [[nodiscard]] explicit operator bool() const noexcept;
 
         [[nodiscard]] const evalue_index& get_index() const noexcept;
+        [[nodiscard]] const metadata_map& get_metadata() const noexcept;
+
         [[nodiscard]] const enum_type& get_type() const noexcept;
         [[nodiscard]] const std::string& get_name() const noexcept;
 
@@ -194,12 +207,15 @@ namespace meta_hpp
     class function final {
     public:
         explicit function() = default;
-        explicit function(detail::function_state_ptr state);
+        explicit function(detail::function_state_ptr state) noexcept;
+        function& operator=(detail::function_state_ptr state) noexcept;
 
         [[nodiscard]] bool is_valid() const noexcept;
         [[nodiscard]] explicit operator bool() const noexcept;
 
         [[nodiscard]] const function_index& get_index() const noexcept;
+        [[nodiscard]] const metadata_map& get_metadata() const noexcept;
+
         [[nodiscard]] const function_type& get_type() const noexcept;
         [[nodiscard]] const std::string& get_name() const noexcept;
 
@@ -225,12 +241,15 @@ namespace meta_hpp
     class member final {
     public:
         explicit member() = default;
-        explicit member(detail::member_state_ptr state);
+        explicit member(detail::member_state_ptr state) noexcept;
+        member& operator=(detail::member_state_ptr state) noexcept;
 
         [[nodiscard]] bool is_valid() const noexcept;
         [[nodiscard]] explicit operator bool() const noexcept;
 
         [[nodiscard]] const member_index& get_index() const noexcept;
+        [[nodiscard]] const metadata_map& get_metadata() const noexcept;
+
         [[nodiscard]] const member_type& get_type() const noexcept;
         [[nodiscard]] const std::string& get_name() const noexcept;
 
@@ -265,12 +284,15 @@ namespace meta_hpp
     class method final {
     public:
         explicit method() = default;
-        explicit method(detail::method_state_ptr state);
+        explicit method(detail::method_state_ptr state) noexcept;
+        method& operator=(detail::method_state_ptr state) noexcept;
 
         [[nodiscard]] bool is_valid() const noexcept;
         [[nodiscard]] explicit operator bool() const noexcept;
 
         [[nodiscard]] const method_index& get_index() const noexcept;
+        [[nodiscard]] const metadata_map& get_metadata() const noexcept;
+
         [[nodiscard]] const method_type& get_type() const noexcept;
         [[nodiscard]] const std::string& get_name() const noexcept;
 
@@ -296,12 +318,15 @@ namespace meta_hpp
     class scope final {
     public:
         explicit scope() = default;
-        explicit scope(detail::scope_state_ptr state);
+        explicit scope(detail::scope_state_ptr state) noexcept;
+        scope& operator=(detail::scope_state_ptr state) noexcept;
 
         [[nodiscard]] bool is_valid() const noexcept;
         [[nodiscard]] explicit operator bool() const noexcept;
 
         [[nodiscard]] const scope_index& get_index() const noexcept;
+        [[nodiscard]] const metadata_map& get_metadata() const noexcept;
+
         [[nodiscard]] const std::string& get_name() const noexcept;
 
         [[nodiscard]] const class_map& get_classes() const noexcept;
@@ -328,12 +353,15 @@ namespace meta_hpp
     class variable final {
     public:
         explicit variable() = default;
-        explicit variable(detail::variable_state_ptr state);
+        explicit variable(detail::variable_state_ptr state) noexcept;
+        variable& operator=(detail::variable_state_ptr state) noexcept;
 
         [[nodiscard]] bool is_valid() const noexcept;
         [[nodiscard]] explicit operator bool() const noexcept;
 
         [[nodiscard]] const variable_index& get_index() const noexcept;
+        [[nodiscard]] const metadata_map& get_metadata() const noexcept;
+
         [[nodiscard]] const pointer_type& get_type() const noexcept;
         [[nodiscard]] const std::string& get_name() const noexcept;
 
@@ -394,18 +422,30 @@ namespace meta_hpp
 
 namespace meta_hpp::detail
 {
+    struct argument_state final {
+        argument_index index;
+        metadata_map metadata;
+
+        std::string name{};
+
+        template < typename Argument >
+        [[nodiscard]] static argument_state_ptr make(std::size_t position, metadata_map metadata);
+    };
+
     struct constructor_state final {
         using invoke_impl = fixed_function<uvalue(std::span<const uarg>)>;
         using is_invocable_with_impl = fixed_function<bool(std::span<const uarg_base>)>;
 
         constructor_index index;
+        metadata_map metadata;
+
         invoke_impl invoke;
         is_invocable_with_impl is_invocable_with;
 
         argument_list arguments;
 
         template < constructor_policy_kind Policy, class_kind Class, typename... Args >
-        [[nodiscard]] static constructor_state_ptr make();
+        [[nodiscard]] static constructor_state_ptr make(metadata_map metadata);
     };
 
     struct destructor_state final {
@@ -413,20 +453,24 @@ namespace meta_hpp::detail
         using is_invocable_with_impl = fixed_function<bool(const uarg_base&)>;
 
         destructor_index index;
+        metadata_map metadata;
+
         invoke_impl invoke;
         is_invocable_with_impl is_invocable_with;
 
         template < class_kind Class >
-        [[nodiscard]] static destructor_state_ptr make();
+        [[nodiscard]] static destructor_state_ptr make(metadata_map metadata);
     };
 
     struct evalue_state final {
         evalue_index index;
+        metadata_map metadata;
+
         uvalue enum_value;
         uvalue underlying_value;
 
         template < enum_kind Enum >
-        [[nodiscard]] static evalue_state_ptr make(std::string name, Enum evalue);
+        [[nodiscard]] static evalue_state_ptr make(std::string name, Enum evalue, metadata_map metadata);
     };
 
     struct function_state final {
@@ -434,13 +478,15 @@ namespace meta_hpp::detail
         using is_invocable_with_impl = fixed_function<bool(std::span<const uarg_base>)>;
 
         function_index index;
+        metadata_map metadata;
+
         invoke_impl invoke;
         is_invocable_with_impl is_invocable_with;
 
         argument_list arguments;
 
         template < function_policy_kind Policy, function_kind Function >
-        [[nodiscard]] static function_state_ptr make(std::string name, Function function);
+        [[nodiscard]] static function_state_ptr make(std::string name, Function function, metadata_map metadata);
     };
 
     struct member_state final {
@@ -451,13 +497,16 @@ namespace meta_hpp::detail
         using is_settable_with_impl = fixed_function<bool(const uinst_base&, const uarg_base&)>;
 
         member_index index;
+        metadata_map metadata;
+
         getter_impl getter;
         setter_impl setter;
         is_gettable_with_impl is_gettable_with;
         is_settable_with_impl is_settable_with;
 
+
         template < member_policy_kind Policy, member_kind Member >
-        [[nodiscard]] static member_state_ptr make(std::string name, Member member);
+        [[nodiscard]] static member_state_ptr make(std::string name, Member member, metadata_map metadata);
     };
 
     struct method_state final {
@@ -465,33 +514,27 @@ namespace meta_hpp::detail
         using is_invocable_with_impl = fixed_function<bool(const uinst_base&, std::span<const uarg_base>)>;
 
         method_index index;
+        metadata_map metadata;
+
         invoke_impl invoke;
         is_invocable_with_impl is_invocable_with;
 
         argument_list arguments;
 
         template < method_policy_kind Policy, method_kind Method >
-        [[nodiscard]] static method_state_ptr make(std::string name, Method method);
-    };
-
-    struct argument_state final {
-        argument_index index;
-
-        std::string name{};
-
-        template < typename Argument >
-        [[nodiscard]] static argument_state_ptr make(std::size_t position);
+        [[nodiscard]] static method_state_ptr make(std::string name, Method method, metadata_map metadata);
     };
 
     struct scope_state final {
         scope_index index;
+        metadata_map metadata;
 
         class_map classes{};
         enum_map enums{};
         function_map functions{};
         variable_map variables{};
 
-        [[nodiscard]] static scope_state_ptr make(std::string name);
+        [[nodiscard]] static scope_state_ptr make(std::string name, metadata_map metadata);
     };
 
     struct variable_state final {
@@ -500,11 +543,13 @@ namespace meta_hpp::detail
         using is_settable_with_impl = fixed_function<bool(const uarg_base&)>;
 
         variable_index index;
+        metadata_map metadata;
+
         getter_impl getter;
         setter_impl setter;
         is_settable_with_impl is_settable_with;
 
         template < variable_policy_kind Policy, pointer_kind Pointer >
-        [[nodiscard]] static variable_state_ptr make(std::string name, Pointer pointer);
+        [[nodiscard]] static variable_state_ptr make(std::string name, Pointer pointer, metadata_map metadata);
     };
 }

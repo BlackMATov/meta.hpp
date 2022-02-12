@@ -119,7 +119,7 @@ namespace meta_hpp::detail
         [&arguments]<std::size_t... Is>(std::index_sequence<Is...>) mutable {
             (arguments.push_back([]<std::size_t I>(){
                 using P = detail::type_list_at_t<I, typename mt::argument_types>;
-                return argument{detail::argument_state::make<P>(I)};
+                return argument{detail::argument_state::make<P>(I, metadata_map{})};
             }.template operator()<Is>()), ...);
         }(std::make_index_sequence<mt::arity>());
 
@@ -130,9 +130,10 @@ namespace meta_hpp::detail
 namespace meta_hpp::detail
 {
     template < method_policy_kind Policy, method_kind Method >
-    method_state_ptr method_state::make(std::string name, Method method) {
+    method_state_ptr method_state::make(std::string name, Method method, metadata_map metadata) {
         return std::make_shared<method_state>(method_state{
             .index{method_index::make<Method>(std::move(name))},
+            .metadata{std::move(metadata)},
             .invoke{make_method_invoke<Policy>(std::move(method))},
             .is_invocable_with{make_method_is_invocable_with<Method>()},
             .arguments{make_method_arguments<Method>()},
@@ -142,8 +143,13 @@ namespace meta_hpp::detail
 
 namespace meta_hpp
 {
-    inline method::method(detail::method_state_ptr state)
+    inline method::method(detail::method_state_ptr state) noexcept
     : state_{std::move(state)} {}
+
+    inline method& method::operator=(detail::method_state_ptr state) noexcept {
+        state_ = std::move(state);
+        return *this;
+    }
 
     inline bool method::is_valid() const noexcept {
         return !!state_;
@@ -155,6 +161,10 @@ namespace meta_hpp
 
     inline const method_index& method::get_index() const noexcept {
         return state_->index;
+    }
+
+    inline const metadata_map& method::get_metadata() const noexcept {
+        return state_->metadata;
     }
 
     inline const method_type& method::get_type() const noexcept {

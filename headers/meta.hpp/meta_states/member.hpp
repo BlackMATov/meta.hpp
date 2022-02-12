@@ -147,9 +147,10 @@ namespace meta_hpp::detail
 namespace meta_hpp::detail
 {
     template < member_policy_kind Policy, member_kind Member >
-    member_state_ptr member_state::make(std::string name, Member member) {
+    member_state_ptr member_state::make(std::string name, Member member, metadata_map metadata) {
         return std::make_shared<member_state>(member_state{
             .index{member_index::make<Member>(std::move(name))},
+            .metadata{std::move(metadata)},
             .getter{make_member_getter<Policy>(member)},
             .setter{make_member_setter(member)},
             .is_gettable_with{make_member_is_gettable_with<Member>()},
@@ -160,8 +161,13 @@ namespace meta_hpp::detail
 
 namespace meta_hpp
 {
-    inline member::member(detail::member_state_ptr state)
+    inline member::member(detail::member_state_ptr state) noexcept
     : state_{std::move(state)} {}
+
+    inline member& member::operator=(detail::member_state_ptr state) noexcept {
+        state_ = std::move(state);
+        return *this;
+    }
 
     inline bool member::is_valid() const noexcept {
         return !!state_;
@@ -173,6 +179,10 @@ namespace meta_hpp
 
     inline const member_index& member::get_index() const noexcept {
         return state_->index;
+    }
+
+    inline const metadata_map& member::get_metadata() const noexcept {
+        return state_->metadata;
     }
 
     inline const member_type& member::get_type() const noexcept {
