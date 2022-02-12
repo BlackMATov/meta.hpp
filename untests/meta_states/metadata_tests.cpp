@@ -286,12 +286,12 @@ TEST_CASE("meta/meta_states/metadata/other") {
     }
 
     SUBCASE("nullptr") {
-        meta::nullptr_<nullptr_t>({
+        meta::nullptr_<std::nullptr_t>({
             .metadata{
                 {"desc", meta::uvalue{"nullptr_t"s}}
             }
         });
-        CHECK(meta::resolve_type<nullptr_t>().get_metadata().at("desc") == "nullptr_t"s);
+        CHECK(meta::resolve_type<std::nullptr_t>().get_metadata().at("desc") == "nullptr_t"s);
     }
 
     SUBCASE("number") {
