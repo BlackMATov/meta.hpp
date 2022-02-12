@@ -9,6 +9,9 @@
 #include "meta_base.hpp"
 #include "meta_states.hpp"
 
+#include "meta_detail/state_registry.hpp"
+#include "meta_detail/type_registry.hpp"
+
 namespace meta_hpp::detail
 {
     template < typename Class, typename... Args >
@@ -85,6 +88,7 @@ namespace meta_hpp
         operator array_type() const noexcept;
     private:
         detail::array_type_data_ptr data_;
+        detail::type_registry::locker locker_;
     };
 }
 
@@ -212,6 +216,7 @@ namespace meta_hpp
             Policy = Policy{});
     private:
         detail::class_type_data_ptr data_;
+        detail::type_registry::locker locker_;
     };
 }
 
@@ -227,6 +232,7 @@ namespace meta_hpp
         enum_bind& evalue_(std::string name, Enum value, evalue_opts opts);
     private:
         detail::enum_type_data_ptr data_;
+        detail::type_registry::locker locker_;
     };
 }
 
@@ -239,6 +245,7 @@ namespace meta_hpp
         operator function_type() const noexcept;
     private:
         detail::function_type_data_ptr data_;
+        detail::type_registry::locker locker_;
     };
 }
 
@@ -251,6 +258,7 @@ namespace meta_hpp
         operator member_type() const noexcept;
     private:
         detail::member_type_data_ptr data_;
+        detail::type_registry::locker locker_;
     };
 }
 
@@ -263,6 +271,7 @@ namespace meta_hpp
         operator method_type() const noexcept;
     private:
         detail::method_type_data_ptr data_;
+        detail::type_registry::locker locker_;
     };
 }
 
@@ -275,6 +284,7 @@ namespace meta_hpp
         operator nullptr_type() const noexcept;
     private:
         detail::nullptr_type_data_ptr data_;
+        detail::type_registry::locker locker_;
     };
 }
 
@@ -287,6 +297,7 @@ namespace meta_hpp
         operator number_type() const noexcept;
     private:
         detail::number_type_data_ptr data_;
+        detail::type_registry::locker locker_;
     };
 }
 
@@ -299,6 +310,7 @@ namespace meta_hpp
         operator pointer_type() const noexcept;
     private:
         detail::pointer_type_data_ptr data_;
+        detail::type_registry::locker locker_;
     };
 }
 
@@ -311,6 +323,7 @@ namespace meta_hpp
         operator reference_type() const noexcept;
     private:
         detail::reference_type_data_ptr data_;
+        detail::type_registry::locker locker_;
     };
 }
 
@@ -323,6 +336,7 @@ namespace meta_hpp
         operator void_type() const noexcept;
     private:
         detail::void_type_data_ptr data_;
+        detail::type_registry::locker locker_;
     };
 }
 
@@ -386,6 +400,7 @@ namespace meta_hpp
             Policy = Policy{});
     private:
         detail::scope_state_ptr state_;
+        detail::state_registry::locker locker_;
     };
 }
 

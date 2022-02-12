@@ -19,7 +19,7 @@ namespace meta_hpp::detail
         }
 
         [[nodiscard]] scope get_scope_by_name(std::string_view name) const noexcept {
-            const std::lock_guard<std::mutex> lock{mutex_};
+            const locker lock;
 
             if ( auto iter = scopes_.find(name); iter != scopes_.end() ) {
                 return iter->second;
@@ -29,7 +29,7 @@ namespace meta_hpp::detail
         }
 
         [[nodiscard]] scope resolve_scope(std::string_view name) {
-            const std::lock_guard<std::mutex> lock{mutex_};
+            const locker lock;
 
             if ( auto iter = scopes_.find(name); iter != scopes_.end() ) {
                 return iter->second;
@@ -38,10 +38,18 @@ namespace meta_hpp::detail
             auto state = scope_state::make(std::string{name}, metadata_map{});
             return scopes_.emplace(std::string{name}, std::move(state)).first->second;
         }
+    public:
+        class locker : noncopyable {
+        public:
+            explicit locker()
+            : lock_{instance().mutex_} {}
+        private:
+            std::lock_guard<std::recursive_mutex> lock_;
+        };
     private:
         state_registry() = default;
     private:
-        mutable std::mutex mutex_;
+        std::recursive_mutex mutex_;
         std::map<std::string, scope, std::less<>> scopes_;
     };
 }
