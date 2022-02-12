@@ -70,7 +70,7 @@ namespace
     {\
         using namespace meta::detail;\
         auto function_ptr = meta::select_overload<int(ToType)>(&FName);\
-        meta::function f_state{function_state::make<meta::function_policy::as_copy>("", function_ptr)};\
+        meta::function f_state{function_state::make<meta::function_policy::as_copy>("", function_ptr, {})};\
         \
         if ( std::is_invocable_v<decltype(function_ptr), decltype(FromValue)> ) {\
             CHECK(uarg{FromValue}.can_cast_to<ToType>());\
@@ -94,7 +94,7 @@ namespace
     {\
         using namespace meta::detail;\
         auto function_ptr = meta::select_overload<int(ToType)>(&FName);\
-        meta::function f_state{function_state::make<meta::function_policy::as_copy>("", function_ptr)};\
+        meta::function f_state{function_state::make<meta::function_policy::as_copy>("", function_ptr, {})};\
         \
         if ( std::is_invocable_v<decltype(function_ptr), FromType> ) {\
             CHECK(f_state.is_invocable_with<FromType>());\

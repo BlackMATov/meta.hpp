@@ -14,8 +14,11 @@
 namespace meta_hpp
 {
     template < detail::enum_kind Enum >
-    enum_bind<Enum>::enum_bind()
-    : data_{detail::type_access(detail::resolve_type<Enum>())} {}
+    enum_bind<Enum>::enum_bind(enum_opts opts)
+    : data_{detail::type_access(detail::resolve_type<Enum>())} {
+        data_->metadata.swap(opts.metadata);
+        data_->metadata.merge(opts.metadata);
+    }
 
     template < detail::enum_kind Enum >
     enum_bind<Enum>::operator enum_type() const noexcept {
@@ -24,8 +27,16 @@ namespace meta_hpp
 
     template < detail::enum_kind Enum >
     enum_bind<Enum>& enum_bind<Enum>::evalue_(std::string name, Enum value) {
-        auto evalue_state = detail::evalue_state::make(std::move(name), std::move(value));
-        data_->evalues.emplace(evalue_state->index, std::move(evalue_state));
+        return evalue_(std::move(name), std::move(value), {});
+    }
+
+    template < detail::enum_kind Enum >
+    enum_bind<Enum>& enum_bind<Enum>::evalue_(std::string name, Enum value, evalue_opts opts) {
+        auto state = detail::evalue_state::make(
+            std::move(name),
+            std::move(value),
+            std::move(opts.metadata));
+        data_->evalues.insert_or_assign(state->index, std::move(state));
         return *this;
     }
 }
