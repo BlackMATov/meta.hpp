@@ -58,34 +58,16 @@ namespace meta_hpp
         return state_->index.get_name();
     }
 
-    inline const class_map& scope::get_classes() const noexcept {
-        return state_->classes;
-    }
-
-    inline const enum_map& scope::get_enums() const noexcept {
-        return state_->enums;
-    }
-
     inline const function_map& scope::get_functions() const noexcept {
         return state_->functions;
     }
 
+    inline const typedef_map& scope::get_typedefs() const noexcept {
+        return state_->typedefs;
+    }
+
     inline const variable_map& scope::get_variables() const noexcept {
         return state_->variables;
-    }
-
-    inline class_type scope::get_class(std::string_view name) const noexcept {
-        if ( auto iter = state_->classes.find(name); iter != state_->classes.end() ) {
-            return iter->second;
-        }
-        return class_type{};
-    }
-
-    inline enum_type scope::get_enum(std::string_view name) const noexcept {
-        if ( auto iter = state_->enums.find(name); iter != state_->enums.end() ) {
-            return iter->second;
-        }
-        return enum_type{};
     }
 
     inline function scope::get_function(std::string_view name) const noexcept {
@@ -95,6 +77,15 @@ namespace meta_hpp
             }
         }
         return function{};
+    }
+
+    inline any_type scope::get_typedef(std::string_view name) const noexcept {
+        for ( auto&& [index, type] : state_->typedefs ) {
+            if ( index == name ) {
+                return type;
+            }
+        }
+        return any_type{};
     }
 
     inline variable scope::get_variable(std::string_view name) const noexcept {

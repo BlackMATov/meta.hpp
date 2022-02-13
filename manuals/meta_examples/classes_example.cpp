@@ -10,7 +10,10 @@ namespace
 {
     class shape {
     public:
+        shape() = default;
+        shape(const shape&) = default;
         virtual ~shape() = default;
+
         virtual int get_area() const = 0;
     };
 

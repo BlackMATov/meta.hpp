@@ -73,10 +73,6 @@ namespace meta_hpp
         return data_->argument_types;
     }
 
-    inline const class_map& class_type::get_classes() const noexcept {
-        return data_->classes;
-    }
-
     inline const class_set& class_type::get_bases() const noexcept {
         return data_->bases;
     }
@@ -89,10 +85,6 @@ namespace meta_hpp
         return data_->destructors;
     }
 
-    inline const enum_map& class_type::get_enums() const noexcept {
-        return data_->enums;
-    }
-
     inline const function_map& class_type::get_functions() const noexcept {
         return data_->functions;
     }
@@ -103,6 +95,10 @@ namespace meta_hpp
 
     inline const method_map& class_type::get_methods() const noexcept {
         return data_->methods;
+    }
+
+    inline const typedef_map& class_type::get_typedefs() const noexcept {
+        return data_->typedefs;
     }
 
     inline const variable_map& class_type::get_variables() const noexcept {
@@ -181,20 +177,6 @@ namespace meta_hpp
         return false;
     }
 
-    inline class_type class_type::get_class(std::string_view name) const noexcept {
-        if ( auto iter = data_->classes.find(name); iter != data_->classes.end() ) {
-            return iter->second;
-        }
-        return class_type{};
-    }
-
-    inline enum_type class_type::get_enum(std::string_view name) const noexcept {
-        if ( auto iter = data_->enums.find(name); iter != data_->enums.end() ) {
-            return iter->second;
-        }
-        return enum_type{};
-    }
-
     inline function class_type::get_function(std::string_view name) const noexcept {
         for ( auto&& [index, function] : data_->functions ) {
             if ( index.get_name() == name ) {
@@ -241,6 +223,22 @@ namespace meta_hpp
         }
 
         return method{};
+    }
+
+    inline any_type class_type::get_typedef(std::string_view name) const noexcept {
+        for ( auto&& [index, type] : data_->typedefs ) {
+            if ( index == name ) {
+                return type;
+            }
+        }
+
+        for ( auto&& base : data_->bases ) {
+            if ( any_type type = base.get_typedef(name); type ) {
+                return type;
+            }
+        }
+
+        return any_type{};
     }
 
     inline variable class_type::get_variable(std::string_view name) const noexcept {

@@ -30,26 +30,6 @@ namespace meta_hpp
     }
 
     //
-    // class_
-    //
-
-    template < detail::class_kind Class >
-    scope_bind& scope_bind::class_(std::string name) {
-        state_->classes.insert_or_assign(std::move(name), detail::resolve_type<Class>());
-        return *this;
-    }
-
-    //
-    // enum_
-    //
-
-    template < detail::enum_kind Enum >
-    scope_bind& scope_bind::enum_(std::string name) {
-        state_->enums.insert_or_assign(std::move(name), detail::resolve_type<Enum>());
-        return *this;
-    }
-
-    //
     // function_
     //
 
@@ -110,6 +90,16 @@ namespace meta_hpp
         }
 
         state_->functions.insert_or_assign(state->index, std::move(state));
+        return *this;
+    }
+
+    //
+    // typedef_
+    //
+
+    template < typename Type >
+    scope_bind& scope_bind::typedef_(std::string name) {
+        state_->typedefs.insert_or_assign(std::move(name), detail::resolve_type<Type>());
         return *this;
     }
 

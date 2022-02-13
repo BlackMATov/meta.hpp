@@ -329,14 +329,12 @@ namespace meta_hpp
 
         [[nodiscard]] const std::string& get_name() const noexcept;
 
-        [[nodiscard]] const class_map& get_classes() const noexcept;
-        [[nodiscard]] const enum_map& get_enums() const noexcept;
         [[nodiscard]] const function_map& get_functions() const noexcept;
+        [[nodiscard]] const typedef_map& get_typedefs() const noexcept;
         [[nodiscard]] const variable_map& get_variables() const noexcept;
 
-        [[nodiscard]] class_type get_class(std::string_view name) const noexcept;
-        [[nodiscard]] enum_type get_enum(std::string_view name) const noexcept;
         [[nodiscard]] function get_function(std::string_view name) const noexcept;
+        [[nodiscard]] any_type get_typedef(std::string_view name) const noexcept;
         [[nodiscard]] variable get_variable(std::string_view name) const noexcept;
 
         template < typename... Args >
@@ -529,9 +527,8 @@ namespace meta_hpp::detail
         scope_index index;
         metadata_map metadata;
 
-        class_map classes{};
-        enum_map enums{};
         function_map functions{};
+        typedef_map typedefs{};
         variable_map variables{};
 
         [[nodiscard]] static scope_state_ptr make(std::string name, metadata_map metadata);

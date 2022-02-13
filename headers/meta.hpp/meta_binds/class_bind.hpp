@@ -25,15 +25,6 @@ namespace meta_hpp
         return class_type{data_};
     }
 
-    // class_
-
-    template < detail::class_kind Class >
-    template < detail::class_kind InternalClass >
-    class_bind<Class>& class_bind<Class>::class_(std::string name) {
-        data_->classes.insert_or_assign(std::move(name), detail::resolve_type<InternalClass>());
-        return *this;
-    }
-
     //
     // base_
     //
@@ -110,17 +101,6 @@ namespace meta_hpp
     {
         auto state = detail::destructor_state::make<Class>(std::move(opts.metadata));
         data_->destructors.insert_or_assign(state->index, std::move(state));
-        return *this;
-    }
-
-    //
-    // enum_
-    //
-
-    template < detail::class_kind Class >
-    template < detail::enum_kind InternalEnum >
-    class_bind<Class>& class_bind<Class>::enum_(std::string name) {
-        data_->enums.insert_or_assign(std::move(name), detail::resolve_type<InternalEnum>());
         return *this;
     }
 
@@ -290,6 +270,17 @@ namespace meta_hpp
         }
 
         data_->methods.insert_or_assign(state->index, std::move(state));
+        return *this;
+    }
+
+    //
+    // typedef_
+    //
+
+    template < detail::class_kind Class >
+    template < typename Type >
+    class_bind<Class>& class_bind<Class>::typedef_(std::string name) {
+        data_->typedefs.insert_or_assign(std::move(name), detail::resolve_type<Type>());
         return *this;
     }
 

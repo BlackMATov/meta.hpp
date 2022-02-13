@@ -11,6 +11,7 @@
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wc++20-compat"
 #pragma clang diagnostic ignored "-Wdocumentation-unknown-command"
+#pragma clang diagnostic ignored "-Wreserved-identifier"
 #pragma clang diagnostic ignored "-Wsigned-enum-bitfield"
 #pragma clang diagnostic ignored "-Wswitch-enum"
 #pragma clang diagnostic ignored "-Wundefined-func-template"

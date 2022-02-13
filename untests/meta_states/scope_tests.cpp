@@ -41,9 +41,9 @@ TEST_CASE("meta/meta_states/scope") {
     namespace meta = meta_hpp;
 
     meta::static_scope_("meta/meta_states/scope/math")
-        .enum_<color>("color")
-        .class_<ivec2>("ivec2")
-        .class_<ivec3>("ivec3")
+        .typedef_<color>("color")
+        .typedef_<ivec2>("ivec2")
+        .typedef_<ivec3>("ivec3")
         .function_("iadd2", &iadd2, {"l", "r"})
         .function_("iadd3", &iadd3, {"l"})
         .variable_("static_ivec2", &static_ivec2)
@@ -54,10 +54,8 @@ TEST_CASE("meta/meta_states/scope") {
     REQUIRE(math_scope.is_valid());
 
     CHECK(math_scope.get_name() == "meta/meta_states/scope/math");
-    CHECK(math_scope.get_classes().size() == 2);
-    CHECK(math_scope.get_enums().size() == 1);
-    CHECK(math_scope.get_functions().size() == 2);
     CHECK(math_scope.get_variables().size() == 2);
+    CHECK(math_scope.get_typedefs().size() == 3);
 
     SUBCASE("") {
         const meta::scope scope;
@@ -74,20 +72,20 @@ TEST_CASE("meta/meta_states/scope") {
     }
 
     SUBCASE("classes") {
-        CHECK_FALSE(math_scope.get_class("non-existent-class"));
+        CHECK_FALSE(math_scope.get_typedef("non-existent-class"));
 
-        const meta::class_type ivec2_type = math_scope.get_class("ivec2");
-        REQUIRE(ivec2_type);
+        const meta::any_type ivec2_type = math_scope.get_typedef("ivec2");
+        CHECK(ivec2_type == meta::resolve_type<ivec2>());
 
-        const meta::class_type ivec3_type = math_scope.get_class("ivec3");
-        REQUIRE(ivec3_type);
+        const meta::any_type ivec3_type = math_scope.get_typedef("ivec3");
+        CHECK(ivec3_type == meta::resolve_type<ivec3>());
     }
 
     SUBCASE("enums") {
-        CHECK_FALSE(math_scope.get_enum("non-existent-enum"));
+        CHECK_FALSE(math_scope.get_typedef("non-existent-enum"));
 
-        const meta::enum_type color_type = math_scope.get_enum("color");
-        REQUIRE(color_type);
+        const meta::any_type color_type = math_scope.get_typedef("color");
+        CHECK(color_type == meta::resolve_type<color>());
     }
 
     SUBCASE("functions") {

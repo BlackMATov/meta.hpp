@@ -205,6 +205,7 @@ namespace meta_hpp
 {
     using argument_list = std::vector<argument>;
     using metadata_map = std::map<std::string, uvalue, std::less<>>;
+    using typedef_map = std::map<std::string, any_type, std::less<>>;
 
     using class_set = std::set<class_type, std::less<>>;
     using class_map = std::map<std::string, class_type, std::less<>>;

@@ -100,11 +100,6 @@ namespace meta_hpp
         explicit class_bind(metadata_map metadata);
         operator class_type() const noexcept;
 
-        // class_
-
-        template < detail::class_kind InternalClass >
-        class_bind& class_(std::string name);
-
         // base_
 
         template < detail::class_kind Base >
@@ -130,11 +125,6 @@ namespace meta_hpp
 
         class_bind& destructor_(destructor_opts opts)
             requires detail::class_bind_destructor_kind<Class>;
-
-        // enum_
-
-        template < detail::enum_kind InternalEnum >
-        class_bind& enum_(std::string name);
 
         // function_
 
@@ -207,6 +197,11 @@ namespace meta_hpp
             std::initializer_list<std::string_view> arguments,
             Policy = Policy{})
             requires detail::class_bind_method_kind<Class, Method>;
+
+        // typdef_
+
+        template < typename Type >
+        class_bind& typedef_(std::string name);
 
         // variable_
 
@@ -361,12 +356,6 @@ namespace meta_hpp
         explicit scope_bind(std::string_view name, metadata_map metadata, static_tag);
         operator scope() const noexcept;
 
-        template < detail::class_kind Class >
-        scope_bind& class_(std::string name);
-
-        template < detail::enum_kind Enum >
-        scope_bind& enum_(std::string name);
-
         // function_
 
         template < detail::function_kind Function
@@ -391,6 +380,11 @@ namespace meta_hpp
             Function function,
             std::initializer_list<std::string_view> arguments,
             Policy = Policy{});
+
+        // typedef_
+
+        template < typename Type >
+        scope_bind& typedef_(std::string name);
 
         // variable_
 
