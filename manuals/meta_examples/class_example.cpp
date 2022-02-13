@@ -40,7 +40,7 @@ namespace
     };
 }
 
-TEST_CASE("meta/meta_examples/classes/type") {
+TEST_CASE("meta/meta_examples/class/type") {
     namespace meta = meta_hpp;
 
     // 'shape' class type registration
@@ -64,7 +64,7 @@ TEST_CASE("meta/meta_examples/classes/type") {
     }
 }
 
-TEST_CASE("meta/meta_examples/classes/usage") {
+TEST_CASE("meta/meta_examples/class/usage") {
     namespace meta = meta_hpp;
 
     // resolves a class type by static class type

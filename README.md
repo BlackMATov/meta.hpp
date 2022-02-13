@@ -49,7 +49,12 @@ target_link_libraries(your_project_target meta.hpp)
 
 ## Examples
 
-> coming soon
+- [Class](./manuals/meta_examples/class_example.cpp)
+- [Enum](./manuals/meta_examples/enum_example.cpp)
+- [Function](./manuals/meta_examples/function_example.cpp)
+- [Member](./manuals/meta_examples/member_example.cpp)
+- [Method](./manuals/meta_examples/method_example.cpp)
+- [Variable](./manuals/meta_examples/variable_example.cpp)
 
 ## API
 
