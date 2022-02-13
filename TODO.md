@@ -1,17 +1,11 @@
 # meta.hpp
 
-- metadata
 - add policy tests
-- rebind types support
 - rewrite ctor/dtor system
 
 * argument defaults
-* argument names
 * type conversions
 
 - (?) enum_type::create, number_type::create, and so on
 - (?) move-only value type support
-- (?) type names
 - (?) properties
-
-(???) Why does local scope have a name?
