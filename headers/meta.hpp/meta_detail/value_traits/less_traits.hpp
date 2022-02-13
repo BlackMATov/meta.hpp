@@ -7,7 +7,7 @@
 #pragma once
 
 #include "../../meta_base.hpp"
-#include "../../meta_value.hpp"
+#include "../../meta_uvalue.hpp"
 
 namespace meta_hpp::detail
 {
