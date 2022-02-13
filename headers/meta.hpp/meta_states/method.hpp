@@ -44,24 +44,19 @@ namespace meta_hpp::detail
             throw_exception_with("an attempt to call a method with an incorrect instance type");
         }
 
-        return std::invoke([
-            &method, &inst, args
         // NOLINTNEXTLINE(readability-named-parameter)
-        ]<std::size_t... Is>(std::index_sequence<Is...>) -> uvalue {
+        return [&method, &inst, args]<std::size_t... Is>(std::index_sequence<Is...>) -> uvalue {
             if ( !(... && args[Is].can_cast_to<type_list_at_t<Is, argument_types>>()) ) {
                 throw_exception_with("an attempt to call a method with incorrect argument types");
             }
 
             if constexpr ( as_void ) {
-                std::ignore = std::invoke(
-                    method,
+                std::ignore = (inst.cast<qualified_type>().*method)(
                     inst.cast<qualified_type>(),
                     args[Is].cast<type_list_at_t<Is, argument_types>>()...);
                 return uvalue{};
             } else {
-                return_type&& return_value = std::invoke(
-                    method,
-                    inst.cast<qualified_type>(),
+                return_type&& return_value = (inst.cast<qualified_type>().*method)(
                     args[Is].cast<type_list_at_t<Is, argument_types>>()...);
 
                 if constexpr ( ref_as_ptr ) {
@@ -70,7 +65,7 @@ namespace meta_hpp::detail
                     return uvalue{std::forward<decltype(return_value)>(return_value)};
                 }
             }
-        }, std::make_index_sequence<mt::arity>());
+        }(std::make_index_sequence<mt::arity>());
     }
 
     template < method_kind Method >
@@ -88,9 +83,9 @@ namespace meta_hpp::detail
         }
 
         // NOLINTNEXTLINE(readability-named-parameter)
-        return std::invoke([args]<std::size_t... Is>(std::index_sequence<Is...>){
+        return [args]<std::size_t... Is>(std::index_sequence<Is...>){
             return (... && args[Is].can_cast_to<type_list_at_t<Is, argument_types>>());
-        }, std::make_index_sequence<mt::arity>());
+        }(std::make_index_sequence<mt::arity>());
     }
 }
 

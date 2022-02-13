@@ -24,11 +24,11 @@ namespace
     using int_method_t = int (clazz::*)() const;
 
     int func_with_member(const clazz& cl, int_member_t m) {
-        return std::invoke(m, cl);
+        return cl.*m;
     }
 
     int func_with_method(const clazz& cl, int_method_t m) {
-        return std::invoke(m, cl);
+        return (cl.*m)();
     }
 }
 

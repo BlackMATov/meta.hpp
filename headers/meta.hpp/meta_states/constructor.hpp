@@ -36,10 +36,8 @@ namespace meta_hpp::detail
             throw_exception_with("an attempt to call a constructor with an incorrect arity");
         }
 
-        return std::invoke([
-            args
         // NOLINTNEXTLINE(readability-named-parameter)
-        ]<std::size_t... Is>(std::index_sequence<Is...>) -> uvalue {
+        return [args]<std::size_t... Is>(std::index_sequence<Is...>) -> uvalue {
             if ( !(... && args[Is].can_cast_to<type_list_at_t<Is, argument_types>>()) ) {
                 throw_exception_with("an attempt to call a constructor with incorrect argument types");
             }
@@ -58,7 +56,7 @@ namespace meta_hpp::detail
                 auto return_value{std::make_shared<class_type>(args[Is].cast<type_list_at_t<Is, argument_types>>()...)};
                 return uvalue{std::move(return_value)};
             }
-        }, std::make_index_sequence<ct::arity>());
+        }(std::make_index_sequence<ct::arity>());
     }
 
     template < class_kind Class, typename... Args >
@@ -71,9 +69,9 @@ namespace meta_hpp::detail
         }
 
         // NOLINTNEXTLINE(readability-named-parameter)
-        return std::invoke([args]<std::size_t... Is>(std::index_sequence<Is...>){
+        return [args]<std::size_t... Is>(std::index_sequence<Is...>){
             return (... && args[Is].can_cast_to<type_list_at_t<Is, argument_types>>());
-        }, std::make_index_sequence<ct::arity>());
+        }(std::make_index_sequence<ct::arity>());
     }
 }
 

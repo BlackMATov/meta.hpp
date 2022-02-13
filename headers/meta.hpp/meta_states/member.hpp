@@ -38,7 +38,7 @@ namespace meta_hpp::detail
         }
 
         if ( inst.is_const() ) {
-            auto&& return_value = std::invoke(member, inst.cast<const class_type>());
+            auto&& return_value = inst.cast<const class_type>().*member;
 
             if constexpr ( as_copy ) {
                 return uvalue{std::forward<decltype(return_value)>(return_value)};
@@ -52,7 +52,7 @@ namespace meta_hpp::detail
                 return uvalue{std::ref(return_value)};
             }
         } else {
-            auto&& return_value = std::invoke(member, inst.cast<class_type>());
+            auto&& return_value = inst.cast<class_type>().*member;
 
             if constexpr ( as_copy ) {
                 return uvalue{std::forward<decltype(return_value)>(return_value)};
@@ -100,7 +100,7 @@ namespace meta_hpp::detail
                 throw_exception_with("an attempt to set a member with an incorrect argument type");
             }
 
-            std::invoke(member, inst.cast<class_type>()) = arg.cast<value_type>();
+            inst.cast<class_type>().*member = arg.cast<value_type>();
         }
     }
 
