@@ -1,6 +1,6 @@
 MIT License
 
-Copyright (C) 2021, by Matvey Cherevko (blackmatov@gmail.com)
+Copyright (C) 2021-2022, by Matvey Cherevko (blackmatov@gmail.com)
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal

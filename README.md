@@ -1,6 +1,6 @@
 # meta.hpp
 
-> C++17 tiny reflection library
+> C++20 tiny dynamic reflection library
 
 [![linux][badge.linux]][linux]
 [![darwin][badge.darwin]][darwin]
@@ -13,30 +13,31 @@
 [badge.linux]: https://img.shields.io/github/workflow/status/BlackMATov/meta.hpp/linux/main?label=GCC%2FClang&logo=linux
 [badge.windows]: https://img.shields.io/github/workflow/status/BlackMATov/meta.hpp/windows/main?label=Visual%20Studio&logo=visual-studio
 [badge.codecov]: https://img.shields.io/codecov/c/github/BlackMATov/meta.hpp/main?logo=codecov
-[badge.language]: https://img.shields.io/badge/language-C%2B%2B17-yellow
+[badge.language]: https://img.shields.io/badge/language-C%2B%2B20-orange
 [badge.license]: https://img.shields.io/badge/license-MIT-blue
 
 [darwin]: https://github.com/BlackMATov/meta.hpp/actions?query=workflow%3Adarwin
 [linux]: https://github.com/BlackMATov/meta.hpp/actions?query=workflow%3Alinux
 [windows]: https://github.com/BlackMATov/meta.hpp/actions?query=workflow%3Awindows
 [codecov]: https://codecov.io/gh/BlackMATov/meta.hpp
-[language]: https://en.wikipedia.org/wiki/C%2B%2B17
+[language]: https://en.wikipedia.org/wiki/C%2B%2B20
 [license]: https://en.wikipedia.org/wiki/MIT_License
 
 [meta]: https://github.com/BlackMATov/meta.hpp
 
 ## Requirements
 
-- [gcc](https://www.gnu.org/software/gcc/) **>= 7**
-- [clang](https://clang.llvm.org/) **>= 5.0**
-- [msvc](https://visualstudio.microsoft.com/) **>= 2017**
+- [clang](https://clang.llvm.org/) **>= 10**
+- [gcc](https://www.gnu.org/software/gcc/) **>= 10**
+- [msvc](https://visualstudio.microsoft.com/) **>= 2019**
+- [xcode](https://developer.apple.com/xcode/) **>= 13.0**
 
 ## Installation
 
 [meta.hpp][meta] is a header-only library. All you need to do is copy the headers files from `headers` directory into your project and include them:
 
 ```cpp
-#include "meta.hpp/meta.hpp"
+#include "meta.hpp/meta_all.hpp"
 ```
 
 Also, you can add the root repository directory to your [cmake](https://cmake.org) project:
@@ -48,7 +49,12 @@ target_link_libraries(your_project_target meta.hpp)
 
 ## Examples
 
-> coming soon
+- [Class](./manuals/meta_examples/class_example.cpp)
+- [Enum](./manuals/meta_examples/enum_example.cpp)
+- [Function](./manuals/meta_examples/function_example.cpp)
+- [Member](./manuals/meta_examples/member_example.cpp)
+- [Method](./manuals/meta_examples/method_example.cpp)
+- [Variable](./manuals/meta_examples/variable_example.cpp)
 
 ## API
 

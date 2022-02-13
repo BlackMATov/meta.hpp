@@ -4,10 +4,12 @@ on: [push, pull_request]
 
 jobs:
   build:
-    runs-on: macos-10.15
+    runs-on: macos-11
     name: "coverage"
     steps:
     - uses: actions/checkout@v2
+      with:
+        submodules: recursive
     - name: Install lcov by Homebrew
       run: brew install lcov
     - name: Build && Test && Upload

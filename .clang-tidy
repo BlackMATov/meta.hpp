@@ -1,0 +1,23 @@
+---
+Checks: '-*,
+
+        clang-analyzer-*,
+
+        concurrency-*,
+
+        cppcoreguidelines-*,
+        -cppcoreguidelines-macro-usage,
+        -cppcoreguidelines-pro-bounds-pointer-arithmetic,
+
+        modernize-*,
+        -modernize-use-trailing-return-type,
+
+        performance-*,
+
+        portability-*,
+
+        readability-*,
+        -readability-redundant-access-specifiers,
+        -readability-use-anyofallof,
+        '
+...

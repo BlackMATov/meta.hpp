@@ -18,20 +18,21 @@ endif()
 
 file(GLOB_RECURSE UNTESTS_SOURCES "*.cpp" "*.hpp")
 add_executable(${PROJECT_NAME} ${UNTESTS_SOURCES})
-target_link_libraries(${PROJECT_NAME} meta.hpp)
+target_link_libraries(${PROJECT_NAME} PRIVATE meta.hpp doctest_with_main)
 
 target_compile_options(${PROJECT_NAME}
     PRIVATE
     $<$<CXX_COMPILER_ID:MSVC>:
-        /W4>
+        /WX /W4>
     PRIVATE
     $<$<CXX_COMPILER_ID:GNU>:
-        -Wall -Wextra -Wpedantic>
+        -Werror -Wall -Wextra -Wpedantic>
     PRIVATE
     $<$<OR:$<CXX_COMPILER_ID:Clang>,$<CXX_COMPILER_ID:AppleClang>>:
-        -Weverything -Wno-unknown-warning-option
-        -Wconversion -Wimplicit-int-float-conversion
-        -Wno-c++98-compat-pedantic -Wno-ctad-maybe-unsupported
-        -Wno-float-equal -Wno-double-promotion -Wno-shadow-field-in-constructor>)
+        -Werror -Weverything -Wconversion>)
+
+target_compile_definitions(${PROJECT_NAME} PRIVATE
+    DOCTEST_CONFIG_INCLUDE_TYPE_TRAITS
+    DOCTEST_CONFIG_USE_STD_HEADERS)
 
 add_test(${PROJECT_NAME} ${PROJECT_NAME})
