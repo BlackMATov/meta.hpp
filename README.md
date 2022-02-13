@@ -56,8 +56,37 @@ target_link_libraries(your_project_target meta.hpp)
 - [Method](./manuals/meta_examples/method_example.cpp)
 - [Variable](./manuals/meta_examples/variable_example.cpp)
 
+## Features
+
+- can reflect:
+    - arrays
+    - classes
+    - constructors
+    - destructors
+    - enums
+    - functions
+    - member
+    - methods
+    - numbers
+    - pointers
+    - references
+    - typedefs
+    - variables
+- has different behaviour bind policies
+- supports multiple and virtual inheritance
+- allows add additional metadata to all types
+- calls functions/methods with runtime variables
+- doesn't contain 3rd-party dependencies
+- can be used without rtti and exceptions
+
 ## API
 
 > coming soon
+
+## Alternatives
+
+- [billyquith/ponder](https://github.com/billyquith/ponder)
+- [rttrorg/rttr](https://github.com/rttrorg/rttr)
+- [skypjack/meta](https://github.com/skypjack/meta)
 
 ## [License (MIT)](./LICENSE.md)
