@@ -170,21 +170,6 @@ namespace meta_hpp
         struct pointer_type_data;
         struct reference_type_data;
         struct void_type_data;
-
-        using type_data_base_ptr = std::shared_ptr<type_data_base>;
-        using array_type_data_ptr = std::shared_ptr<array_type_data>;
-        using class_type_data_ptr = std::shared_ptr<class_type_data>;
-        using constructor_type_data_ptr = std::shared_ptr<constructor_type_data>;
-        using destructor_type_data_ptr = std::shared_ptr<destructor_type_data>;
-        using enum_type_data_ptr = std::shared_ptr<enum_type_data>;
-        using function_type_data_ptr = std::shared_ptr<function_type_data>;
-        using member_type_data_ptr = std::shared_ptr<member_type_data>;
-        using method_type_data_ptr = std::shared_ptr<method_type_data>;
-        using nullptr_type_data_ptr = std::shared_ptr<nullptr_type_data>;
-        using number_type_data_ptr = std::shared_ptr<number_type_data>;
-        using pointer_type_data_ptr = std::shared_ptr<pointer_type_data>;
-        using reference_type_data_ptr = std::shared_ptr<reference_type_data>;
-        using void_type_data_ptr = std::shared_ptr<void_type_data>;
     }
 }
 

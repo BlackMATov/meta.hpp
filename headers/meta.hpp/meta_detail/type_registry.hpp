@@ -123,81 +123,92 @@ namespace meta_hpp::detail
         //
 
         template < array_kind Array >
-        [[nodiscard]] array_type_data_ptr resolve_array_type_data() {
-            static array_type_data_ptr data{std::make_shared<array_type_data>(type_list<Array>{})};
-            return ensure_type<Array>(data);
+        [[nodiscard]] array_type_data* resolve_array_type_data() {
+            static array_type_data data{type_list<Array>{}};
+            ensure_type<Array>(data);
+            return &data;
         }
 
         template < class_kind Class >
-        [[nodiscard]] class_type_data_ptr resolve_class_type_data() {
-            static class_type_data_ptr data{std::make_shared<class_type_data>(type_list<Class>{})};
-            return ensure_type<Class>(data);
+        [[nodiscard]] class_type_data* resolve_class_type_data() {
+            static class_type_data data{type_list<Class>{}};
+            ensure_type<Class>(data);
+            return &data;
         }
 
         template < class_kind Class, typename... Args >
-        [[nodiscard]] constructor_type_data_ptr resolve_constructor_type_data() {
-            static constructor_type_data_ptr data{std::make_shared<constructor_type_data>(type_list<Class>{}, type_list<Args...>{})};
-            return data;
+        [[nodiscard]] constructor_type_data* resolve_constructor_type_data() {
+            static constructor_type_data data{type_list<Class>{}, type_list<Args...>{}};
+            return &data;
         }
 
         template < class_kind Class >
-        [[nodiscard]] destructor_type_data_ptr resolve_destructor_type_data() {
-            static destructor_type_data_ptr data{std::make_shared<destructor_type_data>(type_list<Class>{})};
-            return data;
+        [[nodiscard]] destructor_type_data* resolve_destructor_type_data() {
+            static destructor_type_data data{type_list<Class>{}};
+            return &data;
         }
 
         template < enum_kind Enum >
-        [[nodiscard]] enum_type_data_ptr resolve_enum_type_data() {
-            static enum_type_data_ptr data{std::make_shared<enum_type_data>(type_list<Enum>{})};
-            return ensure_type<Enum>(data);
+        [[nodiscard]] enum_type_data* resolve_enum_type_data() {
+            static enum_type_data data{type_list<Enum>{}};
+            ensure_type<Enum>(data);
+            return &data;
         }
 
         template < function_kind Function >
-        [[nodiscard]] function_type_data_ptr resolve_function_type_data() {
-            static function_type_data_ptr data{std::make_shared<function_type_data>(type_list<Function>{})};
-            return ensure_type<Function>(data);
+        [[nodiscard]] function_type_data* resolve_function_type_data() {
+            static function_type_data data{type_list<Function>{}};
+            ensure_type<Function>(data);
+            return &data;
         }
 
         template < member_kind Member >
-        [[nodiscard]] member_type_data_ptr resolve_member_type_data() {
-            static member_type_data_ptr data{std::make_shared<member_type_data>(type_list<Member>{})};
-            return ensure_type<Member>(data);
+        [[nodiscard]] member_type_data* resolve_member_type_data() {
+            static member_type_data data{type_list<Member>{}};
+            ensure_type<Member>(data);
+            return &data;
         }
 
         template < method_kind Method >
-        [[nodiscard]] method_type_data_ptr resolve_method_type_data() {
-            static method_type_data_ptr data{std::make_shared<method_type_data>(type_list<Method>{})};
-            return ensure_type<Method>(data);
+        [[nodiscard]] method_type_data* resolve_method_type_data() {
+            static method_type_data data{type_list<Method>{}};
+            ensure_type<Method>(data);
+            return &data;
         }
 
         template < nullptr_kind Nullptr >
-        [[nodiscard]] nullptr_type_data_ptr resolve_nullptr_type_data() {
-            static nullptr_type_data_ptr data{std::make_shared<nullptr_type_data>(type_list<Nullptr>{})};
-            return ensure_type<Nullptr>(data);
+        [[nodiscard]] nullptr_type_data* resolve_nullptr_type_data() {
+            static nullptr_type_data data{type_list<Nullptr>{}};
+            ensure_type<Nullptr>(data);
+            return &data;
         }
 
         template < number_kind Number >
-        [[nodiscard]] number_type_data_ptr resolve_number_type_data() {
-            static number_type_data_ptr data{std::make_shared<number_type_data>(type_list<Number>{})};
-            return ensure_type<Number>(data);
+        [[nodiscard]] number_type_data* resolve_number_type_data() {
+            static number_type_data data{type_list<Number>{}};
+            ensure_type<Number>(data);
+            return &data;
         }
 
         template < pointer_kind Pointer >
-        [[nodiscard]] pointer_type_data_ptr resolve_pointer_type_data() {
-            static pointer_type_data_ptr data{std::make_shared<pointer_type_data>(type_list<Pointer>{})};
-            return ensure_type<Pointer>(data);
+        [[nodiscard]] pointer_type_data* resolve_pointer_type_data() {
+            static pointer_type_data data{type_list<Pointer>{}};
+            ensure_type<Pointer>(data);
+            return &data;
         }
 
         template < reference_kind Reference >
-        [[nodiscard]] reference_type_data_ptr resolve_reference_type_data() {
-            static reference_type_data_ptr data{std::make_shared<reference_type_data>(type_list<Reference>{})};
-            return ensure_type<Reference>(data);
+        [[nodiscard]] reference_type_data* resolve_reference_type_data() {
+            static reference_type_data data{type_list<Reference>{}};
+            ensure_type<Reference>(data);
+            return &data;
         }
 
         template < void_kind Void >
-        [[nodiscard]] void_type_data_ptr resolve_void_type_data() {
-            static void_type_data_ptr data{std::make_shared<void_type_data>(type_list<Void>{})};
-            return ensure_type<Void>(data);
+        [[nodiscard]] void_type_data* resolve_void_type_data() {
+            static void_type_data data{type_list<Void>{}};
+            ensure_type<Void>(data);
+            return &data;
         }
     public:
         class locker : noncopyable {
@@ -211,16 +222,15 @@ namespace meta_hpp::detail
         type_registry() = default;
 
         template < typename Type, typename TypeData >
-        TypeData ensure_type(const TypeData& type_data) {
+        void ensure_type(TypeData& type_data) {
             static std::once_flag init_flag{};
             std::call_once(init_flag, [this, &type_data](){
                 const locker lock;
-                type_by_id_[type_data->id] = any_type{type_data};
+                type_by_id_.emplace(type_data.id, any_type{&type_data});
             #ifndef META_HPP_NO_RTTI
-                type_by_rtti_[typeid(Type)] = any_type{type_data};
+                type_by_rtti_.emplace(typeid(Type), any_type{&type_data});
             #endif
             });
-            return type_data;
         }
     private:
         std::recursive_mutex mutex_;

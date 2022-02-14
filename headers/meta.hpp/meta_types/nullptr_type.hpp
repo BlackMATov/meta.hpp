@@ -22,11 +22,11 @@ namespace meta_hpp::detail
 
 namespace meta_hpp
 {
-    inline nullptr_type::nullptr_type(detail::nullptr_type_data_ptr data)
-    : data_{std::move(data)} {}
+    inline nullptr_type::nullptr_type(detail::nullptr_type_data* data)
+    : data_{data} {}
 
     inline bool nullptr_type::is_valid() const noexcept {
-        return !!data_;
+        return data_ != nullptr;
     }
 
     inline nullptr_type::operator bool() const noexcept {

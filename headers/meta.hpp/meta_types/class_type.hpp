@@ -34,11 +34,11 @@ namespace meta_hpp::detail
 
 namespace meta_hpp
 {
-    inline class_type::class_type(detail::class_type_data_ptr data)
-    : data_{std::move(data)} {}
+    inline class_type::class_type(detail::class_type_data* data)
+    : data_{data} {}
 
     inline bool class_type::is_valid() const noexcept {
-        return !!data_;
+        return data_ != nullptr;
     }
 
     inline class_type::operator bool() const noexcept {

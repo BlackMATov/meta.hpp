@@ -26,11 +26,11 @@ namespace meta_hpp::detail
 
 namespace meta_hpp
 {
-    inline number_type::number_type(detail::number_type_data_ptr data)
-    : data_{std::move(data)} {}
+    inline number_type::number_type(detail::number_type_data* data)
+    : data_{data} {}
 
     inline bool number_type::is_valid() const noexcept {
-        return !!data_;
+        return data_ != nullptr;
     }
 
     inline number_type::operator bool() const noexcept {
