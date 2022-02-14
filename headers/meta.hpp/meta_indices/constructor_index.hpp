@@ -22,6 +22,10 @@ namespace meta_hpp
         return constructor_index{detail::resolve_constructor_type<Class, Args...>()};
     }
 
+    inline std::size_t constructor_index::get_hash() const noexcept {
+        return detail::hash_combiner{}(type_);
+    }
+
     inline const constructor_type& constructor_index::get_type() const noexcept {
         return type_;
     }

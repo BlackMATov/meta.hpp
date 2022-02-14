@@ -22,6 +22,10 @@ namespace meta_hpp
         return destructor_index{detail::resolve_destructor_type<Class>()};
     }
 
+    inline std::size_t destructor_index::get_hash() const noexcept {
+        return detail::hash_combiner{}(type_);
+    }
+
     inline const destructor_type& destructor_index::get_type() const noexcept {
         return type_;
     }

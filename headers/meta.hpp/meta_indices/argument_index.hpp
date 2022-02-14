@@ -23,6 +23,10 @@ namespace meta_hpp
         return argument_index{detail::resolve_type<Argument>(), position};
     }
 
+    inline std::size_t argument_index::get_hash() const noexcept {
+        return detail::hash_combiner{}(detail::hash_combiner{}(type_), position_);
+    }
+
     inline const any_type& argument_index::get_type() const noexcept {
         return type_;
     }

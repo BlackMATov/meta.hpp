@@ -23,6 +23,10 @@ namespace meta_hpp
         return function_index{detail::resolve_type<Function>(), std::move(name)};
     }
 
+    inline std::size_t function_index::get_hash() const noexcept {
+        return detail::hash_combiner{}(detail::hash_combiner{}(type_), name_);
+    }
+
     inline const function_type& function_index::get_type() const noexcept {
         return type_;
     }

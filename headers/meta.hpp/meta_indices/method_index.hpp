@@ -23,6 +23,10 @@ namespace meta_hpp
         return method_index{detail::resolve_type<Method>(), std::move(name)};
     }
 
+    inline std::size_t method_index::get_hash() const noexcept {
+        return detail::hash_combiner{}(detail::hash_combiner{}(type_), name_);
+    }
+
     inline const method_type& method_index::get_type() const noexcept {
         return type_;
     }

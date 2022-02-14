@@ -424,6 +424,16 @@ namespace meta_hpp
     };
 }
 
+namespace std
+{
+    template < meta_hpp::detail::type_family T >
+    struct hash<T> {
+        size_t operator()(const T& t) const noexcept {
+            return meta_hpp::detail::hash_combiner{}(t.get_id());
+        }
+    };
+}
+
 namespace meta_hpp
 {
     template < detail::type_family T, detail::type_family U >

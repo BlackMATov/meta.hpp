@@ -23,6 +23,10 @@ namespace meta_hpp
         return variable_index{detail::resolve_type<Pointer>(), std::move(name)};
     }
 
+    inline std::size_t variable_index::get_hash() const noexcept {
+        return detail::hash_combiner{}(detail::hash_combiner{}(type_), name_);
+    }
+
     inline const pointer_type& variable_index::get_type() const noexcept {
         return type_;
     }
