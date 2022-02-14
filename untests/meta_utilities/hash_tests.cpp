@@ -90,7 +90,7 @@ TEST_CASE("meta/meta_utilities/hash") {
         std::hash<meta::function_type>{}(ivec2_function.get_type());
         std::hash<meta::member_type>{}(ivec2_member.get_type());
         std::hash<meta::method_type>{}(ivec2_method.get_type());
-        std::hash<meta::nullptr_type>{}(meta::resolve_type<nullptr_t>());
+        std::hash<meta::nullptr_type>{}(meta::resolve_type<std::nullptr_t>());
         std::hash<meta::number_type>{}(meta::resolve_type<int>());
         std::hash<meta::pointer_type>{}(meta::resolve_type<int*>());
         std::hash<meta::reference_type>{}(meta::resolve_type<int&>());
