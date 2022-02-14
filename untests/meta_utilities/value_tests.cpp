@@ -582,8 +582,8 @@ TEST_CASE("meta/meta_utilities/value/functions") {
         {
             const meta::uvalue v{&ivec2::add};
             CHECK(v.get_type() == meta::resolve_type<ivec2&(ivec2::*)(const ivec2&)>());
-            CHECK(std::invoke(v.cast<decltype(&ivec2::add)>(), ivec2{1,2}, ivec2{3,4}) == ivec2{4,6});
-            CHECK(std::invoke(*v.try_cast<decltype(&ivec2::add)>(), ivec2{1,2}, ivec2{3,4}) == ivec2{4,6});
+            CHECK((ivec2{1,2}.*(v.cast<decltype(&ivec2::add)>()))(ivec2{3,4}) == ivec2(4,6));
+            CHECK((ivec2{1,2}.*(*v.try_cast<decltype(&ivec2::add)>()))(ivec2{3,4}) == ivec2(4,6));
         }
     }
 
@@ -591,14 +591,14 @@ TEST_CASE("meta/meta_utilities/value/functions") {
         {
             const meta::uvalue v{iadd2};
             CHECK(v.get_type() == meta::resolve_type<ivec2(*)(ivec2, ivec2)>());
-            CHECK(std::invoke(v.cast<decltype(iadd2)>(), ivec2{1,2}, ivec2{3,4}) == ivec2{4,6});
-            CHECK(std::invoke(*v.try_cast<decltype(iadd2)>(), ivec2{1,2}, ivec2{3,4}) == ivec2{4,6});
+            CHECK((v.cast<decltype(iadd2)>())(ivec2{1,2}, ivec2{3,4}) == ivec2{4,6});
+            CHECK((*v.try_cast<decltype(iadd2)>())(ivec2{1,2}, ivec2{3,4}) == ivec2{4,6});
         }
         {
             const meta::uvalue v{&iadd2};
             CHECK(v.get_type() == meta::resolve_type<ivec2(*)(ivec2, ivec2)>());
-            CHECK(std::invoke(v.cast<decltype(&iadd2)>(), ivec2{1,2}, ivec2{3,4}) == ivec2{4,6});
-            CHECK(std::invoke(*v.try_cast<decltype(&iadd2)>(), ivec2{1,2}, ivec2{3,4}) == ivec2{4,6});
+            CHECK((v.cast<decltype(&iadd2)>())(ivec2{1,2}, ivec2{3,4}) == ivec2{4,6});
+            CHECK((*v.try_cast<decltype(&iadd2)>())(ivec2{1,2}, ivec2{3,4}) == ivec2{4,6});
         }
     }
 }

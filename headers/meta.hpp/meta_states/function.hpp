@@ -38,22 +38,18 @@ namespace meta_hpp::detail
             throw_exception_with("an attempt to call a function with an incorrect arity");
         }
 
-        return std::invoke([
-            &function, args
         // NOLINTNEXTLINE(readability-named-parameter)
-        ]<std::size_t... Is>(std::index_sequence<Is...>) -> uvalue {
+        return [&function, args]<std::size_t... Is>(std::index_sequence<Is...>) -> uvalue {
             if ( !(... && args[Is].can_cast_to<type_list_at_t<Is, argument_types>>()) ) {
                 throw_exception_with("an attempt to call a function with incorrect argument types");
             }
 
             if constexpr ( as_void ) {
-                std::ignore = std::invoke(
-                    function,
+                std::ignore = function(
                     args[Is].cast<type_list_at_t<Is, argument_types>>()...);
                 return uvalue{};
             } else {
-                return_type&& return_value = std::invoke(
-                    function,
+                return_type&& return_value = function(
                     args[Is].cast<type_list_at_t<Is, argument_types>>()...);
 
                 if constexpr ( ref_as_ptr ) {
@@ -62,7 +58,7 @@ namespace meta_hpp::detail
                     return uvalue{std::forward<decltype(return_value)>(return_value)};
                 }
             }
-        }, std::make_index_sequence<ft::arity>());
+        }(std::make_index_sequence<ft::arity>());
     }
 
     template < function_kind Function >
@@ -75,9 +71,9 @@ namespace meta_hpp::detail
         }
 
         // NOLINTNEXTLINE(readability-named-parameter)
-        return std::invoke([args]<std::size_t... Is>(std::index_sequence<Is...>){
+        return [args]<std::size_t... Is>(std::index_sequence<Is...>){
             return (... && args[Is].can_cast_to<type_list_at_t<Is, argument_types>>());
-        }, std::make_index_sequence<ft::arity>());
+        }(std::make_index_sequence<ft::arity>());
     }
 }
 

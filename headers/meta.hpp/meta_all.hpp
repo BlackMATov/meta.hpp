@@ -61,9 +61,9 @@
 #include "meta_types/reference_type.hpp"
 #include "meta_types/void_type.hpp"
 
-#include "meta_value.hpp"
-#include "meta_value/value.hpp"
-#include "meta_value/vinvoke.hpp"
+#include "meta_uvalue.hpp"
+#include "meta_uvalue/invoke.hpp"
+#include "meta_uvalue/uvalue.hpp"
 
 namespace meta_hpp
 {

@@ -7,7 +7,7 @@
 #pragma once
 
 #include "../meta_base.hpp"
-#include "../meta_value.hpp"
+#include "../meta_uvalue.hpp"
 
 #include "../meta_detail/value_traits/deref_traits.hpp"
 #include "../meta_detail/value_traits/equals_traits.hpp"
