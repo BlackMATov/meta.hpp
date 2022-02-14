@@ -15,12 +15,16 @@
 namespace meta_hpp
 {
     inline member_index::member_index(member_type type, std::string name)
-    : type_{std::move(type)}
+    : type_{type}
     , name_{std::move(name)} {}
 
     template < detail::member_kind Member >
     member_index member_index::make(std::string name) {
         return member_index{detail::resolve_type<Member>(), std::move(name)};
+    }
+
+    inline std::size_t member_index::get_hash() const noexcept {
+        return detail::hash_combiner{}(detail::hash_combiner{}(type_), name_);
     }
 
     inline const member_type& member_index::get_type() const noexcept {

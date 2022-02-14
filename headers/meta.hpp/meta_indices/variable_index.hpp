@@ -15,12 +15,16 @@
 namespace meta_hpp
 {
     inline variable_index::variable_index(pointer_type type, std::string name)
-    : type_{std::move(type)}
+    : type_{type}
     , name_{std::move(name)} {}
 
     template < detail::pointer_kind Pointer >
     variable_index variable_index::make(std::string name) {
         return variable_index{detail::resolve_type<Pointer>(), std::move(name)};
+    }
+
+    inline std::size_t variable_index::get_hash() const noexcept {
+        return detail::hash_combiner{}(detail::hash_combiner{}(type_), name_);
     }
 
     inline const pointer_type& variable_index::get_type() const noexcept {

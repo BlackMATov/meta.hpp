@@ -77,11 +77,11 @@ namespace meta_hpp
         return data_->bases;
     }
 
-    inline const constructor_map& class_type::get_ctors() const noexcept {
+    inline const constructor_map& class_type::get_constructors() const noexcept {
         return data_->constructors;
     }
 
-    inline const destructor_map& class_type::get_dtors() const noexcept {
+    inline const destructor_map& class_type::get_destructors() const noexcept {
         return data_->destructors;
     }
 

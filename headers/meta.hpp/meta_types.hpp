@@ -156,8 +156,8 @@ namespace meta_hpp
         [[nodiscard]] const std::vector<any_type>& get_argument_types() const noexcept;
 
         [[nodiscard]] const class_set& get_bases() const noexcept;
-        [[nodiscard]] const constructor_map& get_ctors() const noexcept;
-        [[nodiscard]] const destructor_map& get_dtors() const noexcept;
+        [[nodiscard]] const constructor_map& get_constructors() const noexcept;
+        [[nodiscard]] const destructor_map& get_destructors() const noexcept;
         [[nodiscard]] const function_map& get_functions() const noexcept;
         [[nodiscard]] const member_map& get_members() const noexcept;
         [[nodiscard]] const method_map& get_methods() const noexcept;
@@ -421,6 +421,16 @@ namespace meta_hpp
     private:
         detail::void_type_data* data_{};
         friend auto detail::type_access<void_type>(const void_type&);
+    };
+}
+
+namespace std
+{
+    template < meta_hpp::detail::type_family T >
+    struct hash<T> {
+        size_t operator()(const T& t) const noexcept {
+            return meta_hpp::detail::hash_combiner{}(t.get_id());
+        }
     };
 }
 

@@ -60,3 +60,13 @@ namespace meta_hpp::detail
         }
     };
 }
+
+namespace std
+{
+    template <>
+    struct hash<meta_hpp::detail::type_id> {
+        size_t operator()(const meta_hpp::detail::type_id& id) const noexcept {
+            return id.get_hash();
+        }
+    };
+}

@@ -15,12 +15,16 @@
 namespace meta_hpp
 {
     inline evalue_index::evalue_index(enum_type type, std::string name)
-    : type_{std::move(type)}
+    : type_{type}
     , name_{std::move(name)} {}
 
     template < detail::enum_kind Enum >
     evalue_index evalue_index::make(std::string name) {
         return evalue_index{detail::resolve_type<Enum>(), std::move(name)};
+    }
+
+    inline std::size_t evalue_index::get_hash() const noexcept {
+        return detail::hash_combiner{}(detail::hash_combiner{}(type_), name_);
     }
 
     inline const enum_type& evalue_index::get_type() const noexcept {

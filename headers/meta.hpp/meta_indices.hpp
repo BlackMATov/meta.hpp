@@ -9,11 +9,14 @@
 #include "meta_base.hpp"
 #include "meta_types.hpp"
 
+#include "meta_detail/index_family.hpp"
+
 namespace meta_hpp
 {
     class argument_index final {
     public:
         argument_index() = delete;
+        [[nodiscard]] std::size_t get_hash() const noexcept;
         [[nodiscard]] const any_type& get_type() const noexcept;
         [[nodiscard]] std::size_t get_position() const noexcept;
     private:
@@ -32,6 +35,7 @@ namespace meta_hpp
     class constructor_index final {
     public:
         constructor_index() = delete;
+        [[nodiscard]] std::size_t get_hash() const noexcept;
         [[nodiscard]] const constructor_type& get_type() const noexcept;
     private:
         friend detail::constructor_state;
@@ -48,6 +52,7 @@ namespace meta_hpp
     class destructor_index final {
     public:
         destructor_index() = delete;
+        [[nodiscard]] std::size_t get_hash() const noexcept;
         [[nodiscard]] const destructor_type& get_type() const noexcept;
     private:
         friend detail::destructor_state;
@@ -64,6 +69,7 @@ namespace meta_hpp
     class evalue_index final {
     public:
         evalue_index() = delete;
+        [[nodiscard]] std::size_t get_hash() const noexcept;
         [[nodiscard]] const enum_type& get_type() const noexcept;
         [[nodiscard]] const std::string& get_name() const noexcept;
     private:
@@ -82,6 +88,7 @@ namespace meta_hpp
     class function_index final {
     public:
         function_index() = delete;
+        [[nodiscard]] std::size_t get_hash() const noexcept;
         [[nodiscard]] const function_type& get_type() const noexcept;
         [[nodiscard]] const std::string& get_name() const noexcept;
     private:
@@ -100,6 +107,7 @@ namespace meta_hpp
     class member_index final {
     public:
         member_index() = delete;
+        [[nodiscard]] std::size_t get_hash() const noexcept;
         [[nodiscard]] const member_type& get_type() const noexcept;
         [[nodiscard]] const std::string& get_name() const noexcept;
     private:
@@ -118,6 +126,7 @@ namespace meta_hpp
     class method_index final {
     public:
         method_index() = delete;
+        [[nodiscard]] std::size_t get_hash() const noexcept;
         [[nodiscard]] const method_type& get_type() const noexcept;
         [[nodiscard]] const std::string& get_name() const noexcept;
     private:
@@ -136,6 +145,7 @@ namespace meta_hpp
     class scope_index final {
     public:
         scope_index() = delete;
+        [[nodiscard]] std::size_t get_hash() const noexcept;
         [[nodiscard]] const std::string& get_name() const noexcept;
     private:
         friend detail::scope_state;
@@ -151,6 +161,7 @@ namespace meta_hpp
     class variable_index final {
     public:
         variable_index() = delete;
+        [[nodiscard]] std::size_t get_hash() const noexcept;
         [[nodiscard]] const pointer_type& get_type() const noexcept;
         [[nodiscard]] const std::string& get_name() const noexcept;
     private:
@@ -164,5 +175,15 @@ namespace meta_hpp
     private:
         pointer_type type_;
         std::string name_;
+    };
+}
+
+namespace std
+{
+    template < meta_hpp::detail::index_family T >
+    struct hash<T> {
+        size_t operator()(const T& t) const noexcept {
+            return t.get_hash();
+        }
     };
 }

@@ -15,12 +15,16 @@
 namespace meta_hpp
 {
     inline method_index::method_index(method_type type, std::string name)
-    : type_{std::move(type)}
+    : type_{type}
     , name_{std::move(name)} {}
 
     template < detail::method_kind Method >
     method_index method_index::make(std::string name) {
         return method_index{detail::resolve_type<Method>(), std::move(name)};
+    }
+
+    inline std::size_t method_index::get_hash() const noexcept {
+        return detail::hash_combiner{}(detail::hash_combiner{}(type_), name_);
     }
 
     inline const method_type& method_index::get_type() const noexcept {

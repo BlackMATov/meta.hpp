@@ -183,11 +183,11 @@ TEST_CASE("meta/meta_types/class_type") {
         }
     }
 
-    SUBCASE("get_ctors") {
-        CHECK(base_clazz_1_type.get_ctors().size() == 1);
-        CHECK(base_clazz_2_type.get_ctors().size() == 1);
-        CHECK(derived_clazz_type.get_ctors().size() == 1);
-        CHECK(final_derived_clazz_type.get_ctors().size() == 1);
+    SUBCASE("get_constructors") {
+        CHECK(base_clazz_1_type.get_constructors().size() == 1);
+        CHECK(base_clazz_2_type.get_constructors().size() == 1);
+        CHECK(derived_clazz_type.get_constructors().size() == 1);
+        CHECK(final_derived_clazz_type.get_constructors().size() == 1);
     }
 
     SUBCASE("get_bases") {

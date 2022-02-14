@@ -15,12 +15,16 @@
 namespace meta_hpp
 {
     inline function_index::function_index(function_type type, std::string name)
-    : type_{std::move(type)}
+    : type_{type}
     , name_{std::move(name)} {}
 
     template < detail::function_kind Function >
     function_index function_index::make(std::string name) {
         return function_index{detail::resolve_type<Function>(), std::move(name)};
+    }
+
+    inline std::size_t function_index::get_hash() const noexcept {
+        return detail::hash_combiner{}(detail::hash_combiner{}(type_), name_);
     }
 
     inline const function_type& function_index::get_type() const noexcept {

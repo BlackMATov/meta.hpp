@@ -15,11 +15,15 @@
 namespace meta_hpp
 {
     inline destructor_index::destructor_index(destructor_type type)
-    : type_{std::move(type)} {}
+    : type_{type} {}
 
     template < detail::class_kind Class >
     destructor_index destructor_index::make() {
         return destructor_index{detail::resolve_destructor_type<Class>()};
+    }
+
+    inline std::size_t destructor_index::get_hash() const noexcept {
+        return detail::hash_combiner{}(type_);
     }
 
     inline const destructor_type& destructor_index::get_type() const noexcept {

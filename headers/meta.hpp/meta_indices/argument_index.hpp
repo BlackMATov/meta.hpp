@@ -15,12 +15,16 @@
 namespace meta_hpp
 {
     inline argument_index::argument_index(any_type type, std::size_t position)
-    : type_{std::move(type)}
+    : type_{type}
     , position_{position} {}
 
     template < typename Argument >
     inline argument_index argument_index::make(std::size_t position) {
         return argument_index{detail::resolve_type<Argument>(), position};
+    }
+
+    inline std::size_t argument_index::get_hash() const noexcept {
+        return detail::hash_combiner{}(detail::hash_combiner{}(type_), position_);
     }
 
     inline const any_type& argument_index::get_type() const noexcept {
