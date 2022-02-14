@@ -15,7 +15,7 @@
 namespace meta_hpp
 {
     inline constructor_index::constructor_index(constructor_type type)
-    : type_{std::move(type)} {}
+    : type_{type} {}
 
     template < detail::class_kind Class, typename... Args >
     constructor_index constructor_index::make() {

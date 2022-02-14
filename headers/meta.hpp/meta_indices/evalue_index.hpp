@@ -15,7 +15,7 @@
 namespace meta_hpp
 {
     inline evalue_index::evalue_index(enum_type type, std::string name)
-    : type_{std::move(type)}
+    : type_{type}
     , name_{std::move(name)} {}
 
     template < detail::enum_kind Enum >

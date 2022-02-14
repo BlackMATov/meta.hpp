@@ -15,7 +15,7 @@
 namespace meta_hpp
 {
     inline member_index::member_index(member_type type, std::string name)
-    : type_{std::move(type)}
+    : type_{type}
     , name_{std::move(name)} {}
 
     template < detail::member_kind Member >

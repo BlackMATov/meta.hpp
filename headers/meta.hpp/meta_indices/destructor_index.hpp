@@ -15,7 +15,7 @@
 namespace meta_hpp
 {
     inline destructor_index::destructor_index(destructor_type type)
-    : type_{std::move(type)} {}
+    : type_{type} {}
 
     template < detail::class_kind Class >
     destructor_index destructor_index::make() {

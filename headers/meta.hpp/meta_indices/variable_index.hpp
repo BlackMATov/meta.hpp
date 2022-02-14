@@ -15,7 +15,7 @@
 namespace meta_hpp
 {
     inline variable_index::variable_index(pointer_type type, std::string name)
-    : type_{std::move(type)}
+    : type_{type}
     , name_{std::move(name)} {}
 
     template < detail::pointer_kind Pointer >

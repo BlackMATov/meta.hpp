@@ -15,7 +15,7 @@
 namespace meta_hpp
 {
     inline function_index::function_index(function_type type, std::string name)
-    : type_{std::move(type)}
+    : type_{type}
     , name_{std::move(name)} {}
 
     template < detail::function_kind Function >

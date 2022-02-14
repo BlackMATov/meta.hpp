@@ -15,7 +15,7 @@
 namespace meta_hpp
 {
     inline argument_index::argument_index(any_type type, std::size_t position)
-    : type_{std::move(type)}
+    : type_{type}
     , position_{position} {}
 
     template < typename Argument >

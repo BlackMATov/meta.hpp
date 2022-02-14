@@ -15,7 +15,7 @@
 namespace meta_hpp
 {
     inline method_index::method_index(method_type type, std::string name)
-    : type_{std::move(type)}
+    : type_{type}
     , name_{std::move(name)} {}
 
     template < detail::method_kind Method >
