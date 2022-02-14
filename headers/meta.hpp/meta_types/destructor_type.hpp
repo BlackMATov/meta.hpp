@@ -27,11 +27,11 @@ namespace meta_hpp::detail
 
 namespace meta_hpp
 {
-    inline destructor_type::destructor_type(detail::destructor_type_data_ptr data)
-    : data_{std::move(data)} {}
+    inline destructor_type::destructor_type(detail::destructor_type_data* data)
+    : data_{data} {}
 
     inline bool destructor_type::is_valid() const noexcept {
-        return !!data_;
+        return data_ != nullptr;
     }
 
     inline destructor_type::operator bool() const noexcept {

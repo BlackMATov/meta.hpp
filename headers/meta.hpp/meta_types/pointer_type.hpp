@@ -27,11 +27,11 @@ namespace meta_hpp::detail
 
 namespace meta_hpp
 {
-    inline pointer_type::pointer_type(detail::pointer_type_data_ptr data)
-    : data_{std::move(data)} {}
+    inline pointer_type::pointer_type(detail::pointer_type_data* data)
+    : data_{data} {}
 
     inline bool pointer_type::is_valid() const noexcept {
-        return !!data_;
+        return data_ != nullptr;
     }
 
     inline pointer_type::operator bool() const noexcept {

@@ -27,11 +27,11 @@ namespace meta_hpp::detail
 
 namespace meta_hpp
 {
-    inline reference_type::reference_type(detail::reference_type_data_ptr data)
-    : data_{std::move(data)} {}
+    inline reference_type::reference_type(detail::reference_type_data* data)
+    : data_{data} {}
 
     inline bool reference_type::is_valid() const noexcept {
-        return !!data_;
+        return data_ != nullptr;
     }
 
     inline reference_type::operator bool() const noexcept {

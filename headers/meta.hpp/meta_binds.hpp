@@ -87,8 +87,8 @@ namespace meta_hpp
         explicit array_bind(metadata_map metadata);
         operator array_type() const noexcept;
     private:
-        detail::array_type_data_ptr data_;
-        detail::type_registry::locker locker_;
+        detail::array_type_data* data_{};
+        detail::type_registry::locker locker_{};
     };
 }
 
@@ -220,8 +220,8 @@ namespace meta_hpp
             variable_opts opts,
             Policy = Policy{});
     private:
-        detail::class_type_data_ptr data_;
-        detail::type_registry::locker locker_;
+        detail::class_type_data* data_{};
+        detail::type_registry::locker locker_{};
     };
 }
 
@@ -236,8 +236,8 @@ namespace meta_hpp
         enum_bind& evalue_(std::string name, Enum value);
         enum_bind& evalue_(std::string name, Enum value, evalue_opts opts);
     private:
-        detail::enum_type_data_ptr data_;
-        detail::type_registry::locker locker_;
+        detail::enum_type_data* data_{};
+        detail::type_registry::locker locker_{};
     };
 }
 
@@ -249,8 +249,8 @@ namespace meta_hpp
         explicit function_bind(metadata_map metadata);
         operator function_type() const noexcept;
     private:
-        detail::function_type_data_ptr data_;
-        detail::type_registry::locker locker_;
+        detail::function_type_data* data_{};
+        detail::type_registry::locker locker_{};
     };
 }
 
@@ -262,8 +262,8 @@ namespace meta_hpp
         explicit member_bind(metadata_map metadata);
         operator member_type() const noexcept;
     private:
-        detail::member_type_data_ptr data_;
-        detail::type_registry::locker locker_;
+        detail::member_type_data* data_{};
+        detail::type_registry::locker locker_{};
     };
 }
 
@@ -275,8 +275,8 @@ namespace meta_hpp
         explicit method_bind(metadata_map metadata);
         operator method_type() const noexcept;
     private:
-        detail::method_type_data_ptr data_;
-        detail::type_registry::locker locker_;
+        detail::method_type_data* data_{};
+        detail::type_registry::locker locker_{};
     };
 }
 
@@ -288,8 +288,8 @@ namespace meta_hpp
         explicit nullptr_bind(metadata_map metadata);
         operator nullptr_type() const noexcept;
     private:
-        detail::nullptr_type_data_ptr data_;
-        detail::type_registry::locker locker_;
+        detail::nullptr_type_data* data_{};
+        detail::type_registry::locker locker_{};
     };
 }
 
@@ -301,8 +301,8 @@ namespace meta_hpp
         explicit number_bind(metadata_map metadata);
         operator number_type() const noexcept;
     private:
-        detail::number_type_data_ptr data_;
-        detail::type_registry::locker locker_;
+        detail::number_type_data* data_{};
+        detail::type_registry::locker locker_{};
     };
 }
 
@@ -314,8 +314,8 @@ namespace meta_hpp
         explicit pointer_bind(metadata_map metadata);
         operator pointer_type() const noexcept;
     private:
-        detail::pointer_type_data_ptr data_;
-        detail::type_registry::locker locker_;
+        detail::pointer_type_data* data_{};
+        detail::type_registry::locker locker_{};
     };
 }
 
@@ -327,8 +327,8 @@ namespace meta_hpp
         explicit reference_bind(metadata_map metadata);
         operator reference_type() const noexcept;
     private:
-        detail::reference_type_data_ptr data_;
-        detail::type_registry::locker locker_;
+        detail::reference_type_data* data_{};
+        detail::type_registry::locker locker_{};
     };
 }
 
@@ -340,8 +340,8 @@ namespace meta_hpp
         explicit void_bind(metadata_map metadata);
         operator void_type() const noexcept;
     private:
-        detail::void_type_data_ptr data_;
-        detail::type_registry::locker locker_;
+        detail::void_type_data* data_{};
+        detail::type_registry::locker locker_{};
     };
 }
 
@@ -404,7 +404,7 @@ namespace meta_hpp
             Policy = Policy{});
     private:
         detail::scope_state_ptr state_;
-        detail::state_registry::locker locker_;
+        detail::state_registry::locker locker_{};
     };
 }
 

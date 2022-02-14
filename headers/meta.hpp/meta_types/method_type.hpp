@@ -29,11 +29,11 @@ namespace meta_hpp::detail
 
 namespace meta_hpp
 {
-    inline method_type::method_type(detail::method_type_data_ptr data)
-    : data_{std::move(data)} {}
+    inline method_type::method_type(detail::method_type_data* data)
+    : data_{data} {}
 
     inline bool method_type::is_valid() const noexcept {
-        return !!data_;
+        return data_ != nullptr;
     }
 
     inline method_type::operator bool() const noexcept {

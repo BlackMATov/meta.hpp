@@ -28,11 +28,11 @@ namespace meta_hpp::detail
 
 namespace meta_hpp
 {
-    inline array_type::array_type(detail::array_type_data_ptr data)
-    : data_{std::move(data)} {}
+    inline array_type::array_type(detail::array_type_data* data)
+    : data_{data} {}
 
     inline bool array_type::is_valid() const noexcept {
-        return !!data_;
+        return data_ != nullptr;
     }
 
     inline array_type::operator bool() const noexcept {
