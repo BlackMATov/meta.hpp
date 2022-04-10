@@ -39,14 +39,25 @@ target_compile_options(${PROJECT_NAME}
         -Wno-weak-vtables
         >)
 
-if(BUILD_AS_STANDALONE)
-    set(DOCTEST_NO_INSTALL ON CACHE BOOL "Don't install doctest")
-    add_subdirectory(vendors/doctest)
+#
+# BUILD_AS_STANDALONE
+#
 
-    set(FMT_INSTALL OFF CACHE BOOL "Don't install fmtlib")
-    add_subdirectory(vendors/fmtlib)
-
-    enable_testing()
-    add_subdirectory(manuals)
-    add_subdirectory(untests)
+if(NOT ${BUILD_AS_STANDALONE})
+    return()
 endif()
+
+option(BUILD_WITH_COVERAGE "Build with coverage" OFF)
+option(BUILD_WITH_SANITIZERS "Build with sanitizers" OFF)
+
+enable_testing()
+set_property(GLOBAL PROPERTY USE_FOLDERS ON)
+set_property(GLOBAL PROPERTY PREDEFINED_TARGETS_FOLDER "CMake")
+list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
+
+include(EnableASan)
+include(EnableUBSan)
+
+add_subdirectory(manuals)
+add_subdirectory(vendors)
+add_subdirectory(untests)

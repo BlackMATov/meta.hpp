@@ -1,24 +1,18 @@
 project(meta.hpp.untests)
 
-#
-# coverage
-#
-
-option(BUILD_WITH_COVERAGE "Build with coverage" OFF)
-if(BUILD_WITH_COVERAGE AND (CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang"))
-    set(COVERAGE_FLAGS "--coverage")
-    set(CMAKE_C_FLAGS_DEBUG "${CMAKE_C_FLAGS_DEBUG} ${COVERAGE_FLAGS}")
-    set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} ${COVERAGE_FLAGS}")
-    set(CMAKE_LINKER_FLAGS_DEBUG "${CMAKE_LINKER_FLAGS_DEBUG} ${COVERAGE_FLAGS}")
-endif()
-
-#
-# executable
-#
-
 file(GLOB_RECURSE UNTESTS_SOURCES "*.cpp" "*.hpp")
+source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR} FILES ${UNTESTS_SOURCES})
+
 add_executable(${PROJECT_NAME} ${UNTESTS_SOURCES})
 target_link_libraries(${PROJECT_NAME} PRIVATE meta.hpp doctest_with_main)
+
+if(${BUILD_WITH_COVERAGE})
+    target_link_libraries(${PROJECT_NAME} PRIVATE enable_gcov)
+endif()
+
+if(${BUILD_WITH_SANITIZERS})
+    target_link_libraries(${PROJECT_NAME} PRIVATE enable_asan enable_ubsan)
+endif()
 
 target_compile_options(${PROJECT_NAME}
     PRIVATE
