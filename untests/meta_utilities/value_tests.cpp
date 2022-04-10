@@ -13,10 +13,11 @@ namespace
         int y{};
 
         ivec2() = delete;
-        explicit ivec2(int v): x{v}, y{v} {}
-        ivec2(int x, int y): x{x}, y{y} {}
 
-        ivec2(ivec2&& other) noexcept
+        [[maybe_unused]] explicit ivec2(int v): x{v}, y{v} {}
+        [[maybe_unused]] ivec2(int x, int y): x{x}, y{y} {}
+
+        [[maybe_unused]] ivec2(ivec2&& other) noexcept
         : x{other.x}
         , y{other.y} {
             other.x = 0;
@@ -24,7 +25,7 @@ namespace
             ++move_constructor_counter;
         }
 
-        ivec2(const ivec2& other) noexcept
+        [[maybe_unused]] ivec2(const ivec2& other) noexcept
         : x{other.x}
         , y{other.y} {
             ++copy_constructor_counter;
@@ -49,8 +50,9 @@ namespace
         int z{};
 
         ivec3() = delete;
-        explicit ivec3(int v): x{v}, y{v}, z{v} {}
-        ivec3(int x, int y, int z): x{x}, y{y}, z{z} {}
+
+        [[maybe_unused]] explicit ivec3(int v): x{v}, y{v}, z{v} {}
+        [[maybe_unused]] ivec3(int x, int y, int z): x{x}, y{y}, z{z} {}
     };
 
     int ivec2::move_constructor_counter{0};

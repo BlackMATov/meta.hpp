@@ -11,8 +11,8 @@ namespace
     struct A {
         A() = default;
 
-        A(A&&) = default;
-        A(const A&) = default;
+        [[maybe_unused]] A(A&&) = default;
+        [[maybe_unused]]A(const A&) = default;
 
         A& operator=(A&&) = delete;
         A& operator=(const A&) = delete;

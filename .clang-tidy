@@ -2,6 +2,7 @@
 Checks: '-*,
 
         bugprone-*,
+        -bugprone-easily-swappable-parameters,
 
         clang-analyzer-*,
 

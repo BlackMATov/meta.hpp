@@ -5,7 +5,6 @@
         "--clang-tidy",
         "--compile-commands-dir=${workspaceFolder}/.clangd",
         "--completion-style=detailed",
-        "--cross-file-rename",
         "--header-insertion=never"
     ],
     "cmake.copyCompileCommands": "${workspaceFolder}/.clangd/compile_commands.json"
