@@ -8,9 +8,8 @@
 
 #include "../meta_base.hpp"
 #include "../meta_indices.hpp"
+#include "../meta_registry.hpp"
 #include "../meta_types.hpp"
-
-#include "../meta_detail/type_registry.hpp"
 
 namespace meta_hpp
 {
@@ -19,7 +18,7 @@ namespace meta_hpp
 
     template < detail::class_kind Class >
     destructor_index destructor_index::make() {
-        return destructor_index{detail::resolve_destructor_type<Class>()};
+        return destructor_index{resolve_destructor_type<Class>()};
     }
 
     inline std::size_t destructor_index::get_hash() const noexcept {

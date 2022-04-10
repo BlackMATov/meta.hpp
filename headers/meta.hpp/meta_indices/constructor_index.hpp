@@ -8,9 +8,8 @@
 
 #include "../meta_base.hpp"
 #include "../meta_indices.hpp"
+#include "../meta_registry.hpp"
 #include "../meta_types.hpp"
-
-#include "../meta_detail/type_registry.hpp"
 
 namespace meta_hpp
 {
@@ -19,7 +18,7 @@ namespace meta_hpp
 
     template < detail::class_kind Class, typename... Args >
     constructor_index constructor_index::make() {
-        return constructor_index{detail::resolve_constructor_type<Class, Args...>()};
+        return constructor_index{resolve_constructor_type<Class, Args...>()};
     }
 
     inline std::size_t constructor_index::get_hash() const noexcept {

@@ -56,6 +56,7 @@ set_property(GLOBAL PROPERTY PREDEFINED_TARGETS_FOLDER "CMake")
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
 
 include(EnableASan)
+include(EnableGCov)
 include(EnableUBSan)
 
 add_subdirectory(manuals)

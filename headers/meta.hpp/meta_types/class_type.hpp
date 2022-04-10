@@ -7,6 +7,7 @@
 #pragma once
 
 #include "../meta_base.hpp"
+#include "../meta_registry.hpp"
 #include "../meta_types.hpp"
 
 #include "../meta_states/constructor.hpp"
@@ -15,7 +16,6 @@
 #include "../meta_states/method.hpp"
 #include "../meta_states/variable.hpp"
 
-#include "../meta_detail/type_registry.hpp"
 #include "../meta_detail/type_traits/class_traits.hpp"
 
 namespace meta_hpp::detail
@@ -133,7 +133,7 @@ namespace meta_hpp
 
     template < detail::class_kind Derived >
     bool class_type::is_base_of() const noexcept {
-        return is_base_of(detail::resolve_type<Derived>());
+        return is_base_of(resolve_type<Derived>());
     }
 
     inline bool class_type::is_base_of(const class_type& derived) const noexcept {
@@ -156,7 +156,7 @@ namespace meta_hpp
 
     template < detail::class_kind Base >
     bool class_type::is_derived_from() const noexcept {
-        return is_derived_from(detail::resolve_type<Base>());
+        return is_derived_from(resolve_type<Base>());
     }
 
     inline bool class_type::is_derived_from(const class_type& base) const noexcept {
@@ -263,7 +263,7 @@ namespace meta_hpp
 
     template < typename... Args >
     constructor class_type::get_constructor_with() const noexcept {
-        return get_constructor_with({detail::resolve_type<Args>()...});
+        return get_constructor_with({resolve_type<Args>()...});
     }
 
     template < typename Iter >
@@ -291,7 +291,7 @@ namespace meta_hpp
 
     template < typename... Args >
     function class_type::get_function_with(std::string_view name) const noexcept {
-        return get_function_with(name, {detail::resolve_type<Args>()...});
+        return get_function_with(name, {resolve_type<Args>()...});
     }
 
     template < typename Iter >
@@ -330,7 +330,7 @@ namespace meta_hpp
 
     template < typename... Args >
     method class_type::get_method_with(std::string_view name) const noexcept {
-        return get_method_with(name, {detail::resolve_type<Args>()...});
+        return get_method_with(name, {resolve_type<Args>()...});
     }
 
     template < typename Iter >

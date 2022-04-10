@@ -8,14 +8,13 @@
 
 #include "../meta_base.hpp"
 #include "../meta_binds.hpp"
-
-#include "../meta_detail/type_registry.hpp"
+#include "../meta_registry.hpp"
 
 namespace meta_hpp
 {
     template < detail::function_kind Function >
     function_bind<Function>::function_bind(metadata_map metadata)
-    : data_{detail::type_access(detail::resolve_type<Function>())} {
+    : data_{detail::type_access(resolve_type<Function>())} {
         data_->metadata.swap(metadata);
         data_->metadata.merge(metadata);
     }

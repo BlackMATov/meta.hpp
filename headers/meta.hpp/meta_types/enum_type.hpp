@@ -7,11 +7,11 @@
 #pragma once
 
 #include "../meta_base.hpp"
+#include "../meta_registry.hpp"
 #include "../meta_types.hpp"
 
 #include "../meta_states/evalue.hpp"
 
-#include "../meta_detail/type_registry.hpp"
 #include "../meta_detail/type_traits/enum_traits.hpp"
 #include "../meta_detail/value_utilities/uarg.hpp"
 

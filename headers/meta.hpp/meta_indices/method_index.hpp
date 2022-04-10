@@ -8,9 +8,8 @@
 
 #include "../meta_base.hpp"
 #include "../meta_indices.hpp"
+#include "../meta_registry.hpp"
 #include "../meta_types.hpp"
-
-#include "../meta_detail/type_registry.hpp"
 
 namespace meta_hpp
 {
@@ -20,7 +19,7 @@ namespace meta_hpp
 
     template < detail::method_kind Method >
     method_index method_index::make(std::string name) {
-        return method_index{detail::resolve_type<Method>(), std::move(name)};
+        return method_index{resolve_type<Method>(), std::move(name)};
     }
 
     inline std::size_t method_index::get_hash() const noexcept {

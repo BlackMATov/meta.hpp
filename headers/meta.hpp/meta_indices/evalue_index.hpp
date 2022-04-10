@@ -8,9 +8,8 @@
 
 #include "../meta_base.hpp"
 #include "../meta_indices.hpp"
+#include "../meta_registry.hpp"
 #include "../meta_types.hpp"
-
-#include "../meta_detail/type_registry.hpp"
 
 namespace meta_hpp
 {
@@ -20,7 +19,7 @@ namespace meta_hpp
 
     template < detail::enum_kind Enum >
     evalue_index evalue_index::make(std::string name) {
-        return evalue_index{detail::resolve_type<Enum>(), std::move(name)};
+        return evalue_index{resolve_type<Enum>(), std::move(name)};
     }
 
     inline std::size_t evalue_index::get_hash() const noexcept {

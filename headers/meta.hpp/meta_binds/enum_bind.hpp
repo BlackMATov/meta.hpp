@@ -8,14 +8,13 @@
 
 #include "../meta_base.hpp"
 #include "../meta_binds.hpp"
-
-#include "../meta_detail/type_registry.hpp"
+#include "../meta_registry.hpp"
 
 namespace meta_hpp
 {
     template < detail::enum_kind Enum >
     enum_bind<Enum>::enum_bind(metadata_map metadata)
-    : data_{detail::type_access(detail::resolve_type<Enum>())} {
+    : data_{detail::type_access(resolve_type<Enum>())} {
         data_->metadata.swap(metadata);
         data_->metadata.merge(metadata);
     }

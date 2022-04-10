@@ -34,6 +34,8 @@
 #include "meta_indices/scope_index.hpp"
 #include "meta_indices/variable_index.hpp"
 
+#include "meta_registry.hpp"
+
 #include "meta_states.hpp"
 #include "meta_states/argument.hpp"
 #include "meta_states/constructor.hpp"
@@ -64,11 +66,3 @@
 #include "meta_uvalue.hpp"
 #include "meta_uvalue/invoke.hpp"
 #include "meta_uvalue/uvalue.hpp"
-
-namespace meta_hpp
-{
-    using detail::resolve_type;
-    using detail::resolve_polymorphic_type;
-
-    using detail::resolve_scope;
-}
