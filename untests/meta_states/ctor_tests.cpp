@@ -12,8 +12,8 @@ namespace
     struct clazz {
         int i{};
 
-        clazz(int i)
-        : i{i} {
+        clazz(int ni)
+        : i{ni} {
             ++constructor_counter;
         }
 

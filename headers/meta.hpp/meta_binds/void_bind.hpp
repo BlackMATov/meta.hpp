@@ -8,14 +8,13 @@
 
 #include "../meta_base.hpp"
 #include "../meta_binds.hpp"
-
-#include "../meta_detail/type_registry.hpp"
+#include "../meta_registry.hpp"
 
 namespace meta_hpp
 {
     template < detail::void_kind Void >
     void_bind<Void>::void_bind(metadata_map metadata)
-    : data_{detail::type_access(detail::resolve_type<void>())} {
+    : data_{detail::type_access(resolve_type<void>())} {
         data_->metadata.swap(metadata);
         data_->metadata.merge(metadata);
     }

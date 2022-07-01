@@ -1,0 +1,11 @@
+{
+    "clangd.arguments": [
+        "--all-scopes-completion",
+        "--background-index",
+        "--clang-tidy",
+        "--compile-commands-dir=${workspaceFolder}/.clangd",
+        "--completion-style=detailed",
+        "--header-insertion=never"
+    ],
+    "cmake.copyCompileCommands": "${workspaceFolder}/.clangd/compile_commands.json"
+}

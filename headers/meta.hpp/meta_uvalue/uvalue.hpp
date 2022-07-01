@@ -7,6 +7,7 @@
 #pragma once
 
 #include "../meta_base.hpp"
+#include "../meta_registry.hpp"
 #include "../meta_uvalue.hpp"
 
 #include "../meta_detail/value_traits/deref_traits.hpp"
@@ -15,8 +16,6 @@
 #include "../meta_detail/value_traits/istream_traits.hpp"
 #include "../meta_detail/value_traits/less_traits.hpp"
 #include "../meta_detail/value_traits/ostream_traits.hpp"
-
-#include "../meta_detail/type_registry.hpp"
 
 namespace meta_hpp
 {
@@ -118,7 +117,7 @@ namespace meta_hpp
         // NOLINTNEXTLINE(readability-function-cognitive-complexity)
         static vtable_t* get() {
             static vtable_t table{
-                .type = detail::resolve_type<Tp>(),
+                .type = resolve_type<Tp>(),
 
                 .data = [](storage_u& from) noexcept -> void* {
                     return storage_cast<Tp>(from);
@@ -302,7 +301,7 @@ namespace meta_hpp
     }
 
     inline const any_type& uvalue::get_type() const noexcept {
-        static any_type void_type = detail::resolve_type<void>();
+        static any_type void_type = resolve_type<void>();
         return vtable_ != nullptr ? vtable_->type : void_type;
     }
 
@@ -365,7 +364,7 @@ namespace meta_hpp
     template < typename T >
     std::decay_t<T>* uvalue::try_cast() noexcept {
         using Tp = std::decay_t<T>;
-        return get_type() == detail::resolve_type<Tp>()
+        return get_type() == resolve_type<Tp>()
             ? vtable_t::storage_cast<Tp>(storage_)
             : nullptr;
     }
@@ -373,7 +372,7 @@ namespace meta_hpp
     template < typename T >
     const std::decay_t<T>* uvalue::try_cast() const noexcept {
         using Tp = std::decay_t<T>;
-        return get_type() == detail::resolve_type<Tp>()
+        return get_type() == resolve_type<Tp>()
             ? vtable_t::storage_cast<Tp>(storage_)
             : nullptr;
     }
@@ -388,7 +387,7 @@ namespace meta_hpp
         }
 
         const any_type& l_type = l.get_type();
-        const any_type& r_type = detail::resolve_type<T>();
+        const any_type& r_type = resolve_type<T>();
 
         return (l_type < r_type) || (l_type == r_type && l.cast<T>() < r);
     }
@@ -399,7 +398,7 @@ namespace meta_hpp
             return false;
         }
 
-        const any_type& l_type = detail::resolve_type<T>();
+        const any_type& l_type = resolve_type<T>();
         const any_type& r_type = r.get_type();
 
         return (l_type < r_type) || (l_type == r_type && l < r.cast<T>());
@@ -430,7 +429,7 @@ namespace meta_hpp
         }
 
         const any_type& l_type = l.get_type();
-        const any_type& r_type = detail::resolve_type<T>();
+        const any_type& r_type = resolve_type<T>();
 
         return l_type == r_type && l.cast<T>() == r;
     }
@@ -441,7 +440,7 @@ namespace meta_hpp
             return false;
         }
 
-        const any_type& l_type = detail::resolve_type<T>();
+        const any_type& l_type = resolve_type<T>();
         const any_type& r_type = r.get_type();
 
         return l_type == r_type && l == r.cast<T>();

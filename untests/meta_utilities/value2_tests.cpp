@@ -13,10 +13,11 @@ namespace
         int y{};
 
         ivec2() = delete;
-        explicit ivec2(int v): x{v}, y{v} {}
-        ivec2(int x, int y): x{x}, y{y} {}
 
-        ivec2(ivec2&& other) noexcept
+        [[maybe_unused]] explicit ivec2(int nv): x{nv}, y{nv} {}
+        [[maybe_unused]] ivec2(int nx, int ny): x{nx}, y{ny} {}
+
+        [[maybe_unused]] ivec2(ivec2&& other) noexcept
         : x{other.x}
         , y{other.y} {
             other.x = 0;
@@ -24,7 +25,7 @@ namespace
             ++move_constructor_counter;
         }
 
-        ivec2(const ivec2& other) noexcept
+        [[maybe_unused]] ivec2(const ivec2& other) noexcept
         : x{other.x}
         , y{other.y} {
             ++copy_constructor_counter;
@@ -49,10 +50,11 @@ namespace
         int dummy[42]{};
 
         ivec2_big() = delete;
-        explicit ivec2_big(int v): x{v}, y{v} {}
-        ivec2_big(int x, int y): x{x}, y{y} {}
 
-        ivec2_big(ivec2_big&& other) noexcept
+        [[maybe_unused]] explicit ivec2_big(int nv): x{nv}, y{nv} {}
+        [[maybe_unused]] ivec2_big(int nx, int ny): x{nx}, y{ny} {}
+
+        [[maybe_unused]] ivec2_big(ivec2_big&& other) noexcept
         : x{other.x}
         , y{other.y} {
             other.x = 0;
@@ -60,7 +62,7 @@ namespace
             ++move_constructor_counter;
         }
 
-        ivec2_big(const ivec2_big& other) noexcept
+        [[maybe_unused]] ivec2_big(const ivec2_big& other) noexcept
         : x{other.x}
         , y{other.y} {
             ++copy_constructor_counter;

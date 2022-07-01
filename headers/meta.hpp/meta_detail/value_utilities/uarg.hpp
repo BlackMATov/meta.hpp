@@ -209,9 +209,8 @@ namespace meta_hpp::detail
                     return std::is_convertible_v<noncopyable&&, copy_cvref_t<To, noncopyable>>;
                 case ref_types::const_rvalue:
                     return std::is_convertible_v<const noncopyable&&, copy_cvref_t<To, noncopyable>>;
-                default:
-                    return false;
                 }
+                return false;
             };
 
             if ( is_a(to_type, from_type) && is_convertible() ) {
@@ -230,9 +229,8 @@ namespace meta_hpp::detail
                     return std::is_constructible_v<To, to_raw_type&&> && can_cast_to<to_raw_type&&>();
                 case ref_types::const_rvalue:
                     return std::is_constructible_v<To, const to_raw_type&&> && can_cast_to<const to_raw_type&&>();
-                default:
-                    return false;
                 }
+                return false;
             };
 
             if ( is_a(to_type, from_type) && is_constructible() ) {

@@ -13,11 +13,19 @@ namespace meta_hpp::detail
 {
     class type_registry final {
     public:
+        class locker final : noncopyable {
+        public:
+            explicit locker()
+            : lock_{instance().mutex_} {}
+        private:
+            std::lock_guard<std::recursive_mutex> lock_;
+        };
+
         [[nodiscard]] static type_registry& instance() {
             static type_registry instance;
             return instance;
         }
-
+    public:
         [[nodiscard]] any_type get_type_by_id(type_id id) const noexcept {
             const locker lock;
 
@@ -37,11 +45,7 @@ namespace meta_hpp::detail
 
             return any_type{};
         }
-
-        //
-        //
-        //
-
+    public:
         template < array_kind Array >
         [[nodiscard]] array_type resolve_type() { return resolve_array_type<Array>(); }
 
@@ -74,11 +78,7 @@ namespace meta_hpp::detail
 
         template < void_kind Void >
         [[nodiscard]] void_type resolve_type() { return resolve_void_type<Void>(); }
-
-        //
-        //
-        //
-
+    public:
         template < array_kind Array >
         [[nodiscard]] array_type resolve_array_type() { return array_type{resolve_array_type_data<Array>()}; }
 
@@ -117,11 +117,7 @@ namespace meta_hpp::detail
 
         template < void_kind Void >
         [[nodiscard]] void_type resolve_void_type() { return void_type{resolve_void_type_data<Void>()}; }
-
-        //
-        //
-        //
-
+    private:
         template < array_kind Array >
         [[nodiscard]] array_type_data* resolve_array_type_data() {
             static array_type_data data{type_list<Array>{}};
@@ -210,14 +206,6 @@ namespace meta_hpp::detail
             ensure_type<Void>(data);
             return &data;
         }
-    public:
-        class locker : noncopyable {
-        public:
-            explicit locker()
-            : lock_{instance().mutex_} {}
-        private:
-            std::lock_guard<std::recursive_mutex> lock_;
-        };
     private:
         type_registry() = default;
 
@@ -237,62 +225,4 @@ namespace meta_hpp::detail
         std::map<type_id, any_type, std::less<>> type_by_id_;
         std::map<std::type_index, any_type, std::less<>> type_by_rtti_;
     };
-}
-
-namespace meta_hpp::detail
-{
-    template < typename T >
-    [[nodiscard]] auto resolve_type() {
-        type_registry& registry = type_registry::instance();
-        return registry.resolve_type<std::remove_cv_t<T>>();
-    }
-
-    template < typename... Ts >
-    [[nodiscard]] std::vector<any_type> resolve_types() {
-        return { resolve_type<Ts>()... };
-    }
-}
-
-namespace meta_hpp::detail
-{
-    template < class_kind Class, typename... Args >
-    constructor_type resolve_constructor_type() {
-        type_registry& registry = type_registry::instance();
-        return registry.resolve_constructor_type<Class, Args...>();
-    }
-
-    template < class_kind Class >
-    destructor_type resolve_destructor_type() {
-        type_registry& registry = type_registry::instance();
-        return registry.resolve_destructor_type<Class>();
-    }
-}
-
-namespace meta_hpp::detail
-{
-    template < typename T >
-    // NOLINTNEXTLINE(readability-named-parameter)
-    [[nodiscard]] auto resolve_type(T&&) {
-        return resolve_type<std::remove_reference_t<T>>();
-    }
-
-    template < typename... Ts >
-    // NOLINTNEXTLINE(readability-named-parameter)
-    [[nodiscard]] std::vector<any_type> resolve_types(type_list<Ts...>) {
-        return { resolve_type<Ts>()... };
-    }
-}
-
-namespace meta_hpp::detail
-{
-    template < typename T >
-    [[nodiscard]] any_type resolve_polymorphic_type(T&& v) noexcept {
-    #ifndef META_HPP_NO_RTTI
-        type_registry& registry = type_registry::instance();
-        return registry.get_type_by_rtti(typeid(v));
-    #else
-        (void)v;
-        return any_type{};
-    #endif
-    }
 }

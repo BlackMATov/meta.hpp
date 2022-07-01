@@ -135,8 +135,8 @@ namespace enum_hpp::detail
     struct ignore_assign final {
         Enum value;
 
-        constexpr explicit ignore_assign(Enum value) noexcept
-        : value(value) {}
+        constexpr explicit ignore_assign(Enum nvalue) noexcept
+        : value(nvalue) {}
 
         template < typename Other >
         // NOLINTNEXTLINE(readability-named-parameter)

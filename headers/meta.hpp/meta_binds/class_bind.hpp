@@ -8,14 +8,13 @@
 
 #include "../meta_base.hpp"
 #include "../meta_binds.hpp"
-
-#include "../meta_detail/type_registry.hpp"
+#include "../meta_registry.hpp"
 
 namespace meta_hpp
 {
     template < detail::class_kind Class >
     class_bind<Class>::class_bind(metadata_map metadata)
-    : data_{detail::type_access(detail::resolve_type<Class>())} {
+    : data_{detail::type_access(resolve_type<Class>())} {
         data_->metadata.swap(metadata);
         data_->metadata.merge(metadata);
     }
@@ -34,7 +33,7 @@ namespace meta_hpp
     class_bind<Class>& class_bind<Class>::base_()
         requires detail::class_bind_base_kind<Class, Base>
     {
-        const class_type base_type = detail::resolve_type<Base>();
+        const class_type base_type = resolve_type<Base>();
         if ( data_->bases.contains(base_type) ) {
             return *this;
         }
@@ -280,7 +279,7 @@ namespace meta_hpp
     template < detail::class_kind Class >
     template < typename Type >
     class_bind<Class>& class_bind<Class>::typedef_(std::string name) {
-        data_->typedefs.insert_or_assign(std::move(name), detail::resolve_type<Type>());
+        data_->typedefs.insert_or_assign(std::move(name), resolve_type<Type>());
         return *this;
     }
 

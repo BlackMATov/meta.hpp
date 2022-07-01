@@ -8,9 +8,8 @@
 
 #include "../meta_base.hpp"
 #include "../meta_indices.hpp"
+#include "../meta_registry.hpp"
 #include "../meta_types.hpp"
-
-#include "../meta_detail/type_registry.hpp"
 
 namespace meta_hpp
 {
@@ -20,7 +19,7 @@ namespace meta_hpp
 
     template < detail::pointer_kind Pointer >
     variable_index variable_index::make(std::string name) {
-        return variable_index{detail::resolve_type<Pointer>(), std::move(name)};
+        return variable_index{resolve_type<Pointer>(), std::move(name)};
     }
 
     inline std::size_t variable_index::get_hash() const noexcept {

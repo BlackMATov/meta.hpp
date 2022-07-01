@@ -8,9 +8,8 @@
 
 #include "../meta_base.hpp"
 #include "../meta_indices.hpp"
+#include "../meta_registry.hpp"
 #include "../meta_types.hpp"
-
-#include "../meta_detail/type_registry.hpp"
 
 namespace meta_hpp
 {
@@ -20,7 +19,7 @@ namespace meta_hpp
 
     template < detail::member_kind Member >
     member_index member_index::make(std::string name) {
-        return member_index{detail::resolve_type<Member>(), std::move(name)};
+        return member_index{resolve_type<Member>(), std::move(name)};
     }
 
     inline std::size_t member_index::get_hash() const noexcept {

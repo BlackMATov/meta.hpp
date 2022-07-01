@@ -1,6 +1,10 @@
 ---
 Checks: '-*,
 
+        bugprone-*,
+        -bugprone-easily-swappable-parameters,
+        -bugprone-forwarding-reference-overload,
+
         clang-analyzer-*,
 
         concurrency-*,
@@ -17,6 +21,7 @@ Checks: '-*,
         portability-*,
 
         readability-*,
+        -readability-identifier-length,
         -readability-redundant-access-specifiers,
         -readability-use-anyofallof,
         '

@@ -12,8 +12,8 @@ namespace
         A() = default;
         virtual ~A() = default;
 
-        A(A&&) noexcept { ++move_ctors_; }
-        A(const A&) { ++copy_ctors_; }
+        [[maybe_unused]] A(A&&) noexcept { ++move_ctors_; }
+        [[maybe_unused]] A(const A&) { ++copy_ctors_; }
 
         A& operator=(A&&) = delete;
         A& operator=(const A&) = delete;

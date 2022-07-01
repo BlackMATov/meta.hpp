@@ -8,9 +8,8 @@
 
 #include "../meta_base.hpp"
 #include "../meta_indices.hpp"
+#include "../meta_registry.hpp"
 #include "../meta_types.hpp"
-
-#include "../meta_detail/type_registry.hpp"
 
 namespace meta_hpp
 {
@@ -20,7 +19,7 @@ namespace meta_hpp
 
     template < typename Argument >
     inline argument_index argument_index::make(std::size_t position) {
-        return argument_index{detail::resolve_type<Argument>(), position};
+        return argument_index{resolve_type<Argument>(), position};
     }
 
     inline std::size_t argument_index::get_hash() const noexcept {

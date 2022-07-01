@@ -8,9 +8,7 @@
 
 #include "../meta_base.hpp"
 #include "../meta_binds.hpp"
-
-#include "../meta_detail/state_registry.hpp"
-#include "../meta_detail/type_registry.hpp"
+#include "../meta_registry.hpp"
 
 namespace meta_hpp
 {
@@ -20,7 +18,7 @@ namespace meta_hpp
 
     // NOLINTNEXTLINE(readability-named-parameter)
     inline scope_bind::scope_bind(std::string_view name, metadata_map metadata, static_tag)
-    : state_{detail::state_access(detail::resolve_scope(name))} {
+    : state_{detail::state_access(resolve_scope(name))} {
         state_->metadata.swap(metadata);
         state_->metadata.merge(metadata);
     }
@@ -99,7 +97,7 @@ namespace meta_hpp
 
     template < typename Type >
     scope_bind& scope_bind::typedef_(std::string name) {
-        state_->typedefs.insert_or_assign(std::move(name), detail::resolve_type<Type>());
+        state_->typedefs.insert_or_assign(std::move(name), resolve_type<Type>());
         return *this;
     }
 

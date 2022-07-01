@@ -8,14 +8,13 @@
 
 #include "../meta_base.hpp"
 #include "../meta_binds.hpp"
-
-#include "../meta_detail/type_registry.hpp"
+#include "../meta_registry.hpp"
 
 namespace meta_hpp
 {
     template < detail::pointer_kind Pointer >
     pointer_bind<Pointer>::pointer_bind(metadata_map metadata)
-    : data_{detail::type_access(detail::resolve_type<Pointer>())} {
+    : data_{detail::type_access(resolve_type<Pointer>())} {
         data_->metadata.swap(metadata);
         data_->metadata.merge(metadata);
     }

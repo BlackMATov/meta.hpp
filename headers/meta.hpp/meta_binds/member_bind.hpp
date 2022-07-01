@@ -8,14 +8,13 @@
 
 #include "../meta_base.hpp"
 #include "../meta_binds.hpp"
-
-#include "../meta_detail/type_registry.hpp"
+#include "../meta_registry.hpp"
 
 namespace meta_hpp
 {
     template < detail::member_kind Member >
     member_bind<Member>::member_bind(metadata_map metadata)
-    : data_{detail::type_access(detail::resolve_type<Member>())} {
+    : data_{detail::type_access(resolve_type<Member>())} {
         data_->metadata.swap(metadata);
         data_->metadata.merge(metadata);
     }

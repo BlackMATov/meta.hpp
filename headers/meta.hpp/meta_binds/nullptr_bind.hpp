@@ -8,14 +8,13 @@
 
 #include "../meta_base.hpp"
 #include "../meta_binds.hpp"
-
-#include "../meta_detail/type_registry.hpp"
+#include "../meta_registry.hpp"
 
 namespace meta_hpp
 {
     template < detail::nullptr_kind Nullptr >
     nullptr_bind<Nullptr>::nullptr_bind(metadata_map metadata)
-    : data_{detail::type_access(detail::resolve_type<Nullptr>())} {
+    : data_{detail::type_access(resolve_type<Nullptr>())} {
         data_->metadata.swap(metadata);
         data_->metadata.merge(metadata);
     }

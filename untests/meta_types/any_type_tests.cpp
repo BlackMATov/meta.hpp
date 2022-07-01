@@ -10,7 +10,7 @@ namespace
 {
     struct class_t {
         class_t() = default;
-        class_t(int i): member_v{i} {}
+        [[maybe_unused]] class_t(int i): member_v{i} {}
 
         int member_v{};
         void method_v() {}
