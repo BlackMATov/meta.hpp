@@ -23,7 +23,17 @@ target_compile_options(${PROJECT_NAME}
         -Werror -Wall -Wextra -Wpedantic>
     PRIVATE
     $<$<OR:$<CXX_COMPILER_ID:Clang>,$<CXX_COMPILER_ID:AppleClang>>:
-        -Werror -Weverything -Wconversion>)
+        -Werror -Weverything -Wconversion
+        -Wno-c++98-compat
+        -Wno-c++98-compat-pedantic
+        -Wno-exit-time-destructors
+        -Wno-padded
+        -Wno-unknown-warning-option
+        -Wno-unneeded-internal-declaration
+        -Wno-unneeded-member-function
+        -Wno-unused-macros
+        -Wno-weak-vtables
+        >)
 
 target_compile_definitions(${PROJECT_NAME} PRIVATE
     DOCTEST_CONFIG_INCLUDE_TYPE_TRAITS

@@ -14,8 +14,8 @@ namespace
 
         ivec2() = delete;
 
-        [[maybe_unused]] explicit ivec2(int v): x{v}, y{v} {}
-        [[maybe_unused]] ivec2(int x, int y): x{x}, y{y} {}
+        [[maybe_unused]] explicit ivec2(int nv): x{nv}, y{nv} {}
+        [[maybe_unused]] ivec2(int nx, int ny): x{nx}, y{ny} {}
 
         [[maybe_unused]] ivec2(ivec2&& other) noexcept
         : x{other.x}
@@ -51,8 +51,8 @@ namespace
 
         ivec2_big() = delete;
 
-        [[maybe_unused]] explicit ivec2_big(int v): x{v}, y{v} {}
-        [[maybe_unused]] ivec2_big(int x, int y): x{x}, y{y} {}
+        [[maybe_unused]] explicit ivec2_big(int nv): x{nv}, y{nv} {}
+        [[maybe_unused]] ivec2_big(int nx, int ny): x{nx}, y{ny} {}
 
         [[maybe_unused]] ivec2_big(ivec2_big&& other) noexcept
         : x{other.x}

@@ -18,27 +18,6 @@ target_include_directories(${PROJECT_NAME} INTERFACE headers)
 find_package(Threads REQUIRED)
 target_link_libraries(${PROJECT_NAME} INTERFACE Threads::Threads)
 
-target_compile_options(${PROJECT_NAME}
-    INTERFACE
-    $<$<CXX_COMPILER_ID:MSVC>:
-        >
-    INTERFACE
-    $<$<CXX_COMPILER_ID:GNU>:
-        >
-    INTERFACE
-    $<$<OR:$<CXX_COMPILER_ID:Clang>,$<CXX_COMPILER_ID:AppleClang>>:
-        -Wno-c++98-compat
-        -Wno-c++98-compat-pedantic
-        -Wno-covered-switch-default
-        -Wno-exit-time-destructors
-        -Wno-global-constructors
-        -Wno-padded
-        -Wno-shadow-field-in-constructor
-        -Wno-unknown-warning-option
-        -Wno-unused-macros
-        -Wno-weak-vtables
-        >)
-
 #
 # BUILD_AS_STANDALONE
 #

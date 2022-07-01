@@ -476,9 +476,9 @@ namespace meta_hpp::detail
 
         metadata_map metadata;
 
-        explicit type_data_base(type_id id, type_kind kind)
-        : id{id}
-        , kind{kind} {}
+        explicit type_data_base(type_id nid, type_kind nkind)
+        : id{nid}
+        , kind{nkind} {}
     };
 
     struct array_type_data final : type_data_base {

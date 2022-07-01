@@ -20,8 +20,8 @@ namespace
         int x{};
         int y{};
 
-        [[maybe_unused]] explicit ivec2(int v) : x{v}, y{v} {}
-        [[maybe_unused]] ivec2(int x, int y) : x{x}, y{y} {}
+        [[maybe_unused]] explicit ivec2(int nv) : x{nv}, y{nv} {}
+        [[maybe_unused]] ivec2(int nx, int ny) : x{nx}, y{ny} {}
 
         ivec2& add(const ivec2& other) noexcept {
             x += other.x;
