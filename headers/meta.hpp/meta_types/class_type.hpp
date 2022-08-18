@@ -29,6 +29,7 @@ namespace meta_hpp::detail
     : type_data_base{type_id{type_list<class_tag<Class>>{}}, type_kind::class_}
     , flags{class_traits<Class>::make_flags()}
     , size{class_traits<Class>::size}
+    , align{class_traits<Class>::align}
     , argument_types{resolve_types(typename class_traits<Class>::argument_types{})} {}
 }
 
@@ -59,6 +60,10 @@ namespace meta_hpp
 
     inline std::size_t class_type::get_size() const noexcept {
         return data_->size;
+    }
+
+    inline std::size_t class_type::get_align() const noexcept {
+        return data_->align;
     }
 
     inline std::size_t class_type::get_arity() const noexcept {

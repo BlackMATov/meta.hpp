@@ -126,6 +126,13 @@ TEST_CASE("meta/meta_types/class_type") {
         CHECK(final_derived_clazz_type.get_size() == sizeof(final_derived_clazz));
     }
 
+    SUBCASE("get_align") {
+        CHECK(base_clazz_1_type.get_align() == alignof(base_clazz_1));
+        CHECK(base_clazz_2_type.get_align() == alignof(base_clazz_2));
+        CHECK(derived_clazz_type.get_align() == alignof(derived_clazz));
+        CHECK(final_derived_clazz_type.get_align() == alignof(final_derived_clazz));
+    }
+
     SUBCASE("get_arity") {
         {
             const meta::class_type type = meta::resolve_type<derived_clazz>();

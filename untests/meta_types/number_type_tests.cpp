@@ -24,6 +24,7 @@ TEST_CASE("meta/meta_types/number_type") {
         REQUIRE(type);
 
         CHECK(type.get_size() == sizeof(int));
+        CHECK(type.get_align() == alignof(int));
         CHECK(type.get_flags() == (
             meta::number_flags::is_signed |
             meta::number_flags::is_integral));
@@ -34,16 +35,18 @@ TEST_CASE("meta/meta_types/number_type") {
         REQUIRE(type);
 
         CHECK(type.get_size() == sizeof(float));
+        CHECK(type.get_align() == alignof(float));
         CHECK(type.get_flags() == (
             meta::number_flags::is_signed |
             meta::number_flags::is_floating_point));
     }
 
-    SUBCASE("const unsigned") {
-        const meta::number_type type = meta::resolve_type<const unsigned>();
+    SUBCASE("const unsigned long long") {
+        const meta::number_type type = meta::resolve_type<const unsigned long long>();
         REQUIRE(type);
 
-        CHECK(type.get_size() == sizeof(unsigned));
+        CHECK(type.get_size() == sizeof(unsigned long long));
+        CHECK(type.get_align() == alignof(unsigned long long));
         CHECK(type.get_flags() == (
             meta::number_flags::is_unsigned |
             meta::number_flags::is_integral));

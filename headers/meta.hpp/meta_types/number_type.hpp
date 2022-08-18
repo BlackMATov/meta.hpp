@@ -22,7 +22,8 @@ namespace meta_hpp::detail
     number_type_data::number_type_data(type_list<Number>)
     : type_data_base{type_id{type_list<number_tag<Number>>{}}, type_kind::number_}
     , flags{number_traits<Number>::make_flags()}
-    , size{number_traits<Number>::size} {}
+    , size{number_traits<Number>::size}
+    , align{number_traits<Number>::align} {}
 }
 
 namespace meta_hpp
@@ -52,5 +53,9 @@ namespace meta_hpp
 
     inline std::size_t number_type::get_size() const noexcept {
         return data_->size;
+    }
+
+    inline std::size_t number_type::get_align() const noexcept {
+        return data_->align;
     }
 }

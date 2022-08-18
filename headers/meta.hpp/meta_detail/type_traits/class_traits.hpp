@@ -52,6 +52,7 @@ namespace meta_hpp::detail
     template < class_kind Class >
     struct class_traits : impl::class_traits_base<Class> {
         static constexpr std::size_t size{sizeof(Class)};
+        static constexpr std::size_t align{alignof(Class)};
 
         [[nodiscard]] static constexpr class_bitflags make_flags() noexcept {
             class_bitflags flags{};
