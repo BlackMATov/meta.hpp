@@ -18,7 +18,7 @@ namespace meta_hpp::detail
         is_template_instantiation = 1 << 4,
     };
 
-    ENUM_HPP_OPERATORS_DECL(class_flags)
+    META_HPP_BITFLAGS_OPERATORS_DECL(class_flags)
     using class_bitflags = bitflags<class_flags>;
 }
 

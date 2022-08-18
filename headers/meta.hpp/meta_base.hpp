@@ -33,9 +33,8 @@
 #include <variant>
 #include <vector>
 
+#include "meta_base/bitflags.hpp"
 #include "meta_base/cvref_traits.hpp"
-#include "meta_base/enum_bitflags.hpp"
-#include "meta_base/enum.hpp"
 #include "meta_base/fixed_function.hpp"
 #include "meta_base/hash_combiner.hpp"
 #include "meta_base/noncopyable.hpp"
@@ -63,8 +62,6 @@ namespace meta_hpp
     using detail::type_id;
     using detail::type_kind;
     using detail::type_list;
-
-    using enum_hpp::bitflags::bitflags;
 }
 
 namespace meta_hpp
