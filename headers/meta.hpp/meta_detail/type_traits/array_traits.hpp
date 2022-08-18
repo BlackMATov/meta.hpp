@@ -15,7 +15,7 @@ namespace meta_hpp::detail
         is_unbounded = 1 << 1,
     };
 
-    ENUM_HPP_OPERATORS_DECL(array_flags)
+    META_HPP_BITFLAGS_OPERATORS_DECL(array_flags)
     using array_bitflags = bitflags<array_flags>;
 }
 

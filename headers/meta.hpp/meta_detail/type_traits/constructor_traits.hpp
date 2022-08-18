@@ -14,7 +14,7 @@ namespace meta_hpp::detail
         is_noexcept = 1 << 0,
     };
 
-    ENUM_HPP_OPERATORS_DECL(constructor_flags)
+    META_HPP_BITFLAGS_OPERATORS_DECL(constructor_flags)
     using constructor_bitflags = bitflags<constructor_flags>;
 }
 

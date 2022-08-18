@@ -14,7 +14,7 @@ namespace meta_hpp::detail
         is_readonly = 1 << 0,
     };
 
-    ENUM_HPP_OPERATORS_DECL(member_flags)
+    META_HPP_BITFLAGS_OPERATORS_DECL(member_flags)
     using member_bitflags = bitflags<member_flags>;
 }
 

@@ -17,7 +17,7 @@ namespace meta_hpp::detail
         is_floating_point = 1 << 3,
     };
 
-    ENUM_HPP_OPERATORS_DECL(number_flags)
+    META_HPP_BITFLAGS_OPERATORS_DECL(number_flags)
     using number_bitflags = bitflags<number_flags>;
 }
 

@@ -17,7 +17,7 @@ namespace meta_hpp::detail
         is_rvalue_qualified = 1 << 3,
     };
 
-    ENUM_HPP_OPERATORS_DECL(method_flags)
+    META_HPP_BITFLAGS_OPERATORS_DECL(method_flags)
     using method_bitflags = bitflags<method_flags>;
 }
 
