@@ -10,8 +10,6 @@ endif()
 project(meta.hpp)
 
 add_library(${PROJECT_NAME} INTERFACE)
-add_library(${PROJECT_NAME}::${PROJECT_NAME} ALIAS ${PROJECT_NAME})
-
 target_compile_features(${PROJECT_NAME} INTERFACE cxx_std_20)
 target_include_directories(${PROJECT_NAME} INTERFACE headers)
 
@@ -39,5 +37,6 @@ include(EnableGCov)
 include(EnableUBSan)
 
 add_subdirectory(manuals)
+add_subdirectory(singles)
 add_subdirectory(vendors)
 add_subdirectory(untests)
