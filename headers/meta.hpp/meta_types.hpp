@@ -150,6 +150,7 @@ namespace meta_hpp
         [[nodiscard]] const metadata_map& get_metadata() const noexcept;
 
         [[nodiscard]] std::size_t get_size() const noexcept;
+        [[nodiscard]] std::size_t get_align() const noexcept;
 
         [[nodiscard]] std::size_t get_arity() const noexcept;
         [[nodiscard]] any_type get_argument_type(std::size_t position) const noexcept;
@@ -367,6 +368,7 @@ namespace meta_hpp
         [[nodiscard]] const metadata_map& get_metadata() const noexcept;
 
         [[nodiscard]] std::size_t get_size() const noexcept;
+        [[nodiscard]] std::size_t get_align() const noexcept;
     private:
         detail::number_type_data* data_{};
         friend auto detail::type_access<number_type>(const number_type&);
@@ -493,6 +495,7 @@ namespace meta_hpp::detail
     struct class_type_data final : type_data_base {
         const class_bitflags flags;
         const std::size_t size;
+        const std::size_t align;
         const std::vector<any_type> argument_types;
 
         class_set bases;
@@ -579,6 +582,7 @@ namespace meta_hpp::detail
     struct number_type_data final : type_data_base {
         const number_bitflags flags;
         const std::size_t size;
+        const std::size_t align;
 
         template < number_kind Number >
         explicit number_type_data(type_list<Number>);

@@ -37,19 +37,19 @@ namespace meta_hpp::detail
             swap(flags_, other.flags_);
         }
 
-        constexpr explicit operator bool() const noexcept {
+        [[nodiscard]] constexpr explicit operator bool() const noexcept {
             return !!flags_;
         }
 
-        constexpr underlying_type as_raw() const noexcept {
+        [[nodiscard]] constexpr underlying_type as_raw() const noexcept {
             return flags_;
         }
 
-        constexpr enum_type as_enum() const noexcept {
+        [[nodiscard]] constexpr enum_type as_enum() const noexcept {
             return static_cast<enum_type>(flags_);
         }
 
-        constexpr bool has(bitflags flags) const noexcept {
+        [[nodiscard]] constexpr bool has(bitflags flags) const noexcept {
             return flags.flags_ == (flags_ & flags.flags_);
         }
 

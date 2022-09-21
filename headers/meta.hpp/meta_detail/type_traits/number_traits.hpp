@@ -26,6 +26,7 @@ namespace meta_hpp::detail
     template < number_kind Number >
     struct number_traits {
         static constexpr std::size_t size{sizeof(Number)};
+        static constexpr std::size_t align{alignof(Number)};
 
         [[nodiscard]] static constexpr number_bitflags make_flags() noexcept {
             number_bitflags flags{};
