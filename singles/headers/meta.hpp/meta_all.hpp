@@ -17,6 +17,7 @@
 #include <map>
 #include <memory>
 #include <mutex>
+#include <new>
 #include <set>
 #include <span>
 #include <stdexcept>
@@ -223,11 +224,11 @@ namespace meta_hpp::detail
 
 namespace meta_hpp::detail
 {
-    template < typename Function, std::size_t MaxFunctorSize = sizeof(void*) * 2 >
+    template < typename Function >
     class fixed_function;
 
-    template < typename R, typename... Args, std::size_t MaxFunctorSize >
-    class fixed_function<R(Args...), MaxFunctorSize> final {
+    template < typename R, typename... Args >
+    class fixed_function<R(Args...)> final {
     public:
         using result_type = R;
 
@@ -287,59 +288,62 @@ namespace meta_hpp::detail
         struct vtable_t;
         vtable_t* vtable_{};
     private:
-        using storage_t = std::aligned_storage_t<MaxFunctorSize>;
-        storage_t storage_{};
+        struct buffer_t final {
+            // NOLINTNEXTLINE(*-avoid-c-arrays)
+            alignas(std::max_align_t) std::byte data[sizeof(void*) * 2];
+        } buffer_{};
     };
 
-    template < typename Function, std::size_t MaxFunctorSize >
-    inline void swap(fixed_function<Function, MaxFunctorSize>& l, fixed_function<Function, MaxFunctorSize>& r) noexcept {
+    template < typename Function >
+    inline void swap(fixed_function<Function>& l, fixed_function<Function>& r) noexcept {
         l.swap(r);
     }
 }
 
 namespace meta_hpp::detail
 {
-    template < typename R, typename... Args, std::size_t MaxFunctorSize >
-    struct fixed_function<R(Args...), MaxFunctorSize>::vtable_t final {
+    template < typename R, typename... Args >
+    struct fixed_function<R(Args...)>::vtable_t final {
         R (*const call)(const fixed_function& self, Args... args);
         void (*const move)(fixed_function& from, fixed_function& to) noexcept;
         void (*const destroy)(fixed_function& self);
 
         template < typename T >
-        static T* storage_cast(storage_t& storage) noexcept {
+        static T* buffer_cast(buffer_t& buffer) noexcept {
             // NOLINTNEXTLINE(cppcoreguidelines-pro-type-reinterpret-cast)
-            return reinterpret_cast<T*>(&storage);
+            return std::launder(reinterpret_cast<T*>(buffer.data));
         }
 
         template < typename T >
-        static const T* storage_cast(const storage_t& storage) noexcept {
+        static const T* buffer_cast(const buffer_t& buffer) noexcept {
             // NOLINTNEXTLINE(cppcoreguidelines-pro-type-reinterpret-cast)
-            return reinterpret_cast<const T*>(&storage);
+            return std::launder(reinterpret_cast<const T*>(buffer.data));
         }
 
-        template < typename FunctionType >
+        template < typename Fp >
         static vtable_t* get() {
             static vtable_t table{
                 .call = +[](const fixed_function& self, Args... args) -> R {
                     assert(self);
 
-                    const FunctionType& src = *storage_cast<FunctionType>(self.storage_);
+                    const Fp& src = *buffer_cast<Fp>(self.buffer_);
                     return std::invoke(src, std::forward<Args>(args)...);
                 },
                 .move = +[](fixed_function& from, fixed_function& to) noexcept {
                     assert(from && !to);
 
-                    FunctionType& src = *storage_cast<FunctionType>(from.storage_);
-                    ::new (&to.storage_) FunctionType(std::move(src));
+                    Fp& src = *buffer_cast<Fp>(from.buffer_);
+                    ::new (buffer_cast<Fp>(to.buffer_)) Fp(std::move(src));
+                    src.~Fp();
 
                     to.vtable_ = from.vtable_;
-                    from.vtable_->destroy(from);
+                    from.vtable_ = nullptr;
                 },
                 .destroy = +[](fixed_function& self){
                     assert(self);
 
-                    FunctionType& src = *storage_cast<FunctionType>(self.storage_);
-                    src.~FunctionType();
+                    Fp& src = *buffer_cast<Fp>(self.buffer_);
+                    src.~Fp();
 
                     self.vtable_ = nullptr;
                 },
@@ -351,12 +355,13 @@ namespace meta_hpp::detail
         static void construct(fixed_function& dst, Functor&& functor) {
             using Fp = std::decay_t<Functor>;
 
-            static_assert(sizeof(Fp) <= MaxFunctorSize);
-            static_assert(alignof(Fp) <= alignof(storage_t));
+            static_assert(sizeof(Fp) <= sizeof(buffer_t));
+            static_assert(alignof(Fp) <= alignof(buffer_t));
             static_assert(std::is_invocable_r_v<R, Fp, Args...>);
             static_assert(std::is_nothrow_move_constructible_v<Fp>);
 
-            ::new (&dst.storage_) Fp(std::forward<Functor>(functor));
+            ::new (buffer_cast<Fp>(dst.buffer_)) Fp(std::forward<Functor>(functor));
+
             dst.vtable_ = vtable_t::get<Fp>();
         }
 
@@ -2235,7 +2240,10 @@ namespace meta_hpp
         struct vtable_t;
         vtable_t* vtable_{};
     private:
-        using buffer_t = std::aligned_storage_t<sizeof(void*) * 2>;
+        struct buffer_t final {
+            // NOLINTNEXTLINE(*-avoid-c-arrays)
+            alignas(std::max_align_t) std::byte data[sizeof(void*) * 2];
+        };
         using storage_u = std::variant<std::monostate, void*, buffer_t>;
         storage_u storage_{};
     };
@@ -7968,13 +7976,13 @@ namespace meta_hpp
         template < typename T >
         static T* buffer_cast(buffer_t& buffer) noexcept {
             // NOLINTNEXTLINE(cppcoreguidelines-pro-type-reinterpret-cast)
-            return reinterpret_cast<T*>(&buffer);
+            return std::launder(reinterpret_cast<T*>(buffer.data));
         }
 
         template < typename T >
         static const T* buffer_cast(const buffer_t& buffer) noexcept {
             // NOLINTNEXTLINE(cppcoreguidelines-pro-type-reinterpret-cast)
-            return reinterpret_cast<const T*>(&buffer);
+            return std::launder(reinterpret_cast<const T*>(buffer.data));
         }
 
         template < typename T >
@@ -8005,8 +8013,7 @@ namespace meta_hpp
                 std::is_nothrow_move_constructible_v<Tp>;
 
             if constexpr ( in_buffer ) {
-                dst.storage_.emplace<buffer_t>();
-                ::new (storage_cast<Tp>(dst.storage_)) Tp(std::forward<T>(val));
+                ::new (buffer_cast<Tp>(dst.storage_.emplace<buffer_t>())) Tp(std::forward<T>(val));
             } else {
                 dst.storage_.emplace<void*>(std::make_unique<Tp>(std::forward<T>(val)).release());
             }
@@ -8064,7 +8071,7 @@ namespace meta_hpp
                         },
                         [&to](buffer_t& buffer) {
                             Tp& src = *buffer_cast<Tp>(buffer);
-                            ::new (&to.storage_.emplace<buffer_t>()) Tp(std::move(src));
+                            ::new (buffer_cast<Tp>(to.storage_.emplace<buffer_t>())) Tp(std::move(src));
                             src.~Tp();
                         },
                         [](...){}
@@ -8080,11 +8087,11 @@ namespace meta_hpp
                     std::visit(detail::overloaded {
                         [&to](void* ptr) {
                             const Tp& src = *static_cast<const Tp*>(ptr);
-                            to.storage_.emplace<void*>(new Tp(src));
+                            to.storage_.emplace<void*>(std::make_unique<Tp>(src).release());
                         },
                         [&to](const buffer_t& buffer) {
                             const Tp& src = *buffer_cast<Tp>(buffer);
-                            ::new (&to.storage_.emplace<buffer_t>()) Tp(src);
+                            ::new (buffer_cast<Tp>(to.storage_.emplace<buffer_t>())) Tp(src);
                         },
                         [](...){}
                     }, from.storage_);

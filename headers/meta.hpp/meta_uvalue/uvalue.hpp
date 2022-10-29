@@ -41,13 +41,13 @@ namespace meta_hpp
         template < typename T >
         static T* buffer_cast(buffer_t& buffer) noexcept {
             // NOLINTNEXTLINE(cppcoreguidelines-pro-type-reinterpret-cast)
-            return reinterpret_cast<T*>(&buffer);
+            return std::launder(reinterpret_cast<T*>(buffer.data));
         }
 
         template < typename T >
         static const T* buffer_cast(const buffer_t& buffer) noexcept {
             // NOLINTNEXTLINE(cppcoreguidelines-pro-type-reinterpret-cast)
-            return reinterpret_cast<const T*>(&buffer);
+            return std::launder(reinterpret_cast<const T*>(buffer.data));
         }
 
         template < typename T >
@@ -78,8 +78,7 @@ namespace meta_hpp
                 std::is_nothrow_move_constructible_v<Tp>;
 
             if constexpr ( in_buffer ) {
-                dst.storage_.emplace<buffer_t>();
-                ::new (storage_cast<Tp>(dst.storage_)) Tp(std::forward<T>(val));
+                ::new (buffer_cast<Tp>(dst.storage_.emplace<buffer_t>())) Tp(std::forward<T>(val));
             } else {
                 dst.storage_.emplace<void*>(std::make_unique<Tp>(std::forward<T>(val)).release());
             }
@@ -137,7 +136,7 @@ namespace meta_hpp
                         },
                         [&to](buffer_t& buffer) {
                             Tp& src = *buffer_cast<Tp>(buffer);
-                            ::new (&to.storage_.emplace<buffer_t>()) Tp(std::move(src));
+                            ::new (buffer_cast<Tp>(to.storage_.emplace<buffer_t>())) Tp(std::move(src));
                             src.~Tp();
                         },
                         [](...){}
@@ -153,11 +152,11 @@ namespace meta_hpp
                     std::visit(detail::overloaded {
                         [&to](void* ptr) {
                             const Tp& src = *static_cast<const Tp*>(ptr);
-                            to.storage_.emplace<void*>(new Tp(src));
+                            to.storage_.emplace<void*>(std::make_unique<Tp>(src).release());
                         },
                         [&to](const buffer_t& buffer) {
                             const Tp& src = *buffer_cast<Tp>(buffer);
-                            ::new (&to.storage_.emplace<buffer_t>()) Tp(src);
+                            ::new (buffer_cast<Tp>(to.storage_.emplace<buffer_t>())) Tp(src);
                         },
                         [](...){}
                     }, from.storage_);

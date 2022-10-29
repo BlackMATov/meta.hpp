@@ -21,7 +21,12 @@
         {
             "name": "macos-base",
             "hidden": true,
-            "inherits": "ninja-base"
+            "inherits": "ninja-base",
+            "condition": {
+                "type": "equals",
+                "lhs": "${hostSystemName}",
+                "rhs": "Darwin"
+            }
         },
         {
             "name": "macos-arm64",
@@ -52,6 +57,80 @@
             "cacheVariables": {
                 "BUILD_WITH_SANITIZERS": true
             }
+        },
+        {
+            "name": "windows-base",
+            "hidden": true,
+            "inherits": "ninja-base",
+            "condition": {
+                "type": "equals",
+                "lhs": "${hostSystemName}",
+                "rhs": "Windows"
+            }
+        },
+        {
+            "name": "windows-x86-msvc2019",
+            "inherits": "windows-base",
+            "architecture": {
+                "value": "x86",
+                "strategy": "external"
+            },
+            "toolset": {
+                "value": "v142,host=x64",
+                "strategy": "external"
+            },
+            "cacheVariables": {
+                "CMAKE_C_COMPILER": "cl",
+                "CMAKE_CXX_COMPILER": "cl"
+            }
+        },
+        {
+            "name": "windows-x64-msvc2019",
+            "inherits": "windows-base",
+            "architecture": {
+                "value": "x64",
+                "strategy": "external"
+            },
+            "toolset": {
+                "value": "v142,host=x64",
+                "strategy": "external"
+            },
+            "cacheVariables": {
+                "CMAKE_C_COMPILER": "cl",
+                "CMAKE_CXX_COMPILER": "cl"
+            }
+        },
+        {
+            "name": "windows-x86-msvc2022",
+            "inherits": "windows-base",
+            "architecture": {
+                "value": "x86",
+                "strategy": "external"
+            },
+            "toolset": {
+                "value": "v143,host=x64",
+                "strategy": "external"
+            },
+            "cacheVariables": {
+                "CMAKE_C_COMPILER": "cl",
+                "CMAKE_CXX_COMPILER": "cl"
+            }
+        },
+        {
+            "name": "windows-x64-msvc2022",
+            "inherits": "windows-base",
+            "architecture": {
+                "value": "x64",
+                "strategy": "external"
+            },
+            "toolset": {
+                "value": "v143,host=x64",
+                "strategy": "external"
+            },
+            "cacheVariables": {
+                "CMAKE_C_COMPILER": "cl",
+                "CMAKE_CXX_COMPILER": "cl"
+            }
         }
     ],
 
@@ -75,29 +154,46 @@
             "name": "macos-x64-release",
             "configuration": "Release",
             "configurePreset": "macos-x64"
-        }
-    ],
-
-    "testPresets": [
+        },
         {
-            "name": "macos-arm64-debug",
+            "name": "windows-x86-msvc2019-debug",
             "configuration": "Debug",
-            "configurePreset": "macos-arm64-san"
+            "configurePreset": "windows-x86-msvc2019"
         },
         {
-            "name": "macos-arm64-release",
+            "name": "windows-x86-msvc2019-release",
             "configuration": "Release",
-            "configurePreset": "macos-arm64"
+            "configurePreset": "windows-x86-msvc2019"
         },
         {
-            "name": "macos-x64-debug",
+            "name": "windows-x64-msvc2019-debug",
             "configuration": "Debug",
-            "configurePreset": "macos-x64-san"
+            "configurePreset": "windows-x64-msvc2019"
         },
         {
-            "name": "macos-x64-release",
+            "name": "windows-x64-msvc2019-release",
             "configuration": "Release",
-            "configurePreset": "macos-x64"
+            "configurePreset": "windows-x64-msvc2019"
+        },
+        {
+            "name": "windows-x86-msvc2022-debug",
+            "configuration": "Debug",
+            "configurePreset": "windows-x86-msvc2022"
+        },
+        {
+            "name": "windows-x86-msvc2022-release",
+            "configuration": "Release",
+            "configurePreset": "windows-x86-msvc2022"
+        },
+        {
+            "name": "windows-x64-msvc2022-debug",
+            "configuration": "Debug",
+            "configurePreset": "windows-x64-msvc2022"
+        },
+        {
+            "name": "windows-x64-msvc2022-release",
+            "configuration": "Release",
+            "configurePreset": "windows-x64-msvc2022"
         }
     ]
 }
