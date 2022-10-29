@@ -86,7 +86,10 @@ namespace meta_hpp
         struct vtable_t;
         vtable_t* vtable_{};
     private:
-        using buffer_t = std::aligned_storage_t<sizeof(void*) * 2>;
+        struct buffer_t final {
+            // NOLINTNEXTLINE(*-avoid-c-arrays)
+            alignas(std::max_align_t) std::byte data[sizeof(void*) * 2];
+        };
         using storage_u = std::variant<std::monostate, void*, buffer_t>;
         storage_u storage_{};
     };
