@@ -504,15 +504,15 @@ TEST_CASE("meta/meta_utilities/value") {
             CHECK(ivec2::copy_constructor_counter == 0);
 
             [[maybe_unused]] meta::uvalue vv1{*vp};
-            CHECK((ivec2::move_constructor_counter == 0 || ivec2::move_constructor_counter == 2));
+            CHECK((ivec2::move_constructor_counter == 0 || ivec2::move_constructor_counter == 1 || ivec2::move_constructor_counter == 2));
             CHECK(ivec2::copy_constructor_counter == 1);
 
             [[maybe_unused]] meta::uvalue vv2{*std::move(vp)};
-            CHECK((ivec2::move_constructor_counter == 0 || ivec2::move_constructor_counter == 4));
+            CHECK((ivec2::move_constructor_counter == 0 || ivec2::move_constructor_counter == 2 || ivec2::move_constructor_counter == 4));
             CHECK(ivec2::copy_constructor_counter == 2);
 
             [[maybe_unused]] meta::uvalue vv3{*std::as_const(vp)};
-            CHECK((ivec2::move_constructor_counter == 0 || ivec2::move_constructor_counter == 6));
+            CHECK((ivec2::move_constructor_counter == 0 || ivec2::move_constructor_counter == 3 || ivec2::move_constructor_counter == 6));
             CHECK(ivec2::copy_constructor_counter == 3);
         }
         {
