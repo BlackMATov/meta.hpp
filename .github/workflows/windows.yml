@@ -12,6 +12,8 @@ jobs:
         # https://github.com/actions/virtual-environments/tree/main/images/win
         - { os: "windows-2019", vs: "Visual Studio 2019", arch: "x86" }
         - { os: "windows-2019", vs: "Visual Studio 2019", arch: "x64" }
+        - { os: "windows-2022", vs: "Visual Studio 2022", arch: "x86" }
+        - { os: "windows-2022", vs: "Visual Studio 2022", arch: "x64" }
     name: "${{matrix.config.vs}} ${{matrix.config.arch}}"
     steps:
     - uses: actions/checkout@v2
