@@ -44,7 +44,11 @@ namespace meta_hpp::detail
                 throw_exception_with("an attempt to call a function with incorrect argument types");
             }
 
-            if constexpr ( as_void ) {
+            if constexpr ( std::is_void_v<return_type> ) {
+                function(
+                    args[Is].cast<type_list_at_t<Is, argument_types>>()...);
+                return uvalue{};
+            } else if constexpr ( stdex::same_as<Policy, function_policy::discard_return> ) {
                 std::ignore = function(
                     args[Is].cast<type_list_at_t<Is, argument_types>>()...);
                 return uvalue{};
