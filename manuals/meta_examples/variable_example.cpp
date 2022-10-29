@@ -23,7 +23,7 @@ TEST_CASE("meta/meta_examples/variable/usage") {
     // finds the variable by name 'pi_v'
     const meta::variable pi_variable = constants_scope.get_variable("pi_v");
 
-    // checks the type and data type of the founded variable
+    // checks the type and data type of the found variable
     CHECK(pi_variable.get_type() == meta::resolve_type<const double*>());
     CHECK(pi_variable.get_type().get_data_type() == meta::resolve_type<double>());
 

@@ -51,7 +51,7 @@ TEST_CASE("meta/meta_examples/function/usage") {
     // also, we can find it with argument types (for overloaded functions)
     CHECK(sub_function == math_scope.get_function_with<int, int>("sub"));
 
-    // checks a type of the founded function
+    // checks a type of the found function
     CHECK(sub_function.get_type() == meta::resolve_type<int(*)(int, int)>());
 
     // checks the ability to call the function with specific arguments
