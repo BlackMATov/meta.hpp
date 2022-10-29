@@ -21,7 +21,12 @@
         {
             "name": "macos-base",
             "hidden": true,
-            "inherits": "ninja-base"
+            "inherits": "ninja-base",
+            "condition": {
+                "type": "equals",
+                "lhs": "${hostSystemName}",
+                "rhs": "Darwin"
+            }
         },
         {
             "name": "macos-arm64",
@@ -52,6 +57,48 @@
             "cacheVariables": {
                 "BUILD_WITH_SANITIZERS": true
             }
+        },
+        {
+            "name": "windows-base",
+            "hidden": true,
+            "inherits": "ninja-base",
+            "condition": {
+                "type": "equals",
+                "lhs": "${hostSystemName}",
+                "rhs": "Windows"
+            }
+        },
+        {
+            "name": "windows-x86",
+            "inherits": "windows-base",
+            "architecture": {
+                "value": "x86",
+                "strategy": "external"
+            },
+            "toolset": {
+                "value": "host=x64",
+                "strategy": "external"
+            },
+            "cacheVariables": {
+                "CMAKE_C_COMPILER": "cl",
+                "CMAKE_CXX_COMPILER": "cl"
+            }
+        },
+        {
+            "name": "windows-x64",
+            "inherits": "windows-base",
+            "architecture": {
+                "value": "x64",
+                "strategy": "external"
+            },
+            "toolset": {
+                "value": "host=x64",
+                "strategy": "external"
+            },
+            "cacheVariables": {
+                "CMAKE_C_COMPILER": "cl",
+                "CMAKE_CXX_COMPILER": "cl"
+            }
         }
     ],
 
@@ -75,6 +122,26 @@
             "name": "macos-x64-release",
             "configuration": "Release",
             "configurePreset": "macos-x64"
+        },
+        {
+            "name": "windows-x86-debug",
+            "configuration": "Debug",
+            "configurePreset": "windows-x86"
+        },
+        {
+            "name": "windows-x86-release",
+            "configuration": "Release",
+            "configurePreset": "windows-x86"
+        },
+        {
+            "name": "windows-x64-debug",
+            "configuration": "Debug",
+            "configurePreset": "windows-x64"
+        },
+        {
+            "name": "windows-x64-release",
+            "configuration": "Release",
+            "configurePreset": "windows-x64"
         }
     ],
 
@@ -98,6 +165,26 @@
             "name": "macos-x64-release",
             "configuration": "Release",
             "configurePreset": "macos-x64"
+        },
+        {
+            "name": "windows-x86-debug",
+            "configuration": "Debug",
+            "configurePreset": "windows-x86"
+        },
+        {
+            "name": "windows-x86-release",
+            "configuration": "Release",
+            "configurePreset": "windows-x86"
+        },
+        {
+            "name": "windows-x64-debug",
+            "configuration": "Debug",
+            "configurePreset": "windows-x64"
+        },
+        {
+            "name": "windows-x64-release",
+            "configuration": "Release",
+            "configurePreset": "windows-x64"
         }
     ]
 }
