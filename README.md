@@ -54,6 +54,7 @@ target_link_libraries(your_project_target meta.hpp)
 - [Function](./manuals/meta_examples/function_example.cpp)
 - [Member](./manuals/meta_examples/member_example.cpp)
 - [Method](./manuals/meta_examples/method_example.cpp)
+- [Scopes](./manuals/meta_examples/scopes_example.cpp)
 - [Variable](./manuals/meta_examples/variable_example.cpp)
 
 ## Features
