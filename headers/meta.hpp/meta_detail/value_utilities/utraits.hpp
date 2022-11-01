@@ -135,6 +135,11 @@ namespace meta_hpp::detail
         return nullptr;
     }
 
+    [[nodiscard]] inline const void* pointer_upcast(const void* ptr, const class_type& from, const class_type& to) {
+        // NOLINTNEXTLINE(cppcoreguidelines-pro-type-const-cast)
+        return pointer_upcast(const_cast<void*>(ptr), from, to);
+    }
+
     template < class_kind To, class_kind From >
     [[nodiscard]] To* pointer_upcast(From* ptr) {
         return static_cast<To*>(pointer_upcast(ptr, resolve_type<From>(), resolve_type<To>()));
@@ -142,7 +147,6 @@ namespace meta_hpp::detail
 
     template < class_kind To, class_kind From >
     [[nodiscard]] const To* pointer_upcast(const From* ptr) {
-        // NOLINTNEXTLINE(cppcoreguidelines-pro-type-const-cast)
-        return pointer_upcast<To>(const_cast<From*>(ptr));
+        return static_cast<const To*>(pointer_upcast(ptr, resolve_type<From>(), resolve_type<To>()));
     }
 }

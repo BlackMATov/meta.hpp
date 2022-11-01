@@ -17,6 +17,8 @@
 #include "../meta_detail/value_traits/less_traits.hpp"
 #include "../meta_detail/value_traits/ostream_traits.hpp"
 
+#include "../meta_detail/value_utilities/utraits.hpp"
+
 namespace meta_hpp
 {
     struct uvalue::vtable_t final {
@@ -327,53 +329,83 @@ namespace meta_hpp
     template < typename T >
     std::decay_t<T>& uvalue::cast() & {
         using Tp = std::decay_t<T>;
+
         if ( Tp* ptr = try_cast<Tp>() ) {
             return *ptr;
         }
+
         detail::throw_exception_with("bad value cast");
     }
 
     template < typename T >
     std::decay_t<T>&& uvalue::cast() && {
         using Tp = std::decay_t<T>;
+
         if ( Tp* ptr = try_cast<Tp>() ) {
             return std::move(*ptr);
         }
+
         detail::throw_exception_with("bad value cast");
     }
 
     template < typename T >
     const std::decay_t<T>& uvalue::cast() const & {
         using Tp = std::decay_t<T>;
+
         if ( const Tp* ptr = try_cast<const Tp>() ) {
             return *ptr;
         }
+
         detail::throw_exception_with("bad value cast");
     }
 
     template < typename T >
     const std::decay_t<T>&& uvalue::cast() const && {
         using Tp = std::decay_t<T>;
+
         if ( const Tp* ptr = try_cast<const Tp>() ) {
             return std::move(*ptr);
         }
+
         detail::throw_exception_with("bad value cast");
     }
 
     template < typename T >
     std::decay_t<T>* uvalue::try_cast() noexcept {
         using Tp = std::decay_t<T>;
-        return get_type() == resolve_type<Tp>()
-            ? vtable_t::storage_cast<Tp>(storage_)
-            : nullptr;
+
+        const any_type& from_type = get_type();
+        const any_type& to_type = resolve_type<Tp>();
+
+        if ( from_type == to_type ) {
+            return static_cast<Tp*>(data());
+        }
+
+        if ( from_type.is_class() && to_type.is_class() ) {
+            void* to_ptr = detail::pointer_upcast(data(), from_type.as_class(), to_type.as_class());
+            return static_cast<Tp*>(to_ptr);
+        }
+
+        return nullptr;
     }
 
     template < typename T >
     const std::decay_t<T>* uvalue::try_cast() const noexcept {
         using Tp = std::decay_t<T>;
-        return get_type() == resolve_type<Tp>()
-            ? vtable_t::storage_cast<Tp>(storage_)
-            : nullptr;
+
+        const any_type& from_type = get_type();
+        const any_type& to_type = resolve_type<Tp>();
+
+        if ( from_type == to_type ) {
+            return static_cast<const Tp*>(data());
+        }
+
+        if ( from_type.is_class() && to_type.is_class() ) {
+            const void* to_ptr = detail::pointer_upcast(data(), from_type.as_class(), to_type.as_class());
+            return static_cast<const Tp*>(to_ptr);
+        }
+
+        return nullptr;
     }
 }
 
