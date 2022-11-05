@@ -195,6 +195,43 @@ namespace meta_hpp::detail
 namespace meta_hpp::detail
 {
     template < typename From >
+    struct cv_traits {
+        static constexpr bool is_const = std::is_const_v<std::remove_reference_t<From>>;
+        static constexpr bool is_volatile = std::is_volatile_v<std::remove_reference_t<From>>;
+
+        template < bool yesno, template < typename > typename Q, typename V >
+        using apply_t_if = std::conditional_t<yesno, Q<V>, V>;
+
+        template < typename To >
+        using add_to =
+            apply_t_if<is_const, std::add_const_t,
+            apply_t_if<is_volatile, std::add_volatile_t,
+            To>>;
+
+        template < typename To >
+        using copy_to = add_to<std::remove_cv_t<To>>;
+    };
+
+    template < typename From, typename To >
+    struct add_cv {
+        using type = typename cv_traits<From>::template add_to<To>;
+    };
+
+    template < typename From, typename To >
+    struct copy_cv {
+        using type = typename cv_traits<From>::template copy_to<To>;
+    };
+
+    template < typename From, typename To >
+    using add_cv_t = typename add_cv<From, To>::type;
+
+    template < typename From, typename To >
+    using copy_cv_t = typename copy_cv<From, To>::type;
+}
+
+namespace meta_hpp::detail
+{
+    template < typename From >
     struct cvref_traits {
         static constexpr bool is_lvalue = std::is_lvalue_reference_v<From>;
         static constexpr bool is_rvalue = std::is_rvalue_reference_v<From>;
@@ -205,18 +242,29 @@ namespace meta_hpp::detail
         using apply_t_if = std::conditional_t<yesno, Q<V>, V>;
 
         template < typename To >
-        using copy_to =
+        using add_to =
             apply_t_if<is_lvalue, std::add_lvalue_reference_t,
             apply_t_if<is_rvalue, std::add_rvalue_reference_t,
             apply_t_if<is_const, std::add_const_t,
             apply_t_if<is_volatile, std::add_volatile_t,
-            std::remove_cvref_t<To>>>>>;
+            To>>>>;
+
+        template < typename To >
+        using copy_to = add_to<std::remove_cvref_t<To>>;
+    };
+
+    template < typename From, typename To >
+    struct add_cvref {
+        using type = typename cvref_traits<From>::template add_to<To>;
     };
 
     template < typename From, typename To >
     struct copy_cvref {
         using type = typename cvref_traits<From>::template copy_to<To>;
     };
+
+    template < typename From, typename To >
+    using add_cvref_t = typename add_cvref<From, To>::type;
 
     template < typename From, typename To >
     using copy_cvref_t = typename copy_cvref<From, To>::type;
@@ -2215,22 +2263,40 @@ namespace meta_hpp
         [[nodiscard]] uvalue operator[](std::size_t index) const;
 
         template < typename T >
-        [[nodiscard]] std::decay_t<T>& cast() &;
+        [[nodiscard]] T get_as() &;
+        template < typename T >
+        [[nodiscard]] T get_as() &&;
+        template < typename T >
+        [[nodiscard]] T get_as() const &;
+        template < typename T >
+        [[nodiscard]] T get_as() const &&;
 
         template < typename T >
-        [[nodiscard]] std::decay_t<T>&& cast() &&;
+        [[nodiscard]] T& get_as_ref() &;
+        template < typename T >
+        [[nodiscard]] T&& get_as_ref() &&;
+        template < typename T >
+        [[nodiscard]] const T& get_as_ref() const &;
+        template < typename T >
+        [[nodiscard]] const T&& get_as_ref() const &&;
 
         template < typename T >
-        [[nodiscard]] const std::decay_t<T>& cast() const &;
+        [[nodiscard]] bool can_get_as() &;
+        template < typename T >
+        [[nodiscard]] bool can_get_as() &&;
+        template < typename T >
+        [[nodiscard]] bool can_get_as() const &;
+        template < typename T >
+        [[nodiscard]] bool can_get_as() const &&;
 
         template < typename T >
-        [[nodiscard]] const std::decay_t<T>&& cast() const &&;
-
+        [[nodiscard]] bool can_get_as_ref() &;
         template < typename T >
-        [[nodiscard]] std::decay_t<T>* try_cast() noexcept;
-
+        [[nodiscard]] bool can_get_as_ref() &&;
         template < typename T >
-        [[nodiscard]] const std::decay_t<T>* try_cast() const noexcept;
+        [[nodiscard]] bool can_get_as_ref() const &;
+        template < typename T >
+        [[nodiscard]] bool can_get_as_ref() const &&;
 
         friend bool operator<(const uvalue& l, const uvalue& r);
         friend bool operator==(const uvalue& l, const uvalue& r);
@@ -2251,6 +2317,21 @@ namespace meta_hpp
     inline void swap(uvalue& l, uvalue& r) noexcept {
         l.swap(r);
     }
+}
+
+namespace meta_hpp
+{
+    template < typename T, detail::decay_value_kind V >
+    [[nodiscard]] auto get_as(V&& value) -> T;
+
+    template < typename T, detail::decay_value_kind V >
+    [[nodiscard]] auto get_as_ref(V&& value) -> detail::add_cvref_t<V&&, T>;
+
+    template < typename T, detail::decay_value_kind V >
+    [[nodiscard]] bool can_get_as(V&& value) noexcept;
+
+    template < typename T, detail::decay_value_kind V >
+    [[nodiscard]] bool can_get_as_ref(V&& value) noexcept;
 }
 
 namespace meta_hpp::detail
@@ -4707,6 +4788,11 @@ namespace meta_hpp::detail
         return nullptr;
     }
 
+    [[nodiscard]] inline const void* pointer_upcast(const void* ptr, const class_type& from, const class_type& to) {
+        // NOLINTNEXTLINE(cppcoreguidelines-pro-type-const-cast)
+        return pointer_upcast(const_cast<void*>(ptr), from, to);
+    }
+
     template < class_kind To, class_kind From >
     [[nodiscard]] To* pointer_upcast(From* ptr) {
         return static_cast<To*>(pointer_upcast(ptr, resolve_type<From>(), resolve_type<To>()));
@@ -4714,8 +4800,7 @@ namespace meta_hpp::detail
 
     template < class_kind To, class_kind From >
     [[nodiscard]] const To* pointer_upcast(const From* ptr) {
-        // NOLINTNEXTLINE(cppcoreguidelines-pro-type-const-cast)
-        return pointer_upcast<To>(const_cast<From*>(ptr));
+        return static_cast<const To*>(pointer_upcast(ptr, resolve_type<From>(), resolve_type<To>()));
     }
 }
 
@@ -8119,7 +8204,7 @@ namespace meta_hpp
 
                 .deref = +[]([[maybe_unused]] const uvalue& v) -> uvalue {
                     if constexpr ( detail::has_deref_traits<Tp> ) {
-                        return detail::deref_traits<Tp>{}(v.cast<Tp>());
+                        return detail::deref_traits<Tp>{}(v.get_as_ref<Tp>());
                     } else {
                         detail::throw_exception_with("value type doesn't have value deref traits");
                     }
@@ -8127,7 +8212,7 @@ namespace meta_hpp
 
                 .index = +[]([[maybe_unused]] const uvalue& v, [[maybe_unused]] std::size_t i) -> uvalue {
                     if constexpr ( detail::has_index_traits<Tp> ) {
-                        return detail::index_traits<Tp>{}(v.cast<Tp>(), i);
+                        return detail::index_traits<Tp>{}(v.get_as_ref<Tp>(), i);
                     } else {
                         detail::throw_exception_with("value type doesn't have value index traits");
                     }
@@ -8135,7 +8220,7 @@ namespace meta_hpp
 
                 .less = +[]([[maybe_unused]] const uvalue& l, [[maybe_unused]] const uvalue& r) -> bool {
                     if constexpr ( detail::has_less_traits<Tp> ) {
-                        return detail::less_traits<Tp>{}(l.cast<Tp>(), r.cast<Tp>());
+                        return detail::less_traits<Tp>{}(l.get_as_ref<Tp>(), r.get_as_ref<Tp>());
                     } else {
                         detail::throw_exception_with("value type doesn't have value less traits");
                     }
@@ -8143,7 +8228,7 @@ namespace meta_hpp
 
                 .equals = +[]([[maybe_unused]] const uvalue& l, [[maybe_unused]] const uvalue& r) -> bool {
                     if constexpr ( detail::has_equals_traits<Tp> ) {
-                        return detail::equals_traits<Tp>{}(l.cast<Tp>(), r.cast<Tp>());
+                        return detail::equals_traits<Tp>{}(l.get_as_ref<Tp>(), r.get_as_ref<Tp>());
                     } else {
                         detail::throw_exception_with("value type doesn't have value equals traits");
                     }
@@ -8151,7 +8236,7 @@ namespace meta_hpp
 
                 .istream = +[]([[maybe_unused]] std::istream& is, [[maybe_unused]] uvalue& v) -> std::istream& {
                     if constexpr ( detail::has_istream_traits<Tp> ) {
-                        return detail::istream_traits<Tp>{}(is, v.cast<Tp>());
+                        return detail::istream_traits<Tp>{}(is, v.get_as_ref<Tp>());
                     } else {
                         detail::throw_exception_with("value type doesn't have value istream traits");
                     }
@@ -8159,7 +8244,7 @@ namespace meta_hpp
 
                 .ostream = +[]([[maybe_unused]] std::ostream& os, [[maybe_unused]] const uvalue& v) -> std::ostream& {
                     if constexpr ( detail::has_ostream_traits<Tp> ) {
-                        return detail::ostream_traits<Tp>{}(os, v.cast<Tp>());
+                        return detail::ostream_traits<Tp>{}(os, v.get_as_ref<Tp>());
                     } else {
                         detail::throw_exception_with("value type doesn't have value ostream traits");
                     }
@@ -8260,55 +8345,216 @@ namespace meta_hpp
     }
 
     template < typename T >
-    std::decay_t<T>& uvalue::cast() & {
+    T uvalue::get_as() & {
+        return meta_hpp::get_as<T>(*this);
+    }
+
+    template < typename T >
+    T uvalue::get_as() && {
+        return meta_hpp::get_as<T>(std::move(*this));
+    }
+
+    template < typename T >
+    T uvalue::get_as() const & {
+        return meta_hpp::get_as<T>(*this);
+    }
+
+    template < typename T >
+    T uvalue::get_as() const && {
+        // NOLINTNEXTLINE(*-move-const-arg)
+        return meta_hpp::get_as<T>(std::move(*this));
+    }
+
+    template < typename T >
+    T& uvalue::get_as_ref() & {
+        return meta_hpp::get_as_ref<T>(*this);
+    }
+
+    template < typename T >
+    T&& uvalue::get_as_ref() && {
+        return meta_hpp::get_as_ref<T>(std::move(*this));
+    }
+
+    template < typename T >
+    const T& uvalue::get_as_ref() const & {
+        return meta_hpp::get_as_ref<T>(*this);
+    }
+
+    template < typename T >
+    const T&& uvalue::get_as_ref() const && {
+        // NOLINTNEXTLINE(*-move-const-arg)
+        return meta_hpp::get_as_ref<T>(std::move(*this));
+    }
+
+    //
+
+    template < typename T >
+    bool uvalue::can_get_as() & {
+        return meta_hpp::can_get_as<T>(*this);
+    }
+
+    template < typename T >
+    bool uvalue::can_get_as() && {
+        return meta_hpp::can_get_as<T>(std::move(*this));
+    }
+
+    template < typename T >
+    bool uvalue::can_get_as() const & {
+        return meta_hpp::can_get_as<T>(*this);
+    }
+
+    template < typename T >
+    bool uvalue::can_get_as() const && {
+        // NOLINTNEXTLINE(*-move-const-arg)
+        return meta_hpp::can_get_as<T>(std::move(*this));
+    }
+
+    template < typename T >
+    bool uvalue::can_get_as_ref() & {
+        return meta_hpp::can_get_as_ref<T>(*this);
+    }
+
+    template < typename T >
+    bool uvalue::can_get_as_ref() && {
+        return meta_hpp::can_get_as_ref<T>(std::move(*this));
+    }
+
+    template < typename T >
+    bool uvalue::can_get_as_ref() const & {
+        return meta_hpp::can_get_as_ref<T>(*this);
+    }
+
+    template < typename T >
+    bool uvalue::can_get_as_ref() const && {
+        // NOLINTNEXTLINE(*-move-const-arg)
+        return meta_hpp::can_get_as_ref<T>(std::move(*this));
+    }
+}
+
+namespace meta_hpp
+{
+    template < typename T, detail::decay_value_kind V >
+    [[nodiscard]] auto get_as(V&& value) -> T {
         using Tp = std::decay_t<T>;
-        if ( Tp* ptr = try_cast<Tp>() ) {
-            return *ptr;
+        static_assert(std::is_constructible_v<T, detail::add_cvref_t<V&&, Tp>>);
+
+        const any_type& from_type = value.get_type();
+        const any_type& to_type = resolve_type<Tp>();
+
+        if ( from_type == to_type ) {
+            using to_ptr_t = detail::add_cv_t<V, Tp>*;
+            auto to_ptr = static_cast<to_ptr_t>(value.data());
+            return static_cast<T>(*to_ptr);
         }
+
+        const auto is_a = [](const any_type& base, const any_type& derived){
+            return (base == derived)
+                || (base.is_class() && derived.is_class() && base.as_class().is_base_of(derived.as_class()));
+        };
+
+        if ( is_a(to_type, from_type) ) {
+            const class_type& to_class = to_type.as_class();
+            const class_type& from_class = from_type.as_class();
+
+            using to_ptr_t = detail::add_cv_t<V, Tp>*;
+            auto to_ptr = static_cast<to_ptr_t>(detail::pointer_upcast(value.data(), from_class, to_class));
+            return static_cast<T>(*to_ptr);
+        }
+
+        if constexpr ( std::is_pointer_v<T> ) {
+            if ( to_type.is_pointer() && from_type.is_nullptr() ) {
+                return static_cast<T>(nullptr);
+            }
+
+            if ( to_type.is_pointer() && from_type.is_pointer() ) {
+                const pointer_type& to_type_ptr = to_type.as_pointer();
+                const bool to_type_ptr_readonly = to_type_ptr.get_flags().has(pointer_flags::is_readonly);
+
+                const pointer_type& from_type_ptr = from_type.as_pointer();
+                const bool from_type_ptr_readonly = from_type_ptr.get_flags().has(pointer_flags::is_readonly);
+
+                const any_type& to_data_type = to_type_ptr.get_data_type();
+                const any_type& from_data_type = from_type_ptr.get_data_type();
+
+                if ( to_type_ptr_readonly >= from_type_ptr_readonly ) {
+                    using from_data_ptr_t = detail::add_cv_t<V, void*>*;
+                    auto from_data_ptr = static_cast<from_data_ptr_t>(value.data());
+
+                    if ( to_data_type.is_void() || to_data_type == from_data_type ) {
+                        return static_cast<T>(*from_data_ptr);
+                    }
+
+                    if ( is_a(to_data_type, from_data_type) ) {
+                        const class_type& to_data_class = to_data_type.as_class();
+                        const class_type& from_data_class = from_data_type.as_class();
+
+                        void* to_ptr = detail::pointer_upcast(*from_data_ptr, from_data_class, to_data_class);
+                        return static_cast<T>(to_ptr);
+                    }
+                }
+            }
+        }
+
         detail::throw_exception_with("bad value cast");
     }
 
-    template < typename T >
-    std::decay_t<T>&& uvalue::cast() && {
+    template < typename T, detail::decay_value_kind V >
+    [[nodiscard]] auto get_as_ref(V&& value) -> detail::add_cvref_t<V&&, T> {
+        static_assert(!std::is_reference_v<T>);
+        return get_as<detail::add_cvref_t<V&&, T>>(std::forward<V>(value));
+    }
+
+    template < typename T, detail::decay_value_kind V >
+    [[nodiscard]] bool can_get_as(V&& value) noexcept {
         using Tp = std::decay_t<T>;
-        if ( Tp* ptr = try_cast<Tp>() ) {
-            return std::move(*ptr);
+        static_assert(std::is_constructible_v<T, detail::add_cvref_t<V&&, Tp>>);
+
+        const any_type& from_type = value.get_type();
+        const any_type& to_type = resolve_type<Tp>();
+
+        if ( from_type == to_type ) {
+            return true;
         }
-        detail::throw_exception_with("bad value cast");
-    }
 
-    template < typename T >
-    const std::decay_t<T>& uvalue::cast() const & {
-        using Tp = std::decay_t<T>;
-        if ( const Tp* ptr = try_cast<const Tp>() ) {
-            return *ptr;
+        const auto is_a = [](const any_type& base, const any_type& derived){
+            return (base == derived)
+                || (base.is_class() && derived.is_class() && base.as_class().is_base_of(derived.as_class()));
+        };
+
+        if ( is_a(to_type, from_type) ) {
+            return true;
         }
-        detail::throw_exception_with("bad value cast");
-    }
 
-    template < typename T >
-    const std::decay_t<T>&& uvalue::cast() const && {
-        using Tp = std::decay_t<T>;
-        if ( const Tp* ptr = try_cast<const Tp>() ) {
-            return std::move(*ptr);
+        if constexpr ( std::is_pointer_v<T> ) {
+            if ( to_type.is_pointer() && from_type.is_nullptr() ) {
+                return true;
+            }
+
+            if ( to_type.is_pointer() && from_type.is_pointer() ) {
+                const pointer_type& to_type_ptr = to_type.as_pointer();
+                const bool to_type_ptr_readonly = to_type_ptr.get_flags().has(pointer_flags::is_readonly);
+
+                const pointer_type& from_type_ptr = from_type.as_pointer();
+                const bool from_type_ptr_readonly = from_type_ptr.get_flags().has(pointer_flags::is_readonly);
+
+                const any_type& to_data_type = to_type_ptr.get_data_type();
+                const any_type& from_data_type = from_type_ptr.get_data_type();
+
+                if ( to_type_ptr_readonly >= from_type_ptr_readonly ) {
+                    if ( to_data_type.is_void() || is_a(to_data_type, from_data_type) ) {
+                        return true;
+                    }
+                }
+            }
         }
-        detail::throw_exception_with("bad value cast");
+
+        return false;
     }
 
-    template < typename T >
-    std::decay_t<T>* uvalue::try_cast() noexcept {
-        using Tp = std::decay_t<T>;
-        return get_type() == resolve_type<Tp>()
-            ? vtable_t::storage_cast<Tp>(storage_)
-            : nullptr;
-    }
-
-    template < typename T >
-    const std::decay_t<T>* uvalue::try_cast() const noexcept {
-        using Tp = std::decay_t<T>;
-        return get_type() == resolve_type<Tp>()
-            ? vtable_t::storage_cast<Tp>(storage_)
-            : nullptr;
+    template < typename T, detail::decay_value_kind V >
+    [[nodiscard]] bool can_get_as_ref(V&& value) noexcept {
+        static_assert(!std::is_reference_v<T>);
+        return can_get_as<detail::add_cvref_t<V&&, T>>(std::forward<V>(value));
     }
 }
 
@@ -8323,7 +8569,7 @@ namespace meta_hpp
         const any_type& l_type = l.get_type();
         const any_type& r_type = resolve_type<T>();
 
-        return (l_type < r_type) || (l_type == r_type && l.cast<T>() < r);
+        return (l_type < r_type) || (l_type == r_type && l.get_as_ref<T>() < r);
     }
 
     template < typename T >
@@ -8335,7 +8581,7 @@ namespace meta_hpp
         const any_type& l_type = resolve_type<T>();
         const any_type& r_type = r.get_type();
 
-        return (l_type < r_type) || (l_type == r_type && l < r.cast<T>());
+        return (l_type < r_type) || (l_type == r_type && l < r.get_as_ref<T>());
     }
 
     [[nodiscard]] inline bool operator<(const uvalue& l, const uvalue& r) {
@@ -8365,7 +8611,7 @@ namespace meta_hpp
         const any_type& l_type = l.get_type();
         const any_type& r_type = resolve_type<T>();
 
-        return l_type == r_type && l.cast<T>() == r;
+        return l_type == r_type && l.get_as_ref<T>() == r;
     }
 
     template < typename T >
@@ -8377,7 +8623,7 @@ namespace meta_hpp
         const any_type& l_type = resolve_type<T>();
         const any_type& r_type = r.get_type();
 
-        return l_type == r_type && l == r.cast<T>();
+        return l_type == r_type && l == r.get_as_ref<T>();
     }
 
     [[nodiscard]] inline bool operator==(const uvalue& l, const uvalue& r) {

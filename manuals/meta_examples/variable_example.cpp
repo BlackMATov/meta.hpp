@@ -34,7 +34,7 @@ TEST_CASE("meta/meta_examples/variable/usage") {
     CHECK(pi_variable_value.get_type() == meta::resolve_type<double>());
 
     // checks the typed variable value
-    CHECK(pi_variable_value.cast<double>() == doctest::Approx(3.14).epsilon(0.01));
+    CHECK(pi_variable_value.get_as<double>() == doctest::Approx(3.14).epsilon(0.01));
 
     // we can change variable values, but only non-const
     CHECK_THROWS(pi_variable.set(6.0));
