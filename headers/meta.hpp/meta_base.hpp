@@ -35,6 +35,7 @@
 #include <vector>
 
 #include "meta_base/bitflags.hpp"
+#include "meta_base/cv_traits.hpp"
 #include "meta_base/cvref_traits.hpp"
 #include "meta_base/fixed_function.hpp"
 #include "meta_base/hash_combiner.hpp"

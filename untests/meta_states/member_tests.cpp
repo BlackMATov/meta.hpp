@@ -247,14 +247,14 @@ TEST_CASE("meta/meta_states/member") {
             clazz_1 v;
             using ref_t = std::reference_wrapper<std::unique_ptr<int>>;
             CHECK(vm.get(v).get_type() == meta::resolve_type<ref_t>());
-            CHECK(vm.get(v).try_cast<ref_t>()->get() == v.unique_int_member);
+            CHECK(vm.get(v).get_as_ref<ref_t>().get() == v.unique_int_member);
         }
 
         {
             const clazz_1 v;
             using ref_t = std::reference_wrapper<const std::unique_ptr<int>>;
             CHECK(vm.get(v).get_type() == meta::resolve_type<ref_t>());
-            CHECK(vm.get(v).try_cast<ref_t>()->get() == v.unique_int_member);
+            CHECK(vm.get(v).get_as_ref<ref_t>().get() == v.unique_int_member);
         }
     }
 }

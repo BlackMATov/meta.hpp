@@ -11,9 +11,7 @@
 namespace meta_hpp::detail
 {
     template < typename From >
-    struct cvref_traits {
-        static constexpr bool is_lvalue = std::is_lvalue_reference_v<From>;
-        static constexpr bool is_rvalue = std::is_rvalue_reference_v<From>;
+    struct cv_traits {
         static constexpr bool is_const = std::is_const_v<std::remove_reference_t<From>>;
         static constexpr bool is_volatile = std::is_volatile_v<std::remove_reference_t<From>>;
 
@@ -22,29 +20,27 @@ namespace meta_hpp::detail
 
         template < typename To >
         using add_to =
-            apply_t_if<is_lvalue, std::add_lvalue_reference_t,
-            apply_t_if<is_rvalue, std::add_rvalue_reference_t,
             apply_t_if<is_const, std::add_const_t,
             apply_t_if<is_volatile, std::add_volatile_t,
-            To>>>>;
+            To>>;
 
         template < typename To >
-        using copy_to = add_to<std::remove_cvref_t<To>>;
+        using copy_to = add_to<std::remove_cv_t<To>>;
     };
 
     template < typename From, typename To >
-    struct add_cvref {
-        using type = typename cvref_traits<From>::template add_to<To>;
+    struct add_cv {
+        using type = typename cv_traits<From>::template add_to<To>;
     };
 
     template < typename From, typename To >
-    struct copy_cvref {
-        using type = typename cvref_traits<From>::template copy_to<To>;
+    struct copy_cv {
+        using type = typename cv_traits<From>::template copy_to<To>;
     };
 
     template < typename From, typename To >
-    using add_cvref_t = typename add_cvref<From, To>::type;
+    using add_cv_t = typename add_cv<From, To>::type;
 
     template < typename From, typename To >
-    using copy_cvref_t = typename copy_cvref<From, To>::type;
+    using copy_cv_t = typename copy_cv<From, To>::type;
 }

@@ -61,22 +61,40 @@ namespace meta_hpp
         [[nodiscard]] uvalue operator[](std::size_t index) const;
 
         template < typename T >
-        [[nodiscard]] std::decay_t<T>& cast() &;
+        [[nodiscard]] T get_as() &;
+        template < typename T >
+        [[nodiscard]] T get_as() &&;
+        template < typename T >
+        [[nodiscard]] T get_as() const &;
+        template < typename T >
+        [[nodiscard]] T get_as() const &&;
 
         template < typename T >
-        [[nodiscard]] std::decay_t<T>&& cast() &&;
+        [[nodiscard]] T& get_as_ref() &;
+        template < typename T >
+        [[nodiscard]] T&& get_as_ref() &&;
+        template < typename T >
+        [[nodiscard]] const T& get_as_ref() const &;
+        template < typename T >
+        [[nodiscard]] const T&& get_as_ref() const &&;
 
         template < typename T >
-        [[nodiscard]] const std::decay_t<T>& cast() const &;
+        [[nodiscard]] bool can_get_as() &;
+        template < typename T >
+        [[nodiscard]] bool can_get_as() &&;
+        template < typename T >
+        [[nodiscard]] bool can_get_as() const &;
+        template < typename T >
+        [[nodiscard]] bool can_get_as() const &&;
 
         template < typename T >
-        [[nodiscard]] const std::decay_t<T>&& cast() const &&;
-
+        [[nodiscard]] bool can_get_as_ref() &;
         template < typename T >
-        [[nodiscard]] std::decay_t<T>* try_cast() noexcept;
-
+        [[nodiscard]] bool can_get_as_ref() &&;
         template < typename T >
-        [[nodiscard]] const std::decay_t<T>* try_cast() const noexcept;
+        [[nodiscard]] bool can_get_as_ref() const &;
+        template < typename T >
+        [[nodiscard]] bool can_get_as_ref() const &&;
 
         friend bool operator<(const uvalue& l, const uvalue& r);
         friend bool operator==(const uvalue& l, const uvalue& r);
@@ -97,4 +115,19 @@ namespace meta_hpp
     inline void swap(uvalue& l, uvalue& r) noexcept {
         l.swap(r);
     }
+}
+
+namespace meta_hpp
+{
+    template < typename T, detail::decay_value_kind V >
+    [[nodiscard]] auto get_as(V&& value) -> T;
+
+    template < typename T, detail::decay_value_kind V >
+    [[nodiscard]] auto get_as_ref(V&& value) -> detail::add_cvref_t<V&&, T>;
+
+    template < typename T, detail::decay_value_kind V >
+    [[nodiscard]] bool can_get_as(V&& value) noexcept;
+
+    template < typename T, detail::decay_value_kind V >
+    [[nodiscard]] bool can_get_as_ref(V&& value) noexcept;
 }
