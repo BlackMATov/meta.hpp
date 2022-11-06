@@ -154,7 +154,7 @@ TEST_CASE("meta/meta_utilities/value2/counters/small") {
             meta::uvalue v2{std::move(v1)};
 
             CHECK_FALSE(v1);
-            CHECK(v2.cast<ivec2>().x == 1);
+            CHECK(v2.get_as<ivec2>().x == 1);
 
             CHECK(ivec2::destructor_counter == 2);
             CHECK(ivec2::move_constructor_counter == 2);
@@ -170,8 +170,8 @@ TEST_CASE("meta/meta_utilities/value2/counters/small") {
             meta::uvalue v1{ivec2{1,2}};
             meta::uvalue v2{std::as_const(v1)};
 
-            CHECK(v1.cast<ivec2>().x == 1);
-            CHECK(v2.cast<ivec2>().y == 2);
+            CHECK(v1.get_as<ivec2>().x == 1);
+            CHECK(v2.get_as<ivec2>().y == 2);
 
             CHECK(ivec2::destructor_counter == 1);
             CHECK(ivec2::move_constructor_counter == 1);
@@ -191,8 +191,8 @@ TEST_CASE("meta/meta_utilities/value2/counters/small") {
             CHECK(ivec2::copy_constructor_counter == 0);
 
             v1.swap(v2);
-            CHECK(v1.cast<ivec2>().x == 3);
-            CHECK(v2.cast<ivec2>().x == 1);
+            CHECK(v1.get_as<ivec2>().x == 3);
+            CHECK(v2.get_as<ivec2>().x == 1);
 
             CHECK(ivec2::destructor_counter == 5);
             CHECK(ivec2::move_constructor_counter == 5);
@@ -241,7 +241,7 @@ TEST_CASE("meta/meta_utilities/value2/counters/big") {
             meta::uvalue v2{std::move(v1)};
 
             CHECK_FALSE(v1);
-            CHECK(v2.cast<ivec2_big>().x == 1);
+            CHECK(v2.get_as<ivec2_big>().x == 1);
 
             CHECK(ivec2_big::destructor_counter == 1);
             CHECK(ivec2_big::move_constructor_counter == 1);
@@ -257,8 +257,8 @@ TEST_CASE("meta/meta_utilities/value2/counters/big") {
             meta::uvalue v1{ivec2_big{1,2}};
             meta::uvalue v2{std::as_const(v1)};
 
-            CHECK(v1.cast<ivec2_big>().x == 1);
-            CHECK(v2.cast<ivec2_big>().y == 2);
+            CHECK(v1.get_as<ivec2_big>().x == 1);
+            CHECK(v2.get_as<ivec2_big>().y == 2);
 
             CHECK(ivec2_big::destructor_counter == 1);
             CHECK(ivec2_big::move_constructor_counter == 1);
@@ -278,8 +278,8 @@ TEST_CASE("meta/meta_utilities/value2/counters/big") {
             CHECK(ivec2_big::copy_constructor_counter == 0);
 
             v1.swap(v2);
-            CHECK(v1.cast<ivec2_big>().x == 3);
-            CHECK(v2.cast<ivec2_big>().x == 1);
+            CHECK(v1.get_as<ivec2_big>().x == 3);
+            CHECK(v2.get_as<ivec2_big>().x == 1);
 
             CHECK(ivec2_big::destructor_counter == 2);
             CHECK(ivec2_big::move_constructor_counter == 2);
@@ -312,7 +312,7 @@ TEST_CASE("meta/meta_utilities/value2/counters/swap") {
             CHECK(ivec2::copy_constructor_counter == 0);
 
             v1.swap(v2);
-            CHECK(v1.cast<ivec2>().x == 1);
+            CHECK(v1.get_as<ivec2>().x == 1);
             CHECK_FALSE(v2);
 
             CHECK(ivec2::destructor_counter == 2);
@@ -321,7 +321,7 @@ TEST_CASE("meta/meta_utilities/value2/counters/swap") {
 
             v1.swap(v2);
             CHECK_FALSE(v1);
-            CHECK(v2.cast<ivec2>().y == 2);
+            CHECK(v2.get_as<ivec2>().y == 2);
 
             CHECK(ivec2::destructor_counter == 3);
             CHECK(ivec2::move_constructor_counter == 3);
@@ -343,7 +343,7 @@ TEST_CASE("meta/meta_utilities/value2/counters/swap") {
             CHECK(ivec2_big::copy_constructor_counter == 0);
 
             v1.swap(v2);
-            CHECK(v1.cast<ivec2_big>().x == 3);
+            CHECK(v1.get_as<ivec2_big>().x == 3);
             CHECK_FALSE(v2);
 
             CHECK(ivec2_big::destructor_counter == 1);
@@ -352,7 +352,7 @@ TEST_CASE("meta/meta_utilities/value2/counters/swap") {
 
             v1.swap(v2);
             CHECK_FALSE(v1);
-            CHECK(v2.cast<ivec2_big>().y == 4);
+            CHECK(v2.get_as<ivec2_big>().y == 4);
 
             CHECK(ivec2_big::destructor_counter == 1);
             CHECK(ivec2_big::move_constructor_counter == 1);
@@ -378,8 +378,8 @@ TEST_CASE("meta/meta_utilities/value2/counters/swap") {
             CHECK(ivec2_big::copy_constructor_counter == 0);
 
             v1.swap(v2);
-            CHECK(v1.cast<ivec2_big>().x == 3);
-            CHECK(v2.cast<ivec2>().x == 1);
+            CHECK(v1.get_as<ivec2_big>().x == 3);
+            CHECK(v2.get_as<ivec2>().x == 1);
 
             CHECK(ivec2::destructor_counter == 2);
             CHECK(ivec2::move_constructor_counter == 2);
@@ -390,8 +390,8 @@ TEST_CASE("meta/meta_utilities/value2/counters/swap") {
             CHECK(ivec2_big::copy_constructor_counter == 0);
 
             v1.swap(v2);
-            CHECK(v1.cast<ivec2>().y == 2);
-            CHECK(v2.cast<ivec2_big>().y == 4);
+            CHECK(v1.get_as<ivec2>().y == 2);
+            CHECK(v2.get_as<ivec2_big>().y == 4);
 
             CHECK(ivec2::destructor_counter == 3);
             CHECK(ivec2::move_constructor_counter == 3);

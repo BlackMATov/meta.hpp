@@ -61,22 +61,20 @@ namespace meta_hpp
         [[nodiscard]] uvalue operator[](std::size_t index) const;
 
         template < typename T >
-        [[nodiscard]] std::decay_t<T>& cast() &;
+        [[nodiscard]] auto get_as()
+            -> std::conditional_t<detail::pointer_kind<T>, T, T&>;
 
         template < typename T >
-        [[nodiscard]] std::decay_t<T>&& cast() &&;
+        [[nodiscard]] auto get_as() const
+            -> std::conditional_t<detail::pointer_kind<T>, T, const T&>;
 
         template < typename T >
-        [[nodiscard]] const std::decay_t<T>& cast() const &;
+        [[nodiscard]] auto try_get_as() noexcept
+            -> std::conditional_t<detail::pointer_kind<T>, T, T*>;
 
         template < typename T >
-        [[nodiscard]] const std::decay_t<T>&& cast() const &&;
-
-        template < typename T >
-        [[nodiscard]] std::decay_t<T>* try_cast() noexcept;
-
-        template < typename T >
-        [[nodiscard]] const std::decay_t<T>* try_cast() const noexcept;
+        [[nodiscard]] auto try_get_as() const noexcept
+            -> std::conditional_t<detail::pointer_kind<T>, T, const T*>;
 
         friend bool operator<(const uvalue& l, const uvalue& r);
         friend bool operator==(const uvalue& l, const uvalue& r);
