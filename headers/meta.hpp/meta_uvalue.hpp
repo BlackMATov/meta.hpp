@@ -69,6 +69,14 @@ namespace meta_hpp
             -> std::conditional_t<detail::pointer_kind<T>, T, const T&>;
 
         template < typename T >
+        [[nodiscard]] auto try_get_as() noexcept
+            -> std::conditional_t<detail::pointer_kind<T>, T, T*>;
+
+        template < typename T >
+        [[nodiscard]] auto try_get_as() const noexcept
+            -> std::conditional_t<detail::pointer_kind<T>, T, const T*>;
+
+        template < typename T >
         [[nodiscard]] bool can_get_as() const noexcept;
 
         friend bool operator<(const uvalue& l, const uvalue& r);
