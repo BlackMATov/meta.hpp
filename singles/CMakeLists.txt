@@ -12,7 +12,7 @@ set(META_SINGLES_OUTPUT "${META_ROOT_DIR}/singles/headers/meta.hpp/meta_all.hpp"
 file(GLOB_RECURSE META_SINGLES_DEPENDS "${META_ROOT_DIR}/headers/*.hpp")
 
 add_custom_command(OUTPUT "${META_SINGLES_OUTPUT}"
-    COMMAND "${Python3_EXECUTABLE}" ".ci/build_singles.py" "${META_SINGLES_INPUT}" "${META_SINGLES_OUTPUT}"
+    COMMAND "${Python3_EXECUTABLE}" "singles/scripts/build_singles.py" "${META_SINGLES_INPUT}" "${META_SINGLES_OUTPUT}"
     DEPENDS ${META_SINGLES_DEPENDS}
     WORKING_DIRECTORY "${META_ROOT_DIR}")
 
