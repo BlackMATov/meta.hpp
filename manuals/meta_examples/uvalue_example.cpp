@@ -84,13 +84,13 @@ TEST_CASE("meta/meta_examples/uvalue/usage") {
         CHECK(s->get_area() == 200);
     }
 
-    // upcasting is supported for pointers too
+    // also, upcasting is supported for pointers
     rectangle rect{3, 5};
     val = &rect;
     CHECK(val.get_as<shape*>()->get_area() == 15);
     CHECK(val.get_type() == meta::resolve_type<rectangle*>());
 
-    // but we can use try_get_as for pointers too
+    // and we can use try_get_as for pointers too
     CHECK(val.try_get_as<shape*>());
     if ( shape* s = val.try_get_as<shape*>() ) {
         CHECK(s->get_area() == 15);
