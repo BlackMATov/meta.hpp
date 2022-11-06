@@ -21,5 +21,8 @@ jobs:
       with:
         submodules: recursive
     - name: Build && Test
-      run: .ci/build_linux.sh
       env: { CC: "${{matrix.config.cc}}", CXX: "${{matrix.config.cxx}}" }
+      run: |
+        cmake --preset linux-${{matrix.config.cc}}
+        cmake --build --preset linux-${{matrix.config.cc}}-release
+        ctest --preset linux-${{matrix.config.cc}}-release
