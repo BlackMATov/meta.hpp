@@ -17,9 +17,9 @@ jobs:
     - name: Setup
       run: sudo apt-get -y install cmake ninja-build ${{matrix.config.cc}} ${{matrix.config.cxx}}
     - name: Checkout
-      uses: actions/checkout@v2
+      uses: actions/checkout@v3
       with:
-        submodules: recursive
+        submodules: true
     - name: Build
       run: |
         cmake --preset linux-${{matrix.config.cc}}

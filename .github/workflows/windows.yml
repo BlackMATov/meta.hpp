@@ -19,9 +19,9 @@ jobs:
     - name: Setup
       run: choco install cmake ninja
     - name: Checkout
-      uses: actions/checkout@v2
+      uses: actions/checkout@v3
       with:
-        submodules: recursive
+        submodules: true
     - name: Select MSVC
       uses: ilammy/msvc-dev-cmd@v1
     - name: Build

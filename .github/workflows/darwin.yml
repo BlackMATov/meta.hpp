@@ -17,9 +17,9 @@ jobs:
     - name: Setup
       run: brew install cmake ninja
     - name: Checkout
-      uses: actions/checkout@v2
+      uses: actions/checkout@v3
       with:
-        submodules: recursive
+        submodules: true
     - name: Select Xcode
       run: sudo xcode-select --switch "/Applications/Xcode_${{matrix.config.xcode}}.app"
     - name: Build
