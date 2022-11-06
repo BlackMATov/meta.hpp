@@ -75,9 +75,22 @@ TEST_CASE("meta/meta_examples/uvalue/usage") {
     // also, it supports upcasting for registered types
     CHECK(val.get_as<shape>().get_area() == 200);
 
+    // an exception will be thrown if we try to get a wrong type
+    CHECK_THROWS(std::ignore = val.get_as<int>());
+
+    // but we can use try_get_as for safe access
+    CHECK(val.try_get_as<shape>());
+    if ( shape* s = val.try_get_as<shape>() ) {
+    }
+
     // upcasting is supported for pointers too
     rectangle rect{3, 5};
     val = &rect;
     CHECK(val.get_as<shape*>()->get_area() == 15);
     CHECK(val.get_type() == meta::resolve_type<rectangle*>());
+
+    // but we can use try_get_as for pointers too
+    CHECK(val.try_get_as<shape*>());
+    if ( shape* s = val.try_get_as<shape*>() ) {
+    }
 }

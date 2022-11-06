@@ -76,9 +76,6 @@ namespace meta_hpp
         [[nodiscard]] auto try_get_as() const noexcept
             -> std::conditional_t<detail::pointer_kind<T>, T, const T*>;
 
-        template < typename T >
-        [[nodiscard]] bool can_get_as() const noexcept;
-
         friend bool operator<(const uvalue& l, const uvalue& r);
         friend bool operator==(const uvalue& l, const uvalue& r);
         friend std::istream& operator>>(std::istream& is, uvalue& v);

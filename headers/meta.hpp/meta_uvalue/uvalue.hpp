@@ -489,23 +489,6 @@ namespace meta_hpp
 
         return nullptr;
     }
-
-    template < typename T >
-    bool uvalue::can_get_as() const noexcept {
-        static_assert(std::is_same_v<T, std::decay_t<T>>);
-
-        if constexpr ( detail::pointer_kind<T> ) {
-            if ( T ptr = try_get_as<T>(); ptr || get_type().is_nullptr() ) {
-                return true;
-            }
-        } else {
-            if ( const T* ptr = try_get_as<T>() ) {
-                return true;
-            }
-        }
-
-        return false;
-    }
 }
 
 namespace meta_hpp

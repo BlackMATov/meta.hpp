@@ -133,8 +133,8 @@ TEST_CASE("meta/meta_utilities/value") {
             CHECK_FALSE(*val);
             CHECK_FALSE(val[0]);
 
-            CHECK_FALSE(val.can_get_as<ivec2>());
-            CHECK_FALSE(std::as_const(val).can_get_as<ivec2>());
+            CHECK_FALSE(val.try_get_as<ivec2>());
+            CHECK_FALSE(std::as_const(val).try_get_as<ivec2>());
 
             CHECK_THROWS(std::ignore = val.get_as<int>());
             CHECK_THROWS(std::ignore = std::as_const(val).get_as<int>());
@@ -207,8 +207,8 @@ TEST_CASE("meta/meta_utilities/value") {
 
         CHECK(val.get_as<ivec2>() == ivec2{1,2});
         CHECK(std::as_const(val).get_as<ivec2>() == ivec2{1,2});
-        CHECK_FALSE(val.can_get_as<ivec3>());
-        CHECK_FALSE(std::as_const(val).can_get_as<ivec3>());
+        CHECK_FALSE(val.try_get_as<ivec3>());
+        CHECK_FALSE(std::as_const(val).try_get_as<ivec3>());
     }
 
     SUBCASE("const ivec2&") {
@@ -241,8 +241,8 @@ TEST_CASE("meta/meta_utilities/value") {
 
         CHECK(val.get_as<ivec2>() == ivec2{1,2});
         CHECK(std::as_const(val).get_as<ivec2>() == ivec2{1,2});
-        CHECK_FALSE(val.can_get_as<ivec3>());
-        CHECK_FALSE(std::as_const(val).can_get_as<ivec3>());
+        CHECK_FALSE(val.try_get_as<ivec3>());
+        CHECK_FALSE(std::as_const(val).try_get_as<ivec3>());
     }
 
     SUBCASE("ivec2&&") {
@@ -269,8 +269,8 @@ TEST_CASE("meta/meta_utilities/value") {
 
         CHECK(val.get_as<ivec2>() == ivec2{1,2});
         CHECK(std::as_const(val).get_as<ivec2>() == ivec2{1,2});
-        CHECK_FALSE(val.can_get_as<ivec3>());
-        CHECK_FALSE(std::as_const(val).can_get_as<ivec3>());
+        CHECK_FALSE(val.try_get_as<ivec3>());
+        CHECK_FALSE(std::as_const(val).try_get_as<ivec3>());
     }
 
     SUBCASE("const ivec2&&") {
@@ -297,8 +297,8 @@ TEST_CASE("meta/meta_utilities/value") {
 
         CHECK(val.get_as<ivec2>() == ivec2{1,2});
         CHECK(std::as_const(val).get_as<ivec2>() == ivec2{1,2});
-        CHECK_FALSE(val.can_get_as<ivec3>());
-        CHECK_FALSE(std::as_const(val).can_get_as<ivec3>());
+        CHECK_FALSE(val.try_get_as<ivec3>());
+        CHECK_FALSE(std::as_const(val).try_get_as<ivec3>());
     }
 
     SUBCASE("value(value&&)") {
