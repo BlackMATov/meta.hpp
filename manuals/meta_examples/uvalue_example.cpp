@@ -81,6 +81,7 @@ TEST_CASE("meta/meta_examples/uvalue/usage") {
     // but we can use try_get_as for safe access
     CHECK(val.try_get_as<shape>());
     if ( shape* s = val.try_get_as<shape>() ) {
+        CHECK(s->get_area() == 200);
     }
 
     // upcasting is supported for pointers too
@@ -92,5 +93,6 @@ TEST_CASE("meta/meta_examples/uvalue/usage") {
     // but we can use try_get_as for pointers too
     CHECK(val.try_get_as<shape*>());
     if ( shape* s = val.try_get_as<shape*>() ) {
+        CHECK(s->get_area() == 15);
     }
 }
