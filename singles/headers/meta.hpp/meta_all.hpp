@@ -2271,7 +2271,12 @@ namespace meta_hpp
             -> std::conditional_t<detail::pointer_kind<T>, T, const T&>;
 
         template < typename T >
-        [[nodiscard]] bool can_get_as() const noexcept;
+        [[nodiscard]] auto try_get_as() noexcept
+            -> std::conditional_t<detail::pointer_kind<T>, T, T*>;
+
+        template < typename T >
+        [[nodiscard]] auto try_get_as() const noexcept
+            -> std::conditional_t<detail::pointer_kind<T>, T, const T*>;
 
         friend bool operator<(const uvalue& l, const uvalue& r);
         friend bool operator==(const uvalue& l, const uvalue& r);
@@ -8308,26 +8313,48 @@ namespace meta_hpp
     auto uvalue::get_as() -> std::conditional_t<detail::pointer_kind<T>, T, T&> {
         static_assert(std::is_same_v<T, std::decay_t<T>>);
 
+        if constexpr ( detail::pointer_kind<T> ) {
+            if ( T ptr = try_get_as<T>(); ptr || get_type().is_nullptr() ) {
+                return ptr;
+            }
+        } else {
+            if ( T* ptr = try_get_as<T>() ) {
+                return *ptr;
+            }
+        }
+
+        detail::throw_exception_with("bad value cast");
+    }
+
+    template < typename T >
+    auto uvalue::get_as() const -> std::conditional_t<detail::pointer_kind<T>, T, const T&> {
+        static_assert(std::is_same_v<T, std::decay_t<T>>);
+
+        if constexpr ( detail::pointer_kind<T> ) {
+            if ( T ptr = try_get_as<T>(); ptr || get_type().is_nullptr() ) {
+                return ptr;
+            }
+        } else {
+            if ( const T* ptr = try_get_as<T>() ) {
+                return *ptr;
+            }
+        }
+
+        detail::throw_exception_with("bad value cast");
+    }
+
+    template < typename T >
+    // NOLINTNEXTLINE(*-function-cognitive-complexity)
+    auto uvalue::try_get_as() noexcept -> std::conditional_t<detail::pointer_kind<T>, T, T*> {
+        static_assert(std::is_same_v<T, std::decay_t<T>>);
+
         const any_type& from_type = get_type();
         const any_type& to_type = resolve_type<T>();
-
-        if ( from_type == to_type ) {
-            T* to_ptr = static_cast<T*>(data());
-            return *to_ptr;
-        }
 
         const auto is_a = [](const any_type& base, const any_type& derived){
             return (base == derived)
                 || (base.is_class() && derived.is_class() && base.as_class().is_base_of(derived.as_class()));
         };
-
-        if ( is_a(to_type, from_type) ) {
-            const class_type& to_class = to_type.as_class();
-            const class_type& from_class = from_type.as_class();
-
-            T* to_ptr = static_cast<T*>(detail::pointer_upcast(data(), from_class, to_class));
-            return *to_ptr;
-        }
 
         if constexpr ( detail::pointer_kind<T> ) {
             if ( to_type.is_pointer() && from_type.is_nullptr() ) {
@@ -8363,33 +8390,36 @@ namespace meta_hpp
             }
         }
 
-        detail::throw_exception_with("bad value cast");
+        if constexpr ( !detail::pointer_kind<T> ) {
+            if ( from_type == to_type ) {
+                T* to_ptr = static_cast<T*>(data());
+                return to_ptr;
+            }
+
+            if ( is_a(to_type, from_type) ) {
+                const class_type& to_class = to_type.as_class();
+                const class_type& from_class = from_type.as_class();
+
+                T* to_ptr = static_cast<T*>(detail::pointer_upcast(data(), from_class, to_class));
+                return to_ptr;
+            }
+        }
+
+        return nullptr;
     }
 
     template < typename T >
-    auto uvalue::get_as() const -> std::conditional_t<detail::pointer_kind<T>, T, const T&> {
+    // NOLINTNEXTLINE(*-function-cognitive-complexity)
+    auto uvalue::try_get_as() const noexcept -> std::conditional_t<detail::pointer_kind<T>, T, const T*> {
         static_assert(std::is_same_v<T, std::decay_t<T>>);
 
         const any_type& from_type = get_type();
         const any_type& to_type = resolve_type<T>();
 
-        if ( from_type == to_type ) {
-            const T* to_ptr = static_cast<const T*>(data());
-            return *to_ptr;
-        }
-
         const auto is_a = [](const any_type& base, const any_type& derived){
             return (base == derived)
                 || (base.is_class() && derived.is_class() && base.as_class().is_base_of(derived.as_class()));
         };
-
-        if ( is_a(to_type, from_type) ) {
-            const class_type& to_class = to_type.as_class();
-            const class_type& from_class = from_type.as_class();
-
-            const T* to_ptr = static_cast<const T*>(detail::pointer_upcast(data(), from_class, to_class));
-            return *to_ptr;
-        }
 
         if constexpr ( detail::pointer_kind<T> ) {
             if ( to_type.is_pointer() && from_type.is_nullptr() ) {
@@ -8425,53 +8455,22 @@ namespace meta_hpp
             }
         }
 
-        detail::throw_exception_with("bad value cast");
-    }
-
-    template < typename T >
-    bool uvalue::can_get_as() const noexcept {
-        static_assert(std::is_same_v<T, std::decay_t<T>>);
-
-        const any_type& from_type = get_type();
-        const any_type& to_type = resolve_type<T>();
-
-        if ( from_type == to_type ) {
-            return true;
-        }
-
-        const auto is_a = [](const any_type& base, const any_type& derived){
-            return (base == derived)
-                || (base.is_class() && derived.is_class() && base.as_class().is_base_of(derived.as_class()));
-        };
-
-        if ( is_a(to_type, from_type) ) {
-            return true;
-        }
-
-        if constexpr ( detail::pointer_kind<T> ) {
-            if ( to_type.is_pointer() && from_type.is_nullptr() ) {
-                return true;
+        if constexpr ( !detail::pointer_kind<T> ) {
+            if ( from_type == to_type ) {
+                const T* to_ptr = static_cast<const T*>(data());
+                return to_ptr;
             }
 
-            if ( to_type.is_pointer() && from_type.is_pointer() ) {
-                const pointer_type& to_type_ptr = to_type.as_pointer();
-                const bool to_type_ptr_readonly = to_type_ptr.get_flags().has(pointer_flags::is_readonly);
+            if ( is_a(to_type, from_type) ) {
+                const class_type& to_class = to_type.as_class();
+                const class_type& from_class = from_type.as_class();
 
-                const pointer_type& from_type_ptr = from_type.as_pointer();
-                const bool from_type_ptr_readonly = from_type_ptr.get_flags().has(pointer_flags::is_readonly);
-
-                const any_type& to_data_type = to_type_ptr.get_data_type();
-                const any_type& from_data_type = from_type_ptr.get_data_type();
-
-                if ( to_type_ptr_readonly >= from_type_ptr_readonly ) {
-                    if ( to_data_type.is_void() || is_a(to_data_type, from_data_type) ) {
-                        return true;
-                    }
-                }
+                const T* to_ptr = static_cast<const T*>(detail::pointer_upcast(data(), from_class, to_class));
+                return to_ptr;
             }
         }
 
-        return false;
+        return nullptr;
     }
 }
 
