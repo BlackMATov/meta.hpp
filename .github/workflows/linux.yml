@@ -15,14 +15,15 @@ jobs:
     name: "${{matrix.config.cxx}}"
     steps:
     - name: Setup
-      run: sudo apt-get -y install "${{matrix.config.cc}}" "${{matrix.config.cxx}}"
+      run: sudo apt-get -y install cmake ninja-build ${{matrix.config.cc}} ${{matrix.config.cxx}}
     - name: Checkout
       uses: actions/checkout@v2
       with:
         submodules: recursive
-    - name: Build && Test
-      env: { CC: "${{matrix.config.cc}}", CXX: "${{matrix.config.cxx}}" }
+    - name: Build
       run: |
         cmake --preset linux-${{matrix.config.cc}}
         cmake --build --preset linux-${{matrix.config.cc}}-release
+    - name: Test
+      run: |
         ctest --preset linux-${{matrix.config.cc}}-release

@@ -16,11 +16,18 @@ jobs:
         - { os: "windows-2022", vc: "msvc2022", arch: "x64" }
     name: "${{matrix.config.vc}} ${{matrix.config.arch}}"
     steps:
-    - uses: actions/checkout@v2
+    - name: Setup
+      run: choco install cmake ninja
+    - name: Checkout
+      uses: actions/checkout@v2
       with:
         submodules: recursive
-    - name: Build && Test
+    - name: Select MSVC
+      uses: ilammy/msvc-dev-cmd@v1
+    - name: Build
       run: |
         cmake --preset windows-${{matrix.config.arch}}-${{matrix.config.vc}}
         cmake --build --preset windows-${{matrix.config.arch}}-${{matrix.config.vc}}-release
+    - name: Test
+      run: |
         ctest --preset windows-${{matrix.config.arch}}-${{matrix.config.vc}}-release
