@@ -29,7 +29,7 @@
             }
         },
         {
-            "name": "linux-clang10",
+            "name": "linux-clang-10",
             "inherits": "linux-base",
             "cacheVariables": {
                 "CMAKE_C_COMPILER": "clang-10",
@@ -37,7 +37,7 @@
             }
         },
         {
-            "name": "linux-gcc10",
+            "name": "linux-gcc-10",
             "inherits": "linux-base",
             "cacheVariables": {
                 "CMAKE_C_COMPILER": "gcc-10",
@@ -162,24 +162,24 @@
 
     "buildPresets": [
         {
-            "name": "linux-clang10-debug",
+            "name": "linux-clang-10-debug",
             "configuration": "Debug",
-            "configurePreset": "linux-clang10"
+            "configurePreset": "linux-clang-10"
         },
         {
-            "name": "linux-clang10-release",
+            "name": "linux-clang-10-release",
             "configuration": "Release",
-            "configurePreset": "linux-clang10"
+            "configurePreset": "linux-clang-10"
         },
         {
-            "name": "linux-gcc10-debug",
+            "name": "linux-gcc-10-debug",
             "configuration": "Debug",
-            "configurePreset": "linux-gcc10"
+            "configurePreset": "linux-gcc-10"
         },
         {
-            "name": "linux-gcc10-release",
+            "name": "linux-gcc-10-release",
             "configuration": "Release",
-            "configurePreset": "linux-gcc10"
+            "configurePreset": "linux-gcc-10"
         },
         {
             "name": "macos-arm64-debug",
@@ -245,14 +245,14 @@
 
     "testPresets": [
         {
-            "name": "linux-gcc10-release",
+            "name": "linux-gcc-10-release",
             "configuration": "Release",
-            "configurePreset": "linux-gcc10"
+            "configurePreset": "linux-gcc-10"
         },
         {
-            "name": "linux-clang10-release",
+            "name": "linux-clang-10-release",
             "configuration": "Release",
-            "configurePreset": "linux-clang10"
+            "configurePreset": "linux-clang-10"
         },
         {
             "name": "macos-arm64-release",

@@ -18,6 +18,8 @@ jobs:
     - uses: actions/checkout@v2
       with:
         submodules: recursive
+    - name: Install ninja by Homebrew
+      run: brew install ninja
     - name: Select Xcode
       run: sudo xcode-select --switch "/Applications/Xcode_${{matrix.config.xcode}}.app"
     - name: Build && Test
