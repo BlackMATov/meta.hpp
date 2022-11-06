@@ -19,6 +19,32 @@
             }
         },
         {
+            "name": "linux-base",
+            "hidden": true,
+            "inherits": "ninja-base",
+            "condition": {
+                "type": "equals",
+                "lhs": "${hostSystemName}",
+                "rhs": "Linux"
+            }
+        },
+        {
+            "name": "linux-clang10",
+            "inherits": "linux-base",
+            "cacheVariables": {
+                "CMAKE_C_COMPILER": "clang-10",
+                "CMAKE_CXX_COMPILER": "clang++-10"
+            }
+        },
+        {
+            "name": "linux-gcc10",
+            "inherits": "linux-base",
+            "cacheVariables": {
+                "CMAKE_C_COMPILER": "gcc-10",
+                "CMAKE_CXX_COMPILER": "g++-10"
+            }
+        },
+        {
             "name": "macos-base",
             "hidden": true,
             "inherits": "ninja-base",
@@ -135,6 +161,26 @@
     ],
 
     "buildPresets": [
+        {
+            "name": "linux-clang10-debug",
+            "configuration": "Debug",
+            "configurePreset": "linux-clang10"
+        },
+        {
+            "name": "linux-clang10-release",
+            "configuration": "Release",
+            "configurePreset": "linux-clang10"
+        },
+        {
+            "name": "linux-gcc10-debug",
+            "configuration": "Debug",
+            "configurePreset": "linux-gcc10"
+        },
+        {
+            "name": "linux-gcc10-release",
+            "configuration": "Release",
+            "configurePreset": "linux-gcc10"
+        },
         {
             "name": "macos-arm64-debug",
             "configuration": "Debug",
