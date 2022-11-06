@@ -105,17 +105,17 @@ TEST_CASE("meta/meta_utilities/value") {
 
     SUBCASE("cast types") {
         static_assert(std::is_same_v<
-            decltype(std::declval<meta::uvalue&>().get_as_ref<ivec2>()),
+            decltype(std::declval<meta::uvalue&>().get_as<ivec2>()),
             ivec2&>);
         static_assert(std::is_same_v<
-            decltype(std::declval<meta::uvalue&&>().get_as_ref<ivec2>()),
-            ivec2&&>);
+            decltype(std::declval<meta::uvalue&&>().get_as<ivec2>()),
+            ivec2&>);
         static_assert(std::is_same_v<
-            decltype(std::declval<const meta::uvalue&>().get_as_ref<ivec2>()),
+            decltype(std::declval<const meta::uvalue&>().get_as<ivec2>()),
             const ivec2&>);
         static_assert(std::is_same_v<
-            decltype(std::declval<const meta::uvalue&&>().get_as_ref<ivec2>()),
-            const ivec2&&>);
+            decltype(std::declval<const meta::uvalue&&>().get_as<ivec2>()),
+            const ivec2&>);
     }
 
     SUBCASE("ivec2{}") {
@@ -133,13 +133,13 @@ TEST_CASE("meta/meta_utilities/value") {
             CHECK_FALSE(*val);
             CHECK_FALSE(val[0]);
 
-            CHECK_FALSE(val.can_get_as_ref<ivec2>());
-            CHECK_FALSE(std::as_const(val).can_get_as_ref<ivec2>());
+            CHECK_FALSE(val.can_get_as<ivec2>());
+            CHECK_FALSE(std::as_const(val).can_get_as<ivec2>());
 
-            CHECK_THROWS(std::ignore = val.get_as_ref<int>());
-            CHECK_THROWS(std::ignore = std::as_const(val).get_as_ref<int>());
-            CHECK_THROWS(std::ignore = std::move(val).get_as_ref<int>());
-            CHECK_THROWS(std::ignore = std::move(std::as_const(val)).get_as_ref<int>());
+            CHECK_THROWS(std::ignore = val.get_as<int>());
+            CHECK_THROWS(std::ignore = std::as_const(val).get_as<int>());
+            CHECK_THROWS(std::ignore = std::move(val).get_as<int>());
+            CHECK_THROWS(std::ignore = std::move(std::as_const(val)).get_as<int>());
         }
 
         {
@@ -195,20 +195,20 @@ TEST_CASE("meta/meta_utilities/value") {
         CHECK(val == ivec2{1,2});
         CHECK(val == meta::uvalue{ivec2{1,2}});
 
-        CHECK(val.get_as_ref<ivec2>() == ivec2{1,2});
-        CHECK(std::as_const(val).get_as_ref<ivec2>() == ivec2{1,2});
-        CHECK(std::move(val).get_as_ref<ivec2>() == ivec2{1,2});
-        CHECK(std::move(std::as_const(val)).get_as_ref<ivec2>() == ivec2{1,2});
+        CHECK(val.get_as<ivec2>() == ivec2{1,2});
+        CHECK(std::as_const(val).get_as<ivec2>() == ivec2{1,2});
+        CHECK(std::move(val).get_as<ivec2>() == ivec2{1,2});
+        CHECK(std::move(std::as_const(val)).get_as<ivec2>() == ivec2{1,2});
 
-        CHECK_THROWS(std::ignore = val.get_as_ref<ivec3>());
-        CHECK_THROWS(std::ignore = std::as_const(val).get_as_ref<ivec3>());
-        CHECK_THROWS(std::ignore = std::move(val).get_as_ref<ivec3>());
-        CHECK_THROWS(std::ignore = std::move(std::as_const(val)).get_as_ref<ivec3>());
+        CHECK_THROWS(std::ignore = val.get_as<ivec3>());
+        CHECK_THROWS(std::ignore = std::as_const(val).get_as<ivec3>());
+        CHECK_THROWS(std::ignore = std::move(val).get_as<ivec3>());
+        CHECK_THROWS(std::ignore = std::move(std::as_const(val)).get_as<ivec3>());
 
-        CHECK(val.get_as_ref<ivec2>() == ivec2{1,2});
-        CHECK(std::as_const(val).get_as_ref<ivec2>() == ivec2{1,2});
-        CHECK_FALSE(val.can_get_as_ref<ivec3>());
-        CHECK_FALSE(std::as_const(val).can_get_as_ref<ivec3>());
+        CHECK(val.get_as<ivec2>() == ivec2{1,2});
+        CHECK(std::as_const(val).get_as<ivec2>() == ivec2{1,2});
+        CHECK_FALSE(val.can_get_as<ivec3>());
+        CHECK_FALSE(std::as_const(val).can_get_as<ivec3>());
     }
 
     SUBCASE("const ivec2&") {
@@ -229,20 +229,20 @@ TEST_CASE("meta/meta_utilities/value") {
         CHECK(val == ivec2{1,2});
         CHECK(val == meta::uvalue{ivec2{1,2}});
 
-        CHECK(val.get_as_ref<ivec2>() == ivec2{1,2});
-        CHECK(std::as_const(val).get_as_ref<ivec2>() == ivec2{1,2});
-        CHECK(std::move(val).get_as_ref<ivec2>() == ivec2{1,2});
-        CHECK(std::move(std::as_const(val)).get_as_ref<ivec2>() == ivec2{1,2});
+        CHECK(val.get_as<ivec2>() == ivec2{1,2});
+        CHECK(std::as_const(val).get_as<ivec2>() == ivec2{1,2});
+        CHECK(std::move(val).get_as<ivec2>() == ivec2{1,2});
+        CHECK(std::move(std::as_const(val)).get_as<ivec2>() == ivec2{1,2});
 
-        CHECK_THROWS(std::ignore = val.get_as_ref<ivec3>());
-        CHECK_THROWS(std::ignore = std::as_const(val).get_as_ref<ivec3>());
-        CHECK_THROWS(std::ignore = std::move(val).get_as_ref<ivec3>());
-        CHECK_THROWS(std::ignore = std::move(std::as_const(val)).get_as_ref<ivec3>());
+        CHECK_THROWS(std::ignore = val.get_as<ivec3>());
+        CHECK_THROWS(std::ignore = std::as_const(val).get_as<ivec3>());
+        CHECK_THROWS(std::ignore = std::move(val).get_as<ivec3>());
+        CHECK_THROWS(std::ignore = std::move(std::as_const(val)).get_as<ivec3>());
 
-        CHECK(val.get_as_ref<ivec2>() == ivec2{1,2});
-        CHECK(std::as_const(val).get_as_ref<ivec2>() == ivec2{1,2});
-        CHECK_FALSE(val.can_get_as_ref<ivec3>());
-        CHECK_FALSE(std::as_const(val).can_get_as_ref<ivec3>());
+        CHECK(val.get_as<ivec2>() == ivec2{1,2});
+        CHECK(std::as_const(val).get_as<ivec2>() == ivec2{1,2});
+        CHECK_FALSE(val.can_get_as<ivec3>());
+        CHECK_FALSE(std::as_const(val).can_get_as<ivec3>());
     }
 
     SUBCASE("ivec2&&") {
@@ -257,20 +257,20 @@ TEST_CASE("meta/meta_utilities/value") {
         CHECK(val == ivec2{1,2});
         CHECK(val == meta::uvalue{ivec2{1,2}});
 
-        CHECK(val.get_as_ref<ivec2>() == ivec2{1,2});
-        CHECK(std::as_const(val).get_as_ref<ivec2>() == ivec2{1,2});
-        CHECK(std::move(val).get_as_ref<ivec2>() == ivec2{1,2});
-        CHECK(std::move(std::as_const(val)).get_as_ref<ivec2>() == ivec2{1,2});
+        CHECK(val.get_as<ivec2>() == ivec2{1,2});
+        CHECK(std::as_const(val).get_as<ivec2>() == ivec2{1,2});
+        CHECK(std::move(val).get_as<ivec2>() == ivec2{1,2});
+        CHECK(std::move(std::as_const(val)).get_as<ivec2>() == ivec2{1,2});
 
-        CHECK_THROWS(std::ignore = val.get_as_ref<ivec3>());
-        CHECK_THROWS(std::ignore = std::as_const(val).get_as_ref<ivec3>());
-        CHECK_THROWS(std::ignore = std::move(val).get_as_ref<ivec3>());
-        CHECK_THROWS(std::ignore = std::move(std::as_const(val)).get_as_ref<ivec3>());
+        CHECK_THROWS(std::ignore = val.get_as<ivec3>());
+        CHECK_THROWS(std::ignore = std::as_const(val).get_as<ivec3>());
+        CHECK_THROWS(std::ignore = std::move(val).get_as<ivec3>());
+        CHECK_THROWS(std::ignore = std::move(std::as_const(val)).get_as<ivec3>());
 
-        CHECK(val.get_as_ref<ivec2>() == ivec2{1,2});
-        CHECK(std::as_const(val).get_as_ref<ivec2>() == ivec2{1,2});
-        CHECK_FALSE(val.can_get_as_ref<ivec3>());
-        CHECK_FALSE(std::as_const(val).can_get_as_ref<ivec3>());
+        CHECK(val.get_as<ivec2>() == ivec2{1,2});
+        CHECK(std::as_const(val).get_as<ivec2>() == ivec2{1,2});
+        CHECK_FALSE(val.can_get_as<ivec3>());
+        CHECK_FALSE(std::as_const(val).can_get_as<ivec3>());
     }
 
     SUBCASE("const ivec2&&") {
@@ -285,20 +285,20 @@ TEST_CASE("meta/meta_utilities/value") {
         CHECK(val == ivec2{1,2});
         CHECK(val == meta::uvalue{ivec2{1,2}});
 
-        CHECK(val.get_as_ref<ivec2>() == ivec2{1,2});
-        CHECK(std::as_const(val).get_as_ref<ivec2>() == ivec2{1,2});
-        CHECK(std::move(val).get_as_ref<ivec2>() == ivec2{1,2});
-        CHECK(std::move(std::as_const(val)).get_as_ref<ivec2>() == ivec2{1,2});
+        CHECK(val.get_as<ivec2>() == ivec2{1,2});
+        CHECK(std::as_const(val).get_as<ivec2>() == ivec2{1,2});
+        CHECK(std::move(val).get_as<ivec2>() == ivec2{1,2});
+        CHECK(std::move(std::as_const(val)).get_as<ivec2>() == ivec2{1,2});
 
-        CHECK_THROWS(std::ignore = val.get_as_ref<ivec3>());
-        CHECK_THROWS(std::ignore = std::as_const(val).get_as_ref<ivec3>());
-        CHECK_THROWS(std::ignore = std::move(val).get_as_ref<ivec3>());
-        CHECK_THROWS(std::ignore = std::move(std::as_const(val)).get_as_ref<ivec3>());
+        CHECK_THROWS(std::ignore = val.get_as<ivec3>());
+        CHECK_THROWS(std::ignore = std::as_const(val).get_as<ivec3>());
+        CHECK_THROWS(std::ignore = std::move(val).get_as<ivec3>());
+        CHECK_THROWS(std::ignore = std::move(std::as_const(val)).get_as<ivec3>());
 
-        CHECK(val.get_as_ref<ivec2>() == ivec2{1,2});
-        CHECK(std::as_const(val).get_as_ref<ivec2>() == ivec2{1,2});
-        CHECK_FALSE(val.can_get_as_ref<ivec3>());
-        CHECK_FALSE(std::as_const(val).can_get_as_ref<ivec3>());
+        CHECK(val.get_as<ivec2>() == ivec2{1,2});
+        CHECK(std::as_const(val).get_as<ivec2>() == ivec2{1,2});
+        CHECK_FALSE(val.can_get_as<ivec3>());
+        CHECK_FALSE(std::as_const(val).can_get_as<ivec3>());
     }
 
     SUBCASE("value(value&&)") {
@@ -473,7 +473,7 @@ TEST_CASE("meta/meta_utilities/value") {
             const int* const pi = &i;
             const meta::uvalue v{*meta::uvalue{&pi}};
             CHECK(v.get_type() == meta::resolve_type<const int*>() );
-            CHECK(v.get_as_ref<const int*>() == pi);
+            CHECK(v.get_as<const int*>() == pi);
         }
         {
             int i{42};
@@ -573,22 +573,43 @@ TEST_CASE("meta/meta_utilities/value/functions") {
 
     SUBCASE("add") {
         {
+            meta::uvalue v{&ivec2::add};
+            CHECK(v.get_type() == meta::resolve_type<ivec2&(ivec2::*)(const ivec2&)>());
+            CHECK(v.get_as<decltype(&ivec2::add)>() == &ivec2::add);
+            CHECK((ivec2{1,2}.*(v.get_as<decltype(&ivec2::add)>()))(ivec2{3,4}) == ivec2(4,6));
+        }
+        {
             const meta::uvalue v{&ivec2::add};
             CHECK(v.get_type() == meta::resolve_type<ivec2&(ivec2::*)(const ivec2&)>());
-            CHECK((ivec2{1,2}.*(v.get_as_ref<decltype(&ivec2::add)>()))(ivec2{3,4}) == ivec2(4,6));
+            CHECK(v.get_as<decltype(&ivec2::add)>() == &ivec2::add);
+            CHECK((ivec2{1,2}.*(v.get_as<decltype(&ivec2::add)>()))(ivec2{3,4}) == ivec2(4,6));
         }
     }
 
     SUBCASE("iadd2") {
         {
+            meta::uvalue v{iadd2};
+            CHECK(v.get_type() == meta::resolve_type<ivec2(*)(ivec2, ivec2)>());
+            CHECK(v.get_as<decltype(&iadd2)>() == &iadd2);
+            CHECK((v.get_as<decltype(&iadd2)>())(ivec2{1,2}, ivec2{3,4}) == ivec2{4,6});
+        }
+        {
+            meta::uvalue v{&iadd2};
+            CHECK(v.get_type() == meta::resolve_type<ivec2(*)(ivec2, ivec2)>());
+            CHECK(v.get_as<decltype(&iadd2)>() == &iadd2);
+            CHECK((v.get_as<decltype(&iadd2)>())(ivec2{1,2}, ivec2{3,4}) == ivec2{4,6});
+        }
+        {
             const meta::uvalue v{iadd2};
             CHECK(v.get_type() == meta::resolve_type<ivec2(*)(ivec2, ivec2)>());
-            CHECK((v.get_as_ref<decltype(&iadd2)>())(ivec2{1,2}, ivec2{3,4}) == ivec2{4,6});
+            CHECK(v.get_as<decltype(&iadd2)>() == &iadd2);
+            CHECK((v.get_as<decltype(&iadd2)>())(ivec2{1,2}, ivec2{3,4}) == ivec2{4,6});
         }
         {
             const meta::uvalue v{&iadd2};
             CHECK(v.get_type() == meta::resolve_type<ivec2(*)(ivec2, ivec2)>());
-            CHECK((v.get_as_ref<decltype(&iadd2)>())(ivec2{1,2}, ivec2{3,4}) == ivec2{4,6});
+            CHECK(v.get_as<decltype(&iadd2)>() == &iadd2);
+            CHECK((v.get_as<decltype(&iadd2)>())(ivec2{1,2}, ivec2{3,4}) == ivec2{4,6});
         }
     }
 }

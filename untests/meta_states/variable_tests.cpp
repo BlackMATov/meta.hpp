@@ -186,7 +186,7 @@ TEST_CASE("meta/meta_states/variable") {
 
         using ref_t = std::reference_wrapper<std::unique_ptr<int>>;
         CHECK(vm.get().get_type() == meta::resolve_type<ref_t>());
-        CHECK(vm.get().get_as_ref<ref_t>().get() == clazz_1::unique_int_variable);
+        CHECK(vm.get().get_as<ref_t>().get() == clazz_1::unique_int_variable);
 
         {
             auto nv = std::make_unique<int>(13);
@@ -222,7 +222,7 @@ TEST_CASE("meta/meta_states/variable") {
 
         using ref_t = std::reference_wrapper<const std::unique_ptr<int>>;
         CHECK(vm.get().get_type() == meta::resolve_type<ref_t>());
-        CHECK(vm.get().get_as_ref<ref_t>().get() == clazz_1::const_unique_int_variable);
+        CHECK(vm.get().get_as<ref_t>().get() == clazz_1::const_unique_int_variable);
 
         {
             auto nv = std::make_unique<int>(12);
