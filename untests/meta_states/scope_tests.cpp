@@ -33,6 +33,9 @@ namespace
         return {l.x + r.x, l.y + r.y, l.z + r.z};
     }
 
+    int function_overloaded(int i0) { return i0; }
+    int function_overloaded(int i0, int i1) { return i0 + i1; }
+
     ivec2 static_ivec2 = ivec2{1, 0};
     const ivec3 static_const_ivec3 = ivec3{1, 0};
 }
@@ -46,6 +49,8 @@ TEST_CASE("meta/meta_states/scope") {
         .typedef_<ivec3>("ivec3")
         .function_("iadd2", &iadd2, {"l", "r"})
         .function_("iadd3", &iadd3, {"l"})
+        .function_("function_overloaded", meta::select_overload<int(int)>(&function_overloaded))
+        .function_("function_overloaded", meta::select_overload<int(int,int)>(&function_overloaded))
         .variable_("static_ivec2", &static_ivec2)
         .variable_("static_const_ivec3", &static_const_ivec3);
 
@@ -127,6 +132,63 @@ TEST_CASE("meta/meta_states/scope") {
             CHECK(iadd3_func.get_argument(1).get_name() == "");
 
             CHECK_FALSE(iadd3_func.get_argument(2));
+        }
+    }
+
+    SUBCASE("function_with") {
+        CHECK(math_scope.get_function("function_overloaded"));
+
+        {
+            CHECK_FALSE(math_scope.get_function_with<>("function_overloaded"));
+            CHECK(math_scope.get_function_with<int>("function_overloaded"));
+            CHECK_FALSE(math_scope.get_function_with<int, float>("function_overloaded"));
+
+            CHECK_FALSE(math_scope.get_function_with<>("function_overloaded"));
+            CHECK_FALSE(math_scope.get_function_with<float>("function_overloaded"));
+            CHECK(math_scope.get_function_with<int, int>("function_overloaded"));
+            CHECK_FALSE(math_scope.get_function_with<float, float>("function_overloaded"));
+
+            CHECK_FALSE(math_scope.get_function_with<>("function_overloaded"));
+            CHECK_FALSE(math_scope.get_function_with<double>("function_overloaded"));
+            CHECK_FALSE(math_scope.get_function_with<double, double>("function_overloaded"));
+        }
+
+        {
+            meta::number_type int_type = meta::resolve_type<int>();
+            meta::number_type float_type = meta::resolve_type<float>();
+            meta::number_type double_type = meta::resolve_type<double>();
+
+            CHECK_FALSE(math_scope.get_function_with<>("function_overloaded"));
+            CHECK(math_scope.get_function_with("function_overloaded", {int_type}));
+            CHECK_FALSE(math_scope.get_function_with("function_overloaded", {int_type, float_type}));
+
+            CHECK_FALSE(math_scope.get_function_with("function_overloaded"));
+            CHECK_FALSE(math_scope.get_function_with("function_overloaded", {float_type}));
+            CHECK(math_scope.get_function_with("function_overloaded", {int_type, int_type}));
+            CHECK_FALSE(math_scope.get_function_with("function_overloaded", {float_type, float_type}));
+
+            CHECK_FALSE(math_scope.get_function_with<>("function_overloaded"));
+            CHECK_FALSE(math_scope.get_function_with("function_overloaded", {double_type}));
+            CHECK_FALSE(math_scope.get_function_with("function_overloaded", {double_type, double_type}));
+        }
+
+        {
+            meta::number_type int_type = meta::resolve_type<int>();
+            meta::number_type float_type = meta::resolve_type<float>();
+            meta::number_type double_type = meta::resolve_type<double>();
+
+            CHECK_FALSE(math_scope.get_function_with<>("function_overloaded"));
+            CHECK(math_scope.get_function_with("function_overloaded", std::vector<meta::any_type>{int_type}));
+            CHECK_FALSE(math_scope.get_function_with("function_overloaded", std::vector<meta::any_type>{int_type, float_type}));
+
+            CHECK_FALSE(math_scope.get_function_with("function_overloaded"));
+            CHECK_FALSE(math_scope.get_function_with("function_overloaded", std::vector<meta::any_type>{float_type}));
+            CHECK(math_scope.get_function_with("function_overloaded", std::vector<meta::any_type>{int_type, int_type}));
+            CHECK_FALSE(math_scope.get_function_with("function_overloaded", std::vector<meta::any_type>{float_type, float_type}));
+
+            CHECK_FALSE(math_scope.get_function_with<>("function_overloaded"));
+            CHECK_FALSE(math_scope.get_function_with("function_overloaded", std::vector<meta::any_type>{double_type}));
+            CHECK_FALSE(math_scope.get_function_with("function_overloaded", std::vector<meta::any_type>{double_type, double_type}));
         }
     }
 

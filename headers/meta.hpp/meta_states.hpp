@@ -341,7 +341,7 @@ namespace meta_hpp
         [[nodiscard]] function get_function_with(std::string_view name) const noexcept;
         template < typename Iter >
         [[nodiscard]] function get_function_with(std::string_view name, Iter first, Iter last) const noexcept;
-        [[nodiscard]] function get_function_with(std::string_view name, const std::vector<any_type>& args) const noexcept;
+        [[nodiscard]] function get_function_with(std::string_view name, std::span<const any_type> args) const noexcept;
         [[nodiscard]] function get_function_with(std::string_view name, std::initializer_list<any_type> args) const noexcept;
     private:
         detail::scope_state_ptr state_;

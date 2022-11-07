@@ -282,7 +282,7 @@ namespace meta_hpp
         return constructor{};
     }
 
-    inline constructor class_type::get_constructor_with(const std::vector<any_type>& args) const noexcept {
+    inline constructor class_type::get_constructor_with(std::span<const any_type> args) const noexcept {
         return get_constructor_with(args.begin(), args.end());
     }
 
@@ -321,7 +321,7 @@ namespace meta_hpp
         return function{};
     }
 
-    inline function class_type::get_function_with(std::string_view name, const std::vector<any_type>& args) const noexcept {
+    inline function class_type::get_function_with(std::string_view name, std::span<const any_type> args) const noexcept {
         return get_function_with(name, args.begin(), args.end());
     }
 
@@ -360,7 +360,7 @@ namespace meta_hpp
         return method{};
     }
 
-    inline method class_type::get_method_with(std::string_view name, const std::vector<any_type>& args) const noexcept {
+    inline method class_type::get_method_with(std::string_view name, std::span<const any_type> args) const noexcept {
         return get_method_with(name, args.begin(), args.end());
     }
 
