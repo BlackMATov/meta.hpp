@@ -116,7 +116,7 @@ namespace meta_hpp
         return function{};
     }
 
-    inline function scope::get_function_with(std::string_view name, const std::vector<any_type>& args) const noexcept {
+    inline function scope::get_function_with(std::string_view name, std::span<const any_type> args) const noexcept {
         return get_function_with(name, args.begin(), args.end());
     }
 
