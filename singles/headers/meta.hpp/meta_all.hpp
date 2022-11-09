@@ -270,6 +270,53 @@ namespace meta_hpp::detail
     using copy_cvref_t = typename copy_cvref<From, To>::type;
 }
 
+namespace meta_hpp::stdex
+{
+    template < typename T, typename U >
+    concept same_as =
+        std::is_same_v<T, U> &&
+        std::is_same_v<U, T>;
+
+    template < typename Derived, typename Base >
+    concept derived_from =
+        std::is_base_of_v<Base, Derived> &&
+        std::is_convertible_v<const volatile Derived*, const volatile Base*>;
+
+    template < typename From, typename To >
+    concept convertible_to =
+        std::is_convertible_v<From, To> &&
+        requires { static_cast<To>(std::declval<From>()); };
+
+    template < typename T >
+    concept destructible =
+        std::is_nothrow_destructible_v<T>;
+
+    template < typename T, typename... Args >
+    concept constructible_from =
+        destructible<T> &&
+        std::is_constructible_v<T, Args...>;
+
+    template < typename T >
+    concept move_constructible =
+        constructible_from<T, T> &&
+        convertible_to<T, T>;
+
+    template<typename T>
+    concept copy_constructible =
+        move_constructible<T> &&
+        constructible_from<T, T&> && convertible_to<T&, T> &&
+        constructible_from<T, const T&> && convertible_to<const T&, T> &&
+        constructible_from<T, const T> && convertible_to<const T, T>;
+}
+
+namespace meta_hpp::stdex
+{
+    template < typename Enum >
+    [[nodiscard]] constexpr std::underlying_type_t<Enum> to_underlying(Enum e) noexcept {
+        return static_cast<std::underlying_type_t<Enum>>(e);
+    }
+}
+
 namespace meta_hpp::detail
 {
     template < typename Function >
@@ -300,11 +347,14 @@ namespace meta_hpp::detail
         }
 
         template < typename Functor >
+            requires (!stdex::same_as<fixed_function, std::decay_t<Functor>>)
+        // NOLINTNEXTLINE(*-forwarding-reference-overload)
         fixed_function(Functor&& functor) {
             vtable_t::construct(*this, std::forward<Functor>(functor));
         }
 
         template < typename Functor >
+            requires (!stdex::same_as<fixed_function, std::decay_t<Functor>>)
         fixed_function& operator=(Functor&& functor) {
             fixed_function{std::forward<Functor>(functor)}.swap(*this);
             return *this;
@@ -319,7 +369,7 @@ namespace meta_hpp::detail
         }
 
         R operator()(Args... args) const {
-            assert(vtable_ && "bad function call");
+            assert(vtable_ && "bad function call"); // NOLINT
             return vtable_->call(*this, std::forward<Args>(args)...);
         }
 
@@ -358,13 +408,13 @@ namespace meta_hpp::detail
 
         template < typename T >
         static T* buffer_cast(buffer_t& buffer) noexcept {
-            // NOLINTNEXTLINE(cppcoreguidelines-pro-type-reinterpret-cast)
+            // NOLINTNEXTLINE(*-reinterpret-cast)
             return std::launder(reinterpret_cast<T*>(buffer.data));
         }
 
         template < typename T >
         static const T* buffer_cast(const buffer_t& buffer) noexcept {
-            // NOLINTNEXTLINE(cppcoreguidelines-pro-type-reinterpret-cast)
+            // NOLINTNEXTLINE(*-reinterpret-cast)
             return std::launder(reinterpret_cast<const T*>(buffer.data));
         }
 
@@ -372,13 +422,13 @@ namespace meta_hpp::detail
         static vtable_t* get() {
             static vtable_t table{
                 .call = +[](const fixed_function& self, Args... args) -> R {
-                    assert(self);
+                    assert(self); // NOLINT
 
                     const Fp& src = *buffer_cast<Fp>(self.buffer_);
                     return std::invoke(src, std::forward<Args>(args)...);
                 },
                 .move = +[](fixed_function& from, fixed_function& to) noexcept {
-                    assert(from && !to);
+                    assert(from && !to); // NOLINT
 
                     Fp& src = *buffer_cast<Fp>(from.buffer_);
                     ::new (buffer_cast<Fp>(to.buffer_)) Fp(std::move(src));
@@ -388,7 +438,7 @@ namespace meta_hpp::detail
                     from.vtable_ = nullptr;
                 },
                 .destroy = +[](fixed_function& self){
-                    assert(self);
+                    assert(self); // NOLINT
 
                     Fp& src = *buffer_cast<Fp>(self.buffer_);
                     src.~Fp();
@@ -481,7 +531,7 @@ namespace meta_hpp::detail
 
         template < typename T >
         [[nodiscard]] std::size_t operator()(std::size_t seed, const T& x) noexcept {
-            // NOLINTNEXTLINE(cppcoreguidelines-avoid-magic-numbers, readability-magic-numbers)
+            // NOLINTNEXTLINE(*-magic-numbers)
             return (seed ^= std::hash<T>{}(x) + 0x9e3779b9 + (seed << 6) + (seed >> 2));
         }
     };
@@ -545,53 +595,6 @@ namespace meta_hpp::detail
     }
 }
 
-namespace meta_hpp::stdex
-{
-    template < typename T, typename U >
-    concept same_as =
-        std::is_same_v<T, U> &&
-        std::is_same_v<U, T>;
-
-    template < typename Derived, typename Base >
-    concept derived_from =
-        std::is_base_of_v<Base, Derived> &&
-        std::is_convertible_v<const volatile Derived*, const volatile Base*>;
-
-    template < typename From, typename To >
-    concept convertible_to =
-        std::is_convertible_v<From, To> &&
-        requires { static_cast<To>(std::declval<From>()); };
-
-    template < typename T >
-    concept destructible =
-        std::is_nothrow_destructible_v<T>;
-
-    template < typename T, typename... Args >
-    concept constructible_from =
-        destructible<T> &&
-        std::is_constructible_v<T, Args...>;
-
-    template < typename T >
-    concept move_constructible =
-        constructible_from<T, T> &&
-        convertible_to<T, T>;
-
-    template<typename T>
-    concept copy_constructible =
-        move_constructible<T> &&
-        constructible_from<T, T&> && convertible_to<T&, T> &&
-        constructible_from<T, const T&> && convertible_to<const T&, T> &&
-        constructible_from<T, const T> && convertible_to<const T, T>;
-}
-
-namespace meta_hpp::stdex
-{
-    template < typename Enum >
-    [[nodiscard]] constexpr std::underlying_type_t<Enum> to_underlying(Enum e) noexcept {
-        return static_cast<std::underlying_type_t<Enum>>(e);
-    }
-}
-
 namespace meta_hpp::detail
 {
     template < typename... Types >
@@ -614,7 +617,6 @@ namespace meta_hpp::detail
     class type_id final {
     public:
         template < typename T >
-        // NOLINTNEXTLINE(readability-named-parameter)
         explicit type_id(type_list<T>) noexcept
         : id_{type_to_id<T>()} {}
 
@@ -2241,6 +2243,7 @@ namespace meta_hpp
 
         template < detail::decay_non_value_kind T >
             requires stdex::copy_constructible<std::decay_t<T>>
+        // NOLINTNEXTLINE(*-forwarding-reference-overload)
         explicit uvalue(T&& val);
 
         template < detail::decay_non_value_kind T >
@@ -3606,13 +3609,11 @@ namespace meta_hpp
 namespace meta_hpp
 {
     template < typename T >
-    // NOLINTNEXTLINE(readability-named-parameter)
     [[nodiscard]] auto resolve_type(T&&) {
         return resolve_type<std::remove_reference_t<T>>();
     }
 
     template < typename... Ts >
-    // NOLINTNEXTLINE(readability-named-parameter)
     [[nodiscard]] std::vector<any_type> resolve_types(type_list<Ts...>) {
         return { resolve_type<Ts>()... };
     }
@@ -3827,6 +3828,7 @@ namespace meta_hpp
 
         for ( std::size_t i = 0; i < arguments.size(); ++i ) {
             argument& arg = state->arguments[i];
+            // NOLINTNEXTLINE(*-pointer-arithmetic)
             detail::state_access(arg)->name = std::data(arguments)[i];
         }
 
@@ -3929,6 +3931,7 @@ namespace meta_hpp
 
         for ( std::size_t i = 0; i < arguments.size(); ++i ) {
             argument& arg = state->arguments[i];
+            // NOLINTNEXTLINE(*-pointer-arithmetic)
             detail::state_access(arg)->name = std::data(arguments)[i];
         }
 
@@ -4115,11 +4118,9 @@ namespace meta_hpp
 
 namespace meta_hpp
 {
-    // NOLINTNEXTLINE(readability-named-parameter)
     inline scope_bind::scope_bind(std::string name, metadata_map metadata, local_tag)
     : state_{detail::scope_state::make(std::move(name), std::move(metadata))} {}
 
-    // NOLINTNEXTLINE(readability-named-parameter)
     inline scope_bind::scope_bind(std::string_view name, metadata_map metadata, static_tag)
     : state_{detail::state_access(resolve_scope(name))} {
         state_->metadata.swap(metadata);
@@ -4187,6 +4188,7 @@ namespace meta_hpp
 
         for ( std::size_t i = 0; i < arguments.size(); ++i ) {
             argument& arg = state->arguments[i];
+            // NOLINTNEXTLINE(*-pointer-arithmetic)
             detail::state_access(arg)->name = std::data(arguments)[i];
         }
 
@@ -4577,7 +4579,6 @@ namespace meta_hpp::detail
     struct constructor_tag {};
 
     template < class_kind Class, typename... Args >
-    // NOLINTNEXTLINE(readability-named-parameter)
     constructor_type_data::constructor_type_data(type_list<Class>, type_list<Args...>)
     : type_data_base{type_id{type_list<constructor_tag<Class, Args...>>{}}, type_kind::constructor_}
     , flags{constructor_traits<Class, Args...>::make_flags()}
@@ -4754,7 +4755,7 @@ namespace meta_hpp::detail
     }
 
     [[nodiscard]] inline const void* pointer_upcast(const void* ptr, const class_type& from, const class_type& to) {
-        // NOLINTNEXTLINE(cppcoreguidelines-pro-type-const-cast)
+        // NOLINTNEXTLINE(*-const-cast)
         return pointer_upcast(const_cast<void*>(ptr), from, to);
     }
 
@@ -4791,17 +4792,16 @@ namespace meta_hpp::detail
         virtual ~uarg_base() = default;
 
         template < decay_value_kind T >
-        // NOLINTNEXTLINE(readability-named-parameter)
+        // NOLINTNEXTLINE(*-forwarding-reference-overload)
         explicit uarg_base(T&&)
         : uarg_base{type_list<T&&>{}} {}
 
         template < decay_non_uvalue_kind T >
-        // NOLINTNEXTLINE(readability-named-parameter)
+        // NOLINTNEXTLINE(*-forwarding-reference-overload)
         explicit uarg_base(T&&)
         : uarg_base{type_list<T&&>{}} {}
 
         template < arg_lvalue_ref_kind T >
-        // NOLINTNEXTLINE(readability-named-parameter)
         explicit uarg_base(type_list<T>)
         : ref_type_{std::is_const_v<std::remove_reference_t<T>>
             ? ref_types::const_lvalue
@@ -4809,7 +4809,6 @@ namespace meta_hpp::detail
         , raw_type_{resolve_type<std::remove_cvref_t<T>>()} {}
 
         template < arg_rvalue_ref_kind T >
-        // NOLINTNEXTLINE(readability-named-parameter)
         explicit uarg_base(type_list<T>)
         : ref_type_{std::is_const_v<std::remove_reference_t<T>>
             ? ref_types::const_rvalue
@@ -4878,15 +4877,17 @@ namespace meta_hpp::detail
         ~uarg() override = default;
 
         template < decay_value_kind T >
+        // NOLINTNEXTLINE(*-forwarding-reference-overload)
         explicit uarg(T&& v)
         : uarg_base{std::forward<T>(v)}
-        // NOLINTNEXTLINE(cppcoreguidelines-pro-type-const-cast)
+        // NOLINTNEXTLINE(*-const-cast)
         , data_{const_cast<void*>(v.data())} {}
 
         template < decay_non_uvalue_kind T >
+        // NOLINTNEXTLINE(*-forwarding-reference-overload)
         explicit uarg(T&& v)
         : uarg_base{std::forward<T>(v)}
-        // NOLINTNEXTLINE(cppcoreguidelines-pro-type-const-cast)
+        // NOLINTNEXTLINE(*-const-cast)
         , data_{const_cast<std::remove_cvref_t<T>*>(std::addressof(v))} {}
 
         template < typename To >
@@ -4899,7 +4900,7 @@ namespace meta_hpp::detail
 namespace meta_hpp::detail
 {
     template < typename To >
-    // NOLINTNEXTLINE(readability-function-cognitive-complexity)
+    // NOLINTNEXTLINE(*-cognitive-complexity)
     bool uarg_base::can_cast_to() const noexcept {
         using to_raw_type_cv = std::remove_reference_t<To>;
         using to_raw_type = std::remove_cv_t<to_raw_type_cv>;
@@ -5003,7 +5004,7 @@ namespace meta_hpp::detail
 namespace meta_hpp::detail
 {
     template < typename To >
-    // NOLINTNEXTLINE(readability-function-cognitive-complexity)
+    // NOLINTNEXTLINE(*-cognitive-complexity)
     To uarg::cast() const {
         if ( !can_cast_to<To>() ) {
             throw_exception_with("bad argument cast");
@@ -5144,7 +5145,6 @@ namespace meta_hpp::detail
             throw_exception_with("an attempt to call a constructor with an incorrect arity");
         }
 
-        // NOLINTNEXTLINE(readability-named-parameter)
         return [args]<std::size_t... Is>(std::index_sequence<Is...>) -> uvalue {
             if ( !(... && args[Is].can_cast_to<type_list_at_t<Is, argument_types>>()) ) {
                 throw_exception_with("an attempt to call a constructor with incorrect argument types");
@@ -5176,7 +5176,6 @@ namespace meta_hpp::detail
             return false;
         }
 
-        // NOLINTNEXTLINE(readability-named-parameter)
         return [args]<std::size_t... Is>(std::index_sequence<Is...>){
             return (... && args[Is].can_cast_to<type_list_at_t<Is, argument_types>>());
         }(std::make_index_sequence<ct::arity>());
@@ -5202,7 +5201,6 @@ namespace meta_hpp::detail
         argument_list arguments;
         arguments.reserve(ct::arity);
 
-        // NOLINTNEXTLINE(readability-named-parameter)
         [&arguments]<std::size_t... Is>(std::index_sequence<Is...>) mutable {
             (arguments.push_back([]<std::size_t I>(){
                 using P = detail::type_list_at_t<I, typename ct::argument_types>;
@@ -5311,7 +5309,6 @@ namespace meta_hpp::detail
     struct destructor_tag {};
 
     template < class_kind Class >
-    // NOLINTNEXTLINE(readability-named-parameter)
     destructor_type_data::destructor_type_data(type_list<Class>)
     : type_data_base{type_id{type_list<destructor_tag<Class>>{}}, type_kind::destructor_}
     , flags{destructor_traits<Class>::make_flags()}
@@ -5463,7 +5460,6 @@ namespace meta_hpp::detail
     struct enum_tag {};
 
     template < enum_kind Enum >
-    // NOLINTNEXTLINE(readability-named-parameter)
     enum_type_data::enum_type_data(type_list<Enum>)
     : type_data_base{type_id{type_list<enum_tag<Enum>>{}}, type_kind::enum_}
     , flags{enum_traits<Enum>::make_flags()}
@@ -5600,7 +5596,6 @@ namespace meta_hpp::detail
     struct function_tag {};
 
     template < function_kind Function >
-    // NOLINTNEXTLINE(readability-named-parameter)
     function_type_data::function_type_data(type_list<Function>)
     : type_data_base{type_id{type_list<function_tag<Function>>{}}, type_kind::function_}
     , flags{function_traits<Function>::make_flags()}
@@ -5676,7 +5671,6 @@ namespace meta_hpp::detail
             throw_exception_with("an attempt to call a function with an incorrect arity");
         }
 
-        // NOLINTNEXTLINE(readability-named-parameter)
         return [&function, args]<std::size_t... Is>(std::index_sequence<Is...>) -> uvalue {
             if ( !(... && args[Is].can_cast_to<type_list_at_t<Is, argument_types>>()) ) {
                 throw_exception_with("an attempt to call a function with incorrect argument types");
@@ -5712,7 +5706,6 @@ namespace meta_hpp::detail
             return false;
         }
 
-        // NOLINTNEXTLINE(readability-named-parameter)
         return [args]<std::size_t... Is>(std::index_sequence<Is...>){
             return (... && args[Is].can_cast_to<type_list_at_t<Is, argument_types>>());
         }(std::make_index_sequence<ft::arity>());
@@ -5740,7 +5733,6 @@ namespace meta_hpp::detail
         argument_list arguments;
         arguments.reserve(ft::arity);
 
-        // NOLINTNEXTLINE(readability-named-parameter)
         [&arguments]<std::size_t... Is>(std::index_sequence<Is...>) mutable {
             (arguments.push_back([]<std::size_t I>(){
                 using P = detail::type_list_at_t<I, typename ft::argument_types>;
@@ -5853,7 +5845,6 @@ namespace meta_hpp::detail
     struct member_tag {};
 
     template < member_kind Member >
-    // NOLINTNEXTLINE(readability-named-parameter)
     member_type_data::member_type_data(type_list<Member>)
     : type_data_base{type_id{type_list<member_tag<Member>>{}}, type_kind::member_}
     , flags{member_traits<Member>::make_flags()}
@@ -5917,17 +5908,16 @@ namespace meta_hpp::detail
         virtual ~uinst_base() = default;
 
         template < decay_value_kind T >
-        // NOLINTNEXTLINE(readability-named-parameter)
+        // NOLINTNEXTLINE(*-forwarding-reference-overload)
         explicit uinst_base(T&&)
         : uinst_base{type_list<T&&>{}} {}
 
         template < decay_non_uvalue_kind T >
-        // NOLINTNEXTLINE(readability-named-parameter)
+        // NOLINTNEXTLINE(*-forwarding-reference-overload)
         explicit uinst_base(T&&)
         : uinst_base{type_list<T&&>{}} {}
 
         template < inst_class_lvalue_ref_kind T >
-        // NOLINTNEXTLINE(readability-named-parameter)
         explicit uinst_base(type_list<T>)
         : ref_type_{std::is_const_v<std::remove_reference_t<T>>
             ? ref_types::const_lvalue
@@ -5935,7 +5925,6 @@ namespace meta_hpp::detail
         , raw_type_{resolve_type<std::remove_cvref_t<T>>()} {}
 
         template < inst_class_rvalue_ref_kind T >
-        // NOLINTNEXTLINE(readability-named-parameter)
         explicit uinst_base(type_list<T>)
         : ref_type_{std::is_const_v<std::remove_reference_t<T>>
             ? ref_types::const_rvalue
@@ -6004,15 +5993,17 @@ namespace meta_hpp::detail
         ~uinst() override = default;
 
         template < decay_value_kind T >
+        // NOLINTNEXTLINE(*-forwarding-reference-overload)
         explicit uinst(T&& v)
         : uinst_base{std::forward<T>(v)}
-        // NOLINTNEXTLINE(cppcoreguidelines-pro-type-const-cast)
+        // NOLINTNEXTLINE(*-const-cast)
         , data_{const_cast<void*>(v.data())} {}
 
         template < decay_non_uvalue_kind T >
+        // NOLINTNEXTLINE(*-forwarding-reference-overload)
         explicit uinst(T&& v)
         : uinst_base{std::forward<T>(v)}
-        // NOLINTNEXTLINE(cppcoreguidelines-pro-type-const-cast)
+        // NOLINTNEXTLINE(*-const-cast)
         , data_{const_cast<std::remove_cvref_t<T>*>(std::addressof(v))} {}
 
         template < inst_class_ref_kind Q >
@@ -6334,7 +6325,6 @@ namespace meta_hpp::detail
     struct method_tag {};
 
     template < method_kind Method >
-    // NOLINTNEXTLINE(readability-named-parameter)
     method_type_data::method_type_data(type_list<Method>)
     : type_data_base{type_id{type_list<method_tag<Method>>{}}, type_kind::method_}
     , flags{method_traits<Method>::make_flags()}
@@ -6420,7 +6410,6 @@ namespace meta_hpp::detail
             throw_exception_with("an attempt to call a method with an incorrect instance type");
         }
 
-        // NOLINTNEXTLINE(readability-named-parameter)
         return [&method, &inst, args]<std::size_t... Is>(std::index_sequence<Is...>) -> uvalue {
             if ( !(... && args[Is].can_cast_to<type_list_at_t<Is, argument_types>>()) ) {
                 throw_exception_with("an attempt to call a method with incorrect argument types");
@@ -6461,7 +6450,6 @@ namespace meta_hpp::detail
             return false;
         }
 
-        // NOLINTNEXTLINE(readability-named-parameter)
         return [args]<std::size_t... Is>(std::index_sequence<Is...>){
             return (... && args[Is].can_cast_to<type_list_at_t<Is, argument_types>>());
         }(std::make_index_sequence<mt::arity>());
@@ -6489,7 +6477,6 @@ namespace meta_hpp::detail
         argument_list arguments;
         arguments.reserve(mt::arity);
 
-        // NOLINTNEXTLINE(readability-named-parameter)
         [&arguments]<std::size_t... Is>(std::index_sequence<Is...>) mutable {
             (arguments.push_back([]<std::size_t I>(){
                 using P = detail::type_list_at_t<I, typename mt::argument_types>;
@@ -6605,7 +6592,6 @@ namespace meta_hpp::detail
     struct pointer_tag {};
 
     template < pointer_kind Pointer >
-    // NOLINTNEXTLINE(readability-named-parameter)
     pointer_type_data::pointer_type_data(type_list<Pointer>)
     : type_data_base{type_id{type_list<pointer_tag<Pointer>>{}}, type_kind::pointer_}
     , flags{pointer_traits<Pointer>::make_flags()}
@@ -6812,7 +6798,6 @@ namespace meta_hpp::detail
     struct class_tag {};
 
     template < class_kind Class >
-    // NOLINTNEXTLINE(readability-named-parameter)
     class_type_data::class_type_data(type_list<Class>)
     : type_data_base{type_id{type_list<class_tag<Class>>{}}, type_kind::class_}
     , flags{class_traits<Class>::make_flags()}
@@ -6938,6 +6923,7 @@ namespace meta_hpp
             return true;
         }
 
+        // NOLINTNEXTLINE(*-use-anyofallof)
         for ( auto&& derived_base : derived.data_->bases ) {
             if ( is_base_of(derived_base) ) {
                 return true;
@@ -6961,6 +6947,7 @@ namespace meta_hpp
             return true;
         }
 
+        // NOLINTNEXTLINE(*-use-anyofallof)
         for ( auto&& self_base : data_->bases ) {
             if ( self_base.is_derived_from(base) ) {
                 return true;
@@ -7379,67 +7366,67 @@ namespace meta_hpp
     }
 
     inline array_type any_type::as_array() const noexcept {
-        // NOLINTNEXTLINE(cppcoreguidelines-pro-type-static-cast-downcast)
+        // NOLINTNEXTLINE(*-static-cast-downcast)
         return is_array() ? array_type{static_cast<detail::array_type_data*>(data_)} : array_type{};
     }
 
     inline class_type any_type::as_class() const noexcept {
-        // NOLINTNEXTLINE(cppcoreguidelines-pro-type-static-cast-downcast)
+        // NOLINTNEXTLINE(*-static-cast-downcast)
         return is_class() ? class_type{static_cast<detail::class_type_data*>(data_)} : class_type{};
     }
 
     inline constructor_type any_type::as_constructor() const noexcept {
-        // NOLINTNEXTLINE(cppcoreguidelines-pro-type-static-cast-downcast)
+        // NOLINTNEXTLINE(*-static-cast-downcast)
         return is_constructor() ? constructor_type{static_cast<detail::constructor_type_data*>(data_)} : constructor_type{};
     }
 
     inline destructor_type any_type::as_destructor() const noexcept {
-        // NOLINTNEXTLINE(cppcoreguidelines-pro-type-static-cast-downcast)
+        // NOLINTNEXTLINE(*-static-cast-downcast)
         return is_destructor() ? destructor_type{static_cast<detail::destructor_type_data*>(data_)} : destructor_type{};
     }
 
     inline enum_type any_type::as_enum() const noexcept {
-        // NOLINTNEXTLINE(cppcoreguidelines-pro-type-static-cast-downcast)
+        // NOLINTNEXTLINE(*-static-cast-downcast)
         return is_enum() ? enum_type{static_cast<detail::enum_type_data*>(data_)} : enum_type{};
     }
 
     inline function_type any_type::as_function() const noexcept {
-        // NOLINTNEXTLINE(cppcoreguidelines-pro-type-static-cast-downcast)
+        // NOLINTNEXTLINE(*-static-cast-downcast)
         return is_function() ? function_type{static_cast<detail::function_type_data*>(data_)} : function_type{};
     }
 
     inline member_type any_type::as_member() const noexcept {
-        // NOLINTNEXTLINE(cppcoreguidelines-pro-type-static-cast-downcast)
+        // NOLINTNEXTLINE(*-static-cast-downcast)
         return is_member() ? member_type{static_cast<detail::member_type_data*>(data_)} : member_type{};
     }
 
     inline method_type any_type::as_method() const noexcept {
-        // NOLINTNEXTLINE(cppcoreguidelines-pro-type-static-cast-downcast)
+        // NOLINTNEXTLINE(*-static-cast-downcast)
         return is_method() ? method_type{static_cast<detail::method_type_data*>(data_)} : method_type{};
     }
 
     inline nullptr_type any_type::as_nullptr() const noexcept {
-        // NOLINTNEXTLINE(cppcoreguidelines-pro-type-static-cast-downcast)
+        // NOLINTNEXTLINE(*-static-cast-downcast)
         return is_nullptr() ? nullptr_type{static_cast<detail::nullptr_type_data*>(data_)} : nullptr_type{};
     }
 
     inline number_type any_type::as_number() const noexcept {
-        // NOLINTNEXTLINE(cppcoreguidelines-pro-type-static-cast-downcast)
+        // NOLINTNEXTLINE(*-static-cast-downcast)
         return is_number() ? number_type{static_cast<detail::number_type_data*>(data_)} : number_type{};
     }
 
     inline pointer_type any_type::as_pointer() const noexcept {
-        // NOLINTNEXTLINE(cppcoreguidelines-pro-type-static-cast-downcast)
+        // NOLINTNEXTLINE(*-static-cast-downcast)
         return is_pointer() ? pointer_type{static_cast<detail::pointer_type_data*>(data_)} : pointer_type{};
     }
 
     inline reference_type any_type::as_reference() const noexcept {
-        // NOLINTNEXTLINE(cppcoreguidelines-pro-type-static-cast-downcast)
+        // NOLINTNEXTLINE(*-static-cast-downcast)
         return is_reference() ? reference_type{static_cast<detail::reference_type_data*>(data_)} : reference_type{};
     }
 
     inline void_type any_type::as_void() const noexcept {
-        // NOLINTNEXTLINE(cppcoreguidelines-pro-type-static-cast-downcast)
+        // NOLINTNEXTLINE(*-static-cast-downcast)
         return is_void() ? void_type{static_cast<detail::void_type_data*>(data_)} : void_type{};
     }
 }
@@ -7450,7 +7437,6 @@ namespace meta_hpp::detail
     struct array_tag {};
 
     template < array_kind Array >
-    // NOLINTNEXTLINE(readability-named-parameter)
     array_type_data::array_type_data(type_list<Array>)
     : type_data_base{type_id{type_list<array_tag<Array>>{}}, type_kind::array_}
     , flags{array_traits<Array>::make_flags()}
@@ -7498,7 +7484,6 @@ namespace meta_hpp::detail
     struct nullptr_tag {};
 
     template < nullptr_kind Nullptr >
-    // NOLINTNEXTLINE(readability-named-parameter)
     nullptr_type_data::nullptr_type_data(type_list<Nullptr>)
     : type_data_base{type_id{type_list<nullptr_tag<Nullptr>>{}}, type_kind::nullptr_} {}
 }
@@ -7531,7 +7516,6 @@ namespace meta_hpp::detail
     struct number_tag {};
 
     template < number_kind Number >
-    // NOLINTNEXTLINE(readability-named-parameter)
     number_type_data::number_type_data(type_list<Number>)
     : type_data_base{type_id{type_list<number_tag<Number>>{}}, type_kind::number_}
     , flags{number_traits<Number>::make_flags()}
@@ -7579,7 +7563,6 @@ namespace meta_hpp::detail
     struct reference_tag {};
 
     template < reference_kind Reference >
-    // NOLINTNEXTLINE(readability-named-parameter)
     reference_type_data::reference_type_data(type_list<Reference>)
     : type_data_base{type_id{type_list<reference_tag<Reference>>{}}, type_kind::reference_}
     , flags{reference_traits<Reference>::make_flags()}
@@ -7622,7 +7605,6 @@ namespace meta_hpp::detail
     struct void_tag {};
 
     template < void_kind Void >
-    // NOLINTNEXTLINE(readability-named-parameter)
     void_type_data::void_type_data(type_list<Void>)
     : type_data_base{type_id{type_list<void_tag<Void>>{}}, type_kind::void_} {}
 }
@@ -7890,6 +7872,7 @@ namespace meta_hpp::detail
     template < stdex::copy_constructible T >
     struct index_traits<T*> {
         uvalue operator()(T* v, std::size_t i) const {
+            // NOLINTNEXTLINE(*-pointer-arithmetic)
             return uvalue{v[i]};
         }
     };
@@ -7897,6 +7880,7 @@ namespace meta_hpp::detail
     template < stdex::copy_constructible T >
     struct index_traits<const T*> {
         uvalue operator()(const T* v, std::size_t i) const {
+            // NOLINTNEXTLINE(*-pointer-arithmetic)
             return uvalue{v[i]};
         }
     };
@@ -8025,13 +8009,13 @@ namespace meta_hpp
 
         template < typename T >
         static T* buffer_cast(buffer_t& buffer) noexcept {
-            // NOLINTNEXTLINE(cppcoreguidelines-pro-type-reinterpret-cast)
+            // NOLINTNEXTLINE(*-reinterpret-cast)
             return std::launder(reinterpret_cast<T*>(buffer.data));
         }
 
         template < typename T >
         static const T* buffer_cast(const buffer_t& buffer) noexcept {
-            // NOLINTNEXTLINE(cppcoreguidelines-pro-type-reinterpret-cast)
+            // NOLINTNEXTLINE(*-reinterpret-cast)
             return std::launder(reinterpret_cast<const T*>(buffer.data));
         }
 
@@ -8098,7 +8082,7 @@ namespace meta_hpp
         }
 
         template < typename Tp >
-        // NOLINTNEXTLINE(readability-function-cognitive-complexity)
+        // NOLINTNEXTLINE(*-cognitive-complexity)
         static vtable_t* get() {
             static vtable_t table{
                 .type = resolve_type<Tp>(),
@@ -8112,7 +8096,7 @@ namespace meta_hpp
                 },
 
                 .move = [](uvalue& from, uvalue& to) noexcept {
-                    assert(from && !to);
+                    assert(from && !to); // NOLINT
 
                     std::visit(detail::overloaded {
                         [&to](void* ptr) {
@@ -8132,7 +8116,7 @@ namespace meta_hpp
                 },
 
                 .copy = [](const uvalue& from, uvalue& to){
-                    assert(from && !to);
+                    assert(from && !to); // NOLINT
 
                     std::visit(detail::overloaded {
                         [&to](void* ptr) {
@@ -8150,7 +8134,7 @@ namespace meta_hpp
                 },
 
                 .destroy = [](uvalue& self) noexcept {
-                    assert(self);
+                    assert(self); // NOLINT
 
                     std::visit(detail::overloaded {
                         [](void* ptr) {
@@ -8255,6 +8239,7 @@ namespace meta_hpp
 
     template < detail::decay_non_value_kind T >
         requires stdex::copy_constructible<std::decay_t<T>>
+    // NOLINTNEXTLINE(*-forwarding-reference-overload)
     uvalue::uvalue(T&& val) {
         vtable_t::construct(*this, std::forward<T>(val));
     }
@@ -8344,7 +8329,7 @@ namespace meta_hpp
     }
 
     template < typename T >
-    // NOLINTNEXTLINE(*-function-cognitive-complexity)
+    // NOLINTNEXTLINE(*-cognitive-complexity)
     auto uvalue::try_get_as() noexcept -> std::conditional_t<detail::pointer_kind<T>, T, T*> {
         static_assert(std::is_same_v<T, std::decay_t<T>>);
 
@@ -8409,7 +8394,7 @@ namespace meta_hpp
     }
 
     template < typename T >
-    // NOLINTNEXTLINE(*-function-cognitive-complexity)
+    // NOLINTNEXTLINE(*-cognitive-complexity)
     auto uvalue::try_get_as() const noexcept -> std::conditional_t<detail::pointer_kind<T>, T, const T*> {
         static_assert(std::is_same_v<T, std::decay_t<T>>);
 

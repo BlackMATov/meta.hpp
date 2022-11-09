@@ -65,7 +65,7 @@ namespace
     // int f6(const clazz* const&&) { return v->ii; }
 }
 
-// NOLINTNEXTLINE(cppcoreguidelines-macro-usage)
+// NOLINTNEXTLINE(*-macro-usage)
 #define META_HPP_CHECK_INVOCABLE(FromValue, FName, ToType)\
     {\
         using namespace meta::detail;\
@@ -89,7 +89,7 @@ namespace
         }\
     }
 
-// NOLINTNEXTLINE(cppcoreguidelines-macro-usage)
+// NOLINTNEXTLINE(*-macro-usage)
 #define META_HPP_CHECK_INVOCABLE_2(FromValue, FName, FromType, ToType)\
     {\
         using namespace meta::detail;\

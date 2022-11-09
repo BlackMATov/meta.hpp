@@ -31,13 +31,11 @@ namespace meta_hpp
 namespace meta_hpp
 {
     template < typename T >
-    // NOLINTNEXTLINE(readability-named-parameter)
     [[nodiscard]] auto resolve_type(T&&) {
         return resolve_type<std::remove_reference_t<T>>();
     }
 
     template < typename... Ts >
-    // NOLINTNEXTLINE(readability-named-parameter)
     [[nodiscard]] std::vector<any_type> resolve_types(type_list<Ts...>) {
         return { resolve_type<Ts>()... };
     }

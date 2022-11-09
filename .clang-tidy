@@ -3,8 +3,6 @@ Checks: '-*,
 
         bugprone-*,
         -bugprone-easily-swappable-parameters,
-        -bugprone-forwarding-reference-overload,
-        -bugprone-lambda-function-name,
         -bugprone-macro-parentheses,
 
         clang-analyzer-*,
@@ -13,8 +11,6 @@ Checks: '-*,
 
         cppcoreguidelines-*,
         -cppcoreguidelines-macro-usage,
-        -cppcoreguidelines-pro-bounds-array-to-pointer-decay,
-        -cppcoreguidelines-pro-bounds-pointer-arithmetic,
 
         modernize-*,
         -modernize-use-trailing-return-type,
@@ -27,7 +23,5 @@ Checks: '-*,
         -readability-identifier-length,
         -readability-named-parameter,
         -readability-redundant-access-specifiers,
-        -readability-simplify-boolean-expr,
-        -readability-use-anyofallof,
         '
 ...

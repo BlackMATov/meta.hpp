@@ -18,7 +18,6 @@ namespace meta_hpp::detail
     struct array_tag {};
 
     template < array_kind Array >
-    // NOLINTNEXTLINE(readability-named-parameter)
     array_type_data::array_type_data(type_list<Array>)
     : type_data_base{type_id{type_list<array_tag<Array>>{}}, type_kind::array_}
     , flags{array_traits<Array>::make_flags()}

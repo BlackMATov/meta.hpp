@@ -136,7 +136,7 @@ namespace meta_hpp::detail
     }
 
     [[nodiscard]] inline const void* pointer_upcast(const void* ptr, const class_type& from, const class_type& to) {
-        // NOLINTNEXTLINE(cppcoreguidelines-pro-type-const-cast)
+        // NOLINTNEXTLINE(*-const-cast)
         return pointer_upcast(const_cast<void*>(ptr), from, to);
     }
 

@@ -123,67 +123,67 @@ namespace meta_hpp
     }
 
     inline array_type any_type::as_array() const noexcept {
-        // NOLINTNEXTLINE(cppcoreguidelines-pro-type-static-cast-downcast)
+        // NOLINTNEXTLINE(*-static-cast-downcast)
         return is_array() ? array_type{static_cast<detail::array_type_data*>(data_)} : array_type{};
     }
 
     inline class_type any_type::as_class() const noexcept {
-        // NOLINTNEXTLINE(cppcoreguidelines-pro-type-static-cast-downcast)
+        // NOLINTNEXTLINE(*-static-cast-downcast)
         return is_class() ? class_type{static_cast<detail::class_type_data*>(data_)} : class_type{};
     }
 
     inline constructor_type any_type::as_constructor() const noexcept {
-        // NOLINTNEXTLINE(cppcoreguidelines-pro-type-static-cast-downcast)
+        // NOLINTNEXTLINE(*-static-cast-downcast)
         return is_constructor() ? constructor_type{static_cast<detail::constructor_type_data*>(data_)} : constructor_type{};
     }
 
     inline destructor_type any_type::as_destructor() const noexcept {
-        // NOLINTNEXTLINE(cppcoreguidelines-pro-type-static-cast-downcast)
+        // NOLINTNEXTLINE(*-static-cast-downcast)
         return is_destructor() ? destructor_type{static_cast<detail::destructor_type_data*>(data_)} : destructor_type{};
     }
 
     inline enum_type any_type::as_enum() const noexcept {
-        // NOLINTNEXTLINE(cppcoreguidelines-pro-type-static-cast-downcast)
+        // NOLINTNEXTLINE(*-static-cast-downcast)
         return is_enum() ? enum_type{static_cast<detail::enum_type_data*>(data_)} : enum_type{};
     }
 
     inline function_type any_type::as_function() const noexcept {
-        // NOLINTNEXTLINE(cppcoreguidelines-pro-type-static-cast-downcast)
+        // NOLINTNEXTLINE(*-static-cast-downcast)
         return is_function() ? function_type{static_cast<detail::function_type_data*>(data_)} : function_type{};
     }
 
     inline member_type any_type::as_member() const noexcept {
-        // NOLINTNEXTLINE(cppcoreguidelines-pro-type-static-cast-downcast)
+        // NOLINTNEXTLINE(*-static-cast-downcast)
         return is_member() ? member_type{static_cast<detail::member_type_data*>(data_)} : member_type{};
     }
 
     inline method_type any_type::as_method() const noexcept {
-        // NOLINTNEXTLINE(cppcoreguidelines-pro-type-static-cast-downcast)
+        // NOLINTNEXTLINE(*-static-cast-downcast)
         return is_method() ? method_type{static_cast<detail::method_type_data*>(data_)} : method_type{};
     }
 
     inline nullptr_type any_type::as_nullptr() const noexcept {
-        // NOLINTNEXTLINE(cppcoreguidelines-pro-type-static-cast-downcast)
+        // NOLINTNEXTLINE(*-static-cast-downcast)
         return is_nullptr() ? nullptr_type{static_cast<detail::nullptr_type_data*>(data_)} : nullptr_type{};
     }
 
     inline number_type any_type::as_number() const noexcept {
-        // NOLINTNEXTLINE(cppcoreguidelines-pro-type-static-cast-downcast)
+        // NOLINTNEXTLINE(*-static-cast-downcast)
         return is_number() ? number_type{static_cast<detail::number_type_data*>(data_)} : number_type{};
     }
 
     inline pointer_type any_type::as_pointer() const noexcept {
-        // NOLINTNEXTLINE(cppcoreguidelines-pro-type-static-cast-downcast)
+        // NOLINTNEXTLINE(*-static-cast-downcast)
         return is_pointer() ? pointer_type{static_cast<detail::pointer_type_data*>(data_)} : pointer_type{};
     }
 
     inline reference_type any_type::as_reference() const noexcept {
-        // NOLINTNEXTLINE(cppcoreguidelines-pro-type-static-cast-downcast)
+        // NOLINTNEXTLINE(*-static-cast-downcast)
         return is_reference() ? reference_type{static_cast<detail::reference_type_data*>(data_)} : reference_type{};
     }
 
     inline void_type any_type::as_void() const noexcept {
-        // NOLINTNEXTLINE(cppcoreguidelines-pro-type-static-cast-downcast)
+        // NOLINTNEXTLINE(*-static-cast-downcast)
         return is_void() ? void_type{static_cast<detail::void_type_data*>(data_)} : void_type{};
     }
 }

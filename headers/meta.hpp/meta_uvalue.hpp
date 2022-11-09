@@ -39,6 +39,7 @@ namespace meta_hpp
 
         template < detail::decay_non_value_kind T >
             requires stdex::copy_constructible<std::decay_t<T>>
+        // NOLINTNEXTLINE(*-forwarding-reference-overload)
         explicit uvalue(T&& val);
 
         template < detail::decay_non_value_kind T >

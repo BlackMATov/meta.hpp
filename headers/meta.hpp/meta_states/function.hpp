@@ -38,7 +38,6 @@ namespace meta_hpp::detail
             throw_exception_with("an attempt to call a function with an incorrect arity");
         }
 
-        // NOLINTNEXTLINE(readability-named-parameter)
         return [&function, args]<std::size_t... Is>(std::index_sequence<Is...>) -> uvalue {
             if ( !(... && args[Is].can_cast_to<type_list_at_t<Is, argument_types>>()) ) {
                 throw_exception_with("an attempt to call a function with incorrect argument types");
@@ -74,7 +73,6 @@ namespace meta_hpp::detail
             return false;
         }
 
-        // NOLINTNEXTLINE(readability-named-parameter)
         return [args]<std::size_t... Is>(std::index_sequence<Is...>){
             return (... && args[Is].can_cast_to<type_list_at_t<Is, argument_types>>());
         }(std::make_index_sequence<ft::arity>());
@@ -102,7 +100,6 @@ namespace meta_hpp::detail
         argument_list arguments;
         arguments.reserve(ft::arity);
 
-        // NOLINTNEXTLINE(readability-named-parameter)
         [&arguments]<std::size_t... Is>(std::index_sequence<Is...>) mutable {
             (arguments.push_back([]<std::size_t I>(){
                 using P = detail::type_list_at_t<I, typename ft::argument_types>;

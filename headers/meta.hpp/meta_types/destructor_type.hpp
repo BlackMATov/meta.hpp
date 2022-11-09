@@ -18,7 +18,6 @@ namespace meta_hpp::detail
     struct destructor_tag {};
 
     template < class_kind Class >
-    // NOLINTNEXTLINE(readability-named-parameter)
     destructor_type_data::destructor_type_data(type_list<Class>)
     : type_data_base{type_id{type_list<destructor_tag<Class>>{}}, type_kind::destructor_}
     , flags{destructor_traits<Class>::make_flags()}

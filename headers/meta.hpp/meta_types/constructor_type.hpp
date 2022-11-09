@@ -18,7 +18,6 @@ namespace meta_hpp::detail
     struct constructor_tag {};
 
     template < class_kind Class, typename... Args >
-    // NOLINTNEXTLINE(readability-named-parameter)
     constructor_type_data::constructor_type_data(type_list<Class>, type_list<Args...>)
     : type_data_base{type_id{type_list<constructor_tag<Class, Args...>>{}}, type_kind::constructor_}
     , flags{constructor_traits<Class, Args...>::make_flags()}

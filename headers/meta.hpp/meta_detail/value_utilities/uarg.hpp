@@ -33,17 +33,16 @@ namespace meta_hpp::detail
         virtual ~uarg_base() = default;
 
         template < decay_value_kind T >
-        // NOLINTNEXTLINE(readability-named-parameter)
+        // NOLINTNEXTLINE(*-forwarding-reference-overload)
         explicit uarg_base(T&&)
         : uarg_base{type_list<T&&>{}} {}
 
         template < decay_non_uvalue_kind T >
-        // NOLINTNEXTLINE(readability-named-parameter)
+        // NOLINTNEXTLINE(*-forwarding-reference-overload)
         explicit uarg_base(T&&)
         : uarg_base{type_list<T&&>{}} {}
 
         template < arg_lvalue_ref_kind T >
-        // NOLINTNEXTLINE(readability-named-parameter)
         explicit uarg_base(type_list<T>)
         : ref_type_{std::is_const_v<std::remove_reference_t<T>>
             ? ref_types::const_lvalue
@@ -51,7 +50,6 @@ namespace meta_hpp::detail
         , raw_type_{resolve_type<std::remove_cvref_t<T>>()} {}
 
         template < arg_rvalue_ref_kind T >
-        // NOLINTNEXTLINE(readability-named-parameter)
         explicit uarg_base(type_list<T>)
         : ref_type_{std::is_const_v<std::remove_reference_t<T>>
             ? ref_types::const_rvalue
@@ -120,15 +118,17 @@ namespace meta_hpp::detail
         ~uarg() override = default;
 
         template < decay_value_kind T >
+        // NOLINTNEXTLINE(*-forwarding-reference-overload)
         explicit uarg(T&& v)
         : uarg_base{std::forward<T>(v)}
-        // NOLINTNEXTLINE(cppcoreguidelines-pro-type-const-cast)
+        // NOLINTNEXTLINE(*-const-cast)
         , data_{const_cast<void*>(v.data())} {}
 
         template < decay_non_uvalue_kind T >
+        // NOLINTNEXTLINE(*-forwarding-reference-overload)
         explicit uarg(T&& v)
         : uarg_base{std::forward<T>(v)}
-        // NOLINTNEXTLINE(cppcoreguidelines-pro-type-const-cast)
+        // NOLINTNEXTLINE(*-const-cast)
         , data_{const_cast<std::remove_cvref_t<T>*>(std::addressof(v))} {}
 
         template < typename To >
@@ -141,7 +141,7 @@ namespace meta_hpp::detail
 namespace meta_hpp::detail
 {
     template < typename To >
-    // NOLINTNEXTLINE(readability-function-cognitive-complexity)
+    // NOLINTNEXTLINE(*-cognitive-complexity)
     bool uarg_base::can_cast_to() const noexcept {
         using to_raw_type_cv = std::remove_reference_t<To>;
         using to_raw_type = std::remove_cv_t<to_raw_type_cv>;
@@ -245,7 +245,7 @@ namespace meta_hpp::detail
 namespace meta_hpp::detail
 {
     template < typename To >
-    // NOLINTNEXTLINE(readability-function-cognitive-complexity)
+    // NOLINTNEXTLINE(*-cognitive-complexity)
     To uarg::cast() const {
         if ( !can_cast_to<To>() ) {
             throw_exception_with("bad argument cast");

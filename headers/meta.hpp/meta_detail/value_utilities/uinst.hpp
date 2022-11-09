@@ -33,17 +33,16 @@ namespace meta_hpp::detail
         virtual ~uinst_base() = default;
 
         template < decay_value_kind T >
-        // NOLINTNEXTLINE(readability-named-parameter)
+        // NOLINTNEXTLINE(*-forwarding-reference-overload)
         explicit uinst_base(T&&)
         : uinst_base{type_list<T&&>{}} {}
 
         template < decay_non_uvalue_kind T >
-        // NOLINTNEXTLINE(readability-named-parameter)
+        // NOLINTNEXTLINE(*-forwarding-reference-overload)
         explicit uinst_base(T&&)
         : uinst_base{type_list<T&&>{}} {}
 
         template < inst_class_lvalue_ref_kind T >
-        // NOLINTNEXTLINE(readability-named-parameter)
         explicit uinst_base(type_list<T>)
         : ref_type_{std::is_const_v<std::remove_reference_t<T>>
             ? ref_types::const_lvalue
@@ -51,7 +50,6 @@ namespace meta_hpp::detail
         , raw_type_{resolve_type<std::remove_cvref_t<T>>()} {}
 
         template < inst_class_rvalue_ref_kind T >
-        // NOLINTNEXTLINE(readability-named-parameter)
         explicit uinst_base(type_list<T>)
         : ref_type_{std::is_const_v<std::remove_reference_t<T>>
             ? ref_types::const_rvalue
@@ -120,15 +118,17 @@ namespace meta_hpp::detail
         ~uinst() override = default;
 
         template < decay_value_kind T >
+        // NOLINTNEXTLINE(*-forwarding-reference-overload)
         explicit uinst(T&& v)
         : uinst_base{std::forward<T>(v)}
-        // NOLINTNEXTLINE(cppcoreguidelines-pro-type-const-cast)
+        // NOLINTNEXTLINE(*-const-cast)
         , data_{const_cast<void*>(v.data())} {}
 
         template < decay_non_uvalue_kind T >
+        // NOLINTNEXTLINE(*-forwarding-reference-overload)
         explicit uinst(T&& v)
         : uinst_base{std::forward<T>(v)}
-        // NOLINTNEXTLINE(cppcoreguidelines-pro-type-const-cast)
+        // NOLINTNEXTLINE(*-const-cast)
         , data_{const_cast<std::remove_cvref_t<T>*>(std::addressof(v))} {}
 
         template < inst_class_ref_kind Q >
