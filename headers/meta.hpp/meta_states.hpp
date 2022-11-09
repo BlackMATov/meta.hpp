@@ -52,33 +52,33 @@ namespace meta_hpp
 
     template < typename Policy >
     inline constexpr bool is_constructor_policy_v =
-        std::is_same_v<Policy, constructor_policy::as_object> ||
-        std::is_same_v<Policy, constructor_policy::as_raw_pointer> ||
-        std::is_same_v<Policy, constructor_policy::as_shared_pointer>;
+        stdex::same_as<Policy, constructor_policy::as_object> ||
+        stdex::same_as<Policy, constructor_policy::as_raw_pointer> ||
+        stdex::same_as<Policy, constructor_policy::as_shared_pointer>;
 
     template < typename Policy >
     inline constexpr bool is_function_policy_v =
-        std::is_same_v<Policy, function_policy::as_copy> ||
-        std::is_same_v<Policy, function_policy::discard_return> ||
-        std::is_same_v<Policy, function_policy::return_reference_as_pointer>;
+        stdex::same_as<Policy, function_policy::as_copy> ||
+        stdex::same_as<Policy, function_policy::discard_return> ||
+        stdex::same_as<Policy, function_policy::return_reference_as_pointer>;
 
     template < typename Policy >
     inline constexpr bool is_member_policy_v =
-        std::is_same_v<Policy, member_policy::as_copy> ||
-        std::is_same_v<Policy, member_policy::as_pointer> ||
-        std::is_same_v<Policy, member_policy::as_reference_wrapper>;
+        stdex::same_as<Policy, member_policy::as_copy> ||
+        stdex::same_as<Policy, member_policy::as_pointer> ||
+        stdex::same_as<Policy, member_policy::as_reference_wrapper>;
 
     template < typename Policy >
     inline constexpr bool is_method_policy_v =
-        std::is_same_v<Policy, method_policy::as_copy> ||
-        std::is_same_v<Policy, method_policy::discard_return> ||
-        std::is_same_v<Policy, method_policy::return_reference_as_pointer>;
+        stdex::same_as<Policy, method_policy::as_copy> ||
+        stdex::same_as<Policy, method_policy::discard_return> ||
+        stdex::same_as<Policy, method_policy::return_reference_as_pointer>;
 
     template < typename Policy >
     inline constexpr bool is_variable_policy_v =
-        std::is_same_v<Policy, variable_policy::as_copy> ||
-        std::is_same_v<Policy, variable_policy::as_pointer> ||
-        std::is_same_v<Policy, variable_policy::as_reference_wrapper>;
+        stdex::same_as<Policy, variable_policy::as_copy> ||
+        stdex::same_as<Policy, variable_policy::as_pointer> ||
+        stdex::same_as<Policy, variable_policy::as_reference_wrapper>;
 
     template < typename Policy >
     concept constructor_policy_kind = is_constructor_policy_v<Policy>;

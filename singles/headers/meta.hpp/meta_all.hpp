@@ -905,20 +905,20 @@ namespace meta_hpp::detail
 {
     template < typename T >
     inline constexpr bool is_type_family_v =
-        std::is_same_v<T, any_type> ||
-        std::is_same_v<T, array_type> ||
-        std::is_same_v<T, class_type> ||
-        std::is_same_v<T, constructor_type> ||
-        std::is_same_v<T, destructor_type> ||
-        std::is_same_v<T, enum_type> ||
-        std::is_same_v<T, function_type> ||
-        std::is_same_v<T, member_type> ||
-        std::is_same_v<T, method_type> ||
-        std::is_same_v<T, nullptr_type> ||
-        std::is_same_v<T, number_type> ||
-        std::is_same_v<T, pointer_type> ||
-        std::is_same_v<T, reference_type> ||
-        std::is_same_v<T, void_type>;
+        stdex::same_as<T, any_type> ||
+        stdex::same_as<T, array_type> ||
+        stdex::same_as<T, class_type> ||
+        stdex::same_as<T, constructor_type> ||
+        stdex::same_as<T, destructor_type> ||
+        stdex::same_as<T, enum_type> ||
+        stdex::same_as<T, function_type> ||
+        stdex::same_as<T, member_type> ||
+        stdex::same_as<T, method_type> ||
+        stdex::same_as<T, nullptr_type> ||
+        stdex::same_as<T, number_type> ||
+        stdex::same_as<T, pointer_type> ||
+        stdex::same_as<T, reference_type> ||
+        stdex::same_as<T, void_type>;
 
     template < typename T >
     concept type_family = is_type_family_v<T>;
@@ -2022,15 +2022,15 @@ namespace meta_hpp::detail
 {
     template < typename T >
     inline constexpr bool is_index_family_v =
-        std::is_same_v<T, argument_index> ||
-        std::is_same_v<T, constructor_index> ||
-        std::is_same_v<T, destructor_index> ||
-        std::is_same_v<T, evalue_index> ||
-        std::is_same_v<T, function_index> ||
-        std::is_same_v<T, member_index> ||
-        std::is_same_v<T, method_index> ||
-        std::is_same_v<T, scope_index> ||
-        std::is_same_v<T, variable_index>;
+        stdex::same_as<T, argument_index> ||
+        stdex::same_as<T, constructor_index> ||
+        stdex::same_as<T, destructor_index> ||
+        stdex::same_as<T, evalue_index> ||
+        stdex::same_as<T, function_index> ||
+        stdex::same_as<T, member_index> ||
+        stdex::same_as<T, method_index> ||
+        stdex::same_as<T, scope_index> ||
+        stdex::same_as<T, variable_index>;
 
     template < typename T >
     concept index_family = is_index_family_v<T>;
@@ -2216,7 +2216,7 @@ namespace std
 namespace meta_hpp::detail
 {
     template < typename T >
-    inline constexpr bool is_value_kind_v = std::is_same_v<T, uvalue>;
+    inline constexpr bool is_value_kind_v = stdex::same_as<T, uvalue>;
 
     template < typename T >
     concept value_kind = is_value_kind_v<T>;
@@ -2306,15 +2306,15 @@ namespace meta_hpp::detail
 {
     template < typename T >
     inline constexpr bool is_state_family_v =
-        std::is_same_v<T, argument> ||
-        std::is_same_v<T, constructor> ||
-        std::is_same_v<T, destructor> ||
-        std::is_same_v<T, evalue> ||
-        std::is_same_v<T, function> ||
-        std::is_same_v<T, member> ||
-        std::is_same_v<T, method> ||
-        std::is_same_v<T, scope> ||
-        std::is_same_v<T, variable>;
+        stdex::same_as<T, argument> ||
+        stdex::same_as<T, constructor> ||
+        stdex::same_as<T, destructor> ||
+        stdex::same_as<T, evalue> ||
+        stdex::same_as<T, function> ||
+        stdex::same_as<T, member> ||
+        stdex::same_as<T, method> ||
+        stdex::same_as<T, scope> ||
+        stdex::same_as<T, variable>;
 
     template < typename T >
     concept state_family = is_state_family_v<T>;
@@ -2364,33 +2364,33 @@ namespace meta_hpp
 
     template < typename Policy >
     inline constexpr bool is_constructor_policy_v =
-        std::is_same_v<Policy, constructor_policy::as_object> ||
-        std::is_same_v<Policy, constructor_policy::as_raw_pointer> ||
-        std::is_same_v<Policy, constructor_policy::as_shared_pointer>;
+        stdex::same_as<Policy, constructor_policy::as_object> ||
+        stdex::same_as<Policy, constructor_policy::as_raw_pointer> ||
+        stdex::same_as<Policy, constructor_policy::as_shared_pointer>;
 
     template < typename Policy >
     inline constexpr bool is_function_policy_v =
-        std::is_same_v<Policy, function_policy::as_copy> ||
-        std::is_same_v<Policy, function_policy::discard_return> ||
-        std::is_same_v<Policy, function_policy::return_reference_as_pointer>;
+        stdex::same_as<Policy, function_policy::as_copy> ||
+        stdex::same_as<Policy, function_policy::discard_return> ||
+        stdex::same_as<Policy, function_policy::return_reference_as_pointer>;
 
     template < typename Policy >
     inline constexpr bool is_member_policy_v =
-        std::is_same_v<Policy, member_policy::as_copy> ||
-        std::is_same_v<Policy, member_policy::as_pointer> ||
-        std::is_same_v<Policy, member_policy::as_reference_wrapper>;
+        stdex::same_as<Policy, member_policy::as_copy> ||
+        stdex::same_as<Policy, member_policy::as_pointer> ||
+        stdex::same_as<Policy, member_policy::as_reference_wrapper>;
 
     template < typename Policy >
     inline constexpr bool is_method_policy_v =
-        std::is_same_v<Policy, method_policy::as_copy> ||
-        std::is_same_v<Policy, method_policy::discard_return> ||
-        std::is_same_v<Policy, method_policy::return_reference_as_pointer>;
+        stdex::same_as<Policy, method_policy::as_copy> ||
+        stdex::same_as<Policy, method_policy::discard_return> ||
+        stdex::same_as<Policy, method_policy::return_reference_as_pointer>;
 
     template < typename Policy >
     inline constexpr bool is_variable_policy_v =
-        std::is_same_v<Policy, variable_policy::as_copy> ||
-        std::is_same_v<Policy, variable_policy::as_pointer> ||
-        std::is_same_v<Policy, variable_policy::as_reference_wrapper>;
+        stdex::same_as<Policy, variable_policy::as_copy> ||
+        stdex::same_as<Policy, variable_policy::as_pointer> ||
+        stdex::same_as<Policy, variable_policy::as_reference_wrapper>;
 
     template < typename Policy >
     concept constructor_policy_kind = is_constructor_policy_v<Policy>;
@@ -4632,11 +4632,11 @@ namespace meta_hpp::detail
 {
     template < typename T >
     inline constexpr bool is_uvalue_kind_v =
-        std::is_same_v<T, uarg_base> ||
-        std::is_same_v<T, uarg> ||
-        std::is_same_v<T, uinst_base> ||
-        std::is_same_v<T, uinst> ||
-        std::is_same_v<T, uvalue>;
+        stdex::same_as<T, uarg_base> ||
+        stdex::same_as<T, uarg> ||
+        stdex::same_as<T, uinst_base> ||
+        stdex::same_as<T, uinst> ||
+        stdex::same_as<T, uvalue>;
 
     template < typename T >
     concept uvalue_kind = is_uvalue_kind_v<T>;
@@ -8296,7 +8296,7 @@ namespace meta_hpp
 
     template < typename T >
     auto uvalue::get_as() -> std::conditional_t<detail::pointer_kind<T>, T, T&> {
-        static_assert(std::is_same_v<T, std::decay_t<T>>);
+        static_assert(stdex::same_as<T, std::decay_t<T>>);
 
         if constexpr ( detail::pointer_kind<T> ) {
             if ( T ptr = try_get_as<T>(); ptr || get_type().is_nullptr() ) {
@@ -8313,7 +8313,7 @@ namespace meta_hpp
 
     template < typename T >
     auto uvalue::get_as() const -> std::conditional_t<detail::pointer_kind<T>, T, const T&> {
-        static_assert(std::is_same_v<T, std::decay_t<T>>);
+        static_assert(stdex::same_as<T, std::decay_t<T>>);
 
         if constexpr ( detail::pointer_kind<T> ) {
             if ( T ptr = try_get_as<T>(); ptr || get_type().is_nullptr() ) {
@@ -8331,7 +8331,7 @@ namespace meta_hpp
     template < typename T >
     // NOLINTNEXTLINE(*-cognitive-complexity)
     auto uvalue::try_get_as() noexcept -> std::conditional_t<detail::pointer_kind<T>, T, T*> {
-        static_assert(std::is_same_v<T, std::decay_t<T>>);
+        static_assert(stdex::same_as<T, std::decay_t<T>>);
 
         const any_type& from_type = get_type();
         const any_type& to_type = resolve_type<T>();
@@ -8396,7 +8396,7 @@ namespace meta_hpp
     template < typename T >
     // NOLINTNEXTLINE(*-cognitive-complexity)
     auto uvalue::try_get_as() const noexcept -> std::conditional_t<detail::pointer_kind<T>, T, const T*> {
-        static_assert(std::is_same_v<T, std::decay_t<T>>);
+        static_assert(stdex::same_as<T, std::decay_t<T>>);
 
         const any_type& from_type = get_type();
         const any_type& to_type = resolve_type<T>();

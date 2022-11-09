@@ -12,7 +12,7 @@
 namespace meta_hpp::detail
 {
     template < typename T >
-    inline constexpr bool is_value_kind_v = std::is_same_v<T, uvalue>;
+    inline constexpr bool is_value_kind_v = stdex::same_as<T, uvalue>;
 
     template < typename T >
     concept value_kind = is_value_kind_v<T>;

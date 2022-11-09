@@ -90,20 +90,20 @@ TEST_CASE("meta/meta_utilities/value4/get_type") {
 TEST_CASE("meta/meta_utilities/value4/get_as") {
     namespace meta = meta_hpp;
 
-    static_assert(std::is_same_v<decltype(std::declval<meta::uvalue&>().get_as<derived>()), derived&>);
-    static_assert(std::is_same_v<decltype(std::declval<meta::uvalue&&>().get_as<derived>()), derived&>);
-    static_assert(std::is_same_v<decltype(std::declval<const meta::uvalue&>().get_as<derived>()), const derived&>);
-    static_assert(std::is_same_v<decltype(std::declval<const meta::uvalue&&>().get_as<derived>()), const derived&>);
+    static_assert(meta::stdex::same_as<decltype(std::declval<meta::uvalue&>().get_as<derived>()), derived&>);
+    static_assert(meta::stdex::same_as<decltype(std::declval<meta::uvalue&&>().get_as<derived>()), derived&>);
+    static_assert(meta::stdex::same_as<decltype(std::declval<const meta::uvalue&>().get_as<derived>()), const derived&>);
+    static_assert(meta::stdex::same_as<decltype(std::declval<const meta::uvalue&&>().get_as<derived>()), const derived&>);
 
-    static_assert(std::is_same_v<decltype(std::declval<meta::uvalue&>().get_as<derived*>()), derived*>);
-    static_assert(std::is_same_v<decltype(std::declval<meta::uvalue&&>().get_as<derived*>()), derived*>);
-    static_assert(std::is_same_v<decltype(std::declval<const meta::uvalue&>().get_as<derived*>()), derived*>);
-    static_assert(std::is_same_v<decltype(std::declval<const meta::uvalue&&>().get_as<derived*>()), derived*>);
+    static_assert(meta::stdex::same_as<decltype(std::declval<meta::uvalue&>().get_as<derived*>()), derived*>);
+    static_assert(meta::stdex::same_as<decltype(std::declval<meta::uvalue&&>().get_as<derived*>()), derived*>);
+    static_assert(meta::stdex::same_as<decltype(std::declval<const meta::uvalue&>().get_as<derived*>()), derived*>);
+    static_assert(meta::stdex::same_as<decltype(std::declval<const meta::uvalue&&>().get_as<derived*>()), derived*>);
 
-    static_assert(std::is_same_v<decltype(std::declval<meta::uvalue&>().get_as<const derived*>()), const derived*>);
-    static_assert(std::is_same_v<decltype(std::declval<meta::uvalue&&>().get_as<const derived*>()), const derived*>);
-    static_assert(std::is_same_v<decltype(std::declval<const meta::uvalue&>().get_as<const derived*>()), const derived*>);
-    static_assert(std::is_same_v<decltype(std::declval<const meta::uvalue&&>().get_as<const derived*>()), const derived*>);
+    static_assert(meta::stdex::same_as<decltype(std::declval<meta::uvalue&>().get_as<const derived*>()), const derived*>);
+    static_assert(meta::stdex::same_as<decltype(std::declval<meta::uvalue&&>().get_as<const derived*>()), const derived*>);
+    static_assert(meta::stdex::same_as<decltype(std::declval<const meta::uvalue&>().get_as<const derived*>()), const derived*>);
+    static_assert(meta::stdex::same_as<decltype(std::declval<const meta::uvalue&&>().get_as<const derived*>()), const derived*>);
 
     SUBCASE("derived to derived") {
         {
@@ -209,20 +209,20 @@ TEST_CASE("meta/meta_utilities/value4/get_as") {
 TEST_CASE("meta/meta_utilities/value4/try_get_as") {
     namespace meta = meta_hpp;
 
-    static_assert(std::is_same_v<decltype(std::declval<meta::uvalue&>().try_get_as<derived>()), derived*>);
-    static_assert(std::is_same_v<decltype(std::declval<meta::uvalue&&>().try_get_as<derived>()), derived*>);
-    static_assert(std::is_same_v<decltype(std::declval<const meta::uvalue&>().try_get_as<derived>()), const derived*>);
-    static_assert(std::is_same_v<decltype(std::declval<const meta::uvalue&&>().try_get_as<derived>()), const derived*>);
+    static_assert(meta::stdex::same_as<decltype(std::declval<meta::uvalue&>().try_get_as<derived>()), derived*>);
+    static_assert(meta::stdex::same_as<decltype(std::declval<meta::uvalue&&>().try_get_as<derived>()), derived*>);
+    static_assert(meta::stdex::same_as<decltype(std::declval<const meta::uvalue&>().try_get_as<derived>()), const derived*>);
+    static_assert(meta::stdex::same_as<decltype(std::declval<const meta::uvalue&&>().try_get_as<derived>()), const derived*>);
 
-    static_assert(std::is_same_v<decltype(std::declval<meta::uvalue&>().try_get_as<derived*>()), derived*>);
-    static_assert(std::is_same_v<decltype(std::declval<meta::uvalue&&>().try_get_as<derived*>()), derived*>);
-    static_assert(std::is_same_v<decltype(std::declval<const meta::uvalue&>().try_get_as<derived*>()), derived*>);
-    static_assert(std::is_same_v<decltype(std::declval<const meta::uvalue&&>().try_get_as<derived*>()), derived*>);
+    static_assert(meta::stdex::same_as<decltype(std::declval<meta::uvalue&>().try_get_as<derived*>()), derived*>);
+    static_assert(meta::stdex::same_as<decltype(std::declval<meta::uvalue&&>().try_get_as<derived*>()), derived*>);
+    static_assert(meta::stdex::same_as<decltype(std::declval<const meta::uvalue&>().try_get_as<derived*>()), derived*>);
+    static_assert(meta::stdex::same_as<decltype(std::declval<const meta::uvalue&&>().try_get_as<derived*>()), derived*>);
 
-    static_assert(std::is_same_v<decltype(std::declval<meta::uvalue&>().try_get_as<const derived*>()), const derived*>);
-    static_assert(std::is_same_v<decltype(std::declval<meta::uvalue&&>().try_get_as<const derived*>()), const derived*>);
-    static_assert(std::is_same_v<decltype(std::declval<const meta::uvalue&>().try_get_as<const derived*>()), const derived*>);
-    static_assert(std::is_same_v<decltype(std::declval<const meta::uvalue&&>().try_get_as<const derived*>()), const derived*>);
+    static_assert(meta::stdex::same_as<decltype(std::declval<meta::uvalue&>().try_get_as<const derived*>()), const derived*>);
+    static_assert(meta::stdex::same_as<decltype(std::declval<meta::uvalue&&>().try_get_as<const derived*>()), const derived*>);
+    static_assert(meta::stdex::same_as<decltype(std::declval<const meta::uvalue&>().try_get_as<const derived*>()), const derived*>);
+    static_assert(meta::stdex::same_as<decltype(std::declval<const meta::uvalue&&>().try_get_as<const derived*>()), const derived*>);
 
     SUBCASE("derived to derived") {
         {
