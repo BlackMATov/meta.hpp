@@ -13,6 +13,8 @@
 #include <type_traits>
 #include <utility>
 
+#include "stdex.hpp"
+
 namespace meta_hpp::detail
 {
     template < typename Function >
@@ -43,11 +45,14 @@ namespace meta_hpp::detail
         }
 
         template < typename Functor >
+            requires (!stdex::same_as<fixed_function, std::decay_t<Functor>>)
+        // NOLINTNEXTLINE(*-forwarding-reference-overload)
         fixed_function(Functor&& functor) {
             vtable_t::construct(*this, std::forward<Functor>(functor));
         }
 
         template < typename Functor >
+            requires (!stdex::same_as<fixed_function, std::decay_t<Functor>>)
         fixed_function& operator=(Functor&& functor) {
             fixed_function{std::forward<Functor>(functor)}.swap(*this);
             return *this;
@@ -62,7 +67,7 @@ namespace meta_hpp::detail
         }
 
         R operator()(Args... args) const {
-            assert(vtable_ && "bad function call");
+            assert(vtable_ && "bad function call"); // NOLINT
             return vtable_->call(*this, std::forward<Args>(args)...);
         }
 
@@ -101,13 +106,13 @@ namespace meta_hpp::detail
 
         template < typename T >
         static T* buffer_cast(buffer_t& buffer) noexcept {
-            // NOLINTNEXTLINE(cppcoreguidelines-pro-type-reinterpret-cast)
+            // NOLINTNEXTLINE(*-reinterpret-cast)
             return std::launder(reinterpret_cast<T*>(buffer.data));
         }
 
         template < typename T >
         static const T* buffer_cast(const buffer_t& buffer) noexcept {
-            // NOLINTNEXTLINE(cppcoreguidelines-pro-type-reinterpret-cast)
+            // NOLINTNEXTLINE(*-reinterpret-cast)
             return std::launder(reinterpret_cast<const T*>(buffer.data));
         }
 
@@ -115,13 +120,13 @@ namespace meta_hpp::detail
         static vtable_t* get() {
             static vtable_t table{
                 .call = +[](const fixed_function& self, Args... args) -> R {
-                    assert(self);
+                    assert(self); // NOLINT
 
                     const Fp& src = *buffer_cast<Fp>(self.buffer_);
                     return std::invoke(src, std::forward<Args>(args)...);
                 },
                 .move = +[](fixed_function& from, fixed_function& to) noexcept {
-                    assert(from && !to);
+                    assert(from && !to); // NOLINT
 
                     Fp& src = *buffer_cast<Fp>(from.buffer_);
                     ::new (buffer_cast<Fp>(to.buffer_)) Fp(std::move(src));
@@ -131,7 +136,7 @@ namespace meta_hpp::detail
                     from.vtable_ = nullptr;
                 },
                 .destroy = +[](fixed_function& self){
-                    assert(self);
+                    assert(self); // NOLINT
 
                     Fp& src = *buffer_cast<Fp>(self.buffer_);
                     src.~Fp();

@@ -17,7 +17,6 @@ namespace meta_hpp::detail
     class type_id final {
     public:
         template < typename T >
-        // NOLINTNEXTLINE(readability-named-parameter)
         explicit type_id(type_list<T>) noexcept
         : id_{type_to_id<T>()} {}
 

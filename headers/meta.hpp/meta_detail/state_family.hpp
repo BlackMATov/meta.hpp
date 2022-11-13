@@ -12,15 +12,15 @@ namespace meta_hpp::detail
 {
     template < typename T >
     inline constexpr bool is_state_family_v =
-        std::is_same_v<T, argument> ||
-        std::is_same_v<T, constructor> ||
-        std::is_same_v<T, destructor> ||
-        std::is_same_v<T, evalue> ||
-        std::is_same_v<T, function> ||
-        std::is_same_v<T, member> ||
-        std::is_same_v<T, method> ||
-        std::is_same_v<T, scope> ||
-        std::is_same_v<T, variable>;
+        stdex::same_as<T, argument> ||
+        stdex::same_as<T, constructor> ||
+        stdex::same_as<T, destructor> ||
+        stdex::same_as<T, evalue> ||
+        stdex::same_as<T, function> ||
+        stdex::same_as<T, member> ||
+        stdex::same_as<T, method> ||
+        stdex::same_as<T, scope> ||
+        stdex::same_as<T, variable>;
 
     template < typename T >
     concept state_family = is_state_family_v<T>;

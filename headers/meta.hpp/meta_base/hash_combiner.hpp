@@ -19,7 +19,7 @@ namespace meta_hpp::detail
 
         template < typename T >
         [[nodiscard]] std::size_t operator()(std::size_t seed, const T& x) noexcept {
-            // NOLINTNEXTLINE(cppcoreguidelines-avoid-magic-numbers, readability-magic-numbers)
+            // NOLINTNEXTLINE(*-magic-numbers)
             return (seed ^= std::hash<T>{}(x) + 0x9e3779b9 + (seed << 6) + (seed >> 2));
         }
     };

@@ -18,7 +18,6 @@ namespace meta_hpp::detail
     struct function_tag {};
 
     template < function_kind Function >
-    // NOLINTNEXTLINE(readability-named-parameter)
     function_type_data::function_type_data(type_list<Function>)
     : type_data_base{type_id{type_list<function_tag<Function>>{}}, type_kind::function_}
     , flags{function_traits<Function>::make_flags()}
@@ -63,7 +62,7 @@ namespace meta_hpp
         return position < data_->argument_types.size() ? data_->argument_types[position] : any_type{};
     }
 
-    inline const std::vector<any_type>& function_type::get_argument_types() const noexcept {
+    inline const any_type_list& function_type::get_argument_types() const noexcept {
         return data_->argument_types;
     }
 }

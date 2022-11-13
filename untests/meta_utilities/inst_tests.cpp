@@ -25,7 +25,7 @@ namespace
     struct dclazz : fake, clazz {};
 }
 
-// NOLINTNEXTLINE(cppcoreguidelines-macro-usage)
+// NOLINTNEXTLINE(*-macro-usage)
 #define META_HPP_CHECK_INVOCABLE(Inst, FName, Qualifiers)\
     {\
         using namespace meta::detail;\
@@ -49,7 +49,7 @@ namespace
         }\
     }
 
-// NOLINTNEXTLINE(cppcoreguidelines-macro-usage)
+// NOLINTNEXTLINE(*-macro-usage)
 #define META_HPP_CHECK_INVOCABLE_2(FromValue, FName, FromType, ToQualifiers)\
     {\
         using namespace meta::detail;\

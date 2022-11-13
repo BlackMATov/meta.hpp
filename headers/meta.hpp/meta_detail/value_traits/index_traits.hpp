@@ -25,6 +25,7 @@ namespace meta_hpp::detail
     template < stdex::copy_constructible T >
     struct index_traits<T*> {
         uvalue operator()(T* v, std::size_t i) const {
+            // NOLINTNEXTLINE(*-pointer-arithmetic)
             return uvalue{v[i]};
         }
     };
@@ -32,6 +33,7 @@ namespace meta_hpp::detail
     template < stdex::copy_constructible T >
     struct index_traits<const T*> {
         uvalue operator()(const T* v, std::size_t i) const {
+            // NOLINTNEXTLINE(*-pointer-arithmetic)
             return uvalue{v[i]};
         }
     };

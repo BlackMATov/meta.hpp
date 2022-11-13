@@ -12,11 +12,9 @@
 
 namespace meta_hpp
 {
-    // NOLINTNEXTLINE(readability-named-parameter)
     inline scope_bind::scope_bind(std::string name, metadata_map metadata, local_tag)
     : state_{detail::scope_state::make(std::move(name), std::move(metadata))} {}
 
-    // NOLINTNEXTLINE(readability-named-parameter)
     inline scope_bind::scope_bind(std::string_view name, metadata_map metadata, static_tag)
     : state_{detail::state_access(resolve_scope(name))} {
         state_->metadata.swap(metadata);
@@ -84,6 +82,7 @@ namespace meta_hpp
 
         for ( std::size_t i = 0; i < arguments.size(); ++i ) {
             argument& arg = state->arguments[i];
+            // NOLINTNEXTLINE(*-pointer-arithmetic)
             detail::state_access(arg)->name = std::data(arguments)[i];
         }
 

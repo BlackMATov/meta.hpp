@@ -42,13 +42,13 @@ namespace meta_hpp
 
         template < typename T >
         static T* buffer_cast(buffer_t& buffer) noexcept {
-            // NOLINTNEXTLINE(cppcoreguidelines-pro-type-reinterpret-cast)
+            // NOLINTNEXTLINE(*-reinterpret-cast)
             return std::launder(reinterpret_cast<T*>(buffer.data));
         }
 
         template < typename T >
         static const T* buffer_cast(const buffer_t& buffer) noexcept {
-            // NOLINTNEXTLINE(cppcoreguidelines-pro-type-reinterpret-cast)
+            // NOLINTNEXTLINE(*-reinterpret-cast)
             return std::launder(reinterpret_cast<const T*>(buffer.data));
         }
 
@@ -115,7 +115,7 @@ namespace meta_hpp
         }
 
         template < typename Tp >
-        // NOLINTNEXTLINE(readability-function-cognitive-complexity)
+        // NOLINTNEXTLINE(*-cognitive-complexity)
         static vtable_t* get() {
             static vtable_t table{
                 .type = resolve_type<Tp>(),
@@ -129,7 +129,7 @@ namespace meta_hpp
                 },
 
                 .move = [](uvalue& from, uvalue& to) noexcept {
-                    assert(from && !to);
+                    assert(from && !to); // NOLINT
 
                     std::visit(detail::overloaded {
                         [&to](void* ptr) {
@@ -149,7 +149,7 @@ namespace meta_hpp
                 },
 
                 .copy = [](const uvalue& from, uvalue& to){
-                    assert(from && !to);
+                    assert(from && !to); // NOLINT
 
                     std::visit(detail::overloaded {
                         [&to](void* ptr) {
@@ -167,7 +167,7 @@ namespace meta_hpp
                 },
 
                 .destroy = [](uvalue& self) noexcept {
-                    assert(self);
+                    assert(self); // NOLINT
 
                     std::visit(detail::overloaded {
                         [](void* ptr) {
@@ -272,6 +272,7 @@ namespace meta_hpp
 
     template < detail::decay_non_value_kind T >
         requires stdex::copy_constructible<std::decay_t<T>>
+    // NOLINTNEXTLINE(*-forwarding-reference-overload)
     uvalue::uvalue(T&& val) {
         vtable_t::construct(*this, std::forward<T>(val));
     }
@@ -328,7 +329,7 @@ namespace meta_hpp
 
     template < typename T >
     auto uvalue::get_as() -> std::conditional_t<detail::pointer_kind<T>, T, T&> {
-        static_assert(std::is_same_v<T, std::decay_t<T>>);
+        static_assert(stdex::same_as<T, std::decay_t<T>>);
 
         if constexpr ( detail::pointer_kind<T> ) {
             if ( T ptr = try_get_as<T>(); ptr || get_type().is_nullptr() ) {
@@ -345,7 +346,7 @@ namespace meta_hpp
 
     template < typename T >
     auto uvalue::get_as() const -> std::conditional_t<detail::pointer_kind<T>, T, const T&> {
-        static_assert(std::is_same_v<T, std::decay_t<T>>);
+        static_assert(stdex::same_as<T, std::decay_t<T>>);
 
         if constexpr ( detail::pointer_kind<T> ) {
             if ( T ptr = try_get_as<T>(); ptr || get_type().is_nullptr() ) {
@@ -361,9 +362,9 @@ namespace meta_hpp
     }
 
     template < typename T >
-    // NOLINTNEXTLINE(*-function-cognitive-complexity)
+    // NOLINTNEXTLINE(*-cognitive-complexity)
     auto uvalue::try_get_as() noexcept -> std::conditional_t<detail::pointer_kind<T>, T, T*> {
-        static_assert(std::is_same_v<T, std::decay_t<T>>);
+        static_assert(stdex::same_as<T, std::decay_t<T>>);
 
         const any_type& from_type = get_type();
         const any_type& to_type = resolve_type<T>();
@@ -426,9 +427,9 @@ namespace meta_hpp
     }
 
     template < typename T >
-    // NOLINTNEXTLINE(*-function-cognitive-complexity)
+    // NOLINTNEXTLINE(*-cognitive-complexity)
     auto uvalue::try_get_as() const noexcept -> std::conditional_t<detail::pointer_kind<T>, T, const T*> {
-        static_assert(std::is_same_v<T, std::decay_t<T>>);
+        static_assert(stdex::same_as<T, std::decay_t<T>>);
 
         const any_type& from_type = get_type();
         const any_type& to_type = resolve_type<T>();

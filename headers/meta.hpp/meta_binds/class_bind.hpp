@@ -163,6 +163,7 @@ namespace meta_hpp
 
         for ( std::size_t i = 0; i < arguments.size(); ++i ) {
             argument& arg = state->arguments[i];
+            // NOLINTNEXTLINE(*-pointer-arithmetic)
             detail::state_access(arg)->name = std::data(arguments)[i];
         }
 
@@ -265,6 +266,7 @@ namespace meta_hpp
 
         for ( std::size_t i = 0; i < arguments.size(); ++i ) {
             argument& arg = state->arguments[i];
+            // NOLINTNEXTLINE(*-pointer-arithmetic)
             detail::state_access(arg)->name = std::data(arguments)[i];
         }
 

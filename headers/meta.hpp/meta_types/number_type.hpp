@@ -18,7 +18,6 @@ namespace meta_hpp::detail
     struct number_tag {};
 
     template < number_kind Number >
-    // NOLINTNEXTLINE(readability-named-parameter)
     number_type_data::number_type_data(type_list<Number>)
     : type_data_base{type_id{type_list<number_tag<Number>>{}}, type_kind::number_}
     , flags{number_traits<Number>::make_flags()}

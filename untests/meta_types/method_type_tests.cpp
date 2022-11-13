@@ -45,7 +45,7 @@ TEST_CASE("meta/meta_types/method_type") {
         CHECK(type.get_arity() == 1);
         CHECK(type.get_owner_type() == meta::resolve_type<ivec2>());
         CHECK(type.get_return_type() == meta::resolve_type<int&>());
-        CHECK(type.get_argument_types() == std::vector<meta::any_type>{meta::resolve_type<std::size_t>()});
+        CHECK(type.get_argument_types() == meta::any_type_list{meta::resolve_type<std::size_t>()});
 
         CHECK(type.get_argument_type(0) == meta::resolve_type<std::size_t>());
         CHECK_FALSE(type.get_argument_type(1));
@@ -61,7 +61,7 @@ TEST_CASE("meta/meta_types/method_type") {
         CHECK(type.get_arity() == 0);
         CHECK(type.get_owner_type() == meta::resolve_type<ivec2>());
         CHECK(type.get_return_type() == meta::resolve_type<int>());
-        CHECK(type.get_argument_types() == std::vector<meta::any_type>{});
+        CHECK(type.get_argument_types() == meta::any_type_list{});
 
         CHECK_FALSE(type.get_argument_type(0));
     }

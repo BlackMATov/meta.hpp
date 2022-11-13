@@ -176,17 +176,17 @@ TEST_CASE("meta/meta_types/class_type") {
         {
             const meta::class_type type = meta::resolve_type<derived_clazz>();
             REQUIRE(type);
-            CHECK(type.get_argument_types() == std::vector<meta::any_type>{});
+            CHECK(type.get_argument_types() == meta::any_type_list{});
         }
         {
             const meta::class_type type = meta::resolve_type<variadic_clazz<int>>();
             REQUIRE(type);
-            CHECK(type.get_argument_types() == std::vector<meta::any_type>{meta::resolve_type<int>()});
+            CHECK(type.get_argument_types() == meta::any_type_list{meta::resolve_type<int>()});
         }
         {
             const meta::class_type type = meta::resolve_type<variadic_clazz<int, float>>();
             REQUIRE(type);
-            CHECK(type.get_argument_types() == std::vector<meta::any_type>{meta::resolve_type<int>(), meta::resolve_type<float>()});
+            CHECK(type.get_argument_types() == meta::any_type_list{meta::resolve_type<int>(), meta::resolve_type<float>()});
         }
     }
 
@@ -438,17 +438,17 @@ TEST_CASE("meta/meta_types/class_type") {
             meta::number_type double_type = meta::resolve_type<double>();
 
             CHECK_FALSE(base_clazz_1_type.get_function_with<>("base_function_1_overloaded"));
-            CHECK(base_clazz_1_type.get_function_with("base_function_1_overloaded", std::vector<meta::any_type>{int_type}));
-            CHECK_FALSE(base_clazz_1_type.get_function_with("base_function_1_overloaded", std::vector<meta::any_type>{int_type, float_type}));
+            CHECK(base_clazz_1_type.get_function_with("base_function_1_overloaded", meta::any_type_list{int_type}));
+            CHECK_FALSE(base_clazz_1_type.get_function_with("base_function_1_overloaded", meta::any_type_list{int_type, float_type}));
 
             CHECK_FALSE(base_clazz_1_type.get_function_with("base_function_1_overloaded"));
-            CHECK_FALSE(base_clazz_1_type.get_function_with("base_function_1_overloaded", std::vector<meta::any_type>{float_type}));
-            CHECK(base_clazz_1_type.get_function_with("base_function_1_overloaded", std::vector<meta::any_type>{int_type, int_type}));
-            CHECK_FALSE(base_clazz_1_type.get_function_with("base_function_1_overloaded", std::vector<meta::any_type>{float_type, float_type}));
+            CHECK_FALSE(base_clazz_1_type.get_function_with("base_function_1_overloaded", meta::any_type_list{float_type}));
+            CHECK(base_clazz_1_type.get_function_with("base_function_1_overloaded", meta::any_type_list{int_type, int_type}));
+            CHECK_FALSE(base_clazz_1_type.get_function_with("base_function_1_overloaded", meta::any_type_list{float_type, float_type}));
 
             CHECK_FALSE(base_clazz_1_type.get_function_with<>("base_function_1_overloaded"));
-            CHECK_FALSE(base_clazz_1_type.get_function_with("base_function_1_overloaded", std::vector<meta::any_type>{double_type}));
-            CHECK_FALSE(base_clazz_1_type.get_function_with("base_function_1_overloaded", std::vector<meta::any_type>{double_type, double_type}));
+            CHECK_FALSE(base_clazz_1_type.get_function_with("base_function_1_overloaded", meta::any_type_list{double_type}));
+            CHECK_FALSE(base_clazz_1_type.get_function_with("base_function_1_overloaded", meta::any_type_list{double_type, double_type}));
         }
     }
 
@@ -493,16 +493,16 @@ TEST_CASE("meta/meta_types/class_type") {
             meta::number_type double_type = meta::resolve_type<double>();
 
             CHECK_FALSE(base_clazz_1_type.get_method_with<>("base_method_1_overloaded"));
-            CHECK(base_clazz_1_type.get_method_with("base_method_1_overloaded", std::vector<meta::any_type>{int_type}));
-            CHECK_FALSE(base_clazz_1_type.get_method_with("base_method_1_overloaded", std::vector<meta::any_type>{int_type, int_type}));
+            CHECK(base_clazz_1_type.get_method_with("base_method_1_overloaded", meta::any_type_list{int_type}));
+            CHECK_FALSE(base_clazz_1_type.get_method_with("base_method_1_overloaded", meta::any_type_list{int_type, int_type}));
 
             CHECK_FALSE(base_clazz_1_type.get_method_with("base_method_1_overloaded"));
-            CHECK(base_clazz_1_type.get_method_with("base_method_1_overloaded", std::vector<meta::any_type>{float_type}));
-            CHECK_FALSE(base_clazz_1_type.get_method_with("base_method_1_overloaded", std::vector<meta::any_type>{float_type, float_type}));
+            CHECK(base_clazz_1_type.get_method_with("base_method_1_overloaded", meta::any_type_list{float_type}));
+            CHECK_FALSE(base_clazz_1_type.get_method_with("base_method_1_overloaded", meta::any_type_list{float_type, float_type}));
 
             CHECK_FALSE(base_clazz_1_type.get_method_with<>("base_method_1_overloaded"));
-            CHECK_FALSE(base_clazz_1_type.get_method_with("base_method_1_overloaded", std::vector<meta::any_type>{double_type}));
-            CHECK_FALSE(base_clazz_1_type.get_method_with("base_method_1_overloaded", std::vector<meta::any_type>{double_type, double_type}));
+            CHECK_FALSE(base_clazz_1_type.get_method_with("base_method_1_overloaded", meta::any_type_list{double_type}));
+            CHECK_FALSE(base_clazz_1_type.get_method_with("base_method_1_overloaded", meta::any_type_list{double_type, double_type}));
         }
     }
 }

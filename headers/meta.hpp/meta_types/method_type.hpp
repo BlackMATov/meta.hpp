@@ -18,7 +18,6 @@ namespace meta_hpp::detail
     struct method_tag {};
 
     template < method_kind Method >
-    // NOLINTNEXTLINE(readability-named-parameter)
     method_type_data::method_type_data(type_list<Method>)
     : type_data_base{type_id{type_list<method_tag<Method>>{}}, type_kind::method_}
     , flags{method_traits<Method>::make_flags()}
@@ -68,7 +67,7 @@ namespace meta_hpp
         return position < data_->argument_types.size() ? data_->argument_types[position] : any_type{};
     }
 
-    inline const std::vector<any_type>& method_type::get_argument_types() const noexcept {
+    inline const any_type_list& method_type::get_argument_types() const noexcept {
         return data_->argument_types;
     }
 }

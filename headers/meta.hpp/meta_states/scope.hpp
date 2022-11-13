@@ -108,7 +108,7 @@ namespace meta_hpp
                 continue;
             }
 
-            const std::vector<any_type>& args = function.get_type().get_argument_types();
+            const any_type_list& args = function.get_type().get_argument_types();
             if ( std::equal(first, last, args.begin(), args.end()) ) {
                 return function;
             }

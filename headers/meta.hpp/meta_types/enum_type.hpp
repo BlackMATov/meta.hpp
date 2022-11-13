@@ -21,7 +21,6 @@ namespace meta_hpp::detail
     struct enum_tag {};
 
     template < enum_kind Enum >
-    // NOLINTNEXTLINE(readability-named-parameter)
     enum_type_data::enum_type_data(type_list<Enum>)
     : type_data_base{type_id{type_list<enum_tag<Enum>>{}}, type_kind::enum_}
     , flags{enum_traits<Enum>::make_flags()}

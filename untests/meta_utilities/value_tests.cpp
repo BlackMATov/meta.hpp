@@ -104,16 +104,16 @@ TEST_CASE("meta/meta_utilities/value") {
     ivec2::copy_constructor_counter = 0;
 
     SUBCASE("cast types") {
-        static_assert(std::is_same_v<
+        static_assert(meta::stdex::same_as<
             decltype(std::declval<meta::uvalue&>().get_as<ivec2>()),
             ivec2&>);
-        static_assert(std::is_same_v<
+        static_assert(meta::stdex::same_as<
             decltype(std::declval<meta::uvalue&&>().get_as<ivec2>()),
             ivec2&>);
-        static_assert(std::is_same_v<
+        static_assert(meta::stdex::same_as<
             decltype(std::declval<const meta::uvalue&>().get_as<ivec2>()),
             const ivec2&>);
-        static_assert(std::is_same_v<
+        static_assert(meta::stdex::same_as<
             decltype(std::declval<const meta::uvalue&&>().get_as<ivec2>()),
             const ivec2&>);
     }

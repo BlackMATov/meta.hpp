@@ -16,7 +16,6 @@ namespace meta_hpp::detail
     struct nullptr_tag {};
 
     template < nullptr_kind Nullptr >
-    // NOLINTNEXTLINE(readability-named-parameter)
     nullptr_type_data::nullptr_type_data(type_list<Nullptr>)
     : type_data_base{type_id{type_list<nullptr_tag<Nullptr>>{}}, type_kind::nullptr_} {}
 }
