@@ -41,7 +41,7 @@ TEST_CASE("meta/meta_types/function_type") {
 
         CHECK(type.get_arity() == 1);
         CHECK(type.get_return_type() == meta::resolve_type<void>());
-        CHECK(type.get_argument_types() == std::vector<meta::any_type>{meta::resolve_type<ivec2>()});
+        CHECK(type.get_argument_types() == meta::any_type_list{meta::resolve_type<ivec2>()});
 
         CHECK(type.get_argument_type(0) == meta::resolve_type<ivec2>());
         CHECK_FALSE(type.get_argument_type(1));
@@ -53,7 +53,7 @@ TEST_CASE("meta/meta_types/function_type") {
 
         CHECK(type.get_id() == meta::resolve_type(&arg_ref_noexcept).get_id());
         CHECK(type.get_flags() == meta::function_flags::is_noexcept);
-        CHECK(type.get_argument_types() == std::vector<meta::any_type>{meta::resolve_type<ivec2&>()});
+        CHECK(type.get_argument_types() == meta::any_type_list{meta::resolve_type<ivec2&>()});
 
         CHECK(type.get_argument_type(0) == meta::resolve_type<ivec2&>());
         CHECK_FALSE(type.get_argument_type(1));
@@ -65,7 +65,7 @@ TEST_CASE("meta/meta_types/function_type") {
 
         CHECK(type.get_id() == meta::resolve_type(&arg_cref_noexcept).get_id());
         CHECK(type.get_flags() == meta::function_flags::is_noexcept);
-        CHECK(type.get_argument_types() == std::vector<meta::any_type>{meta::resolve_type<const ivec2&>()});
+        CHECK(type.get_argument_types() == meta::any_type_list{meta::resolve_type<const ivec2&>()});
 
         CHECK(type.get_argument_type(0) == meta::resolve_type<const ivec2&>());
         CHECK_FALSE(type.get_argument_type(1));
@@ -77,7 +77,7 @@ TEST_CASE("meta/meta_types/function_type") {
 
         CHECK(type.get_id() == meta::resolve_type(&arg_bounded_arr).get_id());
         CHECK(type.get_flags() == meta::function_flags{});
-        CHECK(type.get_argument_types() == std::vector<meta::any_type>{meta::resolve_type<ivec2*>()});
+        CHECK(type.get_argument_types() == meta::any_type_list{meta::resolve_type<ivec2*>()});
 
         CHECK(type.get_argument_type(0) == meta::resolve_type<ivec2*>());
         CHECK_FALSE(type.get_argument_type(1));
@@ -89,7 +89,7 @@ TEST_CASE("meta/meta_types/function_type") {
 
         CHECK(type.get_id() == meta::resolve_type(&arg_unbounded_arr).get_id());
         CHECK(type.get_flags() == meta::function_flags{});
-        CHECK(type.get_argument_types() == std::vector<meta::any_type>{meta::resolve_type<ivec2*>()});
+        CHECK(type.get_argument_types() == meta::any_type_list{meta::resolve_type<ivec2*>()});
 
         CHECK(type.get_argument_type(0) == meta::resolve_type<ivec2*>());
         CHECK_FALSE(type.get_argument_type(1));
@@ -101,7 +101,7 @@ TEST_CASE("meta/meta_types/function_type") {
 
         CHECK(type.get_id() == meta::resolve_type(&arg_bounded_const_arr).get_id());
         CHECK(type.get_flags() == meta::function_flags{});
-        CHECK(type.get_argument_types() == std::vector<meta::any_type>{meta::resolve_type<const ivec2*>()});
+        CHECK(type.get_argument_types() == meta::any_type_list{meta::resolve_type<const ivec2*>()});
 
         CHECK(type.get_argument_type(0) == meta::resolve_type<const ivec2*>());
         CHECK_FALSE(type.get_argument_type(1));
@@ -113,7 +113,7 @@ TEST_CASE("meta/meta_types/function_type") {
 
         CHECK(type.get_id() == meta::resolve_type(&arg_unbounded_const_arr).get_id());
         CHECK(type.get_flags() == meta::function_flags{});
-        CHECK(type.get_argument_types() == std::vector<meta::any_type>{meta::resolve_type<const ivec2*>()});
+        CHECK(type.get_argument_types() == meta::any_type_list{meta::resolve_type<const ivec2*>()});
 
         CHECK(type.get_argument_type(0) == meta::resolve_type<const ivec2*>());
         CHECK_FALSE(type.get_argument_type(1));

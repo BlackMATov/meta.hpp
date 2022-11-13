@@ -154,7 +154,7 @@ namespace meta_hpp
 
         [[nodiscard]] std::size_t get_arity() const noexcept;
         [[nodiscard]] any_type get_argument_type(std::size_t position) const noexcept;
-        [[nodiscard]] const std::vector<any_type>& get_argument_types() const noexcept;
+        [[nodiscard]] const any_type_list& get_argument_types() const noexcept;
 
         [[nodiscard]] const class_set& get_bases() const noexcept;
         [[nodiscard]] const constructor_map& get_constructors() const noexcept;
@@ -228,7 +228,7 @@ namespace meta_hpp
         [[nodiscard]] std::size_t get_arity() const noexcept;
         [[nodiscard]] any_type get_class_type() const noexcept;
         [[nodiscard]] any_type get_argument_type(std::size_t position) const noexcept;
-        [[nodiscard]] const std::vector<any_type>& get_argument_types() const noexcept;
+        [[nodiscard]] const any_type_list& get_argument_types() const noexcept;
     private:
         detail::constructor_type_data* data_{};
         friend auto detail::type_access<constructor_type>(const constructor_type&);
@@ -293,7 +293,7 @@ namespace meta_hpp
         [[nodiscard]] std::size_t get_arity() const noexcept;
         [[nodiscard]] any_type get_return_type() const noexcept;
         [[nodiscard]] any_type get_argument_type(std::size_t position) const noexcept;
-        [[nodiscard]] const std::vector<any_type>& get_argument_types() const noexcept;
+        [[nodiscard]] const any_type_list& get_argument_types() const noexcept;
     private:
         detail::function_type_data* data_{};
         friend auto detail::type_access<function_type>(const function_type&);
@@ -334,7 +334,7 @@ namespace meta_hpp
         [[nodiscard]] class_type get_owner_type() const noexcept;
         [[nodiscard]] any_type get_return_type() const noexcept;
         [[nodiscard]] any_type get_argument_type(std::size_t position) const noexcept;
-        [[nodiscard]] const std::vector<any_type>& get_argument_types() const noexcept;
+        [[nodiscard]] const any_type_list& get_argument_types() const noexcept;
     private:
         detail::method_type_data* data_{};
         friend auto detail::type_access<method_type>(const method_type&);
@@ -496,7 +496,7 @@ namespace meta_hpp::detail
         const class_bitflags flags;
         const std::size_t size;
         const std::size_t align;
-        const std::vector<any_type> argument_types;
+        const any_type_list argument_types;
 
         class_set bases;
         constructor_map constructors;
@@ -522,7 +522,7 @@ namespace meta_hpp::detail
     struct constructor_type_data final : type_data_base {
         const constructor_bitflags flags;
         const any_type class_type;
-        const std::vector<any_type> argument_types;
+        const any_type_list argument_types;
 
         template < class_kind Class, typename... Args >
         explicit constructor_type_data(type_list<Class>, type_list<Args...>);
@@ -549,7 +549,7 @@ namespace meta_hpp::detail
     struct function_type_data final : type_data_base {
         const function_bitflags flags;
         const any_type return_type;
-        const std::vector<any_type> argument_types;
+        const any_type_list argument_types;
 
         template < function_kind Function >
         explicit function_type_data(type_list<Function>);
@@ -568,7 +568,7 @@ namespace meta_hpp::detail
         const method_bitflags flags;
         const class_type owner_type;
         const any_type return_type;
-        const std::vector<any_type> argument_types;
+        const any_type_list argument_types;
 
         template < method_kind Method >
         explicit method_type_data(type_list<Method>);

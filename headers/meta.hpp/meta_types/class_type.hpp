@@ -73,7 +73,7 @@ namespace meta_hpp
         return position < data_->argument_types.size() ? data_->argument_types[position] : any_type{};
     }
 
-    inline const std::vector<any_type>& class_type::get_argument_types() const noexcept {
+    inline const any_type_list& class_type::get_argument_types() const noexcept {
         return data_->argument_types;
     }
 
@@ -275,7 +275,7 @@ namespace meta_hpp
     template < typename Iter >
     constructor class_type::get_constructor_with(Iter first, Iter last) const noexcept {
         for ( auto&& [index, ctor] : data_->constructors ) {
-            const std::vector<any_type>& args = ctor.get_type().get_argument_types();
+            const any_type_list& args = ctor.get_type().get_argument_types();
             if ( std::equal(first, last, args.begin(), args.end()) ) {
                 return ctor;
             }
@@ -307,7 +307,7 @@ namespace meta_hpp
                 continue;
             }
 
-            const std::vector<any_type>& args = function.get_type().get_argument_types();
+            const any_type_list& args = function.get_type().get_argument_types();
             if ( std::equal(first, last, args.begin(), args.end()) ) {
                 return function;
             }
@@ -346,7 +346,7 @@ namespace meta_hpp
                 continue;
             }
 
-            const std::vector<any_type>& args = method.get_type().get_argument_types();
+            const any_type_list& args = method.get_type().get_argument_types();
             if ( std::equal(first, last, args.begin(), args.end()) ) {
                 return method;
             }

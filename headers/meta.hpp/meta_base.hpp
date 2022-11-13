@@ -188,7 +188,9 @@ namespace meta_hpp
 
 namespace meta_hpp
 {
+    using any_type_list = std::vector<any_type>;
     using argument_list = std::vector<argument>;
+
     using metadata_map = std::map<std::string, uvalue, std::less<>>;
     using typedef_map = std::map<std::string, any_type, std::less<>>;
 

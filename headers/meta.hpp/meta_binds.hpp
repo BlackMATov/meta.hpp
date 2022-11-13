@@ -47,8 +47,10 @@ namespace meta_hpp
         metadata_map metadata{};
     };
 
+    using argument_opts_list = std::vector<argument_opts>;
+
     struct constructor_opts final {
-        std::vector<argument_opts> arguments{};
+        argument_opts_list arguments{};
         metadata_map metadata{};
     };
 
@@ -61,7 +63,7 @@ namespace meta_hpp
     };
 
     struct function_opts final {
-        std::vector<argument_opts> arguments{};
+        argument_opts_list arguments{};
         metadata_map metadata{};
     };
 
@@ -70,7 +72,7 @@ namespace meta_hpp
     };
 
     struct method_opts final {
-        std::vector<argument_opts> arguments{};
+        argument_opts_list arguments{};
         metadata_map metadata{};
     };
 

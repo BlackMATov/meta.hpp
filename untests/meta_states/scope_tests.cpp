@@ -178,17 +178,17 @@ TEST_CASE("meta/meta_states/scope") {
             meta::number_type double_type = meta::resolve_type<double>();
 
             CHECK_FALSE(math_scope.get_function_with<>("function_overloaded"));
-            CHECK(math_scope.get_function_with("function_overloaded", std::vector<meta::any_type>{int_type}));
-            CHECK_FALSE(math_scope.get_function_with("function_overloaded", std::vector<meta::any_type>{int_type, float_type}));
+            CHECK(math_scope.get_function_with("function_overloaded", meta::any_type_list{int_type}));
+            CHECK_FALSE(math_scope.get_function_with("function_overloaded", meta::any_type_list{int_type, float_type}));
 
             CHECK_FALSE(math_scope.get_function_with("function_overloaded"));
-            CHECK_FALSE(math_scope.get_function_with("function_overloaded", std::vector<meta::any_type>{float_type}));
-            CHECK(math_scope.get_function_with("function_overloaded", std::vector<meta::any_type>{int_type, int_type}));
-            CHECK_FALSE(math_scope.get_function_with("function_overloaded", std::vector<meta::any_type>{float_type, float_type}));
+            CHECK_FALSE(math_scope.get_function_with("function_overloaded", meta::any_type_list{float_type}));
+            CHECK(math_scope.get_function_with("function_overloaded", meta::any_type_list{int_type, int_type}));
+            CHECK_FALSE(math_scope.get_function_with("function_overloaded", meta::any_type_list{float_type, float_type}));
 
             CHECK_FALSE(math_scope.get_function_with<>("function_overloaded"));
-            CHECK_FALSE(math_scope.get_function_with("function_overloaded", std::vector<meta::any_type>{double_type}));
-            CHECK_FALSE(math_scope.get_function_with("function_overloaded", std::vector<meta::any_type>{double_type, double_type}));
+            CHECK_FALSE(math_scope.get_function_with("function_overloaded", meta::any_type_list{double_type}));
+            CHECK_FALSE(math_scope.get_function_with("function_overloaded", meta::any_type_list{double_type, double_type}));
         }
     }
 

@@ -23,7 +23,7 @@ namespace meta_hpp
     }
 
     template < typename... Ts >
-    [[nodiscard]] std::vector<any_type> resolve_types() {
+    [[nodiscard]] any_type_list resolve_types() {
         return { resolve_type<Ts>()... };
     }
 }
@@ -36,7 +36,7 @@ namespace meta_hpp
     }
 
     template < typename... Ts >
-    [[nodiscard]] std::vector<any_type> resolve_types(type_list<Ts...>) {
+    [[nodiscard]] any_type_list resolve_types(type_list<Ts...>) {
         return { resolve_type<Ts>()... };
     }
 }
