@@ -590,25 +590,25 @@ TEST_CASE("meta/meta_utilities/value/functions") {
         {
             meta::uvalue v{iadd2};
             CHECK(v.get_type() == meta::resolve_type<ivec2(*)(ivec2, ivec2)>());
-            CHECK(v.get_as<decltype(&iadd2)>() == &iadd2);
+            CHECK((v.get_as<decltype(&iadd2)>() == &iadd2));
             CHECK((v.get_as<decltype(&iadd2)>())(ivec2{1,2}, ivec2{3,4}) == ivec2{4,6});
         }
         {
             meta::uvalue v{&iadd2};
             CHECK(v.get_type() == meta::resolve_type<ivec2(*)(ivec2, ivec2)>());
-            CHECK(v.get_as<decltype(&iadd2)>() == &iadd2);
+            CHECK((v.get_as<decltype(&iadd2)>() == &iadd2));
             CHECK((v.get_as<decltype(&iadd2)>())(ivec2{1,2}, ivec2{3,4}) == ivec2{4,6});
         }
         {
             const meta::uvalue v{iadd2};
             CHECK(v.get_type() == meta::resolve_type<ivec2(*)(ivec2, ivec2)>());
-            CHECK(v.get_as<decltype(&iadd2)>() == &iadd2);
+            CHECK((v.get_as<decltype(&iadd2)>() == &iadd2));
             CHECK((v.get_as<decltype(&iadd2)>())(ivec2{1,2}, ivec2{3,4}) == ivec2{4,6});
         }
         {
             const meta::uvalue v{&iadd2};
             CHECK(v.get_type() == meta::resolve_type<ivec2(*)(ivec2, ivec2)>());
-            CHECK(v.get_as<decltype(&iadd2)>() == &iadd2);
+            CHECK((v.get_as<decltype(&iadd2)>() == &iadd2));
             CHECK((v.get_as<decltype(&iadd2)>())(ivec2{1,2}, ivec2{3,4}) == ivec2{4,6});
         }
     }
