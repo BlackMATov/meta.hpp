@@ -27,7 +27,7 @@ setup_defines_for_target(${PROJECT_NAME}.singles)
 #
 
 function(setup_libraries_for_target TARGET)
-    target_link_libraries(${TARGET} PRIVATE doctest_with_main fmt)
+    target_link_libraries(${TARGET} PRIVATE doctest_with_main)
 
     if(${BUILD_WITH_COVERAGE})
         target_link_libraries(${TARGET} PRIVATE enable_gcov)

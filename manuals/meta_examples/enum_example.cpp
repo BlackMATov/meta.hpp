@@ -34,9 +34,9 @@ TEST_CASE("meta/meta_examples/enum/type") {
     CHECK(align_type.get_underlying_type() == meta::resolve_type<int>());
 
     // prints all enumerators
-    fmt::print("* align:\n");
+    std::cout << "* align" << std::endl;
     for ( auto&& [index, evalue] : align_type.get_evalues() ) {
-        fmt::print("  - {}:{}\n", index.get_name(), evalue.get_underlying_value());
+        std::cout << "  - " << index.get_name() << "/" << evalue.get_underlying_value() << std::endl;
     }
 }
 
