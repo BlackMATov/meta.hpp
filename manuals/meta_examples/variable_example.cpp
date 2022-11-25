@@ -40,8 +40,8 @@ TEST_CASE("meta/meta_examples/variable/usage") {
     CHECK_THROWS(pi_variable.set(6.0));
 
     // prints all variables in the scope
-    fmt::print("* {}:\n", constants_scope.get_name());
+    std::cout << "* " << constants_scope.get_name() << std::endl;
     for ( auto&& [index, variable] : constants_scope.get_variables() ) {
-        fmt::print("  - {}:{}\n", index.get_name(), variable.get());
+        std::cout << "  - " << index.get_name() << ":" << variable.get() << std::endl;
     }
 }

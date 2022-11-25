@@ -71,8 +71,8 @@ TEST_CASE("meta/meta_examples/function/usage") {
     CHECK(sub_function_typed_result == 42);
 
     // prints all functions in the scope
-    fmt::print("* {}:\n", math_scope.get_name());
+    std::cout << "* " << math_scope.get_name() << std::endl;
     for ( auto&& [index, function] : math_scope.get_functions() ) {
-        fmt::print("  + {}/{}\n", index.get_name(), function.get_type().get_arity());
+        std::cout << "  + " << index.get_name() << "/" << function.get_type().get_arity() << std::endl;
     }
 }

@@ -58,9 +58,9 @@ TEST_CASE("meta/meta_examples/class/type") {
     const meta::class_type rectangle_type = meta::resolve_type<rectangle>();
 
     // prints all class methods
-    fmt::print("* rectangle:\n");
+    std::cout << "* rectangle" << std::endl;
     for ( auto&& [index, method] : rectangle_type.get_methods() ) {
-        fmt::print("  + {}/{}\n", index.get_name(), index.get_type().get_arity());
+        std::cout << "  + " << index.get_name() << "/" << index.get_type().get_arity() << std::endl;
     }
 }
 
