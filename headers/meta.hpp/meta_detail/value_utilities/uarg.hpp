@@ -32,6 +32,9 @@ namespace meta_hpp::detail
 
         virtual ~uarg_base() = default;
 
+        template < typename T >
+        uarg_base(type_list<T>) = delete;
+
         template < decay_value_kind T >
         // NOLINTNEXTLINE(*-forwarding-reference-overload)
         explicit uarg_base(T&&)
@@ -72,18 +75,8 @@ namespace meta_hpp::detail
         : ref_type_{ref_types::const_rvalue}
         , raw_type_{v.get_type()} {}
 
-        [[nodiscard]] bool is_const() const noexcept {
+        [[nodiscard]] bool is_ref_const() const noexcept {
             return ref_type_ == ref_types::const_lvalue
-                || ref_type_ == ref_types::const_rvalue;
-        }
-
-        [[nodiscard]] bool is_lvalue() const noexcept {
-            return ref_type_ == ref_types::lvalue
-                || ref_type_ == ref_types::const_lvalue;
-        }
-
-        [[nodiscard]] bool is_rvalue() const noexcept {
-            return ref_type_ == ref_types::rvalue
                 || ref_type_ == ref_types::const_rvalue;
         }
 
@@ -168,7 +161,7 @@ namespace meta_hpp::detail
                 const bool to_type_ptr_readonly = to_type_ptr.get_flags().has(pointer_flags::is_readonly);
 
                 const array_type& from_type_array = from_type.as_array();
-                const bool from_type_array_readonly = is_const();
+                const bool from_type_array_readonly = is_ref_const();
 
                 const any_type& to_data_type = to_type_ptr.get_data_type();
                 const any_type& from_data_type = from_type_array.get_data_type();

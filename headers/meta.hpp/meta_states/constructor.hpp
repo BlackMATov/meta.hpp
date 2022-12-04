@@ -88,15 +88,17 @@ namespace meta_hpp::detail
     template < class_kind Class, typename... Args >
     argument_list make_constructor_arguments() {
         using ct = detail::constructor_traits<Class, Args...>;
+        using ct_argument_types = typename ct::argument_types;
 
         argument_list arguments;
         arguments.reserve(ct::arity);
 
         [&arguments]<std::size_t... Is>(std::index_sequence<Is...>) mutable {
-            (arguments.push_back([]<std::size_t I>(){
-                using P = detail::type_list_at_t<I, typename ct::argument_types>;
+            [[maybe_unused]] const auto make_argument = []<std::size_t I>(std::index_sequence<I>){
+                using P = detail::type_list_at_t<I, ct_argument_types>;
                 return argument{detail::argument_state::make<P>(I, metadata_map{})};
-            }.template operator()<Is>()), ...);
+            };
+            (arguments.push_back(make_argument(std::index_sequence<Is>{})), ...);
         }(std::make_index_sequence<ct::arity>());
 
         return arguments;

@@ -37,7 +37,7 @@ namespace meta_hpp::detail
             throw_exception_with("an attempt to get a member with an incorrect instance type");
         }
 
-        if ( inst.is_const() ) {
+        if ( inst.is_inst_const() ) {
             auto&& return_value = inst.cast<const class_type>().*member;
 
             if constexpr ( as_copy ) {
@@ -88,7 +88,7 @@ namespace meta_hpp::detail
         if constexpr ( std::is_const_v<value_type> ) {
             throw_exception_with("an attempt to set a constant member");
         } else {
-            if ( inst.is_const() ) {
+            if ( inst.is_inst_const() ) {
                 throw_exception_with("an attempt to set a member with an const instance type");
             }
 
@@ -111,7 +111,7 @@ namespace meta_hpp::detail
         using value_type = typename mt::value_type;
 
         return !std::is_const_v<value_type>
-            && !inst.is_const()
+            && !inst.is_inst_const()
             && inst.can_cast_to<class_type>()
             && arg.can_cast_to<value_type>();
     }

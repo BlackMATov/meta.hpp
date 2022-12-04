@@ -52,12 +52,14 @@ namespace meta_hpp::detail
     template < typename T >
     concept inst_class_lvalue_ref_kind =
         (decay_non_uvalue_kind<T>) &&
-        (std::is_lvalue_reference_v<T> && std::is_class_v<std::remove_reference_t<T>>);
+        (std::is_lvalue_reference_v<T>) &&
+        (std::is_class_v<std::remove_pointer_t<std::remove_reference_t<T>>>);
 
     template < typename T >
     concept inst_class_rvalue_ref_kind =
         (decay_non_uvalue_kind<T>) &&
-        (std::is_class_v<T> || (std::is_rvalue_reference_v<T> && std::is_class_v<std::remove_reference_t<T>>));
+        (!std::is_reference_v<T> || std::is_rvalue_reference_v<T>) &&
+        (std::is_class_v<std::remove_pointer_t<std::remove_reference_t<T>>>);
 }
 
 namespace meta_hpp::detail
