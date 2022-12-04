@@ -96,15 +96,17 @@ namespace meta_hpp::detail
     template < function_kind Function >
     argument_list make_function_arguments() {
         using ft = detail::function_traits<Function>;
+        using ft_argument_types = typename ft::argument_types;
 
         argument_list arguments;
         arguments.reserve(ft::arity);
 
         [&arguments]<std::size_t... Is>(std::index_sequence<Is...>) mutable {
-            (arguments.push_back([]<std::size_t I>(){
-                using P = detail::type_list_at_t<I, typename ft::argument_types>;
+            const auto make_argument = []<std::size_t I>(std::index_sequence<I>){
+                using P = detail::type_list_at_t<I, ft_argument_types>;
                 return argument{detail::argument_state::make<P>(I, metadata_map{})};
-            }.template operator()<Is>()), ...);
+            };
+            (arguments.push_back(make_argument(std::index_sequence<Is>{})), ...);
         }(std::make_index_sequence<ft::arity>());
 
         return arguments;
