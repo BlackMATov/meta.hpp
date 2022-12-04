@@ -102,7 +102,7 @@ namespace meta_hpp::detail
         arguments.reserve(ft::arity);
 
         [&arguments]<std::size_t... Is>(std::index_sequence<Is...>) mutable {
-            const auto make_argument = []<std::size_t I>(std::index_sequence<I>){
+            [[maybe_unused]] const auto make_argument = []<std::size_t I>(std::index_sequence<I>){
                 using P = detail::type_list_at_t<I, ft_argument_types>;
                 return argument{detail::argument_state::make<P>(I, metadata_map{})};
             };
