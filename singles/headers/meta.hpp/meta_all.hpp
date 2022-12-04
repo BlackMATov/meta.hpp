@@ -4675,12 +4675,14 @@ namespace meta_hpp::detail
     template < typename T >
     concept inst_class_lvalue_ref_kind =
         (decay_non_uvalue_kind<T>) &&
-        (std::is_lvalue_reference_v<T> && std::is_class_v<std::remove_reference_t<T>>);
+        (std::is_lvalue_reference_v<T>) &&
+        (std::is_class_v<std::remove_pointer_t<std::remove_reference_t<T>>>);
 
     template < typename T >
     concept inst_class_rvalue_ref_kind =
         (decay_non_uvalue_kind<T>) &&
-        (std::is_class_v<T> || (std::is_rvalue_reference_v<T> && std::is_class_v<std::remove_reference_t<T>>));
+        (!std::is_reference_v<T> || std::is_rvalue_reference_v<T>) &&
+        (std::is_class_v<std::remove_pointer_t<std::remove_reference_t<T>>>);
 }
 
 namespace meta_hpp::detail
@@ -4795,6 +4797,9 @@ namespace meta_hpp::detail
 
         virtual ~uarg_base() = default;
 
+        template < typename T >
+        uarg_base(type_list<T>) = delete;
+
         template < decay_value_kind T >
         // NOLINTNEXTLINE(*-forwarding-reference-overload)
         explicit uarg_base(T&&)
@@ -4835,18 +4840,8 @@ namespace meta_hpp::detail
         : ref_type_{ref_types::const_rvalue}
         , raw_type_{v.get_type()} {}
 
-        [[nodiscard]] bool is_const() const noexcept {
+        [[nodiscard]] bool is_ref_const() const noexcept {
             return ref_type_ == ref_types::const_lvalue
-                || ref_type_ == ref_types::const_rvalue;
-        }
-
-        [[nodiscard]] bool is_lvalue() const noexcept {
-            return ref_type_ == ref_types::lvalue
-                || ref_type_ == ref_types::const_lvalue;
-        }
-
-        [[nodiscard]] bool is_rvalue() const noexcept {
-            return ref_type_ == ref_types::rvalue
                 || ref_type_ == ref_types::const_rvalue;
         }
 
@@ -4931,7 +4926,7 @@ namespace meta_hpp::detail
                 const bool to_type_ptr_readonly = to_type_ptr.get_flags().has(pointer_flags::is_readonly);
 
                 const array_type& from_type_array = from_type.as_array();
-                const bool from_type_array_readonly = is_const();
+                const bool from_type_array_readonly = is_ref_const();
 
                 const any_type& to_data_type = to_type_ptr.get_data_type();
                 const any_type& from_data_type = from_type_array.get_data_type();
@@ -5911,6 +5906,9 @@ namespace meta_hpp::detail
 
         virtual ~uinst_base() = default;
 
+        template < typename T >
+        uinst_base(type_list<T>) = delete;
+
         template < decay_value_kind T >
         // NOLINTNEXTLINE(*-forwarding-reference-overload)
         explicit uinst_base(T&&)
@@ -5951,18 +5949,13 @@ namespace meta_hpp::detail
         : ref_type_{ref_types::const_rvalue}
         , raw_type_{v.get_type()} {}
 
-        [[nodiscard]] bool is_const() const noexcept {
+        [[nodiscard]] bool is_inst_const() const noexcept {
+            if ( raw_type_.is_pointer() ) {
+                const pointer_type& from_type_ptr = raw_type_.as_pointer();
+                const bool from_type_ptr_readonly = from_type_ptr.get_flags().has(pointer_flags::is_readonly);
+                return from_type_ptr_readonly;
+            }
             return ref_type_ == ref_types::const_lvalue
-                || ref_type_ == ref_types::const_rvalue;
-        }
-
-        [[nodiscard]] bool is_lvalue() const noexcept {
-            return ref_type_ == ref_types::lvalue
-                || ref_type_ == ref_types::const_lvalue;
-        }
-
-        [[nodiscard]] bool is_rvalue() const noexcept {
-            return ref_type_ == ref_types::rvalue
                 || ref_type_ == ref_types::const_rvalue;
         }
 
@@ -6032,21 +6025,39 @@ namespace meta_hpp::detail
                 || (base.is_class() && derived.is_class() && base.as_class().is_base_of(derived.as_class()));
         };
 
-        const auto is_invocable = [this](){
-            switch ( get_ref_type() ) {
-            case ref_types::lvalue:
-                return std::is_invocable_v<inst_method, inst_class&>;
-            case ref_types::const_lvalue:
-                return std::is_invocable_v<inst_method, const inst_class&>;
-            case ref_types::rvalue:
-                return std::is_invocable_v<inst_method, inst_class&&>;
-            case ref_types::const_rvalue:
-                return std::is_invocable_v<inst_method, const inst_class&&>;
-            }
-            return false;
-        };
+        if ( from_type.is_class() ) {
+            const auto is_invocable = [this](){
+                switch ( get_ref_type() ) {
+                case ref_types::lvalue:
+                    return std::is_invocable_v<inst_method, inst_class&>;
+                case ref_types::const_lvalue:
+                    return std::is_invocable_v<inst_method, const inst_class&>;
+                case ref_types::rvalue:
+                    return std::is_invocable_v<inst_method, inst_class&&>;
+                case ref_types::const_rvalue:
+                    return std::is_invocable_v<inst_method, const inst_class&&>;
+                }
+                return false;
+            };
 
-        return is_a(to_type, from_type) && is_invocable();
+            return is_invocable() && is_a(to_type, from_type);
+        }
+
+        if ( from_type.is_pointer() ) {
+            const pointer_type& from_type_ptr = from_type.as_pointer();
+            const bool from_type_ptr_readonly = from_type_ptr.get_flags().has(pointer_flags::is_readonly);
+            const any_type& from_data_type = from_type_ptr.get_data_type();
+
+            const auto is_invocable = [from_type_ptr_readonly](){
+                return from_type_ptr_readonly
+                    ? std::is_invocable_v<inst_method, const inst_class&>
+                    : std::is_invocable_v<inst_method, inst_class&>;
+            };
+
+            return is_invocable() && is_a(to_type, from_data_type);
+        }
+
+        return false;
     }
 }
 
@@ -6083,6 +6094,27 @@ namespace meta_hpp::detail
             }
         }
 
+        if ( from_type.is_pointer() ) {
+            const pointer_type& from_type_ptr = from_type.as_pointer();
+            const any_type& from_data_type = from_type_ptr.get_data_type();
+
+            if ( from_data_type.is_class() && to_type.is_class() ) {
+                const class_type& from_data_class = from_data_type.as_class();
+                const class_type& to_class = to_type.as_class();
+
+                void** from_data_ptr = static_cast<void**>(data_);
+                void* to_ptr = pointer_upcast(*from_data_ptr, from_data_class, to_class);
+
+                if constexpr ( !std::is_reference_v<Q> ) {
+                    return *static_cast<inst_class_cv*>(to_ptr);
+                }
+
+                if constexpr ( std::is_lvalue_reference_v<Q> ) {
+                    return *static_cast<inst_class_cv*>(to_ptr);
+                }
+            }
+        }
+
         throw_exception_with("bad instance cast");
     }
 }
@@ -6111,7 +6143,7 @@ namespace meta_hpp::detail
             throw_exception_with("an attempt to get a member with an incorrect instance type");
         }
 
-        if ( inst.is_const() ) {
+        if ( inst.is_inst_const() ) {
             auto&& return_value = inst.cast<const class_type>().*member;
 
             if constexpr ( as_copy ) {
@@ -6162,7 +6194,7 @@ namespace meta_hpp::detail
         if constexpr ( std::is_const_v<value_type> ) {
             throw_exception_with("an attempt to set a constant member");
         } else {
-            if ( inst.is_const() ) {
+            if ( inst.is_inst_const() ) {
                 throw_exception_with("an attempt to set a member with an const instance type");
             }
 
@@ -6185,7 +6217,7 @@ namespace meta_hpp::detail
         using value_type = typename mt::value_type;
 
         return !std::is_const_v<value_type>
-            && !inst.is_const()
+            && !inst.is_inst_const()
             && inst.can_cast_to<class_type>()
             && arg.can_cast_to<value_type>();
     }
