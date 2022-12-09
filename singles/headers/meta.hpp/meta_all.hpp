@@ -17,7 +17,6 @@
 #include <map>
 #include <memory>
 #include <mutex>
-#include <new>
 #include <set>
 #include <span>
 #include <stdexcept>
@@ -427,21 +426,23 @@ namespace meta_hpp::detail
                     const Fp& src = *buffer_cast<Fp>(self.buffer_);
                     return std::invoke(src, std::forward<Args>(args)...);
                 },
+
                 .move = +[](fixed_function& from, fixed_function& to) noexcept {
                     assert(from && !to); // NOLINT
 
                     Fp& src = *buffer_cast<Fp>(from.buffer_);
-                    ::new (buffer_cast<Fp>(to.buffer_)) Fp(std::move(src));
-                    src.~Fp();
+                    std::construct_at(buffer_cast<Fp>(to.buffer_), std::move(src));
+                    std::destroy_at(&src);
 
                     to.vtable_ = from.vtable_;
                     from.vtable_ = nullptr;
                 },
+
                 .destroy = +[](fixed_function& self){
                     assert(self); // NOLINT
 
                     Fp& src = *buffer_cast<Fp>(self.buffer_);
-                    src.~Fp();
+                    std::destroy_at(&src);
 
                     self.vtable_ = nullptr;
                 },
@@ -458,7 +459,7 @@ namespace meta_hpp::detail
             static_assert(std::is_invocable_r_v<R, Fp, Args...>);
             static_assert(std::is_nothrow_move_constructible_v<Fp>);
 
-            ::new (buffer_cast<Fp>(dst.buffer_)) Fp(std::forward<Functor>(functor));
+            std::construct_at(buffer_cast<Fp>(dst.buffer_), std::forward<Functor>(functor));
 
             dst.vtable_ = vtable_t::get<Fp>();
         }
@@ -8089,7 +8090,7 @@ namespace meta_hpp
                 std::is_nothrow_move_constructible_v<Tp>;
 
             if constexpr ( in_buffer ) {
-                ::new (buffer_cast<Tp>(dst.storage_.emplace<buffer_t>())) Tp(std::forward<T>(val));
+                std::construct_at(buffer_cast<Tp>(dst.storage_.emplace<buffer_t>()), std::forward<T>(val));
             } else {
                 dst.storage_.emplace<void*>(std::make_unique<Tp>(std::forward<T>(val)).release());
             }
@@ -8147,8 +8148,8 @@ namespace meta_hpp
                         },
                         [&to](buffer_t& buffer) {
                             Tp& src = *buffer_cast<Tp>(buffer);
-                            ::new (buffer_cast<Tp>(to.storage_.emplace<buffer_t>())) Tp(std::move(src));
-                            src.~Tp();
+                            std::construct_at(buffer_cast<Tp>(to.storage_.emplace<buffer_t>()), std::move(src));
+                            std::destroy_at(&src);
                         },
                         [](...){}
                     }, from.storage_);
@@ -8167,7 +8168,7 @@ namespace meta_hpp
                         },
                         [&to](const buffer_t& buffer) {
                             const Tp& src = *buffer_cast<Tp>(buffer);
-                            ::new (buffer_cast<Tp>(to.storage_.emplace<buffer_t>())) Tp(src);
+                            std::construct_at(buffer_cast<Tp>(to.storage_.emplace<buffer_t>()), src);
                         },
                         [](...){}
                     }, from.storage_);
@@ -8185,7 +8186,7 @@ namespace meta_hpp
                         },
                         [](buffer_t& buffer) {
                             Tp& src = *buffer_cast<Tp>(buffer);
-                            src.~Tp();
+                            std::destroy_at(&src);
                         },
                         [](...){}
                     }, self.storage_);

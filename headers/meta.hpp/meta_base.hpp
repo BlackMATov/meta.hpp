@@ -20,7 +20,6 @@
 #include <map>
 #include <memory>
 #include <mutex>
-#include <new>
 #include <set>
 #include <span>
 #include <stdexcept>

@@ -80,7 +80,7 @@ namespace meta_hpp
                 std::is_nothrow_move_constructible_v<Tp>;
 
             if constexpr ( in_buffer ) {
-                ::new (buffer_cast<Tp>(dst.storage_.emplace<buffer_t>())) Tp(std::forward<T>(val));
+                std::construct_at(buffer_cast<Tp>(dst.storage_.emplace<buffer_t>()), std::forward<T>(val));
             } else {
                 dst.storage_.emplace<void*>(std::make_unique<Tp>(std::forward<T>(val)).release());
             }
@@ -138,8 +138,8 @@ namespace meta_hpp
                         },
                         [&to](buffer_t& buffer) {
                             Tp& src = *buffer_cast<Tp>(buffer);
-                            ::new (buffer_cast<Tp>(to.storage_.emplace<buffer_t>())) Tp(std::move(src));
-                            src.~Tp();
+                            std::construct_at(buffer_cast<Tp>(to.storage_.emplace<buffer_t>()), std::move(src));
+                            std::destroy_at(&src);
                         },
                         [](...){}
                     }, from.storage_);
@@ -158,7 +158,7 @@ namespace meta_hpp
                         },
                         [&to](const buffer_t& buffer) {
                             const Tp& src = *buffer_cast<Tp>(buffer);
-                            ::new (buffer_cast<Tp>(to.storage_.emplace<buffer_t>())) Tp(src);
+                            std::construct_at(buffer_cast<Tp>(to.storage_.emplace<buffer_t>()), src);
                         },
                         [](...){}
                     }, from.storage_);
@@ -176,7 +176,7 @@ namespace meta_hpp
                         },
                         [](buffer_t& buffer) {
                             Tp& src = *buffer_cast<Tp>(buffer);
-                            src.~Tp();
+                            std::destroy_at(&src);
                         },
                         [](...){}
                     }, self.storage_);

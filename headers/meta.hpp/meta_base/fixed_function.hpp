@@ -9,7 +9,7 @@
 #include <cassert>
 #include <cstddef>
 #include <functional>
-#include <new>
+#include <memory>
 #include <type_traits>
 #include <utility>
 
@@ -125,21 +125,23 @@ namespace meta_hpp::detail
                     const Fp& src = *buffer_cast<Fp>(self.buffer_);
                     return std::invoke(src, std::forward<Args>(args)...);
                 },
+
                 .move = +[](fixed_function& from, fixed_function& to) noexcept {
                     assert(from && !to); // NOLINT
 
                     Fp& src = *buffer_cast<Fp>(from.buffer_);
-                    ::new (buffer_cast<Fp>(to.buffer_)) Fp(std::move(src));
-                    src.~Fp();
+                    std::construct_at(buffer_cast<Fp>(to.buffer_), std::move(src));
+                    std::destroy_at(&src);
 
                     to.vtable_ = from.vtable_;
                     from.vtable_ = nullptr;
                 },
+
                 .destroy = +[](fixed_function& self){
                     assert(self); // NOLINT
 
                     Fp& src = *buffer_cast<Fp>(self.buffer_);
-                    src.~Fp();
+                    std::destroy_at(&src);
 
                     self.vtable_ = nullptr;
                 },
@@ -156,7 +158,7 @@ namespace meta_hpp::detail
             static_assert(std::is_invocable_r_v<R, Fp, Args...>);
             static_assert(std::is_nothrow_move_constructible_v<Fp>);
 
-            ::new (buffer_cast<Fp>(dst.buffer_)) Fp(std::forward<Functor>(functor));
+            std::construct_at(buffer_cast<Fp>(dst.buffer_), std::forward<Functor>(functor));
 
             dst.vtable_ = vtable_t::get<Fp>();
         }
