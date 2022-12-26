@@ -13,7 +13,7 @@ jobs:
         - { os: "ubuntu-20.04", cc: "gcc-10", cxx: "g++-10" }
         - { os: "ubuntu-20.04", cc: "clang-10", cxx: "clang++-10" }
         - { os: "ubuntu-22.04", cc: "gcc-12", cxx: "g++-12" }
-        - { os: "ubuntu-22.04", cc: "clang-15", cxx: "clang++-15" }
+        - { os: "ubuntu-22.04", cc: "clang-14", cxx: "clang++-14" }
     name: "${{matrix.config.cxx}}"
     steps:
     - name: Setup
