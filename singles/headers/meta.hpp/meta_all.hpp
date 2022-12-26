@@ -1072,6 +1072,7 @@ namespace meta_hpp::detail
 {
     enum class destructor_flags : std::uint32_t {
         is_noexcept = 1 << 0,
+        is_virtual = 1 << 1,
     };
 
     META_HPP_BITFLAGS_OPERATORS_DECL(destructor_flags)
@@ -1089,6 +1090,10 @@ namespace meta_hpp::detail
 
             if constexpr ( std::is_nothrow_destructible_v<Class> ) {
                 flags.set(destructor_flags::is_noexcept);
+            }
+
+            if constexpr ( std::has_virtual_destructor_v<Class> ) {
+                flags.set(destructor_flags::is_virtual);
             }
 
             return flags;
@@ -3548,7 +3553,13 @@ namespace meta_hpp
 
     template < detail::class_kind Class >
     class_bind<Class> class_(metadata_map metadata = {}) {
-        return class_bind<Class>{std::move(metadata)};
+        class_bind<Class> bind{std::move(metadata)};
+
+        if constexpr ( std::is_destructible_v<Class> ) {
+            bind.destructor_();
+        }
+
+        return bind;
     }
 
     template < detail::enum_kind Enum >
