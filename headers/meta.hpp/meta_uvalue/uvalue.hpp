@@ -80,7 +80,7 @@ namespace meta_hpp
                 std::is_nothrow_move_constructible_v<Tp>;
 
             if constexpr ( in_buffer ) {
-                ::new (buffer_cast<Tp>(dst.storage_.emplace<buffer_t>())) Tp(std::forward<T>(val));
+                std::construct_at(buffer_cast<Tp>(dst.storage_.emplace<buffer_t>()), std::forward<T>(val));
             } else {
                 dst.storage_.emplace<void*>(std::make_unique<Tp>(std::forward<T>(val)).release());
             }
@@ -138,8 +138,8 @@ namespace meta_hpp
                         },
                         [&to](buffer_t& buffer) {
                             Tp& src = *buffer_cast<Tp>(buffer);
-                            ::new (buffer_cast<Tp>(to.storage_.emplace<buffer_t>())) Tp(std::move(src));
-                            src.~Tp();
+                            std::construct_at(buffer_cast<Tp>(to.storage_.emplace<buffer_t>()), std::move(src));
+                            std::destroy_at(&src);
                         },
                         [](...){}
                     }, from.storage_);
@@ -158,7 +158,7 @@ namespace meta_hpp
                         },
                         [&to](const buffer_t& buffer) {
                             const Tp& src = *buffer_cast<Tp>(buffer);
-                            ::new (buffer_cast<Tp>(to.storage_.emplace<buffer_t>())) Tp(src);
+                            std::construct_at(buffer_cast<Tp>(to.storage_.emplace<buffer_t>()), src);
                         },
                         [](...){}
                     }, from.storage_);
@@ -176,7 +176,7 @@ namespace meta_hpp
                         },
                         [](buffer_t& buffer) {
                             Tp& src = *buffer_cast<Tp>(buffer);
-                            src.~Tp();
+                            std::destroy_at(&src);
                         },
                         [](...){}
                     }, self.storage_);
@@ -271,14 +271,14 @@ namespace meta_hpp
     }
 
     template < detail::decay_non_value_kind T >
-        requires stdex::copy_constructible<std::decay_t<T>>
+        requires std::copy_constructible<std::decay_t<T>>
     // NOLINTNEXTLINE(*-forwarding-reference-overload)
     uvalue::uvalue(T&& val) {
         vtable_t::construct(*this, std::forward<T>(val));
     }
 
     template < detail::decay_non_value_kind T >
-        requires stdex::copy_constructible<std::decay_t<T>>
+        requires std::copy_constructible<std::decay_t<T>>
     uvalue& uvalue::operator=(T&& val) {
         uvalue{std::forward<T>(val)}.swap(*this);
         return *this;
@@ -329,7 +329,7 @@ namespace meta_hpp
 
     template < typename T >
     auto uvalue::get_as() -> std::conditional_t<detail::pointer_kind<T>, T, T&> {
-        static_assert(stdex::same_as<T, std::decay_t<T>>);
+        static_assert(std::same_as<T, std::decay_t<T>>);
 
         if constexpr ( detail::pointer_kind<T> ) {
             if ( T ptr = try_get_as<T>(); ptr || get_type().is_nullptr() ) {
@@ -346,7 +346,7 @@ namespace meta_hpp
 
     template < typename T >
     auto uvalue::get_as() const -> std::conditional_t<detail::pointer_kind<T>, T, const T&> {
-        static_assert(stdex::same_as<T, std::decay_t<T>>);
+        static_assert(std::same_as<T, std::decay_t<T>>);
 
         if constexpr ( detail::pointer_kind<T> ) {
             if ( T ptr = try_get_as<T>(); ptr || get_type().is_nullptr() ) {
@@ -364,7 +364,7 @@ namespace meta_hpp
     template < typename T >
     // NOLINTNEXTLINE(*-cognitive-complexity)
     auto uvalue::try_get_as() noexcept -> std::conditional_t<detail::pointer_kind<T>, T, T*> {
-        static_assert(stdex::same_as<T, std::decay_t<T>>);
+        static_assert(std::same_as<T, std::decay_t<T>>);
 
         const any_type& from_type = get_type();
         const any_type& to_type = resolve_type<T>();
@@ -429,7 +429,7 @@ namespace meta_hpp
     template < typename T >
     // NOLINTNEXTLINE(*-cognitive-complexity)
     auto uvalue::try_get_as() const noexcept -> std::conditional_t<detail::pointer_kind<T>, T, const T*> {
-        static_assert(stdex::same_as<T, std::decay_t<T>>);
+        static_assert(std::same_as<T, std::decay_t<T>>);
 
         const any_type& from_type = get_type();
         const any_type& to_type = resolve_type<T>();

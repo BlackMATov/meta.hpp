@@ -16,7 +16,7 @@ namespace meta_hpp::detail
 
     template < typename T >
     concept has_ostream_traits = requires(std::ostream& os, const T& v) {
-        { ostream_traits<T>{}(os, v) } -> stdex::convertible_to<std::ostream&>;
+        { ostream_traits<T>{}(os, v) } -> std::convertible_to<std::ostream&>;
     };
 }
 
@@ -24,7 +24,7 @@ namespace meta_hpp::detail
 {
     template < typename T >
         requires requires(std::ostream& os, const T& v) {
-            { os << v } -> stdex::convertible_to<std::ostream&>;
+            { os << v } -> std::convertible_to<std::ostream&>;
         }
     struct ostream_traits<T> {
         std::ostream& operator()(std::ostream& os, const T& v) const {

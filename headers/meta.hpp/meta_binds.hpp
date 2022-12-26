@@ -27,17 +27,17 @@ namespace meta_hpp::detail
     template < typename Class, typename Base >
     concept class_bind_base_kind =
         class_kind<Class> && class_kind<Base> &&
-        stdex::derived_from<Class, Base>;
+        std::derived_from<Class, Base>;
 
     template < typename Class, typename Member >
     concept class_bind_member_kind =
         class_kind<Class> && member_kind<Member> &&
-        stdex::same_as<Class, typename member_traits<Member>::class_type>;
+        std::same_as<Class, typename member_traits<Member>::class_type>;
 
     template < typename Class, typename Method >
     concept class_bind_method_kind =
         class_kind<Class> && method_kind<Method> &&
-        stdex::same_as<Class, typename method_traits<Method>::class_type>;
+        std::same_as<Class, typename method_traits<Method>::class_type>;
 }
 
 namespace meta_hpp
@@ -419,7 +419,13 @@ namespace meta_hpp
 
     template < detail::class_kind Class >
     class_bind<Class> class_(metadata_map metadata = {}) {
-        return class_bind<Class>{std::move(metadata)};
+        class_bind<Class> bind{std::move(metadata)};
+
+        if constexpr ( std::is_destructible_v<Class> ) {
+            bind.destructor_();
+        }
+
+        return bind;
     }
 
     template < detail::enum_kind Enum >

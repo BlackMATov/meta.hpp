@@ -8,9 +8,9 @@
 [![language][badge.language]][language]
 [![license][badge.license]][license]
 
-[badge.darwin]: https://img.shields.io/github/workflow/status/BlackMATov/meta.hpp/darwin/main?label=Xcode&logo=xcode
-[badge.linux]: https://img.shields.io/github/workflow/status/BlackMATov/meta.hpp/linux/main?label=GCC%2FClang&logo=linux
-[badge.windows]: https://img.shields.io/github/workflow/status/BlackMATov/meta.hpp/windows/main?label=Visual%20Studio&logo=visual-studio
+[badge.darwin]: https://img.shields.io/github/actions/workflow/status/BlackMATov/meta.hpp/.github/workflows/darwin.yml?label=Xcode&logo=xcode
+[badge.linux]: https://img.shields.io/github/actions/workflow/status/BlackMATov/meta.hpp/.github/workflows/linux.yml?label=GCC%2FClang&logo=linux
+[badge.windows]: https://img.shields.io/github/actions/workflow/status/BlackMATov/meta.hpp/.github/workflows/windows.yml?label=Visual%20Studio&logo=visual-studio
 [badge.language]: https://img.shields.io/badge/language-C%2B%2B20-orange
 [badge.license]: https://img.shields.io/badge/license-MIT-blue
 

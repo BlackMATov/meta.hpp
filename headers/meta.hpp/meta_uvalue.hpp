@@ -12,7 +12,7 @@
 namespace meta_hpp::detail
 {
     template < typename T >
-    inline constexpr bool is_value_kind_v = stdex::same_as<T, uvalue>;
+    inline constexpr bool is_value_kind_v = std::same_as<T, uvalue>;
 
     template < typename T >
     concept value_kind = is_value_kind_v<T>;
@@ -38,12 +38,12 @@ namespace meta_hpp
         uvalue& operator=(const uvalue& other);
 
         template < detail::decay_non_value_kind T >
-            requires stdex::copy_constructible<std::decay_t<T>>
+            requires std::copy_constructible<std::decay_t<T>>
         // NOLINTNEXTLINE(*-forwarding-reference-overload)
         explicit uvalue(T&& val);
 
         template < detail::decay_non_value_kind T >
-            requires stdex::copy_constructible<std::decay_t<T>>
+            requires std::copy_constructible<std::decay_t<T>>
         uvalue& operator=(T&& val);
 
         [[nodiscard]] bool is_valid() const noexcept;

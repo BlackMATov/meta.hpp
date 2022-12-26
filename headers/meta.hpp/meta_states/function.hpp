@@ -21,16 +21,16 @@ namespace meta_hpp::detail
         using argument_types = typename ft::argument_types;
 
         constexpr bool as_copy =
-            stdex::copy_constructible<return_type> &&
-            stdex::same_as<Policy, function_policy::as_copy>;
+            std::copy_constructible<return_type> &&
+            std::same_as<Policy, function_policy::as_copy>;
 
         constexpr bool as_void =
             std::is_void_v<return_type> ||
-            stdex::same_as<Policy, function_policy::discard_return>;
+            std::same_as<Policy, function_policy::discard_return>;
 
         constexpr bool ref_as_ptr =
             std::is_reference_v<return_type> &&
-            stdex::same_as<Policy, function_policy::return_reference_as_pointer>;
+            std::same_as<Policy, function_policy::return_reference_as_pointer>;
 
         static_assert(as_copy || as_void || ref_as_ptr);
 
@@ -47,7 +47,7 @@ namespace meta_hpp::detail
                 function(
                     args[Is].cast<type_list_at_t<Is, argument_types>>()...);
                 return uvalue{};
-            } else if constexpr ( stdex::same_as<Policy, function_policy::discard_return> ) {
+            } else if constexpr ( std::same_as<Policy, function_policy::discard_return> ) {
                 std::ignore = function(
                     args[Is].cast<type_list_at_t<Is, argument_types>>()...);
                 return uvalue{};
