@@ -16,7 +16,7 @@ namespace meta_hpp::detail
 
     template < typename T >
     concept has_equals_traits = requires(const T& l, const T& r) {
-        { equals_traits<T>{}(l, r) } -> stdex::convertible_to<bool>;
+        { equals_traits<T>{}(l, r) } -> std::convertible_to<bool>;
     };
 }
 
@@ -24,7 +24,7 @@ namespace meta_hpp::detail
 {
     template < typename T >
         requires requires(const T& l, const T& r) {
-            { std::equal_to<>{}(l, r) } -> stdex::convertible_to<bool>;
+            { std::equal_to<>{}(l, r) } -> std::convertible_to<bool>;
         }
     struct equals_traits<T> {
         bool operator()(const T& l, const T& r) const {

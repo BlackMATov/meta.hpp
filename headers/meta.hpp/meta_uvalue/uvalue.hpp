@@ -271,14 +271,14 @@ namespace meta_hpp
     }
 
     template < detail::decay_non_value_kind T >
-        requires stdex::copy_constructible<std::decay_t<T>>
+        requires std::copy_constructible<std::decay_t<T>>
     // NOLINTNEXTLINE(*-forwarding-reference-overload)
     uvalue::uvalue(T&& val) {
         vtable_t::construct(*this, std::forward<T>(val));
     }
 
     template < detail::decay_non_value_kind T >
-        requires stdex::copy_constructible<std::decay_t<T>>
+        requires std::copy_constructible<std::decay_t<T>>
     uvalue& uvalue::operator=(T&& val) {
         uvalue{std::forward<T>(val)}.swap(*this);
         return *this;
@@ -329,7 +329,7 @@ namespace meta_hpp
 
     template < typename T >
     auto uvalue::get_as() -> std::conditional_t<detail::pointer_kind<T>, T, T&> {
-        static_assert(stdex::same_as<T, std::decay_t<T>>);
+        static_assert(std::same_as<T, std::decay_t<T>>);
 
         if constexpr ( detail::pointer_kind<T> ) {
             if ( T ptr = try_get_as<T>(); ptr || get_type().is_nullptr() ) {
@@ -346,7 +346,7 @@ namespace meta_hpp
 
     template < typename T >
     auto uvalue::get_as() const -> std::conditional_t<detail::pointer_kind<T>, T, const T&> {
-        static_assert(stdex::same_as<T, std::decay_t<T>>);
+        static_assert(std::same_as<T, std::decay_t<T>>);
 
         if constexpr ( detail::pointer_kind<T> ) {
             if ( T ptr = try_get_as<T>(); ptr || get_type().is_nullptr() ) {
@@ -364,7 +364,7 @@ namespace meta_hpp
     template < typename T >
     // NOLINTNEXTLINE(*-cognitive-complexity)
     auto uvalue::try_get_as() noexcept -> std::conditional_t<detail::pointer_kind<T>, T, T*> {
-        static_assert(stdex::same_as<T, std::decay_t<T>>);
+        static_assert(std::same_as<T, std::decay_t<T>>);
 
         const any_type& from_type = get_type();
         const any_type& to_type = resolve_type<T>();
@@ -429,7 +429,7 @@ namespace meta_hpp
     template < typename T >
     // NOLINTNEXTLINE(*-cognitive-complexity)
     auto uvalue::try_get_as() const noexcept -> std::conditional_t<detail::pointer_kind<T>, T, const T*> {
-        static_assert(stdex::same_as<T, std::decay_t<T>>);
+        static_assert(std::same_as<T, std::decay_t<T>>);
 
         const any_type& from_type = get_type();
         const any_type& to_type = resolve_type<T>();

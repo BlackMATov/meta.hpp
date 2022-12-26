@@ -13,11 +13,11 @@ namespace meta_hpp::detail
 {
     template < typename T >
     inline constexpr bool is_uvalue_kind_v =
-        stdex::same_as<T, uarg_base> ||
-        stdex::same_as<T, uarg> ||
-        stdex::same_as<T, uinst_base> ||
-        stdex::same_as<T, uinst> ||
-        stdex::same_as<T, uvalue>;
+        std::same_as<T, uarg_base> ||
+        std::same_as<T, uarg> ||
+        std::same_as<T, uinst_base> ||
+        std::same_as<T, uinst> ||
+        std::same_as<T, uvalue>;
 
     template < typename T >
     concept uvalue_kind = is_uvalue_kind_v<T>;

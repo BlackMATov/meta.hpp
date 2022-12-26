@@ -20,14 +20,14 @@ namespace meta_hpp::detail
         using data_type = typename pt::data_type;
 
         constexpr bool as_copy =
-            stdex::copy_constructible<data_type> &&
-            stdex::same_as<Policy, variable_policy::as_copy>;
+            std::copy_constructible<data_type> &&
+            std::same_as<Policy, variable_policy::as_copy>;
 
         constexpr bool as_ptr =
-            stdex::same_as<Policy, variable_policy::as_pointer>;
+            std::same_as<Policy, variable_policy::as_pointer>;
 
         constexpr bool as_ref_wrap =
-            stdex::same_as<Policy, variable_policy::as_reference_wrapper>;
+            std::same_as<Policy, variable_policy::as_reference_wrapper>;
 
         static_assert(as_copy || as_ptr || as_ref_wrap);
 

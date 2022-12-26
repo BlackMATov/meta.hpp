@@ -21,14 +21,14 @@ namespace meta_hpp::detail
         using argument_types = typename ct::argument_types;
 
         constexpr bool as_object =
-            stdex::copy_constructible<class_type> &&
-            stdex::same_as<Policy, constructor_policy::as_object>;
+            std::copy_constructible<class_type> &&
+            std::same_as<Policy, constructor_policy::as_object>;
 
         constexpr bool as_raw_ptr =
-            stdex::same_as<Policy, constructor_policy::as_raw_pointer>;
+            std::same_as<Policy, constructor_policy::as_raw_pointer>;
 
         constexpr bool as_shared_ptr =
-            stdex::same_as<Policy, constructor_policy::as_shared_pointer>;
+            std::same_as<Policy, constructor_policy::as_shared_pointer>;
 
         static_assert(as_object || as_raw_ptr || as_shared_ptr);
 

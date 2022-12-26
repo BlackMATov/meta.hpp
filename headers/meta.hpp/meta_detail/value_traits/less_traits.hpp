@@ -16,7 +16,7 @@ namespace meta_hpp::detail
 
     template < typename T >
     concept has_less_traits = requires(const T& l, const T& r) {
-        { less_traits<T>{}(l, r) } -> stdex::convertible_to<bool>;
+        { less_traits<T>{}(l, r) } -> std::convertible_to<bool>;
     };
 }
 
@@ -24,7 +24,7 @@ namespace meta_hpp::detail
 {
     template < typename T >
         requires requires(const T& l, const T& r) {
-            { std::less<>{}(l, r) } -> stdex::convertible_to<bool>;
+            { std::less<>{}(l, r) } -> std::convertible_to<bool>;
         }
     struct less_traits<T> {
         bool operator()(const T& l, const T& r) const {

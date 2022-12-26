@@ -14,6 +14,7 @@
 #include <algorithm>
 #include <array>
 #include <atomic>
+#include <concepts>
 #include <functional>
 #include <initializer_list>
 #include <iosfwd>

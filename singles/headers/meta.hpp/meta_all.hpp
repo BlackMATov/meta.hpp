@@ -8,6 +8,7 @@
 #include <array>
 #include <atomic>
 #include <cassert>
+#include <concepts>
 #include <cstddef>
 #include <cstdint>
 #include <cstdlib>
@@ -269,53 +270,6 @@ namespace meta_hpp::detail
     using copy_cvref_t = typename copy_cvref<From, To>::type;
 }
 
-namespace meta_hpp::stdex
-{
-    template < typename T, typename U >
-    concept same_as =
-        std::is_same_v<T, U> &&
-        std::is_same_v<U, T>;
-
-    template < typename Derived, typename Base >
-    concept derived_from =
-        std::is_base_of_v<Base, Derived> &&
-        std::is_convertible_v<const volatile Derived*, const volatile Base*>;
-
-    template < typename From, typename To >
-    concept convertible_to =
-        std::is_convertible_v<From, To> &&
-        requires { static_cast<To>(std::declval<From>()); };
-
-    template < typename T >
-    concept destructible =
-        std::is_nothrow_destructible_v<T>;
-
-    template < typename T, typename... Args >
-    concept constructible_from =
-        destructible<T> &&
-        std::is_constructible_v<T, Args...>;
-
-    template < typename T >
-    concept move_constructible =
-        constructible_from<T, T> &&
-        convertible_to<T, T>;
-
-    template<typename T>
-    concept copy_constructible =
-        move_constructible<T> &&
-        constructible_from<T, T&> && convertible_to<T&, T> &&
-        constructible_from<T, const T&> && convertible_to<const T&, T> &&
-        constructible_from<T, const T> && convertible_to<const T, T>;
-}
-
-namespace meta_hpp::stdex
-{
-    template < typename Enum >
-    [[nodiscard]] constexpr std::underlying_type_t<Enum> to_underlying(Enum e) noexcept {
-        return static_cast<std::underlying_type_t<Enum>>(e);
-    }
-}
-
 namespace meta_hpp::detail
 {
     template < typename Function >
@@ -346,14 +300,14 @@ namespace meta_hpp::detail
         }
 
         template < typename Functor >
-            requires (!stdex::same_as<fixed_function, std::decay_t<Functor>>)
+            requires (!std::same_as<fixed_function, std::decay_t<Functor>>)
         // NOLINTNEXTLINE(*-forwarding-reference-overload)
         fixed_function(Functor&& functor) {
             vtable_t::construct(*this, std::forward<Functor>(functor));
         }
 
         template < typename Functor >
-            requires (!stdex::same_as<fixed_function, std::decay_t<Functor>>)
+            requires (!std::same_as<fixed_function, std::decay_t<Functor>>)
         fixed_function& operator=(Functor&& functor) {
             fixed_function{std::forward<Functor>(functor)}.swap(*this);
             return *this;
@@ -593,6 +547,14 @@ namespace meta_hpp::detail
     template < typename Signature, typename C >
     constexpr auto select_overload(Signature C::*func) noexcept -> decltype(func) {
         return func;
+    }
+}
+
+namespace meta_hpp::stdex
+{
+    template < typename Enum >
+    [[nodiscard]] constexpr std::underlying_type_t<Enum> to_underlying(Enum e) noexcept {
+        return static_cast<std::underlying_type_t<Enum>>(e);
     }
 }
 
@@ -908,20 +870,20 @@ namespace meta_hpp::detail
 {
     template < typename T >
     inline constexpr bool is_type_family_v =
-        stdex::same_as<T, any_type> ||
-        stdex::same_as<T, array_type> ||
-        stdex::same_as<T, class_type> ||
-        stdex::same_as<T, constructor_type> ||
-        stdex::same_as<T, destructor_type> ||
-        stdex::same_as<T, enum_type> ||
-        stdex::same_as<T, function_type> ||
-        stdex::same_as<T, member_type> ||
-        stdex::same_as<T, method_type> ||
-        stdex::same_as<T, nullptr_type> ||
-        stdex::same_as<T, number_type> ||
-        stdex::same_as<T, pointer_type> ||
-        stdex::same_as<T, reference_type> ||
-        stdex::same_as<T, void_type>;
+        std::same_as<T, any_type> ||
+        std::same_as<T, array_type> ||
+        std::same_as<T, class_type> ||
+        std::same_as<T, constructor_type> ||
+        std::same_as<T, destructor_type> ||
+        std::same_as<T, enum_type> ||
+        std::same_as<T, function_type> ||
+        std::same_as<T, member_type> ||
+        std::same_as<T, method_type> ||
+        std::same_as<T, nullptr_type> ||
+        std::same_as<T, number_type> ||
+        std::same_as<T, pointer_type> ||
+        std::same_as<T, reference_type> ||
+        std::same_as<T, void_type>;
 
     template < typename T >
     concept type_family = is_type_family_v<T>;
@@ -2030,15 +1992,15 @@ namespace meta_hpp::detail
 {
     template < typename T >
     inline constexpr bool is_index_family_v =
-        stdex::same_as<T, argument_index> ||
-        stdex::same_as<T, constructor_index> ||
-        stdex::same_as<T, destructor_index> ||
-        stdex::same_as<T, evalue_index> ||
-        stdex::same_as<T, function_index> ||
-        stdex::same_as<T, member_index> ||
-        stdex::same_as<T, method_index> ||
-        stdex::same_as<T, scope_index> ||
-        stdex::same_as<T, variable_index>;
+        std::same_as<T, argument_index> ||
+        std::same_as<T, constructor_index> ||
+        std::same_as<T, destructor_index> ||
+        std::same_as<T, evalue_index> ||
+        std::same_as<T, function_index> ||
+        std::same_as<T, member_index> ||
+        std::same_as<T, method_index> ||
+        std::same_as<T, scope_index> ||
+        std::same_as<T, variable_index>;
 
     template < typename T >
     concept index_family = is_index_family_v<T>;
@@ -2224,7 +2186,7 @@ namespace std
 namespace meta_hpp::detail
 {
     template < typename T >
-    inline constexpr bool is_value_kind_v = stdex::same_as<T, uvalue>;
+    inline constexpr bool is_value_kind_v = std::same_as<T, uvalue>;
 
     template < typename T >
     concept value_kind = is_value_kind_v<T>;
@@ -2250,12 +2212,12 @@ namespace meta_hpp
         uvalue& operator=(const uvalue& other);
 
         template < detail::decay_non_value_kind T >
-            requires stdex::copy_constructible<std::decay_t<T>>
+            requires std::copy_constructible<std::decay_t<T>>
         // NOLINTNEXTLINE(*-forwarding-reference-overload)
         explicit uvalue(T&& val);
 
         template < detail::decay_non_value_kind T >
-            requires stdex::copy_constructible<std::decay_t<T>>
+            requires std::copy_constructible<std::decay_t<T>>
         uvalue& operator=(T&& val);
 
         [[nodiscard]] bool is_valid() const noexcept;
@@ -2314,15 +2276,15 @@ namespace meta_hpp::detail
 {
     template < typename T >
     inline constexpr bool is_state_family_v =
-        stdex::same_as<T, argument> ||
-        stdex::same_as<T, constructor> ||
-        stdex::same_as<T, destructor> ||
-        stdex::same_as<T, evalue> ||
-        stdex::same_as<T, function> ||
-        stdex::same_as<T, member> ||
-        stdex::same_as<T, method> ||
-        stdex::same_as<T, scope> ||
-        stdex::same_as<T, variable>;
+        std::same_as<T, argument> ||
+        std::same_as<T, constructor> ||
+        std::same_as<T, destructor> ||
+        std::same_as<T, evalue> ||
+        std::same_as<T, function> ||
+        std::same_as<T, member> ||
+        std::same_as<T, method> ||
+        std::same_as<T, scope> ||
+        std::same_as<T, variable>;
 
     template < typename T >
     concept state_family = is_state_family_v<T>;
@@ -2372,33 +2334,33 @@ namespace meta_hpp
 
     template < typename Policy >
     inline constexpr bool is_constructor_policy_v =
-        stdex::same_as<Policy, constructor_policy::as_object> ||
-        stdex::same_as<Policy, constructor_policy::as_raw_pointer> ||
-        stdex::same_as<Policy, constructor_policy::as_shared_pointer>;
+        std::same_as<Policy, constructor_policy::as_object> ||
+        std::same_as<Policy, constructor_policy::as_raw_pointer> ||
+        std::same_as<Policy, constructor_policy::as_shared_pointer>;
 
     template < typename Policy >
     inline constexpr bool is_function_policy_v =
-        stdex::same_as<Policy, function_policy::as_copy> ||
-        stdex::same_as<Policy, function_policy::discard_return> ||
-        stdex::same_as<Policy, function_policy::return_reference_as_pointer>;
+        std::same_as<Policy, function_policy::as_copy> ||
+        std::same_as<Policy, function_policy::discard_return> ||
+        std::same_as<Policy, function_policy::return_reference_as_pointer>;
 
     template < typename Policy >
     inline constexpr bool is_member_policy_v =
-        stdex::same_as<Policy, member_policy::as_copy> ||
-        stdex::same_as<Policy, member_policy::as_pointer> ||
-        stdex::same_as<Policy, member_policy::as_reference_wrapper>;
+        std::same_as<Policy, member_policy::as_copy> ||
+        std::same_as<Policy, member_policy::as_pointer> ||
+        std::same_as<Policy, member_policy::as_reference_wrapper>;
 
     template < typename Policy >
     inline constexpr bool is_method_policy_v =
-        stdex::same_as<Policy, method_policy::as_copy> ||
-        stdex::same_as<Policy, method_policy::discard_return> ||
-        stdex::same_as<Policy, method_policy::return_reference_as_pointer>;
+        std::same_as<Policy, method_policy::as_copy> ||
+        std::same_as<Policy, method_policy::discard_return> ||
+        std::same_as<Policy, method_policy::return_reference_as_pointer>;
 
     template < typename Policy >
     inline constexpr bool is_variable_policy_v =
-        stdex::same_as<Policy, variable_policy::as_copy> ||
-        stdex::same_as<Policy, variable_policy::as_pointer> ||
-        stdex::same_as<Policy, variable_policy::as_reference_wrapper>;
+        std::same_as<Policy, variable_policy::as_copy> ||
+        std::same_as<Policy, variable_policy::as_pointer> ||
+        std::same_as<Policy, variable_policy::as_reference_wrapper>;
 
     template < typename Policy >
     concept constructor_policy_kind = is_constructor_policy_v<Policy>;
@@ -3161,17 +3123,17 @@ namespace meta_hpp::detail
     template < typename Class, typename Base >
     concept class_bind_base_kind =
         class_kind<Class> && class_kind<Base> &&
-        stdex::derived_from<Class, Base>;
+        std::derived_from<Class, Base>;
 
     template < typename Class, typename Member >
     concept class_bind_member_kind =
         class_kind<Class> && member_kind<Member> &&
-        stdex::same_as<Class, typename member_traits<Member>::class_type>;
+        std::same_as<Class, typename member_traits<Member>::class_type>;
 
     template < typename Class, typename Method >
     concept class_bind_method_kind =
         class_kind<Class> && method_kind<Method> &&
-        stdex::same_as<Class, typename method_traits<Method>::class_type>;
+        std::same_as<Class, typename method_traits<Method>::class_type>;
 }
 
 namespace meta_hpp
@@ -4660,11 +4622,11 @@ namespace meta_hpp::detail
 {
     template < typename T >
     inline constexpr bool is_uvalue_kind_v =
-        stdex::same_as<T, uarg_base> ||
-        stdex::same_as<T, uarg> ||
-        stdex::same_as<T, uinst_base> ||
-        stdex::same_as<T, uinst> ||
-        stdex::same_as<T, uvalue>;
+        std::same_as<T, uarg_base> ||
+        std::same_as<T, uarg> ||
+        std::same_as<T, uinst_base> ||
+        std::same_as<T, uinst> ||
+        std::same_as<T, uvalue>;
 
     template < typename T >
     concept uvalue_kind = is_uvalue_kind_v<T>;
@@ -5153,14 +5115,14 @@ namespace meta_hpp::detail
         using argument_types = typename ct::argument_types;
 
         constexpr bool as_object =
-            stdex::copy_constructible<class_type> &&
-            stdex::same_as<Policy, constructor_policy::as_object>;
+            std::copy_constructible<class_type> &&
+            std::same_as<Policy, constructor_policy::as_object>;
 
         constexpr bool as_raw_ptr =
-            stdex::same_as<Policy, constructor_policy::as_raw_pointer>;
+            std::same_as<Policy, constructor_policy::as_raw_pointer>;
 
         constexpr bool as_shared_ptr =
-            stdex::same_as<Policy, constructor_policy::as_shared_pointer>;
+            std::same_as<Policy, constructor_policy::as_shared_pointer>;
 
         static_assert(as_object || as_raw_ptr || as_shared_ptr);
 
@@ -5679,16 +5641,16 @@ namespace meta_hpp::detail
         using argument_types = typename ft::argument_types;
 
         constexpr bool as_copy =
-            stdex::copy_constructible<return_type> &&
-            stdex::same_as<Policy, function_policy::as_copy>;
+            std::copy_constructible<return_type> &&
+            std::same_as<Policy, function_policy::as_copy>;
 
         constexpr bool as_void =
             std::is_void_v<return_type> ||
-            stdex::same_as<Policy, function_policy::discard_return>;
+            std::same_as<Policy, function_policy::discard_return>;
 
         constexpr bool ref_as_ptr =
             std::is_reference_v<return_type> &&
-            stdex::same_as<Policy, function_policy::return_reference_as_pointer>;
+            std::same_as<Policy, function_policy::return_reference_as_pointer>;
 
         static_assert(as_copy || as_void || ref_as_ptr);
 
@@ -5705,7 +5667,7 @@ namespace meta_hpp::detail
                 function(
                     args[Is].cast<type_list_at_t<Is, argument_types>>()...);
                 return uvalue{};
-            } else if constexpr ( stdex::same_as<Policy, function_policy::discard_return> ) {
+            } else if constexpr ( std::same_as<Policy, function_policy::discard_return> ) {
                 std::ignore = function(
                     args[Is].cast<type_list_at_t<Is, argument_types>>()...);
                 return uvalue{};
@@ -6156,14 +6118,14 @@ namespace meta_hpp::detail
         using value_type = typename mt::value_type;
 
         constexpr bool as_copy =
-            stdex::copy_constructible<value_type> &&
-            stdex::same_as<Policy, member_policy::as_copy>;
+            std::copy_constructible<value_type> &&
+            std::same_as<Policy, member_policy::as_copy>;
 
         constexpr bool as_ptr =
-            stdex::same_as<Policy, member_policy::as_pointer>;
+            std::same_as<Policy, member_policy::as_pointer>;
 
         constexpr bool as_ref_wrap =
-            stdex::same_as<Policy, member_policy::as_reference_wrapper>;
+            std::same_as<Policy, member_policy::as_reference_wrapper>;
 
         static_assert(as_copy || as_ptr || as_ref_wrap);
 
@@ -6453,16 +6415,16 @@ namespace meta_hpp::detail
         using argument_types = typename mt::argument_types;
 
         constexpr bool as_copy =
-            stdex::copy_constructible<return_type> &&
-            stdex::same_as<Policy, method_policy::as_copy>;
+            std::copy_constructible<return_type> &&
+            std::same_as<Policy, method_policy::as_copy>;
 
         constexpr bool as_void =
             std::is_void_v<return_type> ||
-            stdex::same_as<Policy, method_policy::discard_return>;
+            std::same_as<Policy, method_policy::discard_return>;
 
         constexpr bool ref_as_ptr =
             std::is_reference_v<return_type> &&
-            stdex::same_as<Policy, method_policy::return_reference_as_pointer>;
+            std::same_as<Policy, method_policy::return_reference_as_pointer>;
 
         static_assert(as_copy || as_void || ref_as_ptr);
 
@@ -6483,7 +6445,7 @@ namespace meta_hpp::detail
                 (inst.cast<qualified_type>().*method)(
                     args[Is].cast<type_list_at_t<Is, argument_types>>()...);
                 return uvalue{};
-            } else if constexpr ( stdex::same_as<Policy, method_policy::discard_return> ) {
+            } else if constexpr ( std::same_as<Policy, method_policy::discard_return> ) {
                 std::ignore = (inst.cast<qualified_type>().*method)(
                     args[Is].cast<type_list_at_t<Is, argument_types>>()...);
                 return uvalue{};
@@ -6702,14 +6664,14 @@ namespace meta_hpp::detail
         using data_type = typename pt::data_type;
 
         constexpr bool as_copy =
-            stdex::copy_constructible<data_type> &&
-            stdex::same_as<Policy, variable_policy::as_copy>;
+            std::copy_constructible<data_type> &&
+            std::same_as<Policy, variable_policy::as_copy>;
 
         constexpr bool as_ptr =
-            stdex::same_as<Policy, variable_policy::as_pointer>;
+            std::same_as<Policy, variable_policy::as_pointer>;
 
         constexpr bool as_ref_wrap =
-            stdex::same_as<Policy, variable_policy::as_reference_wrapper>;
+            std::same_as<Policy, variable_policy::as_reference_wrapper>;
 
         static_assert(as_copy || as_ptr || as_ref_wrap);
 
@@ -7863,34 +7825,34 @@ namespace meta_hpp::detail
 
     template < typename T >
     concept has_deref_traits = requires(const T& v) {
-        { deref_traits<T>{}(v) } -> stdex::convertible_to<uvalue>;
+        { deref_traits<T>{}(v) } -> std::convertible_to<uvalue>;
     };
 }
 
 namespace meta_hpp::detail
 {
-    template < stdex::copy_constructible T >
+    template < std::copy_constructible T >
     struct deref_traits<T*> {
         uvalue operator()(T* v) const {
             return uvalue{*v};
         }
     };
 
-    template < stdex::copy_constructible T >
+    template < std::copy_constructible T >
     struct deref_traits<const T*> {
         uvalue operator()(const T* v) const {
             return uvalue{*v};
         }
     };
 
-    template < stdex::copy_constructible T >
+    template < std::copy_constructible T >
     struct deref_traits<std::shared_ptr<T>> {
         uvalue operator()(const std::shared_ptr<T>& v) const {
             return uvalue{*v};
         }
     };
 
-    template < stdex::copy_constructible T >
+    template < std::copy_constructible T >
     struct deref_traits<std::unique_ptr<T>> {
         uvalue operator()(const std::unique_ptr<T>& v) const {
             return uvalue{*v};
@@ -7905,7 +7867,7 @@ namespace meta_hpp::detail
 
     template < typename T >
     concept has_equals_traits = requires(const T& l, const T& r) {
-        { equals_traits<T>{}(l, r) } -> stdex::convertible_to<bool>;
+        { equals_traits<T>{}(l, r) } -> std::convertible_to<bool>;
     };
 }
 
@@ -7913,7 +7875,7 @@ namespace meta_hpp::detail
 {
     template < typename T >
         requires requires(const T& l, const T& r) {
-            { std::equal_to<>{}(l, r) } -> stdex::convertible_to<bool>;
+            { std::equal_to<>{}(l, r) } -> std::convertible_to<bool>;
         }
     struct equals_traits<T> {
         bool operator()(const T& l, const T& r) const {
@@ -7929,13 +7891,13 @@ namespace meta_hpp::detail
 
     template < typename T >
     concept has_index_traits = requires(const T& v, std::size_t i) {
-        { index_traits<T>{}(v, i) } -> stdex::convertible_to<uvalue>;
+        { index_traits<T>{}(v, i) } -> std::convertible_to<uvalue>;
     };
 }
 
 namespace meta_hpp::detail
 {
-    template < stdex::copy_constructible T >
+    template < std::copy_constructible T >
     struct index_traits<T*> {
         uvalue operator()(T* v, std::size_t i) const {
             // NOLINTNEXTLINE(*-pointer-arithmetic)
@@ -7943,7 +7905,7 @@ namespace meta_hpp::detail
         }
     };
 
-    template < stdex::copy_constructible T >
+    template < std::copy_constructible T >
     struct index_traits<const T*> {
         uvalue operator()(const T* v, std::size_t i) const {
             // NOLINTNEXTLINE(*-pointer-arithmetic)
@@ -7951,28 +7913,28 @@ namespace meta_hpp::detail
         }
     };
 
-    template < stdex::copy_constructible T, std::size_t Size >
+    template < std::copy_constructible T, std::size_t Size >
     struct index_traits<std::array<T, Size>> {
         uvalue operator()(const std::array<T, Size>& v, std::size_t i) const {
             return uvalue{v[i]};
         }
     };
 
-    template < stdex::copy_constructible T, std::size_t Extent >
+    template < std::copy_constructible T, std::size_t Extent >
     struct index_traits<std::span<T, Extent>> {
         uvalue operator()(const std::span<T, Extent>& v, std::size_t i) const {
             return uvalue{v[i]};
         }
     };
 
-    template < stdex::copy_constructible T, typename Traits, typename Allocator >
+    template < std::copy_constructible T, typename Traits, typename Allocator >
     struct index_traits<std::basic_string<T, Traits, Allocator>> {
         uvalue operator()(const std::basic_string<T, Traits, Allocator>& v, std::size_t i) const {
             return uvalue{v[i]};
         }
     };
 
-    template < stdex::copy_constructible T, typename Allocator >
+    template < std::copy_constructible T, typename Allocator >
     struct index_traits<std::vector<T, Allocator>> {
         uvalue operator()(const std::vector<T, Allocator>& v, std::size_t i) {
             return uvalue{v[i]};
@@ -7987,7 +7949,7 @@ namespace meta_hpp::detail
 
     template < typename T >
     concept has_istream_traits = requires(std::istream& is, T& v) {
-        { istream_traits<T>{}(is, v) } -> stdex::convertible_to<std::istream&>;
+        { istream_traits<T>{}(is, v) } -> std::convertible_to<std::istream&>;
     };
 }
 
@@ -7995,7 +7957,7 @@ namespace meta_hpp::detail
 {
     template < typename T >
         requires requires(std::istream& is, T& v) {
-            { is >> v } -> stdex::convertible_to<std::istream&>;
+            { is >> v } -> std::convertible_to<std::istream&>;
         }
     struct istream_traits<T> {
         std::istream& operator()(std::istream& is, T& v) const {
@@ -8011,7 +7973,7 @@ namespace meta_hpp::detail
 
     template < typename T >
     concept has_less_traits = requires(const T& l, const T& r) {
-        { less_traits<T>{}(l, r) } -> stdex::convertible_to<bool>;
+        { less_traits<T>{}(l, r) } -> std::convertible_to<bool>;
     };
 }
 
@@ -8019,7 +7981,7 @@ namespace meta_hpp::detail
 {
     template < typename T >
         requires requires(const T& l, const T& r) {
-            { std::less<>{}(l, r) } -> stdex::convertible_to<bool>;
+            { std::less<>{}(l, r) } -> std::convertible_to<bool>;
         }
     struct less_traits<T> {
         bool operator()(const T& l, const T& r) const {
@@ -8035,7 +7997,7 @@ namespace meta_hpp::detail
 
     template < typename T >
     concept has_ostream_traits = requires(std::ostream& os, const T& v) {
-        { ostream_traits<T>{}(os, v) } -> stdex::convertible_to<std::ostream&>;
+        { ostream_traits<T>{}(os, v) } -> std::convertible_to<std::ostream&>;
     };
 }
 
@@ -8043,7 +8005,7 @@ namespace meta_hpp::detail
 {
     template < typename T >
         requires requires(std::ostream& os, const T& v) {
-            { os << v } -> stdex::convertible_to<std::ostream&>;
+            { os << v } -> std::convertible_to<std::ostream&>;
         }
     struct ostream_traits<T> {
         std::ostream& operator()(std::ostream& os, const T& v) const {
@@ -8304,14 +8266,14 @@ namespace meta_hpp
     }
 
     template < detail::decay_non_value_kind T >
-        requires stdex::copy_constructible<std::decay_t<T>>
+        requires std::copy_constructible<std::decay_t<T>>
     // NOLINTNEXTLINE(*-forwarding-reference-overload)
     uvalue::uvalue(T&& val) {
         vtable_t::construct(*this, std::forward<T>(val));
     }
 
     template < detail::decay_non_value_kind T >
-        requires stdex::copy_constructible<std::decay_t<T>>
+        requires std::copy_constructible<std::decay_t<T>>
     uvalue& uvalue::operator=(T&& val) {
         uvalue{std::forward<T>(val)}.swap(*this);
         return *this;
@@ -8362,7 +8324,7 @@ namespace meta_hpp
 
     template < typename T >
     auto uvalue::get_as() -> std::conditional_t<detail::pointer_kind<T>, T, T&> {
-        static_assert(stdex::same_as<T, std::decay_t<T>>);
+        static_assert(std::same_as<T, std::decay_t<T>>);
 
         if constexpr ( detail::pointer_kind<T> ) {
             if ( T ptr = try_get_as<T>(); ptr || get_type().is_nullptr() ) {
@@ -8379,7 +8341,7 @@ namespace meta_hpp
 
     template < typename T >
     auto uvalue::get_as() const -> std::conditional_t<detail::pointer_kind<T>, T, const T&> {
-        static_assert(stdex::same_as<T, std::decay_t<T>>);
+        static_assert(std::same_as<T, std::decay_t<T>>);
 
         if constexpr ( detail::pointer_kind<T> ) {
             if ( T ptr = try_get_as<T>(); ptr || get_type().is_nullptr() ) {
@@ -8397,7 +8359,7 @@ namespace meta_hpp
     template < typename T >
     // NOLINTNEXTLINE(*-cognitive-complexity)
     auto uvalue::try_get_as() noexcept -> std::conditional_t<detail::pointer_kind<T>, T, T*> {
-        static_assert(stdex::same_as<T, std::decay_t<T>>);
+        static_assert(std::same_as<T, std::decay_t<T>>);
 
         const any_type& from_type = get_type();
         const any_type& to_type = resolve_type<T>();
@@ -8462,7 +8424,7 @@ namespace meta_hpp
     template < typename T >
     // NOLINTNEXTLINE(*-cognitive-complexity)
     auto uvalue::try_get_as() const noexcept -> std::conditional_t<detail::pointer_kind<T>, T, const T*> {
-        static_assert(stdex::same_as<T, std::decay_t<T>>);
+        static_assert(std::same_as<T, std::decay_t<T>>);
 
         const any_type& from_type = get_type();
         const any_type& to_type = resolve_type<T>();

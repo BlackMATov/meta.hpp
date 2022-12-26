@@ -8,12 +8,12 @@
 
 #include <cassert>
 #include <cstddef>
+
+#include <concepts>
 #include <functional>
 #include <memory>
 #include <type_traits>
 #include <utility>
-
-#include "stdex.hpp"
 
 namespace meta_hpp::detail
 {
@@ -45,14 +45,14 @@ namespace meta_hpp::detail
         }
 
         template < typename Functor >
-            requires (!stdex::same_as<fixed_function, std::decay_t<Functor>>)
+            requires (!std::same_as<fixed_function, std::decay_t<Functor>>)
         // NOLINTNEXTLINE(*-forwarding-reference-overload)
         fixed_function(Functor&& functor) {
             vtable_t::construct(*this, std::forward<Functor>(functor));
         }
 
         template < typename Functor >
-            requires (!stdex::same_as<fixed_function, std::decay_t<Functor>>)
+            requires (!std::same_as<fixed_function, std::decay_t<Functor>>)
         fixed_function& operator=(Functor&& functor) {
             fixed_function{std::forward<Functor>(functor)}.swap(*this);
             return *this;
