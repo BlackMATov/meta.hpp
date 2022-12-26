@@ -13,12 +13,18 @@ namespace meta_hpp::detail
 {
     class state_registry final {
     public:
-        class locker final : noncopyable {
+        class locker final {
         public:
-            explicit locker()
-            : lock_{instance().mutex_} {}
+            explicit locker() : lock_{instance().mutex_} {}
+            ~locker() = default;
+
+            locker(locker&&) = default;
+            locker& operator=(locker&&) = default;
+
+            locker(const locker&) = delete;
+            locker& operator=(const locker&) = delete;
         private:
-            std::lock_guard<std::recursive_mutex> lock_;
+            std::unique_lock<std::recursive_mutex> lock_;
         };
 
         [[nodiscard]] static state_registry& instance() {

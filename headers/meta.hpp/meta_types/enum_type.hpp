@@ -77,9 +77,9 @@ namespace meta_hpp
             return std::string_view{};
         }
 
-        for ( auto&& evalue : data_->evalues ) {
-            if ( evalue.second.get_value() == value ) {
-                return evalue.second.get_index().get_name();
+        for ( auto&& [_, evalue] : data_->evalues ) {
+            if ( evalue.get_value() == value ) {
+                return evalue.get_index().get_name();
             }
         }
 

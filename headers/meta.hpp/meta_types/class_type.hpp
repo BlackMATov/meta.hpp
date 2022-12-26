@@ -111,9 +111,9 @@ namespace meta_hpp
 
     template < typename... Args >
     uvalue class_type::create(Args&&... args) const {
-        for ( auto&& ctor : data_->constructors ) {
-            if ( ctor.second.is_invocable_with(std::forward<Args>(args)...) ) {
-                return ctor.second.invoke(std::forward<Args>(args)...);
+        for ( auto&& [_, ctor] : data_->constructors ) {
+            if ( ctor.is_invocable_with(std::forward<Args>(args)...) ) {
+                return ctor.invoke(std::forward<Args>(args)...);
             }
         }
         return uvalue{};
@@ -126,9 +126,9 @@ namespace meta_hpp
 
     template < typename Arg >
     bool class_type::destroy(Arg&& ptr) const {
-        for ( auto&& dtor : data_->destructors ) {
-            if ( dtor.second.is_invocable_with(std::forward<Arg>(ptr)) ) {
-                dtor.second.invoke(std::forward<Arg>(ptr));
+        for ( auto&& [_, dtor] : data_->destructors ) {
+            if ( dtor.is_invocable_with(std::forward<Arg>(ptr)) ) {
+                dtor.invoke(std::forward<Arg>(ptr));
                 return true;
             }
         }
