@@ -271,14 +271,14 @@ namespace meta_hpp
     }
 
     template < detail::decay_non_value_kind T >
-        requires std::copy_constructible<std::decay_t<T>>
+        requires std::is_copy_constructible_v<std::decay_t<T>>
     // NOLINTNEXTLINE(*-forwarding-reference-overload)
     uvalue::uvalue(T&& val) {
         vtable_t::construct(*this, std::forward<T>(val));
     }
 
     template < detail::decay_non_value_kind T >
-        requires std::copy_constructible<std::decay_t<T>>
+        requires std::is_copy_constructible_v<std::decay_t<T>>
     uvalue& uvalue::operator=(T&& val) {
         uvalue{std::forward<T>(val)}.swap(*this);
         return *this;

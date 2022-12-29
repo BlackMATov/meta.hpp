@@ -23,7 +23,7 @@ namespace meta_hpp::detail
         using argument_types = typename mt::argument_types;
 
         constexpr bool as_copy =
-            std::copy_constructible<return_type> &&
+            std::is_copy_constructible_v<return_type> &&
             std::same_as<Policy, method_policy::as_copy>;
 
         constexpr bool as_void =

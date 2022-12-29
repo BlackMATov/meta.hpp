@@ -2212,12 +2212,12 @@ namespace meta_hpp
         uvalue& operator=(const uvalue& other);
 
         template < detail::decay_non_value_kind T >
-            requires std::copy_constructible<std::decay_t<T>>
+            requires std::is_copy_constructible_v<std::decay_t<T>>
         // NOLINTNEXTLINE(*-forwarding-reference-overload)
         explicit uvalue(T&& val);
 
         template < detail::decay_non_value_kind T >
-            requires std::copy_constructible<std::decay_t<T>>
+            requires std::is_copy_constructible_v<std::decay_t<T>>
         uvalue& operator=(T&& val);
 
         [[nodiscard]] bool is_valid() const noexcept;
@@ -5115,7 +5115,7 @@ namespace meta_hpp::detail
         using argument_types = typename ct::argument_types;
 
         constexpr bool as_object =
-            std::copy_constructible<class_type> &&
+            std::is_copy_constructible_v<class_type> &&
             std::same_as<Policy, constructor_policy::as_object>;
 
         constexpr bool as_raw_ptr =
@@ -5641,7 +5641,7 @@ namespace meta_hpp::detail
         using argument_types = typename ft::argument_types;
 
         constexpr bool as_copy =
-            std::copy_constructible<return_type> &&
+            std::is_copy_constructible_v<return_type> &&
             std::same_as<Policy, function_policy::as_copy>;
 
         constexpr bool as_void =
@@ -6118,7 +6118,7 @@ namespace meta_hpp::detail
         using value_type = typename mt::value_type;
 
         constexpr bool as_copy =
-            std::copy_constructible<value_type> &&
+            std::is_copy_constructible_v<value_type> &&
             std::same_as<Policy, member_policy::as_copy>;
 
         constexpr bool as_ptr =
@@ -6415,7 +6415,7 @@ namespace meta_hpp::detail
         using argument_types = typename mt::argument_types;
 
         constexpr bool as_copy =
-            std::copy_constructible<return_type> &&
+            std::is_copy_constructible_v<return_type> &&
             std::same_as<Policy, method_policy::as_copy>;
 
         constexpr bool as_void =
@@ -6664,7 +6664,7 @@ namespace meta_hpp::detail
         using data_type = typename pt::data_type;
 
         constexpr bool as_copy =
-            std::copy_constructible<data_type> &&
+            std::is_copy_constructible_v<data_type> &&
             std::same_as<Policy, variable_policy::as_copy>;
 
         constexpr bool as_ptr =
@@ -7831,28 +7831,32 @@ namespace meta_hpp::detail
 
 namespace meta_hpp::detail
 {
-    template < std::copy_constructible T >
+    template < typename T >
+        requires std::is_copy_constructible_v<T>
     struct deref_traits<T*> {
         uvalue operator()(T* v) const {
             return uvalue{*v};
         }
     };
 
-    template < std::copy_constructible T >
+    template < typename T >
+        requires std::is_copy_constructible_v<T>
     struct deref_traits<const T*> {
         uvalue operator()(const T* v) const {
             return uvalue{*v};
         }
     };
 
-    template < std::copy_constructible T >
+    template < typename T >
+        requires std::is_copy_constructible_v<T>
     struct deref_traits<std::shared_ptr<T>> {
         uvalue operator()(const std::shared_ptr<T>& v) const {
             return uvalue{*v};
         }
     };
 
-    template < std::copy_constructible T >
+    template < typename T >
+        requires std::is_copy_constructible_v<T>
     struct deref_traits<std::unique_ptr<T>> {
         uvalue operator()(const std::unique_ptr<T>& v) const {
             return uvalue{*v};
@@ -7897,7 +7901,8 @@ namespace meta_hpp::detail
 
 namespace meta_hpp::detail
 {
-    template < std::copy_constructible T >
+    template < typename T >
+        requires std::is_copy_constructible_v<T>
     struct index_traits<T*> {
         uvalue operator()(T* v, std::size_t i) const {
             // NOLINTNEXTLINE(*-pointer-arithmetic)
@@ -7905,7 +7910,8 @@ namespace meta_hpp::detail
         }
     };
 
-    template < std::copy_constructible T >
+    template < typename T >
+        requires std::is_copy_constructible_v<T>
     struct index_traits<const T*> {
         uvalue operator()(const T* v, std::size_t i) const {
             // NOLINTNEXTLINE(*-pointer-arithmetic)
@@ -7913,28 +7919,32 @@ namespace meta_hpp::detail
         }
     };
 
-    template < std::copy_constructible T, std::size_t Size >
+    template < typename T, std::size_t Size >
+        requires std::is_copy_constructible_v<T>
     struct index_traits<std::array<T, Size>> {
         uvalue operator()(const std::array<T, Size>& v, std::size_t i) const {
             return uvalue{v[i]};
         }
     };
 
-    template < std::copy_constructible T, std::size_t Extent >
+    template < typename T, std::size_t Extent >
+        requires std::is_copy_constructible_v<T>
     struct index_traits<std::span<T, Extent>> {
         uvalue operator()(const std::span<T, Extent>& v, std::size_t i) const {
             return uvalue{v[i]};
         }
     };
 
-    template < std::copy_constructible T, typename Traits, typename Allocator >
+    template < typename T, typename Traits, typename Allocator >
+        requires std::is_copy_constructible_v<T>
     struct index_traits<std::basic_string<T, Traits, Allocator>> {
         uvalue operator()(const std::basic_string<T, Traits, Allocator>& v, std::size_t i) const {
             return uvalue{v[i]};
         }
     };
 
-    template < std::copy_constructible T, typename Allocator >
+    template < typename T, typename Allocator >
+        requires std::is_copy_constructible_v<T>
     struct index_traits<std::vector<T, Allocator>> {
         uvalue operator()(const std::vector<T, Allocator>& v, std::size_t i) {
             return uvalue{v[i]};
@@ -8266,14 +8276,14 @@ namespace meta_hpp
     }
 
     template < detail::decay_non_value_kind T >
-        requires std::copy_constructible<std::decay_t<T>>
+        requires std::is_copy_constructible_v<std::decay_t<T>>
     // NOLINTNEXTLINE(*-forwarding-reference-overload)
     uvalue::uvalue(T&& val) {
         vtable_t::construct(*this, std::forward<T>(val));
     }
 
     template < detail::decay_non_value_kind T >
-        requires std::copy_constructible<std::decay_t<T>>
+        requires std::is_copy_constructible_v<std::decay_t<T>>
     uvalue& uvalue::operator=(T&& val) {
         uvalue{std::forward<T>(val)}.swap(*this);
         return *this;

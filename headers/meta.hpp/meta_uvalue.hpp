@@ -38,12 +38,12 @@ namespace meta_hpp
         uvalue& operator=(const uvalue& other);
 
         template < detail::decay_non_value_kind T >
-            requires std::copy_constructible<std::decay_t<T>>
+            requires std::is_copy_constructible_v<std::decay_t<T>>
         // NOLINTNEXTLINE(*-forwarding-reference-overload)
         explicit uvalue(T&& val);
 
         template < detail::decay_non_value_kind T >
-            requires std::copy_constructible<std::decay_t<T>>
+            requires std::is_copy_constructible_v<std::decay_t<T>>
         uvalue& operator=(T&& val);
 
         [[nodiscard]] bool is_valid() const noexcept;

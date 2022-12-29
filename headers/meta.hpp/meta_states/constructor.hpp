@@ -21,7 +21,7 @@ namespace meta_hpp::detail
         using argument_types = typename ct::argument_types;
 
         constexpr bool as_object =
-            std::copy_constructible<class_type> &&
+            std::is_copy_constructible_v<class_type> &&
             std::same_as<Policy, constructor_policy::as_object>;
 
         constexpr bool as_raw_ptr =
