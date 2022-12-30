@@ -41,7 +41,7 @@ Also, you can add the root repository directory to your [cmake](https://cmake.or
 
 ```cmake
 add_subdirectory(external/meta.hpp)
-target_link_libraries(your_project_target meta.hpp)
+target_link_libraries(your_project_target PUBLIC meta.hpp::meta.hpp)
 ```
 
 ## Examples

@@ -27,6 +27,8 @@ project(meta.hpp
     HOMEPAGE_URL "https://github.com/blackmatov/meta.hpp")
 
 add_library(${PROJECT_NAME} INTERFACE)
+add_library(meta.hpp::meta.hpp ALIAS ${PROJECT_NAME})
+
 target_compile_features(${PROJECT_NAME} INTERFACE cxx_std_20)
 target_include_directories(${PROJECT_NAME} INTERFACE headers)
 
