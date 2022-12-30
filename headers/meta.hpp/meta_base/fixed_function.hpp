@@ -44,22 +44,22 @@ namespace meta_hpp::detail
             return *this;
         }
 
-        template < typename Functor >
-            requires (!std::same_as<fixed_function, std::decay_t<Functor>>)
+        template < typename F >
+            requires (!std::same_as<fixed_function, std::decay_t<F>>)
         // NOLINTNEXTLINE(*-forwarding-reference-overload)
-        fixed_function(Functor&& functor) {
-            vtable_t::construct(*this, std::forward<Functor>(functor));
+        fixed_function(F&& fun) {
+            vtable_t::construct(*this, std::forward<F>(fun));
         }
 
-        template < typename Functor >
-            requires (!std::same_as<fixed_function, std::decay_t<Functor>>)
-        fixed_function& operator=(Functor&& functor) {
-            fixed_function{std::forward<Functor>(functor)}.swap(*this);
+        template < typename F >
+            requires (!std::same_as<fixed_function, std::decay_t<F>>)
+        fixed_function& operator=(F&& fun) {
+            fixed_function{std::forward<F>(fun)}.swap(*this);
             return *this;
         }
 
         [[nodiscard]] bool is_valid() const noexcept {
-            return !!vtable_;
+            return vtable_ != nullptr;
         }
 
         [[nodiscard]] explicit operator bool() const noexcept {
@@ -118,6 +118,8 @@ namespace meta_hpp::detail
 
         template < typename Fp >
         static vtable_t* get() {
+            static_assert(std::same_as<Fp, std::decay_t<Fp>>);
+
             static vtable_t table{
                 .call = +[](const fixed_function& self, Args... args) -> R {
                     assert(self); // NOLINT
@@ -149,16 +151,18 @@ namespace meta_hpp::detail
             return &table;
         }
 
-        template < typename Functor >
-        static void construct(fixed_function& dst, Functor&& functor) {
-            using Fp = std::decay_t<Functor>;
+        template < typename F, typename Fp = std::decay_t<F> >
+        static void construct(fixed_function& dst, F&& fun) {
+            assert(!dst); // NOLINT
 
             static_assert(sizeof(Fp) <= sizeof(buffer_t));
             static_assert(alignof(Fp) <= alignof(buffer_t));
             static_assert(std::is_invocable_r_v<R, Fp, Args...>);
             static_assert(std::is_nothrow_move_constructible_v<Fp>);
 
-            std::construct_at(buffer_cast<Fp>(dst.buffer_), std::forward<Functor>(functor));
+            std::construct_at(
+                buffer_cast<Fp>(dst.buffer_),
+                std::forward<F>(fun));
 
             dst.vtable_ = vtable_t::get<Fp>();
         }
@@ -216,7 +220,6 @@ namespace meta_hpp::detail
     template < typename R, typename... Args >
     fixed_function(R(*)(Args...)) -> fixed_function<R(Args...)>;
 
-    template < typename Functor
-             , typename Signature = impl::strip_signature_impl_t<decltype(&Functor::operator())> >
-    fixed_function(Functor) -> fixed_function<Signature>;
+    template < typename F, typename S = impl::strip_signature_impl_t<decltype(&F::operator())> >
+    fixed_function(F) -> fixed_function<S>;
 }

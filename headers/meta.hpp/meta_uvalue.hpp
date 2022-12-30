@@ -39,12 +39,33 @@ namespace meta_hpp
 
         template < detail::decay_non_value_kind T >
             requires std::is_copy_constructible_v<std::decay_t<T>>
+                && (!stdex::is_in_place_type_v<std::remove_cvref_t<T>>)
         // NOLINTNEXTLINE(*-forwarding-reference-overload)
         explicit uvalue(T&& val);
 
         template < detail::decay_non_value_kind T >
             requires std::is_copy_constructible_v<std::decay_t<T>>
         uvalue& operator=(T&& val);
+
+        template < typename T, typename... Args >
+            requires std::is_copy_constructible_v<std::decay_t<T>>
+                  && std::is_constructible_v<std::decay_t<T>, Args...>
+        explicit uvalue(std::in_place_type_t<T>, Args&&... args);
+
+        template < typename T, typename U, typename... Args >
+            requires std::is_copy_constructible_v<std::decay_t<T>>
+                  && std::is_constructible_v<std::decay_t<T>, std::initializer_list<U>&, Args...>
+        explicit uvalue(std::in_place_type_t<T>, std::initializer_list<U> ilist, Args&&... args);
+
+        template < typename T, typename... Args >
+            requires std::is_copy_constructible_v<std::decay_t<T>>
+                  && std::is_constructible_v<std::decay_t<T>, Args...>
+        std::decay_t<T>& emplace(Args&&... args);
+
+        template < typename T, typename U, typename... Args >
+            requires std::is_copy_constructible_v<std::decay_t<T>>
+                  && std::is_constructible_v<std::decay_t<T>, std::initializer_list<U>&, Args...>
+        std::decay_t<T>& emplace(std::initializer_list<U> ilist, Args&&... args);
 
         [[nodiscard]] bool is_valid() const noexcept;
         [[nodiscard]] explicit operator bool() const noexcept;
@@ -95,5 +116,15 @@ namespace meta_hpp
 
     inline void swap(uvalue& l, uvalue& r) noexcept {
         l.swap(r);
+    }
+
+    template < typename T, typename... Args >
+    uvalue make_uvalue(Args&&... args) {
+        return uvalue(std::in_place_type<T>, std::forward<Args>(args)...);
+    }
+
+    template < typename T, typename U, typename... Args >
+    uvalue make_uvalue(std::initializer_list<U> ilist, Args&&... args) {
+        return uvalue(std::in_place_type<T>, ilist, std::forward<Args>(args)...);
     }
 }

@@ -65,9 +65,9 @@ namespace meta_hpp
             }, storage);
         }
 
-        template < typename T >
-        static void construct(uvalue& dst, T&& val) {
-            using Tp = std::decay_t<T>;
+        template < typename T, typename... Args, typename Tp = std::decay_t<T> >
+        static Tp& construct(uvalue& dst, Args&&... args) {
+            assert(!dst); // NOLINT
 
             constexpr bool in_buffer =
                 sizeof(Tp) <= sizeof(buffer_t) &&
@@ -75,12 +75,16 @@ namespace meta_hpp
                 std::is_nothrow_move_constructible_v<Tp>;
 
             if constexpr ( in_buffer ) {
-                std::construct_at(buffer_cast<Tp>(dst.storage_.emplace<buffer_t>()), std::forward<T>(val));
+                std::construct_at(
+                    buffer_cast<Tp>(dst.storage_.emplace<buffer_t>()),
+                    std::forward<Args>(args)...);
             } else {
-                dst.storage_.emplace<void*>(std::make_unique<Tp>(std::forward<T>(val)).release());
+                dst.storage_.emplace<void*>(
+                    std::make_unique<Tp>(std::forward<Args>(args)...).release());
             }
 
             dst.vtable_ = vtable_t::get<Tp>();
+            return *storage_cast<Tp>(dst.storage_);
         }
 
         static void swap(uvalue& l, uvalue& r) noexcept {
@@ -112,6 +116,8 @@ namespace meta_hpp
         template < typename Tp >
         // NOLINTNEXTLINE(*-cognitive-complexity)
         static vtable_t* get() {
+            static_assert(std::same_as<Tp, std::decay_t<Tp>>);
+
             static vtable_t table{
                 .type = resolve_type<Tp>(),
 
@@ -251,9 +257,10 @@ namespace meta_hpp
 
     template < detail::decay_non_value_kind T >
         requires std::is_copy_constructible_v<std::decay_t<T>>
+            && (!stdex::is_in_place_type_v<std::remove_cvref_t<T>>)
     // NOLINTNEXTLINE(*-forwarding-reference-overload)
     uvalue::uvalue(T&& val) {
-        vtable_t::construct(*this, std::forward<T>(val));
+        vtable_t::construct<T>(*this, std::forward<T>(val));
     }
 
     template < detail::decay_non_value_kind T >
@@ -261,6 +268,36 @@ namespace meta_hpp
     uvalue& uvalue::operator=(T&& val) {
         uvalue{std::forward<T>(val)}.swap(*this);
         return *this;
+    }
+
+    template < typename T, typename... Args >
+        requires std::is_copy_constructible_v<std::decay_t<T>>
+              && std::is_constructible_v<std::decay_t<T>, Args...>
+    uvalue::uvalue(std::in_place_type_t<T>, Args&&... args) {
+        vtable_t::construct<T>(*this, std::forward<Args>(args)...);
+    }
+
+    template < typename T, typename U, typename... Args >
+        requires std::is_copy_constructible_v<std::decay_t<T>>
+              && std::is_constructible_v<std::decay_t<T>, std::initializer_list<U>&, Args...>
+    uvalue::uvalue(std::in_place_type_t<T>, std::initializer_list<U> ilist, Args&&... args) {
+        vtable_t::construct<T>(*this, ilist, std::forward<Args>(args)...);
+    }
+
+    template < typename T, typename... Args >
+        requires std::is_copy_constructible_v<std::decay_t<T>>
+              && std::is_constructible_v<std::decay_t<T>, Args...>
+    std::decay_t<T>& uvalue::emplace(Args&&... args) {
+        reset();
+        return vtable_t::construct<T>(*this, std::forward<Args>(args)...);
+    }
+
+    template < typename T, typename U, typename... Args >
+        requires std::is_copy_constructible_v<std::decay_t<T>>
+              && std::is_constructible_v<std::decay_t<T>, std::initializer_list<U>&, Args...>
+    std::decay_t<T>& uvalue::emplace(std::initializer_list<U> ilist, Args&&... args) {
+        reset();
+        return vtable_t::construct<T>(*this, ilist, std::forward<Args>(args)...);
     }
 
     inline bool uvalue::is_valid() const noexcept {
@@ -528,10 +565,12 @@ namespace meta_hpp
 namespace meta_hpp
 {
     inline std::istream& operator>>(std::istream& is, uvalue& v) {
+        assert(v && "bad operator call"); // NOLINT
         return v.vtable_->istream(is, v);
     }
 
     inline std::ostream& operator<<(std::ostream& os, const uvalue& v) {
+        assert(v && "bad operator call"); // NOLINT
         return v.vtable_->ostream(os, v);
     }
 }

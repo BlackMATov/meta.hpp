@@ -299,22 +299,22 @@ namespace meta_hpp::detail
             return *this;
         }
 
-        template < typename Functor >
-            requires (!std::same_as<fixed_function, std::decay_t<Functor>>)
+        template < typename F >
+            requires (!std::same_as<fixed_function, std::decay_t<F>>)
         // NOLINTNEXTLINE(*-forwarding-reference-overload)
-        fixed_function(Functor&& functor) {
-            vtable_t::construct(*this, std::forward<Functor>(functor));
+        fixed_function(F&& fun) {
+            vtable_t::construct(*this, std::forward<F>(fun));
         }
 
-        template < typename Functor >
-            requires (!std::same_as<fixed_function, std::decay_t<Functor>>)
-        fixed_function& operator=(Functor&& functor) {
-            fixed_function{std::forward<Functor>(functor)}.swap(*this);
+        template < typename F >
+            requires (!std::same_as<fixed_function, std::decay_t<F>>)
+        fixed_function& operator=(F&& fun) {
+            fixed_function{std::forward<F>(fun)}.swap(*this);
             return *this;
         }
 
         [[nodiscard]] bool is_valid() const noexcept {
-            return !!vtable_;
+            return vtable_ != nullptr;
         }
 
         [[nodiscard]] explicit operator bool() const noexcept {
@@ -373,6 +373,8 @@ namespace meta_hpp::detail
 
         template < typename Fp >
         static vtable_t* get() {
+            static_assert(std::same_as<Fp, std::decay_t<Fp>>);
+
             static vtable_t table{
                 .call = +[](const fixed_function& self, Args... args) -> R {
                     assert(self); // NOLINT
@@ -404,16 +406,18 @@ namespace meta_hpp::detail
             return &table;
         }
 
-        template < typename Functor >
-        static void construct(fixed_function& dst, Functor&& functor) {
-            using Fp = std::decay_t<Functor>;
+        template < typename F, typename Fp = std::decay_t<F> >
+        static void construct(fixed_function& dst, F&& fun) {
+            assert(!dst); // NOLINT
 
             static_assert(sizeof(Fp) <= sizeof(buffer_t));
             static_assert(alignof(Fp) <= alignof(buffer_t));
             static_assert(std::is_invocable_r_v<R, Fp, Args...>);
             static_assert(std::is_nothrow_move_constructible_v<Fp>);
 
-            std::construct_at(buffer_cast<Fp>(dst.buffer_), std::forward<Functor>(functor));
+            std::construct_at(
+                buffer_cast<Fp>(dst.buffer_),
+                std::forward<F>(fun));
 
             dst.vtable_ = vtable_t::get<Fp>();
         }
@@ -471,9 +475,8 @@ namespace meta_hpp::detail
     template < typename R, typename... Args >
     fixed_function(R(*)(Args...)) -> fixed_function<R(Args...)>;
 
-    template < typename Functor
-             , typename Signature = impl::strip_signature_impl_t<decltype(&Functor::operator())> >
-    fixed_function(Functor) -> fixed_function<Signature>;
+    template < typename F, typename S = impl::strip_signature_impl_t<decltype(&F::operator())> >
+    fixed_function(F) -> fixed_function<S>;
 }
 
 namespace meta_hpp::detail
@@ -548,6 +551,18 @@ namespace meta_hpp::detail
     constexpr auto select_overload(Signature C::*func) noexcept -> decltype(func) {
         return func;
     }
+}
+
+namespace meta_hpp::stdex
+{
+    template < typename T >
+    struct is_in_place_type : std::false_type {};
+
+    template < typename U >
+    struct is_in_place_type<std::in_place_type_t<U>> : std::true_type {};
+
+    template < typename T >
+    inline constexpr bool is_in_place_type_v = is_in_place_type<T>::value;
 }
 
 namespace meta_hpp::stdex
@@ -2213,12 +2228,33 @@ namespace meta_hpp
 
         template < detail::decay_non_value_kind T >
             requires std::is_copy_constructible_v<std::decay_t<T>>
+                && (!stdex::is_in_place_type_v<std::remove_cvref_t<T>>)
         // NOLINTNEXTLINE(*-forwarding-reference-overload)
         explicit uvalue(T&& val);
 
         template < detail::decay_non_value_kind T >
             requires std::is_copy_constructible_v<std::decay_t<T>>
         uvalue& operator=(T&& val);
+
+        template < typename T, typename... Args >
+            requires std::is_copy_constructible_v<std::decay_t<T>>
+                  && std::is_constructible_v<std::decay_t<T>, Args...>
+        explicit uvalue(std::in_place_type_t<T>, Args&&... args);
+
+        template < typename T, typename U, typename... Args >
+            requires std::is_copy_constructible_v<std::decay_t<T>>
+                  && std::is_constructible_v<std::decay_t<T>, std::initializer_list<U>&, Args...>
+        explicit uvalue(std::in_place_type_t<T>, std::initializer_list<U> ilist, Args&&... args);
+
+        template < typename T, typename... Args >
+            requires std::is_copy_constructible_v<std::decay_t<T>>
+                  && std::is_constructible_v<std::decay_t<T>, Args...>
+        std::decay_t<T>& emplace(Args&&... args);
+
+        template < typename T, typename U, typename... Args >
+            requires std::is_copy_constructible_v<std::decay_t<T>>
+                  && std::is_constructible_v<std::decay_t<T>, std::initializer_list<U>&, Args...>
+        std::decay_t<T>& emplace(std::initializer_list<U> ilist, Args&&... args);
 
         [[nodiscard]] bool is_valid() const noexcept;
         [[nodiscard]] explicit operator bool() const noexcept;
@@ -2269,6 +2305,16 @@ namespace meta_hpp
 
     inline void swap(uvalue& l, uvalue& r) noexcept {
         l.swap(r);
+    }
+
+    template < typename T, typename... Args >
+    uvalue make_uvalue(Args&&... args) {
+        return uvalue(std::in_place_type<T>, std::forward<Args>(args)...);
+    }
+
+    template < typename T, typename U, typename... Args >
+    uvalue make_uvalue(std::initializer_list<U> ilist, Args&&... args) {
+        return uvalue(std::in_place_type<T>, ilist, std::forward<Args>(args)...);
     }
 }
 
@@ -8022,9 +8068,9 @@ namespace meta_hpp
             }, storage);
         }
 
-        template < typename T >
-        static void construct(uvalue& dst, T&& val) {
-            using Tp = std::decay_t<T>;
+        template < typename T, typename... Args, typename Tp = std::decay_t<T> >
+        static Tp& construct(uvalue& dst, Args&&... args) {
+            assert(!dst); // NOLINT
 
             constexpr bool in_buffer =
                 sizeof(Tp) <= sizeof(buffer_t) &&
@@ -8032,12 +8078,16 @@ namespace meta_hpp
                 std::is_nothrow_move_constructible_v<Tp>;
 
             if constexpr ( in_buffer ) {
-                std::construct_at(buffer_cast<Tp>(dst.storage_.emplace<buffer_t>()), std::forward<T>(val));
+                std::construct_at(
+                    buffer_cast<Tp>(dst.storage_.emplace<buffer_t>()),
+                    std::forward<Args>(args)...);
             } else {
-                dst.storage_.emplace<void*>(std::make_unique<Tp>(std::forward<T>(val)).release());
+                dst.storage_.emplace<void*>(
+                    std::make_unique<Tp>(std::forward<Args>(args)...).release());
             }
 
             dst.vtable_ = vtable_t::get<Tp>();
+            return *storage_cast<Tp>(dst.storage_);
         }
 
         static void swap(uvalue& l, uvalue& r) noexcept {
@@ -8069,6 +8119,8 @@ namespace meta_hpp
         template < typename Tp >
         // NOLINTNEXTLINE(*-cognitive-complexity)
         static vtable_t* get() {
+            static_assert(std::same_as<Tp, std::decay_t<Tp>>);
+
             static vtable_t table{
                 .type = resolve_type<Tp>(),
 
@@ -8208,9 +8260,10 @@ namespace meta_hpp
 
     template < detail::decay_non_value_kind T >
         requires std::is_copy_constructible_v<std::decay_t<T>>
+            && (!stdex::is_in_place_type_v<std::remove_cvref_t<T>>)
     // NOLINTNEXTLINE(*-forwarding-reference-overload)
     uvalue::uvalue(T&& val) {
-        vtable_t::construct(*this, std::forward<T>(val));
+        vtable_t::construct<T>(*this, std::forward<T>(val));
     }
 
     template < detail::decay_non_value_kind T >
@@ -8218,6 +8271,36 @@ namespace meta_hpp
     uvalue& uvalue::operator=(T&& val) {
         uvalue{std::forward<T>(val)}.swap(*this);
         return *this;
+    }
+
+    template < typename T, typename... Args >
+        requires std::is_copy_constructible_v<std::decay_t<T>>
+              && std::is_constructible_v<std::decay_t<T>, Args...>
+    uvalue::uvalue(std::in_place_type_t<T>, Args&&... args) {
+        vtable_t::construct<T>(*this, std::forward<Args>(args)...);
+    }
+
+    template < typename T, typename U, typename... Args >
+        requires std::is_copy_constructible_v<std::decay_t<T>>
+              && std::is_constructible_v<std::decay_t<T>, std::initializer_list<U>&, Args...>
+    uvalue::uvalue(std::in_place_type_t<T>, std::initializer_list<U> ilist, Args&&... args) {
+        vtable_t::construct<T>(*this, ilist, std::forward<Args>(args)...);
+    }
+
+    template < typename T, typename... Args >
+        requires std::is_copy_constructible_v<std::decay_t<T>>
+              && std::is_constructible_v<std::decay_t<T>, Args...>
+    std::decay_t<T>& uvalue::emplace(Args&&... args) {
+        reset();
+        return vtable_t::construct<T>(*this, std::forward<Args>(args)...);
+    }
+
+    template < typename T, typename U, typename... Args >
+        requires std::is_copy_constructible_v<std::decay_t<T>>
+              && std::is_constructible_v<std::decay_t<T>, std::initializer_list<U>&, Args...>
+    std::decay_t<T>& uvalue::emplace(std::initializer_list<U> ilist, Args&&... args) {
+        reset();
+        return vtable_t::construct<T>(*this, ilist, std::forward<Args>(args)...);
     }
 
     inline bool uvalue::is_valid() const noexcept {
@@ -8485,10 +8568,12 @@ namespace meta_hpp
 namespace meta_hpp
 {
     inline std::istream& operator>>(std::istream& is, uvalue& v) {
+        assert(v && "bad operator call"); // NOLINT
         return v.vtable_->istream(is, v);
     }
 
     inline std::ostream& operator<<(std::ostream& os, const uvalue& v) {
+        assert(v && "bad operator call"); // NOLINT
         return v.vtable_->ostream(os, v);
     }
 }
