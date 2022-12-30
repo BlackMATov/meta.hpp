@@ -1,12 +1,30 @@
-cmake_minimum_required(VERSION 3.15 FATAL_ERROR)
+cmake_minimum_required(VERSION 3.21 FATAL_ERROR)
 
-if(NOT DEFINED PROJECT_NAME)
-    set(BUILD_AS_STANDALONE ON)
-else()
-    set(BUILD_AS_STANDALONE OFF)
-endif()
+#
+# VERSION
+#
 
-project(meta.hpp)
+file(READ headers/meta.hpp/meta_base/base.hpp META_HPP_BASE_FILE)
+
+string(REGEX MATCH "#define[ ]+META_HPP_VERSION_MAJOR[ ]+([0-9]+)" _ ${META_HPP_BASE_FILE})
+set(META_HPP_VERSION_MAJOR "${CMAKE_MATCH_1}")
+
+string(REGEX MATCH "#define[ ]+META_HPP_VERSION_MINOR[ ]+([0-9]+)" _ ${META_HPP_BASE_FILE})
+set(META_HPP_VERSION_MINOR "${CMAKE_MATCH_1}")
+
+string(REGEX MATCH "#define[ ]+META_HPP_VERSION_PATCH[ ]+([0-9]+)" _ ${META_HPP_BASE_FILE})
+set(META_HPP_VERSION_PATCH "${CMAKE_MATCH_1}")
+
+set(META_HPP_VERSION ${META_HPP_VERSION_MAJOR}.${META_HPP_VERSION_MINOR}.${META_HPP_VERSION_PATCH})
+
+#
+# PROJECT
+#
+
+project(meta.hpp
+    VERSION ${META_HPP_VERSION}
+    DESCRIPTION "C++20 tiny dynamic reflection library"
+    HOMEPAGE_URL "https://github.com/blackmatov/meta.hpp")
 
 add_library(${PROJECT_NAME} INTERFACE)
 target_compile_features(${PROJECT_NAME} INTERFACE cxx_std_20)
@@ -16,10 +34,10 @@ find_package(Threads REQUIRED)
 target_link_libraries(${PROJECT_NAME} INTERFACE Threads::Threads)
 
 #
-# BUILD_AS_STANDALONE
+# DEVELOPER
 #
 
-if(NOT ${BUILD_AS_STANDALONE})
+if(NOT PROJECT_IS_TOP_LEVEL)
     return()
 endif()
 

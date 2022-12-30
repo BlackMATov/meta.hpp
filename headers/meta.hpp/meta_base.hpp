@@ -6,34 +6,7 @@
 
 #pragma once
 
-#include <cassert>
-#include <cstddef>
-#include <cstdint>
-#include <cstdlib>
-
-#include <algorithm>
-#include <array>
-#include <atomic>
-#include <concepts>
-#include <functional>
-#include <initializer_list>
-#include <iosfwd>
-#include <map>
-#include <memory>
-#include <mutex>
-#include <set>
-#include <span>
-#include <stdexcept>
-#include <string_view>
-#include <string>
-#include <tuple>
-#include <type_traits>
-#include <typeindex>
-#include <typeinfo>
-#include <utility>
-#include <variant>
-#include <vector>
-
+#include "meta_base/base.hpp"
 #include "meta_base/bitflags.hpp"
 #include "meta_base/cv_traits.hpp"
 #include "meta_base/cvref_traits.hpp"
@@ -47,14 +20,6 @@
 #include "meta_base/type_id.hpp"
 #include "meta_base/type_kinds.hpp"
 #include "meta_base/type_list.hpp"
-
-#if !defined(__cpp_exceptions)
-#  define META_HPP_NO_EXCEPTIONS
-#endif
-
-#if !defined(__cpp_rtti)
-#  define META_HPP_NO_RTTI
-#endif
 
 namespace meta_hpp
 {

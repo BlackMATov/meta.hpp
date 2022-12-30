@@ -6,7 +6,7 @@
 
 #pragma once
 
-#include <type_traits>
+#include "base.hpp"
 
 namespace meta_hpp::detail
 {

@@ -6,8 +6,7 @@
 
 #pragma once
 
-#include <cstddef>
-#include <functional>
+#include "base.hpp"
 
 namespace meta_hpp::detail
 {

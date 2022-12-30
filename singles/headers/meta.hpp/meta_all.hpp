@@ -31,6 +31,18 @@
 #include <variant>
 #include <vector>
 
+#define META_HPP_VERSION_MAJOR 0
+#define META_HPP_VERSION_MINOR 0
+#define META_HPP_VERSION_PATCH 1
+
+#if !defined(__cpp_exceptions)
+#  define META_HPP_NO_EXCEPTIONS
+#endif
+
+#if !defined(__cpp_rtti)
+#  define META_HPP_NO_RTTI
+#endif
+
 namespace meta_hpp::detail
 {
     template < typename Enum >
@@ -717,14 +729,6 @@ namespace meta_hpp::detail
         if constexpr ( void_kind<T> ) { return type_kind::void_; }
     }
 }
-
-#if !defined(__cpp_exceptions)
-#  define META_HPP_NO_EXCEPTIONS
-#endif
-
-#if !defined(__cpp_rtti)
-#  define META_HPP_NO_RTTI
-#endif
 
 namespace meta_hpp
 {

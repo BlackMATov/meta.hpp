@@ -6,14 +6,7 @@
 
 #pragma once
 
-#include <cassert>
-#include <cstddef>
-
-#include <concepts>
-#include <functional>
-#include <memory>
-#include <type_traits>
-#include <utility>
+#include "base.hpp"
 
 namespace meta_hpp::detail
 {
