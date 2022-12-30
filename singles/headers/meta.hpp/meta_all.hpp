@@ -1648,8 +1648,8 @@ namespace meta_hpp
 
         [[nodiscard]] evalue get_evalue(std::string_view name) const noexcept;
 
-        template < typename Value >
-        [[nodiscard]] std::string_view value_to_name(Value&& value) const noexcept;
+        template < detail::enum_kind Enum >
+        [[nodiscard]] std::string_view value_to_name(Enum value) const noexcept;
         [[nodiscard]] uvalue name_to_value(std::string_view name) const noexcept;
     private:
         detail::enum_type_data* data_{};
@@ -5495,11 +5495,9 @@ namespace meta_hpp
         return evalue{};
     }
 
-    template < typename Value >
-    std::string_view enum_type::value_to_name(Value&& value) const noexcept {
-        const detail::uarg value_arg{std::forward<Value>(value)};
-
-        if ( value_arg.get_raw_type() != *this ) {
+    template < detail::enum_kind Enum >
+    std::string_view enum_type::value_to_name(Enum value) const noexcept {
+        if ( resolve_type<Enum>() != *this ) {
             return std::string_view{};
         }
 
@@ -7867,30 +7865,6 @@ namespace meta_hpp::detail
 namespace meta_hpp::detail
 {
     template < typename T >
-    struct equals_traits;
-
-    template < typename T >
-    concept has_equals_traits = requires(const T& l, const T& r) {
-        { equals_traits<T>{}(l, r) } -> std::convertible_to<bool>;
-    };
-}
-
-namespace meta_hpp::detail
-{
-    template < typename T >
-        requires requires(const T& l, const T& r) {
-            { std::equal_to<>{}(l, r) } -> std::convertible_to<bool>;
-        }
-    struct equals_traits<T> {
-        bool operator()(const T& l, const T& r) const {
-            return std::equal_to<>{}(l, r);
-        }
-    };
-}
-
-namespace meta_hpp::detail
-{
-    template < typename T >
     struct index_traits;
 
     template < typename T >
@@ -7979,30 +7953,6 @@ namespace meta_hpp::detail
 namespace meta_hpp::detail
 {
     template < typename T >
-    struct less_traits;
-
-    template < typename T >
-    concept has_less_traits = requires(const T& l, const T& r) {
-        { less_traits<T>{}(l, r) } -> std::convertible_to<bool>;
-    };
-}
-
-namespace meta_hpp::detail
-{
-    template < typename T >
-        requires requires(const T& l, const T& r) {
-            { std::less<>{}(l, r) } -> std::convertible_to<bool>;
-        }
-    struct less_traits<T> {
-        bool operator()(const T& l, const T& r) const {
-            return std::less<>{}(l, r);
-        }
-    };
-}
-
-namespace meta_hpp::detail
-{
-    template < typename T >
     struct ostream_traits;
 
     template < typename T >
@@ -8038,9 +7988,6 @@ namespace meta_hpp
 
         uvalue (*const deref)(const uvalue& from);
         uvalue (*const index)(const uvalue& from, std::size_t);
-
-        bool (*const less)(const uvalue&, const uvalue&);
-        bool (*const equals)(const uvalue&, const uvalue&);
 
         std::istream& (*const istream)(std::istream&, uvalue&);
         std::ostream& (*const ostream)(std::ostream&, const uvalue&);
@@ -8202,22 +8149,6 @@ namespace meta_hpp
                         return detail::index_traits<Tp>{}(v.get_as<Tp>(), i);
                     } else {
                         detail::throw_exception_with("value type doesn't have value index traits");
-                    }
-                },
-
-                .less = +[]([[maybe_unused]] const uvalue& l, [[maybe_unused]] const uvalue& r) -> bool {
-                    if constexpr ( detail::has_less_traits<Tp> ) {
-                        return detail::less_traits<Tp>{}(l.get_as<Tp>(), r.get_as<Tp>());
-                    } else {
-                        detail::throw_exception_with("value type doesn't have value less traits");
-                    }
-                },
-
-                .equals = +[]([[maybe_unused]] const uvalue& l, [[maybe_unused]] const uvalue& r) -> bool {
-                    if constexpr ( detail::has_equals_traits<Tp> ) {
-                        return detail::equals_traits<Tp>{}(l.get_as<Tp>(), r.get_as<Tp>());
-                    } else {
-                        detail::throw_exception_with("value type doesn't have value equals traits");
                     }
                 },
 
@@ -8499,7 +8430,7 @@ namespace meta_hpp
 
 namespace meta_hpp
 {
-    template < typename T >
+    template < detail::decay_non_value_kind T >
     [[nodiscard]] bool operator<(const uvalue& l, const T& r) {
         if ( !static_cast<bool>(l) ) {
             return true;
@@ -8511,7 +8442,7 @@ namespace meta_hpp
         return (l_type < r_type) || (l_type == r_type && l.get_as<T>() < r);
     }
 
-    template < typename T >
+    template < detail::decay_non_value_kind T >
     [[nodiscard]] bool operator<(const T& l, const uvalue& r) {
         if ( !static_cast<bool>(r) ) {
             return false;
@@ -8522,26 +8453,11 @@ namespace meta_hpp
 
         return (l_type < r_type) || (l_type == r_type && l < r.get_as<T>());
     }
-
-    [[nodiscard]] inline bool operator<(const uvalue& l, const uvalue& r) {
-        if ( !static_cast<bool>(r) ) {
-            return false;
-        }
-
-        if ( !static_cast<bool>(l) ) {
-            return true;
-        }
-
-        const any_type& l_type = l.get_type();
-        const any_type& r_type = r.get_type();
-
-        return (l_type < r_type) || (l_type == r_type && l.vtable_->less(l, r));
-    }
 }
 
 namespace meta_hpp
 {
-    template < typename T >
+    template < detail::decay_non_value_kind T >
     [[nodiscard]] bool operator==(const uvalue& l, const T& r) {
         if ( !static_cast<bool>(l) ) {
             return false;
@@ -8553,7 +8469,7 @@ namespace meta_hpp
         return l_type == r_type && l.get_as<T>() == r;
     }
 
-    template < typename T >
+    template < detail::decay_non_value_kind T >
     [[nodiscard]] bool operator==(const T& l, const uvalue& r) {
         if ( !static_cast<bool>(r) ) {
             return false;
@@ -8563,21 +8479,6 @@ namespace meta_hpp
         const any_type& r_type = r.get_type();
 
         return l_type == r_type && l == r.get_as<T>();
-    }
-
-    [[nodiscard]] inline bool operator==(const uvalue& l, const uvalue& r) {
-        if ( static_cast<bool>(l) != static_cast<bool>(r) ) {
-            return false;
-        }
-
-        if ( !static_cast<bool>(l) ) {
-            return true;
-        }
-
-        const any_type& l_type = l.get_type();
-        const any_type& r_type = r.get_type();
-
-        return l_type == r_type && l.vtable_->equals(l, r);
     }
 }
 

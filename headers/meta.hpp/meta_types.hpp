@@ -270,8 +270,8 @@ namespace meta_hpp
 
         [[nodiscard]] evalue get_evalue(std::string_view name) const noexcept;
 
-        template < typename Value >
-        [[nodiscard]] std::string_view value_to_name(Value&& value) const noexcept;
+        template < detail::enum_kind Enum >
+        [[nodiscard]] std::string_view value_to_name(Enum value) const noexcept;
         [[nodiscard]] uvalue name_to_value(std::string_view name) const noexcept;
     private:
         detail::enum_type_data* data_{};

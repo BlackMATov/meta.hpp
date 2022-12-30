@@ -122,7 +122,6 @@ TEST_CASE("meta/meta_types/enum_type") {
 
         CHECK(color_type.value_to_name(color::red) == "red");
         CHECK(color_type.value_to_name(color::blue) == "blue");
-        CHECK(color_type.value_to_name(100500).empty());
         CHECK(color_type.value_to_name(color{100500}).empty());
     }
 
@@ -131,8 +130,7 @@ TEST_CASE("meta/meta_types/enum_type") {
         REQUIRE(ecolor_type);
 
         CHECK(ecolor_type.value_to_name(ecolor_red) == "red");
-        CHECK(ecolor_type.value_to_name(meta::uvalue{ecolor_blue}) == "blue");
-        CHECK(ecolor_type.value_to_name(100500).empty());
+        CHECK(ecolor_type.value_to_name(ecolor_blue) == "blue");
         CHECK(ecolor_type.value_to_name(ecolor{100500}).empty());
     }
 

@@ -22,11 +22,15 @@ namespace
     };
 }
 
-TEST_CASE("meta/meta_utilities/value5/throw_dtor") {
+TEST_CASE("meta/meta_utilities/value5") {
     namespace meta = meta_hpp;
 
     meta::class_<clazz_throw_dtor>()
         .function_("make", &clazz_throw_dtor::make);
+}
+
+TEST_CASE("meta/meta_utilities/value5/throw_dtor") {
+    namespace meta = meta_hpp;
 
     SUBCASE("value") {
         meta::uvalue v{clazz_throw_dtor{42}};

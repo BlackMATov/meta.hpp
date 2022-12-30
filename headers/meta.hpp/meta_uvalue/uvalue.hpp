@@ -11,10 +11,8 @@
 #include "../meta_uvalue.hpp"
 
 #include "../meta_detail/value_traits/deref_traits.hpp"
-#include "../meta_detail/value_traits/equals_traits.hpp"
 #include "../meta_detail/value_traits/index_traits.hpp"
 #include "../meta_detail/value_traits/istream_traits.hpp"
-#include "../meta_detail/value_traits/less_traits.hpp"
 #include "../meta_detail/value_traits/ostream_traits.hpp"
 
 #include "../meta_detail/value_utilities/utraits.hpp"
@@ -33,9 +31,6 @@ namespace meta_hpp
 
         uvalue (*const deref)(const uvalue& from);
         uvalue (*const index)(const uvalue& from, std::size_t);
-
-        bool (*const less)(const uvalue&, const uvalue&);
-        bool (*const equals)(const uvalue&, const uvalue&);
 
         std::istream& (*const istream)(std::istream&, uvalue&);
         std::ostream& (*const ostream)(std::ostream&, const uvalue&);
@@ -197,22 +192,6 @@ namespace meta_hpp
                         return detail::index_traits<Tp>{}(v.get_as<Tp>(), i);
                     } else {
                         detail::throw_exception_with("value type doesn't have value index traits");
-                    }
-                },
-
-                .less = +[]([[maybe_unused]] const uvalue& l, [[maybe_unused]] const uvalue& r) -> bool {
-                    if constexpr ( detail::has_less_traits<Tp> ) {
-                        return detail::less_traits<Tp>{}(l.get_as<Tp>(), r.get_as<Tp>());
-                    } else {
-                        detail::throw_exception_with("value type doesn't have value less traits");
-                    }
-                },
-
-                .equals = +[]([[maybe_unused]] const uvalue& l, [[maybe_unused]] const uvalue& r) -> bool {
-                    if constexpr ( detail::has_equals_traits<Tp> ) {
-                        return detail::equals_traits<Tp>{}(l.get_as<Tp>(), r.get_as<Tp>());
-                    } else {
-                        detail::throw_exception_with("value type doesn't have value equals traits");
                     }
                 },
 
@@ -494,7 +473,7 @@ namespace meta_hpp
 
 namespace meta_hpp
 {
-    template < typename T >
+    template < detail::decay_non_value_kind T >
     [[nodiscard]] bool operator<(const uvalue& l, const T& r) {
         if ( !static_cast<bool>(l) ) {
             return true;
@@ -506,7 +485,7 @@ namespace meta_hpp
         return (l_type < r_type) || (l_type == r_type && l.get_as<T>() < r);
     }
 
-    template < typename T >
+    template < detail::decay_non_value_kind T >
     [[nodiscard]] bool operator<(const T& l, const uvalue& r) {
         if ( !static_cast<bool>(r) ) {
             return false;
@@ -517,26 +496,11 @@ namespace meta_hpp
 
         return (l_type < r_type) || (l_type == r_type && l < r.get_as<T>());
     }
-
-    [[nodiscard]] inline bool operator<(const uvalue& l, const uvalue& r) {
-        if ( !static_cast<bool>(r) ) {
-            return false;
-        }
-
-        if ( !static_cast<bool>(l) ) {
-            return true;
-        }
-
-        const any_type& l_type = l.get_type();
-        const any_type& r_type = r.get_type();
-
-        return (l_type < r_type) || (l_type == r_type && l.vtable_->less(l, r));
-    }
 }
 
 namespace meta_hpp
 {
-    template < typename T >
+    template < detail::decay_non_value_kind T >
     [[nodiscard]] bool operator==(const uvalue& l, const T& r) {
         if ( !static_cast<bool>(l) ) {
             return false;
@@ -548,7 +512,7 @@ namespace meta_hpp
         return l_type == r_type && l.get_as<T>() == r;
     }
 
-    template < typename T >
+    template < detail::decay_non_value_kind T >
     [[nodiscard]] bool operator==(const T& l, const uvalue& r) {
         if ( !static_cast<bool>(r) ) {
             return false;
@@ -558,21 +522,6 @@ namespace meta_hpp
         const any_type& r_type = r.get_type();
 
         return l_type == r_type && l == r.get_as<T>();
-    }
-
-    [[nodiscard]] inline bool operator==(const uvalue& l, const uvalue& r) {
-        if ( static_cast<bool>(l) != static_cast<bool>(r) ) {
-            return false;
-        }
-
-        if ( !static_cast<bool>(l) ) {
-            return true;
-        }
-
-        const any_type& l_type = l.get_type();
-        const any_type& r_type = r.get_type();
-
-        return l_type == r_type && l.vtable_->equals(l, r);
     }
 }
 

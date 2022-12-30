@@ -51,9 +51,6 @@ TEST_CASE("meta/meta_examples/enum/usage") {
     // converts the enumerator to its name
     CHECK(align_type.value_to_name(e) == "center");
 
-    // also, it works with dynamic value types
-    CHECK(align_type.value_to_name(meta::uvalue{e}) == "center");
-
     // ... and back again
     CHECK(align_type.name_to_value("center") == e);
 }

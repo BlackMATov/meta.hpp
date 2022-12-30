@@ -69,11 +69,9 @@ namespace meta_hpp
         return evalue{};
     }
 
-    template < typename Value >
-    std::string_view enum_type::value_to_name(Value&& value) const noexcept {
-        const detail::uarg value_arg{std::forward<Value>(value)};
-
-        if ( value_arg.get_raw_type() != *this ) {
+    template < detail::enum_kind Enum >
+    std::string_view enum_type::value_to_name(Enum value) const noexcept {
+        if ( resolve_type<Enum>() != *this ) {
             return std::string_view{};
         }
 

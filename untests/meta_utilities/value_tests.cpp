@@ -143,33 +143,18 @@ TEST_CASE("meta/meta_utilities/value") {
         }
 
         {
-            CHECK_FALSE(meta::uvalue{1} < meta::uvalue{});
-            CHECK(meta::uvalue{} < meta::uvalue{1});
-            CHECK_FALSE(meta::uvalue{} < meta::uvalue{});
-
             CHECK_FALSE(1 < meta::uvalue{});
             CHECK(meta::uvalue{} < 1);
-            CHECK_FALSE(meta::uvalue{} < meta::uvalue{});
         }
 
         {
-            CHECK_FALSE(meta::uvalue{1} == meta::uvalue{});
-            CHECK_FALSE(meta::uvalue{} == meta::uvalue{1});
-            CHECK(meta::uvalue{} == meta::uvalue{});
-
             CHECK_FALSE(1 == meta::uvalue{});
             CHECK_FALSE(meta::uvalue{} == 1);
-            CHECK(meta::uvalue{} == meta::uvalue{});
         }
 
         {
-            CHECK(meta::uvalue{1} != meta::uvalue{});
-            CHECK(meta::uvalue{} != meta::uvalue{1});
-            CHECK_FALSE(meta::uvalue{} != meta::uvalue{});
-
             CHECK(1 != meta::uvalue{});
             CHECK(meta::uvalue{} != 1);
-            CHECK_FALSE(meta::uvalue{} != meta::uvalue{});
         }
 
         CHECK_FALSE(meta::uvalue{} == 0);
@@ -193,7 +178,6 @@ TEST_CASE("meta/meta_utilities/value") {
         CHECK(*static_cast<const ivec2*>(std::as_const(val).cdata()) == vr);
 
         CHECK(val == ivec2{1,2});
-        CHECK(val == meta::uvalue{ivec2{1,2}});
 
         CHECK(val.get_as<ivec2>() == ivec2{1,2});
         CHECK(std::as_const(val).get_as<ivec2>() == ivec2{1,2});
@@ -227,7 +211,6 @@ TEST_CASE("meta/meta_utilities/value") {
         CHECK(*static_cast<const ivec2*>(std::as_const(val).cdata()) == vr);
 
         CHECK(val == ivec2{1,2});
-        CHECK(val == meta::uvalue{ivec2{1,2}});
 
         CHECK(val.get_as<ivec2>() == ivec2{1,2});
         CHECK(std::as_const(val).get_as<ivec2>() == ivec2{1,2});
@@ -255,7 +238,6 @@ TEST_CASE("meta/meta_utilities/value") {
         CHECK(val.get_type() == meta::resolve_type<ivec2>());
 
         CHECK(val == ivec2{1,2});
-        CHECK(val == meta::uvalue{ivec2{1,2}});
 
         CHECK(val.get_as<ivec2>() == ivec2{1,2});
         CHECK(std::as_const(val).get_as<ivec2>() == ivec2{1,2});
@@ -283,7 +265,6 @@ TEST_CASE("meta/meta_utilities/value") {
         CHECK(val.get_type() == meta::resolve_type<ivec2>());
 
         CHECK(val == ivec2{1,2});
-        CHECK(val == meta::uvalue{ivec2{1,2}});
 
         CHECK(val.get_as<ivec2>() == ivec2{1,2});
         CHECK(std::as_const(val).get_as<ivec2>() == ivec2{1,2});
@@ -422,18 +403,6 @@ TEST_CASE("meta/meta_utilities/value") {
 
         CHECK(ivec2{1,2} < meta::uvalue{ivec2{1,3}});
         CHECK_FALSE(ivec2{1,3} < meta::uvalue{ivec2{1,2}});
-
-        CHECK(meta::uvalue{ivec2{1,2}} < meta::uvalue{ivec2{1,3}});
-        CHECK_FALSE(meta::uvalue{ivec2{1,3}} < meta::uvalue{ivec2{1,2}});
-
-        {
-            class empty_class1 {};
-            class empty_class2 {};
-
-            CHECK((operator<(meta::uvalue{empty_class1{}}, meta::uvalue{empty_class2{}})
-                || operator<(meta::uvalue{empty_class2{}}, meta::uvalue{empty_class1{}})));
-            CHECK_THROWS(std::ignore = operator<(meta::uvalue{empty_class1{}}, meta::uvalue{empty_class1{}}));
-        }
     }
 
     SUBCASE("operator==") {
@@ -442,17 +411,6 @@ TEST_CASE("meta/meta_utilities/value") {
 
         CHECK(ivec2{1,2} == meta::uvalue{ivec2{1,2}});
         CHECK_FALSE(ivec2{1,3} == meta::uvalue{ivec2{1,2}});
-
-        CHECK(meta::uvalue{ivec2{1,2}} == meta::uvalue{ivec2{1,2}});
-        CHECK_FALSE(meta::uvalue{ivec2{1,2}} == meta::uvalue{ivec2{1,3}});
-
-        {
-            class empty_class1 {};
-            class empty_class2 {};
-
-            CHECK_FALSE(operator==(meta::uvalue{empty_class1{}}, meta::uvalue{empty_class2{}}));
-            CHECK_THROWS(std::ignore = operator==(meta::uvalue{empty_class1{}}, meta::uvalue{empty_class1{}}));
-        }
     }
 
     SUBCASE("deref") {
