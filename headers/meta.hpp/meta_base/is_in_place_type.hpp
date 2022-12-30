@@ -9,7 +9,7 @@
 #include <type_traits>
 #include <utility>
 
-namespace meta_hpp::stdex
+namespace meta_hpp::detail
 {
     template < typename T >
     struct is_in_place_type : std::false_type {};
@@ -19,12 +19,4 @@ namespace meta_hpp::stdex
 
     template < typename T >
     inline constexpr bool is_in_place_type_v = is_in_place_type<T>::value;
-}
-
-namespace meta_hpp::stdex
-{
-    template < typename Enum >
-    [[nodiscard]] constexpr std::underlying_type_t<Enum> to_underlying(Enum e) noexcept {
-        return static_cast<std::underlying_type_t<Enum>>(e);
-    }
 }

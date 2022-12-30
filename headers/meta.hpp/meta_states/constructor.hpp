@@ -87,7 +87,7 @@ namespace meta_hpp::detail
 
     template < class_kind Class, typename... Args >
     argument_list make_constructor_arguments() {
-        using ct = detail::constructor_traits<Class, Args...>;
+        using ct = constructor_traits<Class, Args...>;
         using ct_argument_types = typename ct::argument_types;
 
         argument_list arguments;
@@ -95,8 +95,8 @@ namespace meta_hpp::detail
 
         [&arguments]<std::size_t... Is>(std::index_sequence<Is...>) mutable {
             [[maybe_unused]] const auto make_argument = []<std::size_t I>(std::index_sequence<I>){
-                using P = detail::type_list_at_t<I, ct_argument_types>;
-                return argument{detail::argument_state::make<P>(I, metadata_map{})};
+                using P = type_list_at_t<I, ct_argument_types>;
+                return argument{argument_state::make<P>(I, metadata_map{})};
             };
             (arguments.push_back(make_argument(std::index_sequence<Is>{})), ...);
         }(std::make_index_sequence<ct::arity>());

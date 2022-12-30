@@ -497,6 +497,18 @@ namespace meta_hpp::detail
 
 namespace meta_hpp::detail
 {
+    template < typename T >
+    struct is_in_place_type : std::false_type {};
+
+    template < typename U >
+    struct is_in_place_type<std::in_place_type_t<U>> : std::true_type {};
+
+    template < typename T >
+    inline constexpr bool is_in_place_type_v = is_in_place_type<T>::value;
+}
+
+namespace meta_hpp::detail
+{
     class noncopyable {
     protected:
         noncopyable() = default;
@@ -553,19 +565,7 @@ namespace meta_hpp::detail
     }
 }
 
-namespace meta_hpp::stdex
-{
-    template < typename T >
-    struct is_in_place_type : std::false_type {};
-
-    template < typename U >
-    struct is_in_place_type<std::in_place_type_t<U>> : std::true_type {};
-
-    template < typename T >
-    inline constexpr bool is_in_place_type_v = is_in_place_type<T>::value;
-}
-
-namespace meta_hpp::stdex
+namespace meta_hpp::detail
 {
     template < typename Enum >
     [[nodiscard]] constexpr std::underlying_type_t<Enum> to_underlying(Enum e) noexcept {
@@ -2228,7 +2228,7 @@ namespace meta_hpp
 
         template < detail::decay_non_value_kind T >
             requires std::is_copy_constructible_v<std::decay_t<T>>
-                && (!stdex::is_in_place_type_v<std::remove_cvref_t<T>>)
+                && (!detail::is_in_place_type_v<std::remove_cvref_t<T>>)
         // NOLINTNEXTLINE(*-forwarding-reference-overload)
         explicit uvalue(T&& val);
 
@@ -5227,7 +5227,7 @@ namespace meta_hpp::detail
 
     template < class_kind Class, typename... Args >
     argument_list make_constructor_arguments() {
-        using ct = detail::constructor_traits<Class, Args...>;
+        using ct = constructor_traits<Class, Args...>;
         using ct_argument_types = typename ct::argument_types;
 
         argument_list arguments;
@@ -5235,8 +5235,8 @@ namespace meta_hpp::detail
 
         [&arguments]<std::size_t... Is>(std::index_sequence<Is...>) mutable {
             [[maybe_unused]] const auto make_argument = []<std::size_t I>(std::index_sequence<I>){
-                using P = detail::type_list_at_t<I, ct_argument_types>;
-                return argument{detail::argument_state::make<P>(I, metadata_map{})};
+                using P = type_list_at_t<I, ct_argument_types>;
+                return argument{argument_state::make<P>(I, metadata_map{})};
             };
             (arguments.push_back(make_argument(std::index_sequence<Is>{})), ...);
         }(std::make_index_sequence<ct::arity>());
@@ -5573,7 +5573,7 @@ namespace meta_hpp::detail
             .index{evalue_index::make<Enum>(std::move(name))},
             .metadata{std::move(metadata)},
             .enum_value{uvalue{evalue}},
-            .underlying_value{uvalue{stdex::to_underlying(evalue)}},
+            .underlying_value{uvalue{to_underlying(evalue)}},
         });
     }
 }
@@ -5759,7 +5759,7 @@ namespace meta_hpp::detail
 
     template < function_kind Function >
     argument_list make_function_arguments() {
-        using ft = detail::function_traits<Function>;
+        using ft = function_traits<Function>;
         using ft_argument_types = typename ft::argument_types;
 
         argument_list arguments;
@@ -5767,8 +5767,8 @@ namespace meta_hpp::detail
 
         [&arguments]<std::size_t... Is>(std::index_sequence<Is...>) mutable {
             [[maybe_unused]] const auto make_argument = []<std::size_t I>(std::index_sequence<I>){
-                using P = detail::type_list_at_t<I, ft_argument_types>;
-                return argument{detail::argument_state::make<P>(I, metadata_map{})};
+                using P = type_list_at_t<I, ft_argument_types>;
+                return argument{argument_state::make<P>(I, metadata_map{})};
             };
             (arguments.push_back(make_argument(std::index_sequence<Is>{})), ...);
         }(std::make_index_sequence<ft::arity>());
@@ -6542,7 +6542,7 @@ namespace meta_hpp::detail
 
     template < method_kind Method >
     argument_list make_method_arguments() {
-        using mt = detail::method_traits<Method>;
+        using mt = method_traits<Method>;
         using mt_argument_types = typename mt::argument_types;
 
         argument_list arguments;
@@ -6550,8 +6550,8 @@ namespace meta_hpp::detail
 
         [&arguments]<std::size_t... Is>(std::index_sequence<Is...>) mutable {
             [[maybe_unused]] const auto make_argument = []<std::size_t I>(std::index_sequence<I>){
-                using P = detail::type_list_at_t<I, mt_argument_types>;
-                return argument{detail::argument_state::make<P>(I, metadata_map{})};
+                using P = type_list_at_t<I, mt_argument_types>;
+                return argument{argument_state::make<P>(I, metadata_map{})};
             };
             (arguments.push_back(make_argument(std::index_sequence<Is>{})), ...);
         }(std::make_index_sequence<mt::arity>());
@@ -8260,7 +8260,7 @@ namespace meta_hpp
 
     template < detail::decay_non_value_kind T >
         requires std::is_copy_constructible_v<std::decay_t<T>>
-            && (!stdex::is_in_place_type_v<std::remove_cvref_t<T>>)
+            && (!detail::is_in_place_type_v<std::remove_cvref_t<T>>)
     // NOLINTNEXTLINE(*-forwarding-reference-overload)
     uvalue::uvalue(T&& val) {
         vtable_t::construct<T>(*this, std::forward<T>(val));

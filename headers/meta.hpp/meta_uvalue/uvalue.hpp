@@ -257,7 +257,7 @@ namespace meta_hpp
 
     template < detail::decay_non_value_kind T >
         requires std::is_copy_constructible_v<std::decay_t<T>>
-            && (!stdex::is_in_place_type_v<std::remove_cvref_t<T>>)
+            && (!detail::is_in_place_type_v<std::remove_cvref_t<T>>)
     // NOLINTNEXTLINE(*-forwarding-reference-overload)
     uvalue::uvalue(T&& val) {
         vtable_t::construct<T>(*this, std::forward<T>(val));
