@@ -195,6 +195,8 @@ namespace meta_hpp
         [[nodiscard]] constructor get_constructor_with(std::span<const any_type> args) const noexcept;
         [[nodiscard]] constructor get_constructor_with(std::initializer_list<any_type> args) const noexcept;
 
+        [[nodiscard]] destructor get_destructor() const noexcept;
+
         template < typename... Args >
         [[nodiscard]] function get_function_with(std::string_view name) const noexcept;
         template < typename Iter >
