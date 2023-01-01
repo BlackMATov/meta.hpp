@@ -21,7 +21,7 @@ namespace meta_hpp::detail
         using argument_types = typename ct::argument_types;
 
         constexpr bool as_object =
-            std::copy_constructible<class_type> &&
+            std::is_copy_constructible_v<class_type> &&
             std::same_as<Policy, constructor_policy::as_object>;
 
         constexpr bool as_raw_ptr =
@@ -42,18 +42,18 @@ namespace meta_hpp::detail
             }
 
             if constexpr ( as_object ) {
-                class_type return_value{args[Is].cast<type_list_at_t<Is, argument_types>>()...};
-                return uvalue{std::move(return_value)};
+                return make_uvalue<class_type>(
+                    args[Is].cast<type_list_at_t<Is, argument_types>>()...);
             }
 
             if constexpr ( as_raw_ptr ) {
-                auto return_value{std::make_unique<class_type>(args[Is].cast<type_list_at_t<Is, argument_types>>()...)};
-                return uvalue{return_value.release()};
+                return uvalue{std::make_unique<class_type>(
+                    args[Is].cast<type_list_at_t<Is, argument_types>>()...).release()};
             }
 
             if constexpr ( as_shared_ptr ) {
-                auto return_value{std::make_shared<class_type>(args[Is].cast<type_list_at_t<Is, argument_types>>()...)};
-                return uvalue{std::move(return_value)};
+                return uvalue{std::make_shared<class_type>(
+                    args[Is].cast<type_list_at_t<Is, argument_types>>()...)};
             }
         }(std::make_index_sequence<ct::arity>());
     }
@@ -87,7 +87,7 @@ namespace meta_hpp::detail
 
     template < class_kind Class, typename... Args >
     argument_list make_constructor_arguments() {
-        using ct = detail::constructor_traits<Class, Args...>;
+        using ct = constructor_traits<Class, Args...>;
         using ct_argument_types = typename ct::argument_types;
 
         argument_list arguments;
@@ -95,8 +95,8 @@ namespace meta_hpp::detail
 
         [&arguments]<std::size_t... Is>(std::index_sequence<Is...>) mutable {
             [[maybe_unused]] const auto make_argument = []<std::size_t I>(std::index_sequence<I>){
-                using P = detail::type_list_at_t<I, ct_argument_types>;
-                return argument{detail::argument_state::make<P>(I, metadata_map{})};
+                using P = type_list_at_t<I, ct_argument_types>;
+                return argument{argument_state::make<P>(I, metadata_map{})};
             };
             (arguments.push_back(make_argument(std::index_sequence<Is>{})), ...);
         }(std::make_index_sequence<ct::arity>());

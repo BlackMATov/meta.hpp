@@ -9,7 +9,6 @@
 #include "meta_base.hpp"
 
 #include "meta_binds.hpp"
-
 #include "meta_binds/array_bind.hpp"
 #include "meta_binds/class_bind.hpp"
 #include "meta_binds/enum_bind.hpp"

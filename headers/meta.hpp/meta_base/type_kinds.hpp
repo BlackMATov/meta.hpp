@@ -6,8 +6,7 @@
 
 #pragma once
 
-#include <cstdint>
-#include <type_traits>
+#include "base.hpp"
 
 namespace meta_hpp::detail
 {

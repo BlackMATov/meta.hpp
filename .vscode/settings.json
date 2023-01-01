@@ -5,6 +5,18 @@
         "files.trimFinalNewlines": true,
         "files.trimTrailingWhitespace": true
     },
+    "[cmake]": {
+        "files.encoding": "utf8",
+        "files.insertFinalNewline": true,
+        "files.trimFinalNewlines": true,
+        "files.trimTrailingWhitespace": true
+    },
+    "[python]": {
+        "files.encoding": "utf8",
+        "files.insertFinalNewline": true,
+        "files.trimFinalNewlines": true,
+        "files.trimTrailingWhitespace": true
+    },
     "clangd.arguments": [
         "--all-scopes-completion",
         "--background-index",

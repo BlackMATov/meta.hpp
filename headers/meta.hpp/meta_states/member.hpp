@@ -22,7 +22,7 @@ namespace meta_hpp::detail
         using value_type = typename mt::value_type;
 
         constexpr bool as_copy =
-            std::copy_constructible<value_type> &&
+            std::is_copy_constructible_v<value_type> &&
             std::same_as<Policy, member_policy::as_copy>;
 
         constexpr bool as_ptr =

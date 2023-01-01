@@ -23,7 +23,7 @@ namespace meta_hpp::detail
         using argument_types = typename mt::argument_types;
 
         constexpr bool as_copy =
-            std::copy_constructible<return_type> &&
+            std::is_copy_constructible_v<return_type> &&
             std::same_as<Policy, method_policy::as_copy>;
 
         constexpr bool as_void =
@@ -106,7 +106,7 @@ namespace meta_hpp::detail
 
     template < method_kind Method >
     argument_list make_method_arguments() {
-        using mt = detail::method_traits<Method>;
+        using mt = method_traits<Method>;
         using mt_argument_types = typename mt::argument_types;
 
         argument_list arguments;
@@ -114,8 +114,8 @@ namespace meta_hpp::detail
 
         [&arguments]<std::size_t... Is>(std::index_sequence<Is...>) mutable {
             [[maybe_unused]] const auto make_argument = []<std::size_t I>(std::index_sequence<I>){
-                using P = detail::type_list_at_t<I, mt_argument_types>;
-                return argument{detail::argument_state::make<P>(I, metadata_map{})};
+                using P = type_list_at_t<I, mt_argument_types>;
+                return argument{argument_state::make<P>(I, metadata_map{})};
             };
             (arguments.push_back(make_argument(std::index_sequence<Is>{})), ...);
         }(std::make_index_sequence<mt::arity>());

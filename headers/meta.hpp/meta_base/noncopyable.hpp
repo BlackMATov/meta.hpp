@@ -6,6 +6,8 @@
 
 #pragma once
 
+#include "base.hpp"
+
 namespace meta_hpp::detail
 {
     class noncopyable {

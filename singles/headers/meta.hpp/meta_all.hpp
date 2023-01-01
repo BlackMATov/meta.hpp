@@ -31,6 +31,14 @@
 #include <variant>
 #include <vector>
 
+#if !defined(__cpp_exceptions)
+#  define META_HPP_NO_EXCEPTIONS
+#endif
+
+#if !defined(__cpp_rtti)
+#  define META_HPP_NO_RTTI
+#endif
+
 namespace meta_hpp::detail
 {
     template < typename Enum >
@@ -299,22 +307,22 @@ namespace meta_hpp::detail
             return *this;
         }
 
-        template < typename Functor >
-            requires (!std::same_as<fixed_function, std::decay_t<Functor>>)
+        template < typename F >
+            requires (!std::same_as<fixed_function, std::decay_t<F>>)
         // NOLINTNEXTLINE(*-forwarding-reference-overload)
-        fixed_function(Functor&& functor) {
-            vtable_t::construct(*this, std::forward<Functor>(functor));
+        fixed_function(F&& fun) {
+            vtable_t::construct(*this, std::forward<F>(fun));
         }
 
-        template < typename Functor >
-            requires (!std::same_as<fixed_function, std::decay_t<Functor>>)
-        fixed_function& operator=(Functor&& functor) {
-            fixed_function{std::forward<Functor>(functor)}.swap(*this);
+        template < typename F >
+            requires (!std::same_as<fixed_function, std::decay_t<F>>)
+        fixed_function& operator=(F&& fun) {
+            fixed_function{std::forward<F>(fun)}.swap(*this);
             return *this;
         }
 
         [[nodiscard]] bool is_valid() const noexcept {
-            return !!vtable_;
+            return vtable_ != nullptr;
         }
 
         [[nodiscard]] explicit operator bool() const noexcept {
@@ -373,6 +381,8 @@ namespace meta_hpp::detail
 
         template < typename Fp >
         static vtable_t* get() {
+            static_assert(std::same_as<Fp, std::decay_t<Fp>>);
+
             static vtable_t table{
                 .call = +[](const fixed_function& self, Args... args) -> R {
                     assert(self); // NOLINT
@@ -404,16 +414,18 @@ namespace meta_hpp::detail
             return &table;
         }
 
-        template < typename Functor >
-        static void construct(fixed_function& dst, Functor&& functor) {
-            using Fp = std::decay_t<Functor>;
+        template < typename F, typename Fp = std::decay_t<F> >
+        static void construct(fixed_function& dst, F&& fun) {
+            assert(!dst); // NOLINT
 
             static_assert(sizeof(Fp) <= sizeof(buffer_t));
             static_assert(alignof(Fp) <= alignof(buffer_t));
             static_assert(std::is_invocable_r_v<R, Fp, Args...>);
             static_assert(std::is_nothrow_move_constructible_v<Fp>);
 
-            std::construct_at(buffer_cast<Fp>(dst.buffer_), std::forward<Functor>(functor));
+            std::construct_at(
+                buffer_cast<Fp>(dst.buffer_),
+                std::forward<F>(fun));
 
             dst.vtable_ = vtable_t::get<Fp>();
         }
@@ -471,9 +483,8 @@ namespace meta_hpp::detail
     template < typename R, typename... Args >
     fixed_function(R(*)(Args...)) -> fixed_function<R(Args...)>;
 
-    template < typename Functor
-             , typename Signature = impl::strip_signature_impl_t<decltype(&Functor::operator())> >
-    fixed_function(Functor) -> fixed_function<Signature>;
+    template < typename F, typename S = impl::strip_signature_impl_t<decltype(&F::operator())> >
+    fixed_function(F) -> fixed_function<S>;
 }
 
 namespace meta_hpp::detail
@@ -490,6 +501,18 @@ namespace meta_hpp::detail
             return (seed ^= std::hash<T>{}(x) + 0x9e3779b9 + (seed << 6) + (seed >> 2));
         }
     };
+}
+
+namespace meta_hpp::detail
+{
+    template < typename T >
+    struct is_in_place_type : std::false_type {};
+
+    template < typename U >
+    struct is_in_place_type<std::in_place_type_t<U>> : std::true_type {};
+
+    template < typename T >
+    inline constexpr bool is_in_place_type_v = is_in_place_type<T>::value;
 }
 
 namespace meta_hpp::detail
@@ -550,7 +573,7 @@ namespace meta_hpp::detail
     }
 }
 
-namespace meta_hpp::stdex
+namespace meta_hpp::detail
 {
     template < typename Enum >
     [[nodiscard]] constexpr std::underlying_type_t<Enum> to_underlying(Enum e) noexcept {
@@ -702,14 +725,6 @@ namespace meta_hpp::detail
         if constexpr ( void_kind<T> ) { return type_kind::void_; }
     }
 }
-
-#if !defined(__cpp_exceptions)
-#  define META_HPP_NO_EXCEPTIONS
-#endif
-
-#if !defined(__cpp_rtti)
-#  define META_HPP_NO_RTTI
-#endif
 
 namespace meta_hpp
 {
@@ -1573,6 +1588,8 @@ namespace meta_hpp
         [[nodiscard]] constructor get_constructor_with(std::span<const any_type> args) const noexcept;
         [[nodiscard]] constructor get_constructor_with(std::initializer_list<any_type> args) const noexcept;
 
+        [[nodiscard]] destructor get_destructor() const noexcept;
+
         template < typename... Args >
         [[nodiscard]] function get_function_with(std::string_view name) const noexcept;
         template < typename Iter >
@@ -1648,8 +1665,8 @@ namespace meta_hpp
 
         [[nodiscard]] evalue get_evalue(std::string_view name) const noexcept;
 
-        template < typename Value >
-        [[nodiscard]] std::string_view value_to_name(Value&& value) const noexcept;
+        template < detail::enum_kind Enum >
+        [[nodiscard]] std::string_view value_to_name(Enum value) const noexcept;
         [[nodiscard]] uvalue name_to_value(std::string_view name) const noexcept;
     private:
         detail::enum_type_data* data_{};
@@ -2212,13 +2229,34 @@ namespace meta_hpp
         uvalue& operator=(const uvalue& other);
 
         template < detail::decay_non_value_kind T >
-            requires std::copy_constructible<std::decay_t<T>>
+            requires std::is_copy_constructible_v<std::decay_t<T>>
+                && (!detail::is_in_place_type_v<std::remove_cvref_t<T>>)
         // NOLINTNEXTLINE(*-forwarding-reference-overload)
         explicit uvalue(T&& val);
 
         template < detail::decay_non_value_kind T >
-            requires std::copy_constructible<std::decay_t<T>>
+            requires std::is_copy_constructible_v<std::decay_t<T>>
         uvalue& operator=(T&& val);
+
+        template < typename T, typename... Args >
+            requires std::is_copy_constructible_v<std::decay_t<T>>
+                  && std::is_constructible_v<std::decay_t<T>, Args...>
+        explicit uvalue(std::in_place_type_t<T>, Args&&... args);
+
+        template < typename T, typename U, typename... Args >
+            requires std::is_copy_constructible_v<std::decay_t<T>>
+                  && std::is_constructible_v<std::decay_t<T>, std::initializer_list<U>&, Args...>
+        explicit uvalue(std::in_place_type_t<T>, std::initializer_list<U> ilist, Args&&... args);
+
+        template < typename T, typename... Args >
+            requires std::is_copy_constructible_v<std::decay_t<T>>
+                  && std::is_constructible_v<std::decay_t<T>, Args...>
+        std::decay_t<T>& emplace(Args&&... args);
+
+        template < typename T, typename U, typename... Args >
+            requires std::is_copy_constructible_v<std::decay_t<T>>
+                  && std::is_constructible_v<std::decay_t<T>, std::initializer_list<U>&, Args...>
+        std::decay_t<T>& emplace(std::initializer_list<U> ilist, Args&&... args);
 
         [[nodiscard]] bool is_valid() const noexcept;
         [[nodiscard]] explicit operator bool() const noexcept;
@@ -2269,6 +2307,16 @@ namespace meta_hpp
 
     inline void swap(uvalue& l, uvalue& r) noexcept {
         l.swap(r);
+    }
+
+    template < typename T, typename... Args >
+    uvalue make_uvalue(Args&&... args) {
+        return uvalue(std::in_place_type<T>, std::forward<Args>(args)...);
+    }
+
+    template < typename T, typename U, typename... Args >
+    uvalue make_uvalue(std::initializer_list<U> ilist, Args&&... args) {
+        return uvalue(std::in_place_type<T>, ilist, std::forward<Args>(args)...);
     }
 }
 
@@ -5115,7 +5163,7 @@ namespace meta_hpp::detail
         using argument_types = typename ct::argument_types;
 
         constexpr bool as_object =
-            std::copy_constructible<class_type> &&
+            std::is_copy_constructible_v<class_type> &&
             std::same_as<Policy, constructor_policy::as_object>;
 
         constexpr bool as_raw_ptr =
@@ -5136,18 +5184,18 @@ namespace meta_hpp::detail
             }
 
             if constexpr ( as_object ) {
-                class_type return_value{args[Is].cast<type_list_at_t<Is, argument_types>>()...};
-                return uvalue{std::move(return_value)};
+                return make_uvalue<class_type>(
+                    args[Is].cast<type_list_at_t<Is, argument_types>>()...);
             }
 
             if constexpr ( as_raw_ptr ) {
-                auto return_value{std::make_unique<class_type>(args[Is].cast<type_list_at_t<Is, argument_types>>()...)};
-                return uvalue{return_value.release()};
+                return uvalue{std::make_unique<class_type>(
+                    args[Is].cast<type_list_at_t<Is, argument_types>>()...).release()};
             }
 
             if constexpr ( as_shared_ptr ) {
-                auto return_value{std::make_shared<class_type>(args[Is].cast<type_list_at_t<Is, argument_types>>()...)};
-                return uvalue{std::move(return_value)};
+                return uvalue{std::make_shared<class_type>(
+                    args[Is].cast<type_list_at_t<Is, argument_types>>()...)};
             }
         }(std::make_index_sequence<ct::arity>());
     }
@@ -5181,7 +5229,7 @@ namespace meta_hpp::detail
 
     template < class_kind Class, typename... Args >
     argument_list make_constructor_arguments() {
-        using ct = detail::constructor_traits<Class, Args...>;
+        using ct = constructor_traits<Class, Args...>;
         using ct_argument_types = typename ct::argument_types;
 
         argument_list arguments;
@@ -5189,8 +5237,8 @@ namespace meta_hpp::detail
 
         [&arguments]<std::size_t... Is>(std::index_sequence<Is...>) mutable {
             [[maybe_unused]] const auto make_argument = []<std::size_t I>(std::index_sequence<I>){
-                using P = detail::type_list_at_t<I, ct_argument_types>;
-                return argument{detail::argument_state::make<P>(I, metadata_map{})};
+                using P = type_list_at_t<I, ct_argument_types>;
+                return argument{argument_state::make<P>(I, metadata_map{})};
             };
             (arguments.push_back(make_argument(std::index_sequence<Is>{})), ...);
         }(std::make_index_sequence<ct::arity>());
@@ -5495,11 +5543,9 @@ namespace meta_hpp
         return evalue{};
     }
 
-    template < typename Value >
-    std::string_view enum_type::value_to_name(Value&& value) const noexcept {
-        const detail::uarg value_arg{std::forward<Value>(value)};
-
-        if ( value_arg.get_raw_type() != *this ) {
+    template < detail::enum_kind Enum >
+    std::string_view enum_type::value_to_name(Enum value) const noexcept {
+        if ( resolve_type<Enum>() != *this ) {
             return std::string_view{};
         }
 
@@ -5529,7 +5575,7 @@ namespace meta_hpp::detail
             .index{evalue_index::make<Enum>(std::move(name))},
             .metadata{std::move(metadata)},
             .enum_value{uvalue{evalue}},
-            .underlying_value{uvalue{stdex::to_underlying(evalue)}},
+            .underlying_value{uvalue{to_underlying(evalue)}},
         });
     }
 }
@@ -5641,7 +5687,7 @@ namespace meta_hpp::detail
         using argument_types = typename ft::argument_types;
 
         constexpr bool as_copy =
-            std::copy_constructible<return_type> &&
+            std::is_copy_constructible_v<return_type> &&
             std::same_as<Policy, function_policy::as_copy>;
 
         constexpr bool as_void =
@@ -5715,7 +5761,7 @@ namespace meta_hpp::detail
 
     template < function_kind Function >
     argument_list make_function_arguments() {
-        using ft = detail::function_traits<Function>;
+        using ft = function_traits<Function>;
         using ft_argument_types = typename ft::argument_types;
 
         argument_list arguments;
@@ -5723,8 +5769,8 @@ namespace meta_hpp::detail
 
         [&arguments]<std::size_t... Is>(std::index_sequence<Is...>) mutable {
             [[maybe_unused]] const auto make_argument = []<std::size_t I>(std::index_sequence<I>){
-                using P = detail::type_list_at_t<I, ft_argument_types>;
-                return argument{detail::argument_state::make<P>(I, metadata_map{})};
+                using P = type_list_at_t<I, ft_argument_types>;
+                return argument{argument_state::make<P>(I, metadata_map{})};
             };
             (arguments.push_back(make_argument(std::index_sequence<Is>{})), ...);
         }(std::make_index_sequence<ft::arity>());
@@ -6118,7 +6164,7 @@ namespace meta_hpp::detail
         using value_type = typename mt::value_type;
 
         constexpr bool as_copy =
-            std::copy_constructible<value_type> &&
+            std::is_copy_constructible_v<value_type> &&
             std::same_as<Policy, member_policy::as_copy>;
 
         constexpr bool as_ptr =
@@ -6415,7 +6461,7 @@ namespace meta_hpp::detail
         using argument_types = typename mt::argument_types;
 
         constexpr bool as_copy =
-            std::copy_constructible<return_type> &&
+            std::is_copy_constructible_v<return_type> &&
             std::same_as<Policy, method_policy::as_copy>;
 
         constexpr bool as_void =
@@ -6498,7 +6544,7 @@ namespace meta_hpp::detail
 
     template < method_kind Method >
     argument_list make_method_arguments() {
-        using mt = detail::method_traits<Method>;
+        using mt = method_traits<Method>;
         using mt_argument_types = typename mt::argument_types;
 
         argument_list arguments;
@@ -6506,8 +6552,8 @@ namespace meta_hpp::detail
 
         [&arguments]<std::size_t... Is>(std::index_sequence<Is...>) mutable {
             [[maybe_unused]] const auto make_argument = []<std::size_t I>(std::index_sequence<I>){
-                using P = detail::type_list_at_t<I, mt_argument_types>;
-                return argument{detail::argument_state::make<P>(I, metadata_map{})};
+                using P = type_list_at_t<I, mt_argument_types>;
+                return argument{argument_state::make<P>(I, metadata_map{})};
             };
             (arguments.push_back(make_argument(std::index_sequence<Is>{})), ...);
         }(std::make_index_sequence<mt::arity>());
@@ -6664,7 +6710,7 @@ namespace meta_hpp::detail
         using data_type = typename pt::data_type;
 
         constexpr bool as_copy =
-            std::copy_constructible<data_type> &&
+            std::is_copy_constructible_v<data_type> &&
             std::same_as<Policy, variable_policy::as_copy>;
 
         constexpr bool as_ptr =
@@ -7076,7 +7122,7 @@ namespace meta_hpp
 
     template < typename Iter >
     constructor class_type::get_constructor_with(Iter first, Iter last) const noexcept {
-        for ( auto&& [index, ctor] : data_->constructors ) {
+        for ( auto&& [_, ctor] : data_->constructors ) {
             const any_type_list& args = ctor.get_type().get_argument_types();
             if ( std::equal(first, last, args.begin(), args.end()) ) {
                 return ctor;
@@ -7091,6 +7137,19 @@ namespace meta_hpp
 
     inline constructor class_type::get_constructor_with(std::initializer_list<any_type> args) const noexcept {
         return get_constructor_with(args.begin(), args.end());
+    }
+
+    //
+    // get_destructor
+    //
+
+    inline destructor class_type::get_destructor() const noexcept {
+        if ( data_->destructors.empty() ) {
+            return destructor{};
+        }
+
+        auto&& [_, dtor] = *data_->destructors.begin();
+        return dtor;
     }
 
     //
@@ -7831,55 +7890,35 @@ namespace meta_hpp::detail
 
 namespace meta_hpp::detail
 {
-    template < std::copy_constructible T >
+    template < typename T >
+        requires std::is_copy_constructible_v<T>
     struct deref_traits<T*> {
         uvalue operator()(T* v) const {
             return uvalue{*v};
         }
     };
 
-    template < std::copy_constructible T >
+    template < typename T >
+        requires std::is_copy_constructible_v<T>
     struct deref_traits<const T*> {
         uvalue operator()(const T* v) const {
             return uvalue{*v};
         }
     };
 
-    template < std::copy_constructible T >
+    template < typename T >
+        requires std::is_copy_constructible_v<T>
     struct deref_traits<std::shared_ptr<T>> {
         uvalue operator()(const std::shared_ptr<T>& v) const {
             return uvalue{*v};
         }
     };
 
-    template < std::copy_constructible T >
+    template < typename T >
+        requires std::is_copy_constructible_v<T>
     struct deref_traits<std::unique_ptr<T>> {
         uvalue operator()(const std::unique_ptr<T>& v) const {
             return uvalue{*v};
-        }
-    };
-}
-
-namespace meta_hpp::detail
-{
-    template < typename T >
-    struct equals_traits;
-
-    template < typename T >
-    concept has_equals_traits = requires(const T& l, const T& r) {
-        { equals_traits<T>{}(l, r) } -> std::convertible_to<bool>;
-    };
-}
-
-namespace meta_hpp::detail
-{
-    template < typename T >
-        requires requires(const T& l, const T& r) {
-            { std::equal_to<>{}(l, r) } -> std::convertible_to<bool>;
-        }
-    struct equals_traits<T> {
-        bool operator()(const T& l, const T& r) const {
-            return std::equal_to<>{}(l, r);
         }
     };
 }
@@ -7897,7 +7936,8 @@ namespace meta_hpp::detail
 
 namespace meta_hpp::detail
 {
-    template < std::copy_constructible T >
+    template < typename T >
+        requires std::is_copy_constructible_v<T>
     struct index_traits<T*> {
         uvalue operator()(T* v, std::size_t i) const {
             // NOLINTNEXTLINE(*-pointer-arithmetic)
@@ -7905,7 +7945,8 @@ namespace meta_hpp::detail
         }
     };
 
-    template < std::copy_constructible T >
+    template < typename T >
+        requires std::is_copy_constructible_v<T>
     struct index_traits<const T*> {
         uvalue operator()(const T* v, std::size_t i) const {
             // NOLINTNEXTLINE(*-pointer-arithmetic)
@@ -7913,28 +7954,32 @@ namespace meta_hpp::detail
         }
     };
 
-    template < std::copy_constructible T, std::size_t Size >
+    template < typename T, std::size_t Size >
+        requires std::is_copy_constructible_v<T>
     struct index_traits<std::array<T, Size>> {
         uvalue operator()(const std::array<T, Size>& v, std::size_t i) const {
             return uvalue{v[i]};
         }
     };
 
-    template < std::copy_constructible T, std::size_t Extent >
+    template < typename T, std::size_t Extent >
+        requires std::is_copy_constructible_v<T>
     struct index_traits<std::span<T, Extent>> {
         uvalue operator()(const std::span<T, Extent>& v, std::size_t i) const {
             return uvalue{v[i]};
         }
     };
 
-    template < std::copy_constructible T, typename Traits, typename Allocator >
+    template < typename T, typename Traits, typename Allocator >
+        requires std::is_copy_constructible_v<T>
     struct index_traits<std::basic_string<T, Traits, Allocator>> {
         uvalue operator()(const std::basic_string<T, Traits, Allocator>& v, std::size_t i) const {
             return uvalue{v[i]};
         }
     };
 
-    template < std::copy_constructible T, typename Allocator >
+    template < typename T, typename Allocator >
+        requires std::is_copy_constructible_v<T>
     struct index_traits<std::vector<T, Allocator>> {
         uvalue operator()(const std::vector<T, Allocator>& v, std::size_t i) {
             return uvalue{v[i]};
@@ -7962,30 +8007,6 @@ namespace meta_hpp::detail
     struct istream_traits<T> {
         std::istream& operator()(std::istream& is, T& v) const {
             return is >> v;
-        }
-    };
-}
-
-namespace meta_hpp::detail
-{
-    template < typename T >
-    struct less_traits;
-
-    template < typename T >
-    concept has_less_traits = requires(const T& l, const T& r) {
-        { less_traits<T>{}(l, r) } -> std::convertible_to<bool>;
-    };
-}
-
-namespace meta_hpp::detail
-{
-    template < typename T >
-        requires requires(const T& l, const T& r) {
-            { std::less<>{}(l, r) } -> std::convertible_to<bool>;
-        }
-    struct less_traits<T> {
-        bool operator()(const T& l, const T& r) const {
-            return std::less<>{}(l, r);
         }
     };
 }
@@ -8029,9 +8050,6 @@ namespace meta_hpp
         uvalue (*const deref)(const uvalue& from);
         uvalue (*const index)(const uvalue& from, std::size_t);
 
-        bool (*const less)(const uvalue&, const uvalue&);
-        bool (*const equals)(const uvalue&, const uvalue&);
-
         std::istream& (*const istream)(std::istream&, uvalue&);
         std::ostream& (*const ostream)(std::ostream&, const uvalue&);
 
@@ -8065,9 +8083,9 @@ namespace meta_hpp
             }, storage);
         }
 
-        template < typename T >
-        static void construct(uvalue& dst, T&& val) {
-            using Tp = std::decay_t<T>;
+        template < typename T, typename... Args, typename Tp = std::decay_t<T> >
+        static Tp& construct(uvalue& dst, Args&&... args) {
+            assert(!dst); // NOLINT
 
             constexpr bool in_buffer =
                 sizeof(Tp) <= sizeof(buffer_t) &&
@@ -8075,12 +8093,16 @@ namespace meta_hpp
                 std::is_nothrow_move_constructible_v<Tp>;
 
             if constexpr ( in_buffer ) {
-                std::construct_at(buffer_cast<Tp>(dst.storage_.emplace<buffer_t>()), std::forward<T>(val));
+                std::construct_at(
+                    buffer_cast<Tp>(dst.storage_.emplace<buffer_t>()),
+                    std::forward<Args>(args)...);
             } else {
-                dst.storage_.emplace<void*>(std::make_unique<Tp>(std::forward<T>(val)).release());
+                dst.storage_.emplace<void*>(
+                    std::make_unique<Tp>(std::forward<Args>(args)...).release());
             }
 
             dst.vtable_ = vtable_t::get<Tp>();
+            return *storage_cast<Tp>(dst.storage_);
         }
 
         static void swap(uvalue& l, uvalue& r) noexcept {
@@ -8112,6 +8134,8 @@ namespace meta_hpp
         template < typename Tp >
         // NOLINTNEXTLINE(*-cognitive-complexity)
         static vtable_t* get() {
+            static_assert(std::same_as<Tp, std::decay_t<Tp>>);
+
             static vtable_t table{
                 .type = resolve_type<Tp>(),
 
@@ -8195,22 +8219,6 @@ namespace meta_hpp
                     }
                 },
 
-                .less = +[]([[maybe_unused]] const uvalue& l, [[maybe_unused]] const uvalue& r) -> bool {
-                    if constexpr ( detail::has_less_traits<Tp> ) {
-                        return detail::less_traits<Tp>{}(l.get_as<Tp>(), r.get_as<Tp>());
-                    } else {
-                        detail::throw_exception_with("value type doesn't have value less traits");
-                    }
-                },
-
-                .equals = +[]([[maybe_unused]] const uvalue& l, [[maybe_unused]] const uvalue& r) -> bool {
-                    if constexpr ( detail::has_equals_traits<Tp> ) {
-                        return detail::equals_traits<Tp>{}(l.get_as<Tp>(), r.get_as<Tp>());
-                    } else {
-                        detail::throw_exception_with("value type doesn't have value equals traits");
-                    }
-                },
-
                 .istream = +[]([[maybe_unused]] std::istream& is, [[maybe_unused]] uvalue& v) -> std::istream& {
                     if constexpr ( detail::has_istream_traits<Tp> && !detail::pointer_kind<Tp> ) {
                         return detail::istream_traits<Tp>{}(is, v.get_as<Tp>());
@@ -8266,17 +8274,48 @@ namespace meta_hpp
     }
 
     template < detail::decay_non_value_kind T >
-        requires std::copy_constructible<std::decay_t<T>>
+        requires std::is_copy_constructible_v<std::decay_t<T>>
+            && (!detail::is_in_place_type_v<std::remove_cvref_t<T>>)
     // NOLINTNEXTLINE(*-forwarding-reference-overload)
     uvalue::uvalue(T&& val) {
-        vtable_t::construct(*this, std::forward<T>(val));
+        vtable_t::construct<T>(*this, std::forward<T>(val));
     }
 
     template < detail::decay_non_value_kind T >
-        requires std::copy_constructible<std::decay_t<T>>
+        requires std::is_copy_constructible_v<std::decay_t<T>>
     uvalue& uvalue::operator=(T&& val) {
         uvalue{std::forward<T>(val)}.swap(*this);
         return *this;
+    }
+
+    template < typename T, typename... Args >
+        requires std::is_copy_constructible_v<std::decay_t<T>>
+              && std::is_constructible_v<std::decay_t<T>, Args...>
+    uvalue::uvalue(std::in_place_type_t<T>, Args&&... args) {
+        vtable_t::construct<T>(*this, std::forward<Args>(args)...);
+    }
+
+    template < typename T, typename U, typename... Args >
+        requires std::is_copy_constructible_v<std::decay_t<T>>
+              && std::is_constructible_v<std::decay_t<T>, std::initializer_list<U>&, Args...>
+    uvalue::uvalue(std::in_place_type_t<T>, std::initializer_list<U> ilist, Args&&... args) {
+        vtable_t::construct<T>(*this, ilist, std::forward<Args>(args)...);
+    }
+
+    template < typename T, typename... Args >
+        requires std::is_copy_constructible_v<std::decay_t<T>>
+              && std::is_constructible_v<std::decay_t<T>, Args...>
+    std::decay_t<T>& uvalue::emplace(Args&&... args) {
+        reset();
+        return vtable_t::construct<T>(*this, std::forward<Args>(args)...);
+    }
+
+    template < typename T, typename U, typename... Args >
+        requires std::is_copy_constructible_v<std::decay_t<T>>
+              && std::is_constructible_v<std::decay_t<T>, std::initializer_list<U>&, Args...>
+    std::decay_t<T>& uvalue::emplace(std::initializer_list<U> ilist, Args&&... args) {
+        reset();
+        return vtable_t::construct<T>(*this, ilist, std::forward<Args>(args)...);
     }
 
     inline bool uvalue::is_valid() const noexcept {
@@ -8489,7 +8528,7 @@ namespace meta_hpp
 
 namespace meta_hpp
 {
-    template < typename T >
+    template < detail::decay_non_value_kind T >
     [[nodiscard]] bool operator<(const uvalue& l, const T& r) {
         if ( !static_cast<bool>(l) ) {
             return true;
@@ -8501,7 +8540,7 @@ namespace meta_hpp
         return (l_type < r_type) || (l_type == r_type && l.get_as<T>() < r);
     }
 
-    template < typename T >
+    template < detail::decay_non_value_kind T >
     [[nodiscard]] bool operator<(const T& l, const uvalue& r) {
         if ( !static_cast<bool>(r) ) {
             return false;
@@ -8512,26 +8551,11 @@ namespace meta_hpp
 
         return (l_type < r_type) || (l_type == r_type && l < r.get_as<T>());
     }
-
-    [[nodiscard]] inline bool operator<(const uvalue& l, const uvalue& r) {
-        if ( !static_cast<bool>(r) ) {
-            return false;
-        }
-
-        if ( !static_cast<bool>(l) ) {
-            return true;
-        }
-
-        const any_type& l_type = l.get_type();
-        const any_type& r_type = r.get_type();
-
-        return (l_type < r_type) || (l_type == r_type && l.vtable_->less(l, r));
-    }
 }
 
 namespace meta_hpp
 {
-    template < typename T >
+    template < detail::decay_non_value_kind T >
     [[nodiscard]] bool operator==(const uvalue& l, const T& r) {
         if ( !static_cast<bool>(l) ) {
             return false;
@@ -8543,7 +8567,7 @@ namespace meta_hpp
         return l_type == r_type && l.get_as<T>() == r;
     }
 
-    template < typename T >
+    template < detail::decay_non_value_kind T >
     [[nodiscard]] bool operator==(const T& l, const uvalue& r) {
         if ( !static_cast<bool>(r) ) {
             return false;
@@ -8554,30 +8578,17 @@ namespace meta_hpp
 
         return l_type == r_type && l == r.get_as<T>();
     }
-
-    [[nodiscard]] inline bool operator==(const uvalue& l, const uvalue& r) {
-        if ( static_cast<bool>(l) != static_cast<bool>(r) ) {
-            return false;
-        }
-
-        if ( !static_cast<bool>(l) ) {
-            return true;
-        }
-
-        const any_type& l_type = l.get_type();
-        const any_type& r_type = r.get_type();
-
-        return l_type == r_type && l.vtable_->equals(l, r);
-    }
 }
 
 namespace meta_hpp
 {
     inline std::istream& operator>>(std::istream& is, uvalue& v) {
+        assert(v && "bad operator call"); // NOLINT
         return v.vtable_->istream(is, v);
     }
 
     inline std::ostream& operator<<(std::ostream& os, const uvalue& v) {
+        assert(v && "bad operator call"); // NOLINT
         return v.vtable_->ostream(os, v);
     }
 }

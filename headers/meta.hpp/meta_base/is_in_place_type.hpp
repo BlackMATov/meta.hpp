@@ -10,16 +10,12 @@
 
 namespace meta_hpp::detail
 {
-    struct hash_combiner {
-        template < typename T >
-        [[nodiscard]] std::size_t operator()(const T& x) noexcept {
-            return std::hash<T>{}(x);
-        }
+    template < typename T >
+    struct is_in_place_type : std::false_type {};
 
-        template < typename T >
-        [[nodiscard]] std::size_t operator()(std::size_t seed, const T& x) noexcept {
-            // NOLINTNEXTLINE(*-magic-numbers)
-            return (seed ^= std::hash<T>{}(x) + 0x9e3779b9 + (seed << 6) + (seed >> 2));
-        }
-    };
+    template < typename U >
+    struct is_in_place_type<std::in_place_type_t<U>> : std::true_type {};
+
+    template < typename T >
+    inline constexpr bool is_in_place_type_v = is_in_place_type<T>::value;
 }

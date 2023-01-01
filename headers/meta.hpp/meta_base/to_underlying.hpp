@@ -6,9 +6,9 @@
 
 #pragma once
 
-#include <type_traits>
+#include "base.hpp"
 
-namespace meta_hpp::stdex
+namespace meta_hpp::detail
 {
     template < typename Enum >
     [[nodiscard]] constexpr std::underlying_type_t<Enum> to_underlying(Enum e) noexcept {

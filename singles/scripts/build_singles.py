@@ -34,7 +34,7 @@ def CollectSystemIncludes(headerPath, parsedHeaders = set()):
             return set()
 
         headerIncludes = set()
-        
+
         parsedHeaders.add(headerPath)
         headerLines = headerContent.split('\n')
 
@@ -56,7 +56,7 @@ def ParseHeader(headerPath, parsedHeaders = set()):
 
         if PRAGMA_ONCE_MATCHER.search(headerContent) and headerPath in parsedHeaders:
             return ""
-        
+
         parsedHeaders.add(headerPath)
         headerLines = headerContent.split('\n')
 
@@ -70,7 +70,7 @@ def ParseHeader(headerPath, parsedHeaders = set()):
             if PRAGMA_ONCE_MATCHER.match(headerLine):
                 shouldSkipNextEmptyLines = True
                 continue
-        
+
             includeMatch = USER_INCLUDE_MATCHER.findall(headerLine)
             if includeMatch:
                 internalHeaderPath = os.path.abspath(os.path.join(os.path.dirname(headerPath), includeMatch[0]))
@@ -79,7 +79,7 @@ def ParseHeader(headerPath, parsedHeaders = set()):
                 outputContent += internalHeaderContent
                 shouldSkipNextEmptyLines = True
                 continue
-            
+
             includeMatch = SYSTEM_INCLUDE_MATCHER.findall(headerLine)
             if includeMatch:
                 shouldSkipNextEmptyLines = True
@@ -105,7 +105,7 @@ with open(outputHeaderPath, "w") as outputHeaderStream:
 
     outputHeaderStream.write("{}\n".format(licenseComment))
     outputHeaderStream.write("\n")
-    
+
     for systemInclude in sorted(systemIncludes):
         outputHeaderStream.write("#include <{}>\n".format(systemInclude))
     outputHeaderStream.write("\n")

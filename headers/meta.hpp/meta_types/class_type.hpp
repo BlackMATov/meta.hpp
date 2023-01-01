@@ -274,7 +274,7 @@ namespace meta_hpp
 
     template < typename Iter >
     constructor class_type::get_constructor_with(Iter first, Iter last) const noexcept {
-        for ( auto&& [index, ctor] : data_->constructors ) {
+        for ( auto&& [_, ctor] : data_->constructors ) {
             const any_type_list& args = ctor.get_type().get_argument_types();
             if ( std::equal(first, last, args.begin(), args.end()) ) {
                 return ctor;
@@ -289,6 +289,19 @@ namespace meta_hpp
 
     inline constructor class_type::get_constructor_with(std::initializer_list<any_type> args) const noexcept {
         return get_constructor_with(args.begin(), args.end());
+    }
+
+    //
+    // get_destructor
+    //
+
+    inline destructor class_type::get_destructor() const noexcept {
+        if ( data_->destructors.empty() ) {
+            return destructor{};
+        }
+
+        auto&& [_, dtor] = *data_->destructors.begin();
+        return dtor;
     }
 
     //

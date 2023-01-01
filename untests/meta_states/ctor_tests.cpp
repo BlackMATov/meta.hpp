@@ -99,8 +99,8 @@ TEST_CASE("meta/meta_states/ctor") {
         }
 
         CHECK(clazz<1>::constructor_counter == 1);
-        CHECK(clazz<1>::destructor_counter == 2);
-        CHECK(clazz<1>::move_constructor_counter == 1);
+        CHECK(clazz<1>::destructor_counter == 1);
+        CHECK(clazz<1>::move_constructor_counter == 0);
         CHECK(clazz<1>::copy_constructor_counter == 0);
     }
 

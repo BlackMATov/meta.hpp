@@ -19,7 +19,7 @@ namespace meta_hpp::detail
             .index{evalue_index::make<Enum>(std::move(name))},
             .metadata{std::move(metadata)},
             .enum_value{uvalue{evalue}},
-            .underlying_value{uvalue{stdex::to_underlying(evalue)}},
+            .underlying_value{uvalue{to_underlying(evalue)}},
         });
     }
 }

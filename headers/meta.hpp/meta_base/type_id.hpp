@@ -6,10 +6,7 @@
 
 #pragma once
 
-#include <atomic>
-#include <cstdint>
-#include <functional>
-
+#include "base.hpp"
 #include "type_list.hpp"
 
 namespace meta_hpp::detail
