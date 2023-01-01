@@ -5182,18 +5182,18 @@ namespace meta_hpp::detail
             }
 
             if constexpr ( as_object ) {
-                class_type return_value{args[Is].cast<type_list_at_t<Is, argument_types>>()...};
-                return uvalue{std::move(return_value)};
+                return make_uvalue<class_type>(
+                    args[Is].cast<type_list_at_t<Is, argument_types>>()...);
             }
 
             if constexpr ( as_raw_ptr ) {
-                auto return_value{std::make_unique<class_type>(args[Is].cast<type_list_at_t<Is, argument_types>>()...)};
-                return uvalue{return_value.release()};
+                return uvalue{std::make_unique<class_type>(
+                    args[Is].cast<type_list_at_t<Is, argument_types>>()...).release()};
             }
 
             if constexpr ( as_shared_ptr ) {
-                auto return_value{std::make_shared<class_type>(args[Is].cast<type_list_at_t<Is, argument_types>>()...)};
-                return uvalue{std::move(return_value)};
+                return uvalue{std::make_shared<class_type>(
+                    args[Is].cast<type_list_at_t<Is, argument_types>>()...)};
             }
         }(std::make_index_sequence<ct::arity>());
     }
