@@ -31,10 +31,6 @@
 #include <variant>
 #include <vector>
 
-#define META_HPP_VERSION_MAJOR 0
-#define META_HPP_VERSION_MINOR 0
-#define META_HPP_VERSION_PATCH 1
-
 #if !defined(__cpp_exceptions)
 #  define META_HPP_NO_EXCEPTIONS
 #endif

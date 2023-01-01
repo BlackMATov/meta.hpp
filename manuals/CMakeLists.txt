@@ -29,11 +29,11 @@ setup_defines_for_target(${PROJECT_NAME}.singles)
 function(setup_libraries_for_target TARGET)
     target_link_libraries(${TARGET} PRIVATE doctest::doctest_with_main)
 
-    if(${BUILD_WITH_COVERAGE})
+    if(BUILD_WITH_COVERAGE)
         target_link_libraries(${TARGET} PRIVATE meta.hpp::enable_gcov)
     endif()
 
-    if(${BUILD_WITH_SANITIZERS})
+    if(BUILD_WITH_SANITIZERS)
         target_link_libraries(${TARGET} PRIVATE meta.hpp::enable_asan meta.hpp::enable_ubsan)
     endif()
 endfunction()
