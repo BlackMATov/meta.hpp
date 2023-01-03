@@ -25,9 +25,9 @@ namespace meta_hpp
         using namespace detail;
         if constexpr ( sizeof...(Args) > 0 ) {
             const std::array<uarg, sizeof...(Args)> vargs{uarg{std::forward<Args>(args)}...};
-            return raw_function_invoke<function_policy::as_copy>(std::forward<Function>(function), vargs);
+            return raw_function_invoke<function_policy::as_copy_t>(std::forward<Function>(function), vargs);
         } else {
-            return raw_function_invoke<function_policy::as_copy>(std::forward<Function>(function), {});
+            return raw_function_invoke<function_policy::as_copy_t>(std::forward<Function>(function), {});
         }
     }
 }
@@ -43,7 +43,7 @@ namespace meta_hpp
     uvalue invoke(Member&& member, Instance&& instance) {
         using namespace detail;
         const uinst vinst{std::forward<Instance>(instance)};
-        return raw_member_getter<member_policy::as_copy>(std::forward<Member>(member), vinst);
+        return raw_member_getter<member_policy::as_copy_t>(std::forward<Member>(member), vinst);
     }
 }
 
@@ -60,9 +60,9 @@ namespace meta_hpp
         const uinst vinst{std::forward<Instance>(instance)};
         if constexpr ( sizeof...(Args) > 0 ) {
             const std::array<uarg, sizeof...(Args)> vargs{uarg{std::forward<Args>(args)}...};
-            return raw_method_invoke<method_policy::as_copy>(std::forward<Method>(method), vinst, vargs);
+            return raw_method_invoke<method_policy::as_copy_t>(std::forward<Method>(method), vinst, vargs);
         } else {
-            return raw_method_invoke<method_policy::as_copy>(std::forward<Method>(method), vinst, {});
+            return raw_method_invoke<method_policy::as_copy_t>(std::forward<Method>(method), vinst, {});
         }
     }
 }

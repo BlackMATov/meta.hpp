@@ -24,15 +24,15 @@ namespace meta_hpp::detail
 
         constexpr bool as_copy =
             std::is_copy_constructible_v<return_type> &&
-            std::same_as<Policy, method_policy::as_copy>;
+            std::is_same_v<Policy, method_policy::as_copy_t>;
 
         constexpr bool as_void =
             std::is_void_v<return_type> ||
-            std::same_as<Policy, method_policy::discard_return>;
+            std::is_same_v<Policy, method_policy::discard_return_t>;
 
         constexpr bool ref_as_ptr =
             std::is_reference_v<return_type> &&
-            std::same_as<Policy, method_policy::return_reference_as_pointer>;
+            std::is_same_v<Policy, method_policy::return_reference_as_pointer_t>;
 
         static_assert(as_copy || as_void || ref_as_ptr);
 
@@ -53,7 +53,7 @@ namespace meta_hpp::detail
                 (inst.cast<qualified_type>().*method)(
                     args[Is].cast<type_list_at_t<Is, argument_types>>()...);
                 return uvalue{};
-            } else if constexpr ( std::same_as<Policy, method_policy::discard_return> ) {
+            } else if constexpr ( std::is_same_v<Policy, method_policy::discard_return_t> ) {
                 std::ignore = (inst.cast<qualified_type>().*method)(
                     args[Is].cast<type_list_at_t<Is, argument_types>>()...);
                 return uvalue{};

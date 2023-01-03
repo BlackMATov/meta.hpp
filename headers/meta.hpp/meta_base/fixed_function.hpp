@@ -38,14 +38,14 @@ namespace meta_hpp::detail
         }
 
         template < typename F >
-            requires (!std::same_as<fixed_function, std::decay_t<F>>)
+            requires (!std::is_same_v<fixed_function, std::decay_t<F>>)
         // NOLINTNEXTLINE(*-forwarding-reference-overload)
         fixed_function(F&& fun) {
             vtable_t::construct(*this, std::forward<F>(fun));
         }
 
         template < typename F >
-            requires (!std::same_as<fixed_function, std::decay_t<F>>)
+            requires (!std::is_same_v<fixed_function, std::decay_t<F>>)
         fixed_function& operator=(F&& fun) {
             fixed_function{std::forward<F>(fun)}.swap(*this);
             return *this;
@@ -111,7 +111,7 @@ namespace meta_hpp::detail
 
         template < typename Fp >
         static vtable_t* get() {
-            static_assert(std::same_as<Fp, std::decay_t<Fp>>);
+            static_assert(std::is_same_v<Fp, std::decay_t<Fp>>);
 
             static vtable_t table{
                 .call = +[](const fixed_function& self, Args... args) -> R {

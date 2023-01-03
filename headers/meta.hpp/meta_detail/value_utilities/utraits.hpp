@@ -7,38 +7,19 @@
 #pragma once
 
 #include "../../meta_base.hpp"
+#include "../../meta_registry.hpp"
 #include "../../meta_uvalue.hpp"
 
 namespace meta_hpp::detail
 {
-    template < typename T >
-    inline constexpr bool is_uvalue_kind_v =
-        std::same_as<T, uarg_base> ||
-        std::same_as<T, uarg> ||
-        std::same_as<T, uinst_base> ||
-        std::same_as<T, uinst> ||
-        std::same_as<T, uvalue>;
-
-    template < typename T >
-    concept uvalue_kind = is_uvalue_kind_v<T>;
-
-    template < typename T >
-    concept decay_uvalue_kind = uvalue_kind<std::decay_t<T>>;
-
-    template < typename T >
-    concept decay_non_uvalue_kind = !decay_uvalue_kind<T>;
-}
-
-namespace meta_hpp::detail
-{
-    template < typename T >
+    template < typename T, typename Tp = std::decay_t<T> >
     concept arg_lvalue_ref_kind =
-        (decay_non_uvalue_kind<T>) &&
+        (!any_uvalue_kind<Tp>) &&
         (std::is_lvalue_reference_v<T>);
 
-    template < typename T >
+    template < typename T, typename Tp = std::decay_t<T> >
     concept arg_rvalue_ref_kind =
-        (decay_non_uvalue_kind<T>) &&
+        (!any_uvalue_kind<Tp>) &&
         (!std::is_reference_v<T> || std::is_rvalue_reference_v<T>);
 }
 
@@ -49,15 +30,15 @@ namespace meta_hpp::detail
         (std::is_class_v<T>) ||
         (std::is_reference_v<T> && std::is_class_v<std::remove_reference_t<T>>);
 
-    template < typename T >
+    template < typename T, typename Tp = std::decay_t<T> >
     concept inst_class_lvalue_ref_kind =
-        (decay_non_uvalue_kind<T>) &&
+        (!any_uvalue_kind<Tp>) &&
         (std::is_lvalue_reference_v<T>) &&
         (std::is_class_v<std::remove_pointer_t<std::remove_reference_t<T>>>);
 
-    template < typename T >
+    template < typename T, typename Tp = std::decay_t<T> >
     concept inst_class_rvalue_ref_kind =
-        (decay_non_uvalue_kind<T>) &&
+        (!any_uvalue_kind<Tp>) &&
         (!std::is_reference_v<T> || std::is_rvalue_reference_v<T>) &&
         (std::is_class_v<std::remove_pointer_t<std::remove_reference_t<T>>>);
 }

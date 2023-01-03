@@ -24,8 +24,8 @@ TEST_CASE("meta/meta_states/member") {
         .member_("int_member", &clazz_1::int_member)
         .member_("const_int_member", &clazz_1::const_int_member)
         // .member_("unique_int_member", &clazz_1::unique_int_member)
-        .member_("unique_int_member_as_ptr", &clazz_1::unique_int_member, meta::member_policy::as_pointer{})
-        .member_("unique_int_member_as_ref", &clazz_1::unique_int_member, meta::member_policy::as_reference_wrapper{});
+        .member_("unique_int_member_as_ptr", &clazz_1::unique_int_member, meta::member_policy::as_pointer)
+        .member_("unique_int_member_as_ref", &clazz_1::unique_int_member, meta::member_policy::as_reference_wrapper);
 
     const meta::class_type clazz_1_type = meta::resolve_type<clazz_1>();
     REQUIRE(clazz_1_type);

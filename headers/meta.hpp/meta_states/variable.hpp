@@ -21,13 +21,13 @@ namespace meta_hpp::detail
 
         constexpr bool as_copy =
             std::is_copy_constructible_v<data_type> &&
-            std::same_as<Policy, variable_policy::as_copy>;
+            std::is_same_v<Policy, variable_policy::as_copy_t>;
 
         constexpr bool as_ptr =
-            std::same_as<Policy, variable_policy::as_pointer>;
+            std::is_same_v<Policy, variable_policy::as_pointer_t>;
 
         constexpr bool as_ref_wrap =
-            std::same_as<Policy, variable_policy::as_reference_wrapper>;
+            std::is_same_v<Policy, variable_policy::as_reference_wrapper_t>;
 
         static_assert(as_copy || as_ptr || as_ref_wrap);
 

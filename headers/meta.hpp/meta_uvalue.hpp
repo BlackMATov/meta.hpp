@@ -12,16 +12,16 @@
 namespace meta_hpp::detail
 {
     template < typename T >
-    inline constexpr bool is_value_kind_v = std::same_as<T, uvalue>;
+    concept uvalue_kind
+        = std::is_same_v<T, uvalue>;
 
     template < typename T >
-    concept value_kind = is_value_kind_v<T>;
-
-    template < typename T >
-    concept decay_value_kind = value_kind<std::decay_t<T>>;
-
-    template < typename T >
-    concept decay_non_value_kind = !decay_value_kind<T>;
+    concept any_uvalue_kind =
+        std::is_same_v<T, uarg_base> ||
+        std::is_same_v<T, uarg> ||
+        std::is_same_v<T, uinst_base> ||
+        std::is_same_v<T, uinst> ||
+        std::is_same_v<T, uvalue>;
 }
 
 namespace meta_hpp
@@ -37,34 +37,37 @@ namespace meta_hpp
         uvalue& operator=(uvalue&& other) noexcept;
         uvalue& operator=(const uvalue& other);
 
-        template < detail::decay_non_value_kind T >
-            requires std::is_copy_constructible_v<std::decay_t<T>>
-                && (!detail::is_in_place_type_v<std::remove_cvref_t<T>>)
+        template < typename T, typename Tp = std::decay_t<T> >
+            requires (!detail::any_uvalue_kind<Tp>)
+                  && (!detail::is_in_place_type_v<Tp>)
+                  && (std::is_copy_constructible_v<Tp>)
         // NOLINTNEXTLINE(*-forwarding-reference-overload)
         explicit uvalue(T&& val);
 
-        template < detail::decay_non_value_kind T >
-            requires std::is_copy_constructible_v<std::decay_t<T>>
+        template < typename T, typename Tp = std::decay_t<T> >
+            requires (!detail::any_uvalue_kind<Tp>)
+                  && (!detail::is_in_place_type_v<Tp>)
+                  && (std::is_copy_constructible_v<Tp>)
         uvalue& operator=(T&& val);
 
-        template < typename T, typename... Args >
-            requires std::is_copy_constructible_v<std::decay_t<T>>
-                  && std::is_constructible_v<std::decay_t<T>, Args...>
+        template < typename T, typename... Args, typename Tp = std::decay_t<T> >
+            requires std::is_copy_constructible_v<Tp>
+                  && std::is_constructible_v<Tp, Args...>
         explicit uvalue(std::in_place_type_t<T>, Args&&... args);
 
-        template < typename T, typename U, typename... Args >
-            requires std::is_copy_constructible_v<std::decay_t<T>>
-                  && std::is_constructible_v<std::decay_t<T>, std::initializer_list<U>&, Args...>
+        template < typename T, typename U, typename... Args, typename Tp = std::decay_t<T> >
+            requires std::is_copy_constructible_v<Tp>
+                  && std::is_constructible_v<Tp, std::initializer_list<U>&, Args...>
         explicit uvalue(std::in_place_type_t<T>, std::initializer_list<U> ilist, Args&&... args);
 
-        template < typename T, typename... Args >
-            requires std::is_copy_constructible_v<std::decay_t<T>>
-                  && std::is_constructible_v<std::decay_t<T>, Args...>
+        template < typename T, typename... Args, typename Tp = std::decay_t<T> >
+            requires std::is_copy_constructible_v<Tp>
+                  && std::is_constructible_v<Tp, Args...>
         std::decay_t<T>& emplace(Args&&... args);
 
-        template < typename T, typename U, typename... Args >
-            requires std::is_copy_constructible_v<std::decay_t<T>>
-                  && std::is_constructible_v<std::decay_t<T>, std::initializer_list<U>&, Args...>
+        template < typename T, typename U, typename... Args, typename Tp = std::decay_t<T> >
+            requires std::is_copy_constructible_v<Tp>
+                  && std::is_constructible_v<Tp, std::initializer_list<U>&, Args...>
         std::decay_t<T>& emplace(std::initializer_list<U> ilist, Args&&... args);
 
         [[nodiscard]] bool is_valid() const noexcept;
@@ -98,8 +101,6 @@ namespace meta_hpp
         [[nodiscard]] auto try_get_as() const noexcept
             -> std::conditional_t<detail::pointer_kind<T>, T, const T*>;
 
-        friend bool operator<(const uvalue& l, const uvalue& r);
-        friend bool operator==(const uvalue& l, const uvalue& r);
         friend std::istream& operator>>(std::istream& is, uvalue& v);
         friend std::ostream& operator<<(std::ostream& os, const uvalue& v);
     private:

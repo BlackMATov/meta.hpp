@@ -32,12 +32,12 @@ namespace meta_hpp::detail
     template < typename Class, typename Member >
     concept class_bind_member_kind =
         class_kind<Class> && member_kind<Member> &&
-        std::same_as<Class, typename member_traits<Member>::class_type>;
+        std::is_same_v<Class, typename member_traits<Member>::class_type>;
 
     template < typename Class, typename Method >
     concept class_bind_method_kind =
         class_kind<Class> && method_kind<Method> &&
-        std::same_as<Class, typename method_traits<Method>::class_type>;
+        std::is_same_v<Class, typename method_traits<Method>::class_type>;
 }
 
 namespace meta_hpp
@@ -111,12 +111,12 @@ namespace meta_hpp
         // constructor_
 
         template < typename... Args
-                 , constructor_policy_kind Policy = constructor_policy::as_object >
+                 , constructor_policy_kind Policy = constructor_policy::as_object_t >
         class_bind& constructor_(Policy = Policy{})
             requires detail::class_bind_constructor_kind<Class, Args...>;
 
         template < typename... Args
-                 , constructor_policy_kind Policy = constructor_policy::as_object >
+                 , constructor_policy_kind Policy = constructor_policy::as_object_t >
         class_bind& constructor_(constructor_opts opts, Policy = Policy{})
             requires detail::class_bind_constructor_kind<Class, Args...>;
 
@@ -131,14 +131,14 @@ namespace meta_hpp
         // function_
 
         template < detail::function_kind Function
-                 , function_policy_kind Policy = function_policy::as_copy >
+                 , function_policy_kind Policy = function_policy::as_copy_t >
         class_bind& function_(
             std::string name,
             Function function,
             Policy = Policy{});
 
         template < detail::function_kind Function
-                 , function_policy_kind Policy = function_policy::as_copy >
+                 , function_policy_kind Policy = function_policy::as_copy_t >
         class_bind& function_(
             std::string name,
             Function function,
@@ -146,7 +146,7 @@ namespace meta_hpp
             Policy = Policy{});
 
         template < detail::function_kind Function
-                 , function_policy_kind Policy = function_policy::as_copy >
+                 , function_policy_kind Policy = function_policy::as_copy_t >
         class_bind& function_(
             std::string name,
             Function function,
@@ -156,7 +156,7 @@ namespace meta_hpp
         // member_
 
         template < detail::member_kind Member
-                 , member_policy_kind Policy = member_policy::as_copy >
+                 , member_policy_kind Policy = member_policy::as_copy_t >
         class_bind& member_(
             std::string name,
             Member member,
@@ -164,7 +164,7 @@ namespace meta_hpp
             requires detail::class_bind_member_kind<Class, Member>;
 
         template < detail::member_kind Member
-                 , member_policy_kind Policy = member_policy::as_copy >
+                 , member_policy_kind Policy = member_policy::as_copy_t >
         class_bind& member_(
             std::string name,
             Member member,
@@ -175,7 +175,7 @@ namespace meta_hpp
         // method_
 
         template < detail::method_kind Method
-                 , method_policy_kind Policy = method_policy::as_copy >
+                 , method_policy_kind Policy = method_policy::as_copy_t >
         class_bind& method_(
             std::string name,
             Method method,
@@ -183,7 +183,7 @@ namespace meta_hpp
             requires detail::class_bind_method_kind<Class, Method>;
 
         template < detail::method_kind Method
-                 , method_policy_kind Policy = method_policy::as_copy >
+                 , method_policy_kind Policy = method_policy::as_copy_t >
         class_bind& method_(
             std::string name,
             Method method,
@@ -192,7 +192,7 @@ namespace meta_hpp
             requires detail::class_bind_method_kind<Class, Method>;
 
         template < detail::method_kind Method
-                 , method_policy_kind Policy = method_policy::as_copy >
+                 , method_policy_kind Policy = method_policy::as_copy_t >
         class_bind& method_(
             std::string name,
             Method method,
@@ -208,14 +208,14 @@ namespace meta_hpp
         // variable_
 
         template < detail::pointer_kind Pointer
-                 , variable_policy_kind Policy = variable_policy::as_copy >
+                 , variable_policy_kind Policy = variable_policy::as_copy_t >
         class_bind& variable_(
             std::string name,
             Pointer pointer,
             Policy = Policy{});
 
         template < detail::pointer_kind Pointer
-                 , variable_policy_kind Policy = variable_policy::as_copy >
+                 , variable_policy_kind Policy = variable_policy::as_copy_t >
         class_bind& variable_(
             std::string name,
             Pointer pointer,
@@ -361,14 +361,14 @@ namespace meta_hpp
         // function_
 
         template < detail::function_kind Function
-                 , function_policy_kind Policy = function_policy::as_copy >
+                 , function_policy_kind Policy = function_policy::as_copy_t >
         scope_bind& function_(
             std::string name,
             Function function,
             Policy = Policy{});
 
         template < detail::function_kind Function
-                 , function_policy_kind Policy = function_policy::as_copy >
+                 , function_policy_kind Policy = function_policy::as_copy_t >
         scope_bind& function_(
             std::string name,
             Function function,
@@ -376,7 +376,7 @@ namespace meta_hpp
             Policy = Policy{});
 
         template < detail::function_kind Function
-                 , function_policy_kind Policy = function_policy::as_copy >
+                 , function_policy_kind Policy = function_policy::as_copy_t >
         scope_bind& function_(
             std::string name,
             Function function,
@@ -391,14 +391,14 @@ namespace meta_hpp
         // variable_
 
         template < detail::pointer_kind Pointer
-                 , variable_policy_kind Policy = variable_policy::as_copy >
+                 , variable_policy_kind Policy = variable_policy::as_copy_t >
         scope_bind& variable_(
             std::string name,
             Pointer pointer,
             Policy = Policy{});
 
         template < detail::pointer_kind Pointer
-                 , variable_policy_kind Policy = variable_policy::as_copy >
+                 , variable_policy_kind Policy = variable_policy::as_copy_t >
         scope_bind& variable_(
             std::string name,
             Pointer pointer,
