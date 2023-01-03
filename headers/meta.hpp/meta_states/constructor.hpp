@@ -22,13 +22,13 @@ namespace meta_hpp::detail
 
         constexpr bool as_object =
             std::is_copy_constructible_v<class_type> &&
-            std::same_as<Policy, constructor_policy::as_object_t>;
+            std::is_same_v<Policy, constructor_policy::as_object_t>;
 
         constexpr bool as_raw_ptr =
-            std::same_as<Policy, constructor_policy::as_raw_pointer_t>;
+            std::is_same_v<Policy, constructor_policy::as_raw_pointer_t>;
 
         constexpr bool as_shared_ptr =
-            std::same_as<Policy, constructor_policy::as_shared_pointer_t>;
+            std::is_same_v<Policy, constructor_policy::as_shared_pointer_t>;
 
         static_assert(as_object || as_raw_ptr || as_shared_ptr);
 

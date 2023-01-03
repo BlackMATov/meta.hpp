@@ -32,12 +32,12 @@ namespace meta_hpp::detail
     template < typename Class, typename Member >
     concept class_bind_member_kind =
         class_kind<Class> && member_kind<Member> &&
-        std::same_as<Class, typename member_traits<Member>::class_type>;
+        std::is_same_v<Class, typename member_traits<Member>::class_type>;
 
     template < typename Class, typename Method >
     concept class_bind_method_kind =
         class_kind<Class> && method_kind<Method> &&
-        std::same_as<Class, typename method_traits<Method>::class_type>;
+        std::is_same_v<Class, typename method_traits<Method>::class_type>;
 }
 
 namespace meta_hpp

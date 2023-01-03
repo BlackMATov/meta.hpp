@@ -116,7 +116,7 @@ namespace meta_hpp
         template < typename Tp >
         // NOLINTNEXTLINE(*-cognitive-complexity)
         static vtable_t* get() {
-            static_assert(std::same_as<Tp, std::decay_t<Tp>>);
+            static_assert(std::is_same_v<Tp, std::decay_t<Tp>>);
 
             static vtable_t table{
                 .type = resolve_type<Tp>(),
@@ -348,7 +348,7 @@ namespace meta_hpp
 
     template < typename T >
     auto uvalue::get_as() -> std::conditional_t<detail::pointer_kind<T>, T, T&> {
-        static_assert(std::same_as<T, std::decay_t<T>>);
+        static_assert(std::is_same_v<T, std::decay_t<T>>);
 
         if constexpr ( detail::pointer_kind<T> ) {
             if ( T ptr = try_get_as<T>(); ptr || get_type().is_nullptr() ) {
@@ -365,7 +365,7 @@ namespace meta_hpp
 
     template < typename T >
     auto uvalue::get_as() const -> std::conditional_t<detail::pointer_kind<T>, T, const T&> {
-        static_assert(std::same_as<T, std::decay_t<T>>);
+        static_assert(std::is_same_v<T, std::decay_t<T>>);
 
         if constexpr ( detail::pointer_kind<T> ) {
             if ( T ptr = try_get_as<T>(); ptr || get_type().is_nullptr() ) {
@@ -383,7 +383,7 @@ namespace meta_hpp
     template < typename T >
     // NOLINTNEXTLINE(*-cognitive-complexity)
     auto uvalue::try_get_as() noexcept -> std::conditional_t<detail::pointer_kind<T>, T, T*> {
-        static_assert(std::same_as<T, std::decay_t<T>>);
+        static_assert(std::is_same_v<T, std::decay_t<T>>);
 
         const any_type& from_type = get_type();
         const any_type& to_type = resolve_type<T>();
@@ -448,7 +448,7 @@ namespace meta_hpp
     template < typename T >
     // NOLINTNEXTLINE(*-cognitive-complexity)
     auto uvalue::try_get_as() const noexcept -> std::conditional_t<detail::pointer_kind<T>, T, const T*> {
-        static_assert(std::same_as<T, std::decay_t<T>>);
+        static_assert(std::is_same_v<T, std::decay_t<T>>);
 
         const any_type& from_type = get_type();
         const any_type& to_type = resolve_type<T>();

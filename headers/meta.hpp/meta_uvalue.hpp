@@ -13,15 +13,15 @@ namespace meta_hpp::detail
 {
     template < typename T >
     concept uvalue_kind
-        = std::same_as<T, uvalue>;
+        = std::is_same_v<T, uvalue>;
 
     template < typename T >
     concept any_uvalue_kind =
-        std::same_as<T, uarg_base> ||
-        std::same_as<T, uarg> ||
-        std::same_as<T, uinst_base> ||
-        std::same_as<T, uinst> ||
-        std::same_as<T, uvalue>;
+        std::is_same_v<T, uarg_base> ||
+        std::is_same_v<T, uarg> ||
+        std::is_same_v<T, uinst_base> ||
+        std::is_same_v<T, uinst> ||
+        std::is_same_v<T, uvalue>;
 }
 
 namespace meta_hpp

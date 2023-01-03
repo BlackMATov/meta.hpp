@@ -308,14 +308,14 @@ namespace meta_hpp::detail
         }
 
         template < typename F >
-            requires (!std::same_as<fixed_function, std::decay_t<F>>)
+            requires (!std::is_same_v<fixed_function, std::decay_t<F>>)
         // NOLINTNEXTLINE(*-forwarding-reference-overload)
         fixed_function(F&& fun) {
             vtable_t::construct(*this, std::forward<F>(fun));
         }
 
         template < typename F >
-            requires (!std::same_as<fixed_function, std::decay_t<F>>)
+            requires (!std::is_same_v<fixed_function, std::decay_t<F>>)
         fixed_function& operator=(F&& fun) {
             fixed_function{std::forward<F>(fun)}.swap(*this);
             return *this;
@@ -381,7 +381,7 @@ namespace meta_hpp::detail
 
         template < typename Fp >
         static vtable_t* get() {
-            static_assert(std::same_as<Fp, std::decay_t<Fp>>);
+            static_assert(std::is_same_v<Fp, std::decay_t<Fp>>);
 
             static vtable_t table{
                 .call = +[](const fixed_function& self, Args... args) -> R {
@@ -970,20 +970,20 @@ namespace meta_hpp::detail
 {
     template < typename T >
     concept type_family =
-        std::same_as<T, any_type> ||
-        std::same_as<T, array_type> ||
-        std::same_as<T, class_type> ||
-        std::same_as<T, constructor_type> ||
-        std::same_as<T, destructor_type> ||
-        std::same_as<T, enum_type> ||
-        std::same_as<T, function_type> ||
-        std::same_as<T, member_type> ||
-        std::same_as<T, method_type> ||
-        std::same_as<T, nullptr_type> ||
-        std::same_as<T, number_type> ||
-        std::same_as<T, pointer_type> ||
-        std::same_as<T, reference_type> ||
-        std::same_as<T, void_type>;
+        std::is_same_v<T, any_type> ||
+        std::is_same_v<T, array_type> ||
+        std::is_same_v<T, class_type> ||
+        std::is_same_v<T, constructor_type> ||
+        std::is_same_v<T, destructor_type> ||
+        std::is_same_v<T, enum_type> ||
+        std::is_same_v<T, function_type> ||
+        std::is_same_v<T, member_type> ||
+        std::is_same_v<T, method_type> ||
+        std::is_same_v<T, nullptr_type> ||
+        std::is_same_v<T, number_type> ||
+        std::is_same_v<T, pointer_type> ||
+        std::is_same_v<T, reference_type> ||
+        std::is_same_v<T, void_type>;
 
     template < type_family T >
     [[nodiscard]] auto type_access(const T& type) {
@@ -2091,15 +2091,15 @@ namespace meta_hpp::detail
 {
     template < typename T >
     concept index_family =
-        std::same_as<T, argument_index> ||
-        std::same_as<T, constructor_index> ||
-        std::same_as<T, destructor_index> ||
-        std::same_as<T, evalue_index> ||
-        std::same_as<T, function_index> ||
-        std::same_as<T, member_index> ||
-        std::same_as<T, method_index> ||
-        std::same_as<T, scope_index> ||
-        std::same_as<T, variable_index>;
+        std::is_same_v<T, argument_index> ||
+        std::is_same_v<T, constructor_index> ||
+        std::is_same_v<T, destructor_index> ||
+        std::is_same_v<T, evalue_index> ||
+        std::is_same_v<T, function_index> ||
+        std::is_same_v<T, member_index> ||
+        std::is_same_v<T, method_index> ||
+        std::is_same_v<T, scope_index> ||
+        std::is_same_v<T, variable_index>;
 }
 
 namespace meta_hpp
@@ -2283,15 +2283,15 @@ namespace meta_hpp::detail
 {
     template < typename T >
     concept uvalue_kind
-        = std::same_as<T, uvalue>;
+        = std::is_same_v<T, uvalue>;
 
     template < typename T >
     concept any_uvalue_kind =
-        std::same_as<T, uarg_base> ||
-        std::same_as<T, uarg> ||
-        std::same_as<T, uinst_base> ||
-        std::same_as<T, uinst> ||
-        std::same_as<T, uvalue>;
+        std::is_same_v<T, uarg_base> ||
+        std::is_same_v<T, uarg> ||
+        std::is_same_v<T, uinst_base> ||
+        std::is_same_v<T, uinst> ||
+        std::is_same_v<T, uvalue>;
 }
 
 namespace meta_hpp
@@ -2404,15 +2404,15 @@ namespace meta_hpp::detail
 {
     template < typename T >
     concept state_family =
-        std::same_as<T, argument> ||
-        std::same_as<T, constructor> ||
-        std::same_as<T, destructor> ||
-        std::same_as<T, evalue> ||
-        std::same_as<T, function> ||
-        std::same_as<T, member> ||
-        std::same_as<T, method> ||
-        std::same_as<T, scope> ||
-        std::same_as<T, variable>;
+        std::is_same_v<T, argument> ||
+        std::is_same_v<T, constructor> ||
+        std::is_same_v<T, destructor> ||
+        std::is_same_v<T, evalue> ||
+        std::is_same_v<T, function> ||
+        std::is_same_v<T, member> ||
+        std::is_same_v<T, method> ||
+        std::is_same_v<T, scope> ||
+        std::is_same_v<T, variable>;
 
     template < state_family T >
     [[nodiscard]] auto state_access(const T& state) {
@@ -2479,33 +2479,33 @@ namespace meta_hpp
 
     template < typename Policy >
     concept constructor_policy_kind =
-        std::same_as<Policy, constructor_policy::as_object_t> ||
-        std::same_as<Policy, constructor_policy::as_raw_pointer_t> ||
-        std::same_as<Policy, constructor_policy::as_shared_pointer_t>;
+        std::is_same_v<Policy, constructor_policy::as_object_t> ||
+        std::is_same_v<Policy, constructor_policy::as_raw_pointer_t> ||
+        std::is_same_v<Policy, constructor_policy::as_shared_pointer_t>;
 
     template < typename Policy >
     concept function_policy_kind =
-        std::same_as<Policy, function_policy::as_copy_t> ||
-        std::same_as<Policy, function_policy::discard_return_t> ||
-        std::same_as<Policy, function_policy::return_reference_as_pointer_t>;
+        std::is_same_v<Policy, function_policy::as_copy_t> ||
+        std::is_same_v<Policy, function_policy::discard_return_t> ||
+        std::is_same_v<Policy, function_policy::return_reference_as_pointer_t>;
 
     template < typename Policy >
     concept member_policy_kind =
-        std::same_as<Policy, member_policy::as_copy_t> ||
-        std::same_as<Policy, member_policy::as_pointer_t> ||
-        std::same_as<Policy, member_policy::as_reference_wrapper_t>;
+        std::is_same_v<Policy, member_policy::as_copy_t> ||
+        std::is_same_v<Policy, member_policy::as_pointer_t> ||
+        std::is_same_v<Policy, member_policy::as_reference_wrapper_t>;
 
     template < typename Policy >
     concept method_policy_kind =
-        std::same_as<Policy, method_policy::as_copy_t> ||
-        std::same_as<Policy, method_policy::discard_return_t> ||
-        std::same_as<Policy, method_policy::return_reference_as_pointer_t>;
+        std::is_same_v<Policy, method_policy::as_copy_t> ||
+        std::is_same_v<Policy, method_policy::discard_return_t> ||
+        std::is_same_v<Policy, method_policy::return_reference_as_pointer_t>;
 
     template < typename Policy >
     concept variable_policy_kind =
-        std::same_as<Policy, variable_policy::as_copy_t> ||
-        std::same_as<Policy, variable_policy::as_pointer_t> ||
-        std::same_as<Policy, variable_policy::as_reference_wrapper_t>;
+        std::is_same_v<Policy, variable_policy::as_copy_t> ||
+        std::is_same_v<Policy, variable_policy::as_pointer_t> ||
+        std::is_same_v<Policy, variable_policy::as_reference_wrapper_t>;
 }
 
 namespace meta_hpp
@@ -3253,12 +3253,12 @@ namespace meta_hpp::detail
     template < typename Class, typename Member >
     concept class_bind_member_kind =
         class_kind<Class> && member_kind<Member> &&
-        std::same_as<Class, typename member_traits<Member>::class_type>;
+        std::is_same_v<Class, typename member_traits<Member>::class_type>;
 
     template < typename Class, typename Method >
     concept class_bind_method_kind =
         class_kind<Class> && method_kind<Method> &&
-        std::same_as<Class, typename method_traits<Method>::class_type>;
+        std::is_same_v<Class, typename method_traits<Method>::class_type>;
 }
 
 namespace meta_hpp
@@ -5218,13 +5218,13 @@ namespace meta_hpp::detail
 
         constexpr bool as_object =
             std::is_copy_constructible_v<class_type> &&
-            std::same_as<Policy, constructor_policy::as_object_t>;
+            std::is_same_v<Policy, constructor_policy::as_object_t>;
 
         constexpr bool as_raw_ptr =
-            std::same_as<Policy, constructor_policy::as_raw_pointer_t>;
+            std::is_same_v<Policy, constructor_policy::as_raw_pointer_t>;
 
         constexpr bool as_shared_ptr =
-            std::same_as<Policy, constructor_policy::as_shared_pointer_t>;
+            std::is_same_v<Policy, constructor_policy::as_shared_pointer_t>;
 
         static_assert(as_object || as_raw_ptr || as_shared_ptr);
 
@@ -5757,15 +5757,15 @@ namespace meta_hpp::detail
 
         constexpr bool as_copy =
             std::is_copy_constructible_v<return_type> &&
-            std::same_as<Policy, function_policy::as_copy_t>;
+            std::is_same_v<Policy, function_policy::as_copy_t>;
 
         constexpr bool as_void =
             std::is_void_v<return_type> ||
-            std::same_as<Policy, function_policy::discard_return_t>;
+            std::is_same_v<Policy, function_policy::discard_return_t>;
 
         constexpr bool ref_as_ptr =
             std::is_reference_v<return_type> &&
-            std::same_as<Policy, function_policy::return_reference_as_pointer_t>;
+            std::is_same_v<Policy, function_policy::return_reference_as_pointer_t>;
 
         static_assert(as_copy || as_void || ref_as_ptr);
 
@@ -5782,7 +5782,7 @@ namespace meta_hpp::detail
                 function(
                     args[Is].cast<type_list_at_t<Is, argument_types>>()...);
                 return uvalue{};
-            } else if constexpr ( std::same_as<Policy, function_policy::discard_return_t> ) {
+            } else if constexpr ( std::is_same_v<Policy, function_policy::discard_return_t> ) {
                 std::ignore = function(
                     args[Is].cast<type_list_at_t<Is, argument_types>>()...);
                 return uvalue{};
@@ -6231,13 +6231,13 @@ namespace meta_hpp::detail
 
         constexpr bool as_copy =
             std::is_copy_constructible_v<value_type> &&
-            std::same_as<Policy, member_policy::as_copy_t>;
+            std::is_same_v<Policy, member_policy::as_copy_t>;
 
         constexpr bool as_ptr =
-            std::same_as<Policy, member_policy::as_pointer_t>;
+            std::is_same_v<Policy, member_policy::as_pointer_t>;
 
         constexpr bool as_ref_wrap =
-            std::same_as<Policy, member_policy::as_reference_wrapper_t>;
+            std::is_same_v<Policy, member_policy::as_reference_wrapper_t>;
 
         static_assert(as_copy || as_ptr || as_ref_wrap);
 
@@ -6528,15 +6528,15 @@ namespace meta_hpp::detail
 
         constexpr bool as_copy =
             std::is_copy_constructible_v<return_type> &&
-            std::same_as<Policy, method_policy::as_copy_t>;
+            std::is_same_v<Policy, method_policy::as_copy_t>;
 
         constexpr bool as_void =
             std::is_void_v<return_type> ||
-            std::same_as<Policy, method_policy::discard_return_t>;
+            std::is_same_v<Policy, method_policy::discard_return_t>;
 
         constexpr bool ref_as_ptr =
             std::is_reference_v<return_type> &&
-            std::same_as<Policy, method_policy::return_reference_as_pointer_t>;
+            std::is_same_v<Policy, method_policy::return_reference_as_pointer_t>;
 
         static_assert(as_copy || as_void || ref_as_ptr);
 
@@ -6557,7 +6557,7 @@ namespace meta_hpp::detail
                 (inst.cast<qualified_type>().*method)(
                     args[Is].cast<type_list_at_t<Is, argument_types>>()...);
                 return uvalue{};
-            } else if constexpr ( std::same_as<Policy, method_policy::discard_return_t> ) {
+            } else if constexpr ( std::is_same_v<Policy, method_policy::discard_return_t> ) {
                 std::ignore = (inst.cast<qualified_type>().*method)(
                     args[Is].cast<type_list_at_t<Is, argument_types>>()...);
                 return uvalue{};
@@ -6777,13 +6777,13 @@ namespace meta_hpp::detail
 
         constexpr bool as_copy =
             std::is_copy_constructible_v<data_type> &&
-            std::same_as<Policy, variable_policy::as_copy_t>;
+            std::is_same_v<Policy, variable_policy::as_copy_t>;
 
         constexpr bool as_ptr =
-            std::same_as<Policy, variable_policy::as_pointer_t>;
+            std::is_same_v<Policy, variable_policy::as_pointer_t>;
 
         constexpr bool as_ref_wrap =
-            std::same_as<Policy, variable_policy::as_reference_wrapper_t>;
+            std::is_same_v<Policy, variable_policy::as_reference_wrapper_t>;
 
         static_assert(as_copy || as_ptr || as_ref_wrap);
 
@@ -8210,7 +8210,7 @@ namespace meta_hpp
         template < typename Tp >
         // NOLINTNEXTLINE(*-cognitive-complexity)
         static vtable_t* get() {
-            static_assert(std::same_as<Tp, std::decay_t<Tp>>);
+            static_assert(std::is_same_v<Tp, std::decay_t<Tp>>);
 
             static vtable_t table{
                 .type = resolve_type<Tp>(),
@@ -8442,7 +8442,7 @@ namespace meta_hpp
 
     template < typename T >
     auto uvalue::get_as() -> std::conditional_t<detail::pointer_kind<T>, T, T&> {
-        static_assert(std::same_as<T, std::decay_t<T>>);
+        static_assert(std::is_same_v<T, std::decay_t<T>>);
 
         if constexpr ( detail::pointer_kind<T> ) {
             if ( T ptr = try_get_as<T>(); ptr || get_type().is_nullptr() ) {
@@ -8459,7 +8459,7 @@ namespace meta_hpp
 
     template < typename T >
     auto uvalue::get_as() const -> std::conditional_t<detail::pointer_kind<T>, T, const T&> {
-        static_assert(std::same_as<T, std::decay_t<T>>);
+        static_assert(std::is_same_v<T, std::decay_t<T>>);
 
         if constexpr ( detail::pointer_kind<T> ) {
             if ( T ptr = try_get_as<T>(); ptr || get_type().is_nullptr() ) {
@@ -8477,7 +8477,7 @@ namespace meta_hpp
     template < typename T >
     // NOLINTNEXTLINE(*-cognitive-complexity)
     auto uvalue::try_get_as() noexcept -> std::conditional_t<detail::pointer_kind<T>, T, T*> {
-        static_assert(std::same_as<T, std::decay_t<T>>);
+        static_assert(std::is_same_v<T, std::decay_t<T>>);
 
         const any_type& from_type = get_type();
         const any_type& to_type = resolve_type<T>();
@@ -8542,7 +8542,7 @@ namespace meta_hpp
     template < typename T >
     // NOLINTNEXTLINE(*-cognitive-complexity)
     auto uvalue::try_get_as() const noexcept -> std::conditional_t<detail::pointer_kind<T>, T, const T*> {
-        static_assert(std::same_as<T, std::decay_t<T>>);
+        static_assert(std::is_same_v<T, std::decay_t<T>>);
 
         const any_type& from_type = get_type();
         const any_type& to_type = resolve_type<T>();

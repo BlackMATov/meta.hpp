@@ -72,33 +72,33 @@ namespace meta_hpp
 
     template < typename Policy >
     concept constructor_policy_kind =
-        std::same_as<Policy, constructor_policy::as_object_t> ||
-        std::same_as<Policy, constructor_policy::as_raw_pointer_t> ||
-        std::same_as<Policy, constructor_policy::as_shared_pointer_t>;
+        std::is_same_v<Policy, constructor_policy::as_object_t> ||
+        std::is_same_v<Policy, constructor_policy::as_raw_pointer_t> ||
+        std::is_same_v<Policy, constructor_policy::as_shared_pointer_t>;
 
     template < typename Policy >
     concept function_policy_kind =
-        std::same_as<Policy, function_policy::as_copy_t> ||
-        std::same_as<Policy, function_policy::discard_return_t> ||
-        std::same_as<Policy, function_policy::return_reference_as_pointer_t>;
+        std::is_same_v<Policy, function_policy::as_copy_t> ||
+        std::is_same_v<Policy, function_policy::discard_return_t> ||
+        std::is_same_v<Policy, function_policy::return_reference_as_pointer_t>;
 
     template < typename Policy >
     concept member_policy_kind =
-        std::same_as<Policy, member_policy::as_copy_t> ||
-        std::same_as<Policy, member_policy::as_pointer_t> ||
-        std::same_as<Policy, member_policy::as_reference_wrapper_t>;
+        std::is_same_v<Policy, member_policy::as_copy_t> ||
+        std::is_same_v<Policy, member_policy::as_pointer_t> ||
+        std::is_same_v<Policy, member_policy::as_reference_wrapper_t>;
 
     template < typename Policy >
     concept method_policy_kind =
-        std::same_as<Policy, method_policy::as_copy_t> ||
-        std::same_as<Policy, method_policy::discard_return_t> ||
-        std::same_as<Policy, method_policy::return_reference_as_pointer_t>;
+        std::is_same_v<Policy, method_policy::as_copy_t> ||
+        std::is_same_v<Policy, method_policy::discard_return_t> ||
+        std::is_same_v<Policy, method_policy::return_reference_as_pointer_t>;
 
     template < typename Policy >
     concept variable_policy_kind =
-        std::same_as<Policy, variable_policy::as_copy_t> ||
-        std::same_as<Policy, variable_policy::as_pointer_t> ||
-        std::same_as<Policy, variable_policy::as_reference_wrapper_t>;
+        std::is_same_v<Policy, variable_policy::as_copy_t> ||
+        std::is_same_v<Policy, variable_policy::as_pointer_t> ||
+        std::is_same_v<Policy, variable_policy::as_reference_wrapper_t>;
 }
 
 namespace meta_hpp

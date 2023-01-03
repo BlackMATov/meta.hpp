@@ -57,28 +57,28 @@ TEST_CASE("meta/meta_utilities/detail") {
     }
 
     SUBCASE("cvref_traits::copy_to") {
-        static_assert(std::same_as<meta::detail::cvref_traits<float>::copy_to<int>, int>);
-        static_assert(std::same_as<meta::detail::cvref_traits<const float>::copy_to<int>, const int>);
-        static_assert(std::same_as<meta::detail::cvref_traits<const volatile float>::copy_to<int>, const volatile int>);
-        static_assert(std::same_as<meta::detail::cvref_traits<float&>::copy_to<int>, int&>);
-        static_assert(std::same_as<meta::detail::cvref_traits<const float&>::copy_to<int>, const int&>);
-        static_assert(std::same_as<meta::detail::cvref_traits<volatile float&>::copy_to<int>, volatile int&>);
-        static_assert(std::same_as<meta::detail::cvref_traits<const volatile float&&>::copy_to<int>, const volatile int&&>);
+        static_assert(std::is_same_v<meta::detail::cvref_traits<float>::copy_to<int>, int>);
+        static_assert(std::is_same_v<meta::detail::cvref_traits<const float>::copy_to<int>, const int>);
+        static_assert(std::is_same_v<meta::detail::cvref_traits<const volatile float>::copy_to<int>, const volatile int>);
+        static_assert(std::is_same_v<meta::detail::cvref_traits<float&>::copy_to<int>, int&>);
+        static_assert(std::is_same_v<meta::detail::cvref_traits<const float&>::copy_to<int>, const int&>);
+        static_assert(std::is_same_v<meta::detail::cvref_traits<volatile float&>::copy_to<int>, volatile int&>);
+        static_assert(std::is_same_v<meta::detail::cvref_traits<const volatile float&&>::copy_to<int>, const volatile int&&>);
 
-        static_assert(std::same_as<meta::detail::cvref_traits<float>::copy_to<int&>, int>);
-        static_assert(std::same_as<meta::detail::cvref_traits<const float>::copy_to<int&>, const int>);
-        static_assert(std::same_as<meta::detail::cvref_traits<const volatile float>::copy_to<int&>, const volatile int>);
-        static_assert(std::same_as<meta::detail::cvref_traits<float&>::copy_to<int&>, int&>);
-        static_assert(std::same_as<meta::detail::cvref_traits<const float&>::copy_to<int&>, const int&>);
-        static_assert(std::same_as<meta::detail::cvref_traits<volatile float&>::copy_to<int&>, volatile int&>);
-        static_assert(std::same_as<meta::detail::cvref_traits<const volatile float&&>::copy_to<int&>, const volatile int&&>);
+        static_assert(std::is_same_v<meta::detail::cvref_traits<float>::copy_to<int&>, int>);
+        static_assert(std::is_same_v<meta::detail::cvref_traits<const float>::copy_to<int&>, const int>);
+        static_assert(std::is_same_v<meta::detail::cvref_traits<const volatile float>::copy_to<int&>, const volatile int>);
+        static_assert(std::is_same_v<meta::detail::cvref_traits<float&>::copy_to<int&>, int&>);
+        static_assert(std::is_same_v<meta::detail::cvref_traits<const float&>::copy_to<int&>, const int&>);
+        static_assert(std::is_same_v<meta::detail::cvref_traits<volatile float&>::copy_to<int&>, volatile int&>);
+        static_assert(std::is_same_v<meta::detail::cvref_traits<const volatile float&&>::copy_to<int&>, const volatile int&&>);
 
-        static_assert(std::same_as<meta::detail::cvref_traits<float>::copy_to<const volatile int&&>, int>);
-        static_assert(std::same_as<meta::detail::cvref_traits<const float>::copy_to<const volatile int&&>, const int>);
-        static_assert(std::same_as<meta::detail::cvref_traits<const volatile float>::copy_to<const volatile int&&>, const volatile int>);
-        static_assert(std::same_as<meta::detail::cvref_traits<float&>::copy_to<const volatile int&&>, int&>);
-        static_assert(std::same_as<meta::detail::cvref_traits<const float&>::copy_to<const volatile int&&>, const int&>);
-        static_assert(std::same_as<meta::detail::cvref_traits<volatile float&>::copy_to<const volatile int&&>, volatile int&>);
-        static_assert(std::same_as<meta::detail::cvref_traits<const volatile float&&>::copy_to<const volatile int&&>, const volatile int&&>);
+        static_assert(std::is_same_v<meta::detail::cvref_traits<float>::copy_to<const volatile int&&>, int>);
+        static_assert(std::is_same_v<meta::detail::cvref_traits<const float>::copy_to<const volatile int&&>, const int>);
+        static_assert(std::is_same_v<meta::detail::cvref_traits<const volatile float>::copy_to<const volatile int&&>, const volatile int>);
+        static_assert(std::is_same_v<meta::detail::cvref_traits<float&>::copy_to<const volatile int&&>, int&>);
+        static_assert(std::is_same_v<meta::detail::cvref_traits<const float&>::copy_to<const volatile int&&>, const int&>);
+        static_assert(std::is_same_v<meta::detail::cvref_traits<volatile float&>::copy_to<const volatile int&&>, volatile int&>);
+        static_assert(std::is_same_v<meta::detail::cvref_traits<const volatile float&&>::copy_to<const volatile int&&>, const volatile int&&>);
     }
 }
