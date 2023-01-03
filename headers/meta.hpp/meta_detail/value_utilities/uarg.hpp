@@ -7,6 +7,7 @@
 #pragma once
 
 #include "../../meta_base.hpp"
+#include "../../meta_registry.hpp"
 #include "../../meta_uvalue.hpp"
 
 #include "utraits.hpp"

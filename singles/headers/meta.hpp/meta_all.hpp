@@ -2374,8 +2374,6 @@ namespace meta_hpp
         [[nodiscard]] auto try_get_as() const noexcept
             -> std::conditional_t<detail::pointer_kind<T>, T, const T*>;
 
-        friend bool operator<(const uvalue& l, const uvalue& r);
-        friend bool operator==(const uvalue& l, const uvalue& r);
         friend std::istream& operator>>(std::istream& is, uvalue& v);
         friend std::ostream& operator<<(std::ostream& os, const uvalue& v);
     private:
@@ -8152,11 +8150,11 @@ namespace meta_hpp
         void (*const copy)(const uvalue& from, uvalue& to);
         void (*const destroy)(uvalue& self) noexcept;
 
-        uvalue (*const deref)(const uvalue& from);
-        uvalue (*const index)(const uvalue& from, std::size_t);
+        uvalue (*const deref)(const storage_u& from);
+        uvalue (*const index)(const storage_u& from, std::size_t);
 
-        std::istream& (*const istream)(std::istream&, uvalue&);
-        std::ostream& (*const ostream)(std::ostream&, const uvalue&);
+        std::istream& (*const istream)(std::istream& is, storage_u& to);
+        std::ostream& (*const ostream)(std::ostream& os, const storage_u& from);
 
         template < typename T >
         static T* buffer_cast(buffer_t& buffer) noexcept {
@@ -8308,33 +8306,33 @@ namespace meta_hpp
                     self.vtable_ = nullptr;
                 },
 
-                .deref = +[]([[maybe_unused]] const uvalue& v) -> uvalue {
+                .deref = +[]([[maybe_unused]] const storage_u& from) -> uvalue {
                     if constexpr ( detail::has_deref_traits<Tp> ) {
-                        return detail::deref_traits<Tp>{}(v.get_as<Tp>());
+                        return detail::deref_traits<Tp>{}(*storage_cast<Tp>(from));
                     } else {
                         detail::throw_exception_with("value type doesn't have value deref traits");
                     }
                 },
 
-                .index = +[]([[maybe_unused]] const uvalue& v, [[maybe_unused]] std::size_t i) -> uvalue {
+                .index = +[]([[maybe_unused]] const storage_u& from, [[maybe_unused]] std::size_t i) -> uvalue {
                     if constexpr ( detail::has_index_traits<Tp> ) {
-                        return detail::index_traits<Tp>{}(v.get_as<Tp>(), i);
+                        return detail::index_traits<Tp>{}(*storage_cast<Tp>(from), i);
                     } else {
                         detail::throw_exception_with("value type doesn't have value index traits");
                     }
                 },
 
-                .istream = +[]([[maybe_unused]] std::istream& is, [[maybe_unused]] uvalue& v) -> std::istream& {
+                .istream = +[]([[maybe_unused]] std::istream& is, [[maybe_unused]] storage_u& to) -> std::istream& {
                     if constexpr ( detail::has_istream_traits<Tp> && !detail::pointer_kind<Tp> ) {
-                        return detail::istream_traits<Tp>{}(is, v.get_as<Tp>());
+                        return detail::istream_traits<Tp>{}(is, *storage_cast<Tp>(to));
                     } else {
                         detail::throw_exception_with("value type doesn't have value istream traits");
                     }
                 },
 
-                .ostream = +[]([[maybe_unused]] std::ostream& os, [[maybe_unused]] const uvalue& v) -> std::ostream& {
+                .ostream = +[]([[maybe_unused]] std::ostream& os, [[maybe_unused]] const storage_u& from) -> std::ostream& {
                     if constexpr ( detail::has_ostream_traits<Tp> && !detail::pointer_kind<Tp> ) {
-                        return detail::ostream_traits<Tp>{}(os, v.get_as<Tp>());
+                        return detail::ostream_traits<Tp>{}(os, *storage_cast<Tp>(from));
                     } else {
                         detail::throw_exception_with("value type doesn't have value ostream traits");
                     }
@@ -8459,11 +8457,11 @@ namespace meta_hpp
     }
 
     inline uvalue uvalue::operator*() const {
-        return vtable_ != nullptr ? vtable_->deref(*this) : uvalue{};
+        return vtable_ != nullptr ? vtable_->deref(storage_) : uvalue{};
     }
 
     inline uvalue uvalue::operator[](std::size_t index) const {
-        return vtable_ != nullptr ? vtable_->index(*this, index) : uvalue{};
+        return vtable_ != nullptr ? vtable_->index(storage_, index) : uvalue{};
     }
 
     template < typename T >
@@ -8689,11 +8687,11 @@ namespace meta_hpp
 {
     inline std::istream& operator>>(std::istream& is, uvalue& v) {
         assert(v && "bad operator call"); // NOLINT
-        return v.vtable_->istream(is, v);
+        return v.vtable_->istream(is, v.storage_);
     }
 
     inline std::ostream& operator<<(std::ostream& os, const uvalue& v) {
         assert(v && "bad operator call"); // NOLINT
-        return v.vtable_->ostream(os, v);
+        return v.vtable_->ostream(os, v.storage_);
     }
 }
