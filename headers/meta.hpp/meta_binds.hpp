@@ -17,12 +17,12 @@ namespace meta_hpp::detail
     template < typename Class, typename... Args >
     concept class_bind_constructor_kind =
         class_kind<Class> &&
-        requires(Args&&... args) { { Class{std::forward<Args>(args)...} }; };
+        std::is_constructible_v<Class, Args...>;
 
     template < typename Class >
     concept class_bind_destructor_kind =
         class_kind<Class> &&
-        requires(Class&& inst) { { inst.~Class() }; };
+        std::is_destructible_v<Class>;
 
     template < typename Class, typename Base >
     concept class_bind_base_kind =

@@ -84,7 +84,7 @@ namespace meta_hpp::detail
     };
 
     template < typename Function >
-    inline void swap(fixed_function<Function>& l, fixed_function<Function>& r) noexcept {
+    void swap(fixed_function<Function>& l, fixed_function<Function>& r) noexcept {
         l.swap(r);
     }
 }

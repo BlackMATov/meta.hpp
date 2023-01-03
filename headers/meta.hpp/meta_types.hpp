@@ -167,12 +167,12 @@ namespace meta_hpp
 
         template < typename... Args >
         [[nodiscard]] uvalue create(Args&&... args) const;
-
         template < typename... Args >
-        [[nodiscard]] uvalue operator()(Args&&... args) const;
+        uvalue create_at(void* mem, Args&&... args) const;
 
         template < typename Arg >
-        bool destroy(Arg&& ptr) const;
+        bool destroy(Arg&& arg) const;
+        bool destroy_at(void* mem) const;
 
         template < detail::class_kind Derived >
         [[nodiscard]] bool is_base_of() const noexcept;

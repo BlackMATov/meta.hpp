@@ -113,24 +113,34 @@ namespace meta_hpp
     uvalue class_type::create(Args&&... args) const {
         for ( auto&& [_, ctor] : data_->constructors ) {
             if ( ctor.is_invocable_with(std::forward<Args>(args)...) ) {
-                return ctor.invoke(std::forward<Args>(args)...);
+                return ctor.create(std::forward<Args>(args)...);
             }
         }
         return uvalue{};
     }
 
     template < typename... Args >
-    uvalue class_type::operator()(Args&&... args) const {
-        return create(std::forward<Args>(args)...);
+    uvalue class_type::create_at(void* mem, Args&&... args) const {
+        for ( auto&& [_, ctor] : data_->constructors ) {
+            if ( ctor.is_invocable_with(std::forward<Args>(args)...) ) {
+                return ctor.create_at(mem, std::forward<Args>(args)...);
+            }
+        }
+        return uvalue{};
     }
 
     template < typename Arg >
-    bool class_type::destroy(Arg&& ptr) const {
-        for ( auto&& [_, dtor] : data_->destructors ) {
-            if ( dtor.is_invocable_with(std::forward<Arg>(ptr)) ) {
-                dtor.invoke(std::forward<Arg>(ptr));
-                return true;
-            }
+    bool class_type::destroy(Arg&& arg) const {
+        if ( const destructor dtor = get_destructor() ) {
+            return dtor.destroy(std::forward<Arg>(arg));
+        }
+        return false;
+    }
+
+    inline bool class_type::destroy_at(void* mem) const {
+        if ( const destructor dtor = get_destructor() ) {
+            dtor.destroy_at(mem);
+            return true;
         }
         return false;
     }

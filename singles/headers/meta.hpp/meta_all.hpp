@@ -354,7 +354,7 @@ namespace meta_hpp::detail
     };
 
     template < typename Function >
-    inline void swap(fixed_function<Function>& l, fixed_function<Function>& r) noexcept {
+    void swap(fixed_function<Function>& l, fixed_function<Function>& r) noexcept {
         l.swap(r);
     }
 }
@@ -513,6 +513,89 @@ namespace meta_hpp::detail
 
     template < typename T >
     inline constexpr bool is_in_place_type_v = is_in_place_type<T>::value;
+}
+
+namespace meta_hpp::detail
+{
+    class memory_buffer final {
+    public:
+        memory_buffer() = default;
+
+        memory_buffer(const memory_buffer&) = delete;
+        memory_buffer& operator=(const memory_buffer&) = delete;
+
+        memory_buffer(memory_buffer&& other) noexcept
+        : memory_{other.memory_}
+        , size_{other.size_}
+        , align_{other.align_} {
+            other.memory_ = nullptr;
+            other.size_ = 0;
+            other.align_ = std::align_val_t{};
+        }
+
+        memory_buffer& operator=(memory_buffer&& other) noexcept {
+            if ( this != &other ) {
+                memory_buffer{std::move(other)}.swap(*this);
+            }
+            return *this;
+        }
+
+        explicit memory_buffer(std::size_t size, std::align_val_t align)
+        : memory_{::operator new(size, align)}
+        , size_{size}
+        , align_{align} {}
+
+        ~memory_buffer() noexcept {
+            reset();
+        }
+
+        [[nodiscard]] bool is_valid() const noexcept {
+            return memory_ != nullptr;
+        }
+
+        [[nodiscard]] explicit operator bool() const noexcept {
+            return is_valid();
+        }
+
+        void reset() noexcept {
+            if ( memory_ != nullptr ) {
+                ::operator delete(memory_, align_);
+                memory_ = nullptr;
+                size_ = 0;
+                align_ = std::align_val_t{};
+            }
+        }
+
+        void swap(memory_buffer& other) noexcept {
+            std::swap(memory_, other.memory_);
+            std::swap(size_, other.size_);
+            std::swap(align_, other.align_);
+        }
+
+        [[nodiscard]] void* get_memory() noexcept {
+            return memory_;
+        }
+
+        [[nodiscard]] const void* get_memory() const noexcept {
+            return memory_;
+        }
+
+        [[nodiscard]] std::size_t get_size() const noexcept {
+            return size_;
+        }
+
+        [[nodiscard]] std::align_val_t get_align() const noexcept {
+            return align_;
+        }
+    private:
+        void* memory_{};
+        std::size_t size_{};
+        std::align_val_t align_{};
+    };
+
+    inline void swap(memory_buffer& l, memory_buffer& r) noexcept {
+        l.swap(r);
+    }
 }
 
 namespace meta_hpp::detail
@@ -728,6 +811,8 @@ namespace meta_hpp::detail
 
 namespace meta_hpp
 {
+    using detail::memory_buffer;
+
     using detail::select_const;
     using detail::select_non_const;
     using detail::select_overload;
@@ -1560,12 +1645,12 @@ namespace meta_hpp
 
         template < typename... Args >
         [[nodiscard]] uvalue create(Args&&... args) const;
-
         template < typename... Args >
-        [[nodiscard]] uvalue operator()(Args&&... args) const;
+        uvalue create_at(void* mem, Args&&... args) const;
 
         template < typename Arg >
-        bool destroy(Arg&& ptr) const;
+        bool destroy(Arg&& arg) const;
+        bool destroy_at(void* mem) const;
 
         template < detail::class_kind Derived >
         [[nodiscard]] bool is_base_of() const noexcept;
@@ -2464,10 +2549,10 @@ namespace meta_hpp
         [[nodiscard]] const constructor_type& get_type() const noexcept;
 
         template < typename... Args >
-        uvalue invoke(Args&&... args) const;
+        [[nodiscard]] uvalue create(Args&&... args) const;
 
         template < typename... Args >
-        uvalue operator()(Args&&... args) const;
+        uvalue create_at(void* mem, Args&&... args) const;
 
         template < typename... Args >
         [[nodiscard]] bool is_invocable_with() const noexcept;
@@ -2497,16 +2582,9 @@ namespace meta_hpp
         [[nodiscard]] const destructor_type& get_type() const noexcept;
 
         template < typename Arg >
-        void invoke(Arg&& ptr) const;
+        bool destroy(Arg&& arg) const;
 
-        template < typename Arg >
-        void operator()(Arg&& ptr) const;
-
-        template < typename Arg >
-        [[nodiscard]] bool is_invocable_with() const noexcept;
-
-        template < typename Arg >
-        [[nodiscard]] bool is_invocable_with(Arg&& ptr) const noexcept;
+        void destroy_at(void* mem) const;
     private:
         detail::destructor_state_ptr state_;
         friend auto detail::state_access<destructor>(const destructor&);
@@ -2761,13 +2839,15 @@ namespace meta_hpp::detail
     };
 
     struct constructor_state final {
-        using invoke_impl = fixed_function<uvalue(std::span<const uarg>)>;
+        using create_impl = fixed_function<uvalue(std::span<const uarg>)>;
+        using create_at_impl = fixed_function<uvalue(void*, std::span<const uarg>)>;
         using is_invocable_with_impl = fixed_function<bool(std::span<const uarg_base>)>;
 
         constructor_index index;
         metadata_map metadata;
 
-        invoke_impl invoke;
+        create_impl create;
+        create_at_impl create_at;
         is_invocable_with_impl is_invocable_with;
 
         argument_list arguments;
@@ -2777,14 +2857,14 @@ namespace meta_hpp::detail
     };
 
     struct destructor_state final {
-        using invoke_impl = fixed_function<void(const uarg&)>;
-        using is_invocable_with_impl = fixed_function<bool(const uarg_base&)>;
+        using destroy_impl = fixed_function<bool(const uarg&)>;
+        using destroy_at_impl = fixed_function<void(void*)>;
 
         destructor_index index;
         metadata_map metadata;
 
-        invoke_impl invoke;
-        is_invocable_with_impl is_invocable_with;
+        destroy_impl destroy;
+        destroy_at_impl destroy_at;
 
         template < class_kind Class >
         [[nodiscard]] static destructor_state_ptr make(metadata_map metadata);
@@ -3161,12 +3241,12 @@ namespace meta_hpp::detail
     template < typename Class, typename... Args >
     concept class_bind_constructor_kind =
         class_kind<Class> &&
-        requires(Args&&... args) { { Class{std::forward<Args>(args)...} }; };
+        std::is_constructible_v<Class, Args...>;
 
     template < typename Class >
     concept class_bind_destructor_kind =
         class_kind<Class> &&
-        requires(Class&& inst) { { inst.~Class() }; };
+        std::is_destructible_v<Class>;
 
     template < typename Class, typename Base >
     concept class_bind_base_kind =
@@ -5157,7 +5237,7 @@ namespace meta_hpp::detail
 namespace meta_hpp::detail
 {
     template < constructor_policy_kind Policy, class_kind Class, typename... Args >
-    uvalue raw_constructor_invoke(std::span<const uarg> args) {
+    uvalue raw_constructor_create(std::span<const uarg> args) {
         using ct = constructor_traits<Class, Args...>;
         using class_type = typename ct::class_type;
         using argument_types = typename ct::argument_types;
@@ -5201,6 +5281,26 @@ namespace meta_hpp::detail
     }
 
     template < class_kind Class, typename... Args >
+    uvalue raw_constructor_create_at(void* mem, std::span<const uarg> args) {
+        using ct = constructor_traits<Class, Args...>;
+        using class_type = typename ct::class_type;
+        using argument_types = typename ct::argument_types;
+
+        if ( args.size() != ct::arity ) {
+            throw_exception_with("an attempt to call a constructor with an incorrect arity");
+        }
+
+        return [mem, args]<std::size_t... Is>(std::index_sequence<Is...>) -> uvalue {
+            if ( !(... && args[Is].can_cast_to<type_list_at_t<Is, argument_types>>()) ) {
+                throw_exception_with("an attempt to call a constructor with incorrect argument types");
+            }
+            return uvalue{std::construct_at(
+                static_cast<class_type*>(mem),
+                args[Is].cast<type_list_at_t<Is, argument_types>>()...)};
+        }(std::make_index_sequence<ct::arity>());
+    }
+
+    template < class_kind Class, typename... Args >
     bool raw_constructor_is_invocable_with(std::span<const uarg_base> args) {
         using ct = constructor_traits<Class, Args...>;
         using argument_types = typename ct::argument_types;
@@ -5218,8 +5318,13 @@ namespace meta_hpp::detail
 namespace meta_hpp::detail
 {
     template < constructor_policy_kind Policy, class_kind Class, typename... Args >
-    constructor_state::invoke_impl make_constructor_invoke() {
-        return &raw_constructor_invoke<Policy, Class, Args...>;
+    constructor_state::create_impl make_constructor_create() {
+        return &raw_constructor_create<Policy, Class, Args...>;
+    }
+
+    template < class_kind Class, typename... Args >
+    constructor_state::create_at_impl make_constructor_create_at() {
+        return &raw_constructor_create_at<Class, Args...>;
     }
 
     template < class_kind Class, typename... Args >
@@ -5254,7 +5359,8 @@ namespace meta_hpp::detail
         return std::make_shared<constructor_state>(constructor_state{
             .index{constructor_index::make<Class, Args...>()},
             .metadata{std::move(metadata)},
-            .invoke{make_constructor_invoke<Policy, Class, Args...>()},
+            .create{make_constructor_create<Policy, Class, Args...>()},
+            .create_at{make_constructor_create_at<Class, Args...>()},
             .is_invocable_with{make_constructor_is_invocable_with<Class, Args...>()},
             .arguments{make_constructor_arguments<Class, Args...>()},
         });
@@ -5292,19 +5398,25 @@ namespace meta_hpp
     }
 
     template < typename... Args >
-    uvalue constructor::invoke(Args&&... args) const {
+    uvalue constructor::create(Args&&... args) const {
         if constexpr ( sizeof...(Args) > 0 ) {
             using namespace detail;
             const std::array<uarg, sizeof...(Args)> vargs{uarg{std::forward<Args>(args)}...};
-            return state_->invoke(vargs);
+            return state_->create(vargs);
         } else {
-            return state_->invoke({});
+            return state_->create({});
         }
     }
 
     template < typename... Args >
-    uvalue constructor::operator()(Args&&... args) const {
-        return invoke(std::forward<Args>(args)...);
+    uvalue constructor::create_at(void* mem, Args&&... args) const {
+        if constexpr ( sizeof...(Args) > 0 ) {
+            using namespace detail;
+            const std::array<uarg, sizeof...(Args)> vargs{uarg{std::forward<Args>(args)}...};
+            return state_->create_at(mem, vargs);
+        } else {
+            return state_->create_at(mem, {});
+        }
     }
 
     template < typename... Args >
@@ -5383,39 +5495,37 @@ namespace meta_hpp
 namespace meta_hpp::detail
 {
     template < class_kind Class >
-    void raw_destructor_invoke(const uarg& ptr) {
+    bool raw_destructor_destroy(const uarg& arg) {
         using dt = destructor_traits<Class>;
         using class_type = typename dt::class_type;
 
-        if ( !ptr.can_cast_to<class_type*>() ) {
-            throw_exception_with("an attempt to call a destructor with an incorrect argument type");
+        if ( !arg.can_cast_to<class_type*>() ) {
+            return false;
         }
 
-        class_type* raw_ptr = ptr.cast<class_type*>();
-        if ( raw_ptr ) {
-            std::unique_ptr<class_type>{raw_ptr}.reset();
-        }
+        std::unique_ptr<class_type>{arg.cast<class_type*>()}.reset();
+        return true;
     }
 
     template < class_kind Class >
-    bool raw_destructor_is_invocable_with(const uarg_base& ptr) {
+    void raw_destructor_destroy_at(void* mem) {
         using dt = destructor_traits<Class>;
         using class_type = typename dt::class_type;
 
-        return ptr.can_cast_to<class_type*>();
+        std::destroy_at(static_cast<class_type*>(mem));
     }
 }
 
 namespace meta_hpp::detail
 {
     template < class_kind Class >
-    destructor_state::invoke_impl make_destructor_invoke() {
-        return &raw_destructor_invoke<Class>;
+    destructor_state::destroy_impl make_destructor_destroy() {
+        return &raw_destructor_destroy<Class>;
     }
 
     template < class_kind Class >
-    destructor_state::is_invocable_with_impl make_destructor_is_invocable_with() {
-        return &raw_destructor_is_invocable_with<Class>;
+    destructor_state::destroy_at_impl make_destructor_destroy_at() {
+        return &raw_destructor_destroy_at<Class>;
     }
 }
 
@@ -5426,8 +5536,8 @@ namespace meta_hpp::detail
         return std::make_shared<destructor_state>(destructor_state{
             .index{destructor_index::make<Class>()},
             .metadata{std::move(metadata)},
-            .invoke{make_destructor_invoke<Class>()},
-            .is_invocable_with{make_destructor_is_invocable_with<Class>()},
+            .destroy{make_destructor_destroy<Class>()},
+            .destroy_at{make_destructor_destroy_at<Class>()},
         });
     }
 }
@@ -5463,29 +5573,14 @@ namespace meta_hpp
     }
 
     template < typename Arg >
-    void destructor::invoke(Arg&& ptr) const {
+    bool destructor::destroy(Arg&& arg) const {
         using namespace detail;
-        const uarg varg{std::forward<Arg>(ptr)};
-        state_->invoke(varg);
+        const uarg varg{std::forward<Arg>(arg)};
+        return state_->destroy(varg);
     }
 
-    template < typename Arg >
-    void destructor::operator()(Arg&& ptr) const {
-        invoke(std::forward<Arg>(ptr));
-    }
-
-    template < typename Arg >
-    bool destructor::is_invocable_with() const noexcept {
-        using namespace detail;
-        const uarg_base varg{type_list<Arg>{}};
-        return state_->is_invocable_with(varg);
-    }
-
-    template < typename Arg >
-    bool destructor::is_invocable_with(Arg&& ptr) const noexcept {
-        using namespace detail;
-        const uarg_base varg{std::forward<Arg>(ptr)};
-        return state_->is_invocable_with(varg);
+    inline void destructor::destroy_at(void* mem) const {
+        state_->destroy_at(mem);
     }
 }
 
@@ -6961,24 +7056,34 @@ namespace meta_hpp
     uvalue class_type::create(Args&&... args) const {
         for ( auto&& [_, ctor] : data_->constructors ) {
             if ( ctor.is_invocable_with(std::forward<Args>(args)...) ) {
-                return ctor.invoke(std::forward<Args>(args)...);
+                return ctor.create(std::forward<Args>(args)...);
             }
         }
         return uvalue{};
     }
 
     template < typename... Args >
-    uvalue class_type::operator()(Args&&... args) const {
-        return create(std::forward<Args>(args)...);
+    uvalue class_type::create_at(void* mem, Args&&... args) const {
+        for ( auto&& [_, ctor] : data_->constructors ) {
+            if ( ctor.is_invocable_with(std::forward<Args>(args)...) ) {
+                return ctor.create_at(mem, std::forward<Args>(args)...);
+            }
+        }
+        return uvalue{};
     }
 
     template < typename Arg >
-    bool class_type::destroy(Arg&& ptr) const {
-        for ( auto&& [_, dtor] : data_->destructors ) {
-            if ( dtor.is_invocable_with(std::forward<Arg>(ptr)) ) {
-                dtor.invoke(std::forward<Arg>(ptr));
-                return true;
-            }
+    bool class_type::destroy(Arg&& arg) const {
+        if ( const destructor dtor = get_destructor() ) {
+            return dtor.destroy(std::forward<Arg>(arg));
+        }
+        return false;
+    }
+
+    inline bool class_type::destroy_at(void* mem) const {
+        if ( const destructor dtor = get_destructor() ) {
+            dtor.destroy_at(mem);
+            return true;
         }
         return false;
     }

@@ -15,39 +15,37 @@
 namespace meta_hpp::detail
 {
     template < class_kind Class >
-    void raw_destructor_invoke(const uarg& ptr) {
+    bool raw_destructor_destroy(const uarg& arg) {
         using dt = destructor_traits<Class>;
         using class_type = typename dt::class_type;
 
-        if ( !ptr.can_cast_to<class_type*>() ) {
-            throw_exception_with("an attempt to call a destructor with an incorrect argument type");
+        if ( !arg.can_cast_to<class_type*>() ) {
+            return false;
         }
 
-        class_type* raw_ptr = ptr.cast<class_type*>();
-        if ( raw_ptr ) {
-            std::unique_ptr<class_type>{raw_ptr}.reset();
-        }
+        std::unique_ptr<class_type>{arg.cast<class_type*>()}.reset();
+        return true;
     }
 
     template < class_kind Class >
-    bool raw_destructor_is_invocable_with(const uarg_base& ptr) {
+    void raw_destructor_destroy_at(void* mem) {
         using dt = destructor_traits<Class>;
         using class_type = typename dt::class_type;
 
-        return ptr.can_cast_to<class_type*>();
+        std::destroy_at(static_cast<class_type*>(mem));
     }
 }
 
 namespace meta_hpp::detail
 {
     template < class_kind Class >
-    destructor_state::invoke_impl make_destructor_invoke() {
-        return &raw_destructor_invoke<Class>;
+    destructor_state::destroy_impl make_destructor_destroy() {
+        return &raw_destructor_destroy<Class>;
     }
 
     template < class_kind Class >
-    destructor_state::is_invocable_with_impl make_destructor_is_invocable_with() {
-        return &raw_destructor_is_invocable_with<Class>;
+    destructor_state::destroy_at_impl make_destructor_destroy_at() {
+        return &raw_destructor_destroy_at<Class>;
     }
 }
 
@@ -58,8 +56,8 @@ namespace meta_hpp::detail
         return std::make_shared<destructor_state>(destructor_state{
             .index{destructor_index::make<Class>()},
             .metadata{std::move(metadata)},
-            .invoke{make_destructor_invoke<Class>()},
-            .is_invocable_with{make_destructor_is_invocable_with<Class>()},
+            .destroy{make_destructor_destroy<Class>()},
+            .destroy_at{make_destructor_destroy_at<Class>()},
         });
     }
 }
@@ -95,28 +93,13 @@ namespace meta_hpp
     }
 
     template < typename Arg >
-    void destructor::invoke(Arg&& ptr) const {
+    bool destructor::destroy(Arg&& arg) const {
         using namespace detail;
-        const uarg varg{std::forward<Arg>(ptr)};
-        state_->invoke(varg);
+        const uarg varg{std::forward<Arg>(arg)};
+        return state_->destroy(varg);
     }
 
-    template < typename Arg >
-    void destructor::operator()(Arg&& ptr) const {
-        invoke(std::forward<Arg>(ptr));
-    }
-
-    template < typename Arg >
-    bool destructor::is_invocable_with() const noexcept {
-        using namespace detail;
-        const uarg_base varg{type_list<Arg>{}};
-        return state_->is_invocable_with(varg);
-    }
-
-    template < typename Arg >
-    bool destructor::is_invocable_with(Arg&& ptr) const noexcept {
-        using namespace detail;
-        const uarg_base varg{std::forward<Arg>(ptr)};
-        return state_->is_invocable_with(varg);
+    inline void destructor::destroy_at(void* mem) const {
+        state_->destroy_at(mem);
     }
 }

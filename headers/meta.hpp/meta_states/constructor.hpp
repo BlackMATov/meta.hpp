@@ -15,7 +15,7 @@
 namespace meta_hpp::detail
 {
     template < constructor_policy_kind Policy, class_kind Class, typename... Args >
-    uvalue raw_constructor_invoke(std::span<const uarg> args) {
+    uvalue raw_constructor_create(std::span<const uarg> args) {
         using ct = constructor_traits<Class, Args...>;
         using class_type = typename ct::class_type;
         using argument_types = typename ct::argument_types;
@@ -59,6 +59,26 @@ namespace meta_hpp::detail
     }
 
     template < class_kind Class, typename... Args >
+    uvalue raw_constructor_create_at(void* mem, std::span<const uarg> args) {
+        using ct = constructor_traits<Class, Args...>;
+        using class_type = typename ct::class_type;
+        using argument_types = typename ct::argument_types;
+
+        if ( args.size() != ct::arity ) {
+            throw_exception_with("an attempt to call a constructor with an incorrect arity");
+        }
+
+        return [mem, args]<std::size_t... Is>(std::index_sequence<Is...>) -> uvalue {
+            if ( !(... && args[Is].can_cast_to<type_list_at_t<Is, argument_types>>()) ) {
+                throw_exception_with("an attempt to call a constructor with incorrect argument types");
+            }
+            return uvalue{std::construct_at(
+                static_cast<class_type*>(mem),
+                args[Is].cast<type_list_at_t<Is, argument_types>>()...)};
+        }(std::make_index_sequence<ct::arity>());
+    }
+
+    template < class_kind Class, typename... Args >
     bool raw_constructor_is_invocable_with(std::span<const uarg_base> args) {
         using ct = constructor_traits<Class, Args...>;
         using argument_types = typename ct::argument_types;
@@ -76,8 +96,13 @@ namespace meta_hpp::detail
 namespace meta_hpp::detail
 {
     template < constructor_policy_kind Policy, class_kind Class, typename... Args >
-    constructor_state::invoke_impl make_constructor_invoke() {
-        return &raw_constructor_invoke<Policy, Class, Args...>;
+    constructor_state::create_impl make_constructor_create() {
+        return &raw_constructor_create<Policy, Class, Args...>;
+    }
+
+    template < class_kind Class, typename... Args >
+    constructor_state::create_at_impl make_constructor_create_at() {
+        return &raw_constructor_create_at<Class, Args...>;
     }
 
     template < class_kind Class, typename... Args >
@@ -112,7 +137,8 @@ namespace meta_hpp::detail
         return std::make_shared<constructor_state>(constructor_state{
             .index{constructor_index::make<Class, Args...>()},
             .metadata{std::move(metadata)},
-            .invoke{make_constructor_invoke<Policy, Class, Args...>()},
+            .create{make_constructor_create<Policy, Class, Args...>()},
+            .create_at{make_constructor_create_at<Class, Args...>()},
             .is_invocable_with{make_constructor_is_invocable_with<Class, Args...>()},
             .arguments{make_constructor_arguments<Class, Args...>()},
         });
@@ -150,19 +176,25 @@ namespace meta_hpp
     }
 
     template < typename... Args >
-    uvalue constructor::invoke(Args&&... args) const {
+    uvalue constructor::create(Args&&... args) const {
         if constexpr ( sizeof...(Args) > 0 ) {
             using namespace detail;
             const std::array<uarg, sizeof...(Args)> vargs{uarg{std::forward<Args>(args)}...};
-            return state_->invoke(vargs);
+            return state_->create(vargs);
         } else {
-            return state_->invoke({});
+            return state_->create({});
         }
     }
 
     template < typename... Args >
-    uvalue constructor::operator()(Args&&... args) const {
-        return invoke(std::forward<Args>(args)...);
+    uvalue constructor::create_at(void* mem, Args&&... args) const {
+        if constexpr ( sizeof...(Args) > 0 ) {
+            using namespace detail;
+            const std::array<uarg, sizeof...(Args)> vargs{uarg{std::forward<Args>(args)}...};
+            return state_->create_at(mem, vargs);
+        } else {
+            return state_->create_at(mem, {});
+        }
     }
 
     template < typename... Args >

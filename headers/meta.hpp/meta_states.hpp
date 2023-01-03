@@ -134,10 +134,10 @@ namespace meta_hpp
         [[nodiscard]] const constructor_type& get_type() const noexcept;
 
         template < typename... Args >
-        uvalue invoke(Args&&... args) const;
+        [[nodiscard]] uvalue create(Args&&... args) const;
 
         template < typename... Args >
-        uvalue operator()(Args&&... args) const;
+        uvalue create_at(void* mem, Args&&... args) const;
 
         template < typename... Args >
         [[nodiscard]] bool is_invocable_with() const noexcept;
@@ -167,16 +167,9 @@ namespace meta_hpp
         [[nodiscard]] const destructor_type& get_type() const noexcept;
 
         template < typename Arg >
-        void invoke(Arg&& ptr) const;
+        bool destroy(Arg&& arg) const;
 
-        template < typename Arg >
-        void operator()(Arg&& ptr) const;
-
-        template < typename Arg >
-        [[nodiscard]] bool is_invocable_with() const noexcept;
-
-        template < typename Arg >
-        [[nodiscard]] bool is_invocable_with(Arg&& ptr) const noexcept;
+        void destroy_at(void* mem) const;
     private:
         detail::destructor_state_ptr state_;
         friend auto detail::state_access<destructor>(const destructor&);
@@ -431,13 +424,15 @@ namespace meta_hpp::detail
     };
 
     struct constructor_state final {
-        using invoke_impl = fixed_function<uvalue(std::span<const uarg>)>;
+        using create_impl = fixed_function<uvalue(std::span<const uarg>)>;
+        using create_at_impl = fixed_function<uvalue(void*, std::span<const uarg>)>;
         using is_invocable_with_impl = fixed_function<bool(std::span<const uarg_base>)>;
 
         constructor_index index;
         metadata_map metadata;
 
-        invoke_impl invoke;
+        create_impl create;
+        create_at_impl create_at;
         is_invocable_with_impl is_invocable_with;
 
         argument_list arguments;
@@ -447,14 +442,14 @@ namespace meta_hpp::detail
     };
 
     struct destructor_state final {
-        using invoke_impl = fixed_function<void(const uarg&)>;
-        using is_invocable_with_impl = fixed_function<bool(const uarg_base&)>;
+        using destroy_impl = fixed_function<bool(const uarg&)>;
+        using destroy_at_impl = fixed_function<void(void*)>;
 
         destructor_index index;
         metadata_map metadata;
 
-        invoke_impl invoke;
-        is_invocable_with_impl is_invocable_with;
+        destroy_impl destroy;
+        destroy_at_impl destroy_at;
 
         template < class_kind Class >
         [[nodiscard]] static destructor_state_ptr make(metadata_map metadata);
