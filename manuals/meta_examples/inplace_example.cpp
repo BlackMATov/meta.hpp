@@ -12,7 +12,7 @@ namespace
         int x;
         int y;
 
-        ivec2(int xy) : x{xy}, y{xy} {}
+        explicit ivec2(int nv) : x{nv}, y{nv} {}
         ivec2(int nx, int ny) : x{nx}, y{ny} {}
 
         int length2() const noexcept {
@@ -46,6 +46,9 @@ TEST_CASE("meta/meta_examples/inplace") {
     meta::memory_buffer ivec2_buffer{
         ivec2_type.get_size(),
         std::align_val_t{ivec2_type.get_align()}};
+
+    // or you can use static buffer instead (if the required type is available at compile-time)
+    // alignas(ivec2) std::byte ivec2_buffer[sizeof(ivec2)];
 
     // creates 'ivec2' on the memory buffer ('placement new' under the hood)
     const meta::uvalue ivec2_ptr = ivec2_type.create_at(ivec2_buffer.get_memory(), 2, 3);
