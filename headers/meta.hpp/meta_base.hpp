@@ -13,6 +13,7 @@
 #include "meta_base/fixed_function.hpp"
 #include "meta_base/hash_combiner.hpp"
 #include "meta_base/is_in_place_type.hpp"
+#include "meta_base/memory_buffer.hpp"
 #include "meta_base/noncopyable.hpp"
 #include "meta_base/overloaded.hpp"
 #include "meta_base/select_overload.hpp"
@@ -23,6 +24,8 @@
 
 namespace meta_hpp
 {
+    using detail::memory_buffer;
+
     using detail::select_const;
     using detail::select_non_const;
     using detail::select_overload;
