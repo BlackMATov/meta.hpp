@@ -139,7 +139,7 @@ TEST_CASE("meta/meta_states/ctor/as_object") {
     const meta::class_type clazz_type = meta::resolve_type<clazz_t>();
     REQUIRE(clazz_type);
 
-    alignas(alignof(clazz_t)) std::byte clazz_mem[sizeof(clazz_t)];
+    alignas(clazz_t) std::byte clazz_mem[sizeof(clazz_t)];
 
     SUBCASE("int") {
         {
