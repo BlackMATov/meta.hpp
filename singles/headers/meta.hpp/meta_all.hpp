@@ -969,7 +969,7 @@ namespace meta_hpp
 namespace meta_hpp::detail
 {
     template < typename T >
-    inline constexpr bool is_type_family_v =
+    concept type_family =
         std::same_as<T, any_type> ||
         std::same_as<T, array_type> ||
         std::same_as<T, class_type> ||
@@ -984,9 +984,6 @@ namespace meta_hpp::detail
         std::same_as<T, pointer_type> ||
         std::same_as<T, reference_type> ||
         std::same_as<T, void_type>;
-
-    template < typename T >
-    concept type_family = is_type_family_v<T>;
 
     template < type_family T >
     [[nodiscard]] auto type_access(const T& type) {
@@ -2093,7 +2090,7 @@ namespace meta_hpp::detail
 namespace meta_hpp::detail
 {
     template < typename T >
-    inline constexpr bool is_index_family_v =
+    concept index_family =
         std::same_as<T, argument_index> ||
         std::same_as<T, constructor_index> ||
         std::same_as<T, destructor_index> ||
@@ -2103,9 +2100,6 @@ namespace meta_hpp::detail
         std::same_as<T, method_index> ||
         std::same_as<T, scope_index> ||
         std::same_as<T, variable_index>;
-
-    template < typename T >
-    concept index_family = is_index_family_v<T>;
 }
 
 namespace meta_hpp
@@ -2288,16 +2282,16 @@ namespace std
 namespace meta_hpp::detail
 {
     template < typename T >
-    inline constexpr bool is_value_kind_v = std::same_as<T, uvalue>;
+    concept uvalue_kind
+        = std::same_as<T, uvalue>;
 
     template < typename T >
-    concept value_kind = is_value_kind_v<T>;
-
-    template < typename T >
-    concept decay_value_kind = value_kind<std::decay_t<T>>;
-
-    template < typename T >
-    concept decay_non_value_kind = !decay_value_kind<T>;
+    concept any_uvalue_kind =
+        std::same_as<T, uarg_base> ||
+        std::same_as<T, uarg> ||
+        std::same_as<T, uinst_base> ||
+        std::same_as<T, uinst> ||
+        std::same_as<T, uvalue>;
 }
 
 namespace meta_hpp
@@ -2313,34 +2307,37 @@ namespace meta_hpp
         uvalue& operator=(uvalue&& other) noexcept;
         uvalue& operator=(const uvalue& other);
 
-        template < detail::decay_non_value_kind T >
-            requires std::is_copy_constructible_v<std::decay_t<T>>
-                && (!detail::is_in_place_type_v<std::remove_cvref_t<T>>)
+        template < typename T, typename Tp = std::decay_t<T> >
+            requires (!detail::any_uvalue_kind<Tp>)
+                  && (!detail::is_in_place_type_v<Tp>)
+                  && (std::is_copy_constructible_v<Tp>)
         // NOLINTNEXTLINE(*-forwarding-reference-overload)
         explicit uvalue(T&& val);
 
-        template < detail::decay_non_value_kind T >
-            requires std::is_copy_constructible_v<std::decay_t<T>>
+        template < typename T, typename Tp = std::decay_t<T> >
+            requires (!detail::any_uvalue_kind<Tp>)
+                  && (!detail::is_in_place_type_v<Tp>)
+                  && (std::is_copy_constructible_v<Tp>)
         uvalue& operator=(T&& val);
 
-        template < typename T, typename... Args >
-            requires std::is_copy_constructible_v<std::decay_t<T>>
-                  && std::is_constructible_v<std::decay_t<T>, Args...>
+        template < typename T, typename... Args, typename Tp = std::decay_t<T> >
+            requires std::is_copy_constructible_v<Tp>
+                  && std::is_constructible_v<Tp, Args...>
         explicit uvalue(std::in_place_type_t<T>, Args&&... args);
 
-        template < typename T, typename U, typename... Args >
-            requires std::is_copy_constructible_v<std::decay_t<T>>
-                  && std::is_constructible_v<std::decay_t<T>, std::initializer_list<U>&, Args...>
+        template < typename T, typename U, typename... Args, typename Tp = std::decay_t<T> >
+            requires std::is_copy_constructible_v<Tp>
+                  && std::is_constructible_v<Tp, std::initializer_list<U>&, Args...>
         explicit uvalue(std::in_place_type_t<T>, std::initializer_list<U> ilist, Args&&... args);
 
-        template < typename T, typename... Args >
-            requires std::is_copy_constructible_v<std::decay_t<T>>
-                  && std::is_constructible_v<std::decay_t<T>, Args...>
+        template < typename T, typename... Args, typename Tp = std::decay_t<T> >
+            requires std::is_copy_constructible_v<Tp>
+                  && std::is_constructible_v<Tp, Args...>
         std::decay_t<T>& emplace(Args&&... args);
 
-        template < typename T, typename U, typename... Args >
-            requires std::is_copy_constructible_v<std::decay_t<T>>
-                  && std::is_constructible_v<std::decay_t<T>, std::initializer_list<U>&, Args...>
+        template < typename T, typename U, typename... Args, typename Tp = std::decay_t<T> >
+            requires std::is_copy_constructible_v<Tp>
+                  && std::is_constructible_v<Tp, std::initializer_list<U>&, Args...>
         std::decay_t<T>& emplace(std::initializer_list<U> ilist, Args&&... args);
 
         [[nodiscard]] bool is_valid() const noexcept;
@@ -2406,7 +2403,7 @@ namespace meta_hpp
 namespace meta_hpp::detail
 {
     template < typename T >
-    inline constexpr bool is_state_family_v =
+    concept state_family =
         std::same_as<T, argument> ||
         std::same_as<T, constructor> ||
         std::same_as<T, destructor> ||
@@ -2416,9 +2413,6 @@ namespace meta_hpp::detail
         std::same_as<T, method> ||
         std::same_as<T, scope> ||
         std::same_as<T, variable>;
-
-    template < typename T >
-    concept state_family = is_state_family_v<T>;
 
     template < state_family T >
     [[nodiscard]] auto state_access(const T& state) {
@@ -2430,83 +2424,88 @@ namespace meta_hpp
 {
     namespace constructor_policy
     {
-        struct as_object final {};
-        struct as_raw_pointer final {};
-        struct as_shared_pointer final {};
+        struct as_object_t final {};
+        struct as_raw_pointer_t final {};
+        struct as_shared_pointer_t final {};
+
+        inline constexpr as_object_t as_object{};
+        inline constexpr as_raw_pointer_t as_raw_pointer{};
+        inline constexpr as_shared_pointer_t as_shared_pointer{};
     }
 
     namespace function_policy
     {
-        struct as_copy final {};
-        struct discard_return final {};
-        struct return_reference_as_pointer final {};
+        struct as_copy_t final {};
+        struct discard_return_t final {};
+        struct return_reference_as_pointer_t final {};
+
+        inline constexpr as_copy_t as_copy{};
+        inline constexpr discard_return_t discard_return{};
+        inline constexpr return_reference_as_pointer_t return_reference_as_pointer{};
     }
 
     namespace member_policy
     {
-        struct as_copy final {};
-        struct as_pointer final {};
-        struct as_reference_wrapper final {};
+        struct as_copy_t final {};
+        struct as_pointer_t final {};
+        struct as_reference_wrapper_t final {};
+
+        inline constexpr as_copy_t as_copy{};
+        inline constexpr as_pointer_t as_pointer{};
+        inline constexpr as_reference_wrapper_t as_reference_wrapper{};
     }
 
     namespace method_policy
     {
-        struct as_copy final {};
-        struct discard_return final {};
-        struct return_reference_as_pointer final {};
+        struct as_copy_t final {};
+        struct discard_return_t final {};
+        struct return_reference_as_pointer_t final {};
+
+        inline constexpr as_copy_t as_copy{};
+        inline constexpr discard_return_t discard_return{};
+        inline constexpr return_reference_as_pointer_t return_reference_as_pointer{};
     }
 
     namespace variable_policy
     {
-        struct as_copy final {};
-        struct as_pointer final {};
-        struct as_reference_wrapper final {};
+        struct as_copy_t final {};
+        struct as_pointer_t final {};
+        struct as_reference_wrapper_t final {};
+
+        inline constexpr as_copy_t as_copy{};
+        inline constexpr as_pointer_t as_pointer{};
+        inline constexpr as_reference_wrapper_t as_reference_wrapper{};
     }
 
     template < typename Policy >
-    inline constexpr bool is_constructor_policy_v =
-        std::same_as<Policy, constructor_policy::as_object> ||
-        std::same_as<Policy, constructor_policy::as_raw_pointer> ||
-        std::same_as<Policy, constructor_policy::as_shared_pointer>;
+    concept constructor_policy_kind =
+        std::same_as<Policy, constructor_policy::as_object_t> ||
+        std::same_as<Policy, constructor_policy::as_raw_pointer_t> ||
+        std::same_as<Policy, constructor_policy::as_shared_pointer_t>;
 
     template < typename Policy >
-    inline constexpr bool is_function_policy_v =
-        std::same_as<Policy, function_policy::as_copy> ||
-        std::same_as<Policy, function_policy::discard_return> ||
-        std::same_as<Policy, function_policy::return_reference_as_pointer>;
+    concept function_policy_kind =
+        std::same_as<Policy, function_policy::as_copy_t> ||
+        std::same_as<Policy, function_policy::discard_return_t> ||
+        std::same_as<Policy, function_policy::return_reference_as_pointer_t>;
 
     template < typename Policy >
-    inline constexpr bool is_member_policy_v =
-        std::same_as<Policy, member_policy::as_copy> ||
-        std::same_as<Policy, member_policy::as_pointer> ||
-        std::same_as<Policy, member_policy::as_reference_wrapper>;
+    concept member_policy_kind =
+        std::same_as<Policy, member_policy::as_copy_t> ||
+        std::same_as<Policy, member_policy::as_pointer_t> ||
+        std::same_as<Policy, member_policy::as_reference_wrapper_t>;
 
     template < typename Policy >
-    inline constexpr bool is_method_policy_v =
-        std::same_as<Policy, method_policy::as_copy> ||
-        std::same_as<Policy, method_policy::discard_return> ||
-        std::same_as<Policy, method_policy::return_reference_as_pointer>;
+    concept method_policy_kind =
+        std::same_as<Policy, method_policy::as_copy_t> ||
+        std::same_as<Policy, method_policy::discard_return_t> ||
+        std::same_as<Policy, method_policy::return_reference_as_pointer_t>;
 
     template < typename Policy >
-    inline constexpr bool is_variable_policy_v =
-        std::same_as<Policy, variable_policy::as_copy> ||
-        std::same_as<Policy, variable_policy::as_pointer> ||
-        std::same_as<Policy, variable_policy::as_reference_wrapper>;
-
-    template < typename Policy >
-    concept constructor_policy_kind = is_constructor_policy_v<Policy>;
-
-    template < typename Policy >
-    concept function_policy_kind = is_function_policy_v<Policy>;
-
-    template < typename Policy >
-    concept member_policy_kind = is_member_policy_v<Policy>;
-
-    template < typename Policy >
-    concept method_policy_kind = is_method_policy_v<Policy>;
-
-    template < typename Policy >
-    concept variable_policy_kind = is_variable_policy_v<Policy>;
+    concept variable_policy_kind =
+        std::same_as<Policy, variable_policy::as_copy_t> ||
+        std::same_as<Policy, variable_policy::as_pointer_t> ||
+        std::same_as<Policy, variable_policy::as_reference_wrapper_t>;
 }
 
 namespace meta_hpp
@@ -3333,12 +3332,12 @@ namespace meta_hpp
         // constructor_
 
         template < typename... Args
-                 , constructor_policy_kind Policy = constructor_policy::as_object >
+                 , constructor_policy_kind Policy = constructor_policy::as_object_t >
         class_bind& constructor_(Policy = Policy{})
             requires detail::class_bind_constructor_kind<Class, Args...>;
 
         template < typename... Args
-                 , constructor_policy_kind Policy = constructor_policy::as_object >
+                 , constructor_policy_kind Policy = constructor_policy::as_object_t >
         class_bind& constructor_(constructor_opts opts, Policy = Policy{})
             requires detail::class_bind_constructor_kind<Class, Args...>;
 
@@ -3353,14 +3352,14 @@ namespace meta_hpp
         // function_
 
         template < detail::function_kind Function
-                 , function_policy_kind Policy = function_policy::as_copy >
+                 , function_policy_kind Policy = function_policy::as_copy_t >
         class_bind& function_(
             std::string name,
             Function function,
             Policy = Policy{});
 
         template < detail::function_kind Function
-                 , function_policy_kind Policy = function_policy::as_copy >
+                 , function_policy_kind Policy = function_policy::as_copy_t >
         class_bind& function_(
             std::string name,
             Function function,
@@ -3368,7 +3367,7 @@ namespace meta_hpp
             Policy = Policy{});
 
         template < detail::function_kind Function
-                 , function_policy_kind Policy = function_policy::as_copy >
+                 , function_policy_kind Policy = function_policy::as_copy_t >
         class_bind& function_(
             std::string name,
             Function function,
@@ -3378,7 +3377,7 @@ namespace meta_hpp
         // member_
 
         template < detail::member_kind Member
-                 , member_policy_kind Policy = member_policy::as_copy >
+                 , member_policy_kind Policy = member_policy::as_copy_t >
         class_bind& member_(
             std::string name,
             Member member,
@@ -3386,7 +3385,7 @@ namespace meta_hpp
             requires detail::class_bind_member_kind<Class, Member>;
 
         template < detail::member_kind Member
-                 , member_policy_kind Policy = member_policy::as_copy >
+                 , member_policy_kind Policy = member_policy::as_copy_t >
         class_bind& member_(
             std::string name,
             Member member,
@@ -3397,7 +3396,7 @@ namespace meta_hpp
         // method_
 
         template < detail::method_kind Method
-                 , method_policy_kind Policy = method_policy::as_copy >
+                 , method_policy_kind Policy = method_policy::as_copy_t >
         class_bind& method_(
             std::string name,
             Method method,
@@ -3405,7 +3404,7 @@ namespace meta_hpp
             requires detail::class_bind_method_kind<Class, Method>;
 
         template < detail::method_kind Method
-                 , method_policy_kind Policy = method_policy::as_copy >
+                 , method_policy_kind Policy = method_policy::as_copy_t >
         class_bind& method_(
             std::string name,
             Method method,
@@ -3414,7 +3413,7 @@ namespace meta_hpp
             requires detail::class_bind_method_kind<Class, Method>;
 
         template < detail::method_kind Method
-                 , method_policy_kind Policy = method_policy::as_copy >
+                 , method_policy_kind Policy = method_policy::as_copy_t >
         class_bind& method_(
             std::string name,
             Method method,
@@ -3430,14 +3429,14 @@ namespace meta_hpp
         // variable_
 
         template < detail::pointer_kind Pointer
-                 , variable_policy_kind Policy = variable_policy::as_copy >
+                 , variable_policy_kind Policy = variable_policy::as_copy_t >
         class_bind& variable_(
             std::string name,
             Pointer pointer,
             Policy = Policy{});
 
         template < detail::pointer_kind Pointer
-                 , variable_policy_kind Policy = variable_policy::as_copy >
+                 , variable_policy_kind Policy = variable_policy::as_copy_t >
         class_bind& variable_(
             std::string name,
             Pointer pointer,
@@ -3583,14 +3582,14 @@ namespace meta_hpp
         // function_
 
         template < detail::function_kind Function
-                 , function_policy_kind Policy = function_policy::as_copy >
+                 , function_policy_kind Policy = function_policy::as_copy_t >
         scope_bind& function_(
             std::string name,
             Function function,
             Policy = Policy{});
 
         template < detail::function_kind Function
-                 , function_policy_kind Policy = function_policy::as_copy >
+                 , function_policy_kind Policy = function_policy::as_copy_t >
         scope_bind& function_(
             std::string name,
             Function function,
@@ -3598,7 +3597,7 @@ namespace meta_hpp
             Policy = Policy{});
 
         template < detail::function_kind Function
-                 , function_policy_kind Policy = function_policy::as_copy >
+                 , function_policy_kind Policy = function_policy::as_copy_t >
         scope_bind& function_(
             std::string name,
             Function function,
@@ -3613,14 +3612,14 @@ namespace meta_hpp
         // variable_
 
         template < detail::pointer_kind Pointer
-                 , variable_policy_kind Policy = variable_policy::as_copy >
+                 , variable_policy_kind Policy = variable_policy::as_copy_t >
         scope_bind& variable_(
             std::string name,
             Pointer pointer,
             Policy = Policy{});
 
         template < detail::pointer_kind Pointer
-                 , variable_policy_kind Policy = variable_policy::as_copy >
+                 , variable_policy_kind Policy = variable_policy::as_copy_t >
         scope_bind& variable_(
             std::string name,
             Pointer pointer,
@@ -4746,34 +4745,14 @@ namespace meta_hpp
 
 namespace meta_hpp::detail
 {
-    template < typename T >
-    inline constexpr bool is_uvalue_kind_v =
-        std::same_as<T, uarg_base> ||
-        std::same_as<T, uarg> ||
-        std::same_as<T, uinst_base> ||
-        std::same_as<T, uinst> ||
-        std::same_as<T, uvalue>;
-
-    template < typename T >
-    concept uvalue_kind = is_uvalue_kind_v<T>;
-
-    template < typename T >
-    concept decay_uvalue_kind = uvalue_kind<std::decay_t<T>>;
-
-    template < typename T >
-    concept decay_non_uvalue_kind = !decay_uvalue_kind<T>;
-}
-
-namespace meta_hpp::detail
-{
-    template < typename T >
+    template < typename T, typename Tp = std::decay_t<T> >
     concept arg_lvalue_ref_kind =
-        (decay_non_uvalue_kind<T>) &&
+        (!any_uvalue_kind<Tp>) &&
         (std::is_lvalue_reference_v<T>);
 
-    template < typename T >
+    template < typename T, typename Tp = std::decay_t<T> >
     concept arg_rvalue_ref_kind =
-        (decay_non_uvalue_kind<T>) &&
+        (!any_uvalue_kind<Tp>) &&
         (!std::is_reference_v<T> || std::is_rvalue_reference_v<T>);
 }
 
@@ -4784,15 +4763,15 @@ namespace meta_hpp::detail
         (std::is_class_v<T>) ||
         (std::is_reference_v<T> && std::is_class_v<std::remove_reference_t<T>>);
 
-    template < typename T >
+    template < typename T, typename Tp = std::decay_t<T> >
     concept inst_class_lvalue_ref_kind =
-        (decay_non_uvalue_kind<T>) &&
+        (!any_uvalue_kind<Tp>) &&
         (std::is_lvalue_reference_v<T>) &&
         (std::is_class_v<std::remove_pointer_t<std::remove_reference_t<T>>>);
 
-    template < typename T >
+    template < typename T, typename Tp = std::decay_t<T> >
     concept inst_class_rvalue_ref_kind =
-        (decay_non_uvalue_kind<T>) &&
+        (!any_uvalue_kind<Tp>) &&
         (!std::is_reference_v<T> || std::is_rvalue_reference_v<T>) &&
         (std::is_class_v<std::remove_pointer_t<std::remove_reference_t<T>>>);
 }
@@ -4912,12 +4891,8 @@ namespace meta_hpp::detail
         template < typename T >
         uarg_base(type_list<T>) = delete;
 
-        template < decay_value_kind T >
-        // NOLINTNEXTLINE(*-forwarding-reference-overload)
-        explicit uarg_base(T&&)
-        : uarg_base{type_list<T&&>{}} {}
-
-        template < decay_non_uvalue_kind T >
+        template < typename T, typename Tp = std::decay_t<T> >
+            requires (!any_uvalue_kind<Tp>)
         // NOLINTNEXTLINE(*-forwarding-reference-overload)
         explicit uarg_base(T&&)
         : uarg_base{type_list<T&&>{}} {}
@@ -4987,14 +4962,15 @@ namespace meta_hpp::detail
 
         ~uarg() override = default;
 
-        template < decay_value_kind T >
+        template < typename T, uvalue_kind Tp = std::decay_t<T> >
         // NOLINTNEXTLINE(*-forwarding-reference-overload)
         explicit uarg(T&& v)
         : uarg_base{std::forward<T>(v)}
         // NOLINTNEXTLINE(*-const-cast)
         , data_{const_cast<void*>(v.data())} {}
 
-        template < decay_non_uvalue_kind T >
+        template < typename T, typename Tp = std::decay_t<T> >
+            requires (!any_uvalue_kind<Tp>)
         // NOLINTNEXTLINE(*-forwarding-reference-overload)
         explicit uarg(T&& v)
         : uarg_base{std::forward<T>(v)}
@@ -5242,13 +5218,13 @@ namespace meta_hpp::detail
 
         constexpr bool as_object =
             std::is_copy_constructible_v<class_type> &&
-            std::same_as<Policy, constructor_policy::as_object>;
+            std::same_as<Policy, constructor_policy::as_object_t>;
 
         constexpr bool as_raw_ptr =
-            std::same_as<Policy, constructor_policy::as_raw_pointer>;
+            std::same_as<Policy, constructor_policy::as_raw_pointer_t>;
 
         constexpr bool as_shared_ptr =
-            std::same_as<Policy, constructor_policy::as_shared_pointer>;
+            std::same_as<Policy, constructor_policy::as_shared_pointer_t>;
 
         static_assert(as_object || as_raw_ptr || as_shared_ptr);
 
@@ -5781,15 +5757,15 @@ namespace meta_hpp::detail
 
         constexpr bool as_copy =
             std::is_copy_constructible_v<return_type> &&
-            std::same_as<Policy, function_policy::as_copy>;
+            std::same_as<Policy, function_policy::as_copy_t>;
 
         constexpr bool as_void =
             std::is_void_v<return_type> ||
-            std::same_as<Policy, function_policy::discard_return>;
+            std::same_as<Policy, function_policy::discard_return_t>;
 
         constexpr bool ref_as_ptr =
             std::is_reference_v<return_type> &&
-            std::same_as<Policy, function_policy::return_reference_as_pointer>;
+            std::same_as<Policy, function_policy::return_reference_as_pointer_t>;
 
         static_assert(as_copy || as_void || ref_as_ptr);
 
@@ -5806,7 +5782,7 @@ namespace meta_hpp::detail
                 function(
                     args[Is].cast<type_list_at_t<Is, argument_types>>()...);
                 return uvalue{};
-            } else if constexpr ( std::same_as<Policy, function_policy::discard_return> ) {
+            } else if constexpr ( std::same_as<Policy, function_policy::discard_return_t> ) {
                 std::ignore = function(
                     args[Is].cast<type_list_at_t<Is, argument_types>>()...);
                 return uvalue{};
@@ -6038,12 +6014,8 @@ namespace meta_hpp::detail
         template < typename T >
         uinst_base(type_list<T>) = delete;
 
-        template < decay_value_kind T >
-        // NOLINTNEXTLINE(*-forwarding-reference-overload)
-        explicit uinst_base(T&&)
-        : uinst_base{type_list<T&&>{}} {}
-
-        template < decay_non_uvalue_kind T >
+        template < typename T, typename Tp = std::decay_t<T> >
+            requires (!any_uvalue_kind<Tp>)
         // NOLINTNEXTLINE(*-forwarding-reference-overload)
         explicit uinst_base(T&&)
         : uinst_base{type_list<T&&>{}} {}
@@ -6118,14 +6090,15 @@ namespace meta_hpp::detail
 
         ~uinst() override = default;
 
-        template < decay_value_kind T >
+        template < typename T, uvalue_kind Tp = std::decay_t<T> >
         // NOLINTNEXTLINE(*-forwarding-reference-overload)
         explicit uinst(T&& v)
         : uinst_base{std::forward<T>(v)}
         // NOLINTNEXTLINE(*-const-cast)
         , data_{const_cast<void*>(v.data())} {}
 
-        template < decay_non_uvalue_kind T >
+        template < typename T, typename Tp = std::decay_t<T> >
+            requires (!any_uvalue_kind<Tp>)
         // NOLINTNEXTLINE(*-forwarding-reference-overload)
         explicit uinst(T&& v)
         : uinst_base{std::forward<T>(v)}
@@ -6258,13 +6231,13 @@ namespace meta_hpp::detail
 
         constexpr bool as_copy =
             std::is_copy_constructible_v<value_type> &&
-            std::same_as<Policy, member_policy::as_copy>;
+            std::same_as<Policy, member_policy::as_copy_t>;
 
         constexpr bool as_ptr =
-            std::same_as<Policy, member_policy::as_pointer>;
+            std::same_as<Policy, member_policy::as_pointer_t>;
 
         constexpr bool as_ref_wrap =
-            std::same_as<Policy, member_policy::as_reference_wrapper>;
+            std::same_as<Policy, member_policy::as_reference_wrapper_t>;
 
         static_assert(as_copy || as_ptr || as_ref_wrap);
 
@@ -6555,15 +6528,15 @@ namespace meta_hpp::detail
 
         constexpr bool as_copy =
             std::is_copy_constructible_v<return_type> &&
-            std::same_as<Policy, method_policy::as_copy>;
+            std::same_as<Policy, method_policy::as_copy_t>;
 
         constexpr bool as_void =
             std::is_void_v<return_type> ||
-            std::same_as<Policy, method_policy::discard_return>;
+            std::same_as<Policy, method_policy::discard_return_t>;
 
         constexpr bool ref_as_ptr =
             std::is_reference_v<return_type> &&
-            std::same_as<Policy, method_policy::return_reference_as_pointer>;
+            std::same_as<Policy, method_policy::return_reference_as_pointer_t>;
 
         static_assert(as_copy || as_void || ref_as_ptr);
 
@@ -6584,7 +6557,7 @@ namespace meta_hpp::detail
                 (inst.cast<qualified_type>().*method)(
                     args[Is].cast<type_list_at_t<Is, argument_types>>()...);
                 return uvalue{};
-            } else if constexpr ( std::same_as<Policy, method_policy::discard_return> ) {
+            } else if constexpr ( std::same_as<Policy, method_policy::discard_return_t> ) {
                 std::ignore = (inst.cast<qualified_type>().*method)(
                     args[Is].cast<type_list_at_t<Is, argument_types>>()...);
                 return uvalue{};
@@ -6804,13 +6777,13 @@ namespace meta_hpp::detail
 
         constexpr bool as_copy =
             std::is_copy_constructible_v<data_type> &&
-            std::same_as<Policy, variable_policy::as_copy>;
+            std::same_as<Policy, variable_policy::as_copy_t>;
 
         constexpr bool as_ptr =
-            std::same_as<Policy, variable_policy::as_pointer>;
+            std::same_as<Policy, variable_policy::as_pointer_t>;
 
         constexpr bool as_ref_wrap =
-            std::same_as<Policy, variable_policy::as_reference_wrapper>;
+            std::same_as<Policy, variable_policy::as_reference_wrapper_t>;
 
         static_assert(as_copy || as_ptr || as_ref_wrap);
 
@@ -7833,9 +7806,9 @@ namespace meta_hpp
         using namespace detail;
         if constexpr ( sizeof...(Args) > 0 ) {
             const std::array<uarg, sizeof...(Args)> vargs{uarg{std::forward<Args>(args)}...};
-            return raw_function_invoke<function_policy::as_copy>(std::forward<Function>(function), vargs);
+            return raw_function_invoke<function_policy::as_copy_t>(std::forward<Function>(function), vargs);
         } else {
-            return raw_function_invoke<function_policy::as_copy>(std::forward<Function>(function), {});
+            return raw_function_invoke<function_policy::as_copy_t>(std::forward<Function>(function), {});
         }
     }
 }
@@ -7851,7 +7824,7 @@ namespace meta_hpp
     uvalue invoke(Member&& member, Instance&& instance) {
         using namespace detail;
         const uinst vinst{std::forward<Instance>(instance)};
-        return raw_member_getter<member_policy::as_copy>(std::forward<Member>(member), vinst);
+        return raw_member_getter<member_policy::as_copy_t>(std::forward<Member>(member), vinst);
     }
 }
 
@@ -7868,9 +7841,9 @@ namespace meta_hpp
         const uinst vinst{std::forward<Instance>(instance)};
         if constexpr ( sizeof...(Args) > 0 ) {
             const std::array<uarg, sizeof...(Args)> vargs{uarg{std::forward<Args>(args)}...};
-            return raw_method_invoke<method_policy::as_copy>(std::forward<Method>(method), vinst, vargs);
+            return raw_method_invoke<method_policy::as_copy_t>(std::forward<Method>(method), vinst, vargs);
         } else {
-            return raw_method_invoke<method_policy::as_copy>(std::forward<Method>(method), vinst, {});
+            return raw_method_invoke<method_policy::as_copy_t>(std::forward<Method>(method), vinst, {});
         }
     }
 }
@@ -8376,46 +8349,49 @@ namespace meta_hpp
         return *this;
     }
 
-    template < detail::decay_non_value_kind T >
-        requires std::is_copy_constructible_v<std::decay_t<T>>
-            && (!detail::is_in_place_type_v<std::remove_cvref_t<T>>)
+    template < typename T, typename Tp >
+        requires (!detail::any_uvalue_kind<Tp>)
+              && (!detail::is_in_place_type_v<Tp>)
+              && (std::is_copy_constructible_v<Tp>)
     // NOLINTNEXTLINE(*-forwarding-reference-overload)
     uvalue::uvalue(T&& val) {
         vtable_t::construct<T>(*this, std::forward<T>(val));
     }
 
-    template < detail::decay_non_value_kind T >
-        requires std::is_copy_constructible_v<std::decay_t<T>>
+    template < typename T, typename Tp >
+        requires (!detail::any_uvalue_kind<Tp>)
+              && (!detail::is_in_place_type_v<Tp>)
+              && (std::is_copy_constructible_v<Tp>)
     uvalue& uvalue::operator=(T&& val) {
         uvalue{std::forward<T>(val)}.swap(*this);
         return *this;
     }
 
-    template < typename T, typename... Args >
-        requires std::is_copy_constructible_v<std::decay_t<T>>
-              && std::is_constructible_v<std::decay_t<T>, Args...>
+    template < typename T, typename... Args, typename Tp >
+        requires std::is_copy_constructible_v<Tp>
+              && std::is_constructible_v<Tp, Args...>
     uvalue::uvalue(std::in_place_type_t<T>, Args&&... args) {
         vtable_t::construct<T>(*this, std::forward<Args>(args)...);
     }
 
-    template < typename T, typename U, typename... Args >
-        requires std::is_copy_constructible_v<std::decay_t<T>>
-              && std::is_constructible_v<std::decay_t<T>, std::initializer_list<U>&, Args...>
+    template < typename T, typename U, typename... Args, typename Tp >
+        requires std::is_copy_constructible_v<Tp>
+              && std::is_constructible_v<Tp, std::initializer_list<U>&, Args...>
     uvalue::uvalue(std::in_place_type_t<T>, std::initializer_list<U> ilist, Args&&... args) {
         vtable_t::construct<T>(*this, ilist, std::forward<Args>(args)...);
     }
 
-    template < typename T, typename... Args >
-        requires std::is_copy_constructible_v<std::decay_t<T>>
-              && std::is_constructible_v<std::decay_t<T>, Args...>
+    template < typename T, typename... Args, typename Tp >
+        requires std::is_copy_constructible_v<Tp>
+              && std::is_constructible_v<Tp, Args...>
     std::decay_t<T>& uvalue::emplace(Args&&... args) {
         reset();
         return vtable_t::construct<T>(*this, std::forward<Args>(args)...);
     }
 
-    template < typename T, typename U, typename... Args >
-        requires std::is_copy_constructible_v<std::decay_t<T>>
-              && std::is_constructible_v<std::decay_t<T>, std::initializer_list<U>&, Args...>
+    template < typename T, typename U, typename... Args, typename Tp >
+        requires std::is_copy_constructible_v<Tp>
+              && std::is_constructible_v<Tp, std::initializer_list<U>&, Args...>
     std::decay_t<T>& uvalue::emplace(std::initializer_list<U> ilist, Args&&... args) {
         reset();
         return vtable_t::construct<T>(*this, ilist, std::forward<Args>(args)...);
@@ -8631,7 +8607,8 @@ namespace meta_hpp
 
 namespace meta_hpp
 {
-    template < detail::decay_non_value_kind T >
+    template < typename T, typename Tp = std::decay_t<T> >
+        requires (!detail::uvalue_kind<Tp>)
     [[nodiscard]] bool operator<(const uvalue& l, const T& r) {
         if ( !static_cast<bool>(l) ) {
             return true;
@@ -8643,7 +8620,8 @@ namespace meta_hpp
         return (l_type < r_type) || (l_type == r_type && l.get_as<T>() < r);
     }
 
-    template < detail::decay_non_value_kind T >
+    template < typename T, typename Tp = std::decay_t<T> >
+        requires (!detail::uvalue_kind<Tp>)
     [[nodiscard]] bool operator<(const T& l, const uvalue& r) {
         if ( !static_cast<bool>(r) ) {
             return false;
@@ -8658,7 +8636,8 @@ namespace meta_hpp
 
 namespace meta_hpp
 {
-    template < detail::decay_non_value_kind T >
+    template < typename T, typename Tp = std::decay_t<T> >
+        requires (!detail::uvalue_kind<Tp>)
     [[nodiscard]] bool operator==(const uvalue& l, const T& r) {
         if ( !static_cast<bool>(l) ) {
             return false;
@@ -8670,7 +8649,8 @@ namespace meta_hpp
         return l_type == r_type && l.get_as<T>() == r;
     }
 
-    template < detail::decay_non_value_kind T >
+    template < typename T, typename Tp = std::decay_t<T> >
+        requires (!detail::uvalue_kind<Tp>)
     [[nodiscard]] bool operator==(const T& l, const uvalue& r) {
         if ( !static_cast<bool>(r) ) {
             return false;

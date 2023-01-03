@@ -11,7 +11,7 @@
 namespace meta_hpp::detail
 {
     template < typename T >
-    inline constexpr bool is_state_family_v =
+    concept state_family =
         std::same_as<T, argument> ||
         std::same_as<T, constructor> ||
         std::same_as<T, destructor> ||
@@ -21,9 +21,6 @@ namespace meta_hpp::detail
         std::same_as<T, method> ||
         std::same_as<T, scope> ||
         std::same_as<T, variable>;
-
-    template < typename T >
-    concept state_family = is_state_family_v<T>;
 
     template < state_family T >
     [[nodiscard]] auto state_access(const T& state) {

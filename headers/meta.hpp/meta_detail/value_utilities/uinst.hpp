@@ -36,12 +36,8 @@ namespace meta_hpp::detail
         template < typename T >
         uinst_base(type_list<T>) = delete;
 
-        template < decay_value_kind T >
-        // NOLINTNEXTLINE(*-forwarding-reference-overload)
-        explicit uinst_base(T&&)
-        : uinst_base{type_list<T&&>{}} {}
-
-        template < decay_non_uvalue_kind T >
+        template < typename T, typename Tp = std::decay_t<T> >
+            requires (!any_uvalue_kind<Tp>)
         // NOLINTNEXTLINE(*-forwarding-reference-overload)
         explicit uinst_base(T&&)
         : uinst_base{type_list<T&&>{}} {}
@@ -116,14 +112,15 @@ namespace meta_hpp::detail
 
         ~uinst() override = default;
 
-        template < decay_value_kind T >
+        template < typename T, uvalue_kind Tp = std::decay_t<T> >
         // NOLINTNEXTLINE(*-forwarding-reference-overload)
         explicit uinst(T&& v)
         : uinst_base{std::forward<T>(v)}
         // NOLINTNEXTLINE(*-const-cast)
         , data_{const_cast<void*>(v.data())} {}
 
-        template < decay_non_uvalue_kind T >
+        template < typename T, typename Tp = std::decay_t<T> >
+            requires (!any_uvalue_kind<Tp>)
         // NOLINTNEXTLINE(*-forwarding-reference-overload)
         explicit uinst(T&& v)
         : uinst_base{std::forward<T>(v)}

@@ -11,7 +11,7 @@
 namespace meta_hpp::detail
 {
     template < typename T >
-    inline constexpr bool is_index_family_v =
+    concept index_family =
         std::same_as<T, argument_index> ||
         std::same_as<T, constructor_index> ||
         std::same_as<T, destructor_index> ||
@@ -21,7 +21,4 @@ namespace meta_hpp::detail
         std::same_as<T, method_index> ||
         std::same_as<T, scope_index> ||
         std::same_as<T, variable_index>;
-
-    template < typename T >
-    concept index_family = is_index_family_v<T>;
 }

@@ -17,83 +17,88 @@ namespace meta_hpp
 {
     namespace constructor_policy
     {
-        struct as_object final {};
-        struct as_raw_pointer final {};
-        struct as_shared_pointer final {};
+        struct as_object_t final {};
+        struct as_raw_pointer_t final {};
+        struct as_shared_pointer_t final {};
+
+        inline constexpr as_object_t as_object{};
+        inline constexpr as_raw_pointer_t as_raw_pointer{};
+        inline constexpr as_shared_pointer_t as_shared_pointer{};
     }
 
     namespace function_policy
     {
-        struct as_copy final {};
-        struct discard_return final {};
-        struct return_reference_as_pointer final {};
+        struct as_copy_t final {};
+        struct discard_return_t final {};
+        struct return_reference_as_pointer_t final {};
+
+        inline constexpr as_copy_t as_copy{};
+        inline constexpr discard_return_t discard_return{};
+        inline constexpr return_reference_as_pointer_t return_reference_as_pointer{};
     }
 
     namespace member_policy
     {
-        struct as_copy final {};
-        struct as_pointer final {};
-        struct as_reference_wrapper final {};
+        struct as_copy_t final {};
+        struct as_pointer_t final {};
+        struct as_reference_wrapper_t final {};
+
+        inline constexpr as_copy_t as_copy{};
+        inline constexpr as_pointer_t as_pointer{};
+        inline constexpr as_reference_wrapper_t as_reference_wrapper{};
     }
 
     namespace method_policy
     {
-        struct as_copy final {};
-        struct discard_return final {};
-        struct return_reference_as_pointer final {};
+        struct as_copy_t final {};
+        struct discard_return_t final {};
+        struct return_reference_as_pointer_t final {};
+
+        inline constexpr as_copy_t as_copy{};
+        inline constexpr discard_return_t discard_return{};
+        inline constexpr return_reference_as_pointer_t return_reference_as_pointer{};
     }
 
     namespace variable_policy
     {
-        struct as_copy final {};
-        struct as_pointer final {};
-        struct as_reference_wrapper final {};
+        struct as_copy_t final {};
+        struct as_pointer_t final {};
+        struct as_reference_wrapper_t final {};
+
+        inline constexpr as_copy_t as_copy{};
+        inline constexpr as_pointer_t as_pointer{};
+        inline constexpr as_reference_wrapper_t as_reference_wrapper{};
     }
 
     template < typename Policy >
-    inline constexpr bool is_constructor_policy_v =
-        std::same_as<Policy, constructor_policy::as_object> ||
-        std::same_as<Policy, constructor_policy::as_raw_pointer> ||
-        std::same_as<Policy, constructor_policy::as_shared_pointer>;
+    concept constructor_policy_kind =
+        std::same_as<Policy, constructor_policy::as_object_t> ||
+        std::same_as<Policy, constructor_policy::as_raw_pointer_t> ||
+        std::same_as<Policy, constructor_policy::as_shared_pointer_t>;
 
     template < typename Policy >
-    inline constexpr bool is_function_policy_v =
-        std::same_as<Policy, function_policy::as_copy> ||
-        std::same_as<Policy, function_policy::discard_return> ||
-        std::same_as<Policy, function_policy::return_reference_as_pointer>;
+    concept function_policy_kind =
+        std::same_as<Policy, function_policy::as_copy_t> ||
+        std::same_as<Policy, function_policy::discard_return_t> ||
+        std::same_as<Policy, function_policy::return_reference_as_pointer_t>;
 
     template < typename Policy >
-    inline constexpr bool is_member_policy_v =
-        std::same_as<Policy, member_policy::as_copy> ||
-        std::same_as<Policy, member_policy::as_pointer> ||
-        std::same_as<Policy, member_policy::as_reference_wrapper>;
+    concept member_policy_kind =
+        std::same_as<Policy, member_policy::as_copy_t> ||
+        std::same_as<Policy, member_policy::as_pointer_t> ||
+        std::same_as<Policy, member_policy::as_reference_wrapper_t>;
 
     template < typename Policy >
-    inline constexpr bool is_method_policy_v =
-        std::same_as<Policy, method_policy::as_copy> ||
-        std::same_as<Policy, method_policy::discard_return> ||
-        std::same_as<Policy, method_policy::return_reference_as_pointer>;
+    concept method_policy_kind =
+        std::same_as<Policy, method_policy::as_copy_t> ||
+        std::same_as<Policy, method_policy::discard_return_t> ||
+        std::same_as<Policy, method_policy::return_reference_as_pointer_t>;
 
     template < typename Policy >
-    inline constexpr bool is_variable_policy_v =
-        std::same_as<Policy, variable_policy::as_copy> ||
-        std::same_as<Policy, variable_policy::as_pointer> ||
-        std::same_as<Policy, variable_policy::as_reference_wrapper>;
-
-    template < typename Policy >
-    concept constructor_policy_kind = is_constructor_policy_v<Policy>;
-
-    template < typename Policy >
-    concept function_policy_kind = is_function_policy_v<Policy>;
-
-    template < typename Policy >
-    concept member_policy_kind = is_member_policy_v<Policy>;
-
-    template < typename Policy >
-    concept method_policy_kind = is_method_policy_v<Policy>;
-
-    template < typename Policy >
-    concept variable_policy_kind = is_variable_policy_v<Policy>;
+    concept variable_policy_kind =
+        std::same_as<Policy, variable_policy::as_copy_t> ||
+        std::same_as<Policy, variable_policy::as_pointer_t> ||
+        std::same_as<Policy, variable_policy::as_reference_wrapper_t>;
 }
 
 namespace meta_hpp

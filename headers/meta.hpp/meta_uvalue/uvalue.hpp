@@ -255,46 +255,49 @@ namespace meta_hpp
         return *this;
     }
 
-    template < detail::decay_non_value_kind T >
-        requires std::is_copy_constructible_v<std::decay_t<T>>
-            && (!detail::is_in_place_type_v<std::remove_cvref_t<T>>)
+    template < typename T, typename Tp >
+        requires (!detail::any_uvalue_kind<Tp>)
+              && (!detail::is_in_place_type_v<Tp>)
+              && (std::is_copy_constructible_v<Tp>)
     // NOLINTNEXTLINE(*-forwarding-reference-overload)
     uvalue::uvalue(T&& val) {
         vtable_t::construct<T>(*this, std::forward<T>(val));
     }
 
-    template < detail::decay_non_value_kind T >
-        requires std::is_copy_constructible_v<std::decay_t<T>>
+    template < typename T, typename Tp >
+        requires (!detail::any_uvalue_kind<Tp>)
+              && (!detail::is_in_place_type_v<Tp>)
+              && (std::is_copy_constructible_v<Tp>)
     uvalue& uvalue::operator=(T&& val) {
         uvalue{std::forward<T>(val)}.swap(*this);
         return *this;
     }
 
-    template < typename T, typename... Args >
-        requires std::is_copy_constructible_v<std::decay_t<T>>
-              && std::is_constructible_v<std::decay_t<T>, Args...>
+    template < typename T, typename... Args, typename Tp >
+        requires std::is_copy_constructible_v<Tp>
+              && std::is_constructible_v<Tp, Args...>
     uvalue::uvalue(std::in_place_type_t<T>, Args&&... args) {
         vtable_t::construct<T>(*this, std::forward<Args>(args)...);
     }
 
-    template < typename T, typename U, typename... Args >
-        requires std::is_copy_constructible_v<std::decay_t<T>>
-              && std::is_constructible_v<std::decay_t<T>, std::initializer_list<U>&, Args...>
+    template < typename T, typename U, typename... Args, typename Tp >
+        requires std::is_copy_constructible_v<Tp>
+              && std::is_constructible_v<Tp, std::initializer_list<U>&, Args...>
     uvalue::uvalue(std::in_place_type_t<T>, std::initializer_list<U> ilist, Args&&... args) {
         vtable_t::construct<T>(*this, ilist, std::forward<Args>(args)...);
     }
 
-    template < typename T, typename... Args >
-        requires std::is_copy_constructible_v<std::decay_t<T>>
-              && std::is_constructible_v<std::decay_t<T>, Args...>
+    template < typename T, typename... Args, typename Tp >
+        requires std::is_copy_constructible_v<Tp>
+              && std::is_constructible_v<Tp, Args...>
     std::decay_t<T>& uvalue::emplace(Args&&... args) {
         reset();
         return vtable_t::construct<T>(*this, std::forward<Args>(args)...);
     }
 
-    template < typename T, typename U, typename... Args >
-        requires std::is_copy_constructible_v<std::decay_t<T>>
-              && std::is_constructible_v<std::decay_t<T>, std::initializer_list<U>&, Args...>
+    template < typename T, typename U, typename... Args, typename Tp >
+        requires std::is_copy_constructible_v<Tp>
+              && std::is_constructible_v<Tp, std::initializer_list<U>&, Args...>
     std::decay_t<T>& uvalue::emplace(std::initializer_list<U> ilist, Args&&... args) {
         reset();
         return vtable_t::construct<T>(*this, ilist, std::forward<Args>(args)...);
@@ -510,7 +513,8 @@ namespace meta_hpp
 
 namespace meta_hpp
 {
-    template < detail::decay_non_value_kind T >
+    template < typename T, typename Tp = std::decay_t<T> >
+        requires (!detail::uvalue_kind<Tp>)
     [[nodiscard]] bool operator<(const uvalue& l, const T& r) {
         if ( !static_cast<bool>(l) ) {
             return true;
@@ -522,7 +526,8 @@ namespace meta_hpp
         return (l_type < r_type) || (l_type == r_type && l.get_as<T>() < r);
     }
 
-    template < detail::decay_non_value_kind T >
+    template < typename T, typename Tp = std::decay_t<T> >
+        requires (!detail::uvalue_kind<Tp>)
     [[nodiscard]] bool operator<(const T& l, const uvalue& r) {
         if ( !static_cast<bool>(r) ) {
             return false;
@@ -537,7 +542,8 @@ namespace meta_hpp
 
 namespace meta_hpp
 {
-    template < detail::decay_non_value_kind T >
+    template < typename T, typename Tp = std::decay_t<T> >
+        requires (!detail::uvalue_kind<Tp>)
     [[nodiscard]] bool operator==(const uvalue& l, const T& r) {
         if ( !static_cast<bool>(l) ) {
             return false;
@@ -549,7 +555,8 @@ namespace meta_hpp
         return l_type == r_type && l.get_as<T>() == r;
     }
 
-    template < detail::decay_non_value_kind T >
+    template < typename T, typename Tp = std::decay_t<T> >
+        requires (!detail::uvalue_kind<Tp>)
     [[nodiscard]] bool operator==(const T& l, const uvalue& r) {
         if ( !static_cast<bool>(r) ) {
             return false;

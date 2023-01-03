@@ -69,11 +69,11 @@ namespace
 TEST_CASE("meta/meta_states/ctor/noncopyable") {
     namespace meta = meta_hpp;
 
-    using clazz_t = clazz_noncopyable<meta::constructor_policy::as_raw_pointer>;
+    using clazz_t = clazz_noncopyable<meta::constructor_policy::as_raw_pointer_t>;
 
     meta::class_<clazz_t>()
-        .constructor_<int>(meta::constructor_policy::as_raw_pointer{})
-        .constructor_<clazz_t&&>(meta::constructor_policy::as_raw_pointer{});
+        .constructor_<int>(meta::constructor_policy::as_raw_pointer)
+        .constructor_<clazz_t&&>(meta::constructor_policy::as_raw_pointer);
 
     clazz_t::constructor_counter = 0;
     clazz_t::destructor_counter = 0;
@@ -124,12 +124,12 @@ TEST_CASE("meta/meta_states/ctor/noncopyable") {
 TEST_CASE("meta/meta_states/ctor/as_object") {
     namespace meta = meta_hpp;
 
-    using clazz_t = clazz<meta::constructor_policy::as_object>;
+    using clazz_t = clazz<meta::constructor_policy::as_object_t>;
 
     meta::class_<clazz_t>()
-        .constructor_<int>(meta::constructor_policy::as_object{})
-        .constructor_<clazz_t&&>(meta::constructor_policy::as_object{})
-        .constructor_<const clazz_t&>(meta::constructor_policy::as_object{});
+        .constructor_<int>(meta::constructor_policy::as_object)
+        .constructor_<clazz_t&&>(meta::constructor_policy::as_object)
+        .constructor_<const clazz_t&>(meta::constructor_policy::as_object);
 
     clazz_t::constructor_counter = 0;
     clazz_t::destructor_counter = 0;
@@ -254,12 +254,12 @@ TEST_CASE("meta/meta_states/ctor/as_object") {
 TEST_CASE("meta/meta_states/ctor/as_raw_pointer") {
     namespace meta = meta_hpp;
 
-    using clazz_t = clazz<meta::constructor_policy::as_raw_pointer>;
+    using clazz_t = clazz<meta::constructor_policy::as_raw_pointer_t>;
 
     meta::class_<clazz_t>()
-        .constructor_<int>(meta::constructor_policy::as_raw_pointer{})
-        .constructor_<clazz_t&&>(meta::constructor_policy::as_raw_pointer{})
-        .constructor_<const clazz_t&>(meta::constructor_policy::as_raw_pointer{});
+        .constructor_<int>(meta::constructor_policy::as_raw_pointer)
+        .constructor_<clazz_t&&>(meta::constructor_policy::as_raw_pointer)
+        .constructor_<const clazz_t&>(meta::constructor_policy::as_raw_pointer);
 
     clazz_t::constructor_counter = 0;
     clazz_t::destructor_counter = 0;
@@ -329,12 +329,12 @@ TEST_CASE("meta/meta_states/ctor/as_raw_pointer") {
 TEST_CASE("meta/meta_states/ctor/as_shared_pointer") {
     namespace meta = meta_hpp;
 
-    using clazz_t = clazz<meta::constructor_policy::as_shared_pointer>;
+    using clazz_t = clazz<meta::constructor_policy::as_shared_pointer_t>;
 
     meta::class_<clazz_t>()
-        .constructor_<int>(meta::constructor_policy::as_shared_pointer{})
-        .constructor_<clazz_t&&>(meta::constructor_policy::as_shared_pointer{})
-        .constructor_<const clazz_t&>(meta::constructor_policy::as_shared_pointer{});
+        .constructor_<int>(meta::constructor_policy::as_shared_pointer)
+        .constructor_<clazz_t&&>(meta::constructor_policy::as_shared_pointer)
+        .constructor_<const clazz_t&>(meta::constructor_policy::as_shared_pointer);
 
     clazz_t::constructor_counter = 0;
     clazz_t::destructor_counter = 0;

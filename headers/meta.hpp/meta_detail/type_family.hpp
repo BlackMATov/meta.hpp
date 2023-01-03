@@ -11,7 +11,7 @@
 namespace meta_hpp::detail
 {
     template < typename T >
-    inline constexpr bool is_type_family_v =
+    concept type_family =
         std::same_as<T, any_type> ||
         std::same_as<T, array_type> ||
         std::same_as<T, class_type> ||
@@ -26,9 +26,6 @@ namespace meta_hpp::detail
         std::same_as<T, pointer_type> ||
         std::same_as<T, reference_type> ||
         std::same_as<T, void_type>;
-
-    template < typename T >
-    concept type_family = is_type_family_v<T>;
 
     template < type_family T >
     [[nodiscard]] auto type_access(const T& type) {

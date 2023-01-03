@@ -39,12 +39,12 @@ TEST_CASE("meta/meta_states/variable") {
         .variable_("const_ref_int_variable", &clazz_1::const_ref_int_variable)
 
         // .variable_("unique_int_variable", &clazz_1::unique_int_variable)
-        .variable_("unique_int_variable_as_ptr", &clazz_1::unique_int_variable, meta::variable_policy::as_pointer{})
-        .variable_("unique_int_variable_as_ref", &clazz_1::unique_int_variable, meta::variable_policy::as_reference_wrapper{})
+        .variable_("unique_int_variable_as_ptr", &clazz_1::unique_int_variable, meta::variable_policy::as_pointer)
+        .variable_("unique_int_variable_as_ref", &clazz_1::unique_int_variable, meta::variable_policy::as_reference_wrapper)
 
         // .variable_("const_unique_int_variable", &clazz_1::const_unique_int_variable)
-        .variable_("const_unique_int_variable_as_ptr", &clazz_1::const_unique_int_variable, meta::variable_policy::as_pointer{})
-        .variable_("const_unique_int_variable_as_ref", &clazz_1::const_unique_int_variable, meta::variable_policy::as_reference_wrapper{});
+        .variable_("const_unique_int_variable_as_ptr", &clazz_1::const_unique_int_variable, meta::variable_policy::as_pointer)
+        .variable_("const_unique_int_variable_as_ref", &clazz_1::const_unique_int_variable, meta::variable_policy::as_reference_wrapper);
 
     const meta::class_type clazz_1_type = meta::resolve_type<clazz_1>();
     REQUIRE(clazz_1_type);
