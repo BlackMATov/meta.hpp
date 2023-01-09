@@ -23,6 +23,15 @@ find_package(Threads REQUIRED)
 target_link_libraries(${PROJECT_NAME} INTERFACE Threads::Threads)
 
 #
+# DEVELOP
+#
+
+if(PROJECT_IS_TOP_LEVEL)
+    add_subdirectory(develop)
+endif()
+
+
+#
 # INSTALL
 #
 
@@ -34,7 +43,7 @@ if(PROJECT_IS_TOP_LEVEL)
         "${CMAKE_INSTALL_LIBDIR}/cmake/${PROJECT_NAME}")
 
     set(META_HPP_INSTALL_CONFIG_INPUT
-        "${CMAKE_CURRENT_SOURCE_DIR}/cmake/Config.cmake.in")
+        "${CMAKE_CURRENT_SOURCE_DIR}/develop/cmake/Config.cmake.in")
 
     set(META_HPP_INSTALL_GENERATED_CONFIG_CMAKE
         "${CMAKE_CURRENT_BINARY_DIR}/generated/${PROJECT_NAME}-config.cmake")
@@ -46,8 +55,7 @@ if(PROJECT_IS_TOP_LEVEL)
         "${META_HPP_INSTALL_CONFIG_INPUT}"
         "${META_HPP_INSTALL_GENERATED_CONFIG_CMAKE}"
         INSTALL_DESTINATION "${META_HPP_INSTALL_CONFIG_DIR}"
-        NO_SET_AND_CHECK_MACRO
-        NO_CHECK_REQUIRED_COMPONENTS_MACRO)
+        NO_SET_AND_CHECK_MACRO)
 
     write_basic_package_version_file(
         "${META_HPP_INSTALL_GENERATED_CONFIG_VERSION_CMAKE}"
@@ -74,27 +82,4 @@ if(PROJECT_IS_TOP_LEVEL)
         FILES "${META_HPP_INSTALL_GENERATED_CONFIG_CMAKE}"
               "${META_HPP_INSTALL_GENERATED_CONFIG_VERSION_CMAKE}"
         DESTINATION "${META_HPP_INSTALL_CONFIG_DIR}")
-endif()
-
-#
-# DEVELOPER
-#
-
-if(PROJECT_IS_TOP_LEVEL)
-    option(BUILD_WITH_COVERAGE "Build with coverage" OFF)
-    option(BUILD_WITH_SANITIZERS "Build with sanitizers" OFF)
-
-    enable_testing()
-    set_property(GLOBAL PROPERTY USE_FOLDERS ON)
-    set_property(GLOBAL PROPERTY PREDEFINED_TARGETS_FOLDER "CMake")
-    list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
-
-    include(EnableASan)
-    include(EnableGCov)
-    include(EnableUBSan)
-
-    add_subdirectory(manuals)
-    add_subdirectory(singles)
-    add_subdirectory(vendors)
-    add_subdirectory(untests)
 endif()
