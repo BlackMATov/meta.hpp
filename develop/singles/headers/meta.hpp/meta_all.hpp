@@ -419,7 +419,7 @@ namespace meta_hpp::detail
             assert(!dst); // NOLINT
 
             static_assert(sizeof(Fp) <= sizeof(buffer_t));
-            static_assert(alignof(Fp) <= alignof(buffer_t));
+            static_assert(alignof(buffer_t) % alignof(Fp) == 0);
             static_assert(std::is_invocable_r_v<R, Fp, Args...>);
             static_assert(std::is_nothrow_move_constructible_v<Fp>);
 
@@ -8164,8 +8164,8 @@ namespace meta_hpp
             assert(!dst); // NOLINT
 
             constexpr bool in_buffer =
-                sizeof(Tp) <= sizeof(buffer_t) &&
-                alignof(Tp) <= alignof(buffer_t) &&
+                (sizeof(Tp) <= sizeof(buffer_t)) &&
+                (alignof(buffer_t) % alignof(Tp) == 0) &&
                 std::is_nothrow_move_constructible_v<Tp>;
 
             if constexpr ( in_buffer ) {

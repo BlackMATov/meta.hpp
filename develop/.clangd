@@ -1,0 +1,7 @@
+Diagnostics:
+  ClangTidy:
+    Remove:
+      - cppcoreguidelines-*
+      - modernize-*
+      - performance-*
+      - readability-*

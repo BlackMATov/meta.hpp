@@ -17,5 +17,8 @@
         "files.trimFinalNewlines": true,
         "files.trimTrailingWhitespace": true
     },
+    "clangd.arguments": [
+        "--header-insertion=never"
+    ],
     "cmake.copyCompileCommands": "${workspaceFolder}/develop/.cdb/compile_commands.json"
 }
