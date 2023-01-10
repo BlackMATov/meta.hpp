@@ -48,11 +48,10 @@ write_basic_package_version_file(
 
 install(
     TARGETS ${PROJECT_NAME}
-    EXPORT ${PROJECT_NAME}-targets
-    INCLUDES DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}")
+    EXPORT ${PROJECT_NAME}-targets)
 
 install(
-    DIRECTORY ../headers/${PROJECT_NAME}
+    DIRECTORY singles/headers/${PROJECT_NAME}
     DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}")
 
 install(
