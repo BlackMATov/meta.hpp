@@ -9,11 +9,12 @@ list(INSERT CMAKE_MODULE_PATH 0 "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
 include(EnableASan)
 include(EnableGCov)
 include(EnableUBSan)
+include(SetupTargets)
 
 add_subdirectory(manuals)
 add_subdirectory(singles)
-add_subdirectory(vendors)
 add_subdirectory(untests)
+add_subdirectory(vendors)
 
 #
 # install

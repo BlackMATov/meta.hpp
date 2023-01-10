@@ -24,14 +24,13 @@ namespace meta_hpp::detail
         };
     public:
         uarg_base() = delete;
+        ~uarg_base() = default;
 
         uarg_base(uarg_base&&) = default;
         uarg_base(const uarg_base&) = default;
 
         uarg_base& operator=(uarg_base&&) = delete;
         uarg_base& operator=(const uarg_base&) = delete;
-
-        virtual ~uarg_base() = default;
 
         template < typename T >
         uarg_base(type_list<T>) = delete;
@@ -98,14 +97,13 @@ namespace meta_hpp::detail
     class uarg final : public uarg_base {
     public:
         uarg() = delete;
+        ~uarg() = default;
 
         uarg(uarg&&) = default;
         uarg(const uarg&) = default;
 
         uarg& operator=(uarg&&) = delete;
         uarg& operator=(const uarg&) = delete;
-
-        ~uarg() override = default;
 
         template < typename T, uvalue_kind Tp = std::decay_t<T> >
         // NOLINTNEXTLINE(*-forwarding-reference-overload)
