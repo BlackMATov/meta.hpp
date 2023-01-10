@@ -221,8 +221,13 @@ namespace meta_hpp::detail
             std::call_once(init_flag, [this, &type_data](){
                 const locker lock;
                 type_by_id_.emplace(type_data.id, any_type{&type_data});
-            #ifndef META_HPP_NO_RTTI
-                type_by_rtti_.emplace(typeid(Type), any_type{&type_data});
+            #if !defined(META_HPP_NO_RTTI)
+                META_HPP_TRY {
+                    type_by_rtti_.emplace(typeid(Type), any_type{&type_data});
+                } META_HPP_CATCH(...) {
+                    type_by_id_.erase(type_data.id);
+                    META_HPP_RETHROW();
+                }
             #endif
             });
         }

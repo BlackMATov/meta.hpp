@@ -39,6 +39,16 @@
 #  define META_HPP_NO_RTTI
 #endif
 
+#if defined(META_HPP_NO_EXCEPTIONS)
+#  define META_HPP_TRY if ( true )
+#  define META_HPP_CATCH(e) if ( false )
+#  define META_HPP_RETHROW() std::abort()
+#else
+#  define META_HPP_TRY try
+#  define META_HPP_CATCH(e) catch(e)
+#  define META_HPP_RETHROW() throw
+#endif
+
 namespace meta_hpp::detail
 {
     template < typename Enum >
@@ -833,7 +843,7 @@ namespace meta_hpp
     namespace detail
     {
         inline void throw_exception_with [[noreturn]] (const char* what) {
-        #ifndef META_HPP_NO_EXCEPTIONS
+        #if !defined(META_HPP_NO_EXCEPTIONS)
             throw ::meta_hpp::exception(what);
         #else
             (void)what;
@@ -3221,8 +3231,13 @@ namespace meta_hpp::detail
             std::call_once(init_flag, [this, &type_data](){
                 const locker lock;
                 type_by_id_.emplace(type_data.id, any_type{&type_data});
-            #ifndef META_HPP_NO_RTTI
-                type_by_rtti_.emplace(typeid(Type), any_type{&type_data});
+            #if !defined(META_HPP_NO_RTTI)
+                META_HPP_TRY {
+                    type_by_rtti_.emplace(typeid(Type), any_type{&type_data});
+                } META_HPP_CATCH(...) {
+                    type_by_id_.erase(type_data.id);
+                    META_HPP_RETHROW();
+                }
             #endif
             });
         }
@@ -3755,7 +3770,7 @@ namespace meta_hpp
 {
     template < typename T >
     [[nodiscard]] any_type resolve_polymorphic_type(T&& v) noexcept {
-    #ifndef META_HPP_NO_RTTI
+    #if !defined(META_HPP_NO_RTTI)
         using namespace detail;
         type_registry& registry = type_registry::instance();
         return registry.get_type_by_rtti(typeid(v));
@@ -3814,16 +3829,21 @@ namespace meta_hpp
         requires detail::class_bind_base_kind<Class, Base>
     {
         const class_type base_type = resolve_type<Base>();
-        if ( data_->bases.contains(base_type) ) {
+
+        if ( auto&& [_, success] = data_->bases.emplace(base_type); !success ) {
             return *this;
         }
 
-        data_->bases.emplace(base_type);
-        data_->bases_info.emplace(base_type, detail::class_type_data::base_info{
-            .upcast = +[](void* derived) -> void* {
-                return static_cast<Base*>(static_cast<Class*>(derived));
-            }
-        });
+        META_HPP_TRY {
+            data_->bases_info.emplace(base_type, detail::class_type_data::base_info{
+                .upcast = +[](void* derived) -> void* {
+                    return static_cast<Base*>(static_cast<Class*>(derived));
+                }
+            });
+        } META_HPP_CATCH(...) {
+            data_->bases.erase(base_type);
+            META_HPP_RETHROW();
+        }
 
         return *this;
     }
@@ -5309,18 +5329,13 @@ namespace meta_hpp::detail
         using ct = constructor_traits<Class, Args...>;
         using ct_argument_types = typename ct::argument_types;
 
-        argument_list arguments;
-        arguments.reserve(ct::arity);
-
-        [&arguments]<std::size_t... Is>(std::index_sequence<Is...>) mutable {
+        return []<std::size_t... Is>(std::index_sequence<Is...>){
             [[maybe_unused]] const auto make_argument = []<std::size_t I>(std::index_sequence<I>){
                 using P = type_list_at_t<I, ct_argument_types>;
                 return argument{argument_state::make<P>(I, metadata_map{})};
             };
-            (arguments.push_back(make_argument(std::index_sequence<Is>{})), ...);
+            return argument_list{make_argument(std::index_sequence<Is>{})...};
         }(std::make_index_sequence<ct::arity>());
-
-        return arguments;
     }
 }
 
@@ -5831,18 +5846,13 @@ namespace meta_hpp::detail
         using ft = function_traits<Function>;
         using ft_argument_types = typename ft::argument_types;
 
-        argument_list arguments;
-        arguments.reserve(ft::arity);
-
-        [&arguments]<std::size_t... Is>(std::index_sequence<Is...>) mutable {
+        return []<std::size_t... Is>(std::index_sequence<Is...>){
             [[maybe_unused]] const auto make_argument = []<std::size_t I>(std::index_sequence<I>){
                 using P = type_list_at_t<I, ft_argument_types>;
                 return argument{argument_state::make<P>(I, metadata_map{})};
             };
-            (arguments.push_back(make_argument(std::index_sequence<Is>{})), ...);
+            return argument_list{make_argument(std::index_sequence<Is>{})...};
         }(std::make_index_sequence<ft::arity>());
-
-        return arguments;
     }
 }
 
@@ -6609,18 +6619,13 @@ namespace meta_hpp::detail
         using mt = method_traits<Method>;
         using mt_argument_types = typename mt::argument_types;
 
-        argument_list arguments;
-        arguments.reserve(mt::arity);
-
-        [&arguments]<std::size_t... Is>(std::index_sequence<Is...>) mutable {
+        return []<std::size_t... Is>(std::index_sequence<Is...>){
             [[maybe_unused]] const auto make_argument = []<std::size_t I>(std::index_sequence<I>){
                 using P = type_list_at_t<I, mt_argument_types>;
                 return argument{argument_state::make<P>(I, metadata_map{})};
             };
-            (arguments.push_back(make_argument(std::index_sequence<Is>{})), ...);
+            return argument_list{make_argument(std::index_sequence<Is>{})...};
         }(std::make_index_sequence<mt::arity>());
-
-        return arguments;
     }
 }
 
