@@ -62,7 +62,7 @@ namespace meta_hpp
 {
     template < typename T >
     [[nodiscard]] any_type resolve_polymorphic_type(T&& v) noexcept {
-    #ifndef META_HPP_NO_RTTI
+    #if !defined(META_HPP_NO_RTTI)
         using namespace detail;
         type_registry& registry = type_registry::instance();
         return registry.get_type_by_rtti(typeid(v));

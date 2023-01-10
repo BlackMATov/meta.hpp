@@ -63,6 +63,7 @@ TEST_CASE("meta/meta_types/class_type") {
 
     meta::class_<base_clazz_1>()
         .constructor_<int>()
+        .base_<>()
         .member_("base_member_1", &base_clazz_1::base_member_1)
         .method_("base_method_1", &base_clazz_1::base_method_1)
         .function_("base_function_1", &base_clazz_1::base_function_1)
@@ -81,8 +82,7 @@ TEST_CASE("meta/meta_types/class_type") {
 
     meta::class_<derived_clazz>()
         .constructor_<int, float>()
-        .base_<base_clazz_1>()
-        .base_<base_clazz_2>()
+        .base_<base_clazz_1, base_clazz_2>()
         .member_("derived_member", &derived_clazz::derived_member)
         .method_("derived_method", &derived_clazz::derived_method)
         .function_("derived_function", &derived_clazz::derived_function)

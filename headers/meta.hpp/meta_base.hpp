@@ -46,7 +46,7 @@ namespace meta_hpp
     namespace detail
     {
         inline void throw_exception_with [[noreturn]] (const char* what) {
-        #ifndef META_HPP_NO_EXCEPTIONS
+        #if !defined(META_HPP_NO_EXCEPTIONS)
             throw ::meta_hpp::exception(what);
         #else
             (void)what;

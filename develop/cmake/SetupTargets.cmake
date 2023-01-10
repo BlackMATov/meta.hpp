@@ -31,3 +31,16 @@ if(BUILD_WITH_SANITIZERS)
         meta.hpp::enable_asan
         meta.hpp::enable_ubsan)
 endif()
+
+if(BUILD_WITH_NO_EXCEPTIONS)
+    target_link_libraries(${PROJECT_NAME}.setup_targets INTERFACE
+        meta.hpp::disable_exceptions)
+
+    target_compile_definitions(${PROJECT_NAME}.setup_targets INTERFACE
+        DOCTEST_CONFIG_NO_EXCEPTIONS_BUT_WITH_ALL_ASSERTS)
+endif()
+
+if(BUILD_WITH_NO_RTTI)
+    target_link_libraries(${PROJECT_NAME}.setup_targets INTERFACE
+        meta.hpp::disable_rtti)
+endif()

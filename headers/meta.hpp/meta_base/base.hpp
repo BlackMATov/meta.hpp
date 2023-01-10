@@ -41,3 +41,13 @@
 #if !defined(__cpp_rtti)
 #  define META_HPP_NO_RTTI
 #endif
+
+#if defined(META_HPP_NO_EXCEPTIONS)
+#  define META_HPP_TRY if ( true )
+#  define META_HPP_CATCH(e) if ( false )
+#  define META_HPP_RETHROW() std::abort()
+#else
+#  define META_HPP_TRY try
+#  define META_HPP_CATCH(e) catch(e)
+#  define META_HPP_RETHROW() throw
+#endif

@@ -84,8 +84,8 @@ TEST_CASE("meta/meta_states/variable") {
         CHECK_FALSE(vm.is_settable_with<const float&>());
         CHECK_FALSE(vm.is_settable_with(1.0));
 
-        CHECK_NOTHROW(vm.set(10)); CHECK(vm.get() == 10);
-        CHECK_NOTHROW(vm(11)); CHECK(vm() == 11);
+        vm.set(10); CHECK(vm.get() == 10);
+        vm(11); CHECK(vm() == 11);
     }
 
     SUBCASE("const int") {
@@ -132,8 +132,8 @@ TEST_CASE("meta/meta_states/variable") {
         CHECK_FALSE(vm.is_settable_with<const float&>());
         CHECK_FALSE(vm.is_settable_with(1.0));
 
-        CHECK_NOTHROW(vm.set(20)); CHECK(vm.get() == 20);
-        CHECK_NOTHROW(vm(21)); CHECK(vm() == 21);
+        vm.set(20); CHECK(vm.get() == 20);
+        vm(21); CHECK(vm() == 21);
     }
 
     SUBCASE("const ref int") {
@@ -169,7 +169,7 @@ TEST_CASE("meta/meta_states/variable") {
 
         {
             auto nv = std::make_unique<int>(11);
-            CHECK_NOTHROW(vm.set(std::move(nv)));
+            vm.set(std::move(nv));
             CHECK(*clazz_1::unique_int_variable == 11);
         }
 
@@ -190,7 +190,7 @@ TEST_CASE("meta/meta_states/variable") {
 
         {
             auto nv = std::make_unique<int>(13);
-            CHECK_NOTHROW(vm.set(std::move(nv)));
+            vm.set(std::move(nv));
             CHECK(*clazz_1::unique_int_variable == 13);
         }
 

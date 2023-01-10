@@ -379,7 +379,7 @@ TEST_CASE("meta/meta_utilities/value") {
 
     SUBCASE("ostream") {
         std::stringstream str_stream;
-        CHECK_NOTHROW(str_stream << meta::uvalue{21} << " " << meta::uvalue{42});
+        str_stream << meta::uvalue{21} << " " << meta::uvalue{42};
         CHECK_THROWS((str_stream << meta::uvalue{ivec2{1,2}}));
         REQUIRE(str_stream.str() == "21 42");
     }
@@ -391,9 +391,9 @@ TEST_CASE("meta/meta_utilities/value") {
         CHECK_THROWS(str_stream >> v);
 
         v = meta::uvalue{0};
-        CHECK_NOTHROW(str_stream >> v);
+        str_stream >> v;
         CHECK(v == 21);
-        CHECK_NOTHROW(str_stream >> v);
+        str_stream >> v;
         CHECK(v == 42);
     }
 
@@ -436,10 +436,10 @@ TEST_CASE("meta/meta_utilities/value") {
         {
             int i{42};
 
-            void* p1 = &i;
-            const void* p2 = &i;
-            void* const& p3 = &i;
-            const void* const& p4 = &i;
+            [[maybe_unused]] void* p1 = &i;
+            [[maybe_unused]] const void* p2 = &i;
+            [[maybe_unused]] void* const& p3 = &i;
+            [[maybe_unused]] const void* const& p4 = &i;
 
             CHECK_THROWS(std::ignore = *meta::uvalue(p1));
             CHECK_THROWS(std::ignore = *meta::uvalue(p2));

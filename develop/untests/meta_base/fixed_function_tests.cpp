@@ -122,6 +122,6 @@ TEST_CASE("meta/meta_base/fixed_function") {
             s = std::make_unique<int>(10)
         ](){};
         fixed_function ff = std::move(f);
-        CHECK_NOTHROW(ff());
+        ff();
     }
 }
