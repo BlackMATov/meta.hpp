@@ -12,8 +12,8 @@
             "name": "ninja-base",
             "hidden": true,
             "generator": "Ninja Multi-Config",
-            "binaryDir": "${sourceDir}/build/${presetName}",
-            "installDir": "${sourceDir}/install/${presetName}",
+            "binaryDir": "${sourceDir}/develop/build/${presetName}",
+            "installDir": "${sourceDir}/develop/install/${presetName}",
             "cacheVariables": {
                 "CMAKE_EXPORT_COMPILE_COMMANDS": true
             }
