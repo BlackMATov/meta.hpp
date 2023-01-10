@@ -149,7 +149,7 @@ namespace meta_hpp::detail
             assert(!dst); // NOLINT
 
             static_assert(sizeof(Fp) <= sizeof(buffer_t));
-            static_assert(alignof(Fp) <= alignof(buffer_t));
+            static_assert(alignof(buffer_t) % alignof(Fp) == 0);
             static_assert(std::is_invocable_r_v<R, Fp, Args...>);
             static_assert(std::is_nothrow_move_constructible_v<Fp>);
 

@@ -44,17 +44,17 @@ add_subdirectory(external/meta.hpp)
 target_link_libraries(your_project_target PUBLIC meta.hpp::meta.hpp)
 ```
 
-## Examples
+## Manuals
 
-- [Class](./manuals/meta_examples/class_example.cpp)
-- [Enum](./manuals/meta_examples/enum_example.cpp)
-- [Function](./manuals/meta_examples/function_example.cpp)
-- [InPlace](./manuals/meta_examples/inplace_example.cpp)
-- [Member](./manuals/meta_examples/member_example.cpp)
-- [Method](./manuals/meta_examples/method_example.cpp)
-- [Scopes](./manuals/meta_examples/scopes_example.cpp)
-- [UValue](./manuals/meta_examples/uvalue_example.cpp)
-- [Variable](./manuals/meta_examples/variable_example.cpp)
+- [Class](develop/manuals/meta_manuals/class_manual.cpp)
+- [Enum](develop/manuals/meta_manuals/enum_manual.cpp)
+- [Function](develop/manuals/meta_manuals/function_manual.cpp)
+- [InPlace](develop/manuals/meta_manuals/inplace_manual.cpp)
+- [Member](develop/manuals/meta_manuals/member_manual.cpp)
+- [Method](develop/manuals/meta_manuals/method_manual.cpp)
+- [Scopes](develop/manuals/meta_manuals/scopes_manual.cpp)
+- [UValue](develop/manuals/meta_manuals/uvalue_manual.cpp)
+- [Variable](develop/manuals/meta_manuals/variable_manual.cpp)
 
 ## Features
 

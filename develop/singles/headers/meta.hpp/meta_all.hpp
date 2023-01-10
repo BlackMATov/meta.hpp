@@ -419,7 +419,7 @@ namespace meta_hpp::detail
             assert(!dst); // NOLINT
 
             static_assert(sizeof(Fp) <= sizeof(buffer_t));
-            static_assert(alignof(Fp) <= alignof(buffer_t));
+            static_assert(alignof(buffer_t) % alignof(Fp) == 0);
             static_assert(std::is_invocable_r_v<R, Fp, Args...>);
             static_assert(std::is_nothrow_move_constructible_v<Fp>);
 
@@ -4879,14 +4879,13 @@ namespace meta_hpp::detail
         };
     public:
         uarg_base() = delete;
+        ~uarg_base() = default;
 
         uarg_base(uarg_base&&) = default;
         uarg_base(const uarg_base&) = default;
 
         uarg_base& operator=(uarg_base&&) = delete;
         uarg_base& operator=(const uarg_base&) = delete;
-
-        virtual ~uarg_base() = default;
 
         template < typename T >
         uarg_base(type_list<T>) = delete;
@@ -4953,14 +4952,13 @@ namespace meta_hpp::detail
     class uarg final : public uarg_base {
     public:
         uarg() = delete;
+        ~uarg() = default;
 
         uarg(uarg&&) = default;
         uarg(const uarg&) = default;
 
         uarg& operator=(uarg&&) = delete;
         uarg& operator=(const uarg&) = delete;
-
-        ~uarg() override = default;
 
         template < typename T, uvalue_kind Tp = std::decay_t<T> >
         // NOLINTNEXTLINE(*-forwarding-reference-overload)
@@ -6002,14 +6000,13 @@ namespace meta_hpp::detail
         };
     public:
         uinst_base() = delete;
+        ~uinst_base() = default;
 
         uinst_base(uinst_base&&) = default;
         uinst_base(const uinst_base&) = default;
 
         uinst_base& operator=(uinst_base&&) = delete;
         uinst_base& operator=(const uinst_base&) = delete;
-
-        virtual ~uinst_base() = default;
 
         template < typename T >
         uinst_base(type_list<T>) = delete;
@@ -6081,14 +6078,13 @@ namespace meta_hpp::detail
     class uinst final : public uinst_base {
     public:
         uinst() = delete;
+        ~uinst() = default;
 
         uinst(uinst&&) = default;
         uinst(const uinst&) = default;
 
         uinst& operator=(uinst&&) = delete;
         uinst& operator=(const uinst&) = delete;
-
-        ~uinst() override = default;
 
         template < typename T, uvalue_kind Tp = std::decay_t<T> >
         // NOLINTNEXTLINE(*-forwarding-reference-overload)
@@ -8164,8 +8160,8 @@ namespace meta_hpp
             assert(!dst); // NOLINT
 
             constexpr bool in_buffer =
-                sizeof(Tp) <= sizeof(buffer_t) &&
-                alignof(Tp) <= alignof(buffer_t) &&
+                (sizeof(Tp) <= sizeof(buffer_t)) &&
+                (alignof(buffer_t) % alignof(Tp) == 0) &&
                 std::is_nothrow_move_constructible_v<Tp>;
 
             if constexpr ( in_buffer ) {

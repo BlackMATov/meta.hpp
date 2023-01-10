@@ -14,8 +14,6 @@ namespace
     };
 
     class clazz_opened_dtor {
-    public:
-        ~clazz_opened_dtor() = default;
     };
 
     class clazz_virtual_dtor {

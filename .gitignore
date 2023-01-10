@@ -1,4 +1,4 @@
-build/*
-install/*
-.clangd/*
-CMakeLists.txt.user
+.DS_Store
+/develop/.cdb/*
+/develop/build/*
+/develop/install/*

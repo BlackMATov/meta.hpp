@@ -70,8 +70,8 @@ namespace meta_hpp
             assert(!dst); // NOLINT
 
             constexpr bool in_buffer =
-                sizeof(Tp) <= sizeof(buffer_t) &&
-                alignof(Tp) <= alignof(buffer_t) &&
+                (sizeof(Tp) <= sizeof(buffer_t)) &&
+                (alignof(buffer_t) % alignof(Tp) == 0) &&
                 std::is_nothrow_move_constructible_v<Tp>;
 
             if constexpr ( in_buffer ) {
