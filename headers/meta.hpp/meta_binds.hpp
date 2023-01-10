@@ -104,9 +104,9 @@ namespace meta_hpp
 
         // base_
 
-        template < detail::class_kind Base >
+        template < detail::class_kind... Bases >
         class_bind& base_()
-            requires detail::class_bind_base_kind<Class, Base>;
+            requires (... && detail::class_bind_base_kind<Class, Bases>);
 
         // constructor_
 

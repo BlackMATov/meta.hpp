@@ -29,26 +29,28 @@ namespace meta_hpp
     //
 
     template < detail::class_kind Class >
-    template < detail::class_kind Base >
+    template < detail::class_kind... Bases >
     class_bind<Class>& class_bind<Class>::base_()
-        requires detail::class_bind_base_kind<Class, Base>
+        requires (... && detail::class_bind_base_kind<Class, Bases>)
     {
-        const class_type base_type = resolve_type<Base>();
+        ([this]<detail::class_kind Base>(std::in_place_type_t<Base>) {
+            const class_type base_type = resolve_type<Base>();
 
-        if ( auto&& [_, success] = data_->bases.emplace(base_type); !success ) {
-            return *this;
-        }
+            if ( auto&& [_, success] = data_->bases.emplace(base_type); !success ) {
+                return;
+            }
 
-        META_HPP_TRY {
-            data_->bases_info.emplace(base_type, detail::class_type_data::base_info{
-                .upcast = +[](void* derived) -> void* {
-                    return static_cast<Base*>(static_cast<Class*>(derived));
-                }
-            });
-        } META_HPP_CATCH(...) {
-            data_->bases.erase(base_type);
-            META_HPP_RETHROW();
-        }
+            META_HPP_TRY {
+                data_->bases_info.emplace(base_type, detail::class_type_data::base_info{
+                    .upcast = +[](void* derived) -> void* {
+                        return static_cast<Base*>(static_cast<Class*>(derived));
+                    }
+                });
+            } META_HPP_CATCH(...) {
+                data_->bases.erase(base_type);
+                META_HPP_RETHROW();
+            }
+        }(std::in_place_type<Bases>), ...);
 
         return *this;
     }
