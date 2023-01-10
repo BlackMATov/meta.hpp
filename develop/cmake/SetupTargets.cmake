@@ -16,6 +16,7 @@ target_compile_options(${PROJECT_NAME}.setup_targets INTERFACE
         -Wno-exit-time-destructors
         -Wno-global-constructors
         -Wno-padded
+        -Wno-unneeded-internal-declaration
         -Wno-unneeded-member-function
         -Wno-weak-vtables
         >)
