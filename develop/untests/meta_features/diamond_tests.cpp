@@ -330,9 +330,11 @@ TEST_CASE("meta/meta_features/diamond") {
         CHECK(meta::resolve_type(cd) == meta::resolve_type<C>());
         CHECK(meta::resolve_type(dd) == meta::resolve_type<D>());
 
+    #if !defined(META_HPP_NO_RTTI)
         CHECK(meta::resolve_polymorphic_type(ad) == meta::resolve_type<D>());
         CHECK(meta::resolve_polymorphic_type(bd) == meta::resolve_type<D>());
         CHECK(meta::resolve_polymorphic_type(cd) == meta::resolve_type<D>());
         CHECK(meta::resolve_polymorphic_type(dd) == meta::resolve_type<D>());
+    #endif
     }
 }

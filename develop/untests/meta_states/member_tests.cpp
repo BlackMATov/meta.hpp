@@ -136,20 +136,20 @@ TEST_CASE("meta/meta_states/member") {
         }
 
         {
-            CHECK_NOTHROW(vm.set(v, 10)); CHECK(vm.get(v) == 10);
-            CHECK_NOTHROW(vm.set(&v, 100)); CHECK(vm.get(v) == 100);
+            vm.set(v, 10); CHECK(vm.get(v) == 10);
+            vm.set(&v, 100); CHECK(vm.get(v) == 100);
             CHECK_THROWS(vm.set(std::as_const(v), 11)); CHECK(vm.get(v) == 100);
             CHECK_THROWS(vm.set(&std::as_const(v), 11)); CHECK(vm.get(v) == 100);
 
-            CHECK_NOTHROW(vm.set(std::move(v), 12)); CHECK(vm.get(v) == 12);
+            vm.set(std::move(v), 12); CHECK(vm.get(v) == 12);
             CHECK_THROWS(vm.set(std::move(std::as_const(v)), 13)); CHECK(vm.get(v) == 12);
 
-            CHECK_NOTHROW(vm(v, 13)); CHECK(vm(v) == 13);
-            CHECK_NOTHROW(vm(&v, 130)); CHECK(vm(v) == 130);
+            vm(v, 13); CHECK(vm(v) == 13);
+            vm(&v, 130); CHECK(vm(v) == 130);
             CHECK_THROWS(vm(std::as_const(v), 14)); CHECK(vm(v) == 130);
             CHECK_THROWS(vm(std::as_const(v), 14)); CHECK(vm(v) == 130);
 
-            CHECK_NOTHROW(vm(std::move(v), 15)); CHECK(vm(v) == 15);
+            vm(std::move(v), 15); CHECK(vm(v) == 15);
             CHECK_THROWS(vm(std::move(std::as_const(v)), 16)); CHECK(vm(v) == 15);
 
             CHECK_THROWS(vm.set(v2, 17));

@@ -35,7 +35,7 @@ namespace
         if ( std::is_invocable_v<decltype(method_ptr), decltype(Inst)> ) {\
             CHECK(uinst{Inst}.can_cast_to<clazz Qualifiers>());\
             CHECK(uinst_base{type_list<decltype(Inst)>{}}.can_cast_to<clazz Qualifiers>());\
-            CHECK_NOTHROW(std::ignore = uinst{Inst}.cast<clazz Qualifiers>());\
+            std::ignore = uinst{Inst}.cast<clazz Qualifiers>();\
             \
             CHECK(m_state.is_invocable_with<decltype(Inst)>());\
             CHECK(m_state.invoke(Inst) == 1);\

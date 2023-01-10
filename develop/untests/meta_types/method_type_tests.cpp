@@ -16,7 +16,7 @@ namespace
             switch ( i ) {
             case 0: return x;
             case 1: return y;
-            default: throw std::out_of_range("ivec2::at");
+            default: std::abort();
             }
         }
 

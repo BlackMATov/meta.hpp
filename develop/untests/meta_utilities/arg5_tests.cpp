@@ -143,10 +143,10 @@ TEST_CASE("meta/meta_utilities/arg5/cast") {
             static_assert(std::is_invocable_v<void(A* const), decltype(LV())>);
             static_assert(std::is_invocable_v<void(const A* const), decltype(LV())>);
 
-            CHECK_NOTHROW([](A*){}(LV()));
-            CHECK_NOTHROW([](const A*){}(LV()));
-            CHECK_NOTHROW([](A* const){}(LV()));
-            CHECK_NOTHROW([](const A* const){}(LV()));
+            [](A*){}(LV());
+            [](const A*){}(LV());
+            [](A* const){}(LV());
+            [](const A* const){}(LV());
 
             CHECK(uarg(LV()).cast<A*>() == static_cast<A*>(src));
             CHECK(uarg(LV()).cast<const A*>() == static_cast<const A*>(src));

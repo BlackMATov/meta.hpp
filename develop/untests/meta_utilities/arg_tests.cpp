@@ -75,7 +75,7 @@ namespace
         if ( std::is_invocable_v<decltype(function_ptr), decltype(FromValue)> ) {\
             CHECK(uarg{FromValue}.can_cast_to<ToType>());\
             CHECK(uarg_base{type_list<decltype(FromValue)>{}}.can_cast_to<ToType>());\
-            CHECK_NOTHROW(std::ignore = uarg{FromValue}.cast<ToType>());\
+            std::ignore = uarg{FromValue}.cast<ToType>();\
             \
             CHECK(f_state.is_invocable_with<decltype(FromValue)>());\
             CHECK(f_state.invoke(FromValue) == 1);\
