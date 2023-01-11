@@ -6,6 +6,8 @@
 
 #include "../meta_untests.hpp"
 
+#include <sstream>
+
 namespace
 {
     struct ivec2 {

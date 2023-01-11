@@ -6,6 +6,8 @@
 
 #include "../meta_manuals.hpp"
 
+#include <iostream>
+
 namespace
 {
     class shape {

@@ -2,7 +2,7 @@ add_library(${PROJECT_NAME}.setup_targets INTERFACE)
 add_library(${PROJECT_NAME}::setup_targets ALIAS ${PROJECT_NAME}.setup_targets)
 
 target_link_libraries(${PROJECT_NAME}.setup_targets INTERFACE
-    doctest::doctest_with_main)
+    meta.hpp.vendors::doctest)
 
 target_compile_options(${PROJECT_NAME}.setup_targets INTERFACE
     $<$<CXX_COMPILER_ID:MSVC>:
@@ -18,6 +18,7 @@ target_compile_options(${PROJECT_NAME}.setup_targets INTERFACE
         -Wno-padded
         -Wno-unneeded-internal-declaration
         -Wno-unneeded-member-function
+        -Wno-unused-macros
         -Wno-weak-vtables
         >)
 

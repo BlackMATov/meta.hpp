@@ -1,7 +1,18 @@
 project(meta.hpp.vendors)
 
-set(DOCTEST_NO_INSTALL ON CACHE INTERNAL "")
-set(DOCTEST_USE_STD_HEADERS ON CACHE INTERNAL "")
+#
+# doctest
+#
 
-add_subdirectory(doctest)
-set_target_properties(doctest doctest_with_main PROPERTIES FOLDER meta.hpp.vendors)
+add_library(${PROJECT_NAME}.doctest STATIC doctest/doctest/parts/doctest.cpp)
+add_library(${PROJECT_NAME}::doctest ALIAS ${PROJECT_NAME}.doctest)
+
+target_compile_features(${PROJECT_NAME}.doctest
+    PUBLIC cxx_std_20)
+
+target_include_directories(${PROJECT_NAME}.doctest
+    PUBLIC doctest)
+
+target_compile_definitions(${PROJECT_NAME}.doctest
+    PRIVATE DOCTEST_CONFIG_IMPLEMENT_WITH_MAIN
+    INTERFACE DOCTEST_CONFIG_USE_STD_HEADERS)

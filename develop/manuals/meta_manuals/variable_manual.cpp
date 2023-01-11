@@ -6,6 +6,8 @@
 
 #include "../meta_manuals.hpp"
 
+#include <iostream>
+
 namespace
 {
     const double pi_v{3.1415926536};

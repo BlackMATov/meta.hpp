@@ -6,6 +6,8 @@
 
 #include "../meta_manuals.hpp"
 
+#include <iostream>
+
 namespace
 {
     int add(int a, int b) {
