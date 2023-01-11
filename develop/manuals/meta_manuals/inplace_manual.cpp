@@ -62,5 +62,5 @@ TEST_CASE("meta/meta_examples/inplace") {
     CHECK(ivec2_length2(ivec2_ptr) == 13);
 
     // you must manually call the object's destructor
-    ivec2_type.destroy_at(ivec2_buffer.get_memory());
+    CHECK(ivec2_type.destroy_at(ivec2_buffer.get_memory()));
 }

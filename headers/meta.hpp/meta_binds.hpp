@@ -419,13 +419,7 @@ namespace meta_hpp
 
     template < detail::class_kind Class >
     class_bind<Class> class_(metadata_map metadata = {}) {
-        class_bind<Class> bind{std::move(metadata)};
-
-        if constexpr ( std::is_destructible_v<Class> ) {
-            bind.destructor_();
-        }
-
-        return bind;
+        return class_bind<Class>{std::move(metadata)};
     }
 
     template < detail::enum_kind Enum >

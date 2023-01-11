@@ -17,6 +17,10 @@ namespace meta_hpp
     : data_{detail::type_access(resolve_type<Class>())} {
         data_->metadata.swap(metadata);
         data_->metadata.merge(metadata);
+
+        if constexpr ( std::is_destructible_v<Class> ) {
+            destructor_();
+        }
     }
 
     template < detail::class_kind Class >
