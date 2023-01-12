@@ -86,6 +86,13 @@ TEST_CASE("meta/meta_states/member") {
             CHECK(vm.get(std::move(v)).get_as<int>() == 1);
             CHECK(vm.get(std::move(std::as_const(v))).get_as<int>() == 1);
 
+            CHECK(vm.get_as<int>(v) == 1);
+            CHECK(vm.get_as<int>(&v) == 1);
+            CHECK(vm.get_as<int>(std::as_const(v)) == 1);
+            CHECK(vm.get_as<int>(&std::as_const(v)) == 1);
+            CHECK(vm.get_as<int>(std::move(v)) == 1);
+            CHECK(vm.get_as<int>(std::move(std::as_const(v))) == 1);
+
             CHECK(vm(v).get_as<int>() == 1);
             CHECK(vm(&v).get_as<int>() == 1);
             CHECK(vm(std::as_const(v)).get_as<int>() == 1);
@@ -279,13 +286,13 @@ TEST_CASE("meta/meta_states/member") {
         {
             clazz_1 v;
             CHECK(vm.get(v).get_type() == meta::resolve_type<std::unique_ptr<int>*>());
-            CHECK(vm.get(v).get_as<std::unique_ptr<int>*>() == std::addressof(v.unique_int_member));
+            CHECK(vm.get_as<std::unique_ptr<int>*>(v) == std::addressof(v.unique_int_member));
         }
 
         {
             const clazz_1 v;
             CHECK(vm.get(v).get_type() == meta::resolve_type<const std::unique_ptr<int>*>());
-            CHECK(vm.get(v).get_as<const std::unique_ptr<int>*>() == std::addressof(v.unique_int_member));
+            CHECK(vm.get_as<const std::unique_ptr<int>*>(v) == std::addressof(v.unique_int_member));
         }
     }
 
@@ -300,14 +307,14 @@ TEST_CASE("meta/meta_states/member") {
             clazz_1 v;
             using ref_t = std::reference_wrapper<std::unique_ptr<int>>;
             CHECK(vm.get(v).get_type() == meta::resolve_type<ref_t>());
-            CHECK(vm.get(v).get_as<ref_t>().get() == v.unique_int_member);
+            CHECK(vm.get_as<ref_t>(v).get() == v.unique_int_member);
         }
 
         {
             const clazz_1 v;
             using ref_t = std::reference_wrapper<const std::unique_ptr<int>>;
             CHECK(vm.get(v).get_type() == meta::resolve_type<ref_t>());
-            CHECK(vm.get(v).get_as<ref_t>().get() == v.unique_int_member);
+            CHECK(vm.get_as<ref_t>(v).get() == v.unique_int_member);
         }
     }
 }

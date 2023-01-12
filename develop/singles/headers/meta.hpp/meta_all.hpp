@@ -2668,6 +2668,9 @@ namespace meta_hpp
         template < typename Instance >
         [[nodiscard]] uvalue get(Instance&& instance) const;
 
+        template < typename T, typename Instance >
+        [[nodiscard]] T get_as(Instance&& instance) const;
+
         template < typename Instance, typename Value >
         void set(Instance&& instance, Value&& value) const;
 
@@ -2776,6 +2779,9 @@ namespace meta_hpp
         [[nodiscard]] const std::string& get_name() const noexcept;
 
         [[nodiscard]] uvalue get() const;
+
+        template < typename T >
+        [[nodiscard]] T get_as() const;
 
         template < typename Value >
         void set(Value&& value) const;
@@ -6411,6 +6417,11 @@ namespace meta_hpp
         return state_->getter(vinst);
     }
 
+    template < typename T, typename Instance >
+    T member::get_as(Instance&& instance) const {
+        return get(std::forward<Instance>(instance)).template get_as<T>();
+    }
+
     template < typename Instance, typename Value >
     void member::set(Instance&& instance, Value&& value) const {
         using namespace detail;
@@ -6897,6 +6908,11 @@ namespace meta_hpp
 
     inline uvalue variable::get() const {
         return state_->getter();
+    }
+
+    template < typename T >
+    T variable::get_as() const {
+        return get().get_as<T>();
     }
 
     template < typename Value >

@@ -254,6 +254,9 @@ namespace meta_hpp
         template < typename Instance >
         [[nodiscard]] uvalue get(Instance&& instance) const;
 
+        template < typename T, typename Instance >
+        [[nodiscard]] T get_as(Instance&& instance) const;
+
         template < typename Instance, typename Value >
         void set(Instance&& instance, Value&& value) const;
 
@@ -362,6 +365,9 @@ namespace meta_hpp
         [[nodiscard]] const std::string& get_name() const noexcept;
 
         [[nodiscard]] uvalue get() const;
+
+        template < typename T >
+        [[nodiscard]] T get_as() const;
 
         template < typename Value >
         void set(Value&& value) const;
