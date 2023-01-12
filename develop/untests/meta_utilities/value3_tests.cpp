@@ -91,7 +91,7 @@ TEST_CASE("meta/meta_utilities/value4/get_as") {
     namespace meta = meta_hpp;
 
     static_assert(std::is_same_v<decltype(std::declval<meta::uvalue&>().get_as<derived>()), derived&>);
-    static_assert(std::is_same_v<decltype(std::declval<meta::uvalue&&>().get_as<derived>()), derived&>);
+    static_assert(std::is_same_v<decltype(std::declval<meta::uvalue&&>().get_as<derived>()), derived>);
     static_assert(std::is_same_v<decltype(std::declval<const meta::uvalue&>().get_as<derived>()), const derived&>);
     static_assert(std::is_same_v<decltype(std::declval<const meta::uvalue&&>().get_as<derived>()), const derived&>);
 

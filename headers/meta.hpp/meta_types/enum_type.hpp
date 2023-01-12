@@ -76,7 +76,7 @@ namespace meta_hpp
         }
 
         for ( auto&& [_, evalue] : data_->evalues ) {
-            if ( evalue.get_value().get_as<Enum>() == value ) {
+            if ( evalue.get_value().template get_as<Enum>() == value ) {
                 return evalue.get_index().get_name();
             }
         }

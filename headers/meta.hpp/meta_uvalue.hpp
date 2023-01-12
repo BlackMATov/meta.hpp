@@ -86,11 +86,14 @@ namespace meta_hpp
         [[nodiscard]] uvalue operator[](std::size_t index) const;
 
         template < typename T >
-        [[nodiscard]] auto get_as()
+        [[nodiscard]] T get_as() &&;
+
+        template < typename T >
+        [[nodiscard]] auto get_as() &
             -> std::conditional_t<detail::pointer_kind<T>, T, T&>;
 
         template < typename T >
-        [[nodiscard]] auto get_as() const
+        [[nodiscard]] auto get_as() const &
             -> std::conditional_t<detail::pointer_kind<T>, T, const T&>;
 
         template < typename T >

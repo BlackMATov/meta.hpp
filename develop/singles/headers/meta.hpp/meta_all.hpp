@@ -2366,11 +2366,14 @@ namespace meta_hpp
         [[nodiscard]] uvalue operator[](std::size_t index) const;
 
         template < typename T >
-        [[nodiscard]] auto get_as()
+        [[nodiscard]] T get_as() &&;
+
+        template < typename T >
+        [[nodiscard]] auto get_as() &
             -> std::conditional_t<detail::pointer_kind<T>, T, T&>;
 
         template < typename T >
-        [[nodiscard]] auto get_as() const
+        [[nodiscard]] auto get_as() const &
             -> std::conditional_t<detail::pointer_kind<T>, T, const T&>;
 
         template < typename T >
@@ -5635,7 +5638,7 @@ namespace meta_hpp
         }
 
         for ( auto&& [_, evalue] : data_->evalues ) {
-            if ( evalue.get_value().get_as<Enum>() == value ) {
+            if ( evalue.get_value().template get_as<Enum>() == value ) {
                 return evalue.get_index().get_name();
             }
         }
@@ -8388,7 +8391,24 @@ namespace meta_hpp
     }
 
     template < typename T >
-    auto uvalue::get_as() -> std::conditional_t<detail::pointer_kind<T>, T, T&> {
+    [[nodiscard]] T uvalue::get_as() && {
+        static_assert(std::is_same_v<T, std::decay_t<T>>);
+
+        if constexpr ( detail::pointer_kind<T> ) {
+            if ( T ptr = try_get_as<T>(); ptr || get_type().is_nullptr() ) {
+                return ptr;
+            }
+        } else {
+            if ( T* ptr = try_get_as<T>() ) {
+                return std::move(*ptr);
+            }
+        }
+
+        detail::throw_exception_with("bad value cast");
+    }
+
+    template < typename T >
+    auto uvalue::get_as() & -> std::conditional_t<detail::pointer_kind<T>, T, T&> {
         static_assert(std::is_same_v<T, std::decay_t<T>>);
 
         if constexpr ( detail::pointer_kind<T> ) {
@@ -8405,7 +8425,7 @@ namespace meta_hpp
     }
 
     template < typename T >
-    auto uvalue::get_as() const -> std::conditional_t<detail::pointer_kind<T>, T, const T&> {
+    auto uvalue::get_as() const & -> std::conditional_t<detail::pointer_kind<T>, T, const T&> {
         static_assert(std::is_same_v<T, std::decay_t<T>>);
 
         if constexpr ( detail::pointer_kind<T> ) {

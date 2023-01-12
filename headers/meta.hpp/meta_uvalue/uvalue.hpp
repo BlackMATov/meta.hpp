@@ -326,7 +326,24 @@ namespace meta_hpp
     }
 
     template < typename T >
-    auto uvalue::get_as() -> std::conditional_t<detail::pointer_kind<T>, T, T&> {
+    [[nodiscard]] T uvalue::get_as() && {
+        static_assert(std::is_same_v<T, std::decay_t<T>>);
+
+        if constexpr ( detail::pointer_kind<T> ) {
+            if ( T ptr = try_get_as<T>(); ptr || get_type().is_nullptr() ) {
+                return ptr;
+            }
+        } else {
+            if ( T* ptr = try_get_as<T>() ) {
+                return std::move(*ptr);
+            }
+        }
+
+        detail::throw_exception_with("bad value cast");
+    }
+
+    template < typename T >
+    auto uvalue::get_as() & -> std::conditional_t<detail::pointer_kind<T>, T, T&> {
         static_assert(std::is_same_v<T, std::decay_t<T>>);
 
         if constexpr ( detail::pointer_kind<T> ) {
@@ -343,7 +360,7 @@ namespace meta_hpp
     }
 
     template < typename T >
-    auto uvalue::get_as() const -> std::conditional_t<detail::pointer_kind<T>, T, const T&> {
+    auto uvalue::get_as() const & -> std::conditional_t<detail::pointer_kind<T>, T, const T&> {
         static_assert(std::is_same_v<T, std::decay_t<T>>);
 
         if constexpr ( detail::pointer_kind<T> ) {

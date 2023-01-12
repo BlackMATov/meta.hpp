@@ -111,7 +111,7 @@ TEST_CASE("meta/meta_utilities/value") {
             ivec2&>);
         static_assert(std::is_same_v<
             decltype(std::declval<meta::uvalue&&>().get_as<ivec2>()),
-            ivec2&>);
+            ivec2>);
         static_assert(std::is_same_v<
             decltype(std::declval<const meta::uvalue&>().get_as<ivec2>()),
             const ivec2&>);
@@ -166,8 +166,15 @@ TEST_CASE("meta/meta_utilities/value") {
 
         CHECK(val.get_as<ivec2>() == ivec2{1,2});
         CHECK(std::as_const(val).get_as<ivec2>() == ivec2{1,2});
-        CHECK(std::move(val).get_as<ivec2>() == ivec2{1,2});
-        CHECK(std::move(std::as_const(val)).get_as<ivec2>() == ivec2{1,2});
+
+        {
+            meta::uvalue val_copy{val};
+            CHECK(std::move(val_copy).get_as<ivec2>() == ivec2{1,2});
+        }
+        {
+            meta::uvalue val_copy{val};
+            CHECK(std::move(std::as_const(val_copy)).get_as<ivec2>() == ivec2{1,2});
+        }
 
         CHECK_THROWS(std::ignore = val.get_as<ivec3>());
         CHECK_THROWS(std::ignore = std::as_const(val).get_as<ivec3>());
@@ -199,8 +206,15 @@ TEST_CASE("meta/meta_utilities/value") {
 
         CHECK(val.get_as<ivec2>() == ivec2{1,2});
         CHECK(std::as_const(val).get_as<ivec2>() == ivec2{1,2});
-        CHECK(std::move(val).get_as<ivec2>() == ivec2{1,2});
-        CHECK(std::move(std::as_const(val)).get_as<ivec2>() == ivec2{1,2});
+
+        {
+            meta::uvalue val_copy{val};
+            CHECK(std::move(val_copy).get_as<ivec2>() == ivec2{1,2});
+        }
+        {
+            meta::uvalue val_copy{val};
+            CHECK(std::move(std::as_const(val_copy)).get_as<ivec2>() == ivec2{1,2});
+        }
 
         CHECK_THROWS(std::ignore = val.get_as<ivec3>());
         CHECK_THROWS(std::ignore = std::as_const(val).get_as<ivec3>());
@@ -226,8 +240,15 @@ TEST_CASE("meta/meta_utilities/value") {
 
         CHECK(val.get_as<ivec2>() == ivec2{1,2});
         CHECK(std::as_const(val).get_as<ivec2>() == ivec2{1,2});
-        CHECK(std::move(val).get_as<ivec2>() == ivec2{1,2});
-        CHECK(std::move(std::as_const(val)).get_as<ivec2>() == ivec2{1,2});
+
+        {
+            meta::uvalue val_copy{val};
+            CHECK(std::move(val_copy).get_as<ivec2>() == ivec2{1,2});
+        }
+        {
+            meta::uvalue val_copy{val};
+            CHECK(std::move(std::as_const(val_copy)).get_as<ivec2>() == ivec2{1,2});
+        }
 
         CHECK_THROWS(std::ignore = val.get_as<ivec3>());
         CHECK_THROWS(std::ignore = std::as_const(val).get_as<ivec3>());
@@ -253,8 +274,15 @@ TEST_CASE("meta/meta_utilities/value") {
 
         CHECK(val.get_as<ivec2>() == ivec2{1,2});
         CHECK(std::as_const(val).get_as<ivec2>() == ivec2{1,2});
-        CHECK(std::move(val).get_as<ivec2>() == ivec2{1,2});
-        CHECK(std::move(std::as_const(val)).get_as<ivec2>() == ivec2{1,2});
+
+        {
+            meta::uvalue val_copy{val};
+            CHECK(std::move(val_copy).get_as<ivec2>() == ivec2{1,2});
+        }
+        {
+            meta::uvalue val_copy{val};
+            CHECK(std::move(std::as_const(val_copy)).get_as<ivec2>() == ivec2{1,2});
+        }
 
         CHECK_THROWS(std::ignore = val.get_as<ivec3>());
         CHECK_THROWS(std::ignore = std::as_const(val).get_as<ivec3>());
