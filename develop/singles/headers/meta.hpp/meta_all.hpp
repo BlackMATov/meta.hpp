@@ -1760,6 +1760,9 @@ namespace meta_hpp
         template < detail::enum_kind Enum >
         [[nodiscard]] std::string_view value_to_name(Enum value) const noexcept;
         [[nodiscard]] uvalue name_to_value(std::string_view name) const noexcept;
+
+        template < typename T >
+        [[nodiscard]] T name_to_value_as(std::string_view name) const;
     private:
         detail::enum_type_data* data_{};
         friend auto detail::type_access<enum_type>(const enum_type&);
@@ -2623,6 +2626,12 @@ namespace meta_hpp
 
         [[nodiscard]] const uvalue& get_value() const noexcept;
         [[nodiscard]] const uvalue& get_underlying_value() const noexcept;
+
+        template < typename T >
+        [[nodiscard]] T get_value_as() const;
+
+        template < typename T >
+        [[nodiscard]] T get_underlying_value_as() const;
     private:
         detail::evalue_state_ptr state_;
         friend auto detail::state_access<evalue>(const evalue&);
@@ -5699,6 +5708,11 @@ namespace meta_hpp
 
         return uvalue{};
     }
+
+    template < typename T >
+    T enum_type::name_to_value_as(std::string_view name) const {
+        return name_to_value(name).get_as<T>();
+    }
 }
 
 namespace meta_hpp::detail
@@ -5754,6 +5768,16 @@ namespace meta_hpp
 
     inline const uvalue& evalue::get_underlying_value() const noexcept {
         return state_->underlying_value;
+    }
+
+    template < typename T >
+    T evalue::get_value_as() const {
+        return get_value().get_as<T>();
+    }
+
+    template < typename T >
+    T evalue::get_underlying_value_as() const {
+        return get_underlying_value().get_as<T>();
     }
 }
 

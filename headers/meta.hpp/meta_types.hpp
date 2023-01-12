@@ -275,6 +275,9 @@ namespace meta_hpp
         template < detail::enum_kind Enum >
         [[nodiscard]] std::string_view value_to_name(Enum value) const noexcept;
         [[nodiscard]] uvalue name_to_value(std::string_view name) const noexcept;
+
+        template < typename T >
+        [[nodiscard]] T name_to_value_as(std::string_view name) const;
     private:
         detail::enum_type_data* data_{};
         friend auto detail::type_access<enum_type>(const enum_type&);

@@ -91,4 +91,9 @@ namespace meta_hpp
 
         return uvalue{};
     }
+
+    template < typename T >
+    T enum_type::name_to_value_as(std::string_view name) const {
+        return name_to_value(name).get_as<T>();
+    }
 }

@@ -197,6 +197,12 @@ namespace meta_hpp
 
         [[nodiscard]] const uvalue& get_value() const noexcept;
         [[nodiscard]] const uvalue& get_underlying_value() const noexcept;
+
+        template < typename T >
+        [[nodiscard]] T get_value_as() const;
+
+        template < typename T >
+        [[nodiscard]] T get_underlying_value_as() const;
     private:
         detail::evalue_state_ptr state_;
         friend auto detail::state_access<evalue>(const evalue&);

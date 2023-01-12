@@ -54,9 +54,11 @@ TEST_CASE("meta/meta_states/evalue") {
         CHECK(evalue.get_name() == "green");
 
         CHECK(evalue.get_value().get_as<color>() == color::green);
+        CHECK(evalue.get_value_as<color>() == color::green);
         CHECK(evalue.get_value().get_type() == color_type);
 
         CHECK(evalue.get_underlying_value().get_as<unsigned>() == meta::detail::to_underlying(color::green));
+        CHECK(evalue.get_underlying_value_as<unsigned>() == meta::detail::to_underlying(color::green));
         CHECK(evalue.get_underlying_value().get_type() == color_type.get_underlying_type());
     }
 }
