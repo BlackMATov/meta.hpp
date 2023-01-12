@@ -20,6 +20,7 @@ target_compile_options(${PROJECT_NAME}.setup_targets INTERFACE
         -Wno-unneeded-member-function
         -Wno-unused-macros
         -Wno-weak-vtables
+        -Wno-zero-as-null-pointer-constant
         >)
 
 if(BUILD_WITH_COVERAGE)

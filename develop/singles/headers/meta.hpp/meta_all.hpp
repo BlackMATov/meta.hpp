@@ -2534,6 +2534,8 @@ namespace meta_hpp
 {
     class argument final {
     public:
+        using index_type = argument_index;
+
         explicit argument() = default;
         explicit argument(detail::argument_state_ptr state) noexcept;
         argument& operator=(detail::argument_state_ptr state) noexcept;
@@ -2555,8 +2557,10 @@ namespace meta_hpp
 
     class constructor final {
     public:
+        using index_type = constructor_index;
+
         explicit constructor() = default;
-        explicit constructor(detail::constructor_state_ptr state) noexcept;
+        constructor(detail::constructor_state_ptr state) noexcept;
         constructor& operator=(detail::constructor_state_ptr state) noexcept;
 
         [[nodiscard]] bool is_valid() const noexcept;
@@ -2588,8 +2592,10 @@ namespace meta_hpp
 
     class destructor final {
     public:
+        using index_type = destructor_index;
+
         explicit destructor() = default;
-        explicit destructor(detail::destructor_state_ptr state) noexcept;
+        destructor(detail::destructor_state_ptr state) noexcept;
         destructor& operator=(detail::destructor_state_ptr state) noexcept;
 
         [[nodiscard]] bool is_valid() const noexcept;
@@ -2611,8 +2617,10 @@ namespace meta_hpp
 
     class evalue final {
     public:
+        using index_type = evalue_index;
+
         explicit evalue() = default;
-        explicit evalue(detail::evalue_state_ptr state) noexcept;
+        evalue(detail::evalue_state_ptr state) noexcept;
         evalue& operator=(detail::evalue_state_ptr state) noexcept;
 
         [[nodiscard]] bool is_valid() const noexcept;
@@ -2639,8 +2647,10 @@ namespace meta_hpp
 
     class function final {
     public:
+        using index_type = function_index;
+
         explicit function() = default;
-        explicit function(detail::function_state_ptr state) noexcept;
+        function(detail::function_state_ptr state) noexcept;
         function& operator=(detail::function_state_ptr state) noexcept;
 
         [[nodiscard]] bool is_valid() const noexcept;
@@ -2673,8 +2683,10 @@ namespace meta_hpp
 
     class member final {
     public:
+        using index_type = member_index;
+
         explicit member() = default;
-        explicit member(detail::member_state_ptr state) noexcept;
+        member(detail::member_state_ptr state) noexcept;
         member& operator=(detail::member_state_ptr state) noexcept;
 
         [[nodiscard]] bool is_valid() const noexcept;
@@ -2719,8 +2731,10 @@ namespace meta_hpp
 
     class method final {
     public:
+        using index_type = method_index;
+
         explicit method() = default;
-        explicit method(detail::method_state_ptr state) noexcept;
+        method(detail::method_state_ptr state) noexcept;
         method& operator=(detail::method_state_ptr state) noexcept;
 
         [[nodiscard]] bool is_valid() const noexcept;
@@ -2753,6 +2767,8 @@ namespace meta_hpp
 
     class scope final {
     public:
+        using index_type = scope_index;
+
         explicit scope() = default;
         explicit scope(detail::scope_state_ptr state) noexcept;
         scope& operator=(detail::scope_state_ptr state) noexcept;
@@ -2786,8 +2802,10 @@ namespace meta_hpp
 
     class variable final {
     public:
+        using index_type = variable_index;
+
         explicit variable() = default;
-        explicit variable(detail::variable_state_ptr state) noexcept;
+        variable(detail::variable_state_ptr state) noexcept;
         variable& operator=(detail::variable_state_ptr state) noexcept;
 
         [[nodiscard]] bool is_valid() const noexcept;
@@ -2852,6 +2870,45 @@ namespace meta_hpp
     }
 
     template < detail::state_family T, detail::state_family U >
+    [[nodiscard]] bool operator!=(const T& l, const U& r) noexcept {
+        return !(l == r);
+    }
+}
+
+namespace meta_hpp
+{
+    template < detail::state_family T, typename U >
+        requires std::is_same_v<U, typename T::index_type>
+    [[nodiscard]] bool operator<(const T& l, const U& r) noexcept {
+        return !static_cast<bool>(l) || l.get_index() < r;
+    }
+
+    template < typename T, detail::state_family U >
+        requires std::is_same_v<T, typename U::index_type>
+    [[nodiscard]] bool operator<(const T& l, const U& r) noexcept {
+        return static_cast<bool>(r) && l < r.get_index();
+    }
+
+    template < detail::state_family T, typename U >
+        requires std::is_same_v<U, typename T::index_type>
+    [[nodiscard]] bool operator==(const T& l, const U& r) noexcept {
+        return static_cast<bool>(l) || l.get_index() == r;
+    }
+
+    template < typename T, detail::state_family U >
+        requires std::is_same_v<T, typename U::index_type>
+    [[nodiscard]] bool operator==(const T& l, const U& r) noexcept {
+        return static_cast<bool>(r) && l == r.get_index();
+    }
+
+    template < detail::state_family T, typename U >
+        requires std::is_same_v<U, typename T::index_type>
+    [[nodiscard]] bool operator!=(const T& l, const U& r) noexcept {
+        return !(l == r);
+    }
+
+    template < typename T, detail::state_family U >
+        requires std::is_same_v<T, typename U::index_type>
     [[nodiscard]] bool operator!=(const T& l, const U& r) noexcept {
         return !(l == r);
     }
