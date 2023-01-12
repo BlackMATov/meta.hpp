@@ -3024,7 +3024,8 @@ namespace meta_hpp::detail
             }
 
             auto state = scope_state::make(std::string{name}, metadata_map{});
-            return scopes_.insert_or_assign(std::string{name}, std::move(state)).first->second;
+            auto&& [iter, _] = scopes_.insert_or_assign(std::string{name}, std::move(state));
+            return iter->second;
         }
     private:
         state_registry() = default;
@@ -3805,7 +3806,7 @@ namespace meta_hpp
     array_bind<Array>::array_bind(metadata_map metadata)
     : data_{detail::type_access(resolve_type<Array>())} {
         data_->metadata.swap(metadata);
-        data_->metadata.merge(metadata);
+        data_->metadata.merge(std::move(metadata));
     }
 
     template < detail::array_kind Array >
@@ -3820,7 +3821,7 @@ namespace meta_hpp
     class_bind<Class>::class_bind(metadata_map metadata)
     : data_{detail::type_access(resolve_type<Class>())} {
         data_->metadata.swap(metadata);
-        data_->metadata.merge(metadata);
+        data_->metadata.merge(std::move(metadata));
 
         if constexpr ( std::is_destructible_v<Class> ) {
             destructor_();
@@ -4137,7 +4138,7 @@ namespace meta_hpp
     enum_bind<Enum>::enum_bind(metadata_map metadata)
     : data_{detail::type_access(resolve_type<Enum>())} {
         data_->metadata.swap(metadata);
-        data_->metadata.merge(metadata);
+        data_->metadata.merge(std::move(metadata));
     }
 
     template < detail::enum_kind Enum >
@@ -4167,7 +4168,7 @@ namespace meta_hpp
     function_bind<Function>::function_bind(metadata_map metadata)
     : data_{detail::type_access(resolve_type<Function>())} {
         data_->metadata.swap(metadata);
-        data_->metadata.merge(metadata);
+        data_->metadata.merge(std::move(metadata));
     }
 
     template < detail::function_kind Function >
@@ -4182,7 +4183,7 @@ namespace meta_hpp
     member_bind<Member>::member_bind(metadata_map metadata)
     : data_{detail::type_access(resolve_type<Member>())} {
         data_->metadata.swap(metadata);
-        data_->metadata.merge(metadata);
+        data_->metadata.merge(std::move(metadata));
     }
 
     template < detail::member_kind Member >
@@ -4197,7 +4198,7 @@ namespace meta_hpp
     method_bind<Method>::method_bind(metadata_map metadata)
     : data_{detail::type_access(resolve_type<Method>())} {
         data_->metadata.swap(metadata);
-        data_->metadata.merge(metadata);
+        data_->metadata.merge(std::move(metadata));
     }
 
     template < detail::method_kind Method >
@@ -4212,7 +4213,7 @@ namespace meta_hpp
     nullptr_bind<Nullptr>::nullptr_bind(metadata_map metadata)
     : data_{detail::type_access(resolve_type<Nullptr>())} {
         data_->metadata.swap(metadata);
-        data_->metadata.merge(metadata);
+        data_->metadata.merge(std::move(metadata));
     }
 
     template < detail::nullptr_kind Nullptr >
@@ -4227,7 +4228,7 @@ namespace meta_hpp
     number_bind<Number>::number_bind(metadata_map metadata)
     : data_{detail::type_access(resolve_type<Number>())} {
         data_->metadata.swap(metadata);
-        data_->metadata.merge(metadata);
+        data_->metadata.merge(std::move(metadata));
     }
 
     template < detail::number_kind Number >
@@ -4242,7 +4243,7 @@ namespace meta_hpp
     pointer_bind<Pointer>::pointer_bind(metadata_map metadata)
     : data_{detail::type_access(resolve_type<Pointer>())} {
         data_->metadata.swap(metadata);
-        data_->metadata.merge(metadata);
+        data_->metadata.merge(std::move(metadata));
     }
 
     template < detail::pointer_kind Pointer >
@@ -4257,7 +4258,7 @@ namespace meta_hpp
     reference_bind<Reference>::reference_bind(metadata_map metadata)
     : data_{detail::type_access(resolve_type<Reference>())} {
         data_->metadata.swap(metadata);
-        data_->metadata.merge(metadata);
+        data_->metadata.merge(std::move(metadata));
     }
 
     template < detail::reference_kind Reference >
@@ -4274,7 +4275,7 @@ namespace meta_hpp
     inline scope_bind::scope_bind(std::string_view name, metadata_map metadata, static_tag)
     : state_{detail::state_access(resolve_scope(name))} {
         state_->metadata.swap(metadata);
-        state_->metadata.merge(metadata);
+        state_->metadata.merge(std::move(metadata));
     }
 
     inline scope_bind::operator scope() const noexcept {
@@ -4391,7 +4392,7 @@ namespace meta_hpp
     void_bind<Void>::void_bind(metadata_map metadata)
     : data_{detail::type_access(resolve_type<void>())} {
         data_->metadata.swap(metadata);
-        data_->metadata.merge(metadata);
+        data_->metadata.merge(std::move(metadata));
     }
 
     template < detail::void_kind Void >

@@ -16,7 +16,7 @@ namespace meta_hpp
     pointer_bind<Pointer>::pointer_bind(metadata_map metadata)
     : data_{detail::type_access(resolve_type<Pointer>())} {
         data_->metadata.swap(metadata);
-        data_->metadata.merge(metadata);
+        data_->metadata.merge(std::move(metadata));
     }
 
     template < detail::pointer_kind Pointer >

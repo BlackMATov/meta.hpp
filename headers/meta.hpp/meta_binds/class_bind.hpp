@@ -16,7 +16,7 @@ namespace meta_hpp
     class_bind<Class>::class_bind(metadata_map metadata)
     : data_{detail::type_access(resolve_type<Class>())} {
         data_->metadata.swap(metadata);
-        data_->metadata.merge(metadata);
+        data_->metadata.merge(std::move(metadata));
 
         if constexpr ( std::is_destructible_v<Class> ) {
             destructor_();

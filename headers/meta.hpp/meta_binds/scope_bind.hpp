@@ -18,7 +18,7 @@ namespace meta_hpp
     inline scope_bind::scope_bind(std::string_view name, metadata_map metadata, static_tag)
     : state_{detail::state_access(resolve_scope(name))} {
         state_->metadata.swap(metadata);
-        state_->metadata.merge(metadata);
+        state_->metadata.merge(std::move(metadata));
     }
 
     inline scope_bind::operator scope() const noexcept {

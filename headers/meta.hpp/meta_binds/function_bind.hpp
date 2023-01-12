@@ -16,7 +16,7 @@ namespace meta_hpp
     function_bind<Function>::function_bind(metadata_map metadata)
     : data_{detail::type_access(resolve_type<Function>())} {
         data_->metadata.swap(metadata);
-        data_->metadata.merge(metadata);
+        data_->metadata.merge(std::move(metadata));
     }
 
     template < detail::function_kind Function >

@@ -16,7 +16,7 @@ namespace meta_hpp
     reference_bind<Reference>::reference_bind(metadata_map metadata)
     : data_{detail::type_access(resolve_type<Reference>())} {
         data_->metadata.swap(metadata);
-        data_->metadata.merge(metadata);
+        data_->metadata.merge(std::move(metadata));
     }
 
     template < detail::reference_kind Reference >

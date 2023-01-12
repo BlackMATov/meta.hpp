@@ -16,7 +16,7 @@ namespace meta_hpp
     enum_bind<Enum>::enum_bind(metadata_map metadata)
     : data_{detail::type_access(resolve_type<Enum>())} {
         data_->metadata.swap(metadata);
-        data_->metadata.merge(metadata);
+        data_->metadata.merge(std::move(metadata));
     }
 
     template < detail::enum_kind Enum >

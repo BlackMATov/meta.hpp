@@ -16,7 +16,7 @@ namespace meta_hpp
     array_bind<Array>::array_bind(metadata_map metadata)
     : data_{detail::type_access(resolve_type<Array>())} {
         data_->metadata.swap(metadata);
-        data_->metadata.merge(metadata);
+        data_->metadata.merge(std::move(metadata));
     }
 
     template < detail::array_kind Array >

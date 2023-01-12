@@ -16,7 +16,7 @@ namespace meta_hpp
     void_bind<Void>::void_bind(metadata_map metadata)
     : data_{detail::type_access(resolve_type<void>())} {
         data_->metadata.swap(metadata);
-        data_->metadata.merge(metadata);
+        data_->metadata.merge(std::move(metadata));
     }
 
     template < detail::void_kind Void >
