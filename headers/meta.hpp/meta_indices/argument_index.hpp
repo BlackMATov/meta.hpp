@@ -41,4 +41,8 @@ namespace meta_hpp
     inline bool operator==(const argument_index& l, const argument_index& r) noexcept {
         return l.type_ == r.type_ && l.position_ == r.position_;
     }
+
+    inline bool operator!=(const argument_index& l, const argument_index& r) noexcept {
+        return !(l == r);
+    }
 }

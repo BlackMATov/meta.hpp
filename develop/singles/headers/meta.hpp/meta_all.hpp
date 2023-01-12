@@ -2128,6 +2128,7 @@ namespace meta_hpp
         explicit argument_index(any_type type, std::size_t position);
         friend bool operator<(const argument_index& l, const argument_index& r) noexcept;
         friend bool operator==(const argument_index& l, const argument_index& r) noexcept;
+        friend bool operator!=(const argument_index& l, const argument_index& r) noexcept;
     private:
         any_type type_;
         std::size_t position_{};
@@ -2146,6 +2147,7 @@ namespace meta_hpp
         explicit constructor_index(constructor_type type);
         friend bool operator<(const constructor_index& l, const constructor_index& r) noexcept;
         friend bool operator==(const constructor_index& l, const constructor_index& r) noexcept;
+        friend bool operator!=(const constructor_index& l, const constructor_index& r) noexcept;
     private:
         constructor_type type_;
     };
@@ -2163,6 +2165,7 @@ namespace meta_hpp
         explicit destructor_index(destructor_type type);
         friend bool operator<(const destructor_index& l, const destructor_index& r) noexcept;
         friend bool operator==(const destructor_index& l, const destructor_index& r) noexcept;
+        friend bool operator!=(const destructor_index& l, const destructor_index& r) noexcept;
     private:
         destructor_type type_;
     };
@@ -2181,6 +2184,7 @@ namespace meta_hpp
         explicit evalue_index(enum_type type, std::string name);
         friend bool operator<(const evalue_index& l, const evalue_index& r) noexcept;
         friend bool operator==(const evalue_index& l, const evalue_index& r) noexcept;
+        friend bool operator!=(const evalue_index& l, const evalue_index& r) noexcept;
     private:
         enum_type type_;
         std::string name_;
@@ -2200,6 +2204,7 @@ namespace meta_hpp
         explicit function_index(function_type type, std::string name);
         friend bool operator<(const function_index& l, const function_index& r) noexcept;
         friend bool operator==(const function_index& l, const function_index& r) noexcept;
+        friend bool operator!=(const function_index& l, const function_index& r) noexcept;
     private:
         function_type type_;
         std::string name_;
@@ -2219,6 +2224,7 @@ namespace meta_hpp
         explicit member_index(member_type type, std::string name);
         friend bool operator<(const member_index& l, const member_index& r) noexcept;
         friend bool operator==(const member_index& l, const member_index& r) noexcept;
+        friend bool operator!=(const member_index& l, const member_index& r) noexcept;
     private:
         member_type type_;
         std::string name_;
@@ -2238,6 +2244,7 @@ namespace meta_hpp
         explicit method_index(method_type type, std::string name);
         friend bool operator<(const method_index& l, const method_index& r) noexcept;
         friend bool operator==(const method_index& l, const method_index& r) noexcept;
+        friend bool operator!=(const method_index& l, const method_index& r) noexcept;
     private:
         method_type type_;
         std::string name_;
@@ -2255,6 +2262,7 @@ namespace meta_hpp
         explicit scope_index(std::string name);
         friend bool operator<(const scope_index& l, const scope_index& r) noexcept;
         friend bool operator==(const scope_index& l, const scope_index& r) noexcept;
+        friend bool operator!=(const scope_index& l, const scope_index& r) noexcept;
     private:
         std::string name_;
     };
@@ -2273,6 +2281,7 @@ namespace meta_hpp
         explicit variable_index(pointer_type type, std::string name);
         friend bool operator<(const variable_index& l, const variable_index& r) noexcept;
         friend bool operator==(const variable_index& l, const variable_index& r) noexcept;
+        friend bool operator!=(const variable_index& l, const variable_index& r) noexcept;
     private:
         pointer_type type_;
         std::string name_;
@@ -4421,6 +4430,10 @@ namespace meta_hpp
     inline bool operator==(const argument_index& l, const argument_index& r) noexcept {
         return l.type_ == r.type_ && l.position_ == r.position_;
     }
+
+    inline bool operator!=(const argument_index& l, const argument_index& r) noexcept {
+        return !(l == r);
+    }
 }
 
 namespace meta_hpp
@@ -4447,6 +4460,10 @@ namespace meta_hpp
 
     inline bool operator==(const constructor_index& l, const constructor_index& r) noexcept {
         return l.type_ == r.type_;
+    }
+
+    inline bool operator!=(const constructor_index& l, const constructor_index& r) noexcept {
+        return !(l == r);
     }
 }
 
@@ -4475,6 +4492,10 @@ namespace meta_hpp
     inline bool operator==(const destructor_index& l, const destructor_index& r) noexcept {
         return l.type_ == r.type_;
     }
+
+    inline bool operator!=(const destructor_index& l, const destructor_index& r) noexcept {
+        return !(l == r);
+    }
 }
 
 namespace meta_hpp
@@ -4501,11 +4522,15 @@ namespace meta_hpp
     }
 
     inline bool operator<(const evalue_index& l, const evalue_index& r) noexcept {
-        return l.type_ < r.type_ || (l.type_ == r.type_ && std::less<>{}(l.name_, r.name_));
+        return l.type_ < r.type_ || (l.type_ == r.type_ && l.name_ < r.name_);
     }
 
     inline bool operator==(const evalue_index& l, const evalue_index& r) noexcept {
-        return l.type_ == r.type_ && std::equal_to<>{}(l.name_, r.name_);
+        return l.type_ == r.type_ && l.name_ == r.name_;
+    }
+
+    inline bool operator!=(const evalue_index& l, const evalue_index& r) noexcept {
+        return !(l == r);
     }
 }
 
@@ -4533,11 +4558,15 @@ namespace meta_hpp
     }
 
     inline bool operator<(const function_index& l, const function_index& r) noexcept {
-        return l.type_ < r.type_ || (l.type_ == r.type_ && std::less<>{}(l.name_, r.name_));
+        return l.type_ < r.type_ || (l.type_ == r.type_ && l.name_ < r.name_);
     }
 
     inline bool operator==(const function_index& l, const function_index& r) noexcept {
-        return l.type_ == r.type_ && std::equal_to<>{}(l.name_, r.name_);
+        return l.type_ == r.type_ && l.name_ == r.name_;
+    }
+
+    inline bool operator!=(const function_index& l, const function_index& r) noexcept {
+        return !(l == r);
     }
 }
 
@@ -4565,11 +4594,15 @@ namespace meta_hpp
     }
 
     inline bool operator<(const member_index& l, const member_index& r) noexcept {
-        return l.type_ < r.type_ || (l.type_ == r.type_ && std::less<>{}(l.name_, r.name_));
+        return l.type_ < r.type_ || (l.type_ == r.type_ && l.name_ < r.name_);
     }
 
     inline bool operator==(const member_index& l, const member_index& r) noexcept {
-        return l.type_ == r.type_ && std::equal_to<>{}(l.name_, r.name_);
+        return l.type_ == r.type_ && l.name_ == r.name_;
+    }
+
+    inline bool operator!=(const member_index& l, const member_index& r) noexcept {
+        return !(l == r);
     }
 }
 
@@ -4597,11 +4630,15 @@ namespace meta_hpp
     }
 
     inline bool operator<(const method_index& l, const method_index& r) noexcept {
-        return l.type_ < r.type_ || (l.type_ == r.type_ && std::less<>{}(l.name_, r.name_));
+        return l.type_ < r.type_ || (l.type_ == r.type_ && l.name_ < r.name_);
     }
 
     inline bool operator==(const method_index& l, const method_index& r) noexcept {
-        return l.type_ == r.type_ && std::equal_to<>{}(l.name_, r.name_);
+        return l.type_ == r.type_ && l.name_ == r.name_;
+    }
+
+    inline bool operator!=(const method_index& l, const method_index& r) noexcept {
+        return !(l == r);
     }
 }
 
@@ -4623,11 +4660,15 @@ namespace meta_hpp
     }
 
     inline bool operator<(const scope_index& l, const scope_index& r) noexcept {
-        return std::less<>{}(l.name_, r.name_);
+        return l.name_ < r.name_;
     }
 
     inline bool operator==(const scope_index& l, const scope_index& r) noexcept {
-        return std::equal_to<>{}(l.name_, r.name_);
+        return l.name_ == r.name_;
+    }
+
+    inline bool operator!=(const scope_index& l, const scope_index& r) noexcept {
+        return !(l == r);
     }
 }
 
@@ -4655,11 +4696,15 @@ namespace meta_hpp
     }
 
     inline bool operator<(const variable_index& l, const variable_index& r) noexcept {
-        return l.type_ < r.type_ || (l.type_ == r.type_ && std::less<>{}(l.name_, r.name_));
+        return l.type_ < r.type_ || (l.type_ == r.type_ && l.name_ < r.name_);
     }
 
     inline bool operator==(const variable_index& l, const variable_index& r) noexcept {
-        return l.type_ == r.type_ && std::equal_to<>{}(l.name_, r.name_);
+        return l.type_ == r.type_ && l.name_ == r.name_;
+    }
+
+    inline bool operator!=(const variable_index& l, const variable_index& r) noexcept {
+        return !(l == r);
     }
 }
 
