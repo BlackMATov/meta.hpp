@@ -2322,7 +2322,7 @@ namespace meta_hpp
                   && (!detail::is_in_place_type_v<Tp>)
                   && (std::is_copy_constructible_v<Tp>)
         // NOLINTNEXTLINE(*-forwarding-reference-overload)
-        explicit uvalue(T&& val);
+        uvalue(T&& val);
 
         template < typename T, typename Tp = std::decay_t<T> >
             requires (!detail::any_uvalue_kind<Tp>)
@@ -2380,9 +2380,6 @@ namespace meta_hpp
         template < typename T >
         [[nodiscard]] auto try_get_as() const noexcept
             -> std::conditional_t<detail::pointer_kind<T>, T, const T*>;
-
-        friend std::istream& operator>>(std::istream& is, uvalue& v);
-        friend std::ostream& operator<<(std::ostream& os, const uvalue& v);
     private:
         struct vtable_t;
         vtable_t* vtable_{};
@@ -5632,7 +5629,7 @@ namespace meta_hpp
         }
 
         for ( auto&& [_, evalue] : data_->evalues ) {
-            if ( evalue.get_value() == value ) {
+            if ( evalue.get_value().get_as<Enum>() == value ) {
                 return evalue.get_index().get_name();
             }
         }
@@ -8064,54 +8061,6 @@ namespace meta_hpp::detail
     };
 }
 
-namespace meta_hpp::detail
-{
-    template < typename T >
-    struct istream_traits;
-
-    template < typename T >
-    concept has_istream_traits = requires(std::istream& is, T& v) {
-        { istream_traits<T>{}(is, v) } -> std::convertible_to<std::istream&>;
-    };
-}
-
-namespace meta_hpp::detail
-{
-    template < typename T >
-        requires requires(std::istream& is, T& v) {
-            { is >> v } -> std::convertible_to<std::istream&>;
-        }
-    struct istream_traits<T> {
-        std::istream& operator()(std::istream& is, T& v) const {
-            return is >> v;
-        }
-    };
-}
-
-namespace meta_hpp::detail
-{
-    template < typename T >
-    struct ostream_traits;
-
-    template < typename T >
-    concept has_ostream_traits = requires(std::ostream& os, const T& v) {
-        { ostream_traits<T>{}(os, v) } -> std::convertible_to<std::ostream&>;
-    };
-}
-
-namespace meta_hpp::detail
-{
-    template < typename T >
-        requires requires(std::ostream& os, const T& v) {
-            { os << v } -> std::convertible_to<std::ostream&>;
-        }
-    struct ostream_traits<T> {
-        std::ostream& operator()(std::ostream& os, const T& v) const {
-            return os << v;
-        }
-    };
-}
-
 namespace meta_hpp
 {
     struct uvalue::vtable_t final {
@@ -8126,9 +8075,6 @@ namespace meta_hpp
 
         uvalue (*const deref)(const storage_u& from);
         uvalue (*const index)(const storage_u& from, std::size_t);
-
-        std::istream& (*const istream)(std::istream& is, storage_u& to);
-        std::ostream& (*const ostream)(std::ostream& os, const storage_u& from);
 
         template < typename T >
         static T* buffer_cast(buffer_t& buffer) noexcept {
@@ -8293,22 +8239,6 @@ namespace meta_hpp
                         return detail::index_traits<Tp>{}(*storage_cast<Tp>(from), i);
                     } else {
                         detail::throw_exception_with("value type doesn't have value index traits");
-                    }
-                },
-
-                .istream = +[]([[maybe_unused]] std::istream& is, [[maybe_unused]] storage_u& to) -> std::istream& {
-                    if constexpr ( detail::has_istream_traits<Tp> && !detail::pointer_kind<Tp> ) {
-                        return detail::istream_traits<Tp>{}(is, *storage_cast<Tp>(to));
-                    } else {
-                        detail::throw_exception_with("value type doesn't have value istream traits");
-                    }
-                },
-
-                .ostream = +[]([[maybe_unused]] std::ostream& os, [[maybe_unused]] const storage_u& from) -> std::ostream& {
-                    if constexpr ( detail::has_ostream_traits<Tp> && !detail::pointer_kind<Tp> ) {
-                        return detail::ostream_traits<Tp>{}(os, *storage_cast<Tp>(from));
-                    } else {
-                        detail::throw_exception_with("value type doesn't have value ostream traits");
                     }
                 },
             };
@@ -8603,76 +8533,5 @@ namespace meta_hpp
         }
 
         return nullptr;
-    }
-}
-
-namespace meta_hpp
-{
-    template < typename T, typename Tp = std::decay_t<T> >
-        requires (!detail::uvalue_kind<Tp>)
-    [[nodiscard]] bool operator<(const uvalue& l, const T& r) {
-        if ( !static_cast<bool>(l) ) {
-            return true;
-        }
-
-        const any_type& l_type = l.get_type();
-        const any_type& r_type = resolve_type<T>();
-
-        return (l_type < r_type) || (l_type == r_type && l.get_as<T>() < r);
-    }
-
-    template < typename T, typename Tp = std::decay_t<T> >
-        requires (!detail::uvalue_kind<Tp>)
-    [[nodiscard]] bool operator<(const T& l, const uvalue& r) {
-        if ( !static_cast<bool>(r) ) {
-            return false;
-        }
-
-        const any_type& l_type = resolve_type<T>();
-        const any_type& r_type = r.get_type();
-
-        return (l_type < r_type) || (l_type == r_type && l < r.get_as<T>());
-    }
-}
-
-namespace meta_hpp
-{
-    template < typename T, typename Tp = std::decay_t<T> >
-        requires (!detail::uvalue_kind<Tp>)
-    [[nodiscard]] bool operator==(const uvalue& l, const T& r) {
-        if ( !static_cast<bool>(l) ) {
-            return false;
-        }
-
-        const any_type& l_type = l.get_type();
-        const any_type& r_type = resolve_type<T>();
-
-        return l_type == r_type && l.get_as<T>() == r;
-    }
-
-    template < typename T, typename Tp = std::decay_t<T> >
-        requires (!detail::uvalue_kind<Tp>)
-    [[nodiscard]] bool operator==(const T& l, const uvalue& r) {
-        if ( !static_cast<bool>(r) ) {
-            return false;
-        }
-
-        const any_type& l_type = resolve_type<T>();
-        const any_type& r_type = r.get_type();
-
-        return l_type == r_type && l == r.get_as<T>();
-    }
-}
-
-namespace meta_hpp
-{
-    inline std::istream& operator>>(std::istream& is, uvalue& v) {
-        assert(v && "bad operator call"); // NOLINT
-        return v.vtable_->istream(is, v.storage_);
-    }
-
-    inline std::ostream& operator<<(std::ostream& os, const uvalue& v) {
-        assert(v && "bad operator call"); // NOLINT
-        return v.vtable_->ostream(os, v.storage_);
     }
 }

@@ -38,7 +38,7 @@ namespace
             std::ignore = uinst{Inst}.cast<clazz Qualifiers>();\
             \
             CHECK(m_state.is_invocable_with<decltype(Inst)>());\
-            CHECK(m_state.invoke(Inst) == 1);\
+            CHECK(m_state.invoke(Inst).get_as<int>() == 1);\
         } else {\
             CHECK_FALSE(uinst{Inst}.can_cast_to<clazz Qualifiers>());\
             CHECK_FALSE(uinst_base{type_list<decltype(Inst)>{}}.can_cast_to<clazz Qualifiers>());\
@@ -59,7 +59,7 @@ namespace
         if ( std::is_invocable_v<decltype(method_ptr), FromType> ) {\
             CHECK(m_state.is_invocable_with<FromType>());\
             CHECK(m_state.is_invocable_with(FromValue));\
-            CHECK(m_state.invoke(FromValue) == 1);\
+            CHECK(m_state.invoke(FromValue).get_as<int>() == 1);\
         } else {\
             CHECK_FALSE(m_state.is_invocable_with<FromType>());\
             CHECK_FALSE(m_state.is_invocable_with(FromValue));\

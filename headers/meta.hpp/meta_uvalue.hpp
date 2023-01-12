@@ -42,7 +42,7 @@ namespace meta_hpp
                   && (!detail::is_in_place_type_v<Tp>)
                   && (std::is_copy_constructible_v<Tp>)
         // NOLINTNEXTLINE(*-forwarding-reference-overload)
-        explicit uvalue(T&& val);
+        uvalue(T&& val);
 
         template < typename T, typename Tp = std::decay_t<T> >
             requires (!detail::any_uvalue_kind<Tp>)
@@ -100,9 +100,6 @@ namespace meta_hpp
         template < typename T >
         [[nodiscard]] auto try_get_as() const noexcept
             -> std::conditional_t<detail::pointer_kind<T>, T, const T*>;
-
-        friend std::istream& operator>>(std::istream& is, uvalue& v);
-        friend std::ostream& operator<<(std::ostream& os, const uvalue& v);
     private:
         struct vtable_t;
         vtable_t* vtable_{};

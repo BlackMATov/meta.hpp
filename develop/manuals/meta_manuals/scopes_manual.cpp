@@ -72,18 +72,18 @@ TEST_CASE("meta/meta_examples/scopes/local") {
     const meta::function dot3_function = math_scope.get_function("dot3");
 
     // calls and checks found functions
-    CHECK(dot2_function(ivec2{3,4}, ivec2{5,6}) == 39);
-    CHECK(dot3_function(ivec3{3,4,5}, ivec3{6,7,8}) == 86);
+    CHECK(dot2_function(ivec2{3,4}, ivec2{5,6}).get_as<int>() == 39);
+    CHECK(dot3_function(ivec3{3,4,5}, ivec3{6,7,8}).get_as<int>() == 86);
 
     // and free variables, of course
     const meta::variable unit2_variable = math_scope.get_variable("unit2");
     const meta::variable unit3_variable = math_scope.get_variable("unit3");
 
     // checks and uses found variables with functions
-    CHECK(unit2_variable.get() == ivec2{1,1});
-    CHECK(unit3_variable.get() == ivec3{1,1,1});
-    CHECK(dot2_function(unit2_variable.get(), unit2_variable.get()) == 2);
-    CHECK(dot3_function(unit3_variable.get(), unit3_variable.get()) == 3);
+    CHECK(unit2_variable.get().get_as<ivec2>() == ivec2{1,1});
+    CHECK(unit3_variable.get().get_as<ivec3>() == ivec3{1,1,1});
+    CHECK(dot2_function(unit2_variable.get(), unit2_variable.get()).get_as<int>() == 2);
+    CHECK(dot3_function(unit3_variable.get(), unit3_variable.get()).get_as<int>() == 3);
 }
 
 TEST_CASE("meta/meta_examples/scopes/global") {
@@ -106,6 +106,6 @@ TEST_CASE("meta/meta_examples/scopes/global") {
     const meta::variable unit3_variable = math_scope.get_variable("unit3");
 
     // everything works as expected
-    CHECK(dot2_function(unit2_variable.get(), unit2_variable.get()) == 2);
-    CHECK(dot3_function(unit3_variable.get(), unit3_variable.get()) == 3);
+    CHECK(dot2_function(unit2_variable.get(), unit2_variable.get()).get_as<int>() == 2);
+    CHECK(dot3_function(unit3_variable.get(), unit3_variable.get()).get_as<int>() == 3);
 }

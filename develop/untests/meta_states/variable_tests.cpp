@@ -71,8 +71,8 @@ TEST_CASE("meta/meta_states/variable") {
         CHECK(vm.get_type() == meta::resolve_type(&clazz_1::int_variable));
         CHECK(vm.get_name() == "int_variable");
 
-        CHECK(vm.get() == 1);
-        CHECK(vm() == 1);
+        CHECK(vm.get().get_as<int>() == 1);
+        CHECK(vm().get_as<int>() == 1);
 
         CHECK(vm.is_settable_with<int>());
         CHECK(vm.is_settable_with<int&&>());
@@ -84,8 +84,8 @@ TEST_CASE("meta/meta_states/variable") {
         CHECK_FALSE(vm.is_settable_with<const float&>());
         CHECK_FALSE(vm.is_settable_with(1.0));
 
-        vm.set(10); CHECK(vm.get() == 10);
-        vm(11); CHECK(vm() == 11);
+        vm.set(10); CHECK(vm.get().get_as<int>() == 10);
+        vm(11); CHECK(vm().get_as<int>() == 11);
     }
 
     SUBCASE("const int") {
@@ -95,8 +95,8 @@ TEST_CASE("meta/meta_states/variable") {
         CHECK(vm.get_type() == meta::resolve_type(&clazz_1::const_int_variable));
         CHECK(vm.get_name() == "const_int_variable");
 
-        CHECK(vm.get() == 2);
-        CHECK(vm() == 2);
+        CHECK(vm.get().get_as<int>() == 2);
+        CHECK(vm().get_as<int>() == 2);
 
         CHECK_FALSE(vm.is_settable_with<int>());
         CHECK_FALSE(vm.is_settable_with<int&&>());
@@ -108,8 +108,8 @@ TEST_CASE("meta/meta_states/variable") {
         CHECK_FALSE(vm.is_settable_with<const float&>());
         CHECK_FALSE(vm.is_settable_with(1.0));
 
-        CHECK_THROWS(vm.set(10)); CHECK(vm.get() == 2);
-        CHECK_THROWS(vm(10)); CHECK(vm() == 2);
+        CHECK_THROWS(vm.set(10)); CHECK(vm.get().get_as<int>() == 2);
+        CHECK_THROWS(vm(10)); CHECK(vm().get_as<int>() == 2);
     }
 
     SUBCASE("ref int") {
@@ -119,8 +119,8 @@ TEST_CASE("meta/meta_states/variable") {
         CHECK(vm.get_type() == meta::resolve_type(&clazz_1::ref_int_variable));
         CHECK(vm.get_name() == "ref_int_variable");
 
-        CHECK(vm.get() == 11);
-        CHECK(vm() == 11);
+        CHECK(vm.get().get_as<int>() == 11);
+        CHECK(vm().get_as<int>() == 11);
 
         CHECK(vm.is_settable_with<int>());
         CHECK(vm.is_settable_with<int&&>());
@@ -132,8 +132,8 @@ TEST_CASE("meta/meta_states/variable") {
         CHECK_FALSE(vm.is_settable_with<const float&>());
         CHECK_FALSE(vm.is_settable_with(1.0));
 
-        vm.set(20); CHECK(vm.get() == 20);
-        vm(21); CHECK(vm() == 21);
+        vm.set(20); CHECK(vm.get().get_as<int>() == 20);
+        vm(21); CHECK(vm().get_as<int>() == 21);
     }
 
     SUBCASE("const ref int") {
@@ -143,8 +143,8 @@ TEST_CASE("meta/meta_states/variable") {
         CHECK(vm.get_type() == meta::resolve_type(&clazz_1::const_ref_int_variable));
         CHECK(vm.get_name() == "const_ref_int_variable");
 
-        CHECK(vm.get() == 2);
-        CHECK(vm() == 2);
+        CHECK(vm.get().get_as<int>() == 2);
+        CHECK(vm().get_as<int>() == 2);
 
         CHECK_FALSE(vm.is_settable_with<int>());
         CHECK_FALSE(vm.is_settable_with<int&&>());
@@ -156,8 +156,8 @@ TEST_CASE("meta/meta_states/variable") {
         CHECK_FALSE(vm.is_settable_with<const float&>());
         CHECK_FALSE(vm.is_settable_with(1.0));
 
-        CHECK_THROWS(vm.set(10)); CHECK(vm.get() == 2);
-        CHECK_THROWS(vm(11)); CHECK(vm() == 2);
+        CHECK_THROWS(vm.set(10)); CHECK(vm.get().get_as<int>() == 2);
+        CHECK_THROWS(vm(11)); CHECK(vm().get_as<int>() == 2);
     }
 
     SUBCASE("unique_int_variable_as_ptr") {
@@ -165,7 +165,7 @@ TEST_CASE("meta/meta_states/variable") {
         REQUIRE(vm);
 
         CHECK(vm.get().get_type() == meta::resolve_type<std::unique_ptr<int>*>());
-        CHECK(vm.get() == std::addressof(clazz_1::unique_int_variable));
+        CHECK(vm.get().get_as<std::unique_ptr<int>*>() == std::addressof(clazz_1::unique_int_variable));
 
         {
             auto nv = std::make_unique<int>(11);
@@ -206,7 +206,7 @@ TEST_CASE("meta/meta_states/variable") {
         REQUIRE(vm);
 
         CHECK(vm.get().get_type() == meta::resolve_type<const std::unique_ptr<int>*>());
-        CHECK(vm.get() == std::addressof(clazz_1::const_unique_int_variable));
+        CHECK(vm.get().get_as<const std::unique_ptr<int>*>() == std::addressof(clazz_1::const_unique_int_variable));
 
         {
             auto nv = std::make_unique<int>(11);
