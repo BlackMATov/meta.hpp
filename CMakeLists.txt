@@ -9,7 +9,10 @@ project(meta.hpp
 # library
 #
 
-add_library(${PROJECT_NAME} INTERFACE)
+file(GLOB_RECURSE META_HPP_HEADERS "headers/*.hpp")
+source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR} FILES ${META_HPP_HEADERS})
+
+add_library(${PROJECT_NAME} INTERFACE ${META_HPP_HEADERS})
 add_library(meta.hpp::meta.hpp ALIAS ${PROJECT_NAME})
 
 target_compile_features(${PROJECT_NAME} INTERFACE

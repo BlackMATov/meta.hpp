@@ -6,6 +6,9 @@
         "request": "launch",
         "program": "${command:cmake.launchTargetPath}",
         "args": [],
-        "cwd": "${workspaceFolder}"
+        "cwd": "${workspaceFolder}",
+        "initCommands": [
+            "settings set target.process.thread.step-avoid-regexp \"\""
+        ]
     }]
 }
