@@ -39,7 +39,7 @@ namespace
     float base_clazz_2::base_variable_2 = 2.0f;
 
     struct derived_clazz : base_clazz_1, base_clazz_2 {
-        [[maybe_unused]] derived_clazz(int i, float f)
+        derived_clazz(int i, float f)
         : base_clazz_1{i}
         , base_clazz_2{f} {}
 

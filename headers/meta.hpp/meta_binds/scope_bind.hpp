@@ -42,7 +42,7 @@ namespace meta_hpp
         std::string name,
         Function function,
         function_opts opts,
-        [[maybe_unused]] Policy policy)
+        Policy)
     {
         auto state = detail::function_state::make<Policy>(
             std::move(name),
@@ -68,7 +68,7 @@ namespace meta_hpp
         std::string name,
         Function function,
         std::initializer_list<std::string_view> arguments,
-        [[maybe_unused]] Policy policy)
+        Policy)
     {
         auto state = detail::function_state::make<Policy>(
             std::move(name),
@@ -117,7 +117,7 @@ namespace meta_hpp
         std::string name,
         Pointer pointer,
         variable_opts opts,
-        [[maybe_unused]] Policy policy)
+        Policy)
     {
         auto state = detail::variable_state::make<Policy>(
             std::move(name),

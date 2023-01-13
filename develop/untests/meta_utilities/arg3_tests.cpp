@@ -18,22 +18,22 @@ namespace
         A& operator=(const A&) = delete;
 
         int i = 1;
-        [[maybe_unused, nodiscard]] int f() const { return i; }
+        [[nodiscard]] int f() const { return i; }
     };
 
     struct B : virtual A {
         int bi = 2;
-        [[maybe_unused, nodiscard]] int f() const { return bi; }
+        [[nodiscard]] int f() const { return bi; }
     };
 
     struct C : virtual A {
         int ci = 3;
-        [[maybe_unused, nodiscard]] int f() const { return ci; }
+        [[nodiscard]] int f() const { return ci; }
     };
 
     struct D : B, C {
         int di = 4;
-        [[maybe_unused, nodiscard]] int f() const { return di; }
+        [[nodiscard]] int f() const { return di; }
     };
 }
 

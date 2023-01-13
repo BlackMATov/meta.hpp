@@ -16,10 +16,10 @@ namespace
 
         ivec2() = delete;
 
-        [[maybe_unused]] explicit ivec2(int nv): x{nv}, y{nv} {}
-        [[maybe_unused]] ivec2(int nx, int ny): x{nx}, y{ny} {}
+        explicit ivec2(int nv): x{nv}, y{nv} {}
+        ivec2(int nx, int ny): x{nx}, y{ny} {}
 
-        [[maybe_unused]] ivec2(ivec2&& other) noexcept
+        ivec2(ivec2&& other) noexcept
         : x{other.x}
         , y{other.y} {
             other.x = 0;
@@ -27,7 +27,7 @@ namespace
             ++move_constructor_counter;
         }
 
-        [[maybe_unused]] ivec2(const ivec2& other) noexcept
+        ivec2(const ivec2& other) noexcept
         : x{other.x}
         , y{other.y} {
             ++copy_constructor_counter;
@@ -53,8 +53,8 @@ namespace
 
         ivec3() = delete;
 
-        [[maybe_unused]] explicit ivec3(int nv): x{nv}, y{nv}, z{nv} {}
-        [[maybe_unused]] ivec3(int nx, int ny, int nz): x{nx}, y{ny}, z{nz} {}
+        explicit ivec3(int nv): x{nv}, y{nv}, z{nv} {}
+        ivec3(int nx, int ny, int nz): x{nx}, y{ny}, z{nz} {}
     };
 
     int ivec2::move_constructor_counter{0};
@@ -64,11 +64,7 @@ namespace
         return {l.x + r.x, l.y + r.y};
     }
 
-    [[maybe_unused]] bool operator<(const ivec2& l, const ivec2& r) noexcept {
-        return (l.x < r.x) || (l.x == r.x && l.y < r.y);
-    }
-
-    [[maybe_unused]] bool operator==(const ivec2& l, const ivec2& r) noexcept {
+    bool operator==(const ivec2& l, const ivec2& r) noexcept {
         return l.x == r.x && l.y == r.y;
     }
 }
@@ -429,15 +425,15 @@ TEST_CASE("meta/meta_utilities/value") {
             CHECK(ivec2::move_constructor_counter == 0);
             CHECK(ivec2::copy_constructor_counter == 0);
 
-            [[maybe_unused]] meta::uvalue vv1{*vp};
+            meta::uvalue vv1{*vp};
             CHECK((ivec2::move_constructor_counter == 0 || ivec2::move_constructor_counter == 1 || ivec2::move_constructor_counter == 2));
             CHECK(ivec2::copy_constructor_counter == 1);
 
-            [[maybe_unused]] meta::uvalue vv2{*std::move(vp)};
+            meta::uvalue vv2{*std::move(vp)};
             CHECK((ivec2::move_constructor_counter == 0 || ivec2::move_constructor_counter == 2 || ivec2::move_constructor_counter == 4));
             CHECK(ivec2::copy_constructor_counter == 2);
 
-            [[maybe_unused]] meta::uvalue vv3{*std::as_const(vp)};
+            meta::uvalue vv3{*std::as_const(vp)};
             CHECK((ivec2::move_constructor_counter == 0 || ivec2::move_constructor_counter == 3 || ivec2::move_constructor_counter == 6));
             CHECK(ivec2::copy_constructor_counter == 3);
         }

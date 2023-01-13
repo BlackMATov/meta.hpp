@@ -11,24 +11,20 @@ namespace
     struct clazz_throw_dtor {
         int i{};
 
-        [[maybe_unused]]
         clazz_throw_dtor() {
             ++constructor_counter;
         }
 
-        [[maybe_unused]]
         clazz_throw_dtor(int ni) : i{ni} {
             ++constructor_counter;
         }
 
-        [[maybe_unused]]
         clazz_throw_dtor(clazz_throw_dtor&& other)
         : i{other.i} {
             other.i = 0;
             ++move_constructor_counter;
         }
 
-        [[maybe_unused]]
         clazz_throw_dtor(const clazz_throw_dtor& other)
         : i{other.i} {
             ++copy_constructor_counter;

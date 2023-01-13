@@ -4075,7 +4075,7 @@ namespace meta_hpp
     template < typename... Args, constructor_policy_kind Policy >
     class_bind<Class>& class_bind<Class>::constructor_(
         constructor_opts opts,
-        [[maybe_unused]] Policy policy)
+        Policy)
         requires detail::class_bind_constructor_kind<Class, Args...>
     {
         auto state = detail::constructor_state::make<Policy, Class, Args...>(std::move(opts.metadata));
@@ -4134,7 +4134,7 @@ namespace meta_hpp
         std::string name,
         Function function,
         function_opts opts,
-        [[maybe_unused]] Policy policy)
+        Policy)
     {
         auto state = detail::function_state::make<Policy>(
             std::move(name),
@@ -4161,7 +4161,7 @@ namespace meta_hpp
         std::string name,
         Function function,
         std::initializer_list<std::string_view> arguments,
-        [[maybe_unused]] Policy policy)
+        Policy)
     {
         auto state = detail::function_state::make<Policy>(
             std::move(name),
@@ -4203,7 +4203,7 @@ namespace meta_hpp
         std::string name,
         Member member,
         member_opts opts,
-        [[maybe_unused]] Policy policy)
+        Policy)
         requires detail::class_bind_member_kind<Class, Member>
     {
         auto state = detail::member_state::make<Policy>(
@@ -4235,7 +4235,7 @@ namespace meta_hpp
         std::string name,
         Method method,
         method_opts opts,
-        [[maybe_unused]] Policy policy)
+        Policy)
         requires detail::class_bind_method_kind<Class, Method>
     {
         auto state = detail::method_state::make<Policy>(
@@ -4263,7 +4263,7 @@ namespace meta_hpp
         std::string name,
         Method method,
         std::initializer_list<std::string_view> arguments,
-        [[maybe_unused]] Policy policy)
+        Policy)
         requires detail::class_bind_method_kind<Class, Method>
     {
         auto state = detail::method_state::make<Policy>(
@@ -4316,7 +4316,7 @@ namespace meta_hpp
         std::string name,
         Pointer pointer,
         variable_opts opts,
-        [[maybe_unused]] Policy policy)
+        Policy)
     {
         auto state = detail::variable_state::make<Policy>(
             std::move(name),
@@ -4486,7 +4486,7 @@ namespace meta_hpp
         std::string name,
         Function function,
         function_opts opts,
-        [[maybe_unused]] Policy policy)
+        Policy)
     {
         auto state = detail::function_state::make<Policy>(
             std::move(name),
@@ -4512,7 +4512,7 @@ namespace meta_hpp
         std::string name,
         Function function,
         std::initializer_list<std::string_view> arguments,
-        [[maybe_unused]] Policy policy)
+        Policy)
     {
         auto state = detail::function_state::make<Policy>(
             std::move(name),
@@ -4561,7 +4561,7 @@ namespace meta_hpp
         std::string name,
         Pointer pointer,
         variable_opts opts,
-        [[maybe_unused]] Policy policy)
+        Policy)
     {
         auto state = detail::variable_state::make<Policy>(
             std::move(name),
@@ -4708,11 +4708,11 @@ namespace meta_hpp
     }
 
     inline bool operator<(const evalue_index& l, const evalue_index& r) noexcept {
-        return l.type_ < r.type_ || (l.type_ == r.type_ && l.name_ < r.name_);
+        return l.type_ < r.type_ || (l.type_ == r.type_ && std::less<>{}(l.name_, r.name_));
     }
 
     inline bool operator==(const evalue_index& l, const evalue_index& r) noexcept {
-        return l.type_ == r.type_ && l.name_ == r.name_;
+        return l.type_ == r.type_ && std::equal_to<>{}(l.name_, r.name_);
     }
 
     inline bool operator!=(const evalue_index& l, const evalue_index& r) noexcept {
@@ -4744,11 +4744,11 @@ namespace meta_hpp
     }
 
     inline bool operator<(const function_index& l, const function_index& r) noexcept {
-        return l.type_ < r.type_ || (l.type_ == r.type_ && l.name_ < r.name_);
+        return l.type_ < r.type_ || (l.type_ == r.type_ && std::less<>{}(l.name_, r.name_));
     }
 
     inline bool operator==(const function_index& l, const function_index& r) noexcept {
-        return l.type_ == r.type_ && l.name_ == r.name_;
+        return l.type_ == r.type_ && std::equal_to<>{}(l.name_, r.name_);
     }
 
     inline bool operator!=(const function_index& l, const function_index& r) noexcept {
@@ -4780,11 +4780,11 @@ namespace meta_hpp
     }
 
     inline bool operator<(const member_index& l, const member_index& r) noexcept {
-        return l.type_ < r.type_ || (l.type_ == r.type_ && l.name_ < r.name_);
+        return l.type_ < r.type_ || (l.type_ == r.type_ && std::less<>{}(l.name_, r.name_));
     }
 
     inline bool operator==(const member_index& l, const member_index& r) noexcept {
-        return l.type_ == r.type_ && l.name_ == r.name_;
+        return l.type_ == r.type_ && std::equal_to<>{}(l.name_, r.name_);
     }
 
     inline bool operator!=(const member_index& l, const member_index& r) noexcept {
@@ -4816,11 +4816,11 @@ namespace meta_hpp
     }
 
     inline bool operator<(const method_index& l, const method_index& r) noexcept {
-        return l.type_ < r.type_ || (l.type_ == r.type_ && l.name_ < r.name_);
+        return l.type_ < r.type_ || (l.type_ == r.type_ && std::less<>{}(l.name_, r.name_));
     }
 
     inline bool operator==(const method_index& l, const method_index& r) noexcept {
-        return l.type_ == r.type_ && l.name_ == r.name_;
+        return l.type_ == r.type_ && std::equal_to<>{}(l.name_, r.name_);
     }
 
     inline bool operator!=(const method_index& l, const method_index& r) noexcept {
@@ -4846,11 +4846,11 @@ namespace meta_hpp
     }
 
     inline bool operator<(const scope_index& l, const scope_index& r) noexcept {
-        return l.name_ < r.name_;
+        return std::less<>{}(l.name_, r.name_);
     }
 
     inline bool operator==(const scope_index& l, const scope_index& r) noexcept {
-        return l.name_ == r.name_;
+        return std::equal_to<>{}(l.name_, r.name_);
     }
 
     inline bool operator!=(const scope_index& l, const scope_index& r) noexcept {
@@ -4882,11 +4882,11 @@ namespace meta_hpp
     }
 
     inline bool operator<(const variable_index& l, const variable_index& r) noexcept {
-        return l.type_ < r.type_ || (l.type_ == r.type_ && l.name_ < r.name_);
+        return l.type_ < r.type_ || (l.type_ == r.type_ && std::less<>{}(l.name_, r.name_));
     }
 
     inline bool operator==(const variable_index& l, const variable_index& r) noexcept {
-        return l.type_ == r.type_ && l.name_ == r.name_;
+        return l.type_ == r.type_ && std::equal_to<>{}(l.name_, r.name_);
     }
 
     inline bool operator!=(const variable_index& l, const variable_index& r) noexcept {

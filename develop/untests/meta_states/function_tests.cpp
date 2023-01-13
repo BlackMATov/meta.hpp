@@ -27,7 +27,7 @@ namespace
         static int arg_unbounded_const_arr(const ivec2 vs[]) { return vs[0].x + vs[0].y + vs[1].x + vs[1].y; }
     };
 
-    [[maybe_unused]] bool operator==(const ivec2& l, const ivec2& r) noexcept {
+    bool operator==(const ivec2& l, const ivec2& r) noexcept {
         return l.x == r.x && l.y == r.y;
     }
 }

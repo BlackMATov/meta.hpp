@@ -14,16 +14,16 @@ namespace
 
     struct base {
         base() = default;
-        [[maybe_unused]] base(base&&) = default;
-        [[maybe_unused]] base(const base&) = default;
+        base(base&&) = default;
+        base(const base&) = default;
         virtual ~base() = default;
         virtual int pure_virtual_method() = 0;
     };
 
     struct clazz : base {
         clazz() = default;
-        [[maybe_unused]] clazz(clazz&&) = default;
-        [[maybe_unused]] clazz(const clazz&) = default;
+        clazz(clazz&&) = default;
+        clazz(const clazz&) = default;
 
         //
 
