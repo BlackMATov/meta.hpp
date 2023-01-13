@@ -53,6 +53,7 @@ Or just use the single-header version of the library, which you can find [here](
 - [Function](develop/manuals/meta_manuals/function_manual.cpp)
 - [InPlace](develop/manuals/meta_manuals/inplace_manual.cpp)
 - [Member](develop/manuals/meta_manuals/member_manual.cpp)
+- [Metadata](develop/manuals/meta_manuals/metadata_manual.cpp)
 - [Method](develop/manuals/meta_manuals/method_manual.cpp)
 - [Scopes](develop/manuals/meta_manuals/scopes_manual.cpp)
 - [UValue](develop/manuals/meta_manuals/uvalue_manual.cpp)
