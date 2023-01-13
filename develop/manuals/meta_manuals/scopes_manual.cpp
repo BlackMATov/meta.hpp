@@ -19,26 +19,22 @@ namespace
     const ivec2 unit2{1, 1};
     const ivec3 unit3{1, 1, 1};
 
-    [[maybe_unused]]
     int dot2(const ivec2& a, const ivec2& b) {
         return a.x * b.x
              + a.y * b.y;
     }
 
-    [[maybe_unused]]
     int dot3(const ivec3& a, const ivec3& b) {
         return a.x * b.x
              + a.y * b.y
              + a.z * b.z;
     }
 
-    [[maybe_unused]]
     bool operator==(const ivec2& a, const ivec2& b) {
         return a.x == b.x
             && a.y == b.y;
     }
 
-    [[maybe_unused]]
     bool operator==(const ivec3& a, const ivec3& b) {
         return a.x == b.x
             && a.y == b.y

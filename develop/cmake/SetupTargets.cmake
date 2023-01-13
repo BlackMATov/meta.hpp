@@ -16,6 +16,7 @@ target_compile_options(${PROJECT_NAME}.setup_targets INTERFACE
         -Wno-c++98-compat-pedantic
         -Wno-exit-time-destructors
         -Wno-padded
+        -Wno-unneeded-internal-declaration
         -Wno-unused-macros
         -Wno-unused-member-function
         -Wno-weak-vtables

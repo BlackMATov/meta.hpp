@@ -6,8 +6,6 @@
 
 #include "../meta_manuals.hpp"
 
-#include <iostream>
-
 namespace
 {
     enum class align {
@@ -36,11 +34,18 @@ TEST_CASE("meta/meta_manuals/enum/type") {
     CHECK(align_type.get_underlying_type() == meta::resolve_type<int>());
 
     // prints all enumerators
-    std::cout << "* align" << std::endl;
+    fmt::print("* align\n");
     for ( const meta::evalue& evalue : align_type.get_evalues() ) {
-        std::cout << "  - " << evalue.get_name()
-                  << "/" << evalue.get_underlying_value_as<int>() << std::endl;
+        fmt::print("  - {}/{}\n",
+            evalue.get_name(),
+            evalue.get_underlying_value_as<int>());
     }
+
+    // Output:
+    // * align
+    //   - center/2
+    //   - left/0
+    //   - right/1
 }
 
 TEST_CASE("meta/meta_manuals/enum/usage") {

@@ -6,8 +6,6 @@
 
 #include "../meta_manuals.hpp"
 
-#include <iostream>
-
 namespace
 {
     int add(int a, int b) {
@@ -73,9 +71,15 @@ TEST_CASE("meta/meta_manuals/function/usage") {
     CHECK(sub_function_typed_result == 42);
 
     // prints all functions in the scope
-    std::cout << "* " << math_scope.get_name() << std::endl;
+    fmt::print("* {}\n", math_scope.get_name());
     for ( const meta::function& function : math_scope.get_functions() ) {
-        std::cout << "  + " << function.get_name()
-                  << "/" << function.get_type().get_arity() << std::endl;
+        fmt::print("  + {}/{}\n",
+            function.get_name(),
+            function.get_type().get_arity());
     }
+
+    // Output:
+    // * math
+    //   + add/2
+    //   + sub/2
 }

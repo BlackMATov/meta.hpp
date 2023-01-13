@@ -6,8 +6,6 @@
 
 #include "../meta_manuals.hpp"
 
-#include <iostream>
-
 namespace
 {
     const double pi_v{3.1415926536};
@@ -42,9 +40,15 @@ TEST_CASE("meta/meta_manuals/variable/usage") {
     CHECK_THROWS(pi_variable.set(6.0));
 
     // prints all variables in the scope
-    std::cout << "* " << constants_scope.get_name() << std::endl;
+    fmt::print("* {}\n", constants_scope.get_name());
     for ( const meta::variable& variable : constants_scope.get_variables() ) {
-        std::cout << "  - " << variable.get_name()
-                  << ":" << variable.get_as<double>() << std::endl;
+        fmt::print("  - {} : {}\n",
+            variable.get_name(),
+            variable.get_as<double>());
     }
+
+    // Output:
+    // * constants
+    //   - pi_v : 3.1415926536
+    //   - sqrt2_v : 1.4142135624
 }

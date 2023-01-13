@@ -6,8 +6,6 @@
 
 #include "../meta_manuals.hpp"
 
-#include <iostream>
-
 namespace
 {
     class shape {
@@ -60,11 +58,17 @@ TEST_CASE("meta/meta_manuals/class/type") {
     const meta::class_type rectangle_type = meta::resolve_type<rectangle>();
 
     // prints all class methods
-    std::cout << "* rectangle" << std::endl;
+    fmt::print("* rectangle\n");
     for ( const meta::method& method : rectangle_type.get_methods() ) {
-        std::cout << "  + " << method.get_name()
-                  << "/" << method.get_type().get_arity() << std::endl;
+        fmt::print("  + {}/{}\n",
+            method.get_name(),
+            method.get_type().get_arity());
     }
+
+    // Output:
+    // * rectangle
+    //   + get_height/0
+    //   + get_width/0
 }
 
 TEST_CASE("meta/meta_manuals/class/usage") {
