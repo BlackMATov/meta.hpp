@@ -1,3 +1,6 @@
 [submodule "vendors/doctest"]
 	path = develop/vendors/doctest
 	url = https://github.com/onqtam/doctest
+[submodule "develop/vendors/fmt"]
+	path = develop/vendors/fmt
+	url = https://github.com/fmtlib/fmt

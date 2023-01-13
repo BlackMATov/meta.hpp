@@ -24,7 +24,7 @@ namespace
     };
 }
 
-TEST_CASE("meta/meta_examples/method/type") {
+TEST_CASE("meta/meta_manuals/method/type") {
     namespace meta = meta_hpp;
 
     // 'ivec2' class type registration
@@ -50,7 +50,7 @@ TEST_CASE("meta/meta_examples/method/type") {
     CHECK(add_method_type.get_argument_type(0) == meta::resolve_type<const ivec2&>());
 }
 
-TEST_CASE("meta/meta_examples/method/usage") {
+TEST_CASE("meta/meta_manuals/method/usage") {
     namespace meta = meta_hpp;
 
     ivec2 v{20, 10};
@@ -73,7 +73,7 @@ TEST_CASE("meta/meta_examples/method/usage") {
 
     // checks the type and value of the result
     CHECK(ivec2_add_result_value.get_type() == meta::resolve_type<ivec2>());
-    CHECK(ivec2_add_result_value == ivec2{42, 21});
+    CHECK(ivec2_add_result_value.get_as<ivec2>() == ivec2{42, 21});
 
     // checks the result of our manipulations
     CHECK(v == ivec2{42, 21});

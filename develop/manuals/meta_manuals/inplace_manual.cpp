@@ -21,7 +21,7 @@ namespace
     };
 }
 
-TEST_CASE("meta/meta_examples/inplace") {
+TEST_CASE("meta/meta_manuals/inplace") {
     namespace meta = meta_hpp;
 
     // 'ivec2' class type registration
@@ -57,10 +57,10 @@ TEST_CASE("meta/meta_examples/inplace") {
     CHECK(ivec2_ptr.get_type() == meta::resolve_type<ivec2*>());
 
     // interacts with the created object as usual
-    CHECK(ivec2_x.get(ivec2_ptr) == 2);
-    CHECK(ivec2_y.get(ivec2_ptr) == 3);
-    CHECK(ivec2_length2(ivec2_ptr) == 13);
+    CHECK(ivec2_x.get(ivec2_ptr).get_as<int>() == 2);
+    CHECK(ivec2_y.get(ivec2_ptr).get_as<int>() == 3);
+    CHECK(ivec2_length2(ivec2_ptr).get_as<int>() == 13);
 
     // you must manually call the object's destructor
-    ivec2_type.destroy_at(ivec2_buffer.get_memory());
+    CHECK(ivec2_type.destroy_at(ivec2_buffer.get_memory()));
 }

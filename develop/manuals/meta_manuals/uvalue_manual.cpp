@@ -40,7 +40,7 @@ namespace
     };
 }
 
-TEST_CASE("meta/meta_examples/uvalue") {
+TEST_CASE("meta/meta_manuals/uvalue") {
     namespace meta = meta_hpp;
 
     // 'shape' class type registration
@@ -55,7 +55,7 @@ TEST_CASE("meta/meta_examples/uvalue") {
         .method_("get_height", &rectangle::get_height);
 }
 
-TEST_CASE("meta/meta_examples/uvalue/usage") {
+TEST_CASE("meta/meta_manuals/uvalue/usage") {
     namespace meta = meta_hpp;
 
     // the 'uvalue' class allows to store any copyable value inside

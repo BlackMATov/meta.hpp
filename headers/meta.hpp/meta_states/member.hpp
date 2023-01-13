@@ -200,6 +200,11 @@ namespace meta_hpp
         return state_->getter(vinst);
     }
 
+    template < typename T, typename Instance >
+    T member::get_as(Instance&& instance) const {
+        return get(std::forward<Instance>(instance)).template get_as<T>();
+    }
+
     template < typename Instance, typename Value >
     void member::set(Instance&& instance, Value&& value) const {
         using namespace detail;

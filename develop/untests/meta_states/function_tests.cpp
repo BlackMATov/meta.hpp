@@ -27,7 +27,7 @@ namespace
         static int arg_unbounded_const_arr(const ivec2 vs[]) { return vs[0].x + vs[0].y + vs[1].x + vs[1].y; }
     };
 
-    [[maybe_unused]] bool operator==(const ivec2& l, const ivec2& r) noexcept {
+    bool operator==(const ivec2& l, const ivec2& r) noexcept {
         return l.x == r.x && l.y == r.y;
     }
 }
@@ -88,7 +88,7 @@ TEST_CASE("meta/meta_states/function") {
         CHECK_THROWS(func.invoke(ivec2{}, ivec2{}, 42));
 
         CHECK(func.invoke(ivec2{1,2}, ivec2{3,4}));
-        CHECK(func.invoke(ivec2{1,2}, ivec2{3,4}) == ivec2{4,6});
+        CHECK(func.invoke(ivec2{1,2}, ivec2{3,4}).get_as<ivec2>() == ivec2{4,6});
     }
 
     SUBCASE("ilength2") {
@@ -113,7 +113,7 @@ TEST_CASE("meta/meta_states/function") {
         CHECK_THROWS(func.invoke(ivec2{}, 42));
 
         CHECK(func.invoke(ivec2{2,3}));
-        CHECK(func.invoke(ivec2{2,3}) == 13);
+        CHECK(func.invoke(ivec2{2,3}).get_as<int>() == 13);
     }
 
     SUBCASE("arg_null") {
@@ -125,8 +125,8 @@ TEST_CASE("meta/meta_states/function") {
         CHECK(func.is_invocable_with<std::nullptr_t>());
 
         int i{42};
-        CHECK(func.invoke(&i) == false);
-        CHECK(func.invoke(nullptr) == true);
+        CHECK(func.invoke(&i).get_as<bool>() == false);
+        CHECK(func.invoke(nullptr).get_as<bool>() == true);
     }
 
     SUBCASE("arg_arr") {
@@ -145,13 +145,13 @@ TEST_CASE("meta/meta_states/function") {
             CHECK_FALSE(func1.is_invocable_with<const ivec2*>());
             CHECK_FALSE(func1.is_invocable_with<const ivec2* const>());
 
-            CHECK(func1.invoke(bounded_arr) == 10);
-            CHECK(func1.invoke(unbounded_arr) == 10);
+            CHECK(func1.invoke(bounded_arr).get_as<int>() == 10);
+            CHECK(func1.invoke(unbounded_arr).get_as<int>() == 10);
             CHECK_THROWS(func1.invoke(bounded_const_arr));
             CHECK_THROWS(func1.invoke(unbounded_const_arr));
 
-            CHECK(func1.invoke(meta::uvalue{bounded_arr}) == 10);
-            CHECK(func1.invoke(meta::uvalue{unbounded_arr}) == 10);
+            CHECK(func1.invoke(meta::uvalue{bounded_arr}).get_as<int>() == 10);
+            CHECK(func1.invoke(meta::uvalue{unbounded_arr}).get_as<int>() == 10);
             CHECK_THROWS(func1.invoke(meta::uvalue{bounded_const_arr}));
             CHECK_THROWS(func1.invoke(meta::uvalue{unbounded_const_arr}));
 
@@ -170,13 +170,13 @@ TEST_CASE("meta/meta_states/function") {
             CHECK_FALSE(func2.is_invocable_with<const ivec2*>());
             CHECK_FALSE(func2.is_invocable_with<const ivec2* const>());
 
-            CHECK(func2.invoke(bounded_arr) == 10);
-            CHECK(func2.invoke(unbounded_arr) == 10);
+            CHECK(func2.invoke(bounded_arr).get_as<int>() == 10);
+            CHECK(func2.invoke(unbounded_arr).get_as<int>() == 10);
             CHECK_THROWS(func2.invoke(bounded_const_arr));
             CHECK_THROWS(func2.invoke(unbounded_const_arr));
 
-            CHECK(func2.invoke(meta::uvalue{bounded_arr}) == 10);
-            CHECK(func2.invoke(meta::uvalue{unbounded_arr}) == 10);
+            CHECK(func2.invoke(meta::uvalue{bounded_arr}).get_as<int>() == 10);
+            CHECK(func2.invoke(meta::uvalue{unbounded_arr}).get_as<int>() == 10);
             CHECK_THROWS(func2.invoke(meta::uvalue{bounded_const_arr}));
             CHECK_THROWS(func2.invoke(meta::uvalue{unbounded_const_arr}));
 
@@ -203,15 +203,15 @@ TEST_CASE("meta/meta_states/function") {
             CHECK(func1.is_invocable_with<const ivec2*>());
             CHECK(func1.is_invocable_with<const ivec2* const>());
 
-            CHECK(func1.invoke(bounded_arr) == 10);
-            CHECK(func1.invoke(unbounded_arr) == 10);
-            CHECK(func1.invoke(bounded_const_arr) == 10);
-            CHECK(func1.invoke(unbounded_const_arr) == 10);
+            CHECK(func1.invoke(bounded_arr).get_as<int>() == 10);
+            CHECK(func1.invoke(unbounded_arr).get_as<int>() == 10);
+            CHECK(func1.invoke(bounded_const_arr).get_as<int>() == 10);
+            CHECK(func1.invoke(unbounded_const_arr).get_as<int>() == 10);
 
-            CHECK(func1.invoke(meta::uvalue{bounded_arr}) == 10);
-            CHECK(func1.invoke(meta::uvalue{unbounded_arr}) == 10);
-            CHECK(func1.invoke(meta::uvalue{bounded_const_arr}) == 10);
-            CHECK(func1.invoke(meta::uvalue{unbounded_const_arr}) == 10);
+            CHECK(func1.invoke(meta::uvalue{bounded_arr}).get_as<int>() == 10);
+            CHECK(func1.invoke(meta::uvalue{unbounded_arr}).get_as<int>() == 10);
+            CHECK(func1.invoke(meta::uvalue{bounded_const_arr}).get_as<int>() == 10);
+            CHECK(func1.invoke(meta::uvalue{unbounded_const_arr}).get_as<int>() == 10);
 
             static_assert(std::is_invocable_v<decltype(&ivec2::arg_bounded_const_arr), decltype(bounded_arr)>);
             static_assert(std::is_invocable_v<decltype(&ivec2::arg_bounded_const_arr), decltype(unbounded_arr)>);
@@ -228,15 +228,15 @@ TEST_CASE("meta/meta_states/function") {
             CHECK(func2.is_invocable_with<const ivec2*>());
             CHECK(func2.is_invocable_with<const ivec2* const>());
 
-            CHECK(func2.invoke(bounded_arr) == 10);
-            CHECK(func2.invoke(unbounded_arr) == 10);
-            CHECK(func2.invoke(bounded_const_arr) == 10);
-            CHECK(func2.invoke(unbounded_const_arr) == 10);
+            CHECK(func2.invoke(bounded_arr).get_as<int>() == 10);
+            CHECK(func2.invoke(unbounded_arr).get_as<int>() == 10);
+            CHECK(func2.invoke(bounded_const_arr).get_as<int>() == 10);
+            CHECK(func2.invoke(unbounded_const_arr).get_as<int>() == 10);
 
-            CHECK(func2.invoke(meta::uvalue{bounded_arr}) == 10);
-            CHECK(func2.invoke(meta::uvalue{unbounded_arr}) == 10);
-            CHECK(func2.invoke(meta::uvalue{bounded_const_arr}) == 10);
-            CHECK(func2.invoke(meta::uvalue{unbounded_const_arr}) == 10);
+            CHECK(func2.invoke(meta::uvalue{bounded_arr}).get_as<int>() == 10);
+            CHECK(func2.invoke(meta::uvalue{unbounded_arr}).get_as<int>() == 10);
+            CHECK(func2.invoke(meta::uvalue{bounded_const_arr}).get_as<int>() == 10);
+            CHECK(func2.invoke(meta::uvalue{unbounded_const_arr}).get_as<int>() == 10);
 
             static_assert(std::is_invocable_v<decltype(&ivec2::arg_unbounded_const_arr), decltype(bounded_arr)>);
             static_assert(std::is_invocable_v<decltype(&ivec2::arg_unbounded_const_arr), decltype(unbounded_arr)>);

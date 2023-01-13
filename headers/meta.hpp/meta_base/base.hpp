@@ -17,7 +17,6 @@
 #include <concepts>
 #include <functional>
 #include <initializer_list>
-#include <iosfwd>
 #include <map>
 #include <memory>
 #include <mutex>

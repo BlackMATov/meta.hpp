@@ -36,4 +36,8 @@ namespace meta_hpp
     inline bool operator==(const constructor_index& l, const constructor_index& r) noexcept {
         return l.type_ == r.type_;
     }
+
+    inline bool operator!=(const constructor_index& l, const constructor_index& r) noexcept {
+        return !(l == r);
+    }
 }

@@ -17,8 +17,7 @@ namespace meta_hpp
 
     inline scope_bind::scope_bind(std::string_view name, metadata_map metadata, static_tag)
     : state_{detail::state_access(resolve_scope(name))} {
-        state_->metadata.swap(metadata);
-        state_->metadata.merge(metadata);
+        detail::insert_or_assign(state_->metadata, std::move(metadata));
     }
 
     inline scope_bind::operator scope() const noexcept {
@@ -43,7 +42,7 @@ namespace meta_hpp
         std::string name,
         Function function,
         function_opts opts,
-        [[maybe_unused]] Policy policy)
+        Policy)
     {
         auto state = detail::function_state::make<Policy>(
             std::move(name),
@@ -60,7 +59,7 @@ namespace meta_hpp
             detail::state_access(arg)->metadata = std::move(opts.arguments[i].metadata);
         }
 
-        state_->functions.insert_or_assign(state->index, std::move(state));
+        detail::insert_or_assign(state_->functions, std::move(state));
         return *this;
     }
 
@@ -69,7 +68,7 @@ namespace meta_hpp
         std::string name,
         Function function,
         std::initializer_list<std::string_view> arguments,
-        [[maybe_unused]] Policy policy)
+        Policy)
     {
         auto state = detail::function_state::make<Policy>(
             std::move(name),
@@ -86,7 +85,7 @@ namespace meta_hpp
             detail::state_access(arg)->name = std::data(arguments)[i];
         }
 
-        state_->functions.insert_or_assign(state->index, std::move(state));
+        detail::insert_or_assign(state_->functions, std::move(state));
         return *this;
     }
 
@@ -118,13 +117,13 @@ namespace meta_hpp
         std::string name,
         Pointer pointer,
         variable_opts opts,
-        [[maybe_unused]] Policy policy)
+        Policy)
     {
         auto state = detail::variable_state::make<Policy>(
             std::move(name),
             std::move(pointer),
             std::move(opts.metadata));
-        state_->variables.insert_or_assign(state->index, std::move(state));
+        detail::insert_or_assign(state_->variables, std::move(state));
         return *this;
     }
 }

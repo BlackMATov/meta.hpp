@@ -15,8 +15,11 @@ namespace meta_hpp
     template < detail::class_kind Class >
     class_bind<Class>::class_bind(metadata_map metadata)
     : data_{detail::type_access(resolve_type<Class>())} {
-        data_->metadata.swap(metadata);
-        data_->metadata.merge(metadata);
+        detail::insert_or_assign(data_->metadata, std::move(metadata));
+
+        if constexpr ( std::is_destructible_v<Class> ) {
+            destructor_();
+        }
     }
 
     template < detail::class_kind Class >
@@ -34,9 +37,9 @@ namespace meta_hpp
         requires (... && detail::class_bind_base_kind<Class, Bases>)
     {
         ([this]<detail::class_kind Base>(std::in_place_type_t<Base>) {
-            const class_type base_type = resolve_type<Base>();
+            const class_type& base_type = resolve_type<Base>();
 
-            if ( auto&& [_, success] = data_->bases.emplace(base_type); !success ) {
+            if ( auto&& [_, emplaced] = data_->bases.emplace(base_type); !emplaced ) {
                 return;
             }
 
@@ -71,7 +74,7 @@ namespace meta_hpp
     template < typename... Args, constructor_policy_kind Policy >
     class_bind<Class>& class_bind<Class>::constructor_(
         constructor_opts opts,
-        [[maybe_unused]] Policy policy)
+        Policy)
         requires detail::class_bind_constructor_kind<Class, Args...>
     {
         auto state = detail::constructor_state::make<Policy, Class, Args...>(std::move(opts.metadata));
@@ -86,7 +89,7 @@ namespace meta_hpp
             detail::state_access(arg)->metadata = std::move(opts.arguments[i].metadata);
         }
 
-        data_->constructors.insert_or_assign(state->index, std::move(state));
+        detail::insert_or_assign(data_->constructors, std::move(state));
         return *this;
     }
 
@@ -106,7 +109,7 @@ namespace meta_hpp
         requires detail::class_bind_destructor_kind<Class>
     {
         auto state = detail::destructor_state::make<Class>(std::move(opts.metadata));
-        data_->destructors.insert_or_assign(state->index, std::move(state));
+        detail::insert_or_assign(data_->destructors, std::move(state));
         return *this;
     }
 
@@ -130,7 +133,7 @@ namespace meta_hpp
         std::string name,
         Function function,
         function_opts opts,
-        [[maybe_unused]] Policy policy)
+        Policy)
     {
         auto state = detail::function_state::make<Policy>(
             std::move(name),
@@ -147,7 +150,7 @@ namespace meta_hpp
             detail::state_access(arg)->metadata = std::move(opts.arguments[i].metadata);
         }
 
-        data_->functions.insert_or_assign(state->index, std::move(state));
+        detail::insert_or_assign(data_->functions, std::move(state));
         return *this;
     }
 
@@ -157,7 +160,7 @@ namespace meta_hpp
         std::string name,
         Function function,
         std::initializer_list<std::string_view> arguments,
-        [[maybe_unused]] Policy policy)
+        Policy)
     {
         auto state = detail::function_state::make<Policy>(
             std::move(name),
@@ -174,7 +177,7 @@ namespace meta_hpp
             detail::state_access(arg)->name = std::data(arguments)[i];
         }
 
-        data_->functions.insert_or_assign(state->index, std::move(state));
+        detail::insert_or_assign(data_->functions, std::move(state));
         return *this;
     }
 
@@ -199,14 +202,14 @@ namespace meta_hpp
         std::string name,
         Member member,
         member_opts opts,
-        [[maybe_unused]] Policy policy)
+        Policy)
         requires detail::class_bind_member_kind<Class, Member>
     {
         auto state = detail::member_state::make<Policy>(
             std::move(name),
             std::move(member),
             std::move(opts.metadata));
-        data_->members.insert_or_assign(state->index, std::move(state));
+        detail::insert_or_assign(data_->members, std::move(state));
         return *this;
     }
 
@@ -231,7 +234,7 @@ namespace meta_hpp
         std::string name,
         Method method,
         method_opts opts,
-        [[maybe_unused]] Policy policy)
+        Policy)
         requires detail::class_bind_method_kind<Class, Method>
     {
         auto state = detail::method_state::make<Policy>(
@@ -249,7 +252,7 @@ namespace meta_hpp
             detail::state_access(arg)->metadata = std::move(opts.arguments[i].metadata);
         }
 
-        data_->methods.insert_or_assign(state->index, std::move(state));
+        detail::insert_or_assign(data_->methods, std::move(state));
         return *this;
     }
 
@@ -259,7 +262,7 @@ namespace meta_hpp
         std::string name,
         Method method,
         std::initializer_list<std::string_view> arguments,
-        [[maybe_unused]] Policy policy)
+        Policy)
         requires detail::class_bind_method_kind<Class, Method>
     {
         auto state = detail::method_state::make<Policy>(
@@ -277,7 +280,7 @@ namespace meta_hpp
             detail::state_access(arg)->name = std::data(arguments)[i];
         }
 
-        data_->methods.insert_or_assign(state->index, std::move(state));
+        detail::insert_or_assign(data_->methods, std::move(state));
         return *this;
     }
 
@@ -312,13 +315,13 @@ namespace meta_hpp
         std::string name,
         Pointer pointer,
         variable_opts opts,
-        [[maybe_unused]] Policy policy)
+        Policy)
     {
         auto state = detail::variable_state::make<Policy>(
             std::move(name),
             std::move(pointer),
             std::move(opts.metadata));
-        data_->variables.insert_or_assign(state->index, std::move(state));
+        detail::insert_or_assign(data_->variables, std::move(state));
         return *this;
     }
 }

@@ -105,13 +105,13 @@ namespace meta_hpp::detail
             return ptr;
         }
 
-        for ( auto&& [base, base_info] : type_access(from)->bases_info ) {
-            if ( base == to ) {
+        for ( auto&& [base_type, base_info] : type_access(from)->bases_info ) {
+            if ( base_type == to ) {
                 return base_info.upcast(ptr);
             }
 
-            if ( base.is_derived_from(to) ) {
-                return pointer_upcast(base_info.upcast(ptr), base, to);
+            if ( base_type.is_derived_from(to) ) {
+                return pointer_upcast(base_info.upcast(ptr), base_type, to);
             }
         }
 

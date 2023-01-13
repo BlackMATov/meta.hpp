@@ -157,13 +157,13 @@ namespace meta_hpp
         [[nodiscard]] const any_type_list& get_argument_types() const noexcept;
 
         [[nodiscard]] const class_set& get_bases() const noexcept;
-        [[nodiscard]] const constructor_map& get_constructors() const noexcept;
-        [[nodiscard]] const destructor_map& get_destructors() const noexcept;
-        [[nodiscard]] const function_map& get_functions() const noexcept;
-        [[nodiscard]] const member_map& get_members() const noexcept;
-        [[nodiscard]] const method_map& get_methods() const noexcept;
+        [[nodiscard]] const constructor_set& get_constructors() const noexcept;
+        [[nodiscard]] const destructor_set& get_destructors() const noexcept;
+        [[nodiscard]] const function_set& get_functions() const noexcept;
+        [[nodiscard]] const member_set& get_members() const noexcept;
+        [[nodiscard]] const method_set& get_methods() const noexcept;
         [[nodiscard]] const typedef_map& get_typedefs() const noexcept;
-        [[nodiscard]] const variable_map& get_variables() const noexcept;
+        [[nodiscard]] const variable_set& get_variables() const noexcept;
 
         template < typename... Args >
         [[nodiscard]] uvalue create(Args&&... args) const;
@@ -268,13 +268,16 @@ namespace meta_hpp
 
         [[nodiscard]] number_type get_underlying_type() const noexcept;
 
-        [[nodiscard]] const evalue_map& get_evalues() const noexcept;
+        [[nodiscard]] const evalue_set& get_evalues() const noexcept;
 
         [[nodiscard]] evalue get_evalue(std::string_view name) const noexcept;
 
         template < detail::enum_kind Enum >
         [[nodiscard]] std::string_view value_to_name(Enum value) const noexcept;
         [[nodiscard]] uvalue name_to_value(std::string_view name) const noexcept;
+
+        template < typename T >
+        [[nodiscard]] T name_to_value_as(std::string_view name) const;
     private:
         detail::enum_type_data* data_{};
         friend auto detail::type_access<enum_type>(const enum_type&);
@@ -501,13 +504,13 @@ namespace meta_hpp::detail
         const any_type_list argument_types;
 
         class_set bases;
-        constructor_map constructors;
-        destructor_map destructors;
-        function_map functions;
-        member_map members;
-        method_map methods;
+        constructor_set constructors;
+        destructor_set destructors;
+        function_set functions;
+        member_set members;
+        method_set methods;
         typedef_map typedefs;
-        variable_map variables;
+        variable_set variables;
 
         struct base_info final {
             using upcast_fptr = void*(*)(void*);
@@ -542,7 +545,7 @@ namespace meta_hpp::detail
         const enum_bitflags flags;
         const number_type underlying_type;
 
-        evalue_map evalues;
+        evalue_set evalues;
 
         template < enum_kind Enum >
         explicit enum_type_data(type_list<Enum>);

@@ -14,10 +14,10 @@ namespace
 
         ivec2() = delete;
 
-        [[maybe_unused]] explicit ivec2(int nv): x{nv}, y{nv} {}
-        [[maybe_unused]] ivec2(int nx, int ny): x{nx}, y{ny} {}
+        explicit ivec2(int nv): x{nv}, y{nv} {}
+        ivec2(int nx, int ny): x{nx}, y{ny} {}
 
-        [[maybe_unused]] ivec2(ivec2&& other) noexcept
+        ivec2(ivec2&& other) noexcept
         : x{other.x}
         , y{other.y} {
             other.x = 0;
@@ -25,7 +25,7 @@ namespace
             ++move_constructor_counter;
         }
 
-        [[maybe_unused]] ivec2(const ivec2& other) noexcept
+        ivec2(const ivec2& other) noexcept
         : x{other.x}
         , y{other.y} {
             ++copy_constructor_counter;
@@ -51,10 +51,10 @@ namespace
 
         ivec2_big() = delete;
 
-        [[maybe_unused]] explicit ivec2_big(int nv): x{nv}, y{nv} {}
-        [[maybe_unused]] ivec2_big(int nx, int ny): x{nx}, y{ny} {}
+        explicit ivec2_big(int nv): x{nv}, y{nv} {}
+        ivec2_big(int nx, int ny): x{nx}, y{ny} {}
 
-        [[maybe_unused]] ivec2_big(ivec2_big&& other) noexcept
+        ivec2_big(ivec2_big&& other) noexcept
         : x{other.x}
         , y{other.y} {
             other.x = 0;
@@ -62,7 +62,7 @@ namespace
             ++move_constructor_counter;
         }
 
-        [[maybe_unused]] ivec2_big(const ivec2_big& other) noexcept
+        ivec2_big(const ivec2_big& other) noexcept
         : x{other.x}
         , y{other.y} {
             ++copy_constructor_counter;
@@ -79,14 +79,6 @@ namespace
         static int move_constructor_counter;
         static int copy_constructor_counter;
     };
-
-    [[maybe_unused]] bool operator==(const ivec2& l, const ivec2& r) noexcept {
-        return l.x == r.x && l.y == r.y;
-    }
-
-    [[maybe_unused]] bool operator==(const ivec2_big& l, const ivec2_big& r) noexcept {
-        return l.x == r.x && l.y == r.y;
-    }
 
     int ivec2::destructor_counter{0};
     int ivec2::move_constructor_counter{0};

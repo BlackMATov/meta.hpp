@@ -246,6 +246,11 @@
             "configurePreset": "linux-gcc-12"
         },
         {
+            "name": "macos-arm64-debug",
+            "configuration": "Debug",
+            "configurePreset": "macos-arm64"
+        },
+        {
             "name": "macos-arm64-debug-san",
             "configuration": "Debug",
             "configurePreset": "macos-arm64-san"
@@ -264,6 +269,11 @@
             "name": "macos-arm64-release",
             "configuration": "Release",
             "configurePreset": "macos-arm64"
+        },
+        {
+            "name": "macos-x64-debug",
+            "configuration": "Debug",
+            "configurePreset": "macos-x64"
         },
         {
             "name": "macos-x64-debug-san",

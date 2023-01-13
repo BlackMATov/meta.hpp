@@ -105,6 +105,8 @@ namespace meta_hpp
 {
     class argument final {
     public:
+        using index_type = argument_index;
+
         explicit argument() = default;
         explicit argument(detail::argument_state_ptr state) noexcept;
         argument& operator=(detail::argument_state_ptr state) noexcept;
@@ -126,8 +128,10 @@ namespace meta_hpp
 
     class constructor final {
     public:
+        using index_type = constructor_index;
+
         explicit constructor() = default;
-        explicit constructor(detail::constructor_state_ptr state) noexcept;
+        constructor(detail::constructor_state_ptr state) noexcept;
         constructor& operator=(detail::constructor_state_ptr state) noexcept;
 
         [[nodiscard]] bool is_valid() const noexcept;
@@ -159,8 +163,10 @@ namespace meta_hpp
 
     class destructor final {
     public:
+        using index_type = destructor_index;
+
         explicit destructor() = default;
-        explicit destructor(detail::destructor_state_ptr state) noexcept;
+        destructor(detail::destructor_state_ptr state) noexcept;
         destructor& operator=(detail::destructor_state_ptr state) noexcept;
 
         [[nodiscard]] bool is_valid() const noexcept;
@@ -182,8 +188,10 @@ namespace meta_hpp
 
     class evalue final {
     public:
+        using index_type = evalue_index;
+
         explicit evalue() = default;
-        explicit evalue(detail::evalue_state_ptr state) noexcept;
+        evalue(detail::evalue_state_ptr state) noexcept;
         evalue& operator=(detail::evalue_state_ptr state) noexcept;
 
         [[nodiscard]] bool is_valid() const noexcept;
@@ -197,6 +205,12 @@ namespace meta_hpp
 
         [[nodiscard]] const uvalue& get_value() const noexcept;
         [[nodiscard]] const uvalue& get_underlying_value() const noexcept;
+
+        template < typename T >
+        [[nodiscard]] T get_value_as() const;
+
+        template < typename T >
+        [[nodiscard]] T get_underlying_value_as() const;
     private:
         detail::evalue_state_ptr state_;
         friend auto detail::state_access<evalue>(const evalue&);
@@ -204,8 +218,10 @@ namespace meta_hpp
 
     class function final {
     public:
+        using index_type = function_index;
+
         explicit function() = default;
-        explicit function(detail::function_state_ptr state) noexcept;
+        function(detail::function_state_ptr state) noexcept;
         function& operator=(detail::function_state_ptr state) noexcept;
 
         [[nodiscard]] bool is_valid() const noexcept;
@@ -238,8 +254,10 @@ namespace meta_hpp
 
     class member final {
     public:
+        using index_type = member_index;
+
         explicit member() = default;
-        explicit member(detail::member_state_ptr state) noexcept;
+        member(detail::member_state_ptr state) noexcept;
         member& operator=(detail::member_state_ptr state) noexcept;
 
         [[nodiscard]] bool is_valid() const noexcept;
@@ -253,6 +271,9 @@ namespace meta_hpp
 
         template < typename Instance >
         [[nodiscard]] uvalue get(Instance&& instance) const;
+
+        template < typename T, typename Instance >
+        [[nodiscard]] T get_as(Instance&& instance) const;
 
         template < typename Instance, typename Value >
         void set(Instance&& instance, Value&& value) const;
@@ -281,8 +302,10 @@ namespace meta_hpp
 
     class method final {
     public:
+        using index_type = method_index;
+
         explicit method() = default;
-        explicit method(detail::method_state_ptr state) noexcept;
+        method(detail::method_state_ptr state) noexcept;
         method& operator=(detail::method_state_ptr state) noexcept;
 
         [[nodiscard]] bool is_valid() const noexcept;
@@ -315,6 +338,8 @@ namespace meta_hpp
 
     class scope final {
     public:
+        using index_type = scope_index;
+
         explicit scope() = default;
         explicit scope(detail::scope_state_ptr state) noexcept;
         scope& operator=(detail::scope_state_ptr state) noexcept;
@@ -327,9 +352,9 @@ namespace meta_hpp
 
         [[nodiscard]] const std::string& get_name() const noexcept;
 
-        [[nodiscard]] const function_map& get_functions() const noexcept;
+        [[nodiscard]] const function_set& get_functions() const noexcept;
         [[nodiscard]] const typedef_map& get_typedefs() const noexcept;
-        [[nodiscard]] const variable_map& get_variables() const noexcept;
+        [[nodiscard]] const variable_set& get_variables() const noexcept;
 
         [[nodiscard]] function get_function(std::string_view name) const noexcept;
         [[nodiscard]] any_type get_typedef(std::string_view name) const noexcept;
@@ -348,8 +373,10 @@ namespace meta_hpp
 
     class variable final {
     public:
+        using index_type = variable_index;
+
         explicit variable() = default;
-        explicit variable(detail::variable_state_ptr state) noexcept;
+        variable(detail::variable_state_ptr state) noexcept;
         variable& operator=(detail::variable_state_ptr state) noexcept;
 
         [[nodiscard]] bool is_valid() const noexcept;
@@ -362,6 +389,9 @@ namespace meta_hpp
         [[nodiscard]] const std::string& get_name() const noexcept;
 
         [[nodiscard]] uvalue get() const;
+
+        template < typename T >
+        [[nodiscard]] T get_as() const;
 
         template < typename Value >
         void set(Value&& value) const;
@@ -411,6 +441,45 @@ namespace meta_hpp
     }
 
     template < detail::state_family T, detail::state_family U >
+    [[nodiscard]] bool operator!=(const T& l, const U& r) noexcept {
+        return !(l == r);
+    }
+}
+
+namespace meta_hpp
+{
+    template < detail::state_family T, typename U >
+        requires std::is_same_v<U, typename T::index_type>
+    [[nodiscard]] bool operator<(const T& l, const U& r) noexcept {
+        return !static_cast<bool>(l) || l.get_index() < r;
+    }
+
+    template < typename T, detail::state_family U >
+        requires std::is_same_v<T, typename U::index_type>
+    [[nodiscard]] bool operator<(const T& l, const U& r) noexcept {
+        return static_cast<bool>(r) && l < r.get_index();
+    }
+
+    template < detail::state_family T, typename U >
+        requires std::is_same_v<U, typename T::index_type>
+    [[nodiscard]] bool operator==(const T& l, const U& r) noexcept {
+        return static_cast<bool>(l) || l.get_index() == r;
+    }
+
+    template < typename T, detail::state_family U >
+        requires std::is_same_v<T, typename U::index_type>
+    [[nodiscard]] bool operator==(const T& l, const U& r) noexcept {
+        return static_cast<bool>(r) && l == r.get_index();
+    }
+
+    template < detail::state_family T, typename U >
+        requires std::is_same_v<U, typename T::index_type>
+    [[nodiscard]] bool operator!=(const T& l, const U& r) noexcept {
+        return !(l == r);
+    }
+
+    template < typename T, detail::state_family U >
+        requires std::is_same_v<T, typename U::index_type>
     [[nodiscard]] bool operator!=(const T& l, const U& r) noexcept {
         return !(l == r);
     }
@@ -527,9 +596,9 @@ namespace meta_hpp::detail
         scope_index index;
         metadata_map metadata;
 
-        function_map functions{};
+        function_set functions{};
         typedef_map typedefs{};
-        variable_map variables{};
+        variable_set variables{};
 
         [[nodiscard]] static scope_state_ptr make(std::string name, metadata_map metadata);
     };

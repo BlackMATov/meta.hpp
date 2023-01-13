@@ -15,7 +15,7 @@ namespace
     };
 }
 
-TEST_CASE("meta/meta_examples/enum/type") {
+TEST_CASE("meta/meta_manuals/enum/type") {
     namespace meta = meta_hpp;
 
     // 'align' enumeration type registration
@@ -34,13 +34,21 @@ TEST_CASE("meta/meta_examples/enum/type") {
     CHECK(align_type.get_underlying_type() == meta::resolve_type<int>());
 
     // prints all enumerators
-    std::cout << "* align" << std::endl;
-    for ( auto&& [index, evalue] : align_type.get_evalues() ) {
-        std::cout << "  - " << index.get_name() << "/" << evalue.get_underlying_value() << std::endl;
+    fmt::print("* align\n");
+    for ( const meta::evalue& evalue : align_type.get_evalues() ) {
+        fmt::print("  - {}/{}\n",
+            evalue.get_name(),
+            evalue.get_underlying_value_as<int>());
     }
+
+    // Output:
+    // * align
+    //   - center/2
+    //   - left/0
+    //   - right/1
 }
 
-TEST_CASE("meta/meta_examples/enum/usage") {
+TEST_CASE("meta/meta_manuals/enum/usage") {
     namespace meta = meta_hpp;
 
     const align e = align::center;
@@ -52,5 +60,5 @@ TEST_CASE("meta/meta_examples/enum/usage") {
     CHECK(align_type.value_to_name(e) == "center");
 
     // ... and back again
-    CHECK(align_type.name_to_value("center") == e);
+    CHECK(align_type.name_to_value_as<align>("center") == e);
 }

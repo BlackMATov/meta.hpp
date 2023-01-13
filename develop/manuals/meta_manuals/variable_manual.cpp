@@ -12,7 +12,7 @@ namespace
     const double sqrt2_v{1.4142135624};
 }
 
-TEST_CASE("meta/meta_examples/variable/usage") {
+TEST_CASE("meta/meta_manuals/variable/usage") {
     namespace meta = meta_hpp;
 
     // 'constants' local scope declaration
@@ -40,8 +40,15 @@ TEST_CASE("meta/meta_examples/variable/usage") {
     CHECK_THROWS(pi_variable.set(6.0));
 
     // prints all variables in the scope
-    std::cout << "* " << constants_scope.get_name() << std::endl;
-    for ( auto&& [index, variable] : constants_scope.get_variables() ) {
-        std::cout << "  - " << index.get_name() << ":" << variable.get() << std::endl;
+    fmt::print("* {}\n", constants_scope.get_name());
+    for ( const meta::variable& variable : constants_scope.get_variables() ) {
+        fmt::print("  - {} : {}\n",
+            variable.get_name(),
+            variable.get_as<double>());
     }
+
+    // Output:
+    // * constants
+    //   - pi_v : 3.1415926536
+    //   - sqrt2_v : 1.4142135624
 }

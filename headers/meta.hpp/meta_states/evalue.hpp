@@ -65,4 +65,14 @@ namespace meta_hpp
     inline const uvalue& evalue::get_underlying_value() const noexcept {
         return state_->underlying_value;
     }
+
+    template < typename T >
+    T evalue::get_value_as() const {
+        return get_value().get_as<T>();
+    }
+
+    template < typename T >
+    T evalue::get_underlying_value_as() const {
+        return get_underlying_value().get_as<T>();
+    }
 }

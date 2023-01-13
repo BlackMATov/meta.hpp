@@ -12,14 +12,14 @@ namespace
         A() = default;
         virtual ~A() = default;
 
-        [[maybe_unused]] A(A&&) noexcept { ++move_ctors_; }
-        [[maybe_unused]] A(const A&) { ++copy_ctors_; }
+        A(A&&) noexcept { ++move_ctors_; }
+        A(const A&) { ++copy_ctors_; }
 
         A& operator=(A&&) = delete;
         A& operator=(const A&) = delete;
 
         int i = 1;
-        [[maybe_unused, nodiscard]] int f() const { return i; }
+        [[nodiscard]] int f() const { return i; }
 
         static int copy_ctors_;
         static int move_ctors_;
@@ -30,17 +30,17 @@ namespace
 
     struct B : virtual A {
         int bi = 2;
-        [[maybe_unused, nodiscard]] int f() const { return bi; }
+        [[nodiscard]] int f() const { return bi; }
     };
 
     struct C : virtual A {
         int ci = 3;
-        [[maybe_unused, nodiscard]] int f() const { return ci; }
+        [[nodiscard]] int f() const { return ci; }
     };
 
     struct D : B, C {
         int di = 4;
-        [[maybe_unused, nodiscard]] int f() const { return di; }
+        [[nodiscard]] int f() const { return di; }
     };
 }
 

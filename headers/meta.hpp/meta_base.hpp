@@ -12,6 +12,8 @@
 #include "meta_base/cvref_traits.hpp"
 #include "meta_base/fixed_function.hpp"
 #include "meta_base/hash_combiner.hpp"
+#include "meta_base/hashed_string.hpp"
+#include "meta_base/insert_or_assign.hpp"
 #include "meta_base/is_in_place_type.hpp"
 #include "meta_base/memory_buffer.hpp"
 #include "meta_base/noncopyable.hpp"
@@ -24,6 +26,7 @@
 
 namespace meta_hpp
 {
+    using detail::hashed_string;
     using detail::memory_buffer;
 
     using detail::select_const;
@@ -164,17 +167,14 @@ namespace meta_hpp
     using typedef_map = std::map<std::string, any_type, std::less<>>;
 
     using class_set = std::set<class_type, std::less<>>;
-    using class_map = std::map<std::string, class_type, std::less<>>;
-
     using enum_set = std::set<enum_type, std::less<>>;
-    using enum_map = std::map<std::string, enum_type, std::less<>>;
 
-    using constructor_map = std::map<constructor_index, constructor, std::less<>>;
-    using destructor_map = std::map<destructor_index, destructor, std::less<>>;
-    using evalue_map = std::map<evalue_index, evalue, std::less<>>;
-    using function_map = std::map<function_index, function, std::less<>>;
-    using member_map = std::map<member_index, member, std::less<>>;
-    using method_map = std::map<method_index, method, std::less<>>;
-    using scope_map = std::map<scope_index, scope, std::less<>>;
-    using variable_map = std::map<variable_index, variable, std::less<>>;
+    using constructor_set = std::set<constructor, std::less<>>;
+    using destructor_set = std::set<destructor, std::less<>>;
+    using evalue_set = std::set<evalue, std::less<>>;
+    using function_set = std::set<function, std::less<>>;
+    using member_set = std::set<member, std::less<>>;
+    using method_set = std::set<method, std::less<>>;
+    using scope_set = std::set<scope, std::less<>>;
+    using variable_set = std::set<variable, std::less<>>;
 }

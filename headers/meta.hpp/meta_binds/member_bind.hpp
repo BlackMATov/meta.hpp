@@ -15,8 +15,7 @@ namespace meta_hpp
     template < detail::member_kind Member >
     member_bind<Member>::member_bind(metadata_map metadata)
     : data_{detail::type_access(resolve_type<Member>())} {
-        data_->metadata.swap(metadata);
-        data_->metadata.merge(metadata);
+        detail::insert_or_assign(data_->metadata, std::move(metadata));
     }
 
     template < detail::member_kind Member >

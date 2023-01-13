@@ -41,4 +41,8 @@ namespace meta_hpp
     inline bool operator==(const variable_index& l, const variable_index& r) noexcept {
         return l.type_ == r.type_ && std::equal_to<>{}(l.name_, r.name_);
     }
+
+    inline bool operator!=(const variable_index& l, const variable_index& r) noexcept {
+        return !(l == r);
+    }
 }

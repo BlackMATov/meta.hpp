@@ -40,7 +40,7 @@ namespace
     };
 }
 
-TEST_CASE("meta/meta_examples/class/type") {
+TEST_CASE("meta/meta_manuals/class/type") {
     namespace meta = meta_hpp;
 
     // 'shape' class type registration
@@ -58,13 +58,20 @@ TEST_CASE("meta/meta_examples/class/type") {
     const meta::class_type rectangle_type = meta::resolve_type<rectangle>();
 
     // prints all class methods
-    std::cout << "* rectangle" << std::endl;
-    for ( auto&& [index, method] : rectangle_type.get_methods() ) {
-        std::cout << "  + " << index.get_name() << "/" << index.get_type().get_arity() << std::endl;
+    fmt::print("* rectangle\n");
+    for ( const meta::method& method : rectangle_type.get_methods() ) {
+        fmt::print("  + {}/{}\n",
+            method.get_name(),
+            method.get_type().get_arity());
     }
+
+    // Output:
+    // * rectangle
+    //   + get_height/0
+    //   + get_width/0
 }
 
-TEST_CASE("meta/meta_examples/class/usage") {
+TEST_CASE("meta/meta_manuals/class/usage") {
     namespace meta = meta_hpp;
 
     // resolves a class type by static class type
@@ -77,5 +84,5 @@ TEST_CASE("meta/meta_examples/class/usage") {
     const meta::uvalue rectangle_v = rectangle_type.create(10, 20);
 
     // calls the method with the dynamic rectangle instance 'rectangle_v'
-    CHECK(rectangle_area.invoke(rectangle_v) == 200);
+    CHECK(rectangle_area.invoke(rectangle_v).get_as<int>() == 200);
 }

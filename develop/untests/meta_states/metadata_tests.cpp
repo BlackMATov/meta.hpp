@@ -18,8 +18,8 @@ namespace
         int x{};
         int y{};
 
-        [[maybe_unused]] explicit ivec2(int nv) : x{nv}, y{nv} {}
-        [[maybe_unused]] ivec2(int nx, int ny) : x{nx}, y{ny} {}
+        explicit ivec2(int nv) : x{nv}, y{nv} {}
+        ivec2(int nx, int ny) : x{nx}, y{ny} {}
 
         ivec2& add(const ivec2& other) noexcept {
             x += other.x;
@@ -38,30 +38,30 @@ TEST_CASE("meta/meta_states/metadata/enum") {
     using namespace std::string_literals;
 
     meta::enum_<color>({
-        {"desc1", meta::uvalue{"enum-desc1"s}},
-        {"desc2", meta::uvalue{"enum-desc2"s}},
+        {"desc1", "enum-desc1"s},
+        {"desc2", "enum-desc2"s},
     })
     .evalue_("red", color::red, {
-        .metadata{{"desc1", meta::uvalue{"red-color"s}}}
+        .metadata{{"desc1", "red-color"s}}
     })
     .evalue_("green", color::green, {
-        .metadata{{"desc1", meta::uvalue{"green-color"s}}}
+        .metadata{{"desc1", "green-color"s}}
     })
     .evalue_("blue", color::blue, {
-        .metadata{{"desc1", meta::uvalue{"blue-color"s}}}
+        .metadata{{"desc1", "blue-color"s}}
     });
 
     // metadata override
 
     meta::enum_<color>({
-        {"desc2", meta::uvalue{"new-enum-desc2"s}},
-        {"desc3", meta::uvalue{"new-enum-desc3"s}},
+        {"desc2", "new-enum-desc2"s},
+        {"desc3", "new-enum-desc3"s},
     });
 
     meta::enum_<color>()
         .evalue_("red", color::red, {
             .metadata{
-                {"desc2", meta::uvalue{"new-red-color"s}},
+                {"desc2", "new-red-color"s},
             }
         });
 
@@ -71,16 +71,16 @@ TEST_CASE("meta/meta_states/metadata/enum") {
     REQUIRE(color_type);
 
     SUBCASE("color") {
-        CHECK(color_type.get_metadata().at("desc1") == "enum-desc1"s);
-        CHECK(color_type.get_metadata().at("desc2") == "new-enum-desc2"s);
-        CHECK(color_type.get_metadata().at("desc3") == "new-enum-desc3"s);
+        CHECK(color_type.get_metadata().at("desc1").get_as<std::string>() == "enum-desc1"s);
+        CHECK(color_type.get_metadata().at("desc2").get_as<std::string>() == "new-enum-desc2"s);
+        CHECK(color_type.get_metadata().at("desc3").get_as<std::string>() == "new-enum-desc3"s);
     }
 
     SUBCASE("color::red") {
         const meta::evalue red_evalue = color_type.get_evalue("red");
         REQUIRE(red_evalue);
         CHECK_FALSE(red_evalue.get_metadata().contains("desc1"));
-        CHECK(red_evalue.get_metadata().at("desc2") == "new-red-color"s);
+        CHECK(red_evalue.get_metadata().at("desc2").get_as<std::string>() == "new-red-color"s);
     }
 }
 
@@ -89,55 +89,55 @@ TEST_CASE("meta/meta_states/metadata/class") {
     using namespace std::string_literals;
 
     meta::class_<ivec2>({
-        {"desc1", meta::uvalue{"class-desc1"s}},
-        {"desc2", meta::uvalue{"class-desc2"s}},
+        {"desc1", "class-desc1"s},
+        {"desc2", "class-desc2"s},
     })
     .constructor_<int>({
         .arguments{{
             .name{"v"},
-            .metadata{{"desc", meta::uvalue{"the ctor arg"s}}},
+            .metadata{{"desc", "the ctor arg"s}},
         }},
-        .metadata{{"desc", meta::uvalue{"one arg 2d vector ctor"s}}},
+        .metadata{{"desc", "one arg 2d vector ctor"s}},
     })
     .constructor_<int, int>({
         .arguments{{
             .name{"x"},
-            .metadata{{"desc", meta::uvalue{"the 1st ctor arg"s}}},
+            .metadata{{"desc", "the 1st ctor arg"s}},
         },{
             .name{"y"},
-            .metadata{{"desc", meta::uvalue{"the 2nd ctor arg"s}}},
+            .metadata{{"desc", "the 2nd ctor arg"s}},
         }},
-        .metadata{{"desc", meta::uvalue{"two args 2d vector ctor"s}}}
+        .metadata{{"desc", "two args 2d vector ctor"s}}
     })
     .member_("x", &ivec2::x, {
-        .metadata{{"desc", meta::uvalue{"x-member"s}}}
+        .metadata{{"desc", "x-member"s}}
     })
     .member_("y", &ivec2::y, {
-        .metadata{{"desc", meta::uvalue{"y-member"s}}}
+        .metadata{{"desc", "y-member"s}}
     })
     .method_("add", &ivec2::add, {
         .arguments{{
             .name{"other"},
-            .metadata{{"desc", meta::uvalue{"other-arg"s}}}
+            .metadata{{"desc", "other-arg"s}}
         }},
-        .metadata{{"desc", meta::uvalue{"add-method"s}}}
+        .metadata{{"desc", "add-method"s}}
     })
     .function_("iadd", &ivec2::iadd, {
         .arguments{{
             .name{"l"},
-            .metadata{{"desc", meta::uvalue{"l-arg"s}}}
+            .metadata{{"desc", "l-arg"s}}
         },{
             .name{"r"},
-            .metadata{{"desc", meta::uvalue{"r-arg"s}}}
+            .metadata{{"desc", "r-arg"s}}
         }},
-        .metadata{{"desc", meta::uvalue{"iadd-function"s}}}
+        .metadata{{"desc", "iadd-function"s}}
     });
 
     // metadata override
 
     meta::class_<ivec2>({
-        {"desc2", meta::uvalue{"new-class-desc2"s}},
-        {"desc3", meta::uvalue{"new-class-desc3"s}},
+        {"desc2", "new-class-desc2"s},
+        {"desc3", "new-class-desc3"s},
     });
 
     //
@@ -146,9 +146,9 @@ TEST_CASE("meta/meta_states/metadata/class") {
     REQUIRE(ivec2_type);
 
     SUBCASE("ivec2") {
-        CHECK(ivec2_type.get_metadata().at("desc1") == "class-desc1"s);
-        CHECK(ivec2_type.get_metadata().at("desc2") == "new-class-desc2"s);
-        CHECK(ivec2_type.get_metadata().at("desc3") == "new-class-desc3"s);
+        CHECK(ivec2_type.get_metadata().at("desc1").get_as<std::string>() == "class-desc1"s);
+        CHECK(ivec2_type.get_metadata().at("desc2").get_as<std::string>() == "new-class-desc2"s);
+        CHECK(ivec2_type.get_metadata().at("desc3").get_as<std::string>() == "new-class-desc3"s);
     }
 
     SUBCASE("ivec2(int)") {
@@ -156,14 +156,14 @@ TEST_CASE("meta/meta_states/metadata/class") {
         REQUIRE(ivec2_ctor);
 
         REQUIRE(ivec2_ctor.get_metadata().contains("desc"));
-        CHECK(ivec2_ctor.get_metadata().at("desc") == "one arg 2d vector ctor"s);
+        CHECK(ivec2_ctor.get_metadata().at("desc").get_as<std::string>() == "one arg 2d vector ctor"s);
 
         REQUIRE(ivec2_ctor.get_argument(0));
         CHECK(ivec2_ctor.get_argument(0).get_name() == "v");
         CHECK(ivec2_ctor.get_argument(0).get_position() == 0);
         CHECK(ivec2_ctor.get_argument(0).get_type() == meta::resolve_type<int>());
         REQUIRE(ivec2_ctor.get_argument(0).get_metadata().contains("desc"));
-        CHECK(ivec2_ctor.get_argument(0).get_metadata().at("desc") == "the ctor arg"s);
+        CHECK(ivec2_ctor.get_argument(0).get_metadata().at("desc").get_as<std::string>() == "the ctor arg"s);
 
         REQUIRE_FALSE(ivec2_ctor.get_argument(1));
     }
@@ -173,21 +173,21 @@ TEST_CASE("meta/meta_states/metadata/class") {
         REQUIRE(ivec2_ctor);
 
         REQUIRE(ivec2_ctor.get_metadata().contains("desc"));
-        CHECK(ivec2_ctor.get_metadata().at("desc") == "two args 2d vector ctor"s);
+        CHECK(ivec2_ctor.get_metadata().at("desc").get_as<std::string>() == "two args 2d vector ctor"s);
 
         REQUIRE(ivec2_ctor.get_argument(0));
         CHECK(ivec2_ctor.get_argument(0).get_name() == "x");
         CHECK(ivec2_ctor.get_argument(0).get_position() == 0);
         CHECK(ivec2_ctor.get_argument(0).get_type() == meta::resolve_type<int>());
         REQUIRE(ivec2_ctor.get_argument(0).get_metadata().contains("desc"));
-        CHECK(ivec2_ctor.get_argument(0).get_metadata().at("desc") == "the 1st ctor arg"s);
+        CHECK(ivec2_ctor.get_argument(0).get_metadata().at("desc").get_as<std::string>() == "the 1st ctor arg"s);
 
         REQUIRE(ivec2_ctor.get_argument(1));
         CHECK(ivec2_ctor.get_argument(1).get_name() == "y");
         CHECK(ivec2_ctor.get_argument(1).get_position() == 1);
         CHECK(ivec2_ctor.get_argument(1).get_type() == meta::resolve_type<int>());
         REQUIRE(ivec2_ctor.get_argument(1).get_metadata().contains("desc"));
-        CHECK(ivec2_ctor.get_argument(1).get_metadata().at("desc") == "the 2nd ctor arg"s);
+        CHECK(ivec2_ctor.get_argument(1).get_metadata().at("desc").get_as<std::string>() == "the 2nd ctor arg"s);
 
         REQUIRE_FALSE(ivec2_ctor.get_argument(2));
     }
@@ -197,7 +197,7 @@ TEST_CASE("meta/meta_states/metadata/class") {
         REQUIRE(ivec2_x);
 
         REQUIRE(ivec2_x.get_metadata().contains("desc"));
-        CHECK(ivec2_x.get_metadata().at("desc") == "x-member"s);
+        CHECK(ivec2_x.get_metadata().at("desc").get_as<std::string>() == "x-member"s);
     }
 
     SUBCASE("ivec2::y") {
@@ -205,7 +205,7 @@ TEST_CASE("meta/meta_states/metadata/class") {
         REQUIRE(ivec2_y);
 
         REQUIRE(ivec2_y.get_metadata().contains("desc"));
-        CHECK(ivec2_y.get_metadata().at("desc") == "y-member"s);
+        CHECK(ivec2_y.get_metadata().at("desc").get_as<std::string>() == "y-member"s);
     }
 
     SUBCASE("ivec2::add") {
@@ -213,11 +213,11 @@ TEST_CASE("meta/meta_states/metadata/class") {
         REQUIRE(ivec2_add);
 
         REQUIRE(ivec2_add.get_metadata().contains("desc"));
-        CHECK(ivec2_add.get_metadata().at("desc") == "add-method"s);
+        CHECK(ivec2_add.get_metadata().at("desc").get_as<std::string>() == "add-method"s);
 
         REQUIRE(ivec2_add.get_argument(0));
         REQUIRE(ivec2_add.get_argument(0).get_metadata().contains("desc"));
-        CHECK(ivec2_add.get_argument(0).get_metadata().at("desc") == "other-arg"s);
+        CHECK(ivec2_add.get_argument(0).get_metadata().at("desc").get_as<std::string>() == "other-arg"s);
     }
 
     SUBCASE("ivec2::iadd") {
@@ -225,15 +225,15 @@ TEST_CASE("meta/meta_states/metadata/class") {
         REQUIRE(ivec2_iadd);
 
         REQUIRE(ivec2_iadd.get_metadata().contains("desc"));
-        CHECK(ivec2_iadd.get_metadata().at("desc") == "iadd-function"s);
+        CHECK(ivec2_iadd.get_metadata().at("desc").get_as<std::string>() == "iadd-function"s);
 
         REQUIRE(ivec2_iadd.get_argument(0));
         REQUIRE(ivec2_iadd.get_argument(0).get_metadata().contains("desc"));
-        CHECK(ivec2_iadd.get_argument(0).get_metadata().at("desc") == "l-arg"s);
+        CHECK(ivec2_iadd.get_argument(0).get_metadata().at("desc").get_as<std::string>() == "l-arg"s);
 
         REQUIRE(ivec2_iadd.get_argument(1));
         REQUIRE(ivec2_iadd.get_argument(1).get_metadata().contains("desc"));
-        CHECK(ivec2_iadd.get_argument(1).get_metadata().at("desc") == "r-arg"s);
+        CHECK(ivec2_iadd.get_argument(1).get_metadata().at("desc").get_as<std::string>() == "r-arg"s);
     }
 }
 
@@ -243,16 +243,16 @@ TEST_CASE("meta/meta_states/metadata/scope") {
 
     SUBCASE("local_scope") {
         const meta::scope lscope = meta::local_scope_("local-scope", {
-            {"desc", meta::uvalue{"scope-desc"s}}
+            {"desc", "scope-desc"s}
         });
-        CHECK(lscope.get_metadata().at("desc") == "scope-desc"s);
+        CHECK(lscope.get_metadata().at("desc").get_as<std::string>() == "scope-desc"s);
     }
 
     SUBCASE("static_scope") {
         meta::static_scope_("meta/meta_states/metadata/scope/static-scope", {
-            {"desc", meta::uvalue{"scope-desc"s}}
+            {"desc", "scope-desc"s}
         });
-        CHECK(meta::resolve_scope("meta/meta_states/metadata/scope/static-scope").get_metadata().at("desc") == "scope-desc"s);
+        CHECK(meta::resolve_scope("meta/meta_states/metadata/scope/static-scope").get_metadata().at("desc").get_as<std::string>() == "scope-desc"s);
     }
 }
 
@@ -262,64 +262,64 @@ TEST_CASE("meta/meta_states/metadata/other") {
 
     SUBCASE("array") {
         meta::array_<int[]>({
-            {"desc", meta::uvalue{"int[]-type"s}}
+            {"desc", "int[]-type"s}
         });
-        CHECK(meta::resolve_type<int[]>().get_metadata().at("desc") == "int[]-type"s);
+        CHECK(meta::resolve_type<int[]>().get_metadata().at("desc").get_as<std::string>() == "int[]-type"s);
     }
 
     SUBCASE("function") {
         meta::function_<int(*)(int)>({
-            {"desc", meta::uvalue{"int->int"s}}
+            {"desc", "int->int"s}
         });
-        CHECK(meta::resolve_type<int(*)(int)>().get_metadata().at("desc") == "int->int"s);
+        CHECK(meta::resolve_type<int(*)(int)>().get_metadata().at("desc").get_as<std::string>() == "int->int"s);
     }
 
     SUBCASE("member") {
         meta::member_<int ivec2::*>({
-            {"desc", meta::uvalue{"ivec2::int"s}}
+            {"desc", "ivec2::int"s}
         });
-        CHECK(meta::resolve_type<int ivec2::*>().get_metadata().at("desc") == "ivec2::int"s);
+        CHECK(meta::resolve_type<int ivec2::*>().get_metadata().at("desc").get_as<std::string>() == "ivec2::int"s);
     }
 
     SUBCASE("method") {
         meta::method_<int (ivec2::*)(int)>({
-            {"desc", meta::uvalue{"ivec2(int -> int)"s}}
+            {"desc", "ivec2(int -> int)"s}
         });
-        CHECK(meta::resolve_type<int (ivec2::*)(int)>().get_metadata().at("desc") == "ivec2(int -> int)"s);
+        CHECK(meta::resolve_type<int (ivec2::*)(int)>().get_metadata().at("desc").get_as<std::string>() == "ivec2(int -> int)"s);
     }
 
     SUBCASE("nullptr") {
         meta::nullptr_<std::nullptr_t>({
-            {"desc", meta::uvalue{"nullptr_t"s}}
+            {"desc", "nullptr_t"s}
         });
-        CHECK(meta::resolve_type<std::nullptr_t>().get_metadata().at("desc") == "nullptr_t"s);
+        CHECK(meta::resolve_type<std::nullptr_t>().get_metadata().at("desc").get_as<std::string>() == "nullptr_t"s);
     }
 
     SUBCASE("number") {
         meta::number_<int>({
-            {"desc", meta::uvalue{"int-type"s}}
+            {"desc", "int-type"s}
         });
-        CHECK(meta::resolve_type<int>().get_metadata().at("desc") == "int-type"s);
+        CHECK(meta::resolve_type<int>().get_metadata().at("desc").get_as<std::string>() == "int-type"s);
     }
 
     SUBCASE("pointer") {
         meta::pointer_<int*>({
-            {"desc", meta::uvalue{"int*-type"s}}
+            {"desc", "int*-type"s}
         });
-        CHECK(meta::resolve_type<int*>().get_metadata().at("desc") == "int*-type"s);
+        CHECK(meta::resolve_type<int*>().get_metadata().at("desc").get_as<std::string>() == "int*-type"s);
     }
 
     SUBCASE("reference") {
         meta::reference_<int&>({
-            {"desc", meta::uvalue{"int&-type"s}}
+            {"desc", "int&-type"s}
         });
-        CHECK(meta::resolve_type<int&>().get_metadata().at("desc") == "int&-type"s);
+        CHECK(meta::resolve_type<int&>().get_metadata().at("desc").get_as<std::string>() == "int&-type"s);
     }
 
     SUBCASE("void") {
         meta::void_<void>({
-            {"desc", meta::uvalue{"void-type"s}}
+            {"desc", "void-type"s}
         });
-        CHECK(meta::resolve_type<void>().get_metadata().at("desc") == "void-type"s);
+        CHECK(meta::resolve_type<void>().get_metadata().at("desc").get_as<std::string>() == "void-type"s);
     }
 }

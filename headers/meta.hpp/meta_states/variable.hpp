@@ -145,6 +145,11 @@ namespace meta_hpp
         return state_->getter();
     }
 
+    template < typename T >
+    T variable::get_as() const {
+        return get().get_as<T>();
+    }
+
     template < typename Value >
     void variable::set(Value&& value) const {
         using namespace detail;

@@ -20,8 +20,8 @@ namespace
         int x{};
         int y{};
 
-        [[maybe_unused]] explicit ivec2(int nv) : x{nv}, y{nv} {}
-        [[maybe_unused]] ivec2(int nx, int ny) : x{nx}, y{ny} {}
+        explicit ivec2(int nv) : x{nv}, y{nv} {}
+        ivec2(int nx, int ny) : x{nx}, y{ny} {}
 
         ivec2& add(const ivec2& other) noexcept {
             x += other.x;
@@ -54,7 +54,7 @@ TEST_CASE("meta/meta_utilities/hash") {
 
     const meta::class_type ivec2_type = meta::resolve_type<ivec2>();
     const meta::constructor ivec2_ctor = ivec2_type.get_constructor_with<int>();
-    const meta::destructor ivec2_dtor = ivec2_type.get_destructors().begin()->second;
+    const meta::destructor ivec2_dtor = *ivec2_type.get_destructors().begin();
     const meta::function ivec2_function = ivec2_type.get_function("iadd");
     const meta::argument ivec2_function_arg = ivec2_function.get_argument(0);
     const meta::member ivec2_member = ivec2_type.get_member("x");

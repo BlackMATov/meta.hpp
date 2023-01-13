@@ -35,4 +35,8 @@ namespace meta_hpp
     inline bool operator==(const scope_index& l, const scope_index& r) noexcept {
         return std::equal_to<>{}(l.name_, r.name_);
     }
+
+    inline bool operator!=(const scope_index& l, const scope_index& r) noexcept {
+        return !(l == r);
+    }
 }
