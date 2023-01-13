@@ -21,7 +21,7 @@ namespace
     };
 }
 
-TEST_CASE("meta/meta_examples/inplace") {
+TEST_CASE("meta/meta_manuals/inplace") {
     namespace meta = meta_hpp;
 
     // 'ivec2' class type registration

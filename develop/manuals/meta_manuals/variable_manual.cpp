@@ -14,7 +14,7 @@ namespace
     const double sqrt2_v{1.4142135624};
 }
 
-TEST_CASE("meta/meta_examples/variable/usage") {
+TEST_CASE("meta/meta_manuals/variable/usage") {
     namespace meta = meta_hpp;
 
     // 'constants' local scope declaration

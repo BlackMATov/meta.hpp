@@ -19,7 +19,7 @@ namespace
     }
 }
 
-TEST_CASE("meta/meta_examples/function/type") {
+TEST_CASE("meta/meta_manuals/function/type") {
     namespace meta = meta_hpp;
 
     // resolves a function type by pointer
@@ -39,7 +39,7 @@ TEST_CASE("meta/meta_examples/function/type") {
     CHECK(add_function_type.get_argument_type(1) == meta::resolve_type<int>());
 }
 
-TEST_CASE("meta/meta_examples/function/usage") {
+TEST_CASE("meta/meta_manuals/function/usage") {
     namespace meta = meta_hpp;
 
     // 'math' local scope declaration

@@ -17,7 +17,7 @@ namespace
     };
 }
 
-TEST_CASE("meta/meta_examples/enum/type") {
+TEST_CASE("meta/meta_manuals/enum/type") {
     namespace meta = meta_hpp;
 
     // 'align' enumeration type registration
@@ -43,7 +43,7 @@ TEST_CASE("meta/meta_examples/enum/type") {
     }
 }
 
-TEST_CASE("meta/meta_examples/enum/usage") {
+TEST_CASE("meta/meta_manuals/enum/usage") {
     namespace meta = meta_hpp;
 
     const align e = align::center;

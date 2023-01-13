@@ -46,7 +46,7 @@ namespace
     }
 }
 
-TEST_CASE("meta/meta_examples/scopes/local") {
+TEST_CASE("meta/meta_manuals/scopes/local") {
     namespace meta = meta_hpp;
 
     // creates new local scope
@@ -86,18 +86,18 @@ TEST_CASE("meta/meta_examples/scopes/local") {
     CHECK(dot3_function(unit3_variable.get(), unit3_variable.get()).get_as<int>() == 3);
 }
 
-TEST_CASE("meta/meta_examples/scopes/global") {
+TEST_CASE("meta/meta_manuals/scopes/global") {
     namespace meta = meta_hpp;
 
     // also, we can create global scopes
-    meta::static_scope_("meta/meta_examples/scopes/global/math")
+    meta::static_scope_("meta/meta_manuals/scopes/global/math")
         .function_("dot2", &dot2)
         .function_("dot3", &dot3)
         .variable_("unit2", &unit2)
         .variable_("unit3", &unit3);
 
     // finds our global scope by name
-    const meta::scope math_scope = meta::resolve_scope("meta/meta_examples/scopes/global/math");
+    const meta::scope math_scope = meta::resolve_scope("meta/meta_manuals/scopes/global/math");
 
     // and uses it in the same way
     const meta::function dot2_function = math_scope.get_function("dot2");
