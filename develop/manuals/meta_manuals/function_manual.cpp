@@ -74,7 +74,8 @@ TEST_CASE("meta/meta_examples/function/usage") {
 
     // prints all functions in the scope
     std::cout << "* " << math_scope.get_name() << std::endl;
-    for ( auto&& [index, function] : math_scope.get_functions() ) {
-        std::cout << "  + " << index.get_name() << "/" << function.get_type().get_arity() << std::endl;
+    for ( const meta::function& function : math_scope.get_functions() ) {
+        std::cout << "  + " << function.get_name()
+                  << "/" << function.get_type().get_arity() << std::endl;
     }
 }

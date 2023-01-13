@@ -81,23 +81,23 @@ namespace meta_hpp
         return data_->bases;
     }
 
-    inline const constructor_map& class_type::get_constructors() const noexcept {
+    inline const constructor_set& class_type::get_constructors() const noexcept {
         return data_->constructors;
     }
 
-    inline const destructor_map& class_type::get_destructors() const noexcept {
+    inline const destructor_set& class_type::get_destructors() const noexcept {
         return data_->destructors;
     }
 
-    inline const function_map& class_type::get_functions() const noexcept {
+    inline const function_set& class_type::get_functions() const noexcept {
         return data_->functions;
     }
 
-    inline const member_map& class_type::get_members() const noexcept {
+    inline const member_set& class_type::get_members() const noexcept {
         return data_->members;
     }
 
-    inline const method_map& class_type::get_methods() const noexcept {
+    inline const method_set& class_type::get_methods() const noexcept {
         return data_->methods;
     }
 
@@ -105,13 +105,13 @@ namespace meta_hpp
         return data_->typedefs;
     }
 
-    inline const variable_map& class_type::get_variables() const noexcept {
+    inline const variable_set& class_type::get_variables() const noexcept {
         return data_->variables;
     }
 
     template < typename... Args >
     uvalue class_type::create(Args&&... args) const {
-        for ( auto&& [_, ctor] : data_->constructors ) {
+        for ( const constructor& ctor : data_->constructors ) {
             if ( ctor.is_invocable_with(std::forward<Args>(args)...) ) {
                 return ctor.create(std::forward<Args>(args)...);
             }
@@ -121,7 +121,7 @@ namespace meta_hpp
 
     template < typename... Args >
     uvalue class_type::create_at(void* mem, Args&&... args) const {
-        for ( auto&& [_, ctor] : data_->constructors ) {
+        for ( const constructor& ctor : data_->constructors ) {
             if ( ctor.is_invocable_with(std::forward<Args>(args)...) ) {
                 return ctor.create_at(mem, std::forward<Args>(args)...);
             }
@@ -131,14 +131,14 @@ namespace meta_hpp
 
     template < typename Arg >
     bool class_type::destroy(Arg&& arg) const {
-        if ( const destructor dtor = get_destructor() ) {
+        if ( const destructor& dtor = get_destructor() ) {
             return dtor.destroy(std::forward<Arg>(arg));
         }
         return false;
     }
 
     inline bool class_type::destroy_at(void* mem) const {
-        if ( const destructor dtor = get_destructor() ) {
+        if ( const destructor& dtor = get_destructor() ) {
             dtor.destroy_at(mem);
             return true;
         }
@@ -160,7 +160,7 @@ namespace meta_hpp
         }
 
         // NOLINTNEXTLINE(*-use-anyofallof)
-        for ( auto&& derived_base : derived.data_->bases ) {
+        for ( const class_type& derived_base : derived.data_->bases ) {
             if ( is_base_of(derived_base) ) {
                 return true;
             }
@@ -184,7 +184,7 @@ namespace meta_hpp
         }
 
         // NOLINTNEXTLINE(*-use-anyofallof)
-        for ( auto&& self_base : data_->bases ) {
+        for ( const class_type& self_base : data_->bases ) {
             if ( self_base.is_derived_from(base) ) {
                 return true;
             }
@@ -194,14 +194,14 @@ namespace meta_hpp
     }
 
     inline function class_type::get_function(std::string_view name) const noexcept {
-        for ( auto&& [index, function] : data_->functions ) {
-            if ( index.get_name() == name ) {
+        for ( const function& function : data_->functions ) {
+            if ( function.get_name() == name ) {
                 return function;
             }
         }
 
-        for ( auto&& base : data_->bases ) {
-            if ( function function = base.get_function(name); function ) {
+        for ( const class_type& base : data_->bases ) {
+            if ( const function& function = base.get_function(name); function ) {
                 return function;
             }
         }
@@ -210,14 +210,14 @@ namespace meta_hpp
     }
 
     inline member class_type::get_member(std::string_view name) const noexcept {
-        for ( auto&& [index, member] : data_->members ) {
-            if ( index.get_name() == name ) {
+        for ( const member& member : data_->members ) {
+            if ( member.get_name() == name ) {
                 return member;
             }
         }
 
-        for ( auto&& base : data_->bases ) {
-            if ( member member = base.get_member(name); member ) {
+        for ( const class_type& base : data_->bases ) {
+            if ( const member& member = base.get_member(name); member ) {
                 return member;
             }
         }
@@ -226,14 +226,14 @@ namespace meta_hpp
     }
 
     inline method class_type::get_method(std::string_view name) const noexcept {
-        for ( auto&& [index, method] : data_->methods ) {
-            if ( index.get_name() == name ) {
+        for ( const method& method : data_->methods ) {
+            if ( method.get_name() == name ) {
                 return method;
             }
         }
 
-        for ( auto&& base : data_->bases ) {
-            if ( method method = base.get_method(name); method ) {
+        for ( const class_type& base : data_->bases ) {
+            if ( const method& method = base.get_method(name); method ) {
                 return method;
             }
         }
@@ -242,14 +242,12 @@ namespace meta_hpp
     }
 
     inline any_type class_type::get_typedef(std::string_view name) const noexcept {
-        for ( auto&& [index, type] : data_->typedefs ) {
-            if ( index == name ) {
-                return type;
-            }
+        if ( auto iter{data_->typedefs.find(name)}; iter != data_->typedefs.end() ) {
+            return iter->second;
         }
 
-        for ( auto&& base : data_->bases ) {
-            if ( any_type type = base.get_typedef(name); type ) {
+        for ( const class_type& base : data_->bases ) {
+            if ( const any_type& type = base.get_typedef(name); type ) {
                 return type;
             }
         }
@@ -258,14 +256,14 @@ namespace meta_hpp
     }
 
     inline variable class_type::get_variable(std::string_view name) const noexcept {
-        for ( auto&& [index, variable] : data_->variables ) {
-            if ( index.get_name() == name ) {
+        for ( const variable& variable : data_->variables ) {
+            if ( variable.get_name() == name ) {
                 return variable;
             }
         }
 
-        for ( auto&& base : data_->bases ) {
-            if ( variable variable = base.get_variable(name); variable ) {
+        for ( const class_type& base : data_->bases ) {
+            if ( const variable& variable = base.get_variable(name); variable ) {
                 return variable;
             }
         }
@@ -284,7 +282,7 @@ namespace meta_hpp
 
     template < typename Iter >
     constructor class_type::get_constructor_with(Iter first, Iter last) const noexcept {
-        for ( auto&& [_, ctor] : data_->constructors ) {
+        for ( const constructor& ctor : data_->constructors ) {
             const any_type_list& args = ctor.get_type().get_argument_types();
             if ( std::equal(first, last, args.begin(), args.end()) ) {
                 return ctor;
@@ -309,9 +307,7 @@ namespace meta_hpp
         if ( data_->destructors.empty() ) {
             return destructor{};
         }
-
-        auto&& [_, dtor] = *data_->destructors.begin();
-        return dtor;
+        return *data_->destructors.begin();
     }
 
     //
@@ -325,8 +321,8 @@ namespace meta_hpp
 
     template < typename Iter >
     function class_type::get_function_with(std::string_view name, Iter first, Iter last) const noexcept {
-        for ( auto&& [index, function] : data_->functions ) {
-            if ( index.get_name() != name ) {
+        for ( const function& function : data_->functions ) {
+            if ( function.get_name() != name ) {
                 continue;
             }
 
@@ -336,8 +332,8 @@ namespace meta_hpp
             }
         }
 
-        for ( auto&& base : data_->bases ) {
-            if ( function function = base.get_function_with(name, first, last); function ) {
+        for ( const class_type& base : data_->bases ) {
+            if ( const function& function = base.get_function_with(name, first, last); function ) {
                 return function;
             }
         }
@@ -364,8 +360,8 @@ namespace meta_hpp
 
     template < typename Iter >
     method class_type::get_method_with(std::string_view name, Iter first, Iter last) const noexcept {
-        for ( auto&& [index, method] : data_->methods ) {
-            if ( index.get_name() != name ) {
+        for ( const method& method : data_->methods ) {
+            if ( method.get_name() != name ) {
                 continue;
             }
 
@@ -375,8 +371,8 @@ namespace meta_hpp
             }
         }
 
-        for ( auto&& base : data_->bases ) {
-            if ( method method = base.get_method_with(name, first, last); method ) {
+        for ( const class_type& base : data_->bases ) {
+            if ( const method& method = base.get_method_with(name, first, last); method ) {
                 return method;
             }
         }

@@ -57,7 +57,7 @@ namespace meta_hpp
         return state_->index.get_name();
     }
 
-    inline const function_map& scope::get_functions() const noexcept {
+    inline const function_set& scope::get_functions() const noexcept {
         return state_->functions;
     }
 
@@ -65,13 +65,13 @@ namespace meta_hpp
         return state_->typedefs;
     }
 
-    inline const variable_map& scope::get_variables() const noexcept {
+    inline const variable_set& scope::get_variables() const noexcept {
         return state_->variables;
     }
 
     inline function scope::get_function(std::string_view name) const noexcept {
-        for ( auto&& [index, function] : state_->functions ) {
-            if ( index.get_name() == name ) {
+        for ( const function& function : state_->functions ) {
+            if ( function.get_name() == name ) {
                 return function;
             }
         }
@@ -79,17 +79,15 @@ namespace meta_hpp
     }
 
     inline any_type scope::get_typedef(std::string_view name) const noexcept {
-        for ( auto&& [index, type] : state_->typedefs ) {
-            if ( index == name ) {
-                return type;
-            }
+        if ( auto iter{state_->typedefs.find(name)}; iter != state_->typedefs.end() ) {
+            return iter->second;
         }
         return any_type{};
     }
 
     inline variable scope::get_variable(std::string_view name) const noexcept {
-        for ( auto&& [index, variable] : state_->variables ) {
-            if ( index.get_name() == name ) {
+        for ( const variable& variable : state_->variables ) {
+            if ( variable.get_name() == name ) {
                 return variable;
             }
         }
@@ -103,8 +101,8 @@ namespace meta_hpp
 
     template < typename Iter >
     function scope::get_function_with(std::string_view name, Iter first, Iter last) const noexcept {
-        for ( auto&& [index, function] : state_->functions ) {
-            if ( index.get_name() != name ) {
+        for ( const function& function : state_->functions ) {
+            if ( function.get_name() != name ) {
                 continue;
             }
 

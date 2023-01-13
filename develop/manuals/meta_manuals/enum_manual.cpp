@@ -37,8 +37,9 @@ TEST_CASE("meta/meta_examples/enum/type") {
 
     // prints all enumerators
     std::cout << "* align" << std::endl;
-    for ( auto&& [index, evalue] : align_type.get_evalues() ) {
-        std::cout << "  - " << index.get_name() << "/" << evalue.get_underlying_value().get_as<int>() << std::endl;
+    for ( const meta::evalue& evalue : align_type.get_evalues() ) {
+        std::cout << "  - " << evalue.get_name()
+                  << "/" << evalue.get_underlying_value_as<int>() << std::endl;
     }
 }
 
@@ -54,5 +55,5 @@ TEST_CASE("meta/meta_examples/enum/usage") {
     CHECK(align_type.value_to_name(e) == "center");
 
     // ... and back again
-    CHECK(align_type.name_to_value("center").get_as<align>() == e);
+    CHECK(align_type.name_to_value_as<align>("center") == e);
 }

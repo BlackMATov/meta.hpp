@@ -54,7 +54,7 @@ TEST_CASE("meta/meta_utilities/hash") {
 
     const meta::class_type ivec2_type = meta::resolve_type<ivec2>();
     const meta::constructor ivec2_ctor = ivec2_type.get_constructor_with<int>();
-    const meta::destructor ivec2_dtor = ivec2_type.get_destructors().begin()->second;
+    const meta::destructor ivec2_dtor = *ivec2_type.get_destructors().begin();
     const meta::function ivec2_function = ivec2_type.get_function("iadd");
     const meta::argument ivec2_function_arg = ivec2_function.get_argument(0);
     const meta::member ivec2_member = ivec2_type.get_member("x");

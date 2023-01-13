@@ -61,8 +61,9 @@ TEST_CASE("meta/meta_examples/class/type") {
 
     // prints all class methods
     std::cout << "* rectangle" << std::endl;
-    for ( auto&& [index, method] : rectangle_type.get_methods() ) {
-        std::cout << "  + " << index.get_name() << "/" << index.get_type().get_arity() << std::endl;
+    for ( const meta::method& method : rectangle_type.get_methods() ) {
+        std::cout << "  + " << method.get_name()
+                  << "/" << method.get_type().get_arity() << std::endl;
     }
 }
 

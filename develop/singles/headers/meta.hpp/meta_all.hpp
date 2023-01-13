@@ -610,6 +610,45 @@ namespace meta_hpp::detail
 
 namespace meta_hpp::detail
 {
+    template < typename Key, typename Compare, typename Allocator >
+    void insert_or_assign(std::set<Key, Compare, Allocator>& set,
+        std::set<Key, Compare, Allocator>& value)
+    {
+        set.swap(value);
+        set.merge(value);
+    }
+
+    template < typename Key, typename Compare, typename Allocator >
+    void insert_or_assign(std::set<Key, Compare, Allocator>& set,
+        std::set<Key, Compare, Allocator>&& value)
+    {
+        set.swap(value);
+        set.merge(std::move(value));
+    }
+}
+
+
+namespace meta_hpp::detail
+{
+    template < typename Key, typename Value, typename Compare, typename Allocator >
+    void insert_or_assign(std::map<Key, Value, Compare, Allocator>& map,
+        std::map<Key, Value, Compare, Allocator>& value)
+    {
+        map.swap(value);
+        map.merge(value);
+    }
+
+    template < typename Key, typename Value, typename Compare, typename Allocator >
+    void insert_or_assign(std::map<Key, Value, Compare, Allocator>& map,
+        std::map<Key, Value, Compare, Allocator>&& value)
+    {
+        map.swap(value);
+        map.merge(std::move(value));
+    }
+}
+
+namespace meta_hpp::detail
+{
     template < typename T >
     struct is_in_place_type : std::false_type {};
 
@@ -1057,19 +1096,16 @@ namespace meta_hpp
     using typedef_map = std::map<std::string, any_type, std::less<>>;
 
     using class_set = std::set<class_type, std::less<>>;
-    using class_map = std::map<std::string, class_type, std::less<>>;
-
     using enum_set = std::set<enum_type, std::less<>>;
-    using enum_map = std::map<std::string, enum_type, std::less<>>;
 
-    using constructor_map = std::map<constructor_index, constructor, std::less<>>;
-    using destructor_map = std::map<destructor_index, destructor, std::less<>>;
-    using evalue_map = std::map<evalue_index, evalue, std::less<>>;
-    using function_map = std::map<function_index, function, std::less<>>;
-    using member_map = std::map<member_index, member, std::less<>>;
-    using method_map = std::map<method_index, method, std::less<>>;
-    using scope_map = std::map<scope_index, scope, std::less<>>;
-    using variable_map = std::map<variable_index, variable, std::less<>>;
+    using constructor_set = std::set<constructor, std::less<>>;
+    using destructor_set = std::set<destructor, std::less<>>;
+    using evalue_set = std::set<evalue, std::less<>>;
+    using function_set = std::set<function, std::less<>>;
+    using member_set = std::set<member, std::less<>>;
+    using method_set = std::set<method, std::less<>>;
+    using scope_set = std::set<scope, std::less<>>;
+    using variable_set = std::set<variable, std::less<>>;
 }
 
 namespace meta_hpp::detail
@@ -1738,13 +1774,13 @@ namespace meta_hpp
         [[nodiscard]] const any_type_list& get_argument_types() const noexcept;
 
         [[nodiscard]] const class_set& get_bases() const noexcept;
-        [[nodiscard]] const constructor_map& get_constructors() const noexcept;
-        [[nodiscard]] const destructor_map& get_destructors() const noexcept;
-        [[nodiscard]] const function_map& get_functions() const noexcept;
-        [[nodiscard]] const member_map& get_members() const noexcept;
-        [[nodiscard]] const method_map& get_methods() const noexcept;
+        [[nodiscard]] const constructor_set& get_constructors() const noexcept;
+        [[nodiscard]] const destructor_set& get_destructors() const noexcept;
+        [[nodiscard]] const function_set& get_functions() const noexcept;
+        [[nodiscard]] const member_set& get_members() const noexcept;
+        [[nodiscard]] const method_set& get_methods() const noexcept;
         [[nodiscard]] const typedef_map& get_typedefs() const noexcept;
-        [[nodiscard]] const variable_map& get_variables() const noexcept;
+        [[nodiscard]] const variable_set& get_variables() const noexcept;
 
         template < typename... Args >
         [[nodiscard]] uvalue create(Args&&... args) const;
@@ -1849,7 +1885,7 @@ namespace meta_hpp
 
         [[nodiscard]] number_type get_underlying_type() const noexcept;
 
-        [[nodiscard]] const evalue_map& get_evalues() const noexcept;
+        [[nodiscard]] const evalue_set& get_evalues() const noexcept;
 
         [[nodiscard]] evalue get_evalue(std::string_view name) const noexcept;
 
@@ -2085,13 +2121,13 @@ namespace meta_hpp::detail
         const any_type_list argument_types;
 
         class_set bases;
-        constructor_map constructors;
-        destructor_map destructors;
-        function_map functions;
-        member_map members;
-        method_map methods;
+        constructor_set constructors;
+        destructor_set destructors;
+        function_set functions;
+        member_set members;
+        method_set methods;
         typedef_map typedefs;
-        variable_map variables;
+        variable_set variables;
 
         struct base_info final {
             using upcast_fptr = void*(*)(void*);
@@ -2126,7 +2162,7 @@ namespace meta_hpp::detail
         const enum_bitflags flags;
         const number_type underlying_type;
 
-        evalue_map evalues;
+        evalue_set evalues;
 
         template < enum_kind Enum >
         explicit enum_type_data(type_list<Enum>);
@@ -2877,9 +2913,9 @@ namespace meta_hpp
 
         [[nodiscard]] const std::string& get_name() const noexcept;
 
-        [[nodiscard]] const function_map& get_functions() const noexcept;
+        [[nodiscard]] const function_set& get_functions() const noexcept;
         [[nodiscard]] const typedef_map& get_typedefs() const noexcept;
-        [[nodiscard]] const variable_map& get_variables() const noexcept;
+        [[nodiscard]] const variable_set& get_variables() const noexcept;
 
         [[nodiscard]] function get_function(std::string_view name) const noexcept;
         [[nodiscard]] any_type get_typedef(std::string_view name) const noexcept;
@@ -3121,9 +3157,9 @@ namespace meta_hpp::detail
         scope_index index;
         metadata_map metadata;
 
-        function_map functions{};
+        function_set functions{};
         typedef_map typedefs{};
-        variable_map variables{};
+        variable_set variables{};
 
         [[nodiscard]] static scope_state_ptr make(std::string name, metadata_map metadata);
     };
@@ -3967,8 +4003,7 @@ namespace meta_hpp
     template < detail::array_kind Array >
     array_bind<Array>::array_bind(metadata_map metadata)
     : data_{detail::type_access(resolve_type<Array>())} {
-        data_->metadata.swap(metadata);
-        data_->metadata.merge(std::move(metadata));
+        detail::insert_or_assign(data_->metadata, std::move(metadata));
     }
 
     template < detail::array_kind Array >
@@ -3982,8 +4017,7 @@ namespace meta_hpp
     template < detail::class_kind Class >
     class_bind<Class>::class_bind(metadata_map metadata)
     : data_{detail::type_access(resolve_type<Class>())} {
-        data_->metadata.swap(metadata);
-        data_->metadata.merge(std::move(metadata));
+        detail::insert_or_assign(data_->metadata, std::move(metadata));
 
         if constexpr ( std::is_destructible_v<Class> ) {
             destructor_();
@@ -4005,9 +4039,9 @@ namespace meta_hpp
         requires (... && detail::class_bind_base_kind<Class, Bases>)
     {
         ([this]<detail::class_kind Base>(std::in_place_type_t<Base>) {
-            const class_type base_type = resolve_type<Base>();
+            const class_type& base_type = resolve_type<Base>();
 
-            if ( auto&& [_, success] = data_->bases.emplace(base_type); !success ) {
+            if ( auto&& [_, emplaced] = data_->bases.emplace(base_type); !emplaced ) {
                 return;
             }
 
@@ -4057,7 +4091,7 @@ namespace meta_hpp
             detail::state_access(arg)->metadata = std::move(opts.arguments[i].metadata);
         }
 
-        data_->constructors.insert_or_assign(state->index, std::move(state));
+        detail::insert_or_assign(data_->constructors, std::move(state));
         return *this;
     }
 
@@ -4077,7 +4111,7 @@ namespace meta_hpp
         requires detail::class_bind_destructor_kind<Class>
     {
         auto state = detail::destructor_state::make<Class>(std::move(opts.metadata));
-        data_->destructors.insert_or_assign(state->index, std::move(state));
+        detail::insert_or_assign(data_->destructors, std::move(state));
         return *this;
     }
 
@@ -4118,7 +4152,7 @@ namespace meta_hpp
             detail::state_access(arg)->metadata = std::move(opts.arguments[i].metadata);
         }
 
-        data_->functions.insert_or_assign(state->index, std::move(state));
+        detail::insert_or_assign(data_->functions, std::move(state));
         return *this;
     }
 
@@ -4145,7 +4179,7 @@ namespace meta_hpp
             detail::state_access(arg)->name = std::data(arguments)[i];
         }
 
-        data_->functions.insert_or_assign(state->index, std::move(state));
+        detail::insert_or_assign(data_->functions, std::move(state));
         return *this;
     }
 
@@ -4177,7 +4211,7 @@ namespace meta_hpp
             std::move(name),
             std::move(member),
             std::move(opts.metadata));
-        data_->members.insert_or_assign(state->index, std::move(state));
+        detail::insert_or_assign(data_->members, std::move(state));
         return *this;
     }
 
@@ -4220,7 +4254,7 @@ namespace meta_hpp
             detail::state_access(arg)->metadata = std::move(opts.arguments[i].metadata);
         }
 
-        data_->methods.insert_or_assign(state->index, std::move(state));
+        detail::insert_or_assign(data_->methods, std::move(state));
         return *this;
     }
 
@@ -4248,7 +4282,7 @@ namespace meta_hpp
             detail::state_access(arg)->name = std::data(arguments)[i];
         }
 
-        data_->methods.insert_or_assign(state->index, std::move(state));
+        detail::insert_or_assign(data_->methods, std::move(state));
         return *this;
     }
 
@@ -4289,7 +4323,7 @@ namespace meta_hpp
             std::move(name),
             std::move(pointer),
             std::move(opts.metadata));
-        data_->variables.insert_or_assign(state->index, std::move(state));
+        detail::insert_or_assign(data_->variables, std::move(state));
         return *this;
     }
 }
@@ -4299,8 +4333,7 @@ namespace meta_hpp
     template < detail::enum_kind Enum >
     enum_bind<Enum>::enum_bind(metadata_map metadata)
     : data_{detail::type_access(resolve_type<Enum>())} {
-        data_->metadata.swap(metadata);
-        data_->metadata.merge(std::move(metadata));
+        detail::insert_or_assign(data_->metadata, std::move(metadata));
     }
 
     template < detail::enum_kind Enum >
@@ -4319,7 +4352,7 @@ namespace meta_hpp
             std::move(name),
             std::move(value),
             std::move(opts.metadata));
-        data_->evalues.insert_or_assign(state->index, std::move(state));
+        detail::insert_or_assign(data_->evalues, std::move(state));
         return *this;
     }
 }
@@ -4329,8 +4362,7 @@ namespace meta_hpp
     template < detail::function_kind Function >
     function_bind<Function>::function_bind(metadata_map metadata)
     : data_{detail::type_access(resolve_type<Function>())} {
-        data_->metadata.swap(metadata);
-        data_->metadata.merge(std::move(metadata));
+        detail::insert_or_assign(data_->metadata, std::move(metadata));
     }
 
     template < detail::function_kind Function >
@@ -4344,8 +4376,7 @@ namespace meta_hpp
     template < detail::member_kind Member >
     member_bind<Member>::member_bind(metadata_map metadata)
     : data_{detail::type_access(resolve_type<Member>())} {
-        data_->metadata.swap(metadata);
-        data_->metadata.merge(std::move(metadata));
+        detail::insert_or_assign(data_->metadata, std::move(metadata));
     }
 
     template < detail::member_kind Member >
@@ -4359,8 +4390,7 @@ namespace meta_hpp
     template < detail::method_kind Method >
     method_bind<Method>::method_bind(metadata_map metadata)
     : data_{detail::type_access(resolve_type<Method>())} {
-        data_->metadata.swap(metadata);
-        data_->metadata.merge(std::move(metadata));
+        detail::insert_or_assign(data_->metadata, std::move(metadata));
     }
 
     template < detail::method_kind Method >
@@ -4374,8 +4404,7 @@ namespace meta_hpp
     template < detail::nullptr_kind Nullptr >
     nullptr_bind<Nullptr>::nullptr_bind(metadata_map metadata)
     : data_{detail::type_access(resolve_type<Nullptr>())} {
-        data_->metadata.swap(metadata);
-        data_->metadata.merge(std::move(metadata));
+        detail::insert_or_assign(data_->metadata, std::move(metadata));
     }
 
     template < detail::nullptr_kind Nullptr >
@@ -4389,8 +4418,7 @@ namespace meta_hpp
     template < detail::number_kind Number >
     number_bind<Number>::number_bind(metadata_map metadata)
     : data_{detail::type_access(resolve_type<Number>())} {
-        data_->metadata.swap(metadata);
-        data_->metadata.merge(std::move(metadata));
+        detail::insert_or_assign(data_->metadata, std::move(metadata));
     }
 
     template < detail::number_kind Number >
@@ -4404,8 +4432,7 @@ namespace meta_hpp
     template < detail::pointer_kind Pointer >
     pointer_bind<Pointer>::pointer_bind(metadata_map metadata)
     : data_{detail::type_access(resolve_type<Pointer>())} {
-        data_->metadata.swap(metadata);
-        data_->metadata.merge(std::move(metadata));
+        detail::insert_or_assign(data_->metadata, std::move(metadata));
     }
 
     template < detail::pointer_kind Pointer >
@@ -4419,8 +4446,7 @@ namespace meta_hpp
     template < detail::reference_kind Reference >
     reference_bind<Reference>::reference_bind(metadata_map metadata)
     : data_{detail::type_access(resolve_type<Reference>())} {
-        data_->metadata.swap(metadata);
-        data_->metadata.merge(std::move(metadata));
+        detail::insert_or_assign(data_->metadata, std::move(metadata));
     }
 
     template < detail::reference_kind Reference >
@@ -4436,8 +4462,7 @@ namespace meta_hpp
 
     inline scope_bind::scope_bind(std::string_view name, metadata_map metadata, static_tag)
     : state_{detail::state_access(resolve_scope(name))} {
-        state_->metadata.swap(metadata);
-        state_->metadata.merge(std::move(metadata));
+        detail::insert_or_assign(state_->metadata, std::move(metadata));
     }
 
     inline scope_bind::operator scope() const noexcept {
@@ -4479,7 +4504,7 @@ namespace meta_hpp
             detail::state_access(arg)->metadata = std::move(opts.arguments[i].metadata);
         }
 
-        state_->functions.insert_or_assign(state->index, std::move(state));
+        detail::insert_or_assign(state_->functions, std::move(state));
         return *this;
     }
 
@@ -4505,7 +4530,7 @@ namespace meta_hpp
             detail::state_access(arg)->name = std::data(arguments)[i];
         }
 
-        state_->functions.insert_or_assign(state->index, std::move(state));
+        detail::insert_or_assign(state_->functions, std::move(state));
         return *this;
     }
 
@@ -4543,7 +4568,7 @@ namespace meta_hpp
             std::move(name),
             std::move(pointer),
             std::move(opts.metadata));
-        state_->variables.insert_or_assign(state->index, std::move(state));
+        detail::insert_or_assign(state_->variables, std::move(state));
         return *this;
     }
 }
@@ -4553,8 +4578,7 @@ namespace meta_hpp
     template < detail::void_kind Void >
     void_bind<Void>::void_bind(metadata_map metadata)
     : data_{detail::type_access(resolve_type<void>())} {
-        data_->metadata.swap(metadata);
-        data_->metadata.merge(std::move(metadata));
+        detail::insert_or_assign(data_->metadata, std::move(metadata));
     }
 
     template < detail::void_kind Void >
@@ -5072,13 +5096,13 @@ namespace meta_hpp::detail
             return ptr;
         }
 
-        for ( auto&& [base, base_info] : type_access(from)->bases_info ) {
-            if ( base == to ) {
+        for ( auto&& [base_type, base_info] : type_access(from)->bases_info ) {
+            if ( base_type == to ) {
                 return base_info.upcast(ptr);
             }
 
-            if ( base.is_derived_from(to) ) {
-                return pointer_upcast(base_info.upcast(ptr), base, to);
+            if ( base_type.is_derived_from(to) ) {
+                return pointer_upcast(base_info.upcast(ptr), base_type, to);
             }
         }
 
@@ -5826,13 +5850,13 @@ namespace meta_hpp
         return data_->underlying_type;
     }
 
-    inline const evalue_map& enum_type::get_evalues() const noexcept {
+    inline const evalue_set& enum_type::get_evalues() const noexcept {
         return data_->evalues;
     }
 
     inline evalue enum_type::get_evalue(std::string_view name) const noexcept {
-        for ( auto&& [index, evalue] : data_->evalues ) {
-            if ( index.get_name() == name ) {
+        for ( const evalue& evalue : data_->evalues ) {
+            if ( evalue.get_name() == name ) {
                 return evalue;
             }
         }
@@ -5845,9 +5869,9 @@ namespace meta_hpp
             return std::string_view{};
         }
 
-        for ( auto&& [_, evalue] : data_->evalues ) {
-            if ( evalue.get_value().template get_as<Enum>() == value ) {
-                return evalue.get_index().get_name();
+        for ( const evalue& evalue : data_->evalues ) {
+            if ( evalue.get_value_as<Enum>() == value ) {
+                return evalue.get_name();
             }
         }
 
@@ -5855,7 +5879,7 @@ namespace meta_hpp
     }
 
     inline uvalue enum_type::name_to_value(std::string_view name) const noexcept {
-        if ( const evalue value = get_evalue(name); value ) {
+        if ( const evalue& value = get_evalue(name); value ) {
             return value.get_value();
         }
 
@@ -7235,23 +7259,23 @@ namespace meta_hpp
         return data_->bases;
     }
 
-    inline const constructor_map& class_type::get_constructors() const noexcept {
+    inline const constructor_set& class_type::get_constructors() const noexcept {
         return data_->constructors;
     }
 
-    inline const destructor_map& class_type::get_destructors() const noexcept {
+    inline const destructor_set& class_type::get_destructors() const noexcept {
         return data_->destructors;
     }
 
-    inline const function_map& class_type::get_functions() const noexcept {
+    inline const function_set& class_type::get_functions() const noexcept {
         return data_->functions;
     }
 
-    inline const member_map& class_type::get_members() const noexcept {
+    inline const member_set& class_type::get_members() const noexcept {
         return data_->members;
     }
 
-    inline const method_map& class_type::get_methods() const noexcept {
+    inline const method_set& class_type::get_methods() const noexcept {
         return data_->methods;
     }
 
@@ -7259,13 +7283,13 @@ namespace meta_hpp
         return data_->typedefs;
     }
 
-    inline const variable_map& class_type::get_variables() const noexcept {
+    inline const variable_set& class_type::get_variables() const noexcept {
         return data_->variables;
     }
 
     template < typename... Args >
     uvalue class_type::create(Args&&... args) const {
-        for ( auto&& [_, ctor] : data_->constructors ) {
+        for ( const constructor& ctor : data_->constructors ) {
             if ( ctor.is_invocable_with(std::forward<Args>(args)...) ) {
                 return ctor.create(std::forward<Args>(args)...);
             }
@@ -7275,7 +7299,7 @@ namespace meta_hpp
 
     template < typename... Args >
     uvalue class_type::create_at(void* mem, Args&&... args) const {
-        for ( auto&& [_, ctor] : data_->constructors ) {
+        for ( const constructor& ctor : data_->constructors ) {
             if ( ctor.is_invocable_with(std::forward<Args>(args)...) ) {
                 return ctor.create_at(mem, std::forward<Args>(args)...);
             }
@@ -7285,14 +7309,14 @@ namespace meta_hpp
 
     template < typename Arg >
     bool class_type::destroy(Arg&& arg) const {
-        if ( const destructor dtor = get_destructor() ) {
+        if ( const destructor& dtor = get_destructor() ) {
             return dtor.destroy(std::forward<Arg>(arg));
         }
         return false;
     }
 
     inline bool class_type::destroy_at(void* mem) const {
-        if ( const destructor dtor = get_destructor() ) {
+        if ( const destructor& dtor = get_destructor() ) {
             dtor.destroy_at(mem);
             return true;
         }
@@ -7314,7 +7338,7 @@ namespace meta_hpp
         }
 
         // NOLINTNEXTLINE(*-use-anyofallof)
-        for ( auto&& derived_base : derived.data_->bases ) {
+        for ( const class_type& derived_base : derived.data_->bases ) {
             if ( is_base_of(derived_base) ) {
                 return true;
             }
@@ -7338,7 +7362,7 @@ namespace meta_hpp
         }
 
         // NOLINTNEXTLINE(*-use-anyofallof)
-        for ( auto&& self_base : data_->bases ) {
+        for ( const class_type& self_base : data_->bases ) {
             if ( self_base.is_derived_from(base) ) {
                 return true;
             }
@@ -7348,14 +7372,14 @@ namespace meta_hpp
     }
 
     inline function class_type::get_function(std::string_view name) const noexcept {
-        for ( auto&& [index, function] : data_->functions ) {
-            if ( index.get_name() == name ) {
+        for ( const function& function : data_->functions ) {
+            if ( function.get_name() == name ) {
                 return function;
             }
         }
 
-        for ( auto&& base : data_->bases ) {
-            if ( function function = base.get_function(name); function ) {
+        for ( const class_type& base : data_->bases ) {
+            if ( const function& function = base.get_function(name); function ) {
                 return function;
             }
         }
@@ -7364,14 +7388,14 @@ namespace meta_hpp
     }
 
     inline member class_type::get_member(std::string_view name) const noexcept {
-        for ( auto&& [index, member] : data_->members ) {
-            if ( index.get_name() == name ) {
+        for ( const member& member : data_->members ) {
+            if ( member.get_name() == name ) {
                 return member;
             }
         }
 
-        for ( auto&& base : data_->bases ) {
-            if ( member member = base.get_member(name); member ) {
+        for ( const class_type& base : data_->bases ) {
+            if ( const member& member = base.get_member(name); member ) {
                 return member;
             }
         }
@@ -7380,14 +7404,14 @@ namespace meta_hpp
     }
 
     inline method class_type::get_method(std::string_view name) const noexcept {
-        for ( auto&& [index, method] : data_->methods ) {
-            if ( index.get_name() == name ) {
+        for ( const method& method : data_->methods ) {
+            if ( method.get_name() == name ) {
                 return method;
             }
         }
 
-        for ( auto&& base : data_->bases ) {
-            if ( method method = base.get_method(name); method ) {
+        for ( const class_type& base : data_->bases ) {
+            if ( const method& method = base.get_method(name); method ) {
                 return method;
             }
         }
@@ -7396,14 +7420,12 @@ namespace meta_hpp
     }
 
     inline any_type class_type::get_typedef(std::string_view name) const noexcept {
-        for ( auto&& [index, type] : data_->typedefs ) {
-            if ( index == name ) {
-                return type;
-            }
+        if ( auto iter{data_->typedefs.find(name)}; iter != data_->typedefs.end() ) {
+            return iter->second;
         }
 
-        for ( auto&& base : data_->bases ) {
-            if ( any_type type = base.get_typedef(name); type ) {
+        for ( const class_type& base : data_->bases ) {
+            if ( const any_type& type = base.get_typedef(name); type ) {
                 return type;
             }
         }
@@ -7412,14 +7434,14 @@ namespace meta_hpp
     }
 
     inline variable class_type::get_variable(std::string_view name) const noexcept {
-        for ( auto&& [index, variable] : data_->variables ) {
-            if ( index.get_name() == name ) {
+        for ( const variable& variable : data_->variables ) {
+            if ( variable.get_name() == name ) {
                 return variable;
             }
         }
 
-        for ( auto&& base : data_->bases ) {
-            if ( variable variable = base.get_variable(name); variable ) {
+        for ( const class_type& base : data_->bases ) {
+            if ( const variable& variable = base.get_variable(name); variable ) {
                 return variable;
             }
         }
@@ -7438,7 +7460,7 @@ namespace meta_hpp
 
     template < typename Iter >
     constructor class_type::get_constructor_with(Iter first, Iter last) const noexcept {
-        for ( auto&& [_, ctor] : data_->constructors ) {
+        for ( const constructor& ctor : data_->constructors ) {
             const any_type_list& args = ctor.get_type().get_argument_types();
             if ( std::equal(first, last, args.begin(), args.end()) ) {
                 return ctor;
@@ -7463,9 +7485,7 @@ namespace meta_hpp
         if ( data_->destructors.empty() ) {
             return destructor{};
         }
-
-        auto&& [_, dtor] = *data_->destructors.begin();
-        return dtor;
+        return *data_->destructors.begin();
     }
 
     //
@@ -7479,8 +7499,8 @@ namespace meta_hpp
 
     template < typename Iter >
     function class_type::get_function_with(std::string_view name, Iter first, Iter last) const noexcept {
-        for ( auto&& [index, function] : data_->functions ) {
-            if ( index.get_name() != name ) {
+        for ( const function& function : data_->functions ) {
+            if ( function.get_name() != name ) {
                 continue;
             }
 
@@ -7490,8 +7510,8 @@ namespace meta_hpp
             }
         }
 
-        for ( auto&& base : data_->bases ) {
-            if ( function function = base.get_function_with(name, first, last); function ) {
+        for ( const class_type& base : data_->bases ) {
+            if ( const function& function = base.get_function_with(name, first, last); function ) {
                 return function;
             }
         }
@@ -7518,8 +7538,8 @@ namespace meta_hpp
 
     template < typename Iter >
     method class_type::get_method_with(std::string_view name, Iter first, Iter last) const noexcept {
-        for ( auto&& [index, method] : data_->methods ) {
-            if ( index.get_name() != name ) {
+        for ( const method& method : data_->methods ) {
+            if ( method.get_name() != name ) {
                 continue;
             }
 
@@ -7529,8 +7549,8 @@ namespace meta_hpp
             }
         }
 
-        for ( auto&& base : data_->bases ) {
-            if ( method method = base.get_method_with(name, first, last); method ) {
+        for ( const class_type& base : data_->bases ) {
+            if ( const method& method = base.get_method_with(name, first, last); method ) {
                 return method;
             }
         }
@@ -7587,7 +7607,7 @@ namespace meta_hpp
         return state_->index.get_name();
     }
 
-    inline const function_map& scope::get_functions() const noexcept {
+    inline const function_set& scope::get_functions() const noexcept {
         return state_->functions;
     }
 
@@ -7595,13 +7615,13 @@ namespace meta_hpp
         return state_->typedefs;
     }
 
-    inline const variable_map& scope::get_variables() const noexcept {
+    inline const variable_set& scope::get_variables() const noexcept {
         return state_->variables;
     }
 
     inline function scope::get_function(std::string_view name) const noexcept {
-        for ( auto&& [index, function] : state_->functions ) {
-            if ( index.get_name() == name ) {
+        for ( const function& function : state_->functions ) {
+            if ( function.get_name() == name ) {
                 return function;
             }
         }
@@ -7609,17 +7629,15 @@ namespace meta_hpp
     }
 
     inline any_type scope::get_typedef(std::string_view name) const noexcept {
-        for ( auto&& [index, type] : state_->typedefs ) {
-            if ( index == name ) {
-                return type;
-            }
+        if ( auto iter{state_->typedefs.find(name)}; iter != state_->typedefs.end() ) {
+            return iter->second;
         }
         return any_type{};
     }
 
     inline variable scope::get_variable(std::string_view name) const noexcept {
-        for ( auto&& [index, variable] : state_->variables ) {
-            if ( index.get_name() == name ) {
+        for ( const variable& variable : state_->variables ) {
+            if ( variable.get_name() == name ) {
                 return variable;
             }
         }
@@ -7633,8 +7651,8 @@ namespace meta_hpp
 
     template < typename Iter >
     function scope::get_function_with(std::string_view name, Iter first, Iter last) const noexcept {
-        for ( auto&& [index, function] : state_->functions ) {
-            if ( index.get_name() != name ) {
+        for ( const function& function : state_->functions ) {
+            if ( function.get_name() != name ) {
                 continue;
             }
 

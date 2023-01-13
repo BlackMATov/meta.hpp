@@ -352,9 +352,9 @@ namespace meta_hpp
 
         [[nodiscard]] const std::string& get_name() const noexcept;
 
-        [[nodiscard]] const function_map& get_functions() const noexcept;
+        [[nodiscard]] const function_set& get_functions() const noexcept;
         [[nodiscard]] const typedef_map& get_typedefs() const noexcept;
-        [[nodiscard]] const variable_map& get_variables() const noexcept;
+        [[nodiscard]] const variable_set& get_variables() const noexcept;
 
         [[nodiscard]] function get_function(std::string_view name) const noexcept;
         [[nodiscard]] any_type get_typedef(std::string_view name) const noexcept;
@@ -596,9 +596,9 @@ namespace meta_hpp::detail
         scope_index index;
         metadata_map metadata;
 
-        function_map functions{};
+        function_set functions{};
         typedef_map typedefs{};
-        variable_map variables{};
+        variable_set variables{};
 
         [[nodiscard]] static scope_state_ptr make(std::string name, metadata_map metadata);
     };

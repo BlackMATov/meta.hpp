@@ -15,8 +15,7 @@ namespace meta_hpp
     template < detail::method_kind Method >
     method_bind<Method>::method_bind(metadata_map metadata)
     : data_{detail::type_access(resolve_type<Method>())} {
-        data_->metadata.swap(metadata);
-        data_->metadata.merge(std::move(metadata));
+        detail::insert_or_assign(data_->metadata, std::move(metadata));
     }
 
     template < detail::method_kind Method >

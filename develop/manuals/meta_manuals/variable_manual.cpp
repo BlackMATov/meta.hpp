@@ -43,7 +43,8 @@ TEST_CASE("meta/meta_examples/variable/usage") {
 
     // prints all variables in the scope
     std::cout << "* " << constants_scope.get_name() << std::endl;
-    for ( auto&& [index, variable] : constants_scope.get_variables() ) {
-        std::cout << "  - " << index.get_name() << ":" << variable.get_as<double>() << std::endl;
+    for ( const meta::variable& variable : constants_scope.get_variables() ) {
+        std::cout << "  - " << variable.get_name()
+                  << ":" << variable.get_as<double>() << std::endl;
     }
 }

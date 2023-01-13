@@ -56,13 +56,13 @@ namespace meta_hpp
         return data_->underlying_type;
     }
 
-    inline const evalue_map& enum_type::get_evalues() const noexcept {
+    inline const evalue_set& enum_type::get_evalues() const noexcept {
         return data_->evalues;
     }
 
     inline evalue enum_type::get_evalue(std::string_view name) const noexcept {
-        for ( auto&& [index, evalue] : data_->evalues ) {
-            if ( index.get_name() == name ) {
+        for ( const evalue& evalue : data_->evalues ) {
+            if ( evalue.get_name() == name ) {
                 return evalue;
             }
         }
@@ -75,9 +75,9 @@ namespace meta_hpp
             return std::string_view{};
         }
 
-        for ( auto&& [_, evalue] : data_->evalues ) {
-            if ( evalue.get_value().template get_as<Enum>() == value ) {
-                return evalue.get_index().get_name();
+        for ( const evalue& evalue : data_->evalues ) {
+            if ( evalue.get_value_as<Enum>() == value ) {
+                return evalue.get_name();
             }
         }
 
@@ -85,7 +85,7 @@ namespace meta_hpp
     }
 
     inline uvalue enum_type::name_to_value(std::string_view name) const noexcept {
-        if ( const evalue value = get_evalue(name); value ) {
+        if ( const evalue& value = get_evalue(name); value ) {
             return value.get_value();
         }
 
