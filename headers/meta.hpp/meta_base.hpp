@@ -12,6 +12,7 @@
 #include "meta_base/cvref_traits.hpp"
 #include "meta_base/fixed_function.hpp"
 #include "meta_base/hash_combiner.hpp"
+#include "meta_base/hashed_string.hpp"
 #include "meta_base/insert_or_assign.hpp"
 #include "meta_base/is_in_place_type.hpp"
 #include "meta_base/memory_buffer.hpp"
@@ -25,6 +26,7 @@
 
 namespace meta_hpp
 {
+    using detail::hashed_string;
     using detail::memory_buffer;
 
     using detail::select_const;

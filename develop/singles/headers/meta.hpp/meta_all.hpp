@@ -515,6 +515,66 @@ namespace meta_hpp::detail
 
 namespace meta_hpp::detail
 {
+    class hashed_string final {
+    public:
+        hashed_string() = default;
+        ~hashed_string() = default;
+
+        hashed_string(hashed_string&&) = default;
+        hashed_string(const hashed_string&) = default;
+
+        hashed_string& operator=(hashed_string&&) = default;
+        hashed_string& operator=(const hashed_string&) = default;
+
+        hashed_string(const char* str) noexcept
+        : hash_{std::hash<std::string_view>{}(str)} {}
+
+        hashed_string(std::string_view str) noexcept
+        : hash_{std::hash<std::string_view>{}(str)} {}
+
+        hashed_string(const std::string& str) noexcept
+        : hash_{std::hash<std::string_view>{}(str)} {}
+
+        void swap(hashed_string& other) noexcept {
+            std::swap(hash_, other.hash_);
+        }
+
+        [[nodiscard]] std::size_t get_hash() const noexcept {
+            return hash_;
+        }
+    private:
+        std::size_t hash_{};
+    };
+
+    inline void swap(hashed_string& l, hashed_string& r) noexcept {
+        l.swap(r);
+    }
+
+    [[nodiscard]] inline bool operator<(hashed_string l, hashed_string r) noexcept {
+        return l.get_hash() < r.get_hash();
+    }
+
+    [[nodiscard]] inline bool operator==(hashed_string l, hashed_string r) noexcept {
+        return l.get_hash() == r.get_hash();
+    }
+
+    [[nodiscard]] inline bool operator!=(hashed_string l, hashed_string r) noexcept {
+        return l.get_hash() == r.get_hash();
+    }
+}
+
+namespace std
+{
+    template <>
+    struct hash<meta_hpp::detail::hashed_string> {
+        size_t operator()(meta_hpp::detail::hashed_string hs) const noexcept {
+            return hs.get_hash();
+        }
+    };
+}
+
+namespace meta_hpp::detail
+{
     template < typename Key, typename Compare, typename Allocator >
     typename std::set<Key, Compare, Allocator>::iterator
     insert_or_assign(std::set<Key, Compare, Allocator>& set,
@@ -856,6 +916,7 @@ namespace meta_hpp::detail
 
 namespace meta_hpp
 {
+    using detail::hashed_string;
     using detail::memory_buffer;
 
     using detail::select_const;
