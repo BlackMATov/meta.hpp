@@ -12,6 +12,7 @@ namespace
         int i{42};
 
         unique_int() = default;
+        explicit unique_int(int ni) : i{ni} {}
 
         unique_int(unique_int&&) = default;
         unique_int& operator=(unique_int&&) = default;
@@ -180,13 +181,13 @@ TEST_CASE("meta/meta_states/variable") {
         CHECK(vm.get_as<unique_int*>() == std::addressof(clazz_1::unique_int_variable));
 
         {
-            auto nv = std::make_unique<int>(11);
+            unique_int nv{11};
             vm.set(std::move(nv));
             CHECK(clazz_1::unique_int_variable.i == 11);
         }
 
         {
-            auto nv = std::make_unique<int>(12);
+            unique_int nv{12};
             CHECK_THROWS(vm.set(nv));
             CHECK(clazz_1::unique_int_variable.i == 11);
         }
@@ -201,13 +202,13 @@ TEST_CASE("meta/meta_states/variable") {
         CHECK(&vm.get_as<ref_t>().get() == &clazz_1::unique_int_variable);
 
         {
-            auto nv = std::make_unique<int>(13);
+            unique_int nv{13};
             vm.set(std::move(nv));
             CHECK(clazz_1::unique_int_variable.i == 13);
         }
 
         {
-            auto nv = std::make_unique<int>(14);
+            unique_int nv{14};
             CHECK_THROWS(vm.set(nv));
             CHECK(clazz_1::unique_int_variable.i == 13);
         }
@@ -221,7 +222,7 @@ TEST_CASE("meta/meta_states/variable") {
         CHECK(vm.get_as<const unique_int*>() == std::addressof(clazz_1::const_unique_int_variable));
 
         {
-            auto nv = std::make_unique<int>(11);
+            unique_int nv{11};
             CHECK_THROWS(vm.set(nv));
             CHECK_THROWS(vm.set(std::move(nv)));
             CHECK(clazz_1::const_unique_int_variable.i == 42);
@@ -237,7 +238,7 @@ TEST_CASE("meta/meta_states/variable") {
         CHECK(&vm.get_as<ref_t>().get() == &clazz_1::const_unique_int_variable);
 
         {
-            auto nv = std::make_unique<int>(12);
+            unique_int nv{12};
             CHECK_THROWS(vm.set(nv));
             CHECK_THROWS(vm.set(std::move(nv)));
             CHECK(clazz_1::const_unique_int_variable.i == 42);

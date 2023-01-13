@@ -17,7 +17,7 @@ namespace
     struct clazz_2 {};
 }
 
-TEST_CASE("meta/meta_states/member") {
+TEST_CASE("meta/meta_states/member/_") {
     namespace meta = meta_hpp;
 
     meta::class_<clazz_1>()
@@ -26,6 +26,10 @@ TEST_CASE("meta/meta_states/member") {
         // .member_("unique_int_member", &clazz_1::unique_int_member)
         .member_("unique_int_member_as_ptr", &clazz_1::unique_int_member, meta::member_policy::as_pointer)
         .member_("unique_int_member_as_ref", &clazz_1::unique_int_member, meta::member_policy::as_reference_wrapper);
+}
+
+TEST_CASE("meta/meta_states/member") {
+    namespace meta = meta_hpp;
 
     const meta::class_type clazz_1_type = meta::resolve_type<clazz_1>();
     REQUIRE(clazz_1_type);

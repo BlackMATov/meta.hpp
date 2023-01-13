@@ -58,7 +58,7 @@ namespace
     struct variadic_clazz {};
 }
 
-TEST_CASE("meta/meta_types/class_type") {
+TEST_CASE("meta/meta_types/class_type/_") {
     namespace meta = meta_hpp;
 
     meta::class_<base_clazz_1>()
@@ -91,6 +91,10 @@ TEST_CASE("meta/meta_types/class_type") {
     meta::class_<final_derived_clazz>()
         .constructor_<int, float>()
         .base_<derived_clazz>();
+}
+
+TEST_CASE("meta/meta_types/class_type") {
+    namespace meta = meta_hpp;
 
     const meta::class_type base_clazz_1_type = meta::resolve_type<base_clazz_1>();
     REQUIRE(base_clazz_1_type);
