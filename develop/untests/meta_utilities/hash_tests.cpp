@@ -35,7 +35,7 @@ namespace
     };
 }
 
-TEST_CASE("meta/meta_utilities/hash") {
+TEST_CASE("meta/meta_utilities/hash/_") {
     namespace meta = meta_hpp;
 
     meta::enum_<color>()
@@ -51,6 +51,10 @@ TEST_CASE("meta/meta_utilities/hash") {
         .member_("y", &ivec2::y)
         .method_("add", &ivec2::add)
         .function_("iadd", &ivec2::iadd);
+}
+
+TEST_CASE("meta/meta_utilities/hash") {
+    namespace meta = meta_hpp;
 
     const meta::class_type ivec2_type = meta::resolve_type<ivec2>();
     const meta::constructor ivec2_ctor = ivec2_type.get_constructor_with<int>();

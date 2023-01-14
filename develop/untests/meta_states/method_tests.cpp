@@ -61,7 +61,7 @@ namespace
     struct clazz2 {};
 }
 
-TEST_CASE("meta/meta_states/method") {
+TEST_CASE("meta/meta_states/method/_") {
     namespace meta = meta_hpp;
 
     meta::class_<base>()
@@ -90,6 +90,10 @@ TEST_CASE("meta/meta_states/method") {
 
     meta::class_<derived_clazz>()
         .base_<clazz>();
+}
+
+TEST_CASE("meta/meta_states/method") {
+    namespace meta = meta_hpp;
 
     const meta::class_type ct = meta::resolve_type<clazz>();
     REQUIRE(ct);

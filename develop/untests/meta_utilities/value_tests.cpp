@@ -69,7 +69,7 @@ namespace
     }
 }
 
-TEST_CASE("meta/meta_utilities/value/ivec2") {
+TEST_CASE("meta/meta_utilities/value/_") {
     namespace meta = meta_hpp;
 
     meta::class_<ivec2>()
@@ -79,10 +79,6 @@ TEST_CASE("meta/meta_utilities/value/ivec2") {
         .constructor_<const ivec2&>()
         .member_("x", &ivec2::x)
         .member_("y", &ivec2::y);
-}
-
-TEST_CASE("meta/meta_utilities/value/ivec3") {
-    namespace meta = meta_hpp;
 
     meta::class_<ivec3>()
         .constructor_<int>()
