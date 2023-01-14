@@ -8,9 +8,7 @@
 
 #include "meta_base.hpp"
 #include "meta_states.hpp"
-
-#include "meta_detail/state_registry.hpp"
-#include "meta_detail/type_registry.hpp"
+#include "meta_registry.hpp"
 
 namespace meta_hpp::detail
 {
@@ -351,11 +349,7 @@ namespace meta_hpp
 {
     class scope_bind final {
     public:
-        struct local_tag {};
-        struct static_tag {};
-
-        explicit scope_bind(std::string name, metadata_map metadata, local_tag);
-        explicit scope_bind(std::string_view name, metadata_map metadata, static_tag);
+        explicit scope_bind(const scope& scope, metadata_map metadata);
         operator scope() const noexcept;
 
         // function_
@@ -471,10 +465,16 @@ namespace meta_hpp
 namespace meta_hpp
 {
     inline scope_bind local_scope_(std::string name, metadata_map metadata = {}) {
-        return scope_bind{std::move(name), std::move(metadata), scope_bind::local_tag()};
+        scope local_scope{detail::scope_state::make(std::move(name))};
+        return scope_bind{local_scope, std::move(metadata)};
     }
 
     inline scope_bind static_scope_(std::string_view name, metadata_map metadata = {}) {
-        return scope_bind{name, std::move(metadata), scope_bind::static_tag()};
+        scope static_scope{resolve_scope(name)};
+        return scope_bind{static_scope, std::move(metadata)};
+    }
+
+    inline scope_bind extend_scope_(const scope& scope, metadata_map metadata = {}) {
+        return scope_bind{scope, std::move(metadata)};
     }
 }

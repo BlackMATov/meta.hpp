@@ -49,7 +49,7 @@ namespace meta_hpp::detail
                 return iter->second;
             }
 
-            auto state = scope_state::make(std::string{name}, metadata_map{});
+            auto state = scope_state::make(std::string{name});
             auto&& [iter, _] = scopes_.insert_or_assign(std::string{name}, std::move(state));
             return iter->second;
         }

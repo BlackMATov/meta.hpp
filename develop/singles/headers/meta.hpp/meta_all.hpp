@@ -3160,7 +3160,7 @@ namespace meta_hpp::detail
         typedef_map typedefs{};
         variable_set variables{};
 
-        [[nodiscard]] static scope_state_ptr make(std::string name, metadata_map metadata);
+        [[nodiscard]] static scope_state_ptr make(std::string name);
     };
 
     struct variable_state final {
@@ -3220,7 +3220,7 @@ namespace meta_hpp::detail
                 return iter->second;
             }
 
-            auto state = scope_state::make(std::string{name}, metadata_map{});
+            auto state = scope_state::make(std::string{name});
             auto&& [iter, _] = scopes_.insert_or_assign(std::string{name}, std::move(state));
             return iter->second;
         }
@@ -3459,6 +3459,75 @@ namespace meta_hpp::detail
         std::map<type_id, any_type, std::less<>> type_by_id_;
         std::map<std::type_index, any_type, std::less<>> type_by_rtti_;
     };
+}
+
+namespace meta_hpp
+{
+    template < typename T >
+    [[nodiscard]] auto resolve_type() {
+        using namespace detail;
+        type_registry& registry = type_registry::instance();
+        return registry.resolve_type<std::remove_cv_t<T>>();
+    }
+
+    template < typename... Ts >
+    [[nodiscard]] any_type_list resolve_types() {
+        return { resolve_type<Ts>()... };
+    }
+}
+
+namespace meta_hpp
+{
+    template < typename T >
+    [[nodiscard]] auto resolve_type(T&&) {
+        return resolve_type<std::remove_reference_t<T>>();
+    }
+
+    template < typename... Ts >
+    [[nodiscard]] any_type_list resolve_types(type_list<Ts...>) {
+        return { resolve_type<Ts>()... };
+    }
+}
+
+namespace meta_hpp
+{
+    template < detail::class_kind Class, typename... Args >
+    constructor_type resolve_constructor_type() {
+        using namespace detail;
+        type_registry& registry = type_registry::instance();
+        return registry.resolve_constructor_type<Class, Args...>();
+    }
+
+    template < detail::class_kind Class >
+    destructor_type resolve_destructor_type() {
+        using namespace detail;
+        type_registry& registry = type_registry::instance();
+        return registry.resolve_destructor_type<Class>();
+    }
+}
+
+namespace meta_hpp
+{
+    template < typename T >
+    [[nodiscard]] any_type resolve_polymorphic_type(T&& v) noexcept {
+    #if !defined(META_HPP_NO_RTTI)
+        using namespace detail;
+        type_registry& registry = type_registry::instance();
+        return registry.get_type_by_rtti(typeid(v));
+    #else
+        (void)v;
+        return any_type{};
+    #endif
+    }
+}
+
+namespace meta_hpp
+{
+    [[nodiscard]] inline scope resolve_scope(std::string_view name) {
+        using namespace detail;
+        state_registry& registry = state_registry::instance();
+        return registry.resolve_scope(name);
+    }
 }
 
 namespace meta_hpp::detail
@@ -3800,11 +3869,7 @@ namespace meta_hpp
 {
     class scope_bind final {
     public:
-        struct local_tag {};
-        struct static_tag {};
-
-        explicit scope_bind(std::string name, metadata_map metadata, local_tag);
-        explicit scope_bind(std::string_view name, metadata_map metadata, static_tag);
+        explicit scope_bind(const scope& scope, metadata_map metadata);
         operator scope() const noexcept;
 
         // function_
@@ -3920,80 +3985,17 @@ namespace meta_hpp
 namespace meta_hpp
 {
     inline scope_bind local_scope_(std::string name, metadata_map metadata = {}) {
-        return scope_bind{std::move(name), std::move(metadata), scope_bind::local_tag()};
+        scope local_scope{detail::scope_state::make(std::move(name))};
+        return scope_bind{local_scope, std::move(metadata)};
     }
 
     inline scope_bind static_scope_(std::string_view name, metadata_map metadata = {}) {
-        return scope_bind{name, std::move(metadata), scope_bind::static_tag()};
-    }
-}
-
-namespace meta_hpp
-{
-    template < typename T >
-    [[nodiscard]] auto resolve_type() {
-        using namespace detail;
-        type_registry& registry = type_registry::instance();
-        return registry.resolve_type<std::remove_cv_t<T>>();
+        scope static_scope{resolve_scope(name)};
+        return scope_bind{static_scope, std::move(metadata)};
     }
 
-    template < typename... Ts >
-    [[nodiscard]] any_type_list resolve_types() {
-        return { resolve_type<Ts>()... };
-    }
-}
-
-namespace meta_hpp
-{
-    template < typename T >
-    [[nodiscard]] auto resolve_type(T&&) {
-        return resolve_type<std::remove_reference_t<T>>();
-    }
-
-    template < typename... Ts >
-    [[nodiscard]] any_type_list resolve_types(type_list<Ts...>) {
-        return { resolve_type<Ts>()... };
-    }
-}
-
-namespace meta_hpp
-{
-    template < detail::class_kind Class, typename... Args >
-    constructor_type resolve_constructor_type() {
-        using namespace detail;
-        type_registry& registry = type_registry::instance();
-        return registry.resolve_constructor_type<Class, Args...>();
-    }
-
-    template < detail::class_kind Class >
-    destructor_type resolve_destructor_type() {
-        using namespace detail;
-        type_registry& registry = type_registry::instance();
-        return registry.resolve_destructor_type<Class>();
-    }
-}
-
-namespace meta_hpp
-{
-    template < typename T >
-    [[nodiscard]] any_type resolve_polymorphic_type(T&& v) noexcept {
-    #if !defined(META_HPP_NO_RTTI)
-        using namespace detail;
-        type_registry& registry = type_registry::instance();
-        return registry.get_type_by_rtti(typeid(v));
-    #else
-        (void)v;
-        return any_type{};
-    #endif
-    }
-}
-
-namespace meta_hpp
-{
-    [[nodiscard]] inline scope resolve_scope(std::string_view name) {
-        using namespace detail;
-        state_registry& registry = state_registry::instance();
-        return registry.resolve_scope(name);
+    inline scope_bind extend_scope_(const scope& scope, metadata_map metadata = {}) {
+        return scope_bind{scope, std::move(metadata)};
     }
 }
 
@@ -4456,11 +4458,8 @@ namespace meta_hpp
 
 namespace meta_hpp
 {
-    inline scope_bind::scope_bind(std::string name, metadata_map metadata, local_tag)
-    : state_{detail::scope_state::make(std::move(name), std::move(metadata))} {}
-
-    inline scope_bind::scope_bind(std::string_view name, metadata_map metadata, static_tag)
-    : state_{detail::state_access(resolve_scope(name))} {
+    inline scope_bind::scope_bind(const scope& scope, metadata_map metadata)
+    : state_{detail::state_access(scope)} {
         detail::insert_or_assign(state_->metadata, std::move(metadata));
     }
 
@@ -7568,10 +7567,9 @@ namespace meta_hpp
 
 namespace meta_hpp::detail
 {
-    inline scope_state_ptr scope_state::make(std::string name, metadata_map metadata) {
+    inline scope_state_ptr scope_state::make(std::string name) {
         return std::make_shared<scope_state>(scope_state{
             .index{scope_index::make(std::move(name))},
-            .metadata{std::move(metadata)},
         });
     }
 }

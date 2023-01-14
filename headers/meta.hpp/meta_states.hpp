@@ -600,7 +600,7 @@ namespace meta_hpp::detail
         typedef_map typedefs{};
         variable_set variables{};
 
-        [[nodiscard]] static scope_state_ptr make(std::string name, metadata_map metadata);
+        [[nodiscard]] static scope_state_ptr make(std::string name);
     };
 
     struct variable_state final {

@@ -12,11 +12,8 @@
 
 namespace meta_hpp
 {
-    inline scope_bind::scope_bind(std::string name, metadata_map metadata, local_tag)
-    : state_{detail::scope_state::make(std::move(name), std::move(metadata))} {}
-
-    inline scope_bind::scope_bind(std::string_view name, metadata_map metadata, static_tag)
-    : state_{detail::state_access(resolve_scope(name))} {
+    inline scope_bind::scope_bind(const scope& scope, metadata_map metadata)
+    : state_{detail::state_access(scope)} {
         detail::insert_or_assign(state_->metadata, std::move(metadata));
     }
 

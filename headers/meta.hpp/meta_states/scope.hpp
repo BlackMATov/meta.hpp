@@ -19,10 +19,9 @@
 
 namespace meta_hpp::detail
 {
-    inline scope_state_ptr scope_state::make(std::string name, metadata_map metadata) {
+    inline scope_state_ptr scope_state::make(std::string name) {
         return std::make_shared<scope_state>(scope_state{
             .index{scope_index::make(std::move(name))},
-            .metadata{std::move(metadata)},
         });
     }
 }
