@@ -14,17 +14,10 @@ namespace meta_hpp
 {
     template < detail::class_kind Class >
     class_bind<Class>::class_bind(metadata_map metadata)
-    : data_{detail::type_access(resolve_type<Class>())} {
-        detail::insert_or_assign(data_->metadata, std::move(metadata));
-
+    : type_bind_base{resolve_type<Class>(), std::move(metadata)} {
         if constexpr ( std::is_destructible_v<Class> ) {
             destructor_();
         }
-    }
-
-    template < detail::class_kind Class >
-    class_bind<Class>::operator class_type() const noexcept {
-        return class_type{data_};
     }
 
     //
@@ -39,18 +32,18 @@ namespace meta_hpp
         ([this]<detail::class_kind Base>(std::in_place_type_t<Base>) {
             const class_type& base_type = resolve_type<Base>();
 
-            if ( auto&& [_, emplaced] = data_->bases.emplace(base_type); !emplaced ) {
+            if ( auto&& [_, emplaced] = get_data().bases.emplace(base_type); !emplaced ) {
                 return;
             }
 
             META_HPP_TRY {
-                data_->bases_info.emplace(base_type, detail::class_type_data::base_info{
+                get_data().bases_info.emplace(base_type, detail::class_type_data::base_info{
                     .upcast = +[](void* derived) -> void* {
                         return static_cast<Base*>(static_cast<Class*>(derived));
                     }
                 });
             } META_HPP_CATCH(...) {
-                data_->bases.erase(base_type);
+                get_data().bases.erase(base_type);
                 META_HPP_RETHROW();
             }
         }(std::in_place_type<Bases>), ...);
@@ -89,7 +82,7 @@ namespace meta_hpp
             detail::state_access(arg)->metadata = std::move(opts.arguments[i].metadata);
         }
 
-        detail::insert_or_assign(data_->constructors, std::move(state));
+        detail::insert_or_assign(get_data().constructors, std::move(state));
         return *this;
     }
 
@@ -109,7 +102,7 @@ namespace meta_hpp
         requires detail::class_bind_destructor_kind<Class>
     {
         auto state = detail::destructor_state::make<Class>(std::move(opts.metadata));
-        detail::insert_or_assign(data_->destructors, std::move(state));
+        detail::insert_or_assign(get_data().destructors, std::move(state));
         return *this;
     }
 
@@ -150,7 +143,7 @@ namespace meta_hpp
             detail::state_access(arg)->metadata = std::move(opts.arguments[i].metadata);
         }
 
-        detail::insert_or_assign(data_->functions, std::move(state));
+        detail::insert_or_assign(get_data().functions, std::move(state));
         return *this;
     }
 
@@ -177,7 +170,7 @@ namespace meta_hpp
             detail::state_access(arg)->name = std::data(arguments)[i];
         }
 
-        detail::insert_or_assign(data_->functions, std::move(state));
+        detail::insert_or_assign(get_data().functions, std::move(state));
         return *this;
     }
 
@@ -209,7 +202,7 @@ namespace meta_hpp
             std::move(name),
             std::move(member),
             std::move(opts.metadata));
-        detail::insert_or_assign(data_->members, std::move(state));
+        detail::insert_or_assign(get_data().members, std::move(state));
         return *this;
     }
 
@@ -252,7 +245,7 @@ namespace meta_hpp
             detail::state_access(arg)->metadata = std::move(opts.arguments[i].metadata);
         }
 
-        detail::insert_or_assign(data_->methods, std::move(state));
+        detail::insert_or_assign(get_data().methods, std::move(state));
         return *this;
     }
 
@@ -280,7 +273,7 @@ namespace meta_hpp
             detail::state_access(arg)->name = std::data(arguments)[i];
         }
 
-        detail::insert_or_assign(data_->methods, std::move(state));
+        detail::insert_or_assign(get_data().methods, std::move(state));
         return *this;
     }
 
@@ -291,7 +284,7 @@ namespace meta_hpp
     template < detail::class_kind Class >
     template < typename Type >
     class_bind<Class>& class_bind<Class>::typedef_(std::string name) {
-        data_->typedefs.insert_or_assign(std::move(name), resolve_type<Type>());
+        get_data().typedefs.insert_or_assign(std::move(name), resolve_type<Type>());
         return *this;
     }
 
@@ -321,7 +314,7 @@ namespace meta_hpp
             std::move(name),
             std::move(pointer),
             std::move(opts.metadata));
-        detail::insert_or_assign(data_->variables, std::move(state));
+        detail::insert_or_assign(get_data().variables, std::move(state));
         return *this;
     }
 }

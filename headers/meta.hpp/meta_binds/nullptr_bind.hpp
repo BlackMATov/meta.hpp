@@ -14,12 +14,5 @@ namespace meta_hpp
 {
     template < detail::nullptr_kind Nullptr >
     nullptr_bind<Nullptr>::nullptr_bind(metadata_map metadata)
-    : data_{detail::type_access(resolve_type<Nullptr>())} {
-        detail::insert_or_assign(data_->metadata, std::move(metadata));
-    }
-
-    template < detail::nullptr_kind Nullptr >
-    nullptr_bind<Nullptr>::operator nullptr_type() const noexcept {
-        return nullptr_type{data_};
-    }
+    : type_bind_base{resolve_type<Nullptr>(), std::move(metadata)} {}
 }

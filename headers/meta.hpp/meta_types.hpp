@@ -62,7 +62,9 @@ namespace meta_hpp
 {
     class any_type final {
     public:
-        explicit any_type() = default;
+        using data_ptr = detail::type_data_base*;
+
+        any_type() = default;
 
         [[nodiscard]] bool is_valid() const noexcept;
         [[nodiscard]] explicit operator bool() const noexcept;
@@ -114,14 +116,16 @@ namespace meta_hpp
         [[nodiscard]] reference_type as_reference() const noexcept;
         [[nodiscard]] void_type as_void() const noexcept;
     private:
-        detail::type_data_base* data_{};
-        friend auto detail::type_access<any_type>(const any_type&);
+        data_ptr data_{};
+        friend data_ptr detail::type_access<any_type>(const any_type&);
     };
 
     class array_type final {
     public:
+        using data_ptr = detail::array_type_data*;
+
         array_type() = default;
-        array_type(detail::array_type_data* data);
+        array_type(data_ptr data);
 
         [[nodiscard]] bool is_valid() const noexcept;
         [[nodiscard]] explicit operator bool() const noexcept;
@@ -133,14 +137,16 @@ namespace meta_hpp
         [[nodiscard]] std::size_t get_extent() const noexcept;
         [[nodiscard]] any_type get_data_type() const noexcept;
     private:
-        detail::array_type_data* data_{};
-        friend auto detail::type_access<array_type>(const array_type&);
+        data_ptr data_{};
+        friend data_ptr detail::type_access<array_type>(const array_type&);
     };
 
     class class_type final {
     public:
+        using data_ptr = detail::class_type_data*;
+
         class_type() = default;
-        class_type(detail::class_type_data* data);
+        class_type(data_ptr data);
 
         [[nodiscard]] bool is_valid() const noexcept;
         [[nodiscard]] explicit operator bool() const noexcept;
@@ -211,14 +217,16 @@ namespace meta_hpp
         [[nodiscard]] method get_method_with(std::string_view name, std::span<const any_type> args) const noexcept;
         [[nodiscard]] method get_method_with(std::string_view name, std::initializer_list<any_type> args) const noexcept;
     private:
-        detail::class_type_data* data_{};
-        friend auto detail::type_access<class_type>(const class_type&);
+        data_ptr data_{};
+        friend data_ptr detail::type_access<class_type>(const class_type&);
     };
 
     class constructor_type final {
     public:
+        using data_ptr = detail::constructor_type_data*;
+
         constructor_type() = default;
-        constructor_type(detail::constructor_type_data* data);
+        constructor_type(data_ptr data);
 
         [[nodiscard]] bool is_valid() const noexcept;
         [[nodiscard]] explicit operator bool() const noexcept;
@@ -232,14 +240,16 @@ namespace meta_hpp
         [[nodiscard]] any_type get_argument_type(std::size_t position) const noexcept;
         [[nodiscard]] const any_type_list& get_argument_types() const noexcept;
     private:
-        detail::constructor_type_data* data_{};
-        friend auto detail::type_access<constructor_type>(const constructor_type&);
+        data_ptr data_{};
+        friend data_ptr detail::type_access<constructor_type>(const constructor_type&);
     };
 
     class destructor_type final {
     public:
+        using data_ptr = detail::destructor_type_data*;
+
         destructor_type() = default;
-        destructor_type(detail::destructor_type_data* data);
+        destructor_type(data_ptr data);
 
         [[nodiscard]] bool is_valid() const noexcept;
         [[nodiscard]] explicit operator bool() const noexcept;
@@ -250,14 +260,16 @@ namespace meta_hpp
 
         [[nodiscard]] any_type get_class_type() const noexcept;
     private:
-        detail::destructor_type_data* data_{};
-        friend auto detail::type_access<destructor_type>(const destructor_type&);
+        data_ptr data_{};
+        friend data_ptr detail::type_access<destructor_type>(const destructor_type&);
     };
 
     class enum_type final {
     public:
+        using data_ptr = detail::enum_type_data*;
+
         enum_type() = default;
-        enum_type(detail::enum_type_data* data);
+        enum_type(data_ptr data);
 
         [[nodiscard]] bool is_valid() const noexcept;
         [[nodiscard]] explicit operator bool() const noexcept;
@@ -279,14 +291,16 @@ namespace meta_hpp
         template < typename T >
         [[nodiscard]] T name_to_value_as(std::string_view name) const;
     private:
-        detail::enum_type_data* data_{};
-        friend auto detail::type_access<enum_type>(const enum_type&);
+        data_ptr data_{};
+        friend data_ptr detail::type_access<enum_type>(const enum_type&);
     };
 
     class function_type final {
     public:
+        using data_ptr = detail::function_type_data*;
+
         function_type() = default;
-        function_type(detail::function_type_data* data);
+        function_type(data_ptr data);
 
         [[nodiscard]] bool is_valid() const noexcept;
         [[nodiscard]] explicit operator bool() const noexcept;
@@ -300,14 +314,16 @@ namespace meta_hpp
         [[nodiscard]] any_type get_argument_type(std::size_t position) const noexcept;
         [[nodiscard]] const any_type_list& get_argument_types() const noexcept;
     private:
-        detail::function_type_data* data_{};
-        friend auto detail::type_access<function_type>(const function_type&);
+        data_ptr data_{};
+        friend data_ptr detail::type_access<function_type>(const function_type&);
     };
 
     class member_type final {
     public:
+        using data_ptr = detail::member_type_data*;
+
         member_type() = default;
-        member_type(detail::member_type_data* data);
+        member_type(data_ptr data);
 
         [[nodiscard]] bool is_valid() const noexcept;
         [[nodiscard]] explicit operator bool() const noexcept;
@@ -319,14 +335,16 @@ namespace meta_hpp
         [[nodiscard]] class_type get_owner_type() const noexcept;
         [[nodiscard]] any_type get_value_type() const noexcept;
     private:
-        detail::member_type_data* data_{};
-        friend auto detail::type_access<member_type>(const member_type&);
+        data_ptr data_{};
+        friend data_ptr detail::type_access<member_type>(const member_type&);
     };
 
     class method_type final {
     public:
+        using data_ptr = detail::method_type_data*;
+
         method_type() = default;
-        method_type(detail::method_type_data* data);
+        method_type(data_ptr data);
 
         [[nodiscard]] bool is_valid() const noexcept;
         [[nodiscard]] explicit operator bool() const noexcept;
@@ -341,14 +359,16 @@ namespace meta_hpp
         [[nodiscard]] any_type get_argument_type(std::size_t position) const noexcept;
         [[nodiscard]] const any_type_list& get_argument_types() const noexcept;
     private:
-        detail::method_type_data* data_{};
-        friend auto detail::type_access<method_type>(const method_type&);
+        data_ptr data_{};
+        friend data_ptr detail::type_access<method_type>(const method_type&);
     };
 
     class nullptr_type final {
     public:
+        using data_ptr = detail::nullptr_type_data*;
+
         nullptr_type() = default;
-        nullptr_type(detail::nullptr_type_data* data);
+        nullptr_type(data_ptr data);
 
         [[nodiscard]] bool is_valid() const noexcept;
         [[nodiscard]] explicit operator bool() const noexcept;
@@ -356,14 +376,16 @@ namespace meta_hpp
         [[nodiscard]] type_id get_id() const noexcept;
         [[nodiscard]] const metadata_map& get_metadata() const noexcept;
     private:
-        detail::nullptr_type_data* data_{};
-        friend auto detail::type_access<nullptr_type>(const nullptr_type&);
+        data_ptr data_{};
+        friend data_ptr detail::type_access<nullptr_type>(const nullptr_type&);
     };
 
     class number_type final {
     public:
+        using data_ptr = detail::number_type_data*;
+
         number_type() = default;
-        number_type(detail::number_type_data* data);
+        number_type(data_ptr data);
 
         [[nodiscard]] bool is_valid() const noexcept;
         [[nodiscard]] explicit operator bool() const noexcept;
@@ -375,14 +397,16 @@ namespace meta_hpp
         [[nodiscard]] std::size_t get_size() const noexcept;
         [[nodiscard]] std::size_t get_align() const noexcept;
     private:
-        detail::number_type_data* data_{};
-        friend auto detail::type_access<number_type>(const number_type&);
+        data_ptr data_{};
+        friend data_ptr detail::type_access<number_type>(const number_type&);
     };
 
     class pointer_type final {
     public:
+        using data_ptr = detail::pointer_type_data*;
+
         pointer_type() = default;
-        pointer_type(detail::pointer_type_data* data);
+        pointer_type(data_ptr data);
 
         [[nodiscard]] bool is_valid() const noexcept;
         [[nodiscard]] explicit operator bool() const noexcept;
@@ -393,14 +417,16 @@ namespace meta_hpp
 
         [[nodiscard]] any_type get_data_type() const noexcept;
     private:
-        detail::pointer_type_data* data_{};
-        friend auto detail::type_access<pointer_type>(const pointer_type&);
+        data_ptr data_{};
+        friend data_ptr detail::type_access<pointer_type>(const pointer_type&);
     };
 
     class reference_type final {
     public:
+        using data_ptr = detail::reference_type_data*;
+
         reference_type() = default;
-        reference_type(detail::reference_type_data* data);
+        reference_type(data_ptr data);
 
         [[nodiscard]] bool is_valid() const noexcept;
         [[nodiscard]] explicit operator bool() const noexcept;
@@ -411,14 +437,16 @@ namespace meta_hpp
 
         [[nodiscard]] any_type get_data_type() const noexcept;
     private:
-        detail::reference_type_data* data_{};
-        friend auto detail::type_access<reference_type>(const reference_type&);
+        data_ptr data_{};
+        friend data_ptr detail::type_access<reference_type>(const reference_type&);
     };
 
     class void_type final {
     public:
+        using data_ptr = detail::void_type_data*;
+
         void_type() = default;
-        void_type(detail::void_type_data* data);
+        void_type(data_ptr data);
 
         [[nodiscard]] bool is_valid() const noexcept;
         [[nodiscard]] explicit operator bool() const noexcept;
@@ -426,8 +454,8 @@ namespace meta_hpp
         [[nodiscard]] type_id get_id() const noexcept;
         [[nodiscard]] const metadata_map& get_metadata() const noexcept;
     private:
-        detail::void_type_data* data_{};
-        friend auto detail::type_access<void_type>(const void_type&);
+        data_ptr data_{};
+        friend data_ptr detail::type_access<void_type>(const void_type&);
     };
 }
 

@@ -14,12 +14,5 @@ namespace meta_hpp
 {
     template < detail::pointer_kind Pointer >
     pointer_bind<Pointer>::pointer_bind(metadata_map metadata)
-    : data_{detail::type_access(resolve_type<Pointer>())} {
-        detail::insert_or_assign(data_->metadata, std::move(metadata));
-    }
-
-    template < detail::pointer_kind Pointer >
-    pointer_bind<Pointer>::operator pointer_type() const noexcept {
-        return pointer_type{data_};
-    }
+    : type_bind_base{resolve_type<Pointer>(), std::move(metadata)} {}
 }

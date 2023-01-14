@@ -26,13 +26,8 @@ namespace meta_hpp::detail
 
 namespace meta_hpp
 {
-    inline evalue::evalue(detail::evalue_state_ptr state) noexcept
+    inline evalue::evalue(state_ptr state) noexcept
     : state_{std::move(state)} {}
-
-    inline evalue& evalue::operator=(detail::evalue_state_ptr state) noexcept {
-        state_ = std::move(state);
-        return *this;
-    }
 
     inline bool evalue::is_valid() const noexcept {
         return !!state_;

@@ -1127,7 +1127,7 @@ namespace meta_hpp::detail
         std::is_same_v<T, void_type>;
 
     template < type_family T >
-    [[nodiscard]] auto type_access(const T& type) {
+    [[nodiscard]] typename T::data_ptr type_access(const T& type) {
         return type.data_;
     }
 }
@@ -1678,7 +1678,9 @@ namespace meta_hpp
 {
     class any_type final {
     public:
-        explicit any_type() = default;
+        using data_ptr = detail::type_data_base*;
+
+        any_type() = default;
 
         [[nodiscard]] bool is_valid() const noexcept;
         [[nodiscard]] explicit operator bool() const noexcept;
@@ -1730,14 +1732,16 @@ namespace meta_hpp
         [[nodiscard]] reference_type as_reference() const noexcept;
         [[nodiscard]] void_type as_void() const noexcept;
     private:
-        detail::type_data_base* data_{};
-        friend auto detail::type_access<any_type>(const any_type&);
+        data_ptr data_{};
+        friend data_ptr detail::type_access<any_type>(const any_type&);
     };
 
     class array_type final {
     public:
+        using data_ptr = detail::array_type_data*;
+
         array_type() = default;
-        array_type(detail::array_type_data* data);
+        array_type(data_ptr data);
 
         [[nodiscard]] bool is_valid() const noexcept;
         [[nodiscard]] explicit operator bool() const noexcept;
@@ -1749,14 +1753,16 @@ namespace meta_hpp
         [[nodiscard]] std::size_t get_extent() const noexcept;
         [[nodiscard]] any_type get_data_type() const noexcept;
     private:
-        detail::array_type_data* data_{};
-        friend auto detail::type_access<array_type>(const array_type&);
+        data_ptr data_{};
+        friend data_ptr detail::type_access<array_type>(const array_type&);
     };
 
     class class_type final {
     public:
+        using data_ptr = detail::class_type_data*;
+
         class_type() = default;
-        class_type(detail::class_type_data* data);
+        class_type(data_ptr data);
 
         [[nodiscard]] bool is_valid() const noexcept;
         [[nodiscard]] explicit operator bool() const noexcept;
@@ -1827,14 +1833,16 @@ namespace meta_hpp
         [[nodiscard]] method get_method_with(std::string_view name, std::span<const any_type> args) const noexcept;
         [[nodiscard]] method get_method_with(std::string_view name, std::initializer_list<any_type> args) const noexcept;
     private:
-        detail::class_type_data* data_{};
-        friend auto detail::type_access<class_type>(const class_type&);
+        data_ptr data_{};
+        friend data_ptr detail::type_access<class_type>(const class_type&);
     };
 
     class constructor_type final {
     public:
+        using data_ptr = detail::constructor_type_data*;
+
         constructor_type() = default;
-        constructor_type(detail::constructor_type_data* data);
+        constructor_type(data_ptr data);
 
         [[nodiscard]] bool is_valid() const noexcept;
         [[nodiscard]] explicit operator bool() const noexcept;
@@ -1848,14 +1856,16 @@ namespace meta_hpp
         [[nodiscard]] any_type get_argument_type(std::size_t position) const noexcept;
         [[nodiscard]] const any_type_list& get_argument_types() const noexcept;
     private:
-        detail::constructor_type_data* data_{};
-        friend auto detail::type_access<constructor_type>(const constructor_type&);
+        data_ptr data_{};
+        friend data_ptr detail::type_access<constructor_type>(const constructor_type&);
     };
 
     class destructor_type final {
     public:
+        using data_ptr = detail::destructor_type_data*;
+
         destructor_type() = default;
-        destructor_type(detail::destructor_type_data* data);
+        destructor_type(data_ptr data);
 
         [[nodiscard]] bool is_valid() const noexcept;
         [[nodiscard]] explicit operator bool() const noexcept;
@@ -1866,14 +1876,16 @@ namespace meta_hpp
 
         [[nodiscard]] any_type get_class_type() const noexcept;
     private:
-        detail::destructor_type_data* data_{};
-        friend auto detail::type_access<destructor_type>(const destructor_type&);
+        data_ptr data_{};
+        friend data_ptr detail::type_access<destructor_type>(const destructor_type&);
     };
 
     class enum_type final {
     public:
+        using data_ptr = detail::enum_type_data*;
+
         enum_type() = default;
-        enum_type(detail::enum_type_data* data);
+        enum_type(data_ptr data);
 
         [[nodiscard]] bool is_valid() const noexcept;
         [[nodiscard]] explicit operator bool() const noexcept;
@@ -1895,14 +1907,16 @@ namespace meta_hpp
         template < typename T >
         [[nodiscard]] T name_to_value_as(std::string_view name) const;
     private:
-        detail::enum_type_data* data_{};
-        friend auto detail::type_access<enum_type>(const enum_type&);
+        data_ptr data_{};
+        friend data_ptr detail::type_access<enum_type>(const enum_type&);
     };
 
     class function_type final {
     public:
+        using data_ptr = detail::function_type_data*;
+
         function_type() = default;
-        function_type(detail::function_type_data* data);
+        function_type(data_ptr data);
 
         [[nodiscard]] bool is_valid() const noexcept;
         [[nodiscard]] explicit operator bool() const noexcept;
@@ -1916,14 +1930,16 @@ namespace meta_hpp
         [[nodiscard]] any_type get_argument_type(std::size_t position) const noexcept;
         [[nodiscard]] const any_type_list& get_argument_types() const noexcept;
     private:
-        detail::function_type_data* data_{};
-        friend auto detail::type_access<function_type>(const function_type&);
+        data_ptr data_{};
+        friend data_ptr detail::type_access<function_type>(const function_type&);
     };
 
     class member_type final {
     public:
+        using data_ptr = detail::member_type_data*;
+
         member_type() = default;
-        member_type(detail::member_type_data* data);
+        member_type(data_ptr data);
 
         [[nodiscard]] bool is_valid() const noexcept;
         [[nodiscard]] explicit operator bool() const noexcept;
@@ -1935,14 +1951,16 @@ namespace meta_hpp
         [[nodiscard]] class_type get_owner_type() const noexcept;
         [[nodiscard]] any_type get_value_type() const noexcept;
     private:
-        detail::member_type_data* data_{};
-        friend auto detail::type_access<member_type>(const member_type&);
+        data_ptr data_{};
+        friend data_ptr detail::type_access<member_type>(const member_type&);
     };
 
     class method_type final {
     public:
+        using data_ptr = detail::method_type_data*;
+
         method_type() = default;
-        method_type(detail::method_type_data* data);
+        method_type(data_ptr data);
 
         [[nodiscard]] bool is_valid() const noexcept;
         [[nodiscard]] explicit operator bool() const noexcept;
@@ -1957,14 +1975,16 @@ namespace meta_hpp
         [[nodiscard]] any_type get_argument_type(std::size_t position) const noexcept;
         [[nodiscard]] const any_type_list& get_argument_types() const noexcept;
     private:
-        detail::method_type_data* data_{};
-        friend auto detail::type_access<method_type>(const method_type&);
+        data_ptr data_{};
+        friend data_ptr detail::type_access<method_type>(const method_type&);
     };
 
     class nullptr_type final {
     public:
+        using data_ptr = detail::nullptr_type_data*;
+
         nullptr_type() = default;
-        nullptr_type(detail::nullptr_type_data* data);
+        nullptr_type(data_ptr data);
 
         [[nodiscard]] bool is_valid() const noexcept;
         [[nodiscard]] explicit operator bool() const noexcept;
@@ -1972,14 +1992,16 @@ namespace meta_hpp
         [[nodiscard]] type_id get_id() const noexcept;
         [[nodiscard]] const metadata_map& get_metadata() const noexcept;
     private:
-        detail::nullptr_type_data* data_{};
-        friend auto detail::type_access<nullptr_type>(const nullptr_type&);
+        data_ptr data_{};
+        friend data_ptr detail::type_access<nullptr_type>(const nullptr_type&);
     };
 
     class number_type final {
     public:
+        using data_ptr = detail::number_type_data*;
+
         number_type() = default;
-        number_type(detail::number_type_data* data);
+        number_type(data_ptr data);
 
         [[nodiscard]] bool is_valid() const noexcept;
         [[nodiscard]] explicit operator bool() const noexcept;
@@ -1991,14 +2013,16 @@ namespace meta_hpp
         [[nodiscard]] std::size_t get_size() const noexcept;
         [[nodiscard]] std::size_t get_align() const noexcept;
     private:
-        detail::number_type_data* data_{};
-        friend auto detail::type_access<number_type>(const number_type&);
+        data_ptr data_{};
+        friend data_ptr detail::type_access<number_type>(const number_type&);
     };
 
     class pointer_type final {
     public:
+        using data_ptr = detail::pointer_type_data*;
+
         pointer_type() = default;
-        pointer_type(detail::pointer_type_data* data);
+        pointer_type(data_ptr data);
 
         [[nodiscard]] bool is_valid() const noexcept;
         [[nodiscard]] explicit operator bool() const noexcept;
@@ -2009,14 +2033,16 @@ namespace meta_hpp
 
         [[nodiscard]] any_type get_data_type() const noexcept;
     private:
-        detail::pointer_type_data* data_{};
-        friend auto detail::type_access<pointer_type>(const pointer_type&);
+        data_ptr data_{};
+        friend data_ptr detail::type_access<pointer_type>(const pointer_type&);
     };
 
     class reference_type final {
     public:
+        using data_ptr = detail::reference_type_data*;
+
         reference_type() = default;
-        reference_type(detail::reference_type_data* data);
+        reference_type(data_ptr data);
 
         [[nodiscard]] bool is_valid() const noexcept;
         [[nodiscard]] explicit operator bool() const noexcept;
@@ -2027,14 +2053,16 @@ namespace meta_hpp
 
         [[nodiscard]] any_type get_data_type() const noexcept;
     private:
-        detail::reference_type_data* data_{};
-        friend auto detail::type_access<reference_type>(const reference_type&);
+        data_ptr data_{};
+        friend data_ptr detail::type_access<reference_type>(const reference_type&);
     };
 
     class void_type final {
     public:
+        using data_ptr = detail::void_type_data*;
+
         void_type() = default;
-        void_type(detail::void_type_data* data);
+        void_type(data_ptr data);
 
         [[nodiscard]] bool is_valid() const noexcept;
         [[nodiscard]] explicit operator bool() const noexcept;
@@ -2042,8 +2070,8 @@ namespace meta_hpp
         [[nodiscard]] type_id get_id() const noexcept;
         [[nodiscard]] const metadata_map& get_metadata() const noexcept;
     private:
-        detail::void_type_data* data_{};
-        friend auto detail::type_access<void_type>(const void_type&);
+        data_ptr data_{};
+        friend data_ptr detail::type_access<void_type>(const void_type&);
     };
 }
 
@@ -2568,7 +2596,7 @@ namespace meta_hpp::detail
         std::is_same_v<T, variable>;
 
     template < state_family T >
-    [[nodiscard]] auto state_access(const T& state) {
+    [[nodiscard]] typename T::state_ptr state_access(const T& state) {
         return state.state_;
     }
 }
@@ -2666,10 +2694,10 @@ namespace meta_hpp
     class argument final {
     public:
         using index_type = argument_index;
+        using state_ptr = detail::argument_state_ptr;
 
-        explicit argument() = default;
-        explicit argument(detail::argument_state_ptr state) noexcept;
-        argument& operator=(detail::argument_state_ptr state) noexcept;
+        argument() = default;
+        argument(state_ptr state) noexcept;
 
         [[nodiscard]] bool is_valid() const noexcept;
         [[nodiscard]] explicit operator bool() const noexcept;
@@ -2682,17 +2710,17 @@ namespace meta_hpp
 
         [[nodiscard]] const std::string& get_name() const noexcept;
     private:
-        detail::argument_state_ptr state_;
-        friend auto detail::state_access<argument>(const argument&);
+        state_ptr state_;
+        friend state_ptr detail::state_access<argument>(const argument&);
     };
 
     class constructor final {
     public:
         using index_type = constructor_index;
+        using state_ptr = detail::constructor_state_ptr;
 
-        explicit constructor() = default;
-        constructor(detail::constructor_state_ptr state) noexcept;
-        constructor& operator=(detail::constructor_state_ptr state) noexcept;
+        constructor() = default;
+        constructor(state_ptr state) noexcept;
 
         [[nodiscard]] bool is_valid() const noexcept;
         [[nodiscard]] explicit operator bool() const noexcept;
@@ -2717,17 +2745,17 @@ namespace meta_hpp
         [[nodiscard]] argument get_argument(std::size_t position) const noexcept;
         [[nodiscard]] const argument_list& get_arguments() const noexcept;
     private:
-        detail::constructor_state_ptr state_;
-        friend auto detail::state_access<constructor>(const constructor&);
+        state_ptr state_;
+        friend state_ptr detail::state_access<constructor>(const constructor&);
     };
 
     class destructor final {
     public:
         using index_type = destructor_index;
+        using state_ptr = detail::destructor_state_ptr;
 
-        explicit destructor() = default;
-        destructor(detail::destructor_state_ptr state) noexcept;
-        destructor& operator=(detail::destructor_state_ptr state) noexcept;
+        destructor() = default;
+        destructor(state_ptr state) noexcept;
 
         [[nodiscard]] bool is_valid() const noexcept;
         [[nodiscard]] explicit operator bool() const noexcept;
@@ -2742,17 +2770,17 @@ namespace meta_hpp
 
         void destroy_at(void* mem) const;
     private:
-        detail::destructor_state_ptr state_;
-        friend auto detail::state_access<destructor>(const destructor&);
+        state_ptr state_;
+        friend state_ptr detail::state_access<destructor>(const destructor&);
     };
 
     class evalue final {
     public:
         using index_type = evalue_index;
+        using state_ptr = detail::evalue_state_ptr;
 
-        explicit evalue() = default;
-        evalue(detail::evalue_state_ptr state) noexcept;
-        evalue& operator=(detail::evalue_state_ptr state) noexcept;
+        evalue() = default;
+        evalue(state_ptr state) noexcept;
 
         [[nodiscard]] bool is_valid() const noexcept;
         [[nodiscard]] explicit operator bool() const noexcept;
@@ -2772,17 +2800,17 @@ namespace meta_hpp
         template < typename T >
         [[nodiscard]] T get_underlying_value_as() const;
     private:
-        detail::evalue_state_ptr state_;
-        friend auto detail::state_access<evalue>(const evalue&);
+        state_ptr state_;
+        friend state_ptr detail::state_access<evalue>(const evalue&);
     };
 
     class function final {
     public:
         using index_type = function_index;
+        using state_ptr = detail::function_state_ptr;
 
-        explicit function() = default;
-        function(detail::function_state_ptr state) noexcept;
-        function& operator=(detail::function_state_ptr state) noexcept;
+        function() = default;
+        function(state_ptr state) noexcept;
 
         [[nodiscard]] bool is_valid() const noexcept;
         [[nodiscard]] explicit operator bool() const noexcept;
@@ -2808,17 +2836,17 @@ namespace meta_hpp
         [[nodiscard]] argument get_argument(std::size_t position) const noexcept;
         [[nodiscard]] const argument_list& get_arguments() const noexcept;
     private:
-        detail::function_state_ptr state_;
-        friend auto detail::state_access<function>(const function&);
+        state_ptr state_;
+        friend state_ptr detail::state_access<function>(const function&);
     };
 
     class member final {
     public:
         using index_type = member_index;
+        using state_ptr = detail::member_state_ptr;
 
-        explicit member() = default;
-        member(detail::member_state_ptr state) noexcept;
-        member& operator=(detail::member_state_ptr state) noexcept;
+        member() = default;
+        member(state_ptr state) noexcept;
 
         [[nodiscard]] bool is_valid() const noexcept;
         [[nodiscard]] explicit operator bool() const noexcept;
@@ -2856,17 +2884,17 @@ namespace meta_hpp
         template < typename Instance, typename Value >
         [[nodiscard]] bool is_settable_with(Instance&& instance, Value&& value) const noexcept;
     private:
-        detail::member_state_ptr state_;
-        friend auto detail::state_access<member>(const member&);
+        state_ptr state_;
+        friend state_ptr detail::state_access<member>(const member&);
     };
 
     class method final {
     public:
         using index_type = method_index;
+        using state_ptr = detail::method_state_ptr;
 
-        explicit method() = default;
-        method(detail::method_state_ptr state) noexcept;
-        method& operator=(detail::method_state_ptr state) noexcept;
+        method() = default;
+        method(state_ptr state) noexcept;
 
         [[nodiscard]] bool is_valid() const noexcept;
         [[nodiscard]] explicit operator bool() const noexcept;
@@ -2892,17 +2920,17 @@ namespace meta_hpp
         [[nodiscard]] argument get_argument(std::size_t position) const noexcept;
         [[nodiscard]] const argument_list& get_arguments() const noexcept;
     private:
-        detail::method_state_ptr state_;
-        friend auto detail::state_access<method>(const method&);
+        state_ptr state_;
+        friend state_ptr detail::state_access<method>(const method&);
     };
 
     class scope final {
     public:
         using index_type = scope_index;
+        using state_ptr = detail::scope_state_ptr;
 
-        explicit scope() = default;
-        explicit scope(detail::scope_state_ptr state) noexcept;
-        scope& operator=(detail::scope_state_ptr state) noexcept;
+        scope() = default;
+        scope(state_ptr state) noexcept;
 
         [[nodiscard]] bool is_valid() const noexcept;
         [[nodiscard]] explicit operator bool() const noexcept;
@@ -2927,17 +2955,17 @@ namespace meta_hpp
         [[nodiscard]] function get_function_with(std::string_view name, std::span<const any_type> args) const noexcept;
         [[nodiscard]] function get_function_with(std::string_view name, std::initializer_list<any_type> args) const noexcept;
     private:
-        detail::scope_state_ptr state_;
-        friend auto detail::state_access<scope>(const scope&);
+        state_ptr state_;
+        friend state_ptr detail::state_access<scope>(const scope&);
     };
 
     class variable final {
     public:
         using index_type = variable_index;
+        using state_ptr = detail::variable_state_ptr;
 
-        explicit variable() = default;
-        variable(detail::variable_state_ptr state) noexcept;
-        variable& operator=(detail::variable_state_ptr state) noexcept;
+        variable() = default;
+        variable(state_ptr state) noexcept;
 
         [[nodiscard]] bool is_valid() const noexcept;
         [[nodiscard]] explicit operator bool() const noexcept;
@@ -2967,8 +2995,8 @@ namespace meta_hpp
         template < typename Value >
         [[nodiscard]] bool is_settable_with(Value&& value) const noexcept;
     private:
-        detail::variable_state_ptr state_;
-        friend auto detail::state_access<variable>(const variable&);
+        state_ptr state_;
+        friend state_ptr detail::state_access<variable>(const variable&);
     };
 }
 
@@ -3160,7 +3188,7 @@ namespace meta_hpp::detail
         typedef_map typedefs{};
         variable_set variables{};
 
-        [[nodiscard]] static scope_state_ptr make(std::string name);
+        [[nodiscard]] static scope_state_ptr make(std::string name, metadata_map metadata);
     };
 
     struct variable_state final {
@@ -3220,8 +3248,10 @@ namespace meta_hpp::detail
                 return iter->second;
             }
 
-            auto state = scope_state::make(std::string{name});
-            auto&& [iter, _] = scopes_.insert_or_assign(std::string{name}, std::move(state));
+            auto&& [iter, _] = scopes_.insert_or_assign(
+                std::string{name},
+                scope_state::make(std::string{name}, metadata_map{}));
+
             return iter->second;
         }
     private:
@@ -3590,7 +3620,7 @@ namespace meta_hpp
     };
 
     struct method_opts final {
-        argument_opts_list arguments{};
+        argument_opts_list arguments;
         metadata_map metadata{};
     };
 
@@ -3601,24 +3631,68 @@ namespace meta_hpp
 
 namespace meta_hpp
 {
+    template < detail::type_family Type >
+    class type_bind_base {
+    public:
+        explicit type_bind_base(const Type& type, metadata_map metadata)
+        : data_{detail::type_access(type)} {
+            detail::insert_or_assign(data_->metadata, std::move(metadata));
+        }
+
+        operator Type() const noexcept {
+            return Type{data_};
+        }
+    protected:
+        using data_ptr = typename Type::data_ptr;
+        using data_ref = decltype(*std::declval<data_ptr>());
+
+        [[nodiscard]] data_ref get_data() noexcept {
+            return *data_;
+        }
+    private:
+        data_ptr data_;
+        detail::type_registry::locker locker_;
+    };
+
+    template < detail::state_family State >
+    class state_bind_base {
+    public:
+        explicit state_bind_base(const State& state, metadata_map metadata)
+        : state_{detail::state_access(state)} {
+            detail::insert_or_assign(state_->metadata, std::move(metadata));
+        }
+
+        operator State() const noexcept {
+            return State{state_};
+        }
+    protected:
+        using state_ptr = typename State::state_ptr;
+        using state_ref = decltype(*std::declval<state_ptr>());
+
+        [[nodiscard]] state_ref get_state() noexcept {
+            return *state_;
+        }
+    private:
+        state_ptr state_;
+        detail::state_registry::locker locker_;
+    };
+}
+
+namespace meta_hpp
+{
     template < detail::array_kind Array >
-    class array_bind final {
+    class array_bind final : public type_bind_base<array_type> {
     public:
         explicit array_bind(metadata_map metadata);
-        operator array_type() const noexcept;
-    private:
-        detail::array_type_data* data_{};
-        detail::type_registry::locker locker_{};
     };
 }
 
 namespace meta_hpp
 {
     template < detail::class_kind Class >
-    class class_bind final {
+    class class_bind final : public type_bind_base<class_type> {
     public:
         explicit class_bind(metadata_map metadata);
-        operator class_type() const noexcept;
 
         // base_
 
@@ -3739,138 +3813,98 @@ namespace meta_hpp
             Pointer pointer,
             variable_opts opts,
             Policy = Policy{});
-    private:
-        detail::class_type_data* data_{};
-        detail::type_registry::locker locker_{};
     };
 }
 
 namespace meta_hpp
 {
     template < detail::enum_kind Enum >
-    class enum_bind final {
+    class enum_bind final : public type_bind_base<enum_type> {
     public:
         explicit enum_bind(metadata_map metadata);
-        operator enum_type() const noexcept;
 
         enum_bind& evalue_(std::string name, Enum value);
         enum_bind& evalue_(std::string name, Enum value, evalue_opts opts);
-    private:
-        detail::enum_type_data* data_{};
-        detail::type_registry::locker locker_{};
     };
 }
 
 namespace meta_hpp
 {
     template < detail::function_kind Function >
-    class function_bind final {
+    class function_bind final : public type_bind_base<function_type> {
     public:
         explicit function_bind(metadata_map metadata);
-        operator function_type() const noexcept;
-    private:
-        detail::function_type_data* data_{};
-        detail::type_registry::locker locker_{};
     };
 }
 
 namespace meta_hpp
 {
     template < detail::member_kind Member >
-    class member_bind final {
+    class member_bind final : public type_bind_base<member_type> {
     public:
         explicit member_bind(metadata_map metadata);
-        operator member_type() const noexcept;
-    private:
-        detail::member_type_data* data_{};
-        detail::type_registry::locker locker_{};
     };
 }
 
 namespace meta_hpp
 {
     template < detail::method_kind Method >
-    class method_bind final {
+    class method_bind final : public type_bind_base<method_type> {
     public:
         explicit method_bind(metadata_map metadata);
-        operator method_type() const noexcept;
-    private:
-        detail::method_type_data* data_{};
-        detail::type_registry::locker locker_{};
     };
 }
 
 namespace meta_hpp
 {
     template < detail::nullptr_kind Nullptr >
-    class nullptr_bind final {
+    class nullptr_bind final : public type_bind_base<nullptr_type> {
     public:
         explicit nullptr_bind(metadata_map metadata);
-        operator nullptr_type() const noexcept;
-    private:
-        detail::nullptr_type_data* data_{};
-        detail::type_registry::locker locker_{};
     };
 }
 
 namespace meta_hpp
 {
     template < detail::number_kind Number >
-    class number_bind final {
+    class number_bind final : public type_bind_base<number_type> {
     public:
         explicit number_bind(metadata_map metadata);
-        operator number_type() const noexcept;
-    private:
-        detail::number_type_data* data_{};
-        detail::type_registry::locker locker_{};
     };
 }
 
 namespace meta_hpp
 {
     template < detail::pointer_kind Pointer >
-    class pointer_bind final {
+    class pointer_bind final : public type_bind_base<pointer_type> {
     public:
         explicit pointer_bind(metadata_map metadata);
-        operator pointer_type() const noexcept;
-    private:
-        detail::pointer_type_data* data_{};
-        detail::type_registry::locker locker_{};
     };
 }
 
 namespace meta_hpp
 {
     template < detail::reference_kind Reference >
-    class reference_bind final {
+    class reference_bind final : public type_bind_base<reference_type> {
     public:
         explicit reference_bind(metadata_map metadata);
-        operator reference_type() const noexcept;
-    private:
-        detail::reference_type_data* data_{};
-        detail::type_registry::locker locker_{};
     };
 }
 
 namespace meta_hpp
 {
     template < detail::void_kind Void >
-    class void_bind final {
+    class void_bind final : public type_bind_base<void_type> {
     public:
         explicit void_bind(metadata_map metadata);
-        operator void_type() const noexcept;
-    private:
-        detail::void_type_data* data_{};
-        detail::type_registry::locker locker_{};
     };
 }
 
 namespace meta_hpp
 {
-    class scope_bind final {
+    class scope_bind final : public state_bind_base<scope> {
     public:
         explicit scope_bind(const scope& scope, metadata_map metadata);
-        operator scope() const noexcept;
 
         // function_
 
@@ -3918,9 +3952,6 @@ namespace meta_hpp
             Pointer pointer,
             variable_opts opts,
             Policy = Policy{});
-    private:
-        detail::scope_state_ptr state_;
-        detail::state_registry::locker locker_{};
     };
 }
 
@@ -3985,8 +4016,8 @@ namespace meta_hpp
 namespace meta_hpp
 {
     inline scope_bind local_scope_(std::string name, metadata_map metadata = {}) {
-        scope local_scope{detail::scope_state::make(std::move(name))};
-        return scope_bind{local_scope, std::move(metadata)};
+        scope local_scope{detail::scope_state::make(std::move(name), std::move(metadata))};
+        return scope_bind{local_scope, {}};
     }
 
     inline scope_bind static_scope_(std::string_view name, metadata_map metadata = {}) {
@@ -4003,31 +4034,17 @@ namespace meta_hpp
 {
     template < detail::array_kind Array >
     array_bind<Array>::array_bind(metadata_map metadata)
-    : data_{detail::type_access(resolve_type<Array>())} {
-        detail::insert_or_assign(data_->metadata, std::move(metadata));
-    }
-
-    template < detail::array_kind Array >
-    array_bind<Array>::operator array_type() const noexcept {
-        return array_type{data_};
-    }
+    : type_bind_base{resolve_type<Array>(), std::move(metadata)} {}
 }
 
 namespace meta_hpp
 {
     template < detail::class_kind Class >
     class_bind<Class>::class_bind(metadata_map metadata)
-    : data_{detail::type_access(resolve_type<Class>())} {
-        detail::insert_or_assign(data_->metadata, std::move(metadata));
-
+    : type_bind_base{resolve_type<Class>(), std::move(metadata)} {
         if constexpr ( std::is_destructible_v<Class> ) {
             destructor_();
         }
-    }
-
-    template < detail::class_kind Class >
-    class_bind<Class>::operator class_type() const noexcept {
-        return class_type{data_};
     }
 
     //
@@ -4042,18 +4059,18 @@ namespace meta_hpp
         ([this]<detail::class_kind Base>(std::in_place_type_t<Base>) {
             const class_type& base_type = resolve_type<Base>();
 
-            if ( auto&& [_, emplaced] = data_->bases.emplace(base_type); !emplaced ) {
+            if ( auto&& [_, emplaced] = get_data().bases.emplace(base_type); !emplaced ) {
                 return;
             }
 
             META_HPP_TRY {
-                data_->bases_info.emplace(base_type, detail::class_type_data::base_info{
+                get_data().bases_info.emplace(base_type, detail::class_type_data::base_info{
                     .upcast = +[](void* derived) -> void* {
                         return static_cast<Base*>(static_cast<Class*>(derived));
                     }
                 });
             } META_HPP_CATCH(...) {
-                data_->bases.erase(base_type);
+                get_data().bases.erase(base_type);
                 META_HPP_RETHROW();
             }
         }(std::in_place_type<Bases>), ...);
@@ -4092,7 +4109,7 @@ namespace meta_hpp
             detail::state_access(arg)->metadata = std::move(opts.arguments[i].metadata);
         }
 
-        detail::insert_or_assign(data_->constructors, std::move(state));
+        detail::insert_or_assign(get_data().constructors, std::move(state));
         return *this;
     }
 
@@ -4112,7 +4129,7 @@ namespace meta_hpp
         requires detail::class_bind_destructor_kind<Class>
     {
         auto state = detail::destructor_state::make<Class>(std::move(opts.metadata));
-        detail::insert_or_assign(data_->destructors, std::move(state));
+        detail::insert_or_assign(get_data().destructors, std::move(state));
         return *this;
     }
 
@@ -4153,7 +4170,7 @@ namespace meta_hpp
             detail::state_access(arg)->metadata = std::move(opts.arguments[i].metadata);
         }
 
-        detail::insert_or_assign(data_->functions, std::move(state));
+        detail::insert_or_assign(get_data().functions, std::move(state));
         return *this;
     }
 
@@ -4180,7 +4197,7 @@ namespace meta_hpp
             detail::state_access(arg)->name = std::data(arguments)[i];
         }
 
-        detail::insert_or_assign(data_->functions, std::move(state));
+        detail::insert_or_assign(get_data().functions, std::move(state));
         return *this;
     }
 
@@ -4212,7 +4229,7 @@ namespace meta_hpp
             std::move(name),
             std::move(member),
             std::move(opts.metadata));
-        detail::insert_or_assign(data_->members, std::move(state));
+        detail::insert_or_assign(get_data().members, std::move(state));
         return *this;
     }
 
@@ -4255,7 +4272,7 @@ namespace meta_hpp
             detail::state_access(arg)->metadata = std::move(opts.arguments[i].metadata);
         }
 
-        detail::insert_or_assign(data_->methods, std::move(state));
+        detail::insert_or_assign(get_data().methods, std::move(state));
         return *this;
     }
 
@@ -4283,7 +4300,7 @@ namespace meta_hpp
             detail::state_access(arg)->name = std::data(arguments)[i];
         }
 
-        detail::insert_or_assign(data_->methods, std::move(state));
+        detail::insert_or_assign(get_data().methods, std::move(state));
         return *this;
     }
 
@@ -4294,7 +4311,7 @@ namespace meta_hpp
     template < detail::class_kind Class >
     template < typename Type >
     class_bind<Class>& class_bind<Class>::typedef_(std::string name) {
-        data_->typedefs.insert_or_assign(std::move(name), resolve_type<Type>());
+        get_data().typedefs.insert_or_assign(std::move(name), resolve_type<Type>());
         return *this;
     }
 
@@ -4324,7 +4341,7 @@ namespace meta_hpp
             std::move(name),
             std::move(pointer),
             std::move(opts.metadata));
-        detail::insert_or_assign(data_->variables, std::move(state));
+        detail::insert_or_assign(get_data().variables, std::move(state));
         return *this;
     }
 }
@@ -4333,14 +4350,7 @@ namespace meta_hpp
 {
     template < detail::enum_kind Enum >
     enum_bind<Enum>::enum_bind(metadata_map metadata)
-    : data_{detail::type_access(resolve_type<Enum>())} {
-        detail::insert_or_assign(data_->metadata, std::move(metadata));
-    }
-
-    template < detail::enum_kind Enum >
-    enum_bind<Enum>::operator enum_type() const noexcept {
-        return enum_type{data_};
-    }
+    : type_bind_base{resolve_type<Enum>(), std::move(metadata)} {}
 
     template < detail::enum_kind Enum >
     enum_bind<Enum>& enum_bind<Enum>::evalue_(std::string name, Enum value) {
@@ -4353,7 +4363,7 @@ namespace meta_hpp
             std::move(name),
             std::move(value),
             std::move(opts.metadata));
-        detail::insert_or_assign(data_->evalues, std::move(state));
+        detail::insert_or_assign(get_data().evalues, std::move(state));
         return *this;
     }
 }
@@ -4362,110 +4372,55 @@ namespace meta_hpp
 {
     template < detail::function_kind Function >
     function_bind<Function>::function_bind(metadata_map metadata)
-    : data_{detail::type_access(resolve_type<Function>())} {
-        detail::insert_or_assign(data_->metadata, std::move(metadata));
-    }
-
-    template < detail::function_kind Function >
-    function_bind<Function>::operator function_type() const noexcept {
-        return function_type{data_};
-    }
+    : type_bind_base{resolve_type<Function>(), std::move(metadata)} {}
 }
 
 namespace meta_hpp
 {
     template < detail::member_kind Member >
     member_bind<Member>::member_bind(metadata_map metadata)
-    : data_{detail::type_access(resolve_type<Member>())} {
-        detail::insert_or_assign(data_->metadata, std::move(metadata));
-    }
-
-    template < detail::member_kind Member >
-    member_bind<Member>::operator member_type() const noexcept {
-        return member_type{data_};
-    }
+    : type_bind_base{resolve_type<Member>(), std::move(metadata)} {}
 }
 
 namespace meta_hpp
 {
     template < detail::method_kind Method >
     method_bind<Method>::method_bind(metadata_map metadata)
-    : data_{detail::type_access(resolve_type<Method>())} {
-        detail::insert_or_assign(data_->metadata, std::move(metadata));
-    }
-
-    template < detail::method_kind Method >
-    method_bind<Method>::operator method_type() const noexcept {
-        return method_type{data_};
-    }
+    : type_bind_base{resolve_type<Method>(), std::move(metadata)} {}
 }
 
 namespace meta_hpp
 {
     template < detail::nullptr_kind Nullptr >
     nullptr_bind<Nullptr>::nullptr_bind(metadata_map metadata)
-    : data_{detail::type_access(resolve_type<Nullptr>())} {
-        detail::insert_or_assign(data_->metadata, std::move(metadata));
-    }
-
-    template < detail::nullptr_kind Nullptr >
-    nullptr_bind<Nullptr>::operator nullptr_type() const noexcept {
-        return nullptr_type{data_};
-    }
+    : type_bind_base{resolve_type<Nullptr>(), std::move(metadata)} {}
 }
 
 namespace meta_hpp
 {
     template < detail::number_kind Number >
     number_bind<Number>::number_bind(metadata_map metadata)
-    : data_{detail::type_access(resolve_type<Number>())} {
-        detail::insert_or_assign(data_->metadata, std::move(metadata));
-    }
-
-    template < detail::number_kind Number >
-    number_bind<Number>::operator number_type() const noexcept {
-        return number_type{data_};
-    }
+    : type_bind_base{resolve_type<Number>(), std::move(metadata)} {}
 }
 
 namespace meta_hpp
 {
     template < detail::pointer_kind Pointer >
     pointer_bind<Pointer>::pointer_bind(metadata_map metadata)
-    : data_{detail::type_access(resolve_type<Pointer>())} {
-        detail::insert_or_assign(data_->metadata, std::move(metadata));
-    }
-
-    template < detail::pointer_kind Pointer >
-    pointer_bind<Pointer>::operator pointer_type() const noexcept {
-        return pointer_type{data_};
-    }
+    : type_bind_base{resolve_type<Pointer>(), std::move(metadata)} {}
 }
 
 namespace meta_hpp
 {
     template < detail::reference_kind Reference >
     reference_bind<Reference>::reference_bind(metadata_map metadata)
-    : data_{detail::type_access(resolve_type<Reference>())} {
-        detail::insert_or_assign(data_->metadata, std::move(metadata));
-    }
-
-    template < detail::reference_kind Reference >
-    reference_bind<Reference>::operator reference_type() const noexcept {
-        return reference_type{data_};
-    }
+    : type_bind_base{resolve_type<Reference>(), std::move(metadata)} {}
 }
 
 namespace meta_hpp
 {
     inline scope_bind::scope_bind(const scope& scope, metadata_map metadata)
-    : state_{detail::state_access(scope)} {
-        detail::insert_or_assign(state_->metadata, std::move(metadata));
-    }
-
-    inline scope_bind::operator scope() const noexcept {
-        return scope{state_};
-    }
+    : state_bind_base{scope, std::move(metadata)} {}
 
     //
     // function_
@@ -4502,7 +4457,7 @@ namespace meta_hpp
             detail::state_access(arg)->metadata = std::move(opts.arguments[i].metadata);
         }
 
-        detail::insert_or_assign(state_->functions, std::move(state));
+        detail::insert_or_assign(get_state().functions, std::move(state));
         return *this;
     }
 
@@ -4528,7 +4483,7 @@ namespace meta_hpp
             detail::state_access(arg)->name = std::data(arguments)[i];
         }
 
-        detail::insert_or_assign(state_->functions, std::move(state));
+        detail::insert_or_assign(get_state().functions, std::move(state));
         return *this;
     }
 
@@ -4538,7 +4493,7 @@ namespace meta_hpp
 
     template < typename Type >
     scope_bind& scope_bind::typedef_(std::string name) {
-        state_->typedefs.insert_or_assign(std::move(name), resolve_type<Type>());
+        get_state().typedefs.insert_or_assign(std::move(name), resolve_type<Type>());
         return *this;
     }
 
@@ -4566,7 +4521,7 @@ namespace meta_hpp
             std::move(name),
             std::move(pointer),
             std::move(opts.metadata));
-        detail::insert_or_assign(state_->variables, std::move(state));
+        detail::insert_or_assign(get_state().variables, std::move(state));
         return *this;
     }
 }
@@ -4575,14 +4530,7 @@ namespace meta_hpp
 {
     template < detail::void_kind Void >
     void_bind<Void>::void_bind(metadata_map metadata)
-    : data_{detail::type_access(resolve_type<void>())} {
-        detail::insert_or_assign(data_->metadata, std::move(metadata));
-    }
-
-    template < detail::void_kind Void >
-    void_bind<Void>::operator void_type() const noexcept {
-        return void_type{data_};
-    }
+    : type_bind_base{resolve_type<Void>(), std::move(metadata)} {}
 }
 
 namespace meta_hpp
@@ -4907,13 +4855,8 @@ namespace meta_hpp::detail
 namespace meta_hpp
 {
 
-    inline argument::argument(detail::argument_state_ptr state) noexcept
+    inline argument::argument(state_ptr state) noexcept
     : state_{std::move(state)} {}
-
-    inline argument& argument::operator=(detail::argument_state_ptr state) noexcept {
-        state_ = std::move(state);
-        return *this;
-    }
 
     inline bool argument::is_valid() const noexcept {
         return !!state_;
@@ -4959,7 +4902,7 @@ namespace meta_hpp::detail
 
 namespace meta_hpp
 {
-    inline constructor_type::constructor_type(detail::constructor_type_data* data)
+    inline constructor_type::constructor_type(data_ptr data)
     : data_{data} {}
 
     inline bool constructor_type::is_valid() const noexcept {
@@ -5592,13 +5535,8 @@ namespace meta_hpp::detail
 
 namespace meta_hpp
 {
-    inline constructor::constructor(detail::constructor_state_ptr state) noexcept
+    inline constructor::constructor(state_ptr state) noexcept
     : state_{std::move(state)} {}
-
-    inline constructor& constructor::operator=(detail::constructor_state_ptr state) noexcept {
-        state_ = std::move(state);
-        return *this;
-    }
 
     inline bool constructor::is_valid() const noexcept {
         return !!state_;
@@ -5687,7 +5625,7 @@ namespace meta_hpp::detail
 
 namespace meta_hpp
 {
-    inline destructor_type::destructor_type(detail::destructor_type_data* data)
+    inline destructor_type::destructor_type(data_ptr data)
     : data_{data} {}
 
     inline bool destructor_type::is_valid() const noexcept {
@@ -5767,13 +5705,8 @@ namespace meta_hpp::detail
 
 namespace meta_hpp
 {
-    inline destructor::destructor(detail::destructor_state_ptr state) noexcept
+    inline destructor::destructor(state_ptr state) noexcept
     : state_{std::move(state)} {}
-
-    inline destructor& destructor::operator=(detail::destructor_state_ptr state) noexcept {
-        state_ = std::move(state);
-        return *this;
-    }
 
     inline bool destructor::is_valid() const noexcept {
         return !!state_;
@@ -5821,7 +5754,7 @@ namespace meta_hpp::detail
 
 namespace meta_hpp
 {
-    inline enum_type::enum_type(detail::enum_type_data* data)
+    inline enum_type::enum_type(data_ptr data)
     : data_{data} {}
 
     inline bool enum_type::is_valid() const noexcept {
@@ -5905,13 +5838,8 @@ namespace meta_hpp::detail
 
 namespace meta_hpp
 {
-    inline evalue::evalue(detail::evalue_state_ptr state) noexcept
+    inline evalue::evalue(state_ptr state) noexcept
     : state_{std::move(state)} {}
-
-    inline evalue& evalue::operator=(detail::evalue_state_ptr state) noexcept {
-        state_ = std::move(state);
-        return *this;
-    }
 
     inline bool evalue::is_valid() const noexcept {
         return !!state_;
@@ -5971,7 +5899,7 @@ namespace meta_hpp::detail
 
 namespace meta_hpp
 {
-    inline function_type::function_type(detail::function_type_data* data)
+    inline function_type::function_type(data_ptr data)
     : data_{data} {}
 
     inline bool function_type::is_valid() const noexcept {
@@ -6123,13 +6051,8 @@ namespace meta_hpp::detail
 
 namespace meta_hpp
 {
-    inline function::function(detail::function_state_ptr state) noexcept
+    inline function::function(state_ptr state) noexcept
     : state_{std::move(state)} {}
-
-    inline function& function::operator=(detail::function_state_ptr state) noexcept {
-        state_ = std::move(state);
-        return *this;
-    }
 
     inline bool function::is_valid() const noexcept {
         return !!state_;
@@ -6217,7 +6140,7 @@ namespace meta_hpp::detail
 
 namespace meta_hpp
 {
-    inline member_type::member_type(detail::member_type_data* data)
+    inline member_type::member_type(data_ptr data)
     : data_{data} {}
 
     inline bool member_type::is_valid() const noexcept {
@@ -6626,13 +6549,8 @@ namespace meta_hpp::detail
 
 namespace meta_hpp
 {
-    inline member::member(detail::member_state_ptr state) noexcept
+    inline member::member(state_ptr state) noexcept
     : state_{std::move(state)} {}
-
-    inline member& member::operator=(detail::member_state_ptr state) noexcept {
-        state_ = std::move(state);
-        return *this;
-    }
 
     inline bool member::is_valid() const noexcept {
         return !!state_;
@@ -6735,7 +6653,7 @@ namespace meta_hpp::detail
 
 namespace meta_hpp
 {
-    inline method_type::method_type(detail::method_type_data* data)
+    inline method_type::method_type(data_ptr data)
     : data_{data} {}
 
     inline bool method_type::is_valid() const noexcept {
@@ -6901,13 +6819,8 @@ namespace meta_hpp::detail
 
 namespace meta_hpp
 {
-    inline method::method(detail::method_state_ptr state) noexcept
+    inline method::method(state_ptr state) noexcept
     : state_{std::move(state)} {}
-
-    inline method& method::operator=(detail::method_state_ptr state) noexcept {
-        state_ = std::move(state);
-        return *this;
-    }
 
     inline bool method::is_valid() const noexcept {
         return !!state_;
@@ -6997,7 +6910,7 @@ namespace meta_hpp::detail
 
 namespace meta_hpp
 {
-    inline pointer_type::pointer_type(detail::pointer_type_data* data)
+    inline pointer_type::pointer_type(data_ptr data)
     : data_{data} {}
 
     inline bool pointer_type::is_valid() const noexcept {
@@ -7122,13 +7035,8 @@ namespace meta_hpp::detail
 
 namespace meta_hpp
 {
-    inline variable::variable(detail::variable_state_ptr state) noexcept
+    inline variable::variable(state_ptr state) noexcept
     : state_{std::move(state)} {}
-
-    inline variable& variable::operator=(detail::variable_state_ptr state) noexcept {
-        state_ = std::move(state);
-        return *this;
-    }
 
     inline bool variable::is_valid() const noexcept {
         return !!state_;
@@ -7210,7 +7118,7 @@ namespace meta_hpp::detail
 
 namespace meta_hpp
 {
-    inline class_type::class_type(detail::class_type_data* data)
+    inline class_type::class_type(data_ptr data)
     : data_{data} {}
 
     inline bool class_type::is_valid() const noexcept {
@@ -7567,22 +7475,18 @@ namespace meta_hpp
 
 namespace meta_hpp::detail
 {
-    inline scope_state_ptr scope_state::make(std::string name) {
+    inline scope_state_ptr scope_state::make(std::string name, metadata_map metadata) {
         return std::make_shared<scope_state>(scope_state{
             .index{scope_index::make(std::move(name))},
+            .metadata{std::move(metadata)},
         });
     }
 }
 
 namespace meta_hpp
 {
-    inline scope::scope(detail::scope_state_ptr state) noexcept
+    inline scope::scope(state_ptr state) noexcept
     : state_{std::move(state)} {}
-
-    inline scope& scope::operator=(detail::scope_state_ptr state) noexcept {
-        state_ = std::move(state);
-        return *this;
-    }
 
     inline bool scope::is_valid() const noexcept {
         return !!state_;
@@ -7864,7 +7768,7 @@ namespace meta_hpp::detail
 
 namespace meta_hpp
 {
-    inline array_type::array_type(detail::array_type_data* data)
+    inline array_type::array_type(data_ptr data)
     : data_{data} {}
 
     inline bool array_type::is_valid() const noexcept {
@@ -7908,7 +7812,7 @@ namespace meta_hpp::detail
 
 namespace meta_hpp
 {
-    inline nullptr_type::nullptr_type(detail::nullptr_type_data* data)
+    inline nullptr_type::nullptr_type(data_ptr data)
     : data_{data} {}
 
     inline bool nullptr_type::is_valid() const noexcept {
@@ -7943,7 +7847,7 @@ namespace meta_hpp::detail
 
 namespace meta_hpp
 {
-    inline number_type::number_type(detail::number_type_data* data)
+    inline number_type::number_type(data_ptr data)
     : data_{data} {}
 
     inline bool number_type::is_valid() const noexcept {
@@ -7989,7 +7893,7 @@ namespace meta_hpp::detail
 
 namespace meta_hpp
 {
-    inline reference_type::reference_type(detail::reference_type_data* data)
+    inline reference_type::reference_type(data_ptr data)
     : data_{data} {}
 
     inline bool reference_type::is_valid() const noexcept {
@@ -8029,7 +7933,7 @@ namespace meta_hpp::detail
 
 namespace meta_hpp
 {
-    inline void_type::void_type(detail::void_type_data* data)
+    inline void_type::void_type(data_ptr data)
     : data_{data} {}
 
     inline bool void_type::is_valid() const noexcept {

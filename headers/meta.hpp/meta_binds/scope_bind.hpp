@@ -13,13 +13,7 @@
 namespace meta_hpp
 {
     inline scope_bind::scope_bind(const scope& scope, metadata_map metadata)
-    : state_{detail::state_access(scope)} {
-        detail::insert_or_assign(state_->metadata, std::move(metadata));
-    }
-
-    inline scope_bind::operator scope() const noexcept {
-        return scope{state_};
-    }
+    : state_bind_base{scope, std::move(metadata)} {}
 
     //
     // function_
@@ -56,7 +50,7 @@ namespace meta_hpp
             detail::state_access(arg)->metadata = std::move(opts.arguments[i].metadata);
         }
 
-        detail::insert_or_assign(state_->functions, std::move(state));
+        detail::insert_or_assign(get_state().functions, std::move(state));
         return *this;
     }
 
@@ -82,7 +76,7 @@ namespace meta_hpp
             detail::state_access(arg)->name = std::data(arguments)[i];
         }
 
-        detail::insert_or_assign(state_->functions, std::move(state));
+        detail::insert_or_assign(get_state().functions, std::move(state));
         return *this;
     }
 
@@ -92,7 +86,7 @@ namespace meta_hpp
 
     template < typename Type >
     scope_bind& scope_bind::typedef_(std::string name) {
-        state_->typedefs.insert_or_assign(std::move(name), resolve_type<Type>());
+        get_state().typedefs.insert_or_assign(std::move(name), resolve_type<Type>());
         return *this;
     }
 
@@ -120,7 +114,7 @@ namespace meta_hpp
             std::move(name),
             std::move(pointer),
             std::move(opts.metadata));
-        detail::insert_or_assign(state_->variables, std::move(state));
+        detail::insert_or_assign(get_state().variables, std::move(state));
         return *this;
     }
 }

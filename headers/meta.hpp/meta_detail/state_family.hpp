@@ -23,7 +23,7 @@ namespace meta_hpp::detail
         std::is_same_v<T, variable>;
 
     template < state_family T >
-    [[nodiscard]] auto state_access(const T& state) {
+    [[nodiscard]] typename T::state_ptr state_access(const T& state) {
         return state.state_;
     }
 }

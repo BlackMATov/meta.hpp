@@ -27,7 +27,7 @@ namespace meta_hpp::detail
 
 namespace meta_hpp
 {
-    inline member_type::member_type(detail::member_type_data* data)
+    inline member_type::member_type(data_ptr data)
     : data_{data} {}
 
     inline bool member_type::is_valid() const noexcept {

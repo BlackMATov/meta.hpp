@@ -19,22 +19,18 @@
 
 namespace meta_hpp::detail
 {
-    inline scope_state_ptr scope_state::make(std::string name) {
+    inline scope_state_ptr scope_state::make(std::string name, metadata_map metadata) {
         return std::make_shared<scope_state>(scope_state{
             .index{scope_index::make(std::move(name))},
+            .metadata{std::move(metadata)},
         });
     }
 }
 
 namespace meta_hpp
 {
-    inline scope::scope(detail::scope_state_ptr state) noexcept
+    inline scope::scope(state_ptr state) noexcept
     : state_{std::move(state)} {}
-
-    inline scope& scope::operator=(detail::scope_state_ptr state) noexcept {
-        state_ = std::move(state);
-        return *this;
-    }
 
     inline bool scope::is_valid() const noexcept {
         return !!state_;

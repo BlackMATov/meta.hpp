@@ -70,7 +70,7 @@ namespace meta_hpp
     };
 
     struct method_opts final {
-        argument_opts_list arguments{};
+        argument_opts_list arguments;
         metadata_map metadata{};
     };
 
@@ -81,24 +81,68 @@ namespace meta_hpp
 
 namespace meta_hpp
 {
+    template < detail::type_family Type >
+    class type_bind_base {
+    public:
+        explicit type_bind_base(const Type& type, metadata_map metadata)
+        : data_{detail::type_access(type)} {
+            detail::insert_or_assign(data_->metadata, std::move(metadata));
+        }
+
+        operator Type() const noexcept {
+            return Type{data_};
+        }
+    protected:
+        using data_ptr = typename Type::data_ptr;
+        using data_ref = decltype(*std::declval<data_ptr>());
+
+        [[nodiscard]] data_ref get_data() noexcept {
+            return *data_;
+        }
+    private:
+        data_ptr data_;
+        detail::type_registry::locker locker_;
+    };
+
+    template < detail::state_family State >
+    class state_bind_base {
+    public:
+        explicit state_bind_base(const State& state, metadata_map metadata)
+        : state_{detail::state_access(state)} {
+            detail::insert_or_assign(state_->metadata, std::move(metadata));
+        }
+
+        operator State() const noexcept {
+            return State{state_};
+        }
+    protected:
+        using state_ptr = typename State::state_ptr;
+        using state_ref = decltype(*std::declval<state_ptr>());
+
+        [[nodiscard]] state_ref get_state() noexcept {
+            return *state_;
+        }
+    private:
+        state_ptr state_;
+        detail::state_registry::locker locker_;
+    };
+}
+
+namespace meta_hpp
+{
     template < detail::array_kind Array >
-    class array_bind final {
+    class array_bind final : public type_bind_base<array_type> {
     public:
         explicit array_bind(metadata_map metadata);
-        operator array_type() const noexcept;
-    private:
-        detail::array_type_data* data_{};
-        detail::type_registry::locker locker_{};
     };
 }
 
 namespace meta_hpp
 {
     template < detail::class_kind Class >
-    class class_bind final {
+    class class_bind final : public type_bind_base<class_type> {
     public:
         explicit class_bind(metadata_map metadata);
-        operator class_type() const noexcept;
 
         // base_
 
@@ -219,138 +263,98 @@ namespace meta_hpp
             Pointer pointer,
             variable_opts opts,
             Policy = Policy{});
-    private:
-        detail::class_type_data* data_{};
-        detail::type_registry::locker locker_{};
     };
 }
 
 namespace meta_hpp
 {
     template < detail::enum_kind Enum >
-    class enum_bind final {
+    class enum_bind final : public type_bind_base<enum_type> {
     public:
         explicit enum_bind(metadata_map metadata);
-        operator enum_type() const noexcept;
 
         enum_bind& evalue_(std::string name, Enum value);
         enum_bind& evalue_(std::string name, Enum value, evalue_opts opts);
-    private:
-        detail::enum_type_data* data_{};
-        detail::type_registry::locker locker_{};
     };
 }
 
 namespace meta_hpp
 {
     template < detail::function_kind Function >
-    class function_bind final {
+    class function_bind final : public type_bind_base<function_type> {
     public:
         explicit function_bind(metadata_map metadata);
-        operator function_type() const noexcept;
-    private:
-        detail::function_type_data* data_{};
-        detail::type_registry::locker locker_{};
     };
 }
 
 namespace meta_hpp
 {
     template < detail::member_kind Member >
-    class member_bind final {
+    class member_bind final : public type_bind_base<member_type> {
     public:
         explicit member_bind(metadata_map metadata);
-        operator member_type() const noexcept;
-    private:
-        detail::member_type_data* data_{};
-        detail::type_registry::locker locker_{};
     };
 }
 
 namespace meta_hpp
 {
     template < detail::method_kind Method >
-    class method_bind final {
+    class method_bind final : public type_bind_base<method_type> {
     public:
         explicit method_bind(metadata_map metadata);
-        operator method_type() const noexcept;
-    private:
-        detail::method_type_data* data_{};
-        detail::type_registry::locker locker_{};
     };
 }
 
 namespace meta_hpp
 {
     template < detail::nullptr_kind Nullptr >
-    class nullptr_bind final {
+    class nullptr_bind final : public type_bind_base<nullptr_type> {
     public:
         explicit nullptr_bind(metadata_map metadata);
-        operator nullptr_type() const noexcept;
-    private:
-        detail::nullptr_type_data* data_{};
-        detail::type_registry::locker locker_{};
     };
 }
 
 namespace meta_hpp
 {
     template < detail::number_kind Number >
-    class number_bind final {
+    class number_bind final : public type_bind_base<number_type> {
     public:
         explicit number_bind(metadata_map metadata);
-        operator number_type() const noexcept;
-    private:
-        detail::number_type_data* data_{};
-        detail::type_registry::locker locker_{};
     };
 }
 
 namespace meta_hpp
 {
     template < detail::pointer_kind Pointer >
-    class pointer_bind final {
+    class pointer_bind final : public type_bind_base<pointer_type> {
     public:
         explicit pointer_bind(metadata_map metadata);
-        operator pointer_type() const noexcept;
-    private:
-        detail::pointer_type_data* data_{};
-        detail::type_registry::locker locker_{};
     };
 }
 
 namespace meta_hpp
 {
     template < detail::reference_kind Reference >
-    class reference_bind final {
+    class reference_bind final : public type_bind_base<reference_type> {
     public:
         explicit reference_bind(metadata_map metadata);
-        operator reference_type() const noexcept;
-    private:
-        detail::reference_type_data* data_{};
-        detail::type_registry::locker locker_{};
     };
 }
 
 namespace meta_hpp
 {
     template < detail::void_kind Void >
-    class void_bind final {
+    class void_bind final : public type_bind_base<void_type> {
     public:
         explicit void_bind(metadata_map metadata);
-        operator void_type() const noexcept;
-    private:
-        detail::void_type_data* data_{};
-        detail::type_registry::locker locker_{};
     };
 }
 
 namespace meta_hpp
 {
-    class scope_bind final {
+    class scope_bind final : public state_bind_base<scope> {
     public:
         explicit scope_bind(const scope& scope, metadata_map metadata);
-        operator scope() const noexcept;
 
         // function_
 
@@ -398,9 +402,6 @@ namespace meta_hpp
             Pointer pointer,
             variable_opts opts,
             Policy = Policy{});
-    private:
-        detail::scope_state_ptr state_;
-        detail::state_registry::locker locker_{};
     };
 }
 
@@ -465,8 +466,8 @@ namespace meta_hpp
 namespace meta_hpp
 {
     inline scope_bind local_scope_(std::string name, metadata_map metadata = {}) {
-        scope local_scope{detail::scope_state::make(std::move(name))};
-        return scope_bind{local_scope, std::move(metadata)};
+        scope local_scope{detail::scope_state::make(std::move(name), std::move(metadata))};
+        return scope_bind{local_scope, {}};
     }
 
     inline scope_bind static_scope_(std::string_view name, metadata_map metadata = {}) {

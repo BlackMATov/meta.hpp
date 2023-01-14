@@ -22,7 +22,7 @@ namespace meta_hpp::detail
 
 namespace meta_hpp
 {
-    inline nullptr_type::nullptr_type(detail::nullptr_type_data* data)
+    inline nullptr_type::nullptr_type(data_ptr data)
     : data_{data} {}
 
     inline bool nullptr_type::is_valid() const noexcept {

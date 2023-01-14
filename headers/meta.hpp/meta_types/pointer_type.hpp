@@ -26,7 +26,7 @@ namespace meta_hpp::detail
 
 namespace meta_hpp
 {
-    inline pointer_type::pointer_type(detail::pointer_type_data* data)
+    inline pointer_type::pointer_type(data_ptr data)
     : data_{data} {}
 
     inline bool pointer_type::is_valid() const noexcept {

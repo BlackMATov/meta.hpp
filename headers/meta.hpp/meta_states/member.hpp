@@ -161,13 +161,8 @@ namespace meta_hpp::detail
 
 namespace meta_hpp
 {
-    inline member::member(detail::member_state_ptr state) noexcept
+    inline member::member(state_ptr state) noexcept
     : state_{std::move(state)} {}
-
-    inline member& member::operator=(detail::member_state_ptr state) noexcept {
-        state_ = std::move(state);
-        return *this;
-    }
 
     inline bool member::is_valid() const noexcept {
         return !!state_;

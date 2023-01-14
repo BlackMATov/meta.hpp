@@ -29,7 +29,7 @@ namespace meta_hpp::detail
 
 namespace meta_hpp
 {
-    inline enum_type::enum_type(detail::enum_type_data* data)
+    inline enum_type::enum_type(data_ptr data)
     : data_{data} {}
 
     inline bool enum_type::is_valid() const noexcept {
