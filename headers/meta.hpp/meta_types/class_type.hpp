@@ -34,7 +34,7 @@ namespace meta_hpp::detail
 
 namespace meta_hpp
 {
-    inline class_type::class_type(detail::class_type_data* data)
+    inline class_type::class_type(data_ptr data)
     : data_{data} {}
 
     inline bool class_type::is_valid() const noexcept {

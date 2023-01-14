@@ -23,13 +23,8 @@ namespace meta_hpp::detail
 namespace meta_hpp
 {
 
-    inline argument::argument(detail::argument_state_ptr state) noexcept
+    inline argument::argument(state_ptr state) noexcept
     : state_{std::move(state)} {}
-
-    inline argument& argument::operator=(detail::argument_state_ptr state) noexcept {
-        state_ = std::move(state);
-        return *this;
-    }
 
     inline bool argument::is_valid() const noexcept {
         return !!state_;

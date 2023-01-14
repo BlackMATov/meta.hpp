@@ -26,7 +26,7 @@ namespace meta_hpp::detail
 
 namespace meta_hpp
 {
-    inline destructor_type::destructor_type(detail::destructor_type_data* data)
+    inline destructor_type::destructor_type(data_ptr data)
     : data_{data} {}
 
     inline bool destructor_type::is_valid() const noexcept {

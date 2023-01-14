@@ -142,13 +142,8 @@ namespace meta_hpp::detail
 
 namespace meta_hpp
 {
-    inline constructor::constructor(detail::constructor_state_ptr state) noexcept
+    inline constructor::constructor(state_ptr state) noexcept
     : state_{std::move(state)} {}
-
-    inline constructor& constructor::operator=(detail::constructor_state_ptr state) noexcept {
-        state_ = std::move(state);
-        return *this;
-    }
 
     inline bool constructor::is_valid() const noexcept {
         return !!state_;

@@ -14,12 +14,5 @@ namespace meta_hpp
 {
     template < detail::member_kind Member >
     member_bind<Member>::member_bind(metadata_map metadata)
-    : data_{detail::type_access(resolve_type<Member>())} {
-        detail::insert_or_assign(data_->metadata, std::move(metadata));
-    }
-
-    template < detail::member_kind Member >
-    member_bind<Member>::operator member_type() const noexcept {
-        return member_type{data_};
-    }
+    : type_bind_base{resolve_type<Member>(), std::move(metadata)} {}
 }

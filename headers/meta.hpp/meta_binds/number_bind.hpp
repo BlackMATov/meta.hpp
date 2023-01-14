@@ -14,12 +14,5 @@ namespace meta_hpp
 {
     template < detail::number_kind Number >
     number_bind<Number>::number_bind(metadata_map metadata)
-    : data_{detail::type_access(resolve_type<Number>())} {
-        detail::insert_or_assign(data_->metadata, std::move(metadata));
-    }
-
-    template < detail::number_kind Number >
-    number_bind<Number>::operator number_type() const noexcept {
-        return number_type{data_};
-    }
+    : type_bind_base{resolve_type<Number>(), std::move(metadata)} {}
 }

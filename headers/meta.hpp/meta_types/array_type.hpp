@@ -27,7 +27,7 @@ namespace meta_hpp::detail
 
 namespace meta_hpp
 {
-    inline array_type::array_type(detail::array_type_data* data)
+    inline array_type::array_type(data_ptr data)
     : data_{data} {}
 
     inline bool array_type::is_valid() const noexcept {

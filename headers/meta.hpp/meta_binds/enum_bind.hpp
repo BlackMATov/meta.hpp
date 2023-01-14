@@ -14,14 +14,7 @@ namespace meta_hpp
 {
     template < detail::enum_kind Enum >
     enum_bind<Enum>::enum_bind(metadata_map metadata)
-    : data_{detail::type_access(resolve_type<Enum>())} {
-        detail::insert_or_assign(data_->metadata, std::move(metadata));
-    }
-
-    template < detail::enum_kind Enum >
-    enum_bind<Enum>::operator enum_type() const noexcept {
-        return enum_type{data_};
-    }
+    : type_bind_base{resolve_type<Enum>(), std::move(metadata)} {}
 
     template < detail::enum_kind Enum >
     enum_bind<Enum>& enum_bind<Enum>::evalue_(std::string name, Enum value) {
@@ -34,7 +27,7 @@ namespace meta_hpp
             std::move(name),
             std::move(value),
             std::move(opts.metadata));
-        detail::insert_or_assign(data_->evalues, std::move(state));
+        detail::insert_or_assign(get_data().evalues, std::move(state));
         return *this;
     }
 }

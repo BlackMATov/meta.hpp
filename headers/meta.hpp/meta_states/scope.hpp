@@ -29,13 +29,8 @@ namespace meta_hpp::detail
 
 namespace meta_hpp
 {
-    inline scope::scope(detail::scope_state_ptr state) noexcept
+    inline scope::scope(state_ptr state) noexcept
     : state_{std::move(state)} {}
-
-    inline scope& scope::operator=(detail::scope_state_ptr state) noexcept {
-        state_ = std::move(state);
-        return *this;
-    }
 
     inline bool scope::is_valid() const noexcept {
         return !!state_;

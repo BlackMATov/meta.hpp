@@ -27,7 +27,7 @@ namespace meta_hpp::detail
 
 namespace meta_hpp
 {
-    inline constructor_type::constructor_type(detail::constructor_type_data* data)
+    inline constructor_type::constructor_type(data_ptr data)
     : data_{data} {}
 
     inline bool constructor_type::is_valid() const noexcept {

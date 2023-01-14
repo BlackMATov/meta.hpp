@@ -64,13 +64,8 @@ namespace meta_hpp::detail
 
 namespace meta_hpp
 {
-    inline destructor::destructor(detail::destructor_state_ptr state) noexcept
+    inline destructor::destructor(state_ptr state) noexcept
     : state_{std::move(state)} {}
-
-    inline destructor& destructor::operator=(detail::destructor_state_ptr state) noexcept {
-        state_ = std::move(state);
-        return *this;
-    }
 
     inline bool destructor::is_valid() const noexcept {
         return !!state_;

@@ -204,3 +204,17 @@ TEST_CASE("meta/meta_states/scope") {
         CHECK(static_const_ivec3_var.get_type().get_data_type() == meta::resolve_type<ivec3>());
     }
 }
+
+TEST_CASE("meta/meta_states/extend_scope") {
+    namespace meta = meta_hpp;
+
+    const meta::scope math_scope = meta::local_scope_("math")
+        .typedef_<ivec2>("ivec2");
+
+    CHECK(math_scope.get_typedefs().size() == 1);
+
+    meta::extend_scope_(math_scope)
+        .typedef_<ivec3>("ivec3");
+
+    CHECK(math_scope.get_typedefs().size() == 2);
+}

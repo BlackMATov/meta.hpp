@@ -14,12 +14,5 @@ namespace meta_hpp
 {
     template < detail::void_kind Void >
     void_bind<Void>::void_bind(metadata_map metadata)
-    : data_{detail::type_access(resolve_type<void>())} {
-        detail::insert_or_assign(data_->metadata, std::move(metadata));
-    }
-
-    template < detail::void_kind Void >
-    void_bind<Void>::operator void_type() const noexcept {
-        return void_type{data_};
-    }
+    : type_bind_base{resolve_type<Void>(), std::move(metadata)} {}
 }

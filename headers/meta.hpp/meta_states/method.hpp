@@ -135,13 +135,8 @@ namespace meta_hpp::detail
 
 namespace meta_hpp
 {
-    inline method::method(detail::method_state_ptr state) noexcept
+    inline method::method(state_ptr state) noexcept
     : state_{std::move(state)} {}
-
-    inline method& method::operator=(detail::method_state_ptr state) noexcept {
-        state_ = std::move(state);
-        return *this;
-    }
 
     inline bool method::is_valid() const noexcept {
         return !!state_;

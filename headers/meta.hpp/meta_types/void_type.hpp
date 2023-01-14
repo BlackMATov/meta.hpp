@@ -22,7 +22,7 @@ namespace meta_hpp::detail
 
 namespace meta_hpp
 {
-    inline void_type::void_type(detail::void_type_data* data)
+    inline void_type::void_type(data_ptr data)
     : data_{data} {}
 
     inline bool void_type::is_valid() const noexcept {

@@ -106,10 +106,10 @@ namespace meta_hpp
     class argument final {
     public:
         using index_type = argument_index;
+        using state_ptr = detail::argument_state_ptr;
 
-        explicit argument() = default;
-        explicit argument(detail::argument_state_ptr state) noexcept;
-        argument& operator=(detail::argument_state_ptr state) noexcept;
+        argument() = default;
+        argument(state_ptr state) noexcept;
 
         [[nodiscard]] bool is_valid() const noexcept;
         [[nodiscard]] explicit operator bool() const noexcept;
@@ -122,17 +122,17 @@ namespace meta_hpp
 
         [[nodiscard]] const std::string& get_name() const noexcept;
     private:
-        detail::argument_state_ptr state_;
-        friend auto detail::state_access<argument>(const argument&);
+        state_ptr state_;
+        friend state_ptr detail::state_access<argument>(const argument&);
     };
 
     class constructor final {
     public:
         using index_type = constructor_index;
+        using state_ptr = detail::constructor_state_ptr;
 
-        explicit constructor() = default;
-        constructor(detail::constructor_state_ptr state) noexcept;
-        constructor& operator=(detail::constructor_state_ptr state) noexcept;
+        constructor() = default;
+        constructor(state_ptr state) noexcept;
 
         [[nodiscard]] bool is_valid() const noexcept;
         [[nodiscard]] explicit operator bool() const noexcept;
@@ -157,17 +157,17 @@ namespace meta_hpp
         [[nodiscard]] argument get_argument(std::size_t position) const noexcept;
         [[nodiscard]] const argument_list& get_arguments() const noexcept;
     private:
-        detail::constructor_state_ptr state_;
-        friend auto detail::state_access<constructor>(const constructor&);
+        state_ptr state_;
+        friend state_ptr detail::state_access<constructor>(const constructor&);
     };
 
     class destructor final {
     public:
         using index_type = destructor_index;
+        using state_ptr = detail::destructor_state_ptr;
 
-        explicit destructor() = default;
-        destructor(detail::destructor_state_ptr state) noexcept;
-        destructor& operator=(detail::destructor_state_ptr state) noexcept;
+        destructor() = default;
+        destructor(state_ptr state) noexcept;
 
         [[nodiscard]] bool is_valid() const noexcept;
         [[nodiscard]] explicit operator bool() const noexcept;
@@ -182,17 +182,17 @@ namespace meta_hpp
 
         void destroy_at(void* mem) const;
     private:
-        detail::destructor_state_ptr state_;
-        friend auto detail::state_access<destructor>(const destructor&);
+        state_ptr state_;
+        friend state_ptr detail::state_access<destructor>(const destructor&);
     };
 
     class evalue final {
     public:
         using index_type = evalue_index;
+        using state_ptr = detail::evalue_state_ptr;
 
-        explicit evalue() = default;
-        evalue(detail::evalue_state_ptr state) noexcept;
-        evalue& operator=(detail::evalue_state_ptr state) noexcept;
+        evalue() = default;
+        evalue(state_ptr state) noexcept;
 
         [[nodiscard]] bool is_valid() const noexcept;
         [[nodiscard]] explicit operator bool() const noexcept;
@@ -212,17 +212,17 @@ namespace meta_hpp
         template < typename T >
         [[nodiscard]] T get_underlying_value_as() const;
     private:
-        detail::evalue_state_ptr state_;
-        friend auto detail::state_access<evalue>(const evalue&);
+        state_ptr state_;
+        friend state_ptr detail::state_access<evalue>(const evalue&);
     };
 
     class function final {
     public:
         using index_type = function_index;
+        using state_ptr = detail::function_state_ptr;
 
-        explicit function() = default;
-        function(detail::function_state_ptr state) noexcept;
-        function& operator=(detail::function_state_ptr state) noexcept;
+        function() = default;
+        function(state_ptr state) noexcept;
 
         [[nodiscard]] bool is_valid() const noexcept;
         [[nodiscard]] explicit operator bool() const noexcept;
@@ -248,17 +248,17 @@ namespace meta_hpp
         [[nodiscard]] argument get_argument(std::size_t position) const noexcept;
         [[nodiscard]] const argument_list& get_arguments() const noexcept;
     private:
-        detail::function_state_ptr state_;
-        friend auto detail::state_access<function>(const function&);
+        state_ptr state_;
+        friend state_ptr detail::state_access<function>(const function&);
     };
 
     class member final {
     public:
         using index_type = member_index;
+        using state_ptr = detail::member_state_ptr;
 
-        explicit member() = default;
-        member(detail::member_state_ptr state) noexcept;
-        member& operator=(detail::member_state_ptr state) noexcept;
+        member() = default;
+        member(state_ptr state) noexcept;
 
         [[nodiscard]] bool is_valid() const noexcept;
         [[nodiscard]] explicit operator bool() const noexcept;
@@ -296,17 +296,17 @@ namespace meta_hpp
         template < typename Instance, typename Value >
         [[nodiscard]] bool is_settable_with(Instance&& instance, Value&& value) const noexcept;
     private:
-        detail::member_state_ptr state_;
-        friend auto detail::state_access<member>(const member&);
+        state_ptr state_;
+        friend state_ptr detail::state_access<member>(const member&);
     };
 
     class method final {
     public:
         using index_type = method_index;
+        using state_ptr = detail::method_state_ptr;
 
-        explicit method() = default;
-        method(detail::method_state_ptr state) noexcept;
-        method& operator=(detail::method_state_ptr state) noexcept;
+        method() = default;
+        method(state_ptr state) noexcept;
 
         [[nodiscard]] bool is_valid() const noexcept;
         [[nodiscard]] explicit operator bool() const noexcept;
@@ -332,17 +332,17 @@ namespace meta_hpp
         [[nodiscard]] argument get_argument(std::size_t position) const noexcept;
         [[nodiscard]] const argument_list& get_arguments() const noexcept;
     private:
-        detail::method_state_ptr state_;
-        friend auto detail::state_access<method>(const method&);
+        state_ptr state_;
+        friend state_ptr detail::state_access<method>(const method&);
     };
 
     class scope final {
     public:
         using index_type = scope_index;
+        using state_ptr = detail::scope_state_ptr;
 
-        explicit scope() = default;
-        explicit scope(detail::scope_state_ptr state) noexcept;
-        scope& operator=(detail::scope_state_ptr state) noexcept;
+        scope() = default;
+        scope(state_ptr state) noexcept;
 
         [[nodiscard]] bool is_valid() const noexcept;
         [[nodiscard]] explicit operator bool() const noexcept;
@@ -367,17 +367,17 @@ namespace meta_hpp
         [[nodiscard]] function get_function_with(std::string_view name, std::span<const any_type> args) const noexcept;
         [[nodiscard]] function get_function_with(std::string_view name, std::initializer_list<any_type> args) const noexcept;
     private:
-        detail::scope_state_ptr state_;
-        friend auto detail::state_access<scope>(const scope&);
+        state_ptr state_;
+        friend state_ptr detail::state_access<scope>(const scope&);
     };
 
     class variable final {
     public:
         using index_type = variable_index;
+        using state_ptr = detail::variable_state_ptr;
 
-        explicit variable() = default;
-        variable(detail::variable_state_ptr state) noexcept;
-        variable& operator=(detail::variable_state_ptr state) noexcept;
+        variable() = default;
+        variable(state_ptr state) noexcept;
 
         [[nodiscard]] bool is_valid() const noexcept;
         [[nodiscard]] explicit operator bool() const noexcept;
@@ -407,8 +407,8 @@ namespace meta_hpp
         template < typename Value >
         [[nodiscard]] bool is_settable_with(Value&& value) const noexcept;
     private:
-        detail::variable_state_ptr state_;
-        friend auto detail::state_access<variable>(const variable&);
+        state_ptr state_;
+        friend state_ptr detail::state_access<variable>(const variable&);
     };
 }
 

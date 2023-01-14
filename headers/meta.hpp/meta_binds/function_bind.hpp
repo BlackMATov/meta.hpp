@@ -14,12 +14,5 @@ namespace meta_hpp
 {
     template < detail::function_kind Function >
     function_bind<Function>::function_bind(metadata_map metadata)
-    : data_{detail::type_access(resolve_type<Function>())} {
-        detail::insert_or_assign(data_->metadata, std::move(metadata));
-    }
-
-    template < detail::function_kind Function >
-    function_bind<Function>::operator function_type() const noexcept {
-        return function_type{data_};
-    }
+    : type_bind_base{resolve_type<Function>(), std::move(metadata)} {}
 }

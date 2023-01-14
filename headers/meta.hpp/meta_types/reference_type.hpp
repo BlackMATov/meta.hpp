@@ -26,7 +26,7 @@ namespace meta_hpp::detail
 
 namespace meta_hpp
 {
-    inline reference_type::reference_type(detail::reference_type_data* data)
+    inline reference_type::reference_type(data_ptr data)
     : data_{data} {}
 
     inline bool reference_type::is_valid() const noexcept {

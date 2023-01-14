@@ -27,7 +27,7 @@ namespace meta_hpp::detail
 
 namespace meta_hpp
 {
-    inline number_type::number_type(detail::number_type_data* data)
+    inline number_type::number_type(data_ptr data)
     : data_{data} {}
 
     inline bool number_type::is_valid() const noexcept {

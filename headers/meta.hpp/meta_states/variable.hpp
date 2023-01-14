@@ -109,13 +109,8 @@ namespace meta_hpp::detail
 
 namespace meta_hpp
 {
-    inline variable::variable(detail::variable_state_ptr state) noexcept
+    inline variable::variable(state_ptr state) noexcept
     : state_{std::move(state)} {}
-
-    inline variable& variable::operator=(detail::variable_state_ptr state) noexcept {
-        state_ = std::move(state);
-        return *this;
-    }
 
     inline bool variable::is_valid() const noexcept {
         return !!state_;
