@@ -120,9 +120,9 @@ TEST_CASE("meta/meta_utilities/value") {
             CHECK_FALSE(val);
 
             CHECK_FALSE(val.is_valid());
-            CHECK(val.data() == nullptr);
-            CHECK(std::as_const(val).data() == nullptr);
-            CHECK(std::as_const(val).cdata() == nullptr);
+            CHECK(val.get_data() == nullptr);
+            CHECK(std::as_const(val).get_data() == nullptr);
+            CHECK(std::as_const(val).get_cdata() == nullptr);
 
             CHECK_FALSE(*val);
             CHECK_FALSE(val[0]);
@@ -149,10 +149,10 @@ TEST_CASE("meta/meta_utilities/value") {
 
         CHECK(val.get_type() == meta::resolve_type<ivec2>());
 
-        CHECK(*static_cast<const ivec2*>(val.data()) == vr);
-        CHECK(*static_cast<const ivec2*>(val.cdata()) == vr);
-        CHECK(*static_cast<const ivec2*>(std::as_const(val).data()) == vr);
-        CHECK(*static_cast<const ivec2*>(std::as_const(val).cdata()) == vr);
+        CHECK(*static_cast<const ivec2*>(val.get_data()) == vr);
+        CHECK(*static_cast<const ivec2*>(val.get_cdata()) == vr);
+        CHECK(*static_cast<const ivec2*>(std::as_const(val).get_data()) == vr);
+        CHECK(*static_cast<const ivec2*>(std::as_const(val).get_cdata()) == vr);
 
         CHECK(val.get_as<ivec2>() == ivec2{1,2});
 
@@ -189,10 +189,10 @@ TEST_CASE("meta/meta_utilities/value") {
 
         CHECK(val.get_type() == meta::resolve_type<ivec2>());
 
-        CHECK(*static_cast<const ivec2*>(val.data()) == vr);
-        CHECK(*static_cast<const ivec2*>(val.cdata()) == vr);
-        CHECK(*static_cast<const ivec2*>(std::as_const(val).data()) == vr);
-        CHECK(*static_cast<const ivec2*>(std::as_const(val).cdata()) == vr);
+        CHECK(*static_cast<const ivec2*>(val.get_data()) == vr);
+        CHECK(*static_cast<const ivec2*>(val.get_cdata()) == vr);
+        CHECK(*static_cast<const ivec2*>(std::as_const(val).get_data()) == vr);
+        CHECK(*static_cast<const ivec2*>(std::as_const(val).get_cdata()) == vr);
 
         CHECK(val.get_as<ivec2>() == ivec2{1,2});
 
@@ -311,7 +311,7 @@ TEST_CASE("meta/meta_utilities/value") {
         CHECK(ivec2::copy_constructor_counter == 2);
 
         CHECK(val_src.get_as<ivec2>() == ivec2{1,2});
-        CHECK(val_src.data() != val_dst.data());
+        CHECK(val_src.get_data() != val_dst.get_data());
     }
 
     SUBCASE("value& operator=(T&&)") {
@@ -362,7 +362,7 @@ TEST_CASE("meta/meta_utilities/value") {
         CHECK(ivec2::copy_constructor_counter == 1);
 
         CHECK(val_src2.get_as<ivec2>() == ivec2{1,2});
-        CHECK(val_src2.data() != val_dst.data());
+        CHECK(val_src2.get_data() != val_dst.get_data());
     }
 
     SUBCASE("swap") {
@@ -387,13 +387,13 @@ TEST_CASE("meta/meta_utilities/value") {
             int i{42};
             const meta::uvalue v{*meta::uvalue{&i}};
             CHECK(v.get_type() == meta::resolve_type<int>());
-            CHECK(v.data() != &i);
+            CHECK(v.get_data() != &i);
         }
         {
             const char i{42};
             const meta::uvalue v{*meta::uvalue{&i}};
             CHECK(v.get_type() == meta::resolve_type<char>());
-            CHECK(v.data() != &i);
+            CHECK(v.get_data() != &i);
         }
         {
             const int i{42};

@@ -305,15 +305,15 @@ namespace meta_hpp
         return vtable_ != nullptr ? vtable_->type : void_type;
     }
 
-    inline void* uvalue::data() noexcept {
+    inline void* uvalue::get_data() noexcept {
         return vtable_ != nullptr ? vtable_->data(storage_) : nullptr;
     }
 
-    inline const void* uvalue::data() const noexcept {
+    inline const void* uvalue::get_data() const noexcept {
         return vtable_ != nullptr ? vtable_->cdata(storage_) : nullptr;
     }
 
-    inline const void* uvalue::cdata() const noexcept {
+    inline const void* uvalue::get_cdata() const noexcept {
         return vtable_ != nullptr ? vtable_->cdata(storage_) : nullptr;
     }
 
@@ -326,7 +326,7 @@ namespace meta_hpp
     }
 
     template < typename T >
-    [[nodiscard]] T uvalue::get_as() && {
+    T uvalue::get_as() && {
         static_assert(std::is_same_v<T, std::decay_t<T>>);
 
         if constexpr ( detail::pointer_kind<T> ) {
@@ -405,7 +405,7 @@ namespace meta_hpp
                 const any_type& from_data_type = from_type_ptr.get_data_type();
 
                 if ( to_type_ptr_readonly >= from_type_ptr_readonly ) {
-                    void** from_data_ptr = static_cast<void**>(data());
+                    void** from_data_ptr = static_cast<void**>(get_data());
 
                     if ( to_data_type.is_void() || to_data_type == from_data_type ) {
                         void* to_ptr = *from_data_ptr;
@@ -425,7 +425,7 @@ namespace meta_hpp
 
         if constexpr ( !detail::pointer_kind<T> ) {
             if ( from_type == to_type ) {
-                T* to_ptr = static_cast<T*>(data());
+                T* to_ptr = static_cast<T*>(get_data());
                 return to_ptr;
             }
 
@@ -433,7 +433,7 @@ namespace meta_hpp
                 const class_type& to_class = to_type.as_class();
                 const class_type& from_class = from_type.as_class();
 
-                T* to_ptr = static_cast<T*>(detail::pointer_upcast(data(), from_class, to_class));
+                T* to_ptr = static_cast<T*>(detail::pointer_upcast(get_data(), from_class, to_class));
                 return to_ptr;
             }
         }
@@ -470,7 +470,7 @@ namespace meta_hpp
                 const any_type& from_data_type = from_type_ptr.get_data_type();
 
                 if ( to_type_ptr_readonly >= from_type_ptr_readonly ) {
-                    void* const* from_data_ptr = static_cast<void* const*>(data());
+                    void* const* from_data_ptr = static_cast<void* const*>(get_data());
 
                     if ( to_data_type.is_void() || to_data_type == from_data_type ) {
                         void* to_ptr = *from_data_ptr;
@@ -490,7 +490,7 @@ namespace meta_hpp
 
         if constexpr ( !detail::pointer_kind<T> ) {
             if ( from_type == to_type ) {
-                const T* to_ptr = static_cast<const T*>(data());
+                const T* to_ptr = static_cast<const T*>(get_data());
                 return to_ptr;
             }
 
@@ -498,7 +498,7 @@ namespace meta_hpp
                 const class_type& to_class = to_type.as_class();
                 const class_type& from_class = from_type.as_class();
 
-                const T* to_ptr = static_cast<const T*>(detail::pointer_upcast(data(), from_class, to_class));
+                const T* to_ptr = static_cast<const T*>(detail::pointer_upcast(get_data(), from_class, to_class));
                 return to_ptr;
             }
         }

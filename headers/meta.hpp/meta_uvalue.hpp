@@ -78,9 +78,9 @@ namespace meta_hpp
 
         [[nodiscard]] const any_type& get_type() const noexcept;
 
-        [[nodiscard]] void* data() noexcept;
-        [[nodiscard]] const void* data() const noexcept;
-        [[nodiscard]] const void* cdata() const noexcept;
+        [[nodiscard]] void* get_data() noexcept;
+        [[nodiscard]] const void* get_data() const noexcept;
+        [[nodiscard]] const void* get_cdata() const noexcept;
 
         [[nodiscard]] uvalue operator*() const;
         [[nodiscard]] uvalue operator[](std::size_t index) const;

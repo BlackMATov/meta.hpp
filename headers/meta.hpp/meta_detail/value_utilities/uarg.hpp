@@ -110,7 +110,7 @@ namespace meta_hpp::detail
         explicit uarg(T&& v)
         : uarg_base{std::forward<T>(v)}
         // NOLINTNEXTLINE(*-const-cast)
-        , data_{const_cast<void*>(v.data())} {}
+        , data_{const_cast<void*>(v.get_data())} {}
 
         template < typename T, typename Tp = std::decay_t<T> >
             requires (!any_uvalue_kind<Tp>)

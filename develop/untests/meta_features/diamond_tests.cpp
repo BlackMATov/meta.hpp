@@ -163,7 +163,7 @@ TEST_CASE("meta/meta_features/diamond") {
         {
             A a;
             meta::uvalue a_val{&a};
-            CHECK(*static_cast<A**>(a_val.data()) == &a);
+            CHECK(*static_cast<A**>(a_val.get_data()) == &a);
 
             meta::detail::uarg a_arg{a_val};
 
@@ -178,7 +178,7 @@ TEST_CASE("meta/meta_features/diamond") {
         {
             B b;
             meta::uvalue b_val{&b};
-            CHECK(*static_cast<B**>(b_val.data()) == &b);
+            CHECK(*static_cast<B**>(b_val.get_data()) == &b);
 
             meta::detail::uarg b_arg{b_val};
 
@@ -194,7 +194,7 @@ TEST_CASE("meta/meta_features/diamond") {
         {
             C c;
             meta::uvalue c_val{&c};
-            CHECK(*static_cast<C**>(c_val.data()) == &c);
+            CHECK(*static_cast<C**>(c_val.get_data()) == &c);
 
             meta::detail::uarg c_arg{c_val};
 
@@ -210,7 +210,7 @@ TEST_CASE("meta/meta_features/diamond") {
         {
             D d;
             meta::uvalue d_val{&d};
-            CHECK(*static_cast<D**>(d_val.data()) == &d);
+            CHECK(*static_cast<D**>(d_val.get_data()) == &d);
 
             meta::detail::uarg d_arg{d_val};
 
@@ -228,7 +228,7 @@ TEST_CASE("meta/meta_features/diamond") {
         {
             E e;
             meta::uvalue e_val{&e};
-            CHECK(*static_cast<E**>(e_val.data()) == &e);
+            CHECK(*static_cast<E**>(e_val.get_data()) == &e);
 
             meta::detail::uarg e_arg{e_val};
 
