@@ -304,10 +304,6 @@ namespace meta_hpp::detail
         : std::runtime_error(what) {}
     };
 #endif
-
-    inline void throw_exception_with [[noreturn]] ([[maybe_unused]] const char* what) {
-        META_HPP_THROW_AS(exception, what);
-    }
 }
 
 namespace meta_hpp::detail
@@ -4109,7 +4105,7 @@ namespace meta_hpp
         auto state = detail::constructor_state::make<Policy, Class, Args...>(std::move(opts.metadata));
 
         if ( opts.arguments.size() > state->arguments.size() ) {
-            detail::throw_exception_with("provided argument names don't match constructor argument count");
+            META_HPP_THROW_AS(exception, "provided argument names don't match constructor argument count");
         }
 
         for ( std::size_t i = 0; i < opts.arguments.size(); ++i ) {
@@ -4170,7 +4166,7 @@ namespace meta_hpp
             std::move(opts.metadata));
 
         if ( opts.arguments.size() > state->arguments.size() ) {
-            detail::throw_exception_with("provided arguments don't match function argument count");
+            META_HPP_THROW_AS(exception, "provided arguments don't match function argument count");
         }
 
         for ( std::size_t i = 0; i < opts.arguments.size(); ++i ) {
@@ -4197,7 +4193,7 @@ namespace meta_hpp
             {});
 
         if ( arguments.size() > state->arguments.size() ) {
-            detail::throw_exception_with("provided argument names don't match function argument count");
+            META_HPP_THROW_AS(exception, "provided argument names don't match function argument count");
         }
 
         for ( std::size_t i = 0; i < arguments.size(); ++i ) {
@@ -4272,7 +4268,7 @@ namespace meta_hpp
             std::move(opts.metadata));
 
         if ( opts.arguments.size() > state->arguments.size() ) {
-            detail::throw_exception_with("provided arguments don't match method argument count");
+            META_HPP_THROW_AS(exception, "provided arguments don't match method argument count");
         }
 
         for ( std::size_t i = 0; i < opts.arguments.size(); ++i ) {
@@ -4300,7 +4296,7 @@ namespace meta_hpp
             {});
 
         if ( arguments.size() > state->arguments.size() ) {
-            detail::throw_exception_with("provided argument names don't match method argument count");
+            META_HPP_THROW_AS(exception, "provided argument names don't match method argument count");
         }
 
         for ( std::size_t i = 0; i < arguments.size(); ++i ) {
@@ -4457,7 +4453,7 @@ namespace meta_hpp
             std::move(opts.metadata));
 
         if ( opts.arguments.size() > state->arguments.size() ) {
-            detail::throw_exception_with("provided arguments don't match function argument count");
+            META_HPP_THROW_AS(exception, "provided arguments don't match function argument count");
         }
 
         for ( std::size_t i = 0; i < opts.arguments.size(); ++i ) {
@@ -4483,7 +4479,7 @@ namespace meta_hpp
             {});
 
         if ( arguments.size() > state->arguments.size() ) {
-            detail::throw_exception_with("provided argument names don't match function argument count");
+            META_HPP_THROW_AS(exception, "provided argument names don't match function argument count");
         }
 
         for ( std::size_t i = 0; i < arguments.size(); ++i ) {
@@ -5300,7 +5296,7 @@ namespace meta_hpp::detail
     // NOLINTNEXTLINE(*-cognitive-complexity)
     To uarg::cast() const {
         if ( !can_cast_to<To>() ) {
-            throw_exception_with("bad argument cast");
+            META_HPP_THROW_AS(exception, "bad argument cast");
         }
 
         using to_raw_type_cv = std::remove_reference_t<To>;
@@ -5410,7 +5406,7 @@ namespace meta_hpp::detail
             }
         }
 
-        throw_exception_with("bad argument cast");
+        META_HPP_THROW_AS(exception, "bad argument cast");
     }
 }
 
@@ -5435,12 +5431,12 @@ namespace meta_hpp::detail
         static_assert(as_object || as_raw_ptr || as_shared_ptr);
 
         if ( args.size() != ct::arity ) {
-            throw_exception_with("an attempt to call a constructor with an incorrect arity");
+            META_HPP_THROW_AS(exception, "an attempt to call a constructor with an incorrect arity");
         }
 
         return [args]<std::size_t... Is>(std::index_sequence<Is...>) -> uvalue {
             if ( !(... && args[Is].can_cast_to<type_list_at_t<Is, argument_types>>()) ) {
-                throw_exception_with("an attempt to call a constructor with incorrect argument types");
+                META_HPP_THROW_AS(exception, "an attempt to call a constructor with incorrect argument types");
             }
 
             if constexpr ( as_object ) {
@@ -5467,12 +5463,12 @@ namespace meta_hpp::detail
         using argument_types = typename ct::argument_types;
 
         if ( args.size() != ct::arity ) {
-            throw_exception_with("an attempt to call a constructor with an incorrect arity");
+            META_HPP_THROW_AS(exception, "an attempt to call a constructor with an incorrect arity");
         }
 
         return [mem, args]<std::size_t... Is>(std::index_sequence<Is...>) -> uvalue {
             if ( !(... && args[Is].can_cast_to<type_list_at_t<Is, argument_types>>()) ) {
-                throw_exception_with("an attempt to call a constructor with incorrect argument types");
+                META_HPP_THROW_AS(exception, "an attempt to call a constructor with incorrect argument types");
             }
             return uvalue{std::construct_at(
                 static_cast<class_type*>(mem),
@@ -5971,12 +5967,12 @@ namespace meta_hpp::detail
         static_assert(as_copy || as_void || ref_as_ptr);
 
         if ( args.size() != ft::arity ) {
-            throw_exception_with("an attempt to call a function with an incorrect arity");
+            META_HPP_THROW_AS(exception, "an attempt to call a function with an incorrect arity");
         }
 
         return [&function, args]<std::size_t... Is>(std::index_sequence<Is...>) -> uvalue {
             if ( !(... && args[Is].can_cast_to<type_list_at_t<Is, argument_types>>()) ) {
-                throw_exception_with("an attempt to call a function with incorrect argument types");
+                META_HPP_THROW_AS(exception, "an attempt to call a function with incorrect argument types");
             }
 
             if constexpr ( std::is_void_v<return_type> ) {
@@ -6357,7 +6353,7 @@ namespace meta_hpp::detail
     template < inst_class_ref_kind Q >
     decltype(auto) uinst::cast() const {
         if ( !can_cast_to<Q>() ) {
-            throw_exception_with("bad instance cast");
+            META_HPP_THROW_AS(exception, "bad instance cast");
         }
 
         using inst_class_cv = std::remove_reference_t<Q>;
@@ -6406,7 +6402,7 @@ namespace meta_hpp::detail
             }
         }
 
-        throw_exception_with("bad instance cast");
+        META_HPP_THROW_AS(exception, "bad instance cast");
     }
 }
 
@@ -6431,7 +6427,7 @@ namespace meta_hpp::detail
         static_assert(as_copy || as_ptr || as_ref_wrap);
 
         if ( !inst.can_cast_to<const class_type>() ) {
-            throw_exception_with("an attempt to get a member with an incorrect instance type");
+            META_HPP_THROW_AS(exception, "an attempt to get a member with an incorrect instance type");
         }
 
         if ( inst.is_inst_const() ) {
@@ -6483,18 +6479,18 @@ namespace meta_hpp::detail
         using value_type = typename mt::value_type;
 
         if constexpr ( std::is_const_v<value_type> ) {
-            throw_exception_with("an attempt to set a constant member");
+            META_HPP_THROW_AS(exception, "an attempt to set a constant member");
         } else {
             if ( inst.is_inst_const() ) {
-                throw_exception_with("an attempt to set a member with an const instance type");
+                META_HPP_THROW_AS(exception, "an attempt to set a member with an const instance type");
             }
 
             if ( !inst.can_cast_to<class_type>() ) {
-                throw_exception_with("an attempt to set a member with an incorrect instance type");
+                META_HPP_THROW_AS(exception, "an attempt to set a member with an incorrect instance type");
             }
 
             if ( !arg.can_cast_to<value_type>() ) {
-                throw_exception_with("an attempt to set a member with an incorrect argument type");
+                META_HPP_THROW_AS(exception, "an attempt to set a member with an incorrect argument type");
             }
 
             inst.cast<class_type>().*member = arg.cast<value_type>();
@@ -6730,16 +6726,16 @@ namespace meta_hpp::detail
         static_assert(as_copy || as_void || ref_as_ptr);
 
         if ( args.size() != mt::arity ) {
-            throw_exception_with("an attempt to call a method with an incorrect arity");
+            META_HPP_THROW_AS(exception, "an attempt to call a method with an incorrect arity");
         }
 
         if ( !inst.can_cast_to<qualified_type>() ) {
-            throw_exception_with("an attempt to call a method with an incorrect instance type");
+            META_HPP_THROW_AS(exception, "an attempt to call a method with an incorrect instance type");
         }
 
         return [&method, &inst, args]<std::size_t... Is>(std::index_sequence<Is...>) -> uvalue {
             if ( !(... && args[Is].can_cast_to<type_list_at_t<Is, argument_types>>()) ) {
-                throw_exception_with("an attempt to call a method with incorrect argument types");
+                META_HPP_THROW_AS(exception, "an attempt to call a method with incorrect argument types");
             }
 
             if constexpr ( std::is_void_v<return_type> ) {
@@ -6987,10 +6983,10 @@ namespace meta_hpp::detail
         using data_type = typename pt::data_type;
 
         if constexpr ( std::is_const_v<data_type> ) {
-            throw_exception_with("an attempt to set a constant variable");
+            META_HPP_THROW_AS(exception, "an attempt to set a constant variable");
         } else {
             if ( !arg.can_cast_to<data_type>() ) {
-                throw_exception_with("an attempt to set a variable with an incorrect argument type");
+                META_HPP_THROW_AS(exception, "an attempt to set a variable with an incorrect argument type");
             }
             *pointer = arg.cast<data_type>();
         }
@@ -8400,7 +8396,7 @@ namespace meta_hpp
                     if constexpr ( detail::has_deref_traits<Tp> ) {
                         return detail::deref_traits<Tp>{}(*storage_cast<Tp>(from));
                     } else {
-                        detail::throw_exception_with("value type doesn't have value deref traits");
+                        META_HPP_THROW_AS(exception, "value type doesn't have value deref traits");
                     }
                 },
 
@@ -8408,7 +8404,7 @@ namespace meta_hpp
                     if constexpr ( detail::has_index_traits<Tp> ) {
                         return detail::index_traits<Tp>{}(*storage_cast<Tp>(from), i);
                     } else {
-                        detail::throw_exception_with("value type doesn't have value index traits");
+                        META_HPP_THROW_AS(exception, "value type doesn't have value index traits");
                     }
                 },
             };
@@ -8555,7 +8551,7 @@ namespace meta_hpp
             }
         }
 
-        detail::throw_exception_with("bad value cast");
+        META_HPP_THROW_AS(exception, "bad value cast");
     }
 
     template < typename T >
@@ -8572,7 +8568,7 @@ namespace meta_hpp
             }
         }
 
-        detail::throw_exception_with("bad value cast");
+        META_HPP_THROW_AS(exception, "bad value cast");
     }
 
     template < typename T >
@@ -8589,7 +8585,7 @@ namespace meta_hpp
             }
         }
 
-        detail::throw_exception_with("bad value cast");
+        META_HPP_THROW_AS(exception, "bad value cast");
     }
 
     template < typename T >

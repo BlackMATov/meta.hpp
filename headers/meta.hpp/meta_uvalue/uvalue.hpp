@@ -184,7 +184,7 @@ namespace meta_hpp
                     if constexpr ( detail::has_deref_traits<Tp> ) {
                         return detail::deref_traits<Tp>{}(*storage_cast<Tp>(from));
                     } else {
-                        detail::throw_exception_with("value type doesn't have value deref traits");
+                        META_HPP_THROW_AS(exception, "value type doesn't have value deref traits");
                     }
                 },
 
@@ -192,7 +192,7 @@ namespace meta_hpp
                     if constexpr ( detail::has_index_traits<Tp> ) {
                         return detail::index_traits<Tp>{}(*storage_cast<Tp>(from), i);
                     } else {
-                        detail::throw_exception_with("value type doesn't have value index traits");
+                        META_HPP_THROW_AS(exception, "value type doesn't have value index traits");
                     }
                 },
             };
@@ -339,7 +339,7 @@ namespace meta_hpp
             }
         }
 
-        detail::throw_exception_with("bad value cast");
+        META_HPP_THROW_AS(exception, "bad value cast");
     }
 
     template < typename T >
@@ -356,7 +356,7 @@ namespace meta_hpp
             }
         }
 
-        detail::throw_exception_with("bad value cast");
+        META_HPP_THROW_AS(exception, "bad value cast");
     }
 
     template < typename T >
@@ -373,7 +373,7 @@ namespace meta_hpp
             }
         }
 
-        detail::throw_exception_with("bad value cast");
+        META_HPP_THROW_AS(exception, "bad value cast");
     }
 
     template < typename T >

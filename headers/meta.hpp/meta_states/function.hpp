@@ -35,12 +35,12 @@ namespace meta_hpp::detail
         static_assert(as_copy || as_void || ref_as_ptr);
 
         if ( args.size() != ft::arity ) {
-            throw_exception_with("an attempt to call a function with an incorrect arity");
+            META_HPP_THROW_AS(exception, "an attempt to call a function with an incorrect arity");
         }
 
         return [&function, args]<std::size_t... Is>(std::index_sequence<Is...>) -> uvalue {
             if ( !(... && args[Is].can_cast_to<type_list_at_t<Is, argument_types>>()) ) {
-                throw_exception_with("an attempt to call a function with incorrect argument types");
+                META_HPP_THROW_AS(exception, "an attempt to call a function with incorrect argument types");
             }
 
             if constexpr ( std::is_void_v<return_type> ) {

@@ -33,12 +33,12 @@ namespace meta_hpp::detail
         static_assert(as_object || as_raw_ptr || as_shared_ptr);
 
         if ( args.size() != ct::arity ) {
-            throw_exception_with("an attempt to call a constructor with an incorrect arity");
+            META_HPP_THROW_AS(exception, "an attempt to call a constructor with an incorrect arity");
         }
 
         return [args]<std::size_t... Is>(std::index_sequence<Is...>) -> uvalue {
             if ( !(... && args[Is].can_cast_to<type_list_at_t<Is, argument_types>>()) ) {
-                throw_exception_with("an attempt to call a constructor with incorrect argument types");
+                META_HPP_THROW_AS(exception, "an attempt to call a constructor with incorrect argument types");
             }
 
             if constexpr ( as_object ) {
@@ -65,12 +65,12 @@ namespace meta_hpp::detail
         using argument_types = typename ct::argument_types;
 
         if ( args.size() != ct::arity ) {
-            throw_exception_with("an attempt to call a constructor with an incorrect arity");
+            META_HPP_THROW_AS(exception, "an attempt to call a constructor with an incorrect arity");
         }
 
         return [mem, args]<std::size_t... Is>(std::index_sequence<Is...>) -> uvalue {
             if ( !(... && args[Is].can_cast_to<type_list_at_t<Is, argument_types>>()) ) {
-                throw_exception_with("an attempt to call a constructor with incorrect argument types");
+                META_HPP_THROW_AS(exception, "an attempt to call a constructor with incorrect argument types");
             }
             return uvalue{std::construct_at(
                 static_cast<class_type*>(mem),

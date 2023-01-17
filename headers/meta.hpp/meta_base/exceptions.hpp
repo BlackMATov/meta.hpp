@@ -29,8 +29,4 @@ namespace meta_hpp::detail
         : std::runtime_error(what) {}
     };
 #endif
-
-    inline void throw_exception_with [[noreturn]] ([[maybe_unused]] const char* what) {
-        META_HPP_THROW_AS(exception, what);
-    }
 }

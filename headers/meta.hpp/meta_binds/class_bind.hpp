@@ -73,7 +73,7 @@ namespace meta_hpp
         auto state = detail::constructor_state::make<Policy, Class, Args...>(std::move(opts.metadata));
 
         if ( opts.arguments.size() > state->arguments.size() ) {
-            detail::throw_exception_with("provided argument names don't match constructor argument count");
+            META_HPP_THROW_AS(exception, "provided argument names don't match constructor argument count");
         }
 
         for ( std::size_t i = 0; i < opts.arguments.size(); ++i ) {
@@ -134,7 +134,7 @@ namespace meta_hpp
             std::move(opts.metadata));
 
         if ( opts.arguments.size() > state->arguments.size() ) {
-            detail::throw_exception_with("provided arguments don't match function argument count");
+            META_HPP_THROW_AS(exception, "provided arguments don't match function argument count");
         }
 
         for ( std::size_t i = 0; i < opts.arguments.size(); ++i ) {
@@ -161,7 +161,7 @@ namespace meta_hpp
             {});
 
         if ( arguments.size() > state->arguments.size() ) {
-            detail::throw_exception_with("provided argument names don't match function argument count");
+            META_HPP_THROW_AS(exception, "provided argument names don't match function argument count");
         }
 
         for ( std::size_t i = 0; i < arguments.size(); ++i ) {
@@ -236,7 +236,7 @@ namespace meta_hpp
             std::move(opts.metadata));
 
         if ( opts.arguments.size() > state->arguments.size() ) {
-            detail::throw_exception_with("provided arguments don't match method argument count");
+            META_HPP_THROW_AS(exception, "provided arguments don't match method argument count");
         }
 
         for ( std::size_t i = 0; i < opts.arguments.size(); ++i ) {
@@ -264,7 +264,7 @@ namespace meta_hpp
             {});
 
         if ( arguments.size() > state->arguments.size() ) {
-            detail::throw_exception_with("provided argument names don't match method argument count");
+            META_HPP_THROW_AS(exception, "provided argument names don't match method argument count");
         }
 
         for ( std::size_t i = 0; i < arguments.size(); ++i ) {

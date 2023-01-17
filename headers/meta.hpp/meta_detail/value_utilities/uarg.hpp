@@ -237,7 +237,7 @@ namespace meta_hpp::detail
     // NOLINTNEXTLINE(*-cognitive-complexity)
     To uarg::cast() const {
         if ( !can_cast_to<To>() ) {
-            throw_exception_with("bad argument cast");
+            META_HPP_THROW_AS(exception, "bad argument cast");
         }
 
         using to_raw_type_cv = std::remove_reference_t<To>;
@@ -347,6 +347,6 @@ namespace meta_hpp::detail
             }
         }
 
-        throw_exception_with("bad argument cast");
+        META_HPP_THROW_AS(exception, "bad argument cast");
     }
 }
