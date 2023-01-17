@@ -12,6 +12,7 @@
 
 #include "../meta_detail/value_traits/deref_traits.hpp"
 #include "../meta_detail/value_traits/index_traits.hpp"
+#include "../meta_detail/value_traits/unmap_traits.hpp"
 
 #include "../meta_detail/value_utilities/utraits.hpp"
 
@@ -29,6 +30,7 @@ namespace meta_hpp
 
         uvalue (*const deref)(const storage_u& from);
         uvalue (*const index)(const storage_u& from, std::size_t);
+        uvalue (*const unmap)(const storage_u& from);
 
         template < typename T >
         static T* buffer_cast(buffer_t& buffer) noexcept {
@@ -180,7 +182,6 @@ namespace meta_hpp
                     self.vtable_ = nullptr;
                 },
 
-
                 .deref = [](){
                     if constexpr ( detail::has_deref_traits<Tp> ) {
                         return +[](const storage_u& from) -> uvalue {
@@ -195,6 +196,16 @@ namespace meta_hpp
                     if constexpr ( detail::has_index_traits<Tp> ) {
                         return +[](const storage_u& from, std::size_t i) -> uvalue {
                             return detail::index_traits<Tp>{}(*storage_cast<Tp>(from), i);
+                        };
+                    } else {
+                        return nullptr;
+                    }
+                }(),
+
+                .unmap = [](){
+                    if constexpr ( detail::has_unmap_traits<Tp> ) {
+                        return +[](const storage_u& from) -> uvalue {
+                            return detail::unmap_traits<Tp>{}(*storage_cast<Tp>(from));
                         };
                     } else {
                         return nullptr;
@@ -336,6 +347,14 @@ namespace meta_hpp
 
     inline bool uvalue::has_index_op() const noexcept {
         return vtable_ != nullptr && vtable_->index != nullptr;
+    }
+
+    inline uvalue uvalue::unmap() const {
+        return has_unmap_op() ? vtable_->unmap(storage_) : uvalue{};
+    }
+
+    inline bool uvalue::has_unmap_op() const noexcept {
+        return vtable_ != nullptr && vtable_->unmap != nullptr;
     }
 
     template < typename T >

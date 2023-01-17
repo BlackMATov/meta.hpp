@@ -2542,6 +2542,9 @@ namespace meta_hpp
         [[nodiscard]] uvalue operator[](std::size_t index) const;
         [[nodiscard]] bool has_index_op() const noexcept;
 
+        [[nodiscard]] uvalue unmap() const;
+        [[nodiscard]] bool has_unmap_op() const noexcept;
+
         template < typename T >
         [[nodiscard]] T get_as() &&;
 
@@ -8239,6 +8242,41 @@ namespace meta_hpp::detail
     };
 }
 
+namespace meta_hpp::detail
+{
+    template < typename T >
+    struct unmap_traits;
+
+    template < typename T >
+    concept has_unmap_traits = requires(const T& v) {
+        { unmap_traits<T>{}(v) } -> std::convertible_to<uvalue>;
+    };
+}
+
+namespace meta_hpp::detail
+{
+    template < typename T >
+    struct unmap_traits<std::shared_ptr<T>> {
+        uvalue operator()(const std::shared_ptr<T>& v) const {
+            return uvalue{v.get()};
+        }
+    };
+
+    template < typename T, typename D >
+    struct unmap_traits<std::unique_ptr<T, D>> {
+        uvalue operator()(const std::unique_ptr<T, D>& v) const {
+            return uvalue{v.get()};
+        }
+    };
+
+    template < typename T >
+    struct unmap_traits<std::reference_wrapper<T>> {
+        uvalue operator()(const std::reference_wrapper<T>& v) const {
+            return uvalue{std::addressof(v.get())};
+        }
+    };
+}
+
 namespace meta_hpp
 {
     struct uvalue::vtable_t final {
@@ -8253,6 +8291,7 @@ namespace meta_hpp
 
         uvalue (*const deref)(const storage_u& from);
         uvalue (*const index)(const storage_u& from, std::size_t);
+        uvalue (*const unmap)(const storage_u& from);
 
         template < typename T >
         static T* buffer_cast(buffer_t& buffer) noexcept {
@@ -8404,7 +8443,6 @@ namespace meta_hpp
                     self.vtable_ = nullptr;
                 },
 
-
                 .deref = [](){
                     if constexpr ( detail::has_deref_traits<Tp> ) {
                         return +[](const storage_u& from) -> uvalue {
@@ -8419,6 +8457,16 @@ namespace meta_hpp
                     if constexpr ( detail::has_index_traits<Tp> ) {
                         return +[](const storage_u& from, std::size_t i) -> uvalue {
                             return detail::index_traits<Tp>{}(*storage_cast<Tp>(from), i);
+                        };
+                    } else {
+                        return nullptr;
+                    }
+                }(),
+
+                .unmap = [](){
+                    if constexpr ( detail::has_unmap_traits<Tp> ) {
+                        return +[](const storage_u& from) -> uvalue {
+                            return detail::unmap_traits<Tp>{}(*storage_cast<Tp>(from));
                         };
                     } else {
                         return nullptr;
@@ -8560,6 +8608,14 @@ namespace meta_hpp
 
     inline bool uvalue::has_index_op() const noexcept {
         return vtable_ != nullptr && vtable_->index != nullptr;
+    }
+
+    inline uvalue uvalue::unmap() const {
+        return has_unmap_op() ? vtable_->unmap(storage_) : uvalue{};
+    }
+
+    inline bool uvalue::has_unmap_op() const noexcept {
+        return vtable_ != nullptr && vtable_->unmap != nullptr;
     }
 
     template < typename T >

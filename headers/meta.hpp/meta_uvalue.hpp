@@ -88,6 +88,9 @@ namespace meta_hpp
         [[nodiscard]] uvalue operator[](std::size_t index) const;
         [[nodiscard]] bool has_index_op() const noexcept;
 
+        [[nodiscard]] uvalue unmap() const;
+        [[nodiscard]] bool has_unmap_op() const noexcept;
+
         template < typename T >
         [[nodiscard]] T get_as() &&;
 

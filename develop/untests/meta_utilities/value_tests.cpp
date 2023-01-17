@@ -382,6 +382,50 @@ TEST_CASE("meta/meta_utilities/value") {
         CHECK(val2.get_as<ivec2>() == ivec2{1,2});
     }
 
+    SUBCASE("unmap") {
+        {
+            const meta::uvalue u{42};
+            CHECK_FALSE(u.has_unmap_op());
+            CHECK_FALSE(u.unmap());
+        }
+        {
+            int i{42};
+            const meta::uvalue u{std::ref(i)};
+            CHECK(u.has_unmap_op());
+
+            const meta::uvalue v{u.unmap()};
+            CHECK(v.get_type() == meta::resolve_type<int*>());
+            CHECK(v.get_as<int*>() == &i);
+        }
+        {
+            const int i{42};
+            const meta::uvalue u{std::ref(i)};
+            CHECK(u.has_unmap_op());
+
+            const meta::uvalue v{u.unmap()};
+            CHECK(v.get_type() == meta::resolve_type<const int*>());
+            CHECK(v.get_as<const int*>() == &i);
+        }
+        {
+            const auto i = std::make_shared<ivec2>(3, 4);
+            const meta::uvalue u{i};
+            CHECK(u.has_unmap_op());
+
+            const meta::uvalue v{u.unmap()};
+            CHECK(v.get_type() == meta::resolve_type<ivec2*>());
+            CHECK(v.get_as<ivec2*>() == i.get());
+        }
+        {
+            const auto i = std::make_shared<const ivec2>(3, 4);
+            const meta::uvalue u{i};
+            CHECK(u.has_unmap_op());
+
+            const meta::uvalue v{u.unmap()};
+            CHECK(v.get_type() == meta::resolve_type<const ivec2*>());
+            CHECK(v.get_as<const ivec2*>() == i.get());
+        }
+    }
+
     SUBCASE("deref") {
         {
             int i{42};
@@ -389,8 +433,7 @@ TEST_CASE("meta/meta_utilities/value") {
             CHECK(u.has_deref_op());
 
             const meta::uvalue v{*u};
-            CHECK(v.get_type() == meta::resolve_type<int>());
-            CHECK(v.get_data() != &i);
+            CHECK(v.get_as<int>() == i);
         }
         {
             const char i{42};
@@ -398,8 +441,7 @@ TEST_CASE("meta/meta_utilities/value") {
             CHECK(u.has_deref_op());
 
             const meta::uvalue v{*u};
-            CHECK(v.get_type() == meta::resolve_type<char>());
-            CHECK(v.get_data() != &i);
+            CHECK(v.get_as<char>() == i);
         }
         {
             const int i{42};
@@ -408,7 +450,6 @@ TEST_CASE("meta/meta_utilities/value") {
             CHECK(u.has_deref_op());
 
             const meta::uvalue v{*u};
-            CHECK(v.get_type() == meta::resolve_type<const int*>() );
             CHECK(v.get_as<const int*>() == pi);
         }
         {
