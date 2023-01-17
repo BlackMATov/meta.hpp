@@ -1,7 +1,7 @@
 option(BUILD_WITH_COVERAGE "Build with coverage" OFF)
 option(BUILD_WITH_SANITIZERS "Build with sanitizers" OFF)
-option(BUILD_WITH_NO_EXCEPTIONS "Build with no exceptions" OFF)
-option(BUILD_WITH_NO_RTTI "Build with no RTTI" OFF)
+option(BUILD_WITH_NO_EXCEPTIONS "Build with no exceptions" ${META_HPP_NO_EXCEPTIONS})
+option(BUILD_WITH_NO_RTTI "Build with no RTTI" ${META_HPP_NO_RTTI})
 
 enable_testing()
 set_property(GLOBAL PROPERTY USE_FOLDERS ON)

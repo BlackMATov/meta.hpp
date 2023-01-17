@@ -41,7 +41,7 @@ namespace meta_hpp::detail
 
             return any_type{};
         }
-
+    #if !defined(META_HPP_NO_RTTI)
         [[nodiscard]] any_type get_type_by_rtti(const std::type_index& index) const noexcept {
             const locker lock;
 
@@ -51,6 +51,7 @@ namespace meta_hpp::detail
 
             return any_type{};
         }
+    #endif
     public:
         template < array_kind Array >
         [[nodiscard]] array_type resolve_type() { return resolve_array_type<Array>(); }
@@ -234,6 +235,8 @@ namespace meta_hpp::detail
     private:
         std::recursive_mutex mutex_;
         std::map<type_id, any_type, std::less<>> type_by_id_;
+    #if !defined(META_HPP_NO_RTTI)
         std::map<std::type_index, any_type, std::less<>> type_by_rtti_;
+    #endif
     };
 }

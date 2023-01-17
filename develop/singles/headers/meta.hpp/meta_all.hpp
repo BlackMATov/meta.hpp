@@ -30,22 +30,18 @@
 #include <variant>
 #include <vector>
 
-#if !defined(__cpp_exceptions)
+#if !defined(META_HPP_NO_EXCEPTIONS) && !defined(__cpp_exceptions)
 #  define META_HPP_NO_EXCEPTIONS
 #endif
 
-#if !defined(__cpp_rtti)
+#if !defined(META_HPP_NO_RTTI) && !defined(__cpp_rtti)
 #  define META_HPP_NO_RTTI
 #endif
 
-#if defined(META_HPP_NO_EXCEPTIONS)
-#  define META_HPP_TRY if ( true )
-#  define META_HPP_CATCH(e) if ( false )
-#  define META_HPP_RETHROW() std::abort()
-#else
-#  define META_HPP_TRY try
-#  define META_HPP_CATCH(e) catch(e)
-#  define META_HPP_RETHROW() throw
+#if !defined(META_HPP_NO_EXCEPTIONS)
+#endif
+
+#if !defined(META_HPP_NO_RTTI)
 #endif
 
 namespace meta_hpp::detail
@@ -285,6 +281,33 @@ namespace meta_hpp::detail
 
     template < typename From, typename To >
     using copy_cvref_t = typename copy_cvref<From, To>::type;
+}
+
+#if !defined(META_HPP_NO_EXCEPTIONS)
+#  define META_HPP_TRY try
+#  define META_HPP_CATCH(e) catch(e)
+#  define META_HPP_RETHROW() throw
+#  define META_HPP_THROW_AS(e, m) throw e{m}
+#else
+#  define META_HPP_TRY if ( true )
+#  define META_HPP_CATCH(e) if ( false )
+#  define META_HPP_RETHROW() std::abort()
+#  define META_HPP_THROW_AS(e, m) std::terminate()
+#endif
+
+namespace meta_hpp::detail
+{
+#if !defined(META_HPP_NO_EXCEPTIONS)
+    class exception final : public std::runtime_error {
+    public:
+        explicit exception(const char* what)
+        : std::runtime_error(what) {}
+    };
+#endif
+
+    inline void throw_exception_with [[noreturn]] ([[maybe_unused]] const char* what) {
+        META_HPP_THROW_AS(exception, what);
+    }
 }
 
 namespace meta_hpp::detail
@@ -954,6 +977,10 @@ namespace meta_hpp::detail
 
 namespace meta_hpp
 {
+#if !defined(META_HPP_NO_EXCEPTIONS)
+    using detail::exception;
+#endif
+
     using detail::hashed_string;
     using detail::memory_buffer;
 
@@ -964,27 +991,6 @@ namespace meta_hpp
     using detail::type_id;
     using detail::type_kind;
     using detail::type_list;
-}
-
-namespace meta_hpp
-{
-    class exception final : public std::runtime_error {
-    public:
-        explicit exception(const char* what)
-        : std::runtime_error(what) {}
-    };
-
-    namespace detail
-    {
-        inline void throw_exception_with [[noreturn]] (const char* what) {
-        #if !defined(META_HPP_NO_EXCEPTIONS)
-            throw ::meta_hpp::exception(what);
-        #else
-            (void)what;
-            std::abort();
-        #endif
-        }
-    }
 }
 
 namespace meta_hpp
@@ -3294,7 +3300,7 @@ namespace meta_hpp::detail
 
             return any_type{};
         }
-
+    #if !defined(META_HPP_NO_RTTI)
         [[nodiscard]] any_type get_type_by_rtti(const std::type_index& index) const noexcept {
             const locker lock;
 
@@ -3304,6 +3310,7 @@ namespace meta_hpp::detail
 
             return any_type{};
         }
+    #endif
     public:
         template < array_kind Array >
         [[nodiscard]] array_type resolve_type() { return resolve_array_type<Array>(); }
@@ -3487,7 +3494,9 @@ namespace meta_hpp::detail
     private:
         std::recursive_mutex mutex_;
         std::map<type_id, any_type, std::less<>> type_by_id_;
+    #if !defined(META_HPP_NO_RTTI)
         std::map<std::type_index, any_type, std::less<>> type_by_rtti_;
+    #endif
     };
 }
 
