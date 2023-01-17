@@ -385,35 +385,59 @@ TEST_CASE("meta/meta_utilities/value") {
     SUBCASE("deref") {
         {
             int i{42};
-            const meta::uvalue v{*meta::uvalue{&i}};
+            meta::uvalue u{&i};
+            CHECK(u.has_deref_op());
+
+            const meta::uvalue v{*u};
             CHECK(v.get_type() == meta::resolve_type<int>());
             CHECK(v.get_data() != &i);
         }
         {
             const char i{42};
-            const meta::uvalue v{*meta::uvalue{&i}};
+            meta::uvalue u{&i};
+            CHECK(u.has_deref_op());
+
+            const meta::uvalue v{*u};
             CHECK(v.get_type() == meta::resolve_type<char>());
             CHECK(v.get_data() != &i);
         }
         {
             const int i{42};
             const int* const pi = &i;
-            const meta::uvalue v{*meta::uvalue{&pi}};
+            meta::uvalue u{&pi};
+            CHECK(u.has_deref_op());
+
+            const meta::uvalue v{*u};
             CHECK(v.get_type() == meta::resolve_type<const int*>() );
             CHECK(v.get_as<const int*>() == pi);
         }
         {
             int i{42};
 
-            [[maybe_unused]] void* p1 = &i;
-            [[maybe_unused]] const void* p2 = &i;
-            [[maybe_unused]] void* const& p3 = &i;
-            [[maybe_unused]] const void* const& p4 = &i;
+            void* p1 = &i;
+            const void* p2 = &i;
+            void* const& p3 = &i;
+            const void* const& p4 = &i;
 
-            CHECK_THROWS(std::ignore = *meta::uvalue(p1));
-            CHECK_THROWS(std::ignore = *meta::uvalue(p2));
-            CHECK_THROWS(std::ignore = *meta::uvalue(p3));
-            CHECK_THROWS(std::ignore = *meta::uvalue(p4));
+            CHECK_FALSE(meta::uvalue(p1).has_deref_op());
+            CHECK_FALSE(meta::uvalue(p2).has_deref_op());
+            CHECK_FALSE(meta::uvalue(p3).has_deref_op());
+            CHECK_FALSE(meta::uvalue(p4).has_deref_op());
+
+            CHECK_FALSE(*meta::uvalue(p1));
+            CHECK_FALSE(*meta::uvalue(p2));
+            CHECK_FALSE(*meta::uvalue(p3));
+            CHECK_FALSE(*meta::uvalue(p4));
+        }
+        {
+            int* p1 = nullptr;
+            const int* p2 = nullptr;
+
+            CHECK(meta::uvalue{p1}.has_deref_op());
+            CHECK(meta::uvalue{p2}.has_deref_op());
+
+            CHECK_FALSE(*meta::uvalue{p1});
+            CHECK_FALSE(*meta::uvalue{p2});
         }
         {
             ivec2 v{1,2};
@@ -443,55 +467,127 @@ TEST_CASE("meta/meta_utilities/value") {
 TEST_CASE("meta/meta_utilities/value/arrays") {
     namespace meta = meta_hpp;
 
+    SUBCASE("int") {
+        meta::uvalue v{42};
+        CHECK(v.get_type() == meta::resolve_type<int>());
+        CHECK_FALSE(v.has_index_op());
+        CHECK_FALSE(v[0]);
+    }
+
+    SUBCASE("void*") {
+        int i{42};
+        void* p{&i};
+        meta::uvalue v{p};
+        CHECK(v.get_type() == meta::resolve_type<void*>());
+        CHECK_FALSE(v.has_index_op());
+        CHECK_FALSE(v[0]);
+    }
+
+    SUBCASE("const void*") {
+        int i{42};
+        const void* p{&i};
+        meta::uvalue v{p};
+        CHECK(v.get_type() == meta::resolve_type<const void*>());
+        CHECK_FALSE(v.has_index_op());
+        CHECK_FALSE(v[0]);
+    }
+
     SUBCASE("int[3]") {
-        int arr[3]{1,2,3};
-        meta::uvalue v{arr};
-        CHECK(v.get_type() == meta::resolve_type<int*>());
-        CHECK(v[0].get_as<int>() == 1);
-        CHECK(v[1].get_as<int>() == 2);
-        CHECK(v[2].get_as<int>() == 3);
+        {
+            int arr[3]{1,2,3};
+            meta::uvalue v{arr};
+            CHECK(v.get_type() == meta::resolve_type<int*>());
+            CHECK(v.has_index_op());
+
+            CHECK(v[0].get_as<int>() == 1);
+            CHECK(v[1].get_as<int>() == 2);
+            CHECK(v[2].get_as<int>() == 3);
+        }
+        {
+            int* arr = nullptr;
+            meta::uvalue v{arr};
+            CHECK(v.get_type() == meta::resolve_type<int*>());
+            CHECK(v.has_index_op());
+
+            CHECK_FALSE(v[0]);
+        }
     }
 
     SUBCASE("const int[3]") {
-        const int arr[3]{1,2,3};
-        meta::uvalue v{arr};
-        CHECK(v.get_type() == meta::resolve_type<const int*>());
-        CHECK(v[0].get_as<int>() == 1);
-        CHECK(v[1].get_as<int>() == 2);
-        CHECK(v[2].get_as<int>() == 3);
+        {
+            const int arr[3]{1,2,3};
+            meta::uvalue v{arr};
+            CHECK(v.get_type() == meta::resolve_type<const int*>());
+            CHECK(v.has_index_op());
+
+            CHECK(v[0].get_as<int>() == 1);
+            CHECK(v[1].get_as<int>() == 2);
+            CHECK(v[2].get_as<int>() == 3);
+        }
+        {
+            const int* arr = nullptr;
+            meta::uvalue v{arr};
+            CHECK(v.get_type() == meta::resolve_type<const int*>());
+            CHECK(v.has_index_op());
+
+            CHECK_FALSE(v[0]);
+        }
     }
 
     SUBCASE("std::array") {
         meta::uvalue v{std::array{1,2,3}};
         CHECK(v.get_type() == meta::resolve_type<std::array<int, 3>>());
+        CHECK(v.has_index_op());
+
         CHECK(v[0].get_as<int>() == 1);
         CHECK(v[1].get_as<int>() == 2);
         CHECK(v[2].get_as<int>() == 3);
+        CHECK_FALSE(v[3]);
+    }
+
+    SUBCASE("std::deque") {
+        const meta::uvalue v{std::deque{1,2,3}};
+        CHECK(v.get_type() == meta::resolve_type<std::deque<int>>());
+        CHECK(v.has_index_op());
+
+        CHECK(v[0].get_as<int>() == 1);
+        CHECK(v[1].get_as<int>() == 2);
+        CHECK(v[2].get_as<int>() == 3);
+        CHECK_FALSE(v[3]);
     }
 
     SUBCASE("std::string") {
         meta::uvalue v{std::string{"hi!"}};
         CHECK(v.get_type() == meta::resolve_type<std::string>());
+        CHECK(v.has_index_op());
+
         CHECK(v[0].get_as<char>() == 'h');
         CHECK(v[1].get_as<char>() == 'i');
         CHECK(v[2].get_as<char>() == '!');
+        CHECK_FALSE(v[3]);
     }
 
     SUBCASE("std::span") {
         std::vector arr{1,2,3};
         meta::uvalue v{std::span{arr}};
         CHECK(v.get_type() == meta::resolve_type<std::span<int>>());
+        CHECK(v.has_index_op());
+
         CHECK(v[0].get_as<int>() == 1);
         CHECK(v[1].get_as<int>() == 2);
         CHECK(v[2].get_as<int>() == 3);
+        CHECK_FALSE(v[3]);
     }
 
     SUBCASE("std::vector") {
         const meta::uvalue v{std::vector{1,2,3}};
         CHECK(v.get_type() == meta::resolve_type<std::vector<int>>());
+        CHECK(v.has_index_op());
+
         CHECK(v[0].get_as<int>() == 1);
         CHECK(v[1].get_as<int>() == 2);
         CHECK(v[2].get_as<int>() == 3);
+        CHECK_FALSE(v[3]);
     }
 }
 

@@ -26,7 +26,7 @@ namespace meta_hpp::detail
         requires std::is_copy_constructible_v<T>
     struct deref_traits<T*> {
         uvalue operator()(T* v) const {
-            return uvalue{*v};
+            return v != nullptr ? uvalue{*v} : uvalue{};
         }
     };
 
@@ -34,7 +34,7 @@ namespace meta_hpp::detail
         requires std::is_copy_constructible_v<T>
     struct deref_traits<const T*> {
         uvalue operator()(const T* v) const {
-            return uvalue{*v};
+            return v != nullptr ? uvalue{*v} : uvalue{};
         }
     };
 
@@ -42,7 +42,7 @@ namespace meta_hpp::detail
         requires std::is_copy_constructible_v<T>
     struct deref_traits<std::shared_ptr<T>> {
         uvalue operator()(const std::shared_ptr<T>& v) const {
-            return uvalue{*v};
+            return v != nullptr ? uvalue{*v} : uvalue{};
         }
     };
 
@@ -50,7 +50,7 @@ namespace meta_hpp::detail
         requires std::is_copy_constructible_v<T>
     struct deref_traits<std::unique_ptr<T>> {
         uvalue operator()(const std::unique_ptr<T>& v) const {
-            return uvalue{*v};
+            return v != nullptr ? uvalue{*v} : uvalue{};
         }
     };
 }

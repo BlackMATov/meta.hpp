@@ -180,21 +180,26 @@ namespace meta_hpp
                     self.vtable_ = nullptr;
                 },
 
-                .deref = +[]([[maybe_unused]] const storage_u& from) -> uvalue {
-                    if constexpr ( detail::has_deref_traits<Tp> ) {
-                        return detail::deref_traits<Tp>{}(*storage_cast<Tp>(from));
-                    } else {
-                        META_HPP_THROW_AS(exception, "value type doesn't have value deref traits");
-                    }
-                },
 
-                .index = +[]([[maybe_unused]] const storage_u& from, [[maybe_unused]] std::size_t i) -> uvalue {
-                    if constexpr ( detail::has_index_traits<Tp> ) {
-                        return detail::index_traits<Tp>{}(*storage_cast<Tp>(from), i);
+                .deref = [](){
+                    if constexpr ( detail::has_deref_traits<Tp> ) {
+                        return +[](const storage_u& from) -> uvalue {
+                            return detail::deref_traits<Tp>{}(*storage_cast<Tp>(from));
+                        };
                     } else {
-                        META_HPP_THROW_AS(exception, "value type doesn't have value index traits");
+                        return nullptr;
                     }
-                },
+                }(),
+
+                .index = [](){
+                    if constexpr ( detail::has_index_traits<Tp> ) {
+                        return +[](const storage_u& from, std::size_t i) -> uvalue {
+                            return detail::index_traits<Tp>{}(*storage_cast<Tp>(from), i);
+                        };
+                    } else {
+                        return nullptr;
+                    }
+                }(),
             };
 
             return &table;
@@ -318,11 +323,19 @@ namespace meta_hpp
     }
 
     inline uvalue uvalue::operator*() const {
-        return vtable_ != nullptr ? vtable_->deref(storage_) : uvalue{};
+        return has_deref_op() ? vtable_->deref(storage_) : uvalue{};
+    }
+
+    inline bool uvalue::has_deref_op() const noexcept {
+        return vtable_ != nullptr && vtable_->deref != nullptr;
     }
 
     inline uvalue uvalue::operator[](std::size_t index) const {
-        return vtable_ != nullptr ? vtable_->index(storage_, index) : uvalue{};
+        return has_index_op() ? vtable_->index(storage_, index) : uvalue{};
+    }
+
+    inline bool uvalue::has_index_op() const noexcept {
+        return vtable_ != nullptr && vtable_->index != nullptr;
     }
 
     template < typename T >

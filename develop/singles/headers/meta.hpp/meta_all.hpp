@@ -12,6 +12,7 @@
 #include <cstddef>
 #include <cstdint>
 #include <cstdlib>
+#include <deque>
 #include <functional>
 #include <initializer_list>
 #include <map>
@@ -2536,7 +2537,10 @@ namespace meta_hpp
         [[nodiscard]] const void* get_cdata() const noexcept;
 
         [[nodiscard]] uvalue operator*() const;
+        [[nodiscard]] bool has_deref_op() const noexcept;
+
         [[nodiscard]] uvalue operator[](std::size_t index) const;
+        [[nodiscard]] bool has_index_op() const noexcept;
 
         template < typename T >
         [[nodiscard]] T get_as() &&;
@@ -8134,7 +8138,7 @@ namespace meta_hpp::detail
         requires std::is_copy_constructible_v<T>
     struct deref_traits<T*> {
         uvalue operator()(T* v) const {
-            return uvalue{*v};
+            return v != nullptr ? uvalue{*v} : uvalue{};
         }
     };
 
@@ -8142,7 +8146,7 @@ namespace meta_hpp::detail
         requires std::is_copy_constructible_v<T>
     struct deref_traits<const T*> {
         uvalue operator()(const T* v) const {
-            return uvalue{*v};
+            return v != nullptr ? uvalue{*v} : uvalue{};
         }
     };
 
@@ -8150,7 +8154,7 @@ namespace meta_hpp::detail
         requires std::is_copy_constructible_v<T>
     struct deref_traits<std::shared_ptr<T>> {
         uvalue operator()(const std::shared_ptr<T>& v) const {
-            return uvalue{*v};
+            return v != nullptr ? uvalue{*v} : uvalue{};
         }
     };
 
@@ -8158,7 +8162,7 @@ namespace meta_hpp::detail
         requires std::is_copy_constructible_v<T>
     struct deref_traits<std::unique_ptr<T>> {
         uvalue operator()(const std::unique_ptr<T>& v) const {
-            return uvalue{*v};
+            return v != nullptr ? uvalue{*v} : uvalue{};
         }
     };
 }
@@ -8181,7 +8185,7 @@ namespace meta_hpp::detail
     struct index_traits<T*> {
         uvalue operator()(T* v, std::size_t i) const {
             // NOLINTNEXTLINE(*-pointer-arithmetic)
-            return uvalue{v[i]};
+            return v != nullptr ? uvalue{v[i]} : uvalue{};
         }
     };
 
@@ -8190,7 +8194,7 @@ namespace meta_hpp::detail
     struct index_traits<const T*> {
         uvalue operator()(const T* v, std::size_t i) const {
             // NOLINTNEXTLINE(*-pointer-arithmetic)
-            return uvalue{v[i]};
+            return v != nullptr ? uvalue{v[i]} : uvalue{};
         }
     };
 
@@ -8198,7 +8202,15 @@ namespace meta_hpp::detail
         requires std::is_copy_constructible_v<T>
     struct index_traits<std::array<T, Size>> {
         uvalue operator()(const std::array<T, Size>& v, std::size_t i) const {
-            return uvalue{v[i]};
+            return i < v.size() ? uvalue{v[i]} : uvalue{};
+        }
+    };
+
+    template < typename T, typename Allocator >
+        requires std::is_copy_constructible_v<T>
+    struct index_traits<std::deque<T, Allocator>> {
+        uvalue operator()(const std::deque<T, Allocator>& v, std::size_t i) {
+            return i < v.size() ? uvalue{v[i]} : uvalue{};
         }
     };
 
@@ -8206,7 +8218,7 @@ namespace meta_hpp::detail
         requires std::is_copy_constructible_v<T>
     struct index_traits<std::span<T, Extent>> {
         uvalue operator()(const std::span<T, Extent>& v, std::size_t i) const {
-            return uvalue{v[i]};
+            return i < v.size() ? uvalue{v[i]} : uvalue{};
         }
     };
 
@@ -8214,7 +8226,7 @@ namespace meta_hpp::detail
         requires std::is_copy_constructible_v<T>
     struct index_traits<std::basic_string<T, Traits, Allocator>> {
         uvalue operator()(const std::basic_string<T, Traits, Allocator>& v, std::size_t i) const {
-            return uvalue{v[i]};
+            return i < v.size() ? uvalue{v[i]} : uvalue{};
         }
     };
 
@@ -8222,7 +8234,7 @@ namespace meta_hpp::detail
         requires std::is_copy_constructible_v<T>
     struct index_traits<std::vector<T, Allocator>> {
         uvalue operator()(const std::vector<T, Allocator>& v, std::size_t i) {
-            return uvalue{v[i]};
+            return i < v.size() ? uvalue{v[i]} : uvalue{};
         }
     };
 }
@@ -8392,21 +8404,26 @@ namespace meta_hpp
                     self.vtable_ = nullptr;
                 },
 
-                .deref = +[]([[maybe_unused]] const storage_u& from) -> uvalue {
-                    if constexpr ( detail::has_deref_traits<Tp> ) {
-                        return detail::deref_traits<Tp>{}(*storage_cast<Tp>(from));
-                    } else {
-                        META_HPP_THROW_AS(exception, "value type doesn't have value deref traits");
-                    }
-                },
 
-                .index = +[]([[maybe_unused]] const storage_u& from, [[maybe_unused]] std::size_t i) -> uvalue {
-                    if constexpr ( detail::has_index_traits<Tp> ) {
-                        return detail::index_traits<Tp>{}(*storage_cast<Tp>(from), i);
+                .deref = [](){
+                    if constexpr ( detail::has_deref_traits<Tp> ) {
+                        return +[](const storage_u& from) -> uvalue {
+                            return detail::deref_traits<Tp>{}(*storage_cast<Tp>(from));
+                        };
                     } else {
-                        META_HPP_THROW_AS(exception, "value type doesn't have value index traits");
+                        return nullptr;
                     }
-                },
+                }(),
+
+                .index = [](){
+                    if constexpr ( detail::has_index_traits<Tp> ) {
+                        return +[](const storage_u& from, std::size_t i) -> uvalue {
+                            return detail::index_traits<Tp>{}(*storage_cast<Tp>(from), i);
+                        };
+                    } else {
+                        return nullptr;
+                    }
+                }(),
             };
 
             return &table;
@@ -8530,11 +8547,19 @@ namespace meta_hpp
     }
 
     inline uvalue uvalue::operator*() const {
-        return vtable_ != nullptr ? vtable_->deref(storage_) : uvalue{};
+        return has_deref_op() ? vtable_->deref(storage_) : uvalue{};
+    }
+
+    inline bool uvalue::has_deref_op() const noexcept {
+        return vtable_ != nullptr && vtable_->deref != nullptr;
     }
 
     inline uvalue uvalue::operator[](std::size_t index) const {
-        return vtable_ != nullptr ? vtable_->index(storage_, index) : uvalue{};
+        return has_index_op() ? vtable_->index(storage_, index) : uvalue{};
+    }
+
+    inline bool uvalue::has_index_op() const noexcept {
+        return vtable_ != nullptr && vtable_->index != nullptr;
     }
 
     template < typename T >

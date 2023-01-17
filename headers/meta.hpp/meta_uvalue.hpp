@@ -83,7 +83,10 @@ namespace meta_hpp
         [[nodiscard]] const void* get_cdata() const noexcept;
 
         [[nodiscard]] uvalue operator*() const;
+        [[nodiscard]] bool has_deref_op() const noexcept;
+
         [[nodiscard]] uvalue operator[](std::size_t index) const;
+        [[nodiscard]] bool has_index_op() const noexcept;
 
         template < typename T >
         [[nodiscard]] T get_as() &&;
