@@ -20,13 +20,10 @@
 #include <mutex>
 #include <set>
 #include <span>
-#include <stdexcept>
 #include <string>
 #include <string_view>
 #include <tuple>
 #include <type_traits>
-#include <typeindex>
-#include <typeinfo>
 #include <utility>
 #include <variant>
 #include <vector>
@@ -40,9 +37,12 @@
 #endif
 
 #if !defined(META_HPP_NO_EXCEPTIONS)
+#  include <stdexcept>
 #endif
 
 #if !defined(META_HPP_NO_RTTI)
+#  include <typeindex>
+#  include <typeinfo>
 #endif
 
 namespace meta_hpp::detail
