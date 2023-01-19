@@ -42,8 +42,8 @@ namespace
         ivec2& operator=(ivec2&& other) = delete;
         ivec2& operator=(const ivec2& other) = delete;
     public:
-        static int move_constructor_counter;
-        static int copy_constructor_counter;
+        inline static int move_constructor_counter{};
+        inline static int copy_constructor_counter{};
     };
 
     struct ivec3 {
@@ -57,14 +57,53 @@ namespace
         ivec3(int nx, int ny, int nz): x{nx}, y{ny}, z{nz} {}
     };
 
-    int ivec2::move_constructor_counter{0};
-    int ivec2::copy_constructor_counter{0};
+    struct ivec2_big {
+        int x{};
+        int y{};
+
+        int dummy[42]{};
+
+        ivec2_big() = delete;
+
+        explicit ivec2_big(int nv): x{nv}, y{nv} {}
+        ivec2_big(int nx, int ny): x{nx}, y{ny} {}
+
+        ivec2_big(ivec2_big&& other) noexcept
+        : x{other.x}
+        , y{other.y} {
+            other.x = 0;
+            other.y = 0;
+            ++move_constructor_counter;
+        }
+
+        ivec2_big(const ivec2_big& other) noexcept
+        : x{other.x}
+        , y{other.y} {
+            ++copy_constructor_counter;
+        }
+
+        ivec2_big& add(const ivec2_big& other) {
+            x += other.x;
+            y += other.y;
+            return *this;
+        }
+
+        ivec2_big& operator=(ivec2_big&& other) = delete;
+        ivec2_big& operator=(const ivec2_big& other) = delete;
+    public:
+        inline static int move_constructor_counter{};
+        inline static int copy_constructor_counter{};
+    };
 
     ivec2 iadd2(ivec2 l, ivec2 r) {
         return {l.x + r.x, l.y + r.y};
     }
 
     bool operator==(const ivec2& l, const ivec2& r) noexcept {
+        return l.x == r.x && l.y == r.y;
+    }
+
+    bool operator==(const ivec2_big& l, const ivec2_big& r) noexcept {
         return l.x == r.x && l.y == r.y;
     }
 }
@@ -96,6 +135,8 @@ TEST_CASE("meta/meta_utilities/value") {
 
     ivec2::move_constructor_counter = 0;
     ivec2::copy_constructor_counter = 0;
+    ivec2_big::move_constructor_counter = 0;
+    ivec2_big::copy_constructor_counter = 0;
 
     SUBCASE("cast types") {
         static_assert(std::is_same_v<
@@ -339,7 +380,7 @@ TEST_CASE("meta/meta_utilities/value") {
 
         val_dst = std::move(val_src2);
         CHECK(val_dst.get_as<ivec2>() == ivec2{1,2});
-        CHECK(ivec2::move_constructor_counter == 3);
+        CHECK(ivec2::move_constructor_counter == 2);
         CHECK(ivec2::copy_constructor_counter == 0);
     }
 
@@ -358,14 +399,14 @@ TEST_CASE("meta/meta_utilities/value") {
 
         val_dst = val_src2;
         CHECK(val_dst.get_as<ivec2>() == ivec2{1,2});
-        CHECK(ivec2::move_constructor_counter == 2);
+        CHECK(ivec2::move_constructor_counter == 1);
         CHECK(ivec2::copy_constructor_counter == 1);
 
         CHECK(val_src2.get_as<ivec2>() == ivec2{1,2});
         CHECK(val_src2.get_data() != val_dst.get_data());
     }
 
-    SUBCASE("swap") {
+    SUBCASE("swap/0") {
         meta::uvalue val1{"world"s};
         meta::uvalue val2{ivec2{1,2}};
         CHECK(ivec2::move_constructor_counter == 1);
@@ -380,6 +421,95 @@ TEST_CASE("meta/meta_utilities/value") {
         swap(val1, val2);
         CHECK(val1.get_as<std::string>() == "world"s);
         CHECK(val2.get_as<ivec2>() == ivec2{1,2});
+    }
+
+    SUBCASE("swap/1") {
+        meta::uvalue val1{42};
+        meta::uvalue val2{};
+
+        swap(val1, val2);
+        CHECK_FALSE(val1);
+        CHECK(val2.get_as<int>() == 42);
+
+        swap(val1, val2);
+        CHECK(val1.get_as<int>() == 42);
+        CHECK_FALSE(val2);
+    }
+
+    SUBCASE("swap/2") {
+        meta::uvalue val1{ivec2{1,2}};
+        meta::uvalue val2{};
+        CHECK(ivec2::move_constructor_counter == 1);
+        CHECK(ivec2::copy_constructor_counter == 0);
+
+        swap(val1, val2);
+        CHECK_FALSE(val1);
+        CHECK(val2.get_as<ivec2>() == ivec2{1,2});
+        CHECK(ivec2::move_constructor_counter == 2);
+        CHECK(ivec2::copy_constructor_counter == 0);
+
+        swap(val1, val2);
+        CHECK(val1.get_as<ivec2>() == ivec2{1,2});
+        CHECK_FALSE(val2);
+        CHECK(ivec2::move_constructor_counter == 3);
+        CHECK(ivec2::copy_constructor_counter == 0);
+    }
+
+    SUBCASE("swap/3") {
+        meta::uvalue val1{ivec2_big{1,2}};
+        meta::uvalue val2{};
+        CHECK(ivec2_big::move_constructor_counter == 1);
+        CHECK(ivec2_big::copy_constructor_counter == 0);
+
+        swap(val1, val2);
+        CHECK_FALSE(val1);
+        CHECK(val2.get_as<ivec2_big>() == ivec2_big{1,2});
+        CHECK(ivec2_big::move_constructor_counter == 1);
+        CHECK(ivec2_big::copy_constructor_counter == 0);
+
+        swap(val1, val2);
+        CHECK(val1.get_as<ivec2_big>() == ivec2_big{1,2});
+        CHECK_FALSE(val2);
+        CHECK(ivec2_big::move_constructor_counter == 1);
+        CHECK(ivec2_big::copy_constructor_counter == 0);
+    }
+
+    SUBCASE("after_move") {
+        {
+            meta::uvalue val1{42};
+
+            meta::uvalue val2{std::move(val1)};
+            CHECK_FALSE(val1);
+            CHECK(val2.get_as<int>() == 42);
+
+            val1 = std::move(val2);
+            CHECK_FALSE(val2);
+            CHECK(val1.get_as<int>() == 42);
+        }
+        {
+            meta::uvalue val1{ivec2{1,2}};
+
+            meta::uvalue val2{std::move(val1)};
+            CHECK_FALSE(val1);
+            CHECK(val2);
+            CHECK(val2.get_as<ivec2>() == ivec2{1,2});
+
+            val1 = std::move(val2);
+            CHECK_FALSE(val2);
+            CHECK(val1.get_as<ivec2>() == ivec2{1,2});
+        }
+        {
+            meta::uvalue val1{ivec2_big{1,2}};
+
+            meta::uvalue val2{std::move(val1)};
+            CHECK_FALSE(val1);
+            CHECK(val2);
+            CHECK(val2.get_as<ivec2_big>() == ivec2_big{1,2});
+
+            val1 = std::move(val2);
+            CHECK_FALSE(val2);
+            CHECK(val1.get_as<ivec2_big>() == ivec2_big{1,2});
+        }
     }
 
     SUBCASE("unmap") {

@@ -21,91 +21,148 @@ namespace meta_hpp
     struct uvalue::vtable_t final {
         const any_type type;
 
-        void* (*const data)(storage_u& from) noexcept;
-        const void* (*const cdata)(const storage_u& from) noexcept;
+        void (*const move)(uvalue&& self, uvalue& to) noexcept;
+        void (*const copy)(const uvalue& self, uvalue& to);
+        void (*const reset)(uvalue& self) noexcept;
 
-        void (*const move)(uvalue& from, uvalue& to) noexcept;
-        void (*const copy)(const uvalue& from, uvalue& to);
-        void (*const destroy)(uvalue& self) noexcept;
-
-        uvalue (*const deref)(const storage_u& from);
-        uvalue (*const index)(const storage_u& from, std::size_t);
-        uvalue (*const unmap)(const storage_u& from);
+        uvalue (*const deref)(const storage_u& self);
+        uvalue (*const index)(const storage_u& self, std::size_t i);
+        uvalue (*const unmap)(const storage_u& self);
 
         template < typename T >
-        static T* buffer_cast(buffer_t& buffer) noexcept {
-            // NOLINTNEXTLINE(*-reinterpret-cast)
-            return std::launder(reinterpret_cast<T*>(buffer.data));
-        }
+        inline static constexpr bool in_internal_v =
+            (sizeof(T) <= sizeof(internal_storage_t)) &&
+            (alignof(internal_storage_t) % alignof(T) == 0) &&
+            std::is_nothrow_destructible_v<T> &&
+            std::is_nothrow_move_constructible_v<T>;
 
         template < typename T >
-        static const T* buffer_cast(const buffer_t& buffer) noexcept {
-            // NOLINTNEXTLINE(*-reinterpret-cast)
-            return std::launder(reinterpret_cast<const T*>(buffer.data));
+        inline static constexpr bool in_trivial_internal_v =
+            in_internal_v<T> &&
+            std::is_trivially_copyable_v<T>;
+
+        static std::pair<storage_e, const vtable_t*> unpack_vtag(const uvalue& self) noexcept {
+            constexpr std::uintptr_t tag_mask{0b11};
+            const std::uintptr_t vtag{self.storage_.vtag};
+            return std::make_pair(
+                static_cast<storage_e>(vtag & tag_mask),
+                // NOLINTNEXTLINE(*-no-int-to-ptr, *-reinterpret-cast)
+                reinterpret_cast<const vtable_t*>(vtag & ~tag_mask));
         }
 
         template < typename T >
         static T* storage_cast(storage_u& storage) noexcept {
-            return std::visit(detail::overloaded {
-                [](void* ptr) { return static_cast<T*>(ptr); },
-                [](buffer_t& buffer) { return buffer_cast<T>(buffer); },
-                [](...) -> T* { return nullptr; },
-            }, storage);
+            if constexpr ( in_internal_v<T> ) {
+                // NOLINTNEXTLINE(*-union-access, *-reinterpret-cast)
+                return std::launder(reinterpret_cast<T*>(storage.internal.data));
+            } else {
+                // NOLINTNEXTLINE(*-union-access)
+                return static_cast<T*>(storage.external.ptr);
+            }
         }
 
         template < typename T >
         static const T* storage_cast(const storage_u& storage) noexcept {
-            return std::visit(detail::overloaded {
-                [](const void* ptr) { return static_cast<const T*>(ptr); },
-                [](const buffer_t& buffer) { return buffer_cast<T>(buffer); },
-                [](...) -> const T* { return nullptr; },
-            }, storage);
+            if constexpr ( in_internal_v<T> ) {
+                // NOLINTNEXTLINE(*-union-access, *-reinterpret-cast)
+                return std::launder(reinterpret_cast<const T*>(storage.internal.data));
+            } else {
+                // NOLINTNEXTLINE(*-union-access)
+                return static_cast<const T*>(storage.external.ptr);
+            }
         }
 
         template < typename T, typename... Args, typename Tp = std::decay_t<T> >
-        static Tp& construct(uvalue& dst, Args&&... args) {
+        static Tp& do_ctor(uvalue& dst, Args&&... args) {
             assert(!dst); // NOLINT
 
-            constexpr bool in_buffer =
-                (sizeof(Tp) <= sizeof(buffer_t)) &&
-                (alignof(buffer_t) % alignof(Tp) == 0) &&
-                std::is_nothrow_move_constructible_v<Tp>;
-
-            if constexpr ( in_buffer ) {
+            if constexpr ( in_internal_v<Tp> ) {
                 std::construct_at(
-                    buffer_cast<Tp>(dst.storage_.emplace<buffer_t>()),
+                    storage_cast<Tp>(dst.storage_),
                     std::forward<Args>(args)...);
+                dst.storage_.vtag = in_trivial_internal_v<Tp>
+                    ? detail::to_underlying(storage_e::trivial)
+                    : detail::to_underlying(storage_e::internal);
             } else {
-                dst.storage_.emplace<void*>(
-                    std::make_unique<Tp>(std::forward<Args>(args)...).release());
+                // NOLINTNEXTLINE(*-union-access, *-owning-memory)
+                dst.storage_.external.ptr = ::new Tp(std::forward<Args>(args)...);
+                dst.storage_.vtag = detail::to_underlying(storage_e::external);
             }
 
-            dst.vtable_ = vtable_t::get<Tp>();
+            // NOLINTNEXTLINE(*-reinterpret-cast)
+            dst.storage_.vtag |= reinterpret_cast<std::uintptr_t>(vtable_t::get<Tp>());
             return *storage_cast<Tp>(dst.storage_);
         }
 
-        static void swap(uvalue& l, uvalue& r) noexcept {
+        static void do_move(uvalue&& self, uvalue& to) noexcept {
+            assert(!to); // NOLINT
+
+            auto&& [tag, vtable] = unpack_vtag(self);
+
+            switch ( tag ) {
+            case storage_e::nothing:
+                break;
+            case storage_e::trivial:
+                to.storage_ = self.storage_;
+                self.storage_.vtag = 0;
+                break;
+            case storage_e::internal:
+            case storage_e::external:
+                vtable->move(std::move(self), to);
+                break;
+            }
+        }
+
+        static void do_copy(const uvalue& self, uvalue& to) noexcept {
+            assert(!to); // NOLINT
+
+            auto&& [tag, vtable] = unpack_vtag(self);
+
+            switch ( tag ) {
+            case storage_e::nothing:
+                break;
+            case storage_e::trivial:
+                to.storage_ = self.storage_;
+                break;
+            case storage_e::internal:
+            case storage_e::external:
+                vtable->copy(self, to);
+                break;
+            }
+        }
+
+        static void do_reset(uvalue& self) noexcept {
+            auto&& [tag, vtable] = unpack_vtag(self);
+
+            switch ( tag ) {
+            case storage_e::nothing:
+                break;
+            case storage_e::trivial:
+                self.storage_.vtag = 0;
+                break;
+            case storage_e::internal:
+            case storage_e::external:
+                vtable->reset(self);
+                break;
+            }
+        }
+
+        static void do_swap(uvalue& l, uvalue& r) noexcept {
             if ( (&l == &r) || (!l && !r) ) {
                 return;
             }
 
             if ( l && r ) {
-                if ( std::holds_alternative<buffer_t>(l.storage_) ) {
-                    uvalue temp;
-                    r.vtable_->move(r, temp);
-                    l.vtable_->move(l, r);
-                    temp.vtable_->move(temp, l);
+                if ( unpack_vtag(l).first == storage_e::external ) {
+                    r = std::exchange(l, std::move(r));
                 } else {
-                    uvalue temp;
-                    l.vtable_->move(l, temp);
-                    r.vtable_->move(r, l);
-                    temp.vtable_->move(temp, r);
+                    l = std::exchange(r, std::move(l));
                 }
             } else {
                 if ( l ) {
-                    l.vtable_->move(l, r);
+                    r = std::move(l);
                 } else {
-                    r.vtable_->move(r, l);
+                    l = std::move(r);
                 }
             }
         }
@@ -118,74 +175,54 @@ namespace meta_hpp
             static vtable_t table{
                 .type = resolve_type<Tp>(),
 
-                .data = [](storage_u& from) noexcept -> void* {
-                    return storage_cast<Tp>(from);
+                .move = [](uvalue&& self, uvalue& to) noexcept {
+                    assert(self && !to); // NOLINT
+
+                    Tp* src = storage_cast<Tp>(self.storage_);
+
+                    if constexpr ( in_internal_v<Tp> ) {
+                        do_ctor<Tp>(to, std::move(*src));
+                        do_reset(self);
+                    } else {
+                        // NOLINTNEXTLINE(*-union-access)
+                        to.storage_.external.ptr = src;
+                        std::swap(to.storage_.vtag, self.storage_.vtag);
+                    }
                 },
 
-                .cdata = [](const storage_u& from) noexcept -> const void* {
-                    return storage_cast<Tp>(from);
+                .copy = [](const uvalue& self, uvalue& to){
+                    assert(self && !to); // NOLINT
+
+                    const Tp* src = storage_cast<Tp>(self.storage_);
+
+                    if constexpr ( in_internal_v<Tp> ) {
+                        do_ctor<Tp>(to, *src);
+                    } else {
+                        // NOLINTNEXTLINE(*-union-access, *-owning-memory)
+                        to.storage_.external.ptr = ::new Tp(*src);
+                        to.storage_.vtag = self.storage_.vtag;
+                    }
                 },
 
-                .move = [](uvalue& from, uvalue& to) noexcept {
-                    assert(from && !to); // NOLINT
-
-                    std::visit(detail::overloaded {
-                        [&to](void* ptr) {
-                            Tp* src = static_cast<Tp*>(ptr);
-                            to.storage_.emplace<void*>(src);
-                        },
-                        [&to](buffer_t& buffer) {
-                            Tp& src = *buffer_cast<Tp>(buffer);
-                            std::construct_at(buffer_cast<Tp>(to.storage_.emplace<buffer_t>()), std::move(src));
-                            std::destroy_at(&src);
-                        },
-                        [](...){}
-                    }, from.storage_);
-
-                    to.vtable_ = from.vtable_;
-                    from.vtable_ = nullptr;
-                },
-
-                .copy = [](const uvalue& from, uvalue& to){
-                    assert(from && !to); // NOLINT
-
-                    std::visit(detail::overloaded {
-                        [&to](void* ptr) {
-                            const Tp& src = *static_cast<const Tp*>(ptr);
-                            to.storage_.emplace<void*>(std::make_unique<Tp>(src).release());
-                        },
-                        [&to](const buffer_t& buffer) {
-                            const Tp& src = *buffer_cast<Tp>(buffer);
-                            std::construct_at(buffer_cast<Tp>(to.storage_.emplace<buffer_t>()), src);
-                        },
-                        [](...){}
-                    }, from.storage_);
-
-                    to.vtable_ = from.vtable_;
-                },
-
-                .destroy = [](uvalue& self) noexcept {
+                .reset = [](uvalue& self) noexcept {
                     assert(self); // NOLINT
 
-                    std::visit(detail::overloaded {
-                        [](void* ptr) {
-                            Tp* src = static_cast<Tp*>(ptr);
-                            std::unique_ptr<Tp>{src}.reset();
-                        },
-                        [](buffer_t& buffer) {
-                            Tp& src = *buffer_cast<Tp>(buffer);
-                            std::destroy_at(&src);
-                        },
-                        [](...){}
-                    }, self.storage_);
+                    Tp* src = storage_cast<Tp>(self.storage_);
 
-                    self.vtable_ = nullptr;
+                    if constexpr ( in_internal_v<Tp> ) {
+                        std::destroy_at(src);
+                    } else {
+                        // NOLINTNEXTLINE(*-owning-memory)
+                        ::delete src;
+                    }
+
+                    self.storage_.vtag = 0;
                 },
 
                 .deref = [](){
                     if constexpr ( detail::has_deref_traits<Tp> ) {
-                        return +[](const storage_u& from) -> uvalue {
-                            return detail::deref_traits<Tp>{}(*storage_cast<Tp>(from));
+                        return +[](const storage_u& self) -> uvalue {
+                            return detail::deref_traits<Tp>{}(*storage_cast<Tp>(self));
                         };
                     } else {
                         return nullptr;
@@ -194,8 +231,8 @@ namespace meta_hpp
 
                 .index = [](){
                     if constexpr ( detail::has_index_traits<Tp> ) {
-                        return +[](const storage_u& from, std::size_t i) -> uvalue {
-                            return detail::index_traits<Tp>{}(*storage_cast<Tp>(from), i);
+                        return +[](const storage_u& self, std::size_t i) -> uvalue {
+                            return detail::index_traits<Tp>{}(*storage_cast<Tp>(self), i);
                         };
                     } else {
                         return nullptr;
@@ -204,8 +241,8 @@ namespace meta_hpp
 
                 .unmap = [](){
                     if constexpr ( detail::has_unmap_traits<Tp> ) {
-                        return +[](const storage_u& from) -> uvalue {
-                            return detail::unmap_traits<Tp>{}(*storage_cast<Tp>(from));
+                        return +[](const storage_u& self) -> uvalue {
+                            return detail::unmap_traits<Tp>{}(*storage_cast<Tp>(self));
                         };
                     } else {
                         return nullptr;
@@ -225,27 +262,25 @@ namespace meta_hpp
     }
 
     inline uvalue::uvalue(uvalue&& other) noexcept {
-        if ( other.vtable_ != nullptr ) {
-            other.vtable_->move(other, *this);
-        }
+        vtable_t::do_move(std::move(other), *this);
     }
 
     inline uvalue::uvalue(const uvalue& other) {
-        if ( other.vtable_ != nullptr ) {
-            other.vtable_->copy(other, *this);
-        }
+        vtable_t::do_copy(other, *this);
     }
 
     inline uvalue& uvalue::operator=(uvalue&& other) noexcept {
         if ( this != &other ) {
-            uvalue{std::move(other)}.swap(*this);
+            vtable_t::do_reset(*this);
+            vtable_t::do_move(std::move(other), *this);
         }
         return *this;
     }
 
     inline uvalue& uvalue::operator=(const uvalue& other) {
         if ( this != &other ) {
-            uvalue{other}.swap(*this);
+            vtable_t::do_reset(*this);
+            vtable_t::do_copy(other, *this);
         }
         return *this;
     }
@@ -256,7 +291,7 @@ namespace meta_hpp
               && (std::is_copy_constructible_v<Tp>)
     // NOLINTNEXTLINE(*-forwarding-reference-overload)
     uvalue::uvalue(T&& val) {
-        vtable_t::construct<T>(*this, std::forward<T>(val));
+        vtable_t::do_ctor<T>(*this, std::forward<T>(val));
     }
 
     template < typename T, typename Tp >
@@ -264,7 +299,8 @@ namespace meta_hpp
               && (!detail::is_in_place_type_v<Tp>)
               && (std::is_copy_constructible_v<Tp>)
     uvalue& uvalue::operator=(T&& val) {
-        uvalue{std::forward<T>(val)}.swap(*this);
+        vtable_t::do_reset(*this);
+        vtable_t::do_ctor<T>(*this, std::forward<T>(val));
         return *this;
     }
 
@@ -272,34 +308,34 @@ namespace meta_hpp
         requires std::is_copy_constructible_v<Tp>
               && std::is_constructible_v<Tp, Args...>
     uvalue::uvalue(std::in_place_type_t<T>, Args&&... args) {
-        vtable_t::construct<T>(*this, std::forward<Args>(args)...);
+        vtable_t::do_ctor<T>(*this, std::forward<Args>(args)...);
     }
 
     template < typename T, typename U, typename... Args, typename Tp >
         requires std::is_copy_constructible_v<Tp>
               && std::is_constructible_v<Tp, std::initializer_list<U>&, Args...>
     uvalue::uvalue(std::in_place_type_t<T>, std::initializer_list<U> ilist, Args&&... args) {
-        vtable_t::construct<T>(*this, ilist, std::forward<Args>(args)...);
+        vtable_t::do_ctor<T>(*this, ilist, std::forward<Args>(args)...);
     }
 
     template < typename T, typename... Args, typename Tp >
         requires std::is_copy_constructible_v<Tp>
               && std::is_constructible_v<Tp, Args...>
-    std::decay_t<T>& uvalue::emplace(Args&&... args) {
-        reset();
-        return vtable_t::construct<T>(*this, std::forward<Args>(args)...);
+    Tp& uvalue::emplace(Args&&... args) {
+        vtable_t::do_reset(*this);
+        return vtable_t::do_ctor<T>(*this, std::forward<Args>(args)...);
     }
 
     template < typename T, typename U, typename... Args, typename Tp >
         requires std::is_copy_constructible_v<Tp>
               && std::is_constructible_v<Tp, std::initializer_list<U>&, Args...>
-    std::decay_t<T>& uvalue::emplace(std::initializer_list<U> ilist, Args&&... args) {
-        reset();
-        return vtable_t::construct<T>(*this, ilist, std::forward<Args>(args)...);
+    Tp& uvalue::emplace(std::initializer_list<U> ilist, Args&&... args) {
+        vtable_t::do_reset(*this);
+        return vtable_t::do_ctor<T>(*this, ilist, std::forward<Args>(args)...);
     }
 
     inline bool uvalue::is_valid() const noexcept {
-        return vtable_ != nullptr;
+        return storage_.vtag != 0;
     }
 
     inline uvalue::operator bool() const noexcept {
@@ -307,54 +343,104 @@ namespace meta_hpp
     }
 
     inline void uvalue::reset() {
-        if ( vtable_ != nullptr ) {
-            vtable_->destroy(*this);
-        }
+        vtable_t::do_reset(*this);
     }
 
     inline void uvalue::swap(uvalue& other) noexcept {
-        vtable_t::swap(*this, other);
+        vtable_t::do_swap(*this, other);
     }
 
     inline const any_type& uvalue::get_type() const noexcept {
         static any_type void_type = resolve_type<void>();
-        return vtable_ != nullptr ? vtable_->type : void_type;
+        auto&& [tag, vtable] = vtable_t::unpack_vtag(*this);
+        return tag == storage_e::nothing ? void_type : vtable->type;
     }
 
     inline void* uvalue::get_data() noexcept {
-        return vtable_ != nullptr ? vtable_->data(storage_) : nullptr;
+        switch ( vtable_t::unpack_vtag(*this).first ) {
+        case storage_e::nothing:
+            return nullptr;
+        case storage_e::trivial:
+        case storage_e::internal:
+            // NOLINTNEXTLINE(*-union-access)
+            return static_cast<void*>(storage_.internal.data);
+        case storage_e::external:
+            // NOLINTNEXTLINE(*-union-access)
+            return storage_.external.ptr;
+        }
+
+        assert(false); // NOLINT
+        return nullptr;
     }
 
     inline const void* uvalue::get_data() const noexcept {
-        return vtable_ != nullptr ? vtable_->cdata(storage_) : nullptr;
+        switch ( vtable_t::unpack_vtag(*this).first ) {
+        case storage_e::nothing:
+            return nullptr;
+        case storage_e::trivial:
+        case storage_e::internal:
+            // NOLINTNEXTLINE(*-union-access)
+            return static_cast<const void*>(storage_.internal.data);
+        case storage_e::external:
+            // NOLINTNEXTLINE(*-union-access)
+            return storage_.external.ptr;
+        }
+
+        assert(false); // NOLINT
+        return nullptr;
     }
 
     inline const void* uvalue::get_cdata() const noexcept {
-        return vtable_ != nullptr ? vtable_->cdata(storage_) : nullptr;
+        switch ( vtable_t::unpack_vtag(*this).first ) {
+        case storage_e::nothing:
+            return nullptr;
+        case storage_e::trivial:
+        case storage_e::internal:
+            // NOLINTNEXTLINE(*-union-access)
+            return static_cast<const void*>(storage_.internal.data);
+        case storage_e::external:
+            // NOLINTNEXTLINE(*-union-access)
+            return storage_.external.ptr;
+        }
+
+        assert(false); // NOLINT
+        return nullptr;
     }
 
     inline uvalue uvalue::operator*() const {
-        return has_deref_op() ? vtable_->deref(storage_) : uvalue{};
+        auto&& [tag, vtable] = vtable_t::unpack_vtag(*this);
+        return tag != storage_e::nothing && vtable->deref != nullptr
+            ? vtable->deref(storage_)
+            : uvalue{};
     }
 
     inline bool uvalue::has_deref_op() const noexcept {
-        return vtable_ != nullptr && vtable_->deref != nullptr;
+        auto&& [tag, vtable] = vtable_t::unpack_vtag(*this);
+        return tag != storage_e::nothing && vtable->deref != nullptr;
     }
 
     inline uvalue uvalue::operator[](std::size_t index) const {
-        return has_index_op() ? vtable_->index(storage_, index) : uvalue{};
+        auto&& [tag, vtable] = vtable_t::unpack_vtag(*this);
+        return tag != storage_e::nothing && vtable->index != nullptr
+            ? vtable->index(storage_, index)
+            : uvalue{};
     }
 
     inline bool uvalue::has_index_op() const noexcept {
-        return vtable_ != nullptr && vtable_->index != nullptr;
+        auto&& [tag, vtable] = vtable_t::unpack_vtag(*this);
+        return tag != storage_e::nothing && vtable->index != nullptr;
     }
 
     inline uvalue uvalue::unmap() const {
-        return has_unmap_op() ? vtable_->unmap(storage_) : uvalue{};
+        auto&& [tag, vtable] = vtable_t::unpack_vtag(*this);
+        return tag != storage_e::nothing && vtable->unmap != nullptr
+            ? vtable->unmap(storage_)
+            : uvalue{};
     }
 
     inline bool uvalue::has_unmap_op() const noexcept {
-        return vtable_ != nullptr && vtable_->unmap != nullptr;
+        auto&& [tag, vtable] = vtable_t::unpack_vtag(*this);
+        return tag != storage_e::nothing && vtable->unmap != nullptr;
     }
 
     template < typename T >

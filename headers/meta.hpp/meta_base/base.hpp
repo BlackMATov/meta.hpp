@@ -36,7 +36,6 @@
 #include <tuple>
 #include <type_traits>
 #include <utility>
-#include <variant>
 #include <vector>
 
 #if !defined(META_HPP_NO_EXCEPTIONS)
