@@ -32,7 +32,8 @@ namespace meta_hpp
         ([this]<detail::class_kind Base>(std::in_place_type_t<Base>) {
             const class_type& base_type = resolve_type<Base>();
 
-            if ( auto&& [_, emplaced] = get_data().bases.emplace(base_type); !emplaced ) {
+            auto&& [position, emplaced] = get_data().bases.emplace(base_type);
+            if ( !emplaced ) {
                 return;
             }
 
@@ -43,7 +44,7 @@ namespace meta_hpp
                     }
                 });
             } META_HPP_CATCH(...) {
-                get_data().bases.erase(base_type);
+                get_data().bases.erase(position);
                 META_HPP_RETHROW();
             }
         }(std::in_place_type<Bases>), ...);

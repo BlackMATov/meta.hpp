@@ -35,7 +35,7 @@ namespace meta_hpp::detail
         [[nodiscard]] scope get_scope_by_name(std::string_view name) const noexcept {
             const locker lock;
 
-            if ( auto iter = scopes_.find(name); iter != scopes_.end() ) {
+            if ( auto iter{scopes_.find(name)}; iter != scopes_.end() ) {
                 return iter->second;
             }
 
@@ -45,7 +45,7 @@ namespace meta_hpp::detail
         [[nodiscard]] scope resolve_scope(std::string_view name) {
             const locker lock;
 
-            if ( auto iter = scopes_.find(name); iter != scopes_.end() ) {
+            if ( auto iter{scopes_.find(name)}; iter != scopes_.end() ) {
                 return iter->second;
             }
 

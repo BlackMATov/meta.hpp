@@ -2121,6 +2121,39 @@ namespace meta_hpp
     }
 }
 
+namespace meta_hpp
+{
+    template < detail::type_family T >
+    [[nodiscard]] bool operator<(const T& l, type_id r) noexcept {
+        return !static_cast<bool>(l) || l.get_id() < r;
+    }
+
+    template < detail::type_family U >
+    [[nodiscard]] bool operator<(type_id l, const U& r) noexcept {
+        return static_cast<bool>(r) && l < r.get_id();
+    }
+
+    template < detail::type_family T >
+    [[nodiscard]] bool operator==(const T& l, type_id r) noexcept {
+        return static_cast<bool>(l) || l.get_id() == r;
+    }
+
+    template < detail::type_family U >
+    [[nodiscard]] bool operator==(type_id l, const U& r) noexcept {
+        return static_cast<bool>(r) && l == r.get_id();
+    }
+
+    template < detail::type_family T >
+    [[nodiscard]] bool operator!=(const T& l, type_id r) noexcept {
+        return !(l == r);
+    }
+
+    template < detail::type_family U >
+    [[nodiscard]] bool operator!=(type_id l, const U& r) noexcept {
+        return !(l == r);
+    }
+}
+
 namespace meta_hpp::detail
 {
     struct type_data_base {
@@ -3264,7 +3297,7 @@ namespace meta_hpp::detail
         [[nodiscard]] scope get_scope_by_name(std::string_view name) const noexcept {
             const locker lock;
 
-            if ( auto iter = scopes_.find(name); iter != scopes_.end() ) {
+            if ( auto iter{scopes_.find(name)}; iter != scopes_.end() ) {
                 return iter->second;
             }
 
@@ -3274,7 +3307,7 @@ namespace meta_hpp::detail
         [[nodiscard]] scope resolve_scope(std::string_view name) {
             const locker lock;
 
-            if ( auto iter = scopes_.find(name); iter != scopes_.end() ) {
+            if ( auto iter{scopes_.find(name)}; iter != scopes_.end() ) {
                 return iter->second;
             }
 
@@ -3318,8 +3351,8 @@ namespace meta_hpp::detail
         [[nodiscard]] any_type get_type_by_id(type_id id) const noexcept {
             const locker lock;
 
-            if ( auto iter = type_by_id_.find(id); iter != type_by_id_.end() ) {
-                return iter->second;
+            if ( auto iter{type_by_id_.find(id)}; iter != type_by_id_.end() ) {
+                return *iter;
             }
 
             return any_type{};
@@ -3328,7 +3361,7 @@ namespace meta_hpp::detail
         [[nodiscard]] any_type get_type_by_rtti(const std::type_index& index) const noexcept {
             const locker lock;
 
-            if ( auto iter = type_by_rtti_.find(index); iter != type_by_rtti_.end() ) {
+            if ( auto iter{type_by_rtti_.find(index)}; iter != type_by_rtti_.end() ) {
                 return iter->second;
             }
 
@@ -3504,12 +3537,17 @@ namespace meta_hpp::detail
             static std::once_flag init_flag{};
             std::call_once(init_flag, [this, &type_data](){
                 const locker lock;
-                type_by_id_.emplace(type_data.id, any_type{&type_data});
+
+                auto&& [position, emplaced] = type_by_id_.emplace(any_type{&type_data});
+                if ( !emplaced ) {
+                    return;
+                }
+
             #if !defined(META_HPP_NO_RTTI)
                 META_HPP_TRY {
                     type_by_rtti_.emplace(typeid(Type), any_type{&type_data});
                 } META_HPP_CATCH(...) {
-                    type_by_id_.erase(type_data.id);
+                    type_by_id_.erase(position);
                     META_HPP_RETHROW();
                 }
             #endif
@@ -3517,7 +3555,7 @@ namespace meta_hpp::detail
         }
     private:
         std::recursive_mutex mutex_;
-        std::map<type_id, any_type, std::less<>> type_by_id_;
+        std::set<any_type, std::less<>> type_by_id_;
     #if !defined(META_HPP_NO_RTTI)
         std::map<std::type_index, any_type, std::less<>> type_by_rtti_;
     #endif
@@ -4092,7 +4130,8 @@ namespace meta_hpp
         ([this]<detail::class_kind Base>(std::in_place_type_t<Base>) {
             const class_type& base_type = resolve_type<Base>();
 
-            if ( auto&& [_, emplaced] = get_data().bases.emplace(base_type); !emplaced ) {
+            auto&& [position, emplaced] = get_data().bases.emplace(base_type);
+            if ( !emplaced ) {
                 return;
             }
 
@@ -4103,7 +4142,7 @@ namespace meta_hpp
                     }
                 });
             } META_HPP_CATCH(...) {
-                get_data().bases.erase(base_type);
+                get_data().bases.erase(position);
                 META_HPP_RETHROW();
             }
         }(std::in_place_type<Bases>), ...);
