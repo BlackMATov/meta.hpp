@@ -3,5 +3,5 @@
 include(CMakeFindDependencyMacro)
 find_dependency(Threads REQUIRED)
 
-include("${CMAKE_CURRENT_LIST_DIR}/meta.hpp-targets.cmake")
-check_required_components(meta.hpp)
+include("${CMAKE_CURRENT_LIST_DIR}/@PROJECT_NAME@-targets.cmake")
+check_required_components(@PROJECT_NAME@)

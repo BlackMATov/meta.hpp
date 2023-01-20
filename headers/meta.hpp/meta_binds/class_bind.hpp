@@ -32,7 +32,8 @@ namespace meta_hpp
         ([this]<detail::class_kind Base>(std::in_place_type_t<Base>) {
             const class_type& base_type = resolve_type<Base>();
 
-            if ( auto&& [_, emplaced] = get_data().bases.emplace(base_type); !emplaced ) {
+            auto&& [position, emplaced] = get_data().bases.emplace(base_type);
+            if ( !emplaced ) {
                 return;
             }
 
@@ -43,7 +44,7 @@ namespace meta_hpp
                     }
                 });
             } META_HPP_CATCH(...) {
-                get_data().bases.erase(base_type);
+                get_data().bases.erase(position);
                 META_HPP_RETHROW();
             }
         }(std::in_place_type<Bases>), ...);
@@ -73,7 +74,7 @@ namespace meta_hpp
         auto state = detail::constructor_state::make<Policy, Class, Args...>(std::move(opts.metadata));
 
         if ( opts.arguments.size() > state->arguments.size() ) {
-            detail::throw_exception_with("provided argument names don't match constructor argument count");
+            META_HPP_THROW_AS(exception, "provided argument names don't match constructor argument count");
         }
 
         for ( std::size_t i = 0; i < opts.arguments.size(); ++i ) {
@@ -134,7 +135,7 @@ namespace meta_hpp
             std::move(opts.metadata));
 
         if ( opts.arguments.size() > state->arguments.size() ) {
-            detail::throw_exception_with("provided arguments don't match function argument count");
+            META_HPP_THROW_AS(exception, "provided arguments don't match function argument count");
         }
 
         for ( std::size_t i = 0; i < opts.arguments.size(); ++i ) {
@@ -161,7 +162,7 @@ namespace meta_hpp
             {});
 
         if ( arguments.size() > state->arguments.size() ) {
-            detail::throw_exception_with("provided argument names don't match function argument count");
+            META_HPP_THROW_AS(exception, "provided argument names don't match function argument count");
         }
 
         for ( std::size_t i = 0; i < arguments.size(); ++i ) {
@@ -236,7 +237,7 @@ namespace meta_hpp
             std::move(opts.metadata));
 
         if ( opts.arguments.size() > state->arguments.size() ) {
-            detail::throw_exception_with("provided arguments don't match method argument count");
+            META_HPP_THROW_AS(exception, "provided arguments don't match method argument count");
         }
 
         for ( std::size_t i = 0; i < opts.arguments.size(); ++i ) {
@@ -264,7 +265,7 @@ namespace meta_hpp
             {});
 
         if ( arguments.size() > state->arguments.size() ) {
-            detail::throw_exception_with("provided argument names don't match method argument count");
+            META_HPP_THROW_AS(exception, "provided argument names don't match method argument count");
         }
 
         for ( std::size_t i = 0; i < arguments.size(); ++i ) {

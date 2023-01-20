@@ -63,12 +63,12 @@ namespace meta_hpp
         template < typename T, typename... Args, typename Tp = std::decay_t<T> >
             requires std::is_copy_constructible_v<Tp>
                   && std::is_constructible_v<Tp, Args...>
-        std::decay_t<T>& emplace(Args&&... args);
+        Tp& emplace(Args&&... args);
 
         template < typename T, typename U, typename... Args, typename Tp = std::decay_t<T> >
             requires std::is_copy_constructible_v<Tp>
                   && std::is_constructible_v<Tp, std::initializer_list<U>&, Args...>
-        std::decay_t<T>& emplace(std::initializer_list<U> ilist, Args&&... args);
+        Tp& emplace(std::initializer_list<U> ilist, Args&&... args);
 
         [[nodiscard]] bool is_valid() const noexcept;
         [[nodiscard]] explicit operator bool() const noexcept;
@@ -78,12 +78,18 @@ namespace meta_hpp
 
         [[nodiscard]] const any_type& get_type() const noexcept;
 
-        [[nodiscard]] void* data() noexcept;
-        [[nodiscard]] const void* data() const noexcept;
-        [[nodiscard]] const void* cdata() const noexcept;
+        [[nodiscard]] void* get_data() noexcept;
+        [[nodiscard]] const void* get_data() const noexcept;
+        [[nodiscard]] const void* get_cdata() const noexcept;
 
         [[nodiscard]] uvalue operator*() const;
+        [[nodiscard]] bool has_deref_op() const noexcept;
+
         [[nodiscard]] uvalue operator[](std::size_t index) const;
+        [[nodiscard]] bool has_index_op() const noexcept;
+
+        [[nodiscard]] uvalue unmap() const;
+        [[nodiscard]] bool has_unmap_op() const noexcept;
 
         template < typename T >
         [[nodiscard]] T get_as() &&;
@@ -105,14 +111,36 @@ namespace meta_hpp
             -> std::conditional_t<detail::pointer_kind<T>, T, const T*>;
     private:
         struct vtable_t;
-        vtable_t* vtable_{};
-    private:
-        struct buffer_t final {
+
+        struct alignas(std::max_align_t) internal_storage_t final {
             // NOLINTNEXTLINE(*-avoid-c-arrays)
-            alignas(std::max_align_t) std::byte data[sizeof(void*) * 2];
+            std::byte data[sizeof(void*) * 2];
         };
-        using storage_u = std::variant<std::monostate, void*, buffer_t>;
-        storage_u storage_{};
+
+        struct external_storage_t final {
+            // NOLINTNEXTLINE(*-avoid-c-arrays)
+            std::byte padding[sizeof(internal_storage_t) - sizeof(void*)];
+            void* ptr;
+        };
+
+        enum class storage_e : std::uintptr_t {
+            nothing,
+            trivial,
+            internal,
+            external,
+        };
+
+        struct storage_u final {
+            union {
+                internal_storage_t internal;
+                external_storage_t external;
+            };
+            std::uintptr_t vtag;
+        } storage_{};
+
+        static_assert(std::is_standard_layout_v<storage_u>);
+        static_assert(alignof(storage_u) == alignof(std::max_align_t));
+        static_assert(sizeof(internal_storage_t) == sizeof(external_storage_t));
     };
 
     inline void swap(uvalue& l, uvalue& r) noexcept {

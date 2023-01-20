@@ -52,10 +52,10 @@ namespace meta_hpp::detail
         using data_type = typename pt::data_type;
 
         if constexpr ( std::is_const_v<data_type> ) {
-            throw_exception_with("an attempt to set a constant variable");
+            META_HPP_THROW_AS(exception, "an attempt to set a constant variable");
         } else {
             if ( !arg.can_cast_to<data_type>() ) {
-                throw_exception_with("an attempt to set a variable with an incorrect argument type");
+                META_HPP_THROW_AS(exception, "an attempt to set a variable with an incorrect argument type");
             }
             *pointer = arg.cast<data_type>();
         }

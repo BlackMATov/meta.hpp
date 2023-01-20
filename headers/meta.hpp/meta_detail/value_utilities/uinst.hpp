@@ -115,7 +115,7 @@ namespace meta_hpp::detail
         explicit uinst(T&& v)
         : uinst_base{std::forward<T>(v)}
         // NOLINTNEXTLINE(*-const-cast)
-        , data_{const_cast<void*>(v.data())} {}
+        , data_{const_cast<void*>(v.get_data())} {}
 
         template < typename T, typename Tp = std::decay_t<T> >
             requires (!any_uvalue_kind<Tp>)
@@ -188,7 +188,7 @@ namespace meta_hpp::detail
     template < inst_class_ref_kind Q >
     decltype(auto) uinst::cast() const {
         if ( !can_cast_to<Q>() ) {
-            throw_exception_with("bad instance cast");
+            META_HPP_THROW_AS(exception, "bad instance cast");
         }
 
         using inst_class_cv = std::remove_reference_t<Q>;
@@ -237,6 +237,6 @@ namespace meta_hpp::detail
             }
         }
 
-        throw_exception_with("bad instance cast");
+        META_HPP_THROW_AS(exception, "bad instance cast");
     }
 }

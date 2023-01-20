@@ -12,6 +12,7 @@
 #include <cstddef>
 #include <cstdint>
 #include <cstdlib>
+#include <deque>
 #include <functional>
 #include <initializer_list>
 #include <map>
@@ -19,33 +20,28 @@
 #include <mutex>
 #include <set>
 #include <span>
-#include <stdexcept>
 #include <string>
 #include <string_view>
 #include <tuple>
 #include <type_traits>
-#include <typeindex>
-#include <typeinfo>
 #include <utility>
-#include <variant>
 #include <vector>
 
-#if !defined(__cpp_exceptions)
+#if !defined(META_HPP_NO_EXCEPTIONS) && !defined(__cpp_exceptions)
 #  define META_HPP_NO_EXCEPTIONS
 #endif
 
-#if !defined(__cpp_rtti)
+#if !defined(META_HPP_NO_RTTI) && !defined(__cpp_rtti)
 #  define META_HPP_NO_RTTI
 #endif
 
-#if defined(META_HPP_NO_EXCEPTIONS)
-#  define META_HPP_TRY if ( true )
-#  define META_HPP_CATCH(e) if ( false )
-#  define META_HPP_RETHROW() std::abort()
-#else
-#  define META_HPP_TRY try
-#  define META_HPP_CATCH(e) catch(e)
-#  define META_HPP_RETHROW() throw
+#if !defined(META_HPP_NO_EXCEPTIONS)
+#  include <stdexcept>
+#endif
+
+#if !defined(META_HPP_NO_RTTI)
+#  include <typeindex>
+#  include <typeinfo>
 #endif
 
 namespace meta_hpp::detail
@@ -285,6 +281,29 @@ namespace meta_hpp::detail
 
     template < typename From, typename To >
     using copy_cvref_t = typename copy_cvref<From, To>::type;
+}
+
+#if !defined(META_HPP_NO_EXCEPTIONS)
+#  define META_HPP_TRY try
+#  define META_HPP_CATCH(e) catch(e)
+#  define META_HPP_RETHROW() throw
+#  define META_HPP_THROW_AS(e, m) throw e{m}
+#else
+#  define META_HPP_TRY if ( true )
+#  define META_HPP_CATCH(e) if ( false )
+#  define META_HPP_RETHROW() std::abort()
+#  define META_HPP_THROW_AS(e, m) std::terminate()
+#endif
+
+namespace meta_hpp::detail
+{
+#if !defined(META_HPP_NO_EXCEPTIONS)
+    class exception final : public std::runtime_error {
+    public:
+        explicit exception(const char* what)
+        : std::runtime_error(what) {}
+    };
+#endif
 }
 
 namespace meta_hpp::detail
@@ -954,6 +973,10 @@ namespace meta_hpp::detail
 
 namespace meta_hpp
 {
+#if !defined(META_HPP_NO_EXCEPTIONS)
+    using detail::exception;
+#endif
+
     using detail::hashed_string;
     using detail::memory_buffer;
 
@@ -964,27 +987,6 @@ namespace meta_hpp
     using detail::type_id;
     using detail::type_kind;
     using detail::type_list;
-}
-
-namespace meta_hpp
-{
-    class exception final : public std::runtime_error {
-    public:
-        explicit exception(const char* what)
-        : std::runtime_error(what) {}
-    };
-
-    namespace detail
-    {
-        inline void throw_exception_with [[noreturn]] (const char* what) {
-        #if !defined(META_HPP_NO_EXCEPTIONS)
-            throw ::meta_hpp::exception(what);
-        #else
-            (void)what;
-            std::abort();
-        #endif
-        }
-    }
 }
 
 namespace meta_hpp
@@ -2119,6 +2121,39 @@ namespace meta_hpp
     }
 }
 
+namespace meta_hpp
+{
+    template < detail::type_family T >
+    [[nodiscard]] bool operator<(const T& l, type_id r) noexcept {
+        return !static_cast<bool>(l) || l.get_id() < r;
+    }
+
+    template < detail::type_family U >
+    [[nodiscard]] bool operator<(type_id l, const U& r) noexcept {
+        return static_cast<bool>(r) && l < r.get_id();
+    }
+
+    template < detail::type_family T >
+    [[nodiscard]] bool operator==(const T& l, type_id r) noexcept {
+        return static_cast<bool>(l) || l.get_id() == r;
+    }
+
+    template < detail::type_family U >
+    [[nodiscard]] bool operator==(type_id l, const U& r) noexcept {
+        return static_cast<bool>(r) && l == r.get_id();
+    }
+
+    template < detail::type_family T >
+    [[nodiscard]] bool operator!=(const T& l, type_id r) noexcept {
+        return !(l == r);
+    }
+
+    template < detail::type_family U >
+    [[nodiscard]] bool operator!=(type_id l, const U& r) noexcept {
+        return !(l == r);
+    }
+}
+
 namespace meta_hpp::detail
 {
     struct type_data_base {
@@ -2514,12 +2549,12 @@ namespace meta_hpp
         template < typename T, typename... Args, typename Tp = std::decay_t<T> >
             requires std::is_copy_constructible_v<Tp>
                   && std::is_constructible_v<Tp, Args...>
-        std::decay_t<T>& emplace(Args&&... args);
+        Tp& emplace(Args&&... args);
 
         template < typename T, typename U, typename... Args, typename Tp = std::decay_t<T> >
             requires std::is_copy_constructible_v<Tp>
                   && std::is_constructible_v<Tp, std::initializer_list<U>&, Args...>
-        std::decay_t<T>& emplace(std::initializer_list<U> ilist, Args&&... args);
+        Tp& emplace(std::initializer_list<U> ilist, Args&&... args);
 
         [[nodiscard]] bool is_valid() const noexcept;
         [[nodiscard]] explicit operator bool() const noexcept;
@@ -2529,12 +2564,18 @@ namespace meta_hpp
 
         [[nodiscard]] const any_type& get_type() const noexcept;
 
-        [[nodiscard]] void* data() noexcept;
-        [[nodiscard]] const void* data() const noexcept;
-        [[nodiscard]] const void* cdata() const noexcept;
+        [[nodiscard]] void* get_data() noexcept;
+        [[nodiscard]] const void* get_data() const noexcept;
+        [[nodiscard]] const void* get_cdata() const noexcept;
 
         [[nodiscard]] uvalue operator*() const;
+        [[nodiscard]] bool has_deref_op() const noexcept;
+
         [[nodiscard]] uvalue operator[](std::size_t index) const;
+        [[nodiscard]] bool has_index_op() const noexcept;
+
+        [[nodiscard]] uvalue unmap() const;
+        [[nodiscard]] bool has_unmap_op() const noexcept;
 
         template < typename T >
         [[nodiscard]] T get_as() &&;
@@ -2556,14 +2597,36 @@ namespace meta_hpp
             -> std::conditional_t<detail::pointer_kind<T>, T, const T*>;
     private:
         struct vtable_t;
-        vtable_t* vtable_{};
-    private:
-        struct buffer_t final {
+
+        struct alignas(std::max_align_t) internal_storage_t final {
             // NOLINTNEXTLINE(*-avoid-c-arrays)
-            alignas(std::max_align_t) std::byte data[sizeof(void*) * 2];
+            std::byte data[sizeof(void*) * 2];
         };
-        using storage_u = std::variant<std::monostate, void*, buffer_t>;
-        storage_u storage_{};
+
+        struct external_storage_t final {
+            // NOLINTNEXTLINE(*-avoid-c-arrays)
+            std::byte padding[sizeof(internal_storage_t) - sizeof(void*)];
+            void* ptr;
+        };
+
+        enum class storage_e : std::uintptr_t {
+            nothing,
+            trivial,
+            internal,
+            external,
+        };
+
+        struct storage_u final {
+            union {
+                internal_storage_t internal;
+                external_storage_t external;
+            };
+            std::uintptr_t vtag;
+        } storage_{};
+
+        static_assert(std::is_standard_layout_v<storage_u>);
+        static_assert(alignof(storage_u) == alignof(std::max_align_t));
+        static_assert(sizeof(internal_storage_t) == sizeof(external_storage_t));
     };
 
     inline void swap(uvalue& l, uvalue& r) noexcept {
@@ -3231,10 +3294,19 @@ namespace meta_hpp::detail
             return instance;
         }
     public:
+        template < typename F >
+        void for_each_scope(F&& f) const {
+            const locker lock;
+
+            for ( auto&& [name, scope] : scopes_ ) {
+                std::invoke(f, scope);
+            }
+        }
+
         [[nodiscard]] scope get_scope_by_name(std::string_view name) const noexcept {
             const locker lock;
 
-            if ( auto iter = scopes_.find(name); iter != scopes_.end() ) {
+            if ( auto iter{scopes_.find(name)}; iter != scopes_.end() ) {
                 return iter->second;
             }
 
@@ -3244,11 +3316,11 @@ namespace meta_hpp::detail
         [[nodiscard]] scope resolve_scope(std::string_view name) {
             const locker lock;
 
-            if ( auto iter = scopes_.find(name); iter != scopes_.end() ) {
+            if ( auto iter{scopes_.find(name)}; iter != scopes_.end() ) {
                 return iter->second;
             }
 
-            auto&& [iter, _] = scopes_.insert_or_assign(
+            auto&& [iter, _] = scopes_.emplace(
                 std::string{name},
                 scope_state::make(std::string{name}, metadata_map{}));
 
@@ -3285,25 +3357,35 @@ namespace meta_hpp::detail
             return instance;
         }
     public:
+        template < typename F >
+        void for_each_type(F&& f) const {
+            const locker lock;
+
+            for ( const any_type& type : types_ ) {
+                std::invoke(f, type);
+            }
+        }
+
         [[nodiscard]] any_type get_type_by_id(type_id id) const noexcept {
             const locker lock;
 
-            if ( auto iter = type_by_id_.find(id); iter != type_by_id_.end() ) {
-                return iter->second;
+            if ( auto iter{types_.find(id)}; iter != types_.end() ) {
+                return *iter;
             }
 
             return any_type{};
         }
-
+    #if !defined(META_HPP_NO_RTTI)
         [[nodiscard]] any_type get_type_by_rtti(const std::type_index& index) const noexcept {
             const locker lock;
 
-            if ( auto iter = type_by_rtti_.find(index); iter != type_by_rtti_.end() ) {
+            if ( auto iter{rtti_types_.find(index)}; iter != rtti_types_.end() ) {
                 return iter->second;
             }
 
             return any_type{};
         }
+    #endif
     public:
         template < array_kind Array >
         [[nodiscard]] array_type resolve_type() { return resolve_array_type<Array>(); }
@@ -3473,12 +3555,17 @@ namespace meta_hpp::detail
             static std::once_flag init_flag{};
             std::call_once(init_flag, [this, &type_data](){
                 const locker lock;
-                type_by_id_.emplace(type_data.id, any_type{&type_data});
+
+                auto&& [position, emplaced] = types_.emplace(any_type{&type_data});
+                if ( !emplaced ) {
+                    return;
+                }
+
             #if !defined(META_HPP_NO_RTTI)
                 META_HPP_TRY {
-                    type_by_rtti_.emplace(typeid(Type), any_type{&type_data});
+                    rtti_types_.emplace(typeid(Type), any_type{&type_data});
                 } META_HPP_CATCH(...) {
-                    type_by_id_.erase(type_data.id);
+                    types_.erase(position);
                     META_HPP_RETHROW();
                 }
             #endif
@@ -3486,13 +3573,22 @@ namespace meta_hpp::detail
         }
     private:
         std::recursive_mutex mutex_;
-        std::map<type_id, any_type, std::less<>> type_by_id_;
-        std::map<std::type_index, any_type, std::less<>> type_by_rtti_;
+        std::set<any_type, std::less<>> types_;
+    #if !defined(META_HPP_NO_RTTI)
+        std::map<std::type_index, any_type, std::less<>> rtti_types_;
+    #endif
     };
 }
 
 namespace meta_hpp
 {
+    template < typename F >
+    void for_each_type(F&& f) {
+        using namespace detail;
+        type_registry& registry = type_registry::instance();
+        registry.for_each_type(std::forward<F>(f));
+    }
+
     template < typename T >
     [[nodiscard]] auto resolve_type() {
         using namespace detail;
@@ -3500,17 +3596,16 @@ namespace meta_hpp
         return registry.resolve_type<std::remove_cv_t<T>>();
     }
 
+    template < typename T >
+    [[nodiscard]] auto resolve_type(T&&) {
+        using namespace detail;
+        type_registry& registry = type_registry::instance();
+        return registry.resolve_type<std::remove_cvref_t<T>>();
+    }
+
     template < typename... Ts >
     [[nodiscard]] any_type_list resolve_types() {
         return { resolve_type<Ts>()... };
-    }
-}
-
-namespace meta_hpp
-{
-    template < typename T >
-    [[nodiscard]] auto resolve_type(T&&) {
-        return resolve_type<std::remove_reference_t<T>>();
     }
 
     template < typename... Ts >
@@ -3522,22 +3617,19 @@ namespace meta_hpp
 namespace meta_hpp
 {
     template < detail::class_kind Class, typename... Args >
-    constructor_type resolve_constructor_type() {
+    [[nodiscard]] constructor_type resolve_constructor_type() {
         using namespace detail;
         type_registry& registry = type_registry::instance();
         return registry.resolve_constructor_type<Class, Args...>();
     }
 
     template < detail::class_kind Class >
-    destructor_type resolve_destructor_type() {
+    [[nodiscard]] destructor_type resolve_destructor_type() {
         using namespace detail;
         type_registry& registry = type_registry::instance();
         return registry.resolve_destructor_type<Class>();
     }
-}
 
-namespace meta_hpp
-{
     template < typename T >
     [[nodiscard]] any_type resolve_polymorphic_type(T&& v) noexcept {
     #if !defined(META_HPP_NO_RTTI)
@@ -3553,6 +3645,13 @@ namespace meta_hpp
 
 namespace meta_hpp
 {
+    template < typename F >
+    void for_each_scope(F&& f) {
+        using namespace detail;
+        state_registry& registry = state_registry::instance();
+        registry.for_each_scope(std::forward<F>(f));
+    }
+
     [[nodiscard]] inline scope resolve_scope(std::string_view name) {
         using namespace detail;
         state_registry& registry = state_registry::instance();
@@ -4059,7 +4158,8 @@ namespace meta_hpp
         ([this]<detail::class_kind Base>(std::in_place_type_t<Base>) {
             const class_type& base_type = resolve_type<Base>();
 
-            if ( auto&& [_, emplaced] = get_data().bases.emplace(base_type); !emplaced ) {
+            auto&& [position, emplaced] = get_data().bases.emplace(base_type);
+            if ( !emplaced ) {
                 return;
             }
 
@@ -4070,7 +4170,7 @@ namespace meta_hpp
                     }
                 });
             } META_HPP_CATCH(...) {
-                get_data().bases.erase(base_type);
+                get_data().bases.erase(position);
                 META_HPP_RETHROW();
             }
         }(std::in_place_type<Bases>), ...);
@@ -4100,7 +4200,7 @@ namespace meta_hpp
         auto state = detail::constructor_state::make<Policy, Class, Args...>(std::move(opts.metadata));
 
         if ( opts.arguments.size() > state->arguments.size() ) {
-            detail::throw_exception_with("provided argument names don't match constructor argument count");
+            META_HPP_THROW_AS(exception, "provided argument names don't match constructor argument count");
         }
 
         for ( std::size_t i = 0; i < opts.arguments.size(); ++i ) {
@@ -4161,7 +4261,7 @@ namespace meta_hpp
             std::move(opts.metadata));
 
         if ( opts.arguments.size() > state->arguments.size() ) {
-            detail::throw_exception_with("provided arguments don't match function argument count");
+            META_HPP_THROW_AS(exception, "provided arguments don't match function argument count");
         }
 
         for ( std::size_t i = 0; i < opts.arguments.size(); ++i ) {
@@ -4188,7 +4288,7 @@ namespace meta_hpp
             {});
 
         if ( arguments.size() > state->arguments.size() ) {
-            detail::throw_exception_with("provided argument names don't match function argument count");
+            META_HPP_THROW_AS(exception, "provided argument names don't match function argument count");
         }
 
         for ( std::size_t i = 0; i < arguments.size(); ++i ) {
@@ -4263,7 +4363,7 @@ namespace meta_hpp
             std::move(opts.metadata));
 
         if ( opts.arguments.size() > state->arguments.size() ) {
-            detail::throw_exception_with("provided arguments don't match method argument count");
+            META_HPP_THROW_AS(exception, "provided arguments don't match method argument count");
         }
 
         for ( std::size_t i = 0; i < opts.arguments.size(); ++i ) {
@@ -4291,7 +4391,7 @@ namespace meta_hpp
             {});
 
         if ( arguments.size() > state->arguments.size() ) {
-            detail::throw_exception_with("provided argument names don't match method argument count");
+            META_HPP_THROW_AS(exception, "provided argument names don't match method argument count");
         }
 
         for ( std::size_t i = 0; i < arguments.size(); ++i ) {
@@ -4448,7 +4548,7 @@ namespace meta_hpp
             std::move(opts.metadata));
 
         if ( opts.arguments.size() > state->arguments.size() ) {
-            detail::throw_exception_with("provided arguments don't match function argument count");
+            META_HPP_THROW_AS(exception, "provided arguments don't match function argument count");
         }
 
         for ( std::size_t i = 0; i < opts.arguments.size(); ++i ) {
@@ -4474,7 +4574,7 @@ namespace meta_hpp
             {});
 
         if ( arguments.size() > state->arguments.size() ) {
-            detail::throw_exception_with("provided argument names don't match function argument count");
+            META_HPP_THROW_AS(exception, "provided argument names don't match function argument count");
         }
 
         for ( std::size_t i = 0; i < arguments.size(); ++i ) {
@@ -5164,7 +5264,7 @@ namespace meta_hpp::detail
         explicit uarg(T&& v)
         : uarg_base{std::forward<T>(v)}
         // NOLINTNEXTLINE(*-const-cast)
-        , data_{const_cast<void*>(v.data())} {}
+        , data_{const_cast<void*>(v.get_data())} {}
 
         template < typename T, typename Tp = std::decay_t<T> >
             requires (!any_uvalue_kind<Tp>)
@@ -5291,7 +5391,7 @@ namespace meta_hpp::detail
     // NOLINTNEXTLINE(*-cognitive-complexity)
     To uarg::cast() const {
         if ( !can_cast_to<To>() ) {
-            throw_exception_with("bad argument cast");
+            META_HPP_THROW_AS(exception, "bad argument cast");
         }
 
         using to_raw_type_cv = std::remove_reference_t<To>;
@@ -5401,7 +5501,7 @@ namespace meta_hpp::detail
             }
         }
 
-        throw_exception_with("bad argument cast");
+        META_HPP_THROW_AS(exception, "bad argument cast");
     }
 }
 
@@ -5426,12 +5526,12 @@ namespace meta_hpp::detail
         static_assert(as_object || as_raw_ptr || as_shared_ptr);
 
         if ( args.size() != ct::arity ) {
-            throw_exception_with("an attempt to call a constructor with an incorrect arity");
+            META_HPP_THROW_AS(exception, "an attempt to call a constructor with an incorrect arity");
         }
 
         return [args]<std::size_t... Is>(std::index_sequence<Is...>) -> uvalue {
             if ( !(... && args[Is].can_cast_to<type_list_at_t<Is, argument_types>>()) ) {
-                throw_exception_with("an attempt to call a constructor with incorrect argument types");
+                META_HPP_THROW_AS(exception, "an attempt to call a constructor with incorrect argument types");
             }
 
             if constexpr ( as_object ) {
@@ -5458,12 +5558,12 @@ namespace meta_hpp::detail
         using argument_types = typename ct::argument_types;
 
         if ( args.size() != ct::arity ) {
-            throw_exception_with("an attempt to call a constructor with an incorrect arity");
+            META_HPP_THROW_AS(exception, "an attempt to call a constructor with an incorrect arity");
         }
 
         return [mem, args]<std::size_t... Is>(std::index_sequence<Is...>) -> uvalue {
             if ( !(... && args[Is].can_cast_to<type_list_at_t<Is, argument_types>>()) ) {
-                throw_exception_with("an attempt to call a constructor with incorrect argument types");
+                META_HPP_THROW_AS(exception, "an attempt to call a constructor with incorrect argument types");
             }
             return uvalue{std::construct_at(
                 static_cast<class_type*>(mem),
@@ -5962,12 +6062,12 @@ namespace meta_hpp::detail
         static_assert(as_copy || as_void || ref_as_ptr);
 
         if ( args.size() != ft::arity ) {
-            throw_exception_with("an attempt to call a function with an incorrect arity");
+            META_HPP_THROW_AS(exception, "an attempt to call a function with an incorrect arity");
         }
 
         return [&function, args]<std::size_t... Is>(std::index_sequence<Is...>) -> uvalue {
             if ( !(... && args[Is].can_cast_to<type_list_at_t<Is, argument_types>>()) ) {
-                throw_exception_with("an attempt to call a function with incorrect argument types");
+                META_HPP_THROW_AS(exception, "an attempt to call a function with incorrect argument types");
             }
 
             if constexpr ( std::is_void_v<return_type> ) {
@@ -6275,7 +6375,7 @@ namespace meta_hpp::detail
         explicit uinst(T&& v)
         : uinst_base{std::forward<T>(v)}
         // NOLINTNEXTLINE(*-const-cast)
-        , data_{const_cast<void*>(v.data())} {}
+        , data_{const_cast<void*>(v.get_data())} {}
 
         template < typename T, typename Tp = std::decay_t<T> >
             requires (!any_uvalue_kind<Tp>)
@@ -6348,7 +6448,7 @@ namespace meta_hpp::detail
     template < inst_class_ref_kind Q >
     decltype(auto) uinst::cast() const {
         if ( !can_cast_to<Q>() ) {
-            throw_exception_with("bad instance cast");
+            META_HPP_THROW_AS(exception, "bad instance cast");
         }
 
         using inst_class_cv = std::remove_reference_t<Q>;
@@ -6397,7 +6497,7 @@ namespace meta_hpp::detail
             }
         }
 
-        throw_exception_with("bad instance cast");
+        META_HPP_THROW_AS(exception, "bad instance cast");
     }
 }
 
@@ -6422,7 +6522,7 @@ namespace meta_hpp::detail
         static_assert(as_copy || as_ptr || as_ref_wrap);
 
         if ( !inst.can_cast_to<const class_type>() ) {
-            throw_exception_with("an attempt to get a member with an incorrect instance type");
+            META_HPP_THROW_AS(exception, "an attempt to get a member with an incorrect instance type");
         }
 
         if ( inst.is_inst_const() ) {
@@ -6474,18 +6574,18 @@ namespace meta_hpp::detail
         using value_type = typename mt::value_type;
 
         if constexpr ( std::is_const_v<value_type> ) {
-            throw_exception_with("an attempt to set a constant member");
+            META_HPP_THROW_AS(exception, "an attempt to set a constant member");
         } else {
             if ( inst.is_inst_const() ) {
-                throw_exception_with("an attempt to set a member with an const instance type");
+                META_HPP_THROW_AS(exception, "an attempt to set a member with an const instance type");
             }
 
             if ( !inst.can_cast_to<class_type>() ) {
-                throw_exception_with("an attempt to set a member with an incorrect instance type");
+                META_HPP_THROW_AS(exception, "an attempt to set a member with an incorrect instance type");
             }
 
             if ( !arg.can_cast_to<value_type>() ) {
-                throw_exception_with("an attempt to set a member with an incorrect argument type");
+                META_HPP_THROW_AS(exception, "an attempt to set a member with an incorrect argument type");
             }
 
             inst.cast<class_type>().*member = arg.cast<value_type>();
@@ -6721,16 +6821,16 @@ namespace meta_hpp::detail
         static_assert(as_copy || as_void || ref_as_ptr);
 
         if ( args.size() != mt::arity ) {
-            throw_exception_with("an attempt to call a method with an incorrect arity");
+            META_HPP_THROW_AS(exception, "an attempt to call a method with an incorrect arity");
         }
 
         if ( !inst.can_cast_to<qualified_type>() ) {
-            throw_exception_with("an attempt to call a method with an incorrect instance type");
+            META_HPP_THROW_AS(exception, "an attempt to call a method with an incorrect instance type");
         }
 
         return [&method, &inst, args]<std::size_t... Is>(std::index_sequence<Is...>) -> uvalue {
             if ( !(... && args[Is].can_cast_to<type_list_at_t<Is, argument_types>>()) ) {
-                throw_exception_with("an attempt to call a method with incorrect argument types");
+                META_HPP_THROW_AS(exception, "an attempt to call a method with incorrect argument types");
             }
 
             if constexpr ( std::is_void_v<return_type> ) {
@@ -6978,10 +7078,10 @@ namespace meta_hpp::detail
         using data_type = typename pt::data_type;
 
         if constexpr ( std::is_const_v<data_type> ) {
-            throw_exception_with("an attempt to set a constant variable");
+            META_HPP_THROW_AS(exception, "an attempt to set a constant variable");
         } else {
             if ( !arg.can_cast_to<data_type>() ) {
-                throw_exception_with("an attempt to set a variable with an incorrect argument type");
+                META_HPP_THROW_AS(exception, "an attempt to set a variable with an incorrect argument type");
             }
             *pointer = arg.cast<data_type>();
         }
@@ -8129,7 +8229,7 @@ namespace meta_hpp::detail
         requires std::is_copy_constructible_v<T>
     struct deref_traits<T*> {
         uvalue operator()(T* v) const {
-            return uvalue{*v};
+            return v != nullptr ? uvalue{*v} : uvalue{};
         }
     };
 
@@ -8137,7 +8237,7 @@ namespace meta_hpp::detail
         requires std::is_copy_constructible_v<T>
     struct deref_traits<const T*> {
         uvalue operator()(const T* v) const {
-            return uvalue{*v};
+            return v != nullptr ? uvalue{*v} : uvalue{};
         }
     };
 
@@ -8145,7 +8245,7 @@ namespace meta_hpp::detail
         requires std::is_copy_constructible_v<T>
     struct deref_traits<std::shared_ptr<T>> {
         uvalue operator()(const std::shared_ptr<T>& v) const {
-            return uvalue{*v};
+            return v != nullptr ? uvalue{*v} : uvalue{};
         }
     };
 
@@ -8153,7 +8253,7 @@ namespace meta_hpp::detail
         requires std::is_copy_constructible_v<T>
     struct deref_traits<std::unique_ptr<T>> {
         uvalue operator()(const std::unique_ptr<T>& v) const {
-            return uvalue{*v};
+            return v != nullptr ? uvalue{*v} : uvalue{};
         }
     };
 }
@@ -8176,7 +8276,7 @@ namespace meta_hpp::detail
     struct index_traits<T*> {
         uvalue operator()(T* v, std::size_t i) const {
             // NOLINTNEXTLINE(*-pointer-arithmetic)
-            return uvalue{v[i]};
+            return v != nullptr ? uvalue{v[i]} : uvalue{};
         }
     };
 
@@ -8185,7 +8285,7 @@ namespace meta_hpp::detail
     struct index_traits<const T*> {
         uvalue operator()(const T* v, std::size_t i) const {
             // NOLINTNEXTLINE(*-pointer-arithmetic)
-            return uvalue{v[i]};
+            return v != nullptr ? uvalue{v[i]} : uvalue{};
         }
     };
 
@@ -8193,7 +8293,15 @@ namespace meta_hpp::detail
         requires std::is_copy_constructible_v<T>
     struct index_traits<std::array<T, Size>> {
         uvalue operator()(const std::array<T, Size>& v, std::size_t i) const {
-            return uvalue{v[i]};
+            return i < v.size() ? uvalue{v[i]} : uvalue{};
+        }
+    };
+
+    template < typename T, typename Allocator >
+        requires std::is_copy_constructible_v<T>
+    struct index_traits<std::deque<T, Allocator>> {
+        uvalue operator()(const std::deque<T, Allocator>& v, std::size_t i) {
+            return i < v.size() ? uvalue{v[i]} : uvalue{};
         }
     };
 
@@ -8201,7 +8309,7 @@ namespace meta_hpp::detail
         requires std::is_copy_constructible_v<T>
     struct index_traits<std::span<T, Extent>> {
         uvalue operator()(const std::span<T, Extent>& v, std::size_t i) const {
-            return uvalue{v[i]};
+            return i < v.size() ? uvalue{v[i]} : uvalue{};
         }
     };
 
@@ -8209,7 +8317,7 @@ namespace meta_hpp::detail
         requires std::is_copy_constructible_v<T>
     struct index_traits<std::basic_string<T, Traits, Allocator>> {
         uvalue operator()(const std::basic_string<T, Traits, Allocator>& v, std::size_t i) const {
-            return uvalue{v[i]};
+            return i < v.size() ? uvalue{v[i]} : uvalue{};
         }
     };
 
@@ -8217,7 +8325,42 @@ namespace meta_hpp::detail
         requires std::is_copy_constructible_v<T>
     struct index_traits<std::vector<T, Allocator>> {
         uvalue operator()(const std::vector<T, Allocator>& v, std::size_t i) {
-            return uvalue{v[i]};
+            return i < v.size() ? uvalue{v[i]} : uvalue{};
+        }
+    };
+}
+
+namespace meta_hpp::detail
+{
+    template < typename T >
+    struct unmap_traits;
+
+    template < typename T >
+    concept has_unmap_traits = requires(const T& v) {
+        { unmap_traits<T>{}(v) } -> std::convertible_to<uvalue>;
+    };
+}
+
+namespace meta_hpp::detail
+{
+    template < typename T >
+    struct unmap_traits<std::shared_ptr<T>> {
+        uvalue operator()(const std::shared_ptr<T>& v) const {
+            return uvalue{v.get()};
+        }
+    };
+
+    template < typename T, typename D >
+    struct unmap_traits<std::unique_ptr<T, D>> {
+        uvalue operator()(const std::unique_ptr<T, D>& v) const {
+            return uvalue{v.get()};
+        }
+    };
+
+    template < typename T >
+    struct unmap_traits<std::reference_wrapper<T>> {
+        uvalue operator()(const std::reference_wrapper<T>& v) const {
+            return uvalue{std::addressof(v.get())};
         }
     };
 }
@@ -8227,90 +8370,148 @@ namespace meta_hpp
     struct uvalue::vtable_t final {
         const any_type type;
 
-        void* (*const data)(storage_u& from) noexcept;
-        const void* (*const cdata)(const storage_u& from) noexcept;
+        void (*const move)(uvalue&& self, uvalue& to) noexcept;
+        void (*const copy)(const uvalue& self, uvalue& to);
+        void (*const reset)(uvalue& self) noexcept;
 
-        void (*const move)(uvalue& from, uvalue& to) noexcept;
-        void (*const copy)(const uvalue& from, uvalue& to);
-        void (*const destroy)(uvalue& self) noexcept;
-
-        uvalue (*const deref)(const storage_u& from);
-        uvalue (*const index)(const storage_u& from, std::size_t);
+        uvalue (*const deref)(const storage_u& self);
+        uvalue (*const index)(const storage_u& self, std::size_t i);
+        uvalue (*const unmap)(const storage_u& self);
 
         template < typename T >
-        static T* buffer_cast(buffer_t& buffer) noexcept {
-            // NOLINTNEXTLINE(*-reinterpret-cast)
-            return std::launder(reinterpret_cast<T*>(buffer.data));
-        }
+        inline static constexpr bool in_internal_v =
+            (sizeof(T) <= sizeof(internal_storage_t)) &&
+            (alignof(internal_storage_t) % alignof(T) == 0) &&
+            std::is_nothrow_destructible_v<T> &&
+            std::is_nothrow_move_constructible_v<T>;
 
         template < typename T >
-        static const T* buffer_cast(const buffer_t& buffer) noexcept {
-            // NOLINTNEXTLINE(*-reinterpret-cast)
-            return std::launder(reinterpret_cast<const T*>(buffer.data));
+        inline static constexpr bool in_trivial_internal_v =
+            in_internal_v<T> &&
+            std::is_trivially_copyable_v<T>;
+
+        static std::pair<storage_e, const vtable_t*> unpack_vtag(const uvalue& self) noexcept {
+            constexpr std::uintptr_t tag_mask{0b11};
+            const std::uintptr_t vtag{self.storage_.vtag};
+            return std::make_pair(
+                static_cast<storage_e>(vtag & tag_mask),
+                // NOLINTNEXTLINE(*-no-int-to-ptr, *-reinterpret-cast)
+                reinterpret_cast<const vtable_t*>(vtag & ~tag_mask));
         }
 
         template < typename T >
         static T* storage_cast(storage_u& storage) noexcept {
-            return std::visit(detail::overloaded {
-                [](void* ptr) { return static_cast<T*>(ptr); },
-                [](buffer_t& buffer) { return buffer_cast<T>(buffer); },
-                [](...) -> T* { return nullptr; },
-            }, storage);
+            if constexpr ( in_internal_v<T> ) {
+                // NOLINTNEXTLINE(*-union-access, *-reinterpret-cast)
+                return std::launder(reinterpret_cast<T*>(storage.internal.data));
+            } else {
+                // NOLINTNEXTLINE(*-union-access)
+                return static_cast<T*>(storage.external.ptr);
+            }
         }
 
         template < typename T >
         static const T* storage_cast(const storage_u& storage) noexcept {
-            return std::visit(detail::overloaded {
-                [](const void* ptr) { return static_cast<const T*>(ptr); },
-                [](const buffer_t& buffer) { return buffer_cast<T>(buffer); },
-                [](...) -> const T* { return nullptr; },
-            }, storage);
+            if constexpr ( in_internal_v<T> ) {
+                // NOLINTNEXTLINE(*-union-access, *-reinterpret-cast)
+                return std::launder(reinterpret_cast<const T*>(storage.internal.data));
+            } else {
+                // NOLINTNEXTLINE(*-union-access)
+                return static_cast<const T*>(storage.external.ptr);
+            }
         }
 
         template < typename T, typename... Args, typename Tp = std::decay_t<T> >
-        static Tp& construct(uvalue& dst, Args&&... args) {
+        static Tp& do_ctor(uvalue& dst, Args&&... args) {
             assert(!dst); // NOLINT
 
-            constexpr bool in_buffer =
-                (sizeof(Tp) <= sizeof(buffer_t)) &&
-                (alignof(buffer_t) % alignof(Tp) == 0) &&
-                std::is_nothrow_move_constructible_v<Tp>;
-
-            if constexpr ( in_buffer ) {
+            if constexpr ( in_internal_v<Tp> ) {
                 std::construct_at(
-                    buffer_cast<Tp>(dst.storage_.emplace<buffer_t>()),
+                    storage_cast<Tp>(dst.storage_),
                     std::forward<Args>(args)...);
+                dst.storage_.vtag = in_trivial_internal_v<Tp>
+                    ? detail::to_underlying(storage_e::trivial)
+                    : detail::to_underlying(storage_e::internal);
             } else {
-                dst.storage_.emplace<void*>(
-                    std::make_unique<Tp>(std::forward<Args>(args)...).release());
+                // NOLINTNEXTLINE(*-union-access, *-owning-memory)
+                dst.storage_.external.ptr = ::new Tp(std::forward<Args>(args)...);
+                dst.storage_.vtag = detail::to_underlying(storage_e::external);
             }
 
-            dst.vtable_ = vtable_t::get<Tp>();
+            // NOLINTNEXTLINE(*-reinterpret-cast)
+            dst.storage_.vtag |= reinterpret_cast<std::uintptr_t>(vtable_t::get<Tp>());
             return *storage_cast<Tp>(dst.storage_);
         }
 
-        static void swap(uvalue& l, uvalue& r) noexcept {
+        static void do_move(uvalue&& self, uvalue& to) noexcept {
+            assert(!to); // NOLINT
+
+            auto&& [tag, vtable] = unpack_vtag(self);
+
+            switch ( tag ) {
+            case storage_e::nothing:
+                break;
+            case storage_e::trivial:
+                to.storage_ = self.storage_;
+                self.storage_.vtag = 0;
+                break;
+            case storage_e::internal:
+            case storage_e::external:
+                vtable->move(std::move(self), to);
+                break;
+            }
+        }
+
+        static void do_copy(const uvalue& self, uvalue& to) noexcept {
+            assert(!to); // NOLINT
+
+            auto&& [tag, vtable] = unpack_vtag(self);
+
+            switch ( tag ) {
+            case storage_e::nothing:
+                break;
+            case storage_e::trivial:
+                to.storage_ = self.storage_;
+                break;
+            case storage_e::internal:
+            case storage_e::external:
+                vtable->copy(self, to);
+                break;
+            }
+        }
+
+        static void do_reset(uvalue& self) noexcept {
+            auto&& [tag, vtable] = unpack_vtag(self);
+
+            switch ( tag ) {
+            case storage_e::nothing:
+                break;
+            case storage_e::trivial:
+                self.storage_.vtag = 0;
+                break;
+            case storage_e::internal:
+            case storage_e::external:
+                vtable->reset(self);
+                break;
+            }
+        }
+
+        static void do_swap(uvalue& l, uvalue& r) noexcept {
             if ( (&l == &r) || (!l && !r) ) {
                 return;
             }
 
             if ( l && r ) {
-                if ( std::holds_alternative<buffer_t>(l.storage_) ) {
-                    uvalue temp;
-                    r.vtable_->move(r, temp);
-                    l.vtable_->move(l, r);
-                    temp.vtable_->move(temp, l);
+                if ( unpack_vtag(l).first == storage_e::external ) {
+                    r = std::exchange(l, std::move(r));
                 } else {
-                    uvalue temp;
-                    l.vtable_->move(l, temp);
-                    r.vtable_->move(r, l);
-                    temp.vtable_->move(temp, r);
+                    l = std::exchange(r, std::move(l));
                 }
             } else {
                 if ( l ) {
-                    l.vtable_->move(l, r);
+                    r = std::move(l);
                 } else {
-                    r.vtable_->move(r, l);
+                    l = std::move(r);
                 }
             }
         }
@@ -8323,85 +8524,79 @@ namespace meta_hpp
             static vtable_t table{
                 .type = resolve_type<Tp>(),
 
-                .data = [](storage_u& from) noexcept -> void* {
-                    return storage_cast<Tp>(from);
+                .move = [](uvalue&& self, uvalue& to) noexcept {
+                    assert(self && !to); // NOLINT
+
+                    Tp* src = storage_cast<Tp>(self.storage_);
+
+                    if constexpr ( in_internal_v<Tp> ) {
+                        do_ctor<Tp>(to, std::move(*src));
+                        do_reset(self);
+                    } else {
+                        // NOLINTNEXTLINE(*-union-access)
+                        to.storage_.external.ptr = src;
+                        std::swap(to.storage_.vtag, self.storage_.vtag);
+                    }
                 },
 
-                .cdata = [](const storage_u& from) noexcept -> const void* {
-                    return storage_cast<Tp>(from);
+                .copy = [](const uvalue& self, uvalue& to){
+                    assert(self && !to); // NOLINT
+
+                    const Tp* src = storage_cast<Tp>(self.storage_);
+
+                    if constexpr ( in_internal_v<Tp> ) {
+                        do_ctor<Tp>(to, *src);
+                    } else {
+                        // NOLINTNEXTLINE(*-union-access, *-owning-memory)
+                        to.storage_.external.ptr = ::new Tp(*src);
+                        to.storage_.vtag = self.storage_.vtag;
+                    }
                 },
 
-                .move = [](uvalue& from, uvalue& to) noexcept {
-                    assert(from && !to); // NOLINT
-
-                    std::visit(detail::overloaded {
-                        [&to](void* ptr) {
-                            Tp* src = static_cast<Tp*>(ptr);
-                            to.storage_.emplace<void*>(src);
-                        },
-                        [&to](buffer_t& buffer) {
-                            Tp& src = *buffer_cast<Tp>(buffer);
-                            std::construct_at(buffer_cast<Tp>(to.storage_.emplace<buffer_t>()), std::move(src));
-                            std::destroy_at(&src);
-                        },
-                        [](...){}
-                    }, from.storage_);
-
-                    to.vtable_ = from.vtable_;
-                    from.vtable_ = nullptr;
-                },
-
-                .copy = [](const uvalue& from, uvalue& to){
-                    assert(from && !to); // NOLINT
-
-                    std::visit(detail::overloaded {
-                        [&to](void* ptr) {
-                            const Tp& src = *static_cast<const Tp*>(ptr);
-                            to.storage_.emplace<void*>(std::make_unique<Tp>(src).release());
-                        },
-                        [&to](const buffer_t& buffer) {
-                            const Tp& src = *buffer_cast<Tp>(buffer);
-                            std::construct_at(buffer_cast<Tp>(to.storage_.emplace<buffer_t>()), src);
-                        },
-                        [](...){}
-                    }, from.storage_);
-
-                    to.vtable_ = from.vtable_;
-                },
-
-                .destroy = [](uvalue& self) noexcept {
+                .reset = [](uvalue& self) noexcept {
                     assert(self); // NOLINT
 
-                    std::visit(detail::overloaded {
-                        [](void* ptr) {
-                            Tp* src = static_cast<Tp*>(ptr);
-                            std::unique_ptr<Tp>{src}.reset();
-                        },
-                        [](buffer_t& buffer) {
-                            Tp& src = *buffer_cast<Tp>(buffer);
-                            std::destroy_at(&src);
-                        },
-                        [](...){}
-                    }, self.storage_);
+                    Tp* src = storage_cast<Tp>(self.storage_);
 
-                    self.vtable_ = nullptr;
+                    if constexpr ( in_internal_v<Tp> ) {
+                        std::destroy_at(src);
+                    } else {
+                        // NOLINTNEXTLINE(*-owning-memory)
+                        ::delete src;
+                    }
+
+                    self.storage_.vtag = 0;
                 },
 
-                .deref = +[]([[maybe_unused]] const storage_u& from) -> uvalue {
+                .deref = [](){
                     if constexpr ( detail::has_deref_traits<Tp> ) {
-                        return detail::deref_traits<Tp>{}(*storage_cast<Tp>(from));
+                        return +[](const storage_u& self) -> uvalue {
+                            return detail::deref_traits<Tp>{}(*storage_cast<Tp>(self));
+                        };
                     } else {
-                        detail::throw_exception_with("value type doesn't have value deref traits");
+                        return nullptr;
                     }
-                },
+                }(),
 
-                .index = +[]([[maybe_unused]] const storage_u& from, [[maybe_unused]] std::size_t i) -> uvalue {
+                .index = [](){
                     if constexpr ( detail::has_index_traits<Tp> ) {
-                        return detail::index_traits<Tp>{}(*storage_cast<Tp>(from), i);
+                        return +[](const storage_u& self, std::size_t i) -> uvalue {
+                            return detail::index_traits<Tp>{}(*storage_cast<Tp>(self), i);
+                        };
                     } else {
-                        detail::throw_exception_with("value type doesn't have value index traits");
+                        return nullptr;
                     }
-                },
+                }(),
+
+                .unmap = [](){
+                    if constexpr ( detail::has_unmap_traits<Tp> ) {
+                        return +[](const storage_u& self) -> uvalue {
+                            return detail::unmap_traits<Tp>{}(*storage_cast<Tp>(self));
+                        };
+                    } else {
+                        return nullptr;
+                    }
+                }(),
             };
 
             return &table;
@@ -8416,27 +8611,25 @@ namespace meta_hpp
     }
 
     inline uvalue::uvalue(uvalue&& other) noexcept {
-        if ( other.vtable_ != nullptr ) {
-            other.vtable_->move(other, *this);
-        }
+        vtable_t::do_move(std::move(other), *this);
     }
 
     inline uvalue::uvalue(const uvalue& other) {
-        if ( other.vtable_ != nullptr ) {
-            other.vtable_->copy(other, *this);
-        }
+        vtable_t::do_copy(other, *this);
     }
 
     inline uvalue& uvalue::operator=(uvalue&& other) noexcept {
         if ( this != &other ) {
-            uvalue{std::move(other)}.swap(*this);
+            vtable_t::do_reset(*this);
+            vtable_t::do_move(std::move(other), *this);
         }
         return *this;
     }
 
     inline uvalue& uvalue::operator=(const uvalue& other) {
         if ( this != &other ) {
-            uvalue{other}.swap(*this);
+            vtable_t::do_reset(*this);
+            vtable_t::do_copy(other, *this);
         }
         return *this;
     }
@@ -8447,7 +8640,7 @@ namespace meta_hpp
               && (std::is_copy_constructible_v<Tp>)
     // NOLINTNEXTLINE(*-forwarding-reference-overload)
     uvalue::uvalue(T&& val) {
-        vtable_t::construct<T>(*this, std::forward<T>(val));
+        vtable_t::do_ctor<T>(*this, std::forward<T>(val));
     }
 
     template < typename T, typename Tp >
@@ -8455,7 +8648,8 @@ namespace meta_hpp
               && (!detail::is_in_place_type_v<Tp>)
               && (std::is_copy_constructible_v<Tp>)
     uvalue& uvalue::operator=(T&& val) {
-        uvalue{std::forward<T>(val)}.swap(*this);
+        vtable_t::do_reset(*this);
+        vtable_t::do_ctor<T>(*this, std::forward<T>(val));
         return *this;
     }
 
@@ -8463,34 +8657,34 @@ namespace meta_hpp
         requires std::is_copy_constructible_v<Tp>
               && std::is_constructible_v<Tp, Args...>
     uvalue::uvalue(std::in_place_type_t<T>, Args&&... args) {
-        vtable_t::construct<T>(*this, std::forward<Args>(args)...);
+        vtable_t::do_ctor<T>(*this, std::forward<Args>(args)...);
     }
 
     template < typename T, typename U, typename... Args, typename Tp >
         requires std::is_copy_constructible_v<Tp>
               && std::is_constructible_v<Tp, std::initializer_list<U>&, Args...>
     uvalue::uvalue(std::in_place_type_t<T>, std::initializer_list<U> ilist, Args&&... args) {
-        vtable_t::construct<T>(*this, ilist, std::forward<Args>(args)...);
+        vtable_t::do_ctor<T>(*this, ilist, std::forward<Args>(args)...);
     }
 
     template < typename T, typename... Args, typename Tp >
         requires std::is_copy_constructible_v<Tp>
               && std::is_constructible_v<Tp, Args...>
-    std::decay_t<T>& uvalue::emplace(Args&&... args) {
-        reset();
-        return vtable_t::construct<T>(*this, std::forward<Args>(args)...);
+    Tp& uvalue::emplace(Args&&... args) {
+        vtable_t::do_reset(*this);
+        return vtable_t::do_ctor<T>(*this, std::forward<Args>(args)...);
     }
 
     template < typename T, typename U, typename... Args, typename Tp >
         requires std::is_copy_constructible_v<Tp>
               && std::is_constructible_v<Tp, std::initializer_list<U>&, Args...>
-    std::decay_t<T>& uvalue::emplace(std::initializer_list<U> ilist, Args&&... args) {
-        reset();
-        return vtable_t::construct<T>(*this, ilist, std::forward<Args>(args)...);
+    Tp& uvalue::emplace(std::initializer_list<U> ilist, Args&&... args) {
+        vtable_t::do_reset(*this);
+        return vtable_t::do_ctor<T>(*this, ilist, std::forward<Args>(args)...);
     }
 
     inline bool uvalue::is_valid() const noexcept {
-        return vtable_ != nullptr;
+        return storage_.vtag != 0;
     }
 
     inline uvalue::operator bool() const noexcept {
@@ -8498,42 +8692,108 @@ namespace meta_hpp
     }
 
     inline void uvalue::reset() {
-        if ( vtable_ != nullptr ) {
-            vtable_->destroy(*this);
-        }
+        vtable_t::do_reset(*this);
     }
 
     inline void uvalue::swap(uvalue& other) noexcept {
-        vtable_t::swap(*this, other);
+        vtable_t::do_swap(*this, other);
     }
 
     inline const any_type& uvalue::get_type() const noexcept {
         static any_type void_type = resolve_type<void>();
-        return vtable_ != nullptr ? vtable_->type : void_type;
+        auto&& [tag, vtable] = vtable_t::unpack_vtag(*this);
+        return tag == storage_e::nothing ? void_type : vtable->type;
     }
 
-    inline void* uvalue::data() noexcept {
-        return vtable_ != nullptr ? vtable_->data(storage_) : nullptr;
+    inline void* uvalue::get_data() noexcept {
+        switch ( vtable_t::unpack_vtag(*this).first ) {
+        case storage_e::nothing:
+            return nullptr;
+        case storage_e::trivial:
+        case storage_e::internal:
+            // NOLINTNEXTLINE(*-union-access)
+            return static_cast<void*>(storage_.internal.data);
+        case storage_e::external:
+            // NOLINTNEXTLINE(*-union-access)
+            return storage_.external.ptr;
+        }
+
+        assert(false); // NOLINT
+        return nullptr;
     }
 
-    inline const void* uvalue::data() const noexcept {
-        return vtable_ != nullptr ? vtable_->cdata(storage_) : nullptr;
+    inline const void* uvalue::get_data() const noexcept {
+        switch ( vtable_t::unpack_vtag(*this).first ) {
+        case storage_e::nothing:
+            return nullptr;
+        case storage_e::trivial:
+        case storage_e::internal:
+            // NOLINTNEXTLINE(*-union-access)
+            return static_cast<const void*>(storage_.internal.data);
+        case storage_e::external:
+            // NOLINTNEXTLINE(*-union-access)
+            return storage_.external.ptr;
+        }
+
+        assert(false); // NOLINT
+        return nullptr;
     }
 
-    inline const void* uvalue::cdata() const noexcept {
-        return vtable_ != nullptr ? vtable_->cdata(storage_) : nullptr;
+    inline const void* uvalue::get_cdata() const noexcept {
+        switch ( vtable_t::unpack_vtag(*this).first ) {
+        case storage_e::nothing:
+            return nullptr;
+        case storage_e::trivial:
+        case storage_e::internal:
+            // NOLINTNEXTLINE(*-union-access)
+            return static_cast<const void*>(storage_.internal.data);
+        case storage_e::external:
+            // NOLINTNEXTLINE(*-union-access)
+            return storage_.external.ptr;
+        }
+
+        assert(false); // NOLINT
+        return nullptr;
     }
 
     inline uvalue uvalue::operator*() const {
-        return vtable_ != nullptr ? vtable_->deref(storage_) : uvalue{};
+        auto&& [tag, vtable] = vtable_t::unpack_vtag(*this);
+        return tag != storage_e::nothing && vtable->deref != nullptr
+            ? vtable->deref(storage_)
+            : uvalue{};
+    }
+
+    inline bool uvalue::has_deref_op() const noexcept {
+        auto&& [tag, vtable] = vtable_t::unpack_vtag(*this);
+        return tag != storage_e::nothing && vtable->deref != nullptr;
     }
 
     inline uvalue uvalue::operator[](std::size_t index) const {
-        return vtable_ != nullptr ? vtable_->index(storage_, index) : uvalue{};
+        auto&& [tag, vtable] = vtable_t::unpack_vtag(*this);
+        return tag != storage_e::nothing && vtable->index != nullptr
+            ? vtable->index(storage_, index)
+            : uvalue{};
+    }
+
+    inline bool uvalue::has_index_op() const noexcept {
+        auto&& [tag, vtable] = vtable_t::unpack_vtag(*this);
+        return tag != storage_e::nothing && vtable->index != nullptr;
+    }
+
+    inline uvalue uvalue::unmap() const {
+        auto&& [tag, vtable] = vtable_t::unpack_vtag(*this);
+        return tag != storage_e::nothing && vtable->unmap != nullptr
+            ? vtable->unmap(storage_)
+            : uvalue{};
+    }
+
+    inline bool uvalue::has_unmap_op() const noexcept {
+        auto&& [tag, vtable] = vtable_t::unpack_vtag(*this);
+        return tag != storage_e::nothing && vtable->unmap != nullptr;
     }
 
     template < typename T >
-    [[nodiscard]] T uvalue::get_as() && {
+    T uvalue::get_as() && {
         static_assert(std::is_same_v<T, std::decay_t<T>>);
 
         if constexpr ( detail::pointer_kind<T> ) {
@@ -8546,7 +8806,7 @@ namespace meta_hpp
             }
         }
 
-        detail::throw_exception_with("bad value cast");
+        META_HPP_THROW_AS(exception, "bad value cast");
     }
 
     template < typename T >
@@ -8563,7 +8823,7 @@ namespace meta_hpp
             }
         }
 
-        detail::throw_exception_with("bad value cast");
+        META_HPP_THROW_AS(exception, "bad value cast");
     }
 
     template < typename T >
@@ -8580,7 +8840,7 @@ namespace meta_hpp
             }
         }
 
-        detail::throw_exception_with("bad value cast");
+        META_HPP_THROW_AS(exception, "bad value cast");
     }
 
     template < typename T >
@@ -8612,7 +8872,7 @@ namespace meta_hpp
                 const any_type& from_data_type = from_type_ptr.get_data_type();
 
                 if ( to_type_ptr_readonly >= from_type_ptr_readonly ) {
-                    void** from_data_ptr = static_cast<void**>(data());
+                    void** from_data_ptr = static_cast<void**>(get_data());
 
                     if ( to_data_type.is_void() || to_data_type == from_data_type ) {
                         void* to_ptr = *from_data_ptr;
@@ -8632,7 +8892,7 @@ namespace meta_hpp
 
         if constexpr ( !detail::pointer_kind<T> ) {
             if ( from_type == to_type ) {
-                T* to_ptr = static_cast<T*>(data());
+                T* to_ptr = static_cast<T*>(get_data());
                 return to_ptr;
             }
 
@@ -8640,7 +8900,7 @@ namespace meta_hpp
                 const class_type& to_class = to_type.as_class();
                 const class_type& from_class = from_type.as_class();
 
-                T* to_ptr = static_cast<T*>(detail::pointer_upcast(data(), from_class, to_class));
+                T* to_ptr = static_cast<T*>(detail::pointer_upcast(get_data(), from_class, to_class));
                 return to_ptr;
             }
         }
@@ -8677,7 +8937,7 @@ namespace meta_hpp
                 const any_type& from_data_type = from_type_ptr.get_data_type();
 
                 if ( to_type_ptr_readonly >= from_type_ptr_readonly ) {
-                    void* const* from_data_ptr = static_cast<void* const*>(data());
+                    void* const* from_data_ptr = static_cast<void* const*>(get_data());
 
                     if ( to_data_type.is_void() || to_data_type == from_data_type ) {
                         void* to_ptr = *from_data_ptr;
@@ -8697,7 +8957,7 @@ namespace meta_hpp
 
         if constexpr ( !detail::pointer_kind<T> ) {
             if ( from_type == to_type ) {
-                const T* to_ptr = static_cast<const T*>(data());
+                const T* to_ptr = static_cast<const T*>(get_data());
                 return to_ptr;
             }
 
@@ -8705,7 +8965,7 @@ namespace meta_hpp
                 const class_type& to_class = to_type.as_class();
                 const class_type& from_class = from_type.as_class();
 
-                const T* to_ptr = static_cast<const T*>(detail::pointer_upcast(data(), from_class, to_class));
+                const T* to_ptr = static_cast<const T*>(detail::pointer_upcast(get_data(), from_class, to_class));
                 return to_ptr;
             }
         }

@@ -116,7 +116,7 @@ TEST_CASE("meta/meta_utilities/value5/inplace") {
     }
 
     SUBCASE("args") {
-        meta::uvalue v = meta::make_uvalue<std::vector<clazz_throw_dtor>>(2, 42);
+        meta::uvalue v = meta::make_uvalue<std::vector<clazz_throw_dtor>>(2u, 42);
         CHECK(v.get_type() == meta::resolve_type<std::vector<clazz_throw_dtor>>());
 
         CHECK(v[0].get_type() == meta::resolve_type<clazz_throw_dtor>());
@@ -128,7 +128,7 @@ TEST_CASE("meta/meta_utilities/value5/inplace") {
 
     SUBCASE("args/counters") {
         {
-            meta::uvalue v = meta::make_uvalue<std::vector<clazz_throw_dtor>>(2, 42);
+            meta::uvalue v = meta::make_uvalue<std::vector<clazz_throw_dtor>>(2u, 42);
             CHECK(v.get_type() == meta::resolve_type<std::vector<clazz_throw_dtor>>());
         }
         CHECK(clazz_throw_dtor::destructor_counter == 3);
@@ -196,7 +196,7 @@ TEST_CASE("meta/meta_utilities/value5/emplace") {
 
     SUBCASE("args") {
         meta::uvalue v = meta::make_uvalue<clazz_throw_dtor>(21);
-        v.emplace<std::vector<clazz_throw_dtor>>(2, 42);
+        v.emplace<std::vector<clazz_throw_dtor>>(2u, 42);
         CHECK(v.get_type() == meta::resolve_type<std::vector<clazz_throw_dtor>>());
 
         CHECK(v[0].get_type() == meta::resolve_type<clazz_throw_dtor>());
@@ -209,7 +209,7 @@ TEST_CASE("meta/meta_utilities/value5/emplace") {
     SUBCASE("args/counters") {
         {
             meta::uvalue v = meta::make_uvalue<clazz_throw_dtor>(21);
-            v.emplace<std::vector<clazz_throw_dtor>>(2, 42);
+            v.emplace<std::vector<clazz_throw_dtor>>(2u, 42);
             CHECK(v.get_type() == meta::resolve_type<std::vector<clazz_throw_dtor>>());
         }
         CHECK(clazz_throw_dtor::destructor_counter == 4);

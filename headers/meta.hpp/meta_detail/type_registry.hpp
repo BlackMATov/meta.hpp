@@ -32,25 +32,35 @@ namespace meta_hpp::detail
             return instance;
         }
     public:
+        template < typename F >
+        void for_each_type(F&& f) const {
+            const locker lock;
+
+            for ( const any_type& type : types_ ) {
+                std::invoke(f, type);
+            }
+        }
+
         [[nodiscard]] any_type get_type_by_id(type_id id) const noexcept {
             const locker lock;
 
-            if ( auto iter = type_by_id_.find(id); iter != type_by_id_.end() ) {
-                return iter->second;
+            if ( auto iter{types_.find(id)}; iter != types_.end() ) {
+                return *iter;
             }
 
             return any_type{};
         }
-
+    #if !defined(META_HPP_NO_RTTI)
         [[nodiscard]] any_type get_type_by_rtti(const std::type_index& index) const noexcept {
             const locker lock;
 
-            if ( auto iter = type_by_rtti_.find(index); iter != type_by_rtti_.end() ) {
+            if ( auto iter{rtti_types_.find(index)}; iter != rtti_types_.end() ) {
                 return iter->second;
             }
 
             return any_type{};
         }
+    #endif
     public:
         template < array_kind Array >
         [[nodiscard]] array_type resolve_type() { return resolve_array_type<Array>(); }
@@ -220,12 +230,17 @@ namespace meta_hpp::detail
             static std::once_flag init_flag{};
             std::call_once(init_flag, [this, &type_data](){
                 const locker lock;
-                type_by_id_.emplace(type_data.id, any_type{&type_data});
+
+                auto&& [position, emplaced] = types_.emplace(any_type{&type_data});
+                if ( !emplaced ) {
+                    return;
+                }
+
             #if !defined(META_HPP_NO_RTTI)
                 META_HPP_TRY {
-                    type_by_rtti_.emplace(typeid(Type), any_type{&type_data});
+                    rtti_types_.emplace(typeid(Type), any_type{&type_data});
                 } META_HPP_CATCH(...) {
-                    type_by_id_.erase(type_data.id);
+                    types_.erase(position);
                     META_HPP_RETHROW();
                 }
             #endif
@@ -233,7 +248,9 @@ namespace meta_hpp::detail
         }
     private:
         std::recursive_mutex mutex_;
-        std::map<type_id, any_type, std::less<>> type_by_id_;
-        std::map<std::type_index, any_type, std::less<>> type_by_rtti_;
+        std::set<any_type, std::less<>> types_;
+    #if !defined(META_HPP_NO_RTTI)
+        std::map<std::type_index, any_type, std::less<>> rtti_types_;
+    #endif
     };
 }

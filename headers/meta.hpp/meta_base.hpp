@@ -10,6 +10,7 @@
 #include "meta_base/bitflags.hpp"
 #include "meta_base/cv_traits.hpp"
 #include "meta_base/cvref_traits.hpp"
+#include "meta_base/exceptions.hpp"
 #include "meta_base/fixed_function.hpp"
 #include "meta_base/hash_combiner.hpp"
 #include "meta_base/hashed_string.hpp"
@@ -26,6 +27,10 @@
 
 namespace meta_hpp
 {
+#if !defined(META_HPP_NO_EXCEPTIONS)
+    using detail::exception;
+#endif
+
     using detail::hashed_string;
     using detail::memory_buffer;
 
@@ -36,27 +41,6 @@ namespace meta_hpp
     using detail::type_id;
     using detail::type_kind;
     using detail::type_list;
-}
-
-namespace meta_hpp
-{
-    class exception final : public std::runtime_error {
-    public:
-        explicit exception(const char* what)
-        : std::runtime_error(what) {}
-    };
-
-    namespace detail
-    {
-        inline void throw_exception_with [[noreturn]] (const char* what) {
-        #if !defined(META_HPP_NO_EXCEPTIONS)
-            throw ::meta_hpp::exception(what);
-        #else
-            (void)what;
-            std::abort();
-        #endif
-        }
-    }
 }
 
 namespace meta_hpp

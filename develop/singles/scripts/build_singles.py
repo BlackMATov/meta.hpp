@@ -12,6 +12,9 @@ import sys
 EMPTY_MATCHER = re.compile(r'^\s*$')
 C_COMMENT_MATCHER = re.compile(r'^/\*.*\*/', re.S)
 
+IFDEF_MATCHER = re.compile(r'#\s*if')
+ENDDEF_MATCHER = re.compile(r'#\s*endif')
+
 USER_INCLUDE_MATCHER = re.compile(r'#\s*include\s*\"(.*)\"')
 SYSTEM_INCLUDE_MATCHER = re.compile(r'#\s*include\s*<(.*)>')
 PRAGMA_ONCE_MATCHER = re.compile(r'#\s*pragma\s+once')
@@ -33,18 +36,25 @@ def CollectSystemIncludes(headerPath, parsedHeaders = set()):
         if PRAGMA_ONCE_MATCHER.search(headerContent) and headerPath in parsedHeaders:
             return set()
 
+        ifdefScopeLevel = 0
         headerIncludes = set()
 
         parsedHeaders.add(headerPath)
         headerLines = headerContent.split('\n')
 
         for headerLine in headerLines:
+            if IFDEF_MATCHER.match(headerLine):
+                ifdefScopeLevel += 1
+            elif ENDDEF_MATCHER.match(headerLine):
+                ifdefScopeLevel -= 1
+
             includeMatch = USER_INCLUDE_MATCHER.findall(headerLine)
-            if includeMatch:
+            if includeMatch and ifdefScopeLevel == 0:
                 internalHeaderPath = os.path.abspath(os.path.join(os.path.dirname(headerPath), includeMatch[0]))
                 headerIncludes = headerIncludes.union(CollectSystemIncludes(internalHeaderPath, parsedHeaders))
+
             includeMatch = SYSTEM_INCLUDE_MATCHER.findall(headerLine)
-            if includeMatch:
+            if includeMatch and ifdefScopeLevel == 0:
                 headerIncludes.add(includeMatch[0])
 
         return headerIncludes
@@ -61,6 +71,7 @@ def ParseHeader(headerPath, parsedHeaders = set()):
         headerLines = headerContent.split('\n')
 
         outputContent = ""
+        ifdefScopeLevel = 0
         shouldSkipNextEmptyLines = True
 
         for headerLine in headerLines:
@@ -71,8 +82,13 @@ def ParseHeader(headerPath, parsedHeaders = set()):
                 shouldSkipNextEmptyLines = True
                 continue
 
+            if IFDEF_MATCHER.match(headerLine):
+                ifdefScopeLevel += 1
+            elif ENDDEF_MATCHER.match(headerLine):
+                ifdefScopeLevel -= 1
+
             includeMatch = USER_INCLUDE_MATCHER.findall(headerLine)
-            if includeMatch:
+            if includeMatch and ifdefScopeLevel == 0:
                 internalHeaderPath = os.path.abspath(os.path.join(os.path.dirname(headerPath), includeMatch[0]))
                 internalHeaderContent = ParseHeader(internalHeaderPath, parsedHeaders)
 
@@ -81,7 +97,7 @@ def ParseHeader(headerPath, parsedHeaders = set()):
                 continue
 
             includeMatch = SYSTEM_INCLUDE_MATCHER.findall(headerLine)
-            if includeMatch:
+            if includeMatch and ifdefScopeLevel == 0:
                 shouldSkipNextEmptyLines = True
                 continue
 

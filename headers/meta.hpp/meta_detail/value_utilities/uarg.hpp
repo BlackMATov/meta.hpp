@@ -110,7 +110,7 @@ namespace meta_hpp::detail
         explicit uarg(T&& v)
         : uarg_base{std::forward<T>(v)}
         // NOLINTNEXTLINE(*-const-cast)
-        , data_{const_cast<void*>(v.data())} {}
+        , data_{const_cast<void*>(v.get_data())} {}
 
         template < typename T, typename Tp = std::decay_t<T> >
             requires (!any_uvalue_kind<Tp>)
@@ -237,7 +237,7 @@ namespace meta_hpp::detail
     // NOLINTNEXTLINE(*-cognitive-complexity)
     To uarg::cast() const {
         if ( !can_cast_to<To>() ) {
-            throw_exception_with("bad argument cast");
+            META_HPP_THROW_AS(exception, "bad argument cast");
         }
 
         using to_raw_type_cv = std::remove_reference_t<To>;
@@ -347,6 +347,6 @@ namespace meta_hpp::detail
             }
         }
 
-        throw_exception_with("bad argument cast");
+        META_HPP_THROW_AS(exception, "bad argument cast");
     }
 }

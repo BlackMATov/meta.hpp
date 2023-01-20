@@ -503,6 +503,39 @@ namespace meta_hpp
     }
 }
 
+namespace meta_hpp
+{
+    template < detail::type_family T >
+    [[nodiscard]] bool operator<(const T& l, type_id r) noexcept {
+        return !static_cast<bool>(l) || l.get_id() < r;
+    }
+
+    template < detail::type_family U >
+    [[nodiscard]] bool operator<(type_id l, const U& r) noexcept {
+        return static_cast<bool>(r) && l < r.get_id();
+    }
+
+    template < detail::type_family T >
+    [[nodiscard]] bool operator==(const T& l, type_id r) noexcept {
+        return static_cast<bool>(l) || l.get_id() == r;
+    }
+
+    template < detail::type_family U >
+    [[nodiscard]] bool operator==(type_id l, const U& r) noexcept {
+        return static_cast<bool>(r) && l == r.get_id();
+    }
+
+    template < detail::type_family T >
+    [[nodiscard]] bool operator!=(const T& l, type_id r) noexcept {
+        return !(l == r);
+    }
+
+    template < detail::type_family U >
+    [[nodiscard]] bool operator!=(type_id l, const U& r) noexcept {
+        return !(l == r);
+    }
+}
+
 namespace meta_hpp::detail
 {
     struct type_data_base {
