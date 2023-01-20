@@ -3294,6 +3294,15 @@ namespace meta_hpp::detail
             return instance;
         }
     public:
+        template < typename F >
+        void for_each_scope(F&& f) const {
+            const locker lock;
+
+            for ( auto&& [name, scope] : scopes_ ) {
+                std::invoke(f, scope);
+            }
+        }
+
         [[nodiscard]] scope get_scope_by_name(std::string_view name) const noexcept {
             const locker lock;
 
@@ -3311,7 +3320,7 @@ namespace meta_hpp::detail
                 return iter->second;
             }
 
-            auto&& [iter, _] = scopes_.insert_or_assign(
+            auto&& [iter, _] = scopes_.emplace(
                 std::string{name},
                 scope_state::make(std::string{name}, metadata_map{}));
 
@@ -3348,10 +3357,19 @@ namespace meta_hpp::detail
             return instance;
         }
     public:
+        template < typename F >
+        void for_each_type(F&& f) const {
+            const locker lock;
+
+            for ( const any_type& type : types_ ) {
+                std::invoke(f, type);
+            }
+        }
+
         [[nodiscard]] any_type get_type_by_id(type_id id) const noexcept {
             const locker lock;
 
-            if ( auto iter{type_by_id_.find(id)}; iter != type_by_id_.end() ) {
+            if ( auto iter{types_.find(id)}; iter != types_.end() ) {
                 return *iter;
             }
 
@@ -3361,7 +3379,7 @@ namespace meta_hpp::detail
         [[nodiscard]] any_type get_type_by_rtti(const std::type_index& index) const noexcept {
             const locker lock;
 
-            if ( auto iter{type_by_rtti_.find(index)}; iter != type_by_rtti_.end() ) {
+            if ( auto iter{rtti_types_.find(index)}; iter != rtti_types_.end() ) {
                 return iter->second;
             }
 
@@ -3538,16 +3556,16 @@ namespace meta_hpp::detail
             std::call_once(init_flag, [this, &type_data](){
                 const locker lock;
 
-                auto&& [position, emplaced] = type_by_id_.emplace(any_type{&type_data});
+                auto&& [position, emplaced] = types_.emplace(any_type{&type_data});
                 if ( !emplaced ) {
                     return;
                 }
 
             #if !defined(META_HPP_NO_RTTI)
                 META_HPP_TRY {
-                    type_by_rtti_.emplace(typeid(Type), any_type{&type_data});
+                    rtti_types_.emplace(typeid(Type), any_type{&type_data});
                 } META_HPP_CATCH(...) {
-                    type_by_id_.erase(position);
+                    types_.erase(position);
                     META_HPP_RETHROW();
                 }
             #endif
@@ -3555,15 +3573,22 @@ namespace meta_hpp::detail
         }
     private:
         std::recursive_mutex mutex_;
-        std::set<any_type, std::less<>> type_by_id_;
+        std::set<any_type, std::less<>> types_;
     #if !defined(META_HPP_NO_RTTI)
-        std::map<std::type_index, any_type, std::less<>> type_by_rtti_;
+        std::map<std::type_index, any_type, std::less<>> rtti_types_;
     #endif
     };
 }
 
 namespace meta_hpp
 {
+    template < typename F >
+    void for_each_type(F&& f) {
+        using namespace detail;
+        type_registry& registry = type_registry::instance();
+        registry.for_each_type(std::forward<F>(f));
+    }
+
     template < typename T >
     [[nodiscard]] auto resolve_type() {
         using namespace detail;
@@ -3571,17 +3596,16 @@ namespace meta_hpp
         return registry.resolve_type<std::remove_cv_t<T>>();
     }
 
+    template < typename T >
+    [[nodiscard]] auto resolve_type(T&&) {
+        using namespace detail;
+        type_registry& registry = type_registry::instance();
+        return registry.resolve_type<std::remove_cvref_t<T>>();
+    }
+
     template < typename... Ts >
     [[nodiscard]] any_type_list resolve_types() {
         return { resolve_type<Ts>()... };
-    }
-}
-
-namespace meta_hpp
-{
-    template < typename T >
-    [[nodiscard]] auto resolve_type(T&&) {
-        return resolve_type<std::remove_reference_t<T>>();
     }
 
     template < typename... Ts >
@@ -3593,22 +3617,19 @@ namespace meta_hpp
 namespace meta_hpp
 {
     template < detail::class_kind Class, typename... Args >
-    constructor_type resolve_constructor_type() {
+    [[nodiscard]] constructor_type resolve_constructor_type() {
         using namespace detail;
         type_registry& registry = type_registry::instance();
         return registry.resolve_constructor_type<Class, Args...>();
     }
 
     template < detail::class_kind Class >
-    destructor_type resolve_destructor_type() {
+    [[nodiscard]] destructor_type resolve_destructor_type() {
         using namespace detail;
         type_registry& registry = type_registry::instance();
         return registry.resolve_destructor_type<Class>();
     }
-}
 
-namespace meta_hpp
-{
     template < typename T >
     [[nodiscard]] any_type resolve_polymorphic_type(T&& v) noexcept {
     #if !defined(META_HPP_NO_RTTI)
@@ -3624,6 +3645,13 @@ namespace meta_hpp
 
 namespace meta_hpp
 {
+    template < typename F >
+    void for_each_scope(F&& f) {
+        using namespace detail;
+        state_registry& registry = state_registry::instance();
+        registry.for_each_scope(std::forward<F>(f));
+    }
+
     [[nodiscard]] inline scope resolve_scope(std::string_view name) {
         using namespace detail;
         state_registry& registry = state_registry::instance();

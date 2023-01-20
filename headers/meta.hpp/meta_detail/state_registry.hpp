@@ -32,6 +32,15 @@ namespace meta_hpp::detail
             return instance;
         }
     public:
+        template < typename F >
+        void for_each_scope(F&& f) const {
+            const locker lock;
+
+            for ( auto&& [name, scope] : scopes_ ) {
+                std::invoke(f, scope);
+            }
+        }
+
         [[nodiscard]] scope get_scope_by_name(std::string_view name) const noexcept {
             const locker lock;
 
@@ -49,7 +58,7 @@ namespace meta_hpp::detail
                 return iter->second;
             }
 
-            auto&& [iter, _] = scopes_.insert_or_assign(
+            auto&& [iter, _] = scopes_.emplace(
                 std::string{name},
                 scope_state::make(std::string{name}, metadata_map{}));
 
