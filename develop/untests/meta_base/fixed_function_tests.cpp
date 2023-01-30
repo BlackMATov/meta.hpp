@@ -4,11 +4,8 @@
  * Copyright (C) 2021-2023, by Matvey Cherevko (blackmatov@gmail.com)
  ******************************************************************************/
 
-#include "../meta_untests.hpp"
-
-namespace
-{
-}
+#include <meta.hpp/meta_all.hpp>
+#include <doctest/doctest.h>
 
 TEST_CASE("meta/meta_base/fixed_function") {
     namespace meta = meta_hpp;

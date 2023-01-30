@@ -4,7 +4,10 @@
  * Copyright (C) 2021-2023, by Matvey Cherevko (blackmatov@gmail.com)
  ******************************************************************************/
 
-#include "../meta_manuals.hpp"
+#include <meta.hpp/meta_all.hpp>
+
+#include <doctest/doctest.h>
+#include <fmt/core.h>
 
 namespace
 {
