@@ -4,7 +4,8 @@
  * Copyright (C) 2021-2023, by Matvey Cherevko (blackmatov@gmail.com)
  ******************************************************************************/
 
-#include "../meta_untests.hpp"
+#include <meta.hpp/meta_all.hpp>
+#include <doctest/doctest.h>
 
 TEST_CASE("meta/meta_utilities/detail") {
     namespace meta = meta_hpp;

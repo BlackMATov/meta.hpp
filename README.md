@@ -44,7 +44,7 @@ add_subdirectory(external/meta.hpp)
 target_link_libraries(your_project_target PUBLIC meta.hpp::meta.hpp)
 ```
 
-Or just use the single-header version of the library, which you can find [here](develop/singles/headers/meta.hpp).
+Or just use the single-header version of the library, which you can find [here](develop/singles/headers/meta.hpp/meta_all.hpp).
 
 ## Manuals
 
