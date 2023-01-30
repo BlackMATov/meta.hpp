@@ -542,11 +542,19 @@ namespace meta_hpp::detail
         const type_id id;
         const type_kind kind;
 
-        metadata_map metadata;
+        metadata_map metadata{};
 
         explicit type_data_base(type_id nid, type_kind nkind)
         : id{nid}
         , kind{nkind} {}
+
+        type_data_base(type_data_base&&) = delete;
+        type_data_base(const type_data_base&) = delete;
+        type_data_base& operator=(type_data_base&&) = delete;
+        type_data_base& operator=(const type_data_base&) = delete;
+
+    protected:
+        ~type_data_base() = default;
     };
 
     struct array_type_data final : type_data_base {

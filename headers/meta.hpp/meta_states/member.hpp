@@ -146,16 +146,18 @@ namespace meta_hpp::detail
 
 namespace meta_hpp::detail
 {
+    inline member_state::member_state(member_index nindex, metadata_map nmetadata)
+    : index{std::move(nindex)}
+    , metadata{std::move(nmetadata)} {}
+
     template < member_policy_kind Policy, member_kind Member >
     member_state_ptr member_state::make(std::string name, Member member, metadata_map metadata) {
-        return std::make_shared<member_state>(member_state{
-            .index{member_index::make<Member>(std::move(name))},
-            .metadata{std::move(metadata)},
-            .getter{make_member_getter<Policy>(member)},
-            .setter{make_member_setter(member)},
-            .is_gettable_with{make_member_is_gettable_with<Member>()},
-            .is_settable_with{make_member_is_settable_with<Member>()},
-        });
+        member_state state{member_index::make<Member>(std::move(name)), std::move(metadata)};
+        state.getter = make_member_getter<Policy>(member);
+        state.setter = make_member_setter(member);
+        state.is_gettable_with = make_member_is_gettable_with<Member>();
+        state.is_settable_with = make_member_is_settable_with<Member>();
+        return make_intrusive<member_state>(std::move(state));
     }
 }
 

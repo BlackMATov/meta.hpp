@@ -487,7 +487,7 @@ namespace meta_hpp
 
 namespace meta_hpp::detail
 {
-    struct argument_state final {
+    struct argument_state final : intrusive_ref_counter<argument_state> {
         argument_index index;
         metadata_map metadata;
 
@@ -495,9 +495,10 @@ namespace meta_hpp::detail
 
         template < typename Argument >
         [[nodiscard]] static argument_state_ptr make(std::size_t position, metadata_map metadata);
+        explicit argument_state(argument_index index, metadata_map metadata);
     };
 
-    struct constructor_state final {
+    struct constructor_state final : intrusive_ref_counter<constructor_state> {
         using create_impl = fixed_function<uvalue(std::span<const uarg>)>;
         using create_at_impl = fixed_function<uvalue(void*, std::span<const uarg>)>;
         using is_invocable_with_impl = fixed_function<bool(std::span<const uarg_base>)>;
@@ -505,58 +506,60 @@ namespace meta_hpp::detail
         constructor_index index;
         metadata_map metadata;
 
-        create_impl create;
-        create_at_impl create_at;
-        is_invocable_with_impl is_invocable_with;
-
-        argument_list arguments;
+        create_impl create{};
+        create_at_impl create_at{};
+        is_invocable_with_impl is_invocable_with{};
+        argument_list arguments{};
 
         template < constructor_policy_kind Policy, class_kind Class, typename... Args >
         [[nodiscard]] static constructor_state_ptr make(metadata_map metadata);
+        explicit constructor_state(constructor_index index, metadata_map metadata);
     };
 
-    struct destructor_state final {
+    struct destructor_state final : intrusive_ref_counter<destructor_state> {
         using destroy_impl = fixed_function<bool(const uarg&)>;
         using destroy_at_impl = fixed_function<void(void*)>;
 
         destructor_index index;
         metadata_map metadata;
 
-        destroy_impl destroy;
-        destroy_at_impl destroy_at;
+        destroy_impl destroy{};
+        destroy_at_impl destroy_at{};
 
         template < class_kind Class >
         [[nodiscard]] static destructor_state_ptr make(metadata_map metadata);
+        explicit destructor_state(destructor_index index, metadata_map metadata);
     };
 
-    struct evalue_state final {
+    struct evalue_state final : intrusive_ref_counter<evalue_state> {
         evalue_index index;
         metadata_map metadata;
 
-        uvalue enum_value;
-        uvalue underlying_value;
+        uvalue enum_value{};
+        uvalue underlying_value{};
 
         template < enum_kind Enum >
         [[nodiscard]] static evalue_state_ptr make(std::string name, Enum evalue, metadata_map metadata);
+        explicit evalue_state(evalue_index index, metadata_map metadata);
     };
 
-    struct function_state final {
+    struct function_state final : intrusive_ref_counter<function_state> {
         using invoke_impl = fixed_function<uvalue(std::span<const uarg>)>;
         using is_invocable_with_impl = fixed_function<bool(std::span<const uarg_base>)>;
 
         function_index index;
         metadata_map metadata;
 
-        invoke_impl invoke;
-        is_invocable_with_impl is_invocable_with;
-
-        argument_list arguments;
+        invoke_impl invoke{};
+        is_invocable_with_impl is_invocable_with{};
+        argument_list arguments{};
 
         template < function_policy_kind Policy, function_kind Function >
         [[nodiscard]] static function_state_ptr make(std::string name, Function function, metadata_map metadata);
+        explicit function_state(function_index index, metadata_map metadata);
     };
 
-    struct member_state final {
+    struct member_state final : intrusive_ref_counter<member_state> {
         using getter_impl = fixed_function<uvalue(const uinst&)>;
         using setter_impl = fixed_function<void(const uinst&, const uarg&)>;
 
@@ -566,33 +569,33 @@ namespace meta_hpp::detail
         member_index index;
         metadata_map metadata;
 
-        getter_impl getter;
-        setter_impl setter;
-        is_gettable_with_impl is_gettable_with;
-        is_settable_with_impl is_settable_with;
-
+        getter_impl getter{};
+        setter_impl setter{};
+        is_gettable_with_impl is_gettable_with{};
+        is_settable_with_impl is_settable_with{};
 
         template < member_policy_kind Policy, member_kind Member >
         [[nodiscard]] static member_state_ptr make(std::string name, Member member, metadata_map metadata);
+        explicit member_state(member_index index, metadata_map metadata);
     };
 
-    struct method_state final {
+    struct method_state final : intrusive_ref_counter<method_state> {
         using invoke_impl = fixed_function<uvalue(const uinst&, std::span<const uarg>)>;
         using is_invocable_with_impl = fixed_function<bool(const uinst_base&, std::span<const uarg_base>)>;
 
         method_index index;
         metadata_map metadata;
 
-        invoke_impl invoke;
-        is_invocable_with_impl is_invocable_with;
-
-        argument_list arguments;
+        invoke_impl invoke{};
+        is_invocable_with_impl is_invocable_with{};
+        argument_list arguments{};
 
         template < method_policy_kind Policy, method_kind Method >
         [[nodiscard]] static method_state_ptr make(std::string name, Method method, metadata_map metadata);
+        explicit method_state(method_index index, metadata_map metadata);
     };
 
-    struct scope_state final {
+    struct scope_state final : intrusive_ref_counter<scope_state> {
         scope_index index;
         metadata_map metadata;
 
@@ -601,9 +604,10 @@ namespace meta_hpp::detail
         variable_set variables{};
 
         [[nodiscard]] static scope_state_ptr make(std::string name, metadata_map metadata);
+        explicit scope_state(scope_index index, metadata_map metadata);
     };
 
-    struct variable_state final {
+    struct variable_state final : intrusive_ref_counter<variable_state> {
         using getter_impl = fixed_function<uvalue()>;
         using setter_impl = fixed_function<void(const uarg&)>;
         using is_settable_with_impl = fixed_function<bool(const uarg_base&)>;
@@ -611,11 +615,12 @@ namespace meta_hpp::detail
         variable_index index;
         metadata_map metadata;
 
-        getter_impl getter;
-        setter_impl setter;
-        is_settable_with_impl is_settable_with;
+        getter_impl getter{};
+        setter_impl setter{};
+        is_settable_with_impl is_settable_with{};
 
         template < variable_policy_kind Policy, pointer_kind Pointer >
         [[nodiscard]] static variable_state_ptr make(std::string name, Pointer pointer, metadata_map metadata);
+        explicit variable_state(variable_index index, metadata_map metadata);
     };
 }

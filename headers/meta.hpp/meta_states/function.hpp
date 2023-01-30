@@ -110,15 +110,17 @@ namespace meta_hpp::detail
 
 namespace meta_hpp::detail
 {
+    inline function_state::function_state(function_index nindex, metadata_map nmetadata)
+    : index{std::move(nindex)}
+    , metadata{std::move(nmetadata)} {}
+
     template < function_policy_kind Policy, function_kind Function >
     function_state_ptr function_state::make(std::string name, Function function, metadata_map metadata) {
-        return std::make_shared<function_state>(function_state{
-            .index{function_index::make<Function>(std::move(name))},
-            .metadata{std::move(metadata)},
-            .invoke{make_function_invoke<Policy>(std::move(function))},
-            .is_invocable_with{make_function_is_invocable_with<Function>()},
-            .arguments{make_function_arguments<Function>()},
-        });
+        function_state state{function_index::make<Function>(std::move(name)), std::move(metadata)};
+        state.invoke = make_function_invoke<Policy>(std::move(function));
+        state.is_invocable_with = make_function_is_invocable_with<Function>();
+        state.arguments = make_function_arguments<Function>();
+        return make_intrusive<function_state>(std::move(state));
     }
 }
 
