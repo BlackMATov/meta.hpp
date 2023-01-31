@@ -573,9 +573,14 @@ namespace meta_hpp::detail
         hashed_string& operator=(hashed_string&&) = default;
         hashed_string& operator=(const hashed_string&) = default;
 
-        constexpr hashed_string(const char* str) noexcept : hash_{fnv1a_hash(str)} {}
-        constexpr hashed_string(std::string_view str) noexcept : hash_{fnv1a_hash(str)} {}
-        constexpr hashed_string(const std::string& str) noexcept : hash_{fnv1a_hash(str)} {}
+        constexpr hashed_string(const char* str) noexcept
+        : hash_{fnv1a_hash(str)} {}
+
+        constexpr hashed_string(std::string_view str) noexcept
+        : hash_{fnv1a_hash(str)} {}
+
+        hashed_string(const std::string& str) noexcept
+        : hash_{fnv1a_hash(str)} {}
 
         constexpr void swap(hashed_string& other) noexcept {
             std::swap(hash_, other.hash_);
@@ -609,7 +614,7 @@ namespace std
 {
     template <>
     struct hash<meta_hpp::detail::hashed_string> {
-        constexpr size_t operator()(meta_hpp::detail::hashed_string hs) const noexcept {
+        size_t operator()(meta_hpp::detail::hashed_string hs) const noexcept {
             return hs.get_hash();
         }
     };
