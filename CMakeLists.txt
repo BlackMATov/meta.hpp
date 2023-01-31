@@ -38,5 +38,6 @@ target_link_libraries(${PROJECT_NAME} INTERFACE Threads::Threads)
 #
 
 if(PROJECT_IS_TOP_LEVEL)
+    enable_testing()
     add_subdirectory(develop)
 endif()
