@@ -127,16 +127,18 @@ namespace meta_hpp::detail
 
 namespace meta_hpp::detail
 {
+    inline constructor_state::constructor_state(constructor_index nindex, metadata_map nmetadata)
+    : index{nindex}
+    , metadata{std::move(nmetadata)} {}
+
     template < constructor_policy_kind Policy, class_kind Class, typename... Args >
     constructor_state_ptr constructor_state::make(metadata_map metadata) {
-        return std::make_shared<constructor_state>(constructor_state{
-            .index{constructor_index::make<Class, Args...>()},
-            .metadata{std::move(metadata)},
-            .create{make_constructor_create<Policy, Class, Args...>()},
-            .create_at{make_constructor_create_at<Class, Args...>()},
-            .is_invocable_with{make_constructor_is_invocable_with<Class, Args...>()},
-            .arguments{make_constructor_arguments<Class, Args...>()},
-        });
+        constructor_state state{constructor_index::make<Class, Args...>(), std::move(metadata)};
+        state.create = make_constructor_create<Policy, Class, Args...>();
+        state.create_at = make_constructor_create_at<Class, Args...>();
+        state.is_invocable_with = make_constructor_is_invocable_with<Class, Args...>();
+        state.arguments = make_constructor_arguments<Class, Args...>();
+        return make_intrusive<constructor_state>(std::move(state));
     }
 }
 

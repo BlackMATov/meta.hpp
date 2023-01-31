@@ -13,14 +13,16 @@
 
 namespace meta_hpp::detail
 {
+    inline evalue_state::evalue_state(evalue_index nindex, metadata_map nmetadata)
+    : index{std::move(nindex)}
+    , metadata{std::move(nmetadata)} {}
+
     template < enum_kind Enum >
     evalue_state_ptr evalue_state::make(std::string name, Enum evalue, metadata_map metadata) {
-        return std::make_shared<evalue_state>(evalue_state{
-            .index{evalue_index::make<Enum>(std::move(name))},
-            .metadata{std::move(metadata)},
-            .enum_value{uvalue{evalue}},
-            .underlying_value{uvalue{to_underlying(evalue)}},
-        });
+        evalue_state state{evalue_index::make<Enum>(std::move(name)), std::move(metadata)};
+        state.enum_value = uvalue{evalue};
+        state.underlying_value = uvalue{to_underlying(evalue)};
+        return make_intrusive<evalue_state>(std::move(state));
     }
 }
 

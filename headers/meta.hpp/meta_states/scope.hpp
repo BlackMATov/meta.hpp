@@ -19,11 +19,13 @@
 
 namespace meta_hpp::detail
 {
+    inline scope_state::scope_state(scope_index nindex, metadata_map nmetadata)
+    : index{std::move(nindex)}
+    , metadata{std::move(nmetadata)} {}
+
     inline scope_state_ptr scope_state::make(std::string name, metadata_map metadata) {
-        return std::make_shared<scope_state>(scope_state{
-            .index{scope_index::make(std::move(name))},
-            .metadata{std::move(metadata)},
-        });
+        scope_state state{scope_index::make(std::move(name)), std::move(metadata)};
+        return make_intrusive<scope_state>(std::move(state));
     }
 }
 

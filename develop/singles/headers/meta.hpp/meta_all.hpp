@@ -533,6 +533,35 @@ namespace meta_hpp::detail
 
 namespace meta_hpp::detail
 {
+    template < std::size_t SizeBytes = sizeof(std::size_t) >
+    struct fnv1a_hash_traits;
+
+    template <>
+    struct fnv1a_hash_traits<4> { // NOLINT(*-magic-numbers)
+        using underlying_type = std::uint32_t;
+        static inline constexpr underlying_type prime{16777619U};
+        static inline constexpr underlying_type offset{2166136261U};
+    };
+
+    template <>
+    struct fnv1a_hash_traits<8> { // NOLINT(*-magic-numbers)
+        using underlying_type = std::uint64_t;
+        static inline constexpr underlying_type prime{1099511628211U};
+        static inline constexpr underlying_type offset{14695981039346656037U};
+    };
+
+    constexpr std::size_t fnv1a_hash(std::string_view str) noexcept {
+        std::size_t hash{fnv1a_hash_traits<>::offset};
+        for ( char ch : str ) {
+            hash ^= static_cast<std::size_t>(ch);
+            hash *= fnv1a_hash_traits<>::prime;
+        }
+        return hash;
+    }
+}
+
+namespace meta_hpp::detail
+{
     class hashed_string final {
     public:
         hashed_string() = default;
@@ -544,40 +573,40 @@ namespace meta_hpp::detail
         hashed_string& operator=(hashed_string&&) = default;
         hashed_string& operator=(const hashed_string&) = default;
 
-        hashed_string(const char* str) noexcept
-        : hash_{std::hash<std::string_view>{}(str)} {}
+        constexpr hashed_string(const char* str) noexcept
+        : hash_{fnv1a_hash(str)} {}
 
-        hashed_string(std::string_view str) noexcept
-        : hash_{std::hash<std::string_view>{}(str)} {}
+        constexpr hashed_string(std::string_view str) noexcept
+        : hash_{fnv1a_hash(str)} {}
 
         hashed_string(const std::string& str) noexcept
-        : hash_{std::hash<std::string_view>{}(str)} {}
+        : hash_{fnv1a_hash(str)} {}
 
-        void swap(hashed_string& other) noexcept {
+        constexpr void swap(hashed_string& other) noexcept {
             std::swap(hash_, other.hash_);
         }
 
-        [[nodiscard]] std::size_t get_hash() const noexcept {
+        [[nodiscard]] constexpr std::size_t get_hash() const noexcept {
             return hash_;
         }
     private:
-        std::size_t hash_{};
+        std::size_t hash_{fnv1a_hash("")};
     };
 
-    inline void swap(hashed_string& l, hashed_string& r) noexcept {
+    constexpr void swap(hashed_string& l, hashed_string& r) noexcept {
         l.swap(r);
     }
 
-    [[nodiscard]] inline bool operator<(hashed_string l, hashed_string r) noexcept {
+    [[nodiscard]] constexpr bool operator<(hashed_string l, hashed_string r) noexcept {
         return l.get_hash() < r.get_hash();
     }
 
-    [[nodiscard]] inline bool operator==(hashed_string l, hashed_string r) noexcept {
+    [[nodiscard]] constexpr bool operator==(hashed_string l, hashed_string r) noexcept {
         return l.get_hash() == r.get_hash();
     }
 
-    [[nodiscard]] inline bool operator!=(hashed_string l, hashed_string r) noexcept {
-        return l.get_hash() == r.get_hash();
+    [[nodiscard]] constexpr bool operator!=(hashed_string l, hashed_string r) noexcept {
+        return l.get_hash() != r.get_hash();
     }
 }
 
@@ -663,6 +692,177 @@ namespace meta_hpp::detail
         map.swap(value);
         map.merge(std::move(value));
     }
+}
+
+namespace meta_hpp::detail
+{
+    template < typename Derived >
+    class intrusive_ref_counter;
+
+    template < typename Derived >
+    void intrusive_ptr_add_ref(const intrusive_ref_counter<Derived>* ptr);
+
+    template < typename Derived >
+    void intrusive_ptr_release(const intrusive_ref_counter<Derived>* ptr);
+
+    template < typename Derived >
+    class intrusive_ref_counter {
+    public:
+        intrusive_ref_counter() = default;
+
+        intrusive_ref_counter(intrusive_ref_counter&&) noexcept {}
+        intrusive_ref_counter(const intrusive_ref_counter&) noexcept {}
+
+        intrusive_ref_counter& operator=(intrusive_ref_counter&&) noexcept { return *this; }
+        intrusive_ref_counter& operator=(const intrusive_ref_counter&) noexcept { return *this; }
+
+        [[nodiscard]] std::size_t get_use_count() const noexcept {
+            return counter_.load(std::memory_order_acquire);
+        }
+    protected:
+        ~intrusive_ref_counter() = default;
+    private:
+        mutable std::atomic_size_t counter_{};
+        friend void intrusive_ptr_add_ref<Derived>(const intrusive_ref_counter* ptr);
+        friend void intrusive_ptr_release<Derived>(const intrusive_ref_counter* ptr);
+    };
+
+    template < typename Derived >
+    void intrusive_ptr_add_ref(const intrusive_ref_counter<Derived>* ptr) {
+        ptr->counter_.fetch_add(1, std::memory_order_acq_rel);
+    }
+
+    template < typename Derived >
+    void intrusive_ptr_release(const intrusive_ref_counter<Derived>* ptr) {
+        if ( ptr->counter_.fetch_sub(1, std::memory_order_acq_rel) == 1 ) {
+            std::unique_ptr<const Derived>(static_cast<const Derived*>(ptr)).reset();
+        }
+    }
+}
+
+namespace meta_hpp::detail
+{
+    template < typename T >
+    class intrusive_ptr final {
+    public:
+        intrusive_ptr() = default;
+
+        ~intrusive_ptr() {
+            if ( ptr_ != nullptr ) {
+                intrusive_ptr_release(ptr_);
+            }
+        }
+
+        intrusive_ptr(T* ptr, bool add_ref = true)
+        : ptr_{ptr} {
+            if ( ptr_ != nullptr && add_ref ) {
+                intrusive_ptr_add_ref(ptr_);
+            }
+        }
+
+        intrusive_ptr(intrusive_ptr&& other) noexcept
+        : ptr_{other.ptr_} {
+            other.ptr_ = nullptr;
+        }
+
+        intrusive_ptr(const intrusive_ptr& other)
+        : ptr_{other.ptr_} {
+            if ( ptr_ != nullptr ) {
+                intrusive_ptr_add_ref(ptr_);
+            }
+        }
+
+        intrusive_ptr& operator=(T* ptr) noexcept {
+            intrusive_ptr{ptr}.swap(*this);
+            return *this;
+        }
+
+        intrusive_ptr& operator=(intrusive_ptr&& other) noexcept {
+            intrusive_ptr{std::move(other)}.swap(*this);
+            return *this;
+        }
+
+        intrusive_ptr& operator=(const intrusive_ptr& other) {
+            intrusive_ptr{other}.swap(*this);
+            return *this;
+        }
+
+        void reset() {
+            intrusive_ptr{}.swap(*this);
+        }
+
+        void reset(T* ptr) {
+            intrusive_ptr{ptr}.swap(*this);
+        }
+
+        void reset(T* ptr, bool add_ref) {
+            intrusive_ptr{ptr, add_ref}.swap(*this);
+        }
+
+        T* release() noexcept {
+            return std::exchange(ptr_, nullptr);
+        }
+
+        [[nodiscard]] T* get() const noexcept {
+            return ptr_;
+        }
+
+        [[nodiscard]] T& operator*() const noexcept {
+            return *ptr_;
+        }
+
+        [[nodiscard]] T* operator->() const noexcept {
+            return ptr_;
+        }
+
+        [[nodiscard]] explicit operator bool() const noexcept {
+            return ptr_ != nullptr;
+        }
+
+        void swap(intrusive_ptr& other) noexcept {
+            ptr_ = std::exchange(other.ptr_, ptr_);
+        }
+    private:
+        T* ptr_{};
+    };
+
+    template < typename T, typename... Args >
+    intrusive_ptr<T> make_intrusive(Args&&... args) {
+        return std::make_unique<T>(std::forward<Args>(args)...).release();
+    }
+
+    template < typename T >
+    void swap(intrusive_ptr<T>& l, intrusive_ptr<T>& r) noexcept { return l.swap(r); }
+
+    template < typename T >
+    bool operator==(const intrusive_ptr<T>& l, const intrusive_ptr<T>& r) noexcept { return l.get() == r.get(); }
+
+    template < typename T >
+    bool operator!=(const intrusive_ptr<T>& l, const intrusive_ptr<T>& r) noexcept { return l.get() != r.get(); }
+
+    template < typename T >
+    bool operator==(const intrusive_ptr<T>& l, const T* r) noexcept { return l.get() == r; }
+
+    template < typename T >
+    bool operator==(const T* l, const intrusive_ptr<T>& r) noexcept { return l == r.get(); }
+
+    template < typename T >
+    bool operator!=(const intrusive_ptr<T>& l, const T* r) noexcept { return l.get() != r; }
+
+    template < typename T >
+    bool operator!=(const T* l, const intrusive_ptr<T>& r) noexcept { return l != r.get(); }
+
+    template < typename T >
+    bool operator==(const intrusive_ptr<T>& l, std::nullptr_t) noexcept { return !l; }
+
+    template < typename T >
+    bool operator==(std::nullptr_t, const intrusive_ptr<T>& r) noexcept { return !r; }
+
+    template < typename T >
+    bool operator!=(const intrusive_ptr<T>& l, std::nullptr_t) noexcept { return !!l; }
+
+    template < typename T >
+    bool operator!=(std::nullptr_t, const intrusive_ptr<T>& r) noexcept { return !!r; }
 }
 
 namespace meta_hpp::detail
@@ -1027,15 +1227,15 @@ namespace meta_hpp
         struct scope_state;
         struct variable_state;
 
-        using argument_state_ptr = std::shared_ptr<argument_state>;
-        using constructor_state_ptr = std::shared_ptr<constructor_state>;
-        using destructor_state_ptr = std::shared_ptr<destructor_state>;
-        using evalue_state_ptr = std::shared_ptr<evalue_state>;
-        using function_state_ptr = std::shared_ptr<function_state>;
-        using member_state_ptr = std::shared_ptr<member_state>;
-        using method_state_ptr = std::shared_ptr<method_state>;
-        using scope_state_ptr = std::shared_ptr<scope_state>;
-        using variable_state_ptr = std::shared_ptr<variable_state>;
+        using argument_state_ptr = intrusive_ptr<argument_state>;
+        using constructor_state_ptr = intrusive_ptr<constructor_state>;
+        using destructor_state_ptr = intrusive_ptr<destructor_state>;
+        using evalue_state_ptr = intrusive_ptr<evalue_state>;
+        using function_state_ptr = intrusive_ptr<function_state>;
+        using member_state_ptr = intrusive_ptr<member_state>;
+        using method_state_ptr = intrusive_ptr<method_state>;
+        using scope_state_ptr = intrusive_ptr<scope_state>;
+        using variable_state_ptr = intrusive_ptr<variable_state>;
     }
 }
 
@@ -2160,11 +2360,19 @@ namespace meta_hpp::detail
         const type_id id;
         const type_kind kind;
 
-        metadata_map metadata;
+        metadata_map metadata{};
 
         explicit type_data_base(type_id nid, type_kind nkind)
         : id{nid}
         , kind{nkind} {}
+
+        type_data_base(type_data_base&&) = delete;
+        type_data_base(const type_data_base&) = delete;
+        type_data_base& operator=(type_data_base&&) = delete;
+        type_data_base& operator=(const type_data_base&) = delete;
+
+    protected:
+        ~type_data_base() = default;
     };
 
     struct array_type_data final : type_data_base {
@@ -3138,7 +3346,7 @@ namespace meta_hpp
 
 namespace meta_hpp::detail
 {
-    struct argument_state final {
+    struct argument_state final : intrusive_ref_counter<argument_state> {
         argument_index index;
         metadata_map metadata;
 
@@ -3146,9 +3354,10 @@ namespace meta_hpp::detail
 
         template < typename Argument >
         [[nodiscard]] static argument_state_ptr make(std::size_t position, metadata_map metadata);
+        explicit argument_state(argument_index index, metadata_map metadata);
     };
 
-    struct constructor_state final {
+    struct constructor_state final : intrusive_ref_counter<constructor_state> {
         using create_impl = fixed_function<uvalue(std::span<const uarg>)>;
         using create_at_impl = fixed_function<uvalue(void*, std::span<const uarg>)>;
         using is_invocable_with_impl = fixed_function<bool(std::span<const uarg_base>)>;
@@ -3156,58 +3365,60 @@ namespace meta_hpp::detail
         constructor_index index;
         metadata_map metadata;
 
-        create_impl create;
-        create_at_impl create_at;
-        is_invocable_with_impl is_invocable_with;
-
-        argument_list arguments;
+        create_impl create{};
+        create_at_impl create_at{};
+        is_invocable_with_impl is_invocable_with{};
+        argument_list arguments{};
 
         template < constructor_policy_kind Policy, class_kind Class, typename... Args >
         [[nodiscard]] static constructor_state_ptr make(metadata_map metadata);
+        explicit constructor_state(constructor_index index, metadata_map metadata);
     };
 
-    struct destructor_state final {
+    struct destructor_state final : intrusive_ref_counter<destructor_state> {
         using destroy_impl = fixed_function<bool(const uarg&)>;
         using destroy_at_impl = fixed_function<void(void*)>;
 
         destructor_index index;
         metadata_map metadata;
 
-        destroy_impl destroy;
-        destroy_at_impl destroy_at;
+        destroy_impl destroy{};
+        destroy_at_impl destroy_at{};
 
         template < class_kind Class >
         [[nodiscard]] static destructor_state_ptr make(metadata_map metadata);
+        explicit destructor_state(destructor_index index, metadata_map metadata);
     };
 
-    struct evalue_state final {
+    struct evalue_state final : intrusive_ref_counter<evalue_state> {
         evalue_index index;
         metadata_map metadata;
 
-        uvalue enum_value;
-        uvalue underlying_value;
+        uvalue enum_value{};
+        uvalue underlying_value{};
 
         template < enum_kind Enum >
         [[nodiscard]] static evalue_state_ptr make(std::string name, Enum evalue, metadata_map metadata);
+        explicit evalue_state(evalue_index index, metadata_map metadata);
     };
 
-    struct function_state final {
+    struct function_state final : intrusive_ref_counter<function_state> {
         using invoke_impl = fixed_function<uvalue(std::span<const uarg>)>;
         using is_invocable_with_impl = fixed_function<bool(std::span<const uarg_base>)>;
 
         function_index index;
         metadata_map metadata;
 
-        invoke_impl invoke;
-        is_invocable_with_impl is_invocable_with;
-
-        argument_list arguments;
+        invoke_impl invoke{};
+        is_invocable_with_impl is_invocable_with{};
+        argument_list arguments{};
 
         template < function_policy_kind Policy, function_kind Function >
         [[nodiscard]] static function_state_ptr make(std::string name, Function function, metadata_map metadata);
+        explicit function_state(function_index index, metadata_map metadata);
     };
 
-    struct member_state final {
+    struct member_state final : intrusive_ref_counter<member_state> {
         using getter_impl = fixed_function<uvalue(const uinst&)>;
         using setter_impl = fixed_function<void(const uinst&, const uarg&)>;
 
@@ -3217,33 +3428,33 @@ namespace meta_hpp::detail
         member_index index;
         metadata_map metadata;
 
-        getter_impl getter;
-        setter_impl setter;
-        is_gettable_with_impl is_gettable_with;
-        is_settable_with_impl is_settable_with;
-
+        getter_impl getter{};
+        setter_impl setter{};
+        is_gettable_with_impl is_gettable_with{};
+        is_settable_with_impl is_settable_with{};
 
         template < member_policy_kind Policy, member_kind Member >
         [[nodiscard]] static member_state_ptr make(std::string name, Member member, metadata_map metadata);
+        explicit member_state(member_index index, metadata_map metadata);
     };
 
-    struct method_state final {
+    struct method_state final : intrusive_ref_counter<method_state> {
         using invoke_impl = fixed_function<uvalue(const uinst&, std::span<const uarg>)>;
         using is_invocable_with_impl = fixed_function<bool(const uinst_base&, std::span<const uarg_base>)>;
 
         method_index index;
         metadata_map metadata;
 
-        invoke_impl invoke;
-        is_invocable_with_impl is_invocable_with;
-
-        argument_list arguments;
+        invoke_impl invoke{};
+        is_invocable_with_impl is_invocable_with{};
+        argument_list arguments{};
 
         template < method_policy_kind Policy, method_kind Method >
         [[nodiscard]] static method_state_ptr make(std::string name, Method method, metadata_map metadata);
+        explicit method_state(method_index index, metadata_map metadata);
     };
 
-    struct scope_state final {
+    struct scope_state final : intrusive_ref_counter<scope_state> {
         scope_index index;
         metadata_map metadata;
 
@@ -3252,9 +3463,10 @@ namespace meta_hpp::detail
         variable_set variables{};
 
         [[nodiscard]] static scope_state_ptr make(std::string name, metadata_map metadata);
+        explicit scope_state(scope_index index, metadata_map metadata);
     };
 
-    struct variable_state final {
+    struct variable_state final : intrusive_ref_counter<variable_state> {
         using getter_impl = fixed_function<uvalue()>;
         using setter_impl = fixed_function<void(const uarg&)>;
         using is_settable_with_impl = fixed_function<bool(const uarg_base&)>;
@@ -3262,12 +3474,13 @@ namespace meta_hpp::detail
         variable_index index;
         metadata_map metadata;
 
-        getter_impl getter;
-        setter_impl setter;
-        is_settable_with_impl is_settable_with;
+        getter_impl getter{};
+        setter_impl setter{};
+        is_settable_with_impl is_settable_with{};
 
         template < variable_policy_kind Policy, pointer_kind Pointer >
         [[nodiscard]] static variable_state_ptr make(std::string name, Pointer pointer, metadata_map metadata);
+        explicit variable_state(variable_index index, metadata_map metadata);
     };
 }
 
@@ -4943,12 +5156,14 @@ namespace meta_hpp
 
 namespace meta_hpp::detail
 {
+    inline argument_state::argument_state(argument_index nindex, metadata_map nmetadata)
+    : index{nindex}
+    , metadata{std::move(nmetadata)} {}
+
     template < typename Argument >
     inline argument_state_ptr argument_state::make(std::size_t position, metadata_map metadata) {
-        return std::make_shared<argument_state>(argument_state{
-            .index{argument_index::make<Argument>(position)},
-            .metadata{std::move(metadata)},
-        });
+        argument_state state{argument_index::make<Argument>(position), std::move(metadata)};
+        return make_intrusive<argument_state>(std::move(state));
     }
 }
 
@@ -5620,16 +5835,18 @@ namespace meta_hpp::detail
 
 namespace meta_hpp::detail
 {
+    inline constructor_state::constructor_state(constructor_index nindex, metadata_map nmetadata)
+    : index{nindex}
+    , metadata{std::move(nmetadata)} {}
+
     template < constructor_policy_kind Policy, class_kind Class, typename... Args >
     constructor_state_ptr constructor_state::make(metadata_map metadata) {
-        return std::make_shared<constructor_state>(constructor_state{
-            .index{constructor_index::make<Class, Args...>()},
-            .metadata{std::move(metadata)},
-            .create{make_constructor_create<Policy, Class, Args...>()},
-            .create_at{make_constructor_create_at<Class, Args...>()},
-            .is_invocable_with{make_constructor_is_invocable_with<Class, Args...>()},
-            .arguments{make_constructor_arguments<Class, Args...>()},
-        });
+        constructor_state state{constructor_index::make<Class, Args...>(), std::move(metadata)};
+        state.create = make_constructor_create<Policy, Class, Args...>();
+        state.create_at = make_constructor_create_at<Class, Args...>();
+        state.is_invocable_with = make_constructor_is_invocable_with<Class, Args...>();
+        state.arguments = make_constructor_arguments<Class, Args...>();
+        return make_intrusive<constructor_state>(std::move(state));
     }
 }
 
@@ -5792,14 +6009,16 @@ namespace meta_hpp::detail
 
 namespace meta_hpp::detail
 {
+    inline destructor_state::destructor_state(destructor_index nindex, metadata_map nmetadata)
+    : index{nindex}
+    , metadata{std::move(nmetadata)} {}
+
     template < class_kind Class >
     destructor_state_ptr destructor_state::make(metadata_map metadata) {
-        return std::make_shared<destructor_state>(destructor_state{
-            .index{destructor_index::make<Class>()},
-            .metadata{std::move(metadata)},
-            .destroy{make_destructor_destroy<Class>()},
-            .destroy_at{make_destructor_destroy_at<Class>()},
-        });
+        destructor_state state{destructor_index::make<Class>(), std::move(metadata)};
+        state.destroy = make_destructor_destroy<Class>();
+        state.destroy_at = make_destructor_destroy_at<Class>();
+        return make_intrusive<destructor_state>(std::move(state));
     }
 }
 
@@ -5925,14 +6144,16 @@ namespace meta_hpp
 
 namespace meta_hpp::detail
 {
+    inline evalue_state::evalue_state(evalue_index nindex, metadata_map nmetadata)
+    : index{std::move(nindex)}
+    , metadata{std::move(nmetadata)} {}
+
     template < enum_kind Enum >
     evalue_state_ptr evalue_state::make(std::string name, Enum evalue, metadata_map metadata) {
-        return std::make_shared<evalue_state>(evalue_state{
-            .index{evalue_index::make<Enum>(std::move(name))},
-            .metadata{std::move(metadata)},
-            .enum_value{uvalue{evalue}},
-            .underlying_value{uvalue{to_underlying(evalue)}},
-        });
+        evalue_state state{evalue_index::make<Enum>(std::move(name)), std::move(metadata)};
+        state.enum_value = uvalue{evalue};
+        state.underlying_value = uvalue{to_underlying(evalue)};
+        return make_intrusive<evalue_state>(std::move(state));
     }
 }
 
@@ -6137,15 +6358,17 @@ namespace meta_hpp::detail
 
 namespace meta_hpp::detail
 {
+    inline function_state::function_state(function_index nindex, metadata_map nmetadata)
+    : index{std::move(nindex)}
+    , metadata{std::move(nmetadata)} {}
+
     template < function_policy_kind Policy, function_kind Function >
     function_state_ptr function_state::make(std::string name, Function function, metadata_map metadata) {
-        return std::make_shared<function_state>(function_state{
-            .index{function_index::make<Function>(std::move(name))},
-            .metadata{std::move(metadata)},
-            .invoke{make_function_invoke<Policy>(std::move(function))},
-            .is_invocable_with{make_function_is_invocable_with<Function>()},
-            .arguments{make_function_arguments<Function>()},
-        });
+        function_state state{function_index::make<Function>(std::move(name)), std::move(metadata)};
+        state.invoke = make_function_invoke<Policy>(std::move(function));
+        state.is_invocable_with = make_function_is_invocable_with<Function>();
+        state.arguments = make_function_arguments<Function>();
+        return make_intrusive<function_state>(std::move(state));
     }
 }
 
@@ -6634,16 +6857,18 @@ namespace meta_hpp::detail
 
 namespace meta_hpp::detail
 {
+    inline member_state::member_state(member_index nindex, metadata_map nmetadata)
+    : index{std::move(nindex)}
+    , metadata{std::move(nmetadata)} {}
+
     template < member_policy_kind Policy, member_kind Member >
     member_state_ptr member_state::make(std::string name, Member member, metadata_map metadata) {
-        return std::make_shared<member_state>(member_state{
-            .index{member_index::make<Member>(std::move(name))},
-            .metadata{std::move(metadata)},
-            .getter{make_member_getter<Policy>(member)},
-            .setter{make_member_setter(member)},
-            .is_gettable_with{make_member_is_gettable_with<Member>()},
-            .is_settable_with{make_member_is_settable_with<Member>()},
-        });
+        member_state state{member_index::make<Member>(std::move(name)), std::move(metadata)};
+        state.getter = make_member_getter<Policy>(member);
+        state.setter = make_member_setter(member);
+        state.is_gettable_with = make_member_is_gettable_with<Member>();
+        state.is_settable_with = make_member_is_settable_with<Member>();
+        return make_intrusive<member_state>(std::move(state));
     }
 }
 
@@ -6905,15 +7130,17 @@ namespace meta_hpp::detail
 
 namespace meta_hpp::detail
 {
+    inline method_state::method_state(method_index nindex, metadata_map nmetadata)
+    : index{std::move(nindex)}
+    , metadata{std::move(nmetadata)} {}
+
     template < method_policy_kind Policy, method_kind Method >
     method_state_ptr method_state::make(std::string name, Method method, metadata_map metadata) {
-        return std::make_shared<method_state>(method_state{
-            .index{method_index::make<Method>(std::move(name))},
-            .metadata{std::move(metadata)},
-            .invoke{make_method_invoke<Policy>(std::move(method))},
-            .is_invocable_with{make_method_is_invocable_with<Method>()},
-            .arguments{make_method_arguments<Method>()},
-        });
+        method_state state{method_index::make<Method>(std::move(name)), std::move(metadata)};
+        state.invoke = make_method_invoke<Policy>(std::move(method));
+        state.is_invocable_with = make_method_is_invocable_with<Method>();
+        state.arguments = make_method_arguments<Method>();
+        return make_intrusive<method_state>(std::move(state));
     }
 }
 
@@ -7121,15 +7348,17 @@ namespace meta_hpp::detail
 
 namespace meta_hpp::detail
 {
+    inline variable_state::variable_state(variable_index nindex, metadata_map nmetadata)
+    : index{std::move(nindex)}
+    , metadata{std::move(nmetadata)} {}
+
     template < variable_policy_kind Policy, pointer_kind Pointer >
     variable_state_ptr variable_state::make(std::string name, Pointer pointer, metadata_map metadata) {
-        return std::make_shared<variable_state>(variable_state{
-            .index{variable_index::make<Pointer>(std::move(name))},
-            .metadata{std::move(metadata)},
-            .getter{make_variable_getter<Policy>(pointer)},
-            .setter{make_variable_setter(pointer)},
-            .is_settable_with{make_variable_is_settable_with<Pointer>()},
-        });
+        variable_state state{variable_index::make<Pointer>(std::move(name)), std::move(metadata)};
+        state.getter = make_variable_getter<Policy>(pointer);
+        state.setter = make_variable_setter(pointer);
+        state.is_settable_with = make_variable_is_settable_with<Pointer>();
+        return make_intrusive<variable_state>(std::move(state));
     }
 }
 
@@ -7575,11 +7804,13 @@ namespace meta_hpp
 
 namespace meta_hpp::detail
 {
+    inline scope_state::scope_state(scope_index nindex, metadata_map nmetadata)
+    : index{std::move(nindex)}
+    , metadata{std::move(nmetadata)} {}
+
     inline scope_state_ptr scope_state::make(std::string name, metadata_map metadata) {
-        return std::make_shared<scope_state>(scope_state{
-            .index{scope_index::make(std::move(name))},
-            .metadata{std::move(metadata)},
-        });
+        scope_state state{scope_index::make(std::move(name)), std::move(metadata)};
+        return make_intrusive<scope_state>(std::move(state));
     }
 }
 

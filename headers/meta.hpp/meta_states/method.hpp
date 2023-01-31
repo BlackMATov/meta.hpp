@@ -121,15 +121,17 @@ namespace meta_hpp::detail
 
 namespace meta_hpp::detail
 {
+    inline method_state::method_state(method_index nindex, metadata_map nmetadata)
+    : index{std::move(nindex)}
+    , metadata{std::move(nmetadata)} {}
+
     template < method_policy_kind Policy, method_kind Method >
     method_state_ptr method_state::make(std::string name, Method method, metadata_map metadata) {
-        return std::make_shared<method_state>(method_state{
-            .index{method_index::make<Method>(std::move(name))},
-            .metadata{std::move(metadata)},
-            .invoke{make_method_invoke<Policy>(std::move(method))},
-            .is_invocable_with{make_method_is_invocable_with<Method>()},
-            .arguments{make_method_arguments<Method>()},
-        });
+        method_state state{method_index::make<Method>(std::move(name)), std::move(metadata)};
+        state.invoke = make_method_invoke<Policy>(std::move(method));
+        state.is_invocable_with = make_method_is_invocable_with<Method>();
+        state.arguments = make_method_arguments<Method>();
+        return make_intrusive<method_state>(std::move(state));
     }
 }
 

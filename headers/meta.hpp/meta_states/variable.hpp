@@ -95,15 +95,17 @@ namespace meta_hpp::detail
 
 namespace meta_hpp::detail
 {
+    inline variable_state::variable_state(variable_index nindex, metadata_map nmetadata)
+    : index{std::move(nindex)}
+    , metadata{std::move(nmetadata)} {}
+
     template < variable_policy_kind Policy, pointer_kind Pointer >
     variable_state_ptr variable_state::make(std::string name, Pointer pointer, metadata_map metadata) {
-        return std::make_shared<variable_state>(variable_state{
-            .index{variable_index::make<Pointer>(std::move(name))},
-            .metadata{std::move(metadata)},
-            .getter{make_variable_getter<Policy>(pointer)},
-            .setter{make_variable_setter(pointer)},
-            .is_settable_with{make_variable_is_settable_with<Pointer>()},
-        });
+        variable_state state{variable_index::make<Pointer>(std::move(name)), std::move(metadata)};
+        state.getter = make_variable_getter<Policy>(pointer);
+        state.setter = make_variable_setter(pointer);
+        state.is_settable_with = make_variable_is_settable_with<Pointer>();
+        return make_intrusive<variable_state>(std::move(state));
     }
 }
 

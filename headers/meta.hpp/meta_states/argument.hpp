@@ -11,12 +11,14 @@
 
 namespace meta_hpp::detail
 {
+    inline argument_state::argument_state(argument_index nindex, metadata_map nmetadata)
+    : index{nindex}
+    , metadata{std::move(nmetadata)} {}
+
     template < typename Argument >
     inline argument_state_ptr argument_state::make(std::size_t position, metadata_map metadata) {
-        return std::make_shared<argument_state>(argument_state{
-            .index{argument_index::make<Argument>(position)},
-            .metadata{std::move(metadata)},
-        });
+        argument_state state{argument_index::make<Argument>(position), std::move(metadata)};
+        return make_intrusive<argument_state>(std::move(state));
     }
 }
 

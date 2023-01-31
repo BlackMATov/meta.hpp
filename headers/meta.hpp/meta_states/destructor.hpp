@@ -51,14 +51,16 @@ namespace meta_hpp::detail
 
 namespace meta_hpp::detail
 {
+    inline destructor_state::destructor_state(destructor_index nindex, metadata_map nmetadata)
+    : index{nindex}
+    , metadata{std::move(nmetadata)} {}
+
     template < class_kind Class >
     destructor_state_ptr destructor_state::make(metadata_map metadata) {
-        return std::make_shared<destructor_state>(destructor_state{
-            .index{destructor_index::make<Class>()},
-            .metadata{std::move(metadata)},
-            .destroy{make_destructor_destroy<Class>()},
-            .destroy_at{make_destructor_destroy_at<Class>()},
-        });
+        destructor_state state{destructor_index::make<Class>(), std::move(metadata)};
+        state.destroy = make_destructor_destroy<Class>();
+        state.destroy_at = make_destructor_destroy_at<Class>();
+        return make_intrusive<destructor_state>(std::move(state));
     }
 }
 

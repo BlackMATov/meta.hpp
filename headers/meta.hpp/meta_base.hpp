@@ -15,6 +15,7 @@
 #include "meta_base/hash_combiner.hpp"
 #include "meta_base/hashed_string.hpp"
 #include "meta_base/insert_or_assign.hpp"
+#include "meta_base/intrusive_ptr.hpp"
 #include "meta_base/is_in_place_type.hpp"
 #include "meta_base/memory_buffer.hpp"
 #include "meta_base/noncopyable.hpp"
@@ -81,15 +82,15 @@ namespace meta_hpp
         struct scope_state;
         struct variable_state;
 
-        using argument_state_ptr = std::shared_ptr<argument_state>;
-        using constructor_state_ptr = std::shared_ptr<constructor_state>;
-        using destructor_state_ptr = std::shared_ptr<destructor_state>;
-        using evalue_state_ptr = std::shared_ptr<evalue_state>;
-        using function_state_ptr = std::shared_ptr<function_state>;
-        using member_state_ptr = std::shared_ptr<member_state>;
-        using method_state_ptr = std::shared_ptr<method_state>;
-        using scope_state_ptr = std::shared_ptr<scope_state>;
-        using variable_state_ptr = std::shared_ptr<variable_state>;
+        using argument_state_ptr = intrusive_ptr<argument_state>;
+        using constructor_state_ptr = intrusive_ptr<constructor_state>;
+        using destructor_state_ptr = intrusive_ptr<destructor_state>;
+        using evalue_state_ptr = intrusive_ptr<evalue_state>;
+        using function_state_ptr = intrusive_ptr<function_state>;
+        using member_state_ptr = intrusive_ptr<member_state>;
+        using method_state_ptr = intrusive_ptr<method_state>;
+        using scope_state_ptr = intrusive_ptr<scope_state>;
+        using variable_state_ptr = intrusive_ptr<variable_state>;
     }
 }
 
