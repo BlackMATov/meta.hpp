@@ -212,4 +212,11 @@ TEST_CASE("meta/meta_base/intrusive_ptr") {
         CHECK_FALSE(ptr3 != nullptr);
         CHECK_FALSE(nullptr != ptr3);
     }
+
+    SUBCASE("hash") {
+        intrusive_ptr<obj_t> ptr1{};
+        intrusive_ptr<obj_t> ptr2{meta::detail::make_intrusive<obj_t>(42)};
+        CHECK(std::hash<intrusive_ptr<obj_t>>{}(ptr1) == std::hash<obj_t*>{}(ptr1.get()));
+        CHECK(std::hash<intrusive_ptr<obj_t>>{}(ptr2) == std::hash<obj_t*>{}(ptr2.get()));
+    }
 }

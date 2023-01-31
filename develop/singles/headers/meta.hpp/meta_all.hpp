@@ -729,7 +729,8 @@ namespace meta_hpp::detail
     template < typename Derived >
     void intrusive_ptr_release(const intrusive_ref_counter<Derived>* ptr) {
         if ( ptr->counter_.fetch_sub(1, std::memory_order_acq_rel) == 1 ) {
-            std::unique_ptr<const Derived>(static_cast<const Derived*>(ptr)).reset();
+            // NOLINTNEXTLINE(*-owning-memory)
+            delete static_cast<const Derived*>(ptr);
         }
     }
 }
@@ -820,43 +821,51 @@ namespace meta_hpp::detail
         T* ptr_{};
     };
 
+    template < typename T >
+    void swap(intrusive_ptr<T>& l, intrusive_ptr<T>& r) noexcept {
+        return l.swap(r);
+    }
+
     template < typename T, typename... Args >
     intrusive_ptr<T> make_intrusive(Args&&... args) {
-        return std::make_unique<T>(std::forward<Args>(args)...).release();
+        // NOLINTNEXTLINE(*-owning-memory)
+        return new T(std::forward<Args>(args)...);
     }
 
     template < typename T >
-    void swap(intrusive_ptr<T>& l, intrusive_ptr<T>& r) noexcept { return l.swap(r); }
+    [[nodiscard]] bool operator==(const intrusive_ptr<T>& l, const intrusive_ptr<T>& r) noexcept { return l.get() == r.get(); }
+    template < typename T >
+    [[nodiscard]] bool operator!=(const intrusive_ptr<T>& l, const intrusive_ptr<T>& r) noexcept { return l.get() != r.get(); }
 
     template < typename T >
-    bool operator==(const intrusive_ptr<T>& l, const intrusive_ptr<T>& r) noexcept { return l.get() == r.get(); }
+    [[nodiscard]] bool operator==(const intrusive_ptr<T>& l, const T* r) noexcept { return l.get() == r; }
+    template < typename T >
+    [[nodiscard]] bool operator==(const T* l, const intrusive_ptr<T>& r) noexcept { return l == r.get(); }
 
     template < typename T >
-    bool operator!=(const intrusive_ptr<T>& l, const intrusive_ptr<T>& r) noexcept { return l.get() != r.get(); }
+    [[nodiscard]] bool operator!=(const intrusive_ptr<T>& l, const T* r) noexcept { return l.get() != r; }
+    template < typename T >
+    [[nodiscard]] bool operator!=(const T* l, const intrusive_ptr<T>& r) noexcept { return l != r.get(); }
 
     template < typename T >
-    bool operator==(const intrusive_ptr<T>& l, const T* r) noexcept { return l.get() == r; }
+    [[nodiscard]] bool operator==(const intrusive_ptr<T>& l, std::nullptr_t) noexcept { return !l; }
+    template < typename T >
+    [[nodiscard]] bool operator==(std::nullptr_t, const intrusive_ptr<T>& r) noexcept { return !r; }
 
     template < typename T >
-    bool operator==(const T* l, const intrusive_ptr<T>& r) noexcept { return l == r.get(); }
-
+    [[nodiscard]] bool operator!=(const intrusive_ptr<T>& l, std::nullptr_t) noexcept { return !!l; }
     template < typename T >
-    bool operator!=(const intrusive_ptr<T>& l, const T* r) noexcept { return l.get() != r; }
+    [[nodiscard]] bool operator!=(std::nullptr_t, const intrusive_ptr<T>& r) noexcept { return !!r; }
+}
 
+namespace std
+{
     template < typename T >
-    bool operator!=(const T* l, const intrusive_ptr<T>& r) noexcept { return l != r.get(); }
-
-    template < typename T >
-    bool operator==(const intrusive_ptr<T>& l, std::nullptr_t) noexcept { return !l; }
-
-    template < typename T >
-    bool operator==(std::nullptr_t, const intrusive_ptr<T>& r) noexcept { return !r; }
-
-    template < typename T >
-    bool operator!=(const intrusive_ptr<T>& l, std::nullptr_t) noexcept { return !!l; }
-
-    template < typename T >
-    bool operator!=(std::nullptr_t, const intrusive_ptr<T>& r) noexcept { return !!r; }
+    struct hash<meta_hpp::detail::intrusive_ptr<T>> {
+        size_t operator()(const meta_hpp::detail::intrusive_ptr<T>& ptr) const noexcept {
+            return hash<T*>{}(ptr.get());
+        }
+    };
 }
 
 namespace meta_hpp::detail
@@ -8659,7 +8668,7 @@ namespace meta_hpp
                     : detail::to_underlying(storage_e::internal);
             } else {
                 // NOLINTNEXTLINE(*-union-access, *-owning-memory)
-                dst.storage_.external.ptr = ::new Tp(std::forward<Args>(args)...);
+                dst.storage_.external.ptr = new Tp(std::forward<Args>(args)...);
                 dst.storage_.vtag = detail::to_underlying(storage_e::external);
             }
 
@@ -8773,7 +8782,7 @@ namespace meta_hpp
                         do_ctor<Tp>(to, *src);
                     } else {
                         // NOLINTNEXTLINE(*-union-access, *-owning-memory)
-                        to.storage_.external.ptr = ::new Tp(*src);
+                        to.storage_.external.ptr = new Tp(*src);
                         to.storage_.vtag = self.storage_.vtag;
                     }
                 },
@@ -8787,7 +8796,7 @@ namespace meta_hpp
                         std::destroy_at(src);
                     } else {
                         // NOLINTNEXTLINE(*-owning-memory)
-                        ::delete src;
+                        delete src;
                     }
 
                     self.storage_.vtag = 0;

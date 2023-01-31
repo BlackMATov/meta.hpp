@@ -85,7 +85,7 @@ namespace meta_hpp
                     : detail::to_underlying(storage_e::internal);
             } else {
                 // NOLINTNEXTLINE(*-union-access, *-owning-memory)
-                dst.storage_.external.ptr = ::new Tp(std::forward<Args>(args)...);
+                dst.storage_.external.ptr = new Tp(std::forward<Args>(args)...);
                 dst.storage_.vtag = detail::to_underlying(storage_e::external);
             }
 
@@ -199,7 +199,7 @@ namespace meta_hpp
                         do_ctor<Tp>(to, *src);
                     } else {
                         // NOLINTNEXTLINE(*-union-access, *-owning-memory)
-                        to.storage_.external.ptr = ::new Tp(*src);
+                        to.storage_.external.ptr = new Tp(*src);
                         to.storage_.vtag = self.storage_.vtag;
                     }
                 },
@@ -213,7 +213,7 @@ namespace meta_hpp
                         std::destroy_at(src);
                     } else {
                         // NOLINTNEXTLINE(*-owning-memory)
-                        ::delete src;
+                        delete src;
                     }
 
                     self.storage_.vtag = 0;
