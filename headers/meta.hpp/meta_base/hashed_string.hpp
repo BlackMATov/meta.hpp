@@ -50,13 +50,7 @@ namespace meta_hpp::detail
         hashed_string& operator=(hashed_string&&) = default;
         hashed_string& operator=(const hashed_string&) = default;
 
-        constexpr hashed_string(const char* str) noexcept
-        : hash_{fnv1a_hash(str)} {}
-
         constexpr hashed_string(std::string_view str) noexcept
-        : hash_{fnv1a_hash(str)} {}
-
-        hashed_string(const std::string& str) noexcept
         : hash_{fnv1a_hash(str)} {}
 
         constexpr void swap(hashed_string& other) noexcept {
@@ -67,7 +61,7 @@ namespace meta_hpp::detail
             return hash_;
         }
     private:
-        std::size_t hash_{fnv1a_hash("")};
+        std::size_t hash_{fnv1a_hash({})};
     };
 
     constexpr void swap(hashed_string& l, hashed_string& r) noexcept {
