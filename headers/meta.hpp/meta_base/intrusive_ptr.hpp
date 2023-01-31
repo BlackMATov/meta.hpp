@@ -37,17 +37,21 @@ namespace meta_hpp::detail
         ~intrusive_ref_counter() = default;
     private:
         mutable std::atomic_size_t counter_{};
-
-        friend void intrusive_ptr_add_ref<Derived>(const intrusive_ref_counter* ptr) {
-            ptr->counter_.fetch_add(1, std::memory_order_acq_rel);
-        }
-
-        friend void intrusive_ptr_release<Derived>(const intrusive_ref_counter* ptr) {
-            if ( ptr->counter_.fetch_sub(1, std::memory_order_acq_rel) == 1 ) {
-                std::unique_ptr<const Derived>(static_cast<const Derived*>(ptr)).reset();
-            }
-        }
+        friend void intrusive_ptr_add_ref<Derived>(const intrusive_ref_counter* ptr);
+        friend void intrusive_ptr_release<Derived>(const intrusive_ref_counter* ptr);
     };
+
+    template < typename Derived >
+    void intrusive_ptr_add_ref(const intrusive_ref_counter<Derived>* ptr) {
+        ptr->counter_.fetch_add(1, std::memory_order_acq_rel);
+    }
+
+    template < typename Derived >
+    void intrusive_ptr_release(const intrusive_ref_counter<Derived>* ptr) {
+        if ( ptr->counter_.fetch_sub(1, std::memory_order_acq_rel) == 1 ) {
+            std::unique_ptr<const Derived>(static_cast<const Derived*>(ptr)).reset();
+        }
+    }
 }
 
 namespace meta_hpp::detail
