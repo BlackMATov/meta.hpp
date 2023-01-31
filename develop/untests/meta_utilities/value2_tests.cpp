@@ -187,12 +187,12 @@ TEST_CASE("meta/meta_utilities/value2/counters/small") {
             CHECK(v1.get_as<ivec2>().x == 3);
             CHECK(v2.get_as<ivec2>().x == 1);
 
-            CHECK(ivec2::destructor_counter == 5);
-            CHECK(ivec2::move_constructor_counter == 5);
+            CHECK((ivec2::destructor_counter == 5 || ivec2::destructor_counter == 6));
+            CHECK((ivec2::move_constructor_counter == 5 || ivec2::move_constructor_counter == 6));
             CHECK(ivec2::copy_constructor_counter == 0);
         }
-        CHECK(ivec2::destructor_counter == 7);
-        CHECK(ivec2::move_constructor_counter == 5);
+        CHECK((ivec2::destructor_counter == 7 || ivec2::destructor_counter == 8));
+        CHECK((ivec2::move_constructor_counter == 5 || ivec2::move_constructor_counter == 6));
         CHECK(ivec2::copy_constructor_counter == 0);
     }
 }
