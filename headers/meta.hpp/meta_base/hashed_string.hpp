@@ -7,35 +7,7 @@
 #pragma once
 
 #include "base.hpp"
-
-namespace meta_hpp::detail
-{
-    template < std::size_t SizeBytes = sizeof(std::size_t) >
-    struct fnv1a_hash_traits;
-
-    template <>
-    struct fnv1a_hash_traits<4> { // NOLINT(*-magic-numbers)
-        using underlying_type = std::uint32_t;
-        static inline constexpr underlying_type prime{16777619U};
-        static inline constexpr underlying_type offset{2166136261U};
-    };
-
-    template <>
-    struct fnv1a_hash_traits<8> { // NOLINT(*-magic-numbers)
-        using underlying_type = std::uint64_t;
-        static inline constexpr underlying_type prime{1099511628211U};
-        static inline constexpr underlying_type offset{14695981039346656037U};
-    };
-
-    constexpr std::size_t fnv1a_hash(std::string_view str) noexcept {
-        std::size_t hash{fnv1a_hash_traits<>::offset};
-        for ( char ch : str ) {
-            hash ^= static_cast<std::size_t>(ch);
-            hash *= fnv1a_hash_traits<>::prime;
-        }
-        return hash;
-    }
-}
+#include "fnv1a_hash.hpp"
 
 namespace meta_hpp::detail
 {
@@ -51,7 +23,7 @@ namespace meta_hpp::detail
         hashed_string& operator=(const hashed_string&) = default;
 
         constexpr hashed_string(std::string_view str) noexcept
-        : hash_{fnv1a_hash(str)} {}
+        : hash_{fnv1a_hash(str.data(), str.size())} {}
 
         constexpr void swap(hashed_string& other) noexcept {
             std::swap(hash_, other.hash_);
@@ -61,24 +33,13 @@ namespace meta_hpp::detail
             return hash_;
         }
     private:
-        std::size_t hash_{fnv1a_hash({})};
+        std::size_t hash_{fnv1a_hash("", 0)};
     };
 
-    constexpr void swap(hashed_string& l, hashed_string& r) noexcept {
-        l.swap(r);
-    }
-
-    [[nodiscard]] constexpr bool operator<(hashed_string l, hashed_string r) noexcept {
-        return l.get_hash() < r.get_hash();
-    }
-
-    [[nodiscard]] constexpr bool operator==(hashed_string l, hashed_string r) noexcept {
-        return l.get_hash() == r.get_hash();
-    }
-
-    [[nodiscard]] constexpr bool operator!=(hashed_string l, hashed_string r) noexcept {
-        return l.get_hash() != r.get_hash();
-    }
+    constexpr void swap(hashed_string& l, hashed_string& r) noexcept { l.swap(r); }
+    [[nodiscard]] constexpr bool operator<(hashed_string l, hashed_string r) noexcept { return l.get_hash() < r.get_hash(); }
+    [[nodiscard]] constexpr bool operator==(hashed_string l, hashed_string r) noexcept { return l.get_hash() == r.get_hash(); }
+    [[nodiscard]] constexpr bool operator!=(hashed_string l, hashed_string r) noexcept { return l.get_hash() != r.get_hash(); }
 }
 
 namespace std

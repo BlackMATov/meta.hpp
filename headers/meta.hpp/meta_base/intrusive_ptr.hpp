@@ -141,16 +141,14 @@ namespace meta_hpp::detail
         T* ptr_{};
     };
 
-    template < typename T >
-    void swap(intrusive_ptr<T>& l, intrusive_ptr<T>& r) noexcept {
-        return l.swap(r);
-    }
-
     template < typename T, typename... Args >
     intrusive_ptr<T> make_intrusive(Args&&... args) {
         // NOLINTNEXTLINE(*-owning-memory)
         return new T(std::forward<Args>(args)...);
     }
+
+    template < typename T >
+    void swap(intrusive_ptr<T>& l, intrusive_ptr<T>& r) noexcept { return l.swap(r); }
 
     template < typename T >
     [[nodiscard]] bool operator==(const intrusive_ptr<T>& l, const intrusive_ptr<T>& r) noexcept { return l.get() == r.get(); }

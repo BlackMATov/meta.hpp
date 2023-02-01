@@ -22,7 +22,7 @@ TEST_CASE("meta/meta_base/hashed_string") {
 
     SUBCASE("ctor/1") {
         constexpr hashed_string hs{"hello"};
-        static_assert(hs.get_hash() == meta::detail::fnv1a_hash("hello"));
+        static_assert(hs.get_hash() == meta::detail::fnv1a_hash("hello", 5));
 
         CHECK(hs == hashed_string{std::string{"hello"}});
         CHECK(hs == hashed_string{std::string_view{"hello"}});

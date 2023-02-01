@@ -7,6 +7,7 @@
 #pragma once
 
 #include "base.hpp"
+#include "fnv1a_hash.hpp"
 
 namespace meta_hpp::detail
 {
@@ -18,10 +19,10 @@ namespace meta_hpp::detail
         memory_buffer& operator=(const memory_buffer&) = delete;
 
         memory_buffer(memory_buffer&& other) noexcept
-        : memory_{other.memory_}
+        : data_{other.data_}
         , size_{other.size_}
         , align_{other.align_} {
-            other.memory_ = nullptr;
+            other.data_ = nullptr;
             other.size_ = 0;
             other.align_ = std::align_val_t{};
         }
@@ -34,16 +35,23 @@ namespace meta_hpp::detail
         }
 
         explicit memory_buffer(std::size_t size, std::align_val_t align)
-        : memory_{::operator new(size, align)}
+        : data_{::operator new(size, align)}
         , size_{size}
         , align_{align} {}
+
+        explicit memory_buffer(const void* mem, std::size_t size, std::align_val_t align)
+        : memory_buffer{size, align} {
+            if ( mem != nullptr && size > 0 ) {
+                std::memcpy(data_, mem, size);
+            }
+        }
 
         ~memory_buffer() noexcept {
             reset();
         }
 
         [[nodiscard]] bool is_valid() const noexcept {
-            return memory_ != nullptr;
+            return data_ != nullptr;
         }
 
         [[nodiscard]] explicit operator bool() const noexcept {
@@ -51,26 +59,40 @@ namespace meta_hpp::detail
         }
 
         void reset() noexcept {
-            if ( memory_ != nullptr ) {
-                ::operator delete(memory_, align_);
-                memory_ = nullptr;
+            if ( data_ != nullptr ) {
+                ::operator delete(data_, align_);
+                data_ = nullptr;
                 size_ = 0;
                 align_ = std::align_val_t{};
             }
         }
 
         void swap(memory_buffer& other) noexcept {
-            std::swap(memory_, other.memory_);
+            std::swap(data_, other.data_);
             std::swap(size_, other.size_);
             std::swap(align_, other.align_);
         }
 
-        [[nodiscard]] void* get_memory() noexcept {
-            return memory_;
+        [[nodiscard]] int compare(const memory_buffer& other) const noexcept {
+            if ( size_ < other.size_ ) {
+                return -1;
+            }
+
+            if ( size_ > other.size_ ) {
+                return +1;
+            }
+
+            return size_ != 0
+                ? std::memcmp(data_, other.data_, size_)
+                : 0;
         }
 
-        [[nodiscard]] const void* get_memory() const noexcept {
-            return memory_;
+        [[nodiscard]] void* get_data() noexcept {
+            return data_;
+        }
+
+        [[nodiscard]] const void* get_data() const noexcept {
+            return data_;
         }
 
         [[nodiscard]] std::size_t get_size() const noexcept {
@@ -80,13 +102,25 @@ namespace meta_hpp::detail
         [[nodiscard]] std::align_val_t get_align() const noexcept {
             return align_;
         }
+
     private:
-        void* memory_{};
+        void* data_{};
         std::size_t size_{};
         std::align_val_t align_{};
     };
 
-    inline void swap(memory_buffer& l, memory_buffer& r) noexcept {
-        l.swap(r);
-    }
+    inline void swap(memory_buffer& l, memory_buffer& r) noexcept { l.swap(r); }
+    [[nodiscard]] inline bool operator<(const memory_buffer& l, const memory_buffer& r) noexcept { return l.compare(r) < 0; }
+    [[nodiscard]] inline bool operator==(const memory_buffer& l, const memory_buffer& r) noexcept { return l.compare(r) == 0; }
+    [[nodiscard]] inline bool operator!=(const memory_buffer& l, const memory_buffer& r) noexcept { return l.compare(r) != 0; }
+}
+
+namespace std
+{
+    template <>
+    struct hash<meta_hpp::detail::memory_buffer> {
+        size_t operator()(const meta_hpp::detail::memory_buffer& mb) const noexcept {
+            return meta_hpp::detail::fnv1a_hash(mb.get_data(), mb.get_size());
+        }
+    };
 }

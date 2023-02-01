@@ -8,10 +8,12 @@
 #include <array>
 #include <atomic>
 #include <cassert>
+#include <climits>
 #include <concepts>
 #include <cstddef>
 #include <cstdint>
 #include <cstdlib>
+#include <cstring>
 #include <deque>
 #include <functional>
 #include <initializer_list>
@@ -517,6 +519,45 @@ namespace meta_hpp::detail
 
 namespace meta_hpp::detail
 {
+    // REFERENCE:
+    // https://en.wikipedia.org/wiki/Fowler%E2%80%93Noll%E2%80%93Vo_hash_function
+
+    template < std::size_t SizeBits = CHAR_BIT * sizeof(std::size_t) >
+    struct fnv1a_hash_traits;
+
+    template <>
+    struct fnv1a_hash_traits<32> { // NOLINT(*-magic-numbers)
+        using underlying_type = std::uint32_t;
+        static inline constexpr underlying_type prime{16777619U};
+        static inline constexpr underlying_type offset_basis{2166136261U};
+    };
+
+    template <>
+    struct fnv1a_hash_traits<64> { // NOLINT(*-magic-numbers)
+        using underlying_type = std::uint64_t;
+        static inline constexpr underlying_type prime{1099511628211U};
+        static inline constexpr underlying_type offset_basis{14695981039346656037U};
+    };
+
+    template < typename T >
+        requires (std::is_same_v<T, std::byte>) || (std::is_integral_v<T> && sizeof(T) == 1)
+    constexpr std::size_t fnv1a_hash(const T* mem, std::size_t size) noexcept {
+        using traits = fnv1a_hash_traits<>;
+        std::size_t hash{traits::offset_basis};
+        for ( T byte : std::span(mem, size) ) {
+            hash ^= static_cast<std::size_t>(byte);
+            hash *= traits::prime;
+        }
+        return hash;
+    }
+
+    inline std::size_t fnv1a_hash(const void* mem, std::size_t size) noexcept {
+        return fnv1a_hash(static_cast<const std::byte*>(mem), size);
+    }
+}
+
+namespace meta_hpp::detail
+{
     struct hash_combiner {
         template < typename T >
         [[nodiscard]] std::size_t operator()(const T& x) noexcept {
@@ -533,35 +574,6 @@ namespace meta_hpp::detail
 
 namespace meta_hpp::detail
 {
-    template < std::size_t SizeBytes = sizeof(std::size_t) >
-    struct fnv1a_hash_traits;
-
-    template <>
-    struct fnv1a_hash_traits<4> { // NOLINT(*-magic-numbers)
-        using underlying_type = std::uint32_t;
-        static inline constexpr underlying_type prime{16777619U};
-        static inline constexpr underlying_type offset{2166136261U};
-    };
-
-    template <>
-    struct fnv1a_hash_traits<8> { // NOLINT(*-magic-numbers)
-        using underlying_type = std::uint64_t;
-        static inline constexpr underlying_type prime{1099511628211U};
-        static inline constexpr underlying_type offset{14695981039346656037U};
-    };
-
-    constexpr std::size_t fnv1a_hash(std::string_view str) noexcept {
-        std::size_t hash{fnv1a_hash_traits<>::offset};
-        for ( char ch : str ) {
-            hash ^= static_cast<std::size_t>(ch);
-            hash *= fnv1a_hash_traits<>::prime;
-        }
-        return hash;
-    }
-}
-
-namespace meta_hpp::detail
-{
     class hashed_string final {
     public:
         hashed_string() = default;
@@ -574,7 +586,7 @@ namespace meta_hpp::detail
         hashed_string& operator=(const hashed_string&) = default;
 
         constexpr hashed_string(std::string_view str) noexcept
-        : hash_{fnv1a_hash(str)} {}
+        : hash_{fnv1a_hash(str.data(), str.size())} {}
 
         constexpr void swap(hashed_string& other) noexcept {
             std::swap(hash_, other.hash_);
@@ -584,24 +596,13 @@ namespace meta_hpp::detail
             return hash_;
         }
     private:
-        std::size_t hash_{fnv1a_hash({})};
+        std::size_t hash_{fnv1a_hash("", 0)};
     };
 
-    constexpr void swap(hashed_string& l, hashed_string& r) noexcept {
-        l.swap(r);
-    }
-
-    [[nodiscard]] constexpr bool operator<(hashed_string l, hashed_string r) noexcept {
-        return l.get_hash() < r.get_hash();
-    }
-
-    [[nodiscard]] constexpr bool operator==(hashed_string l, hashed_string r) noexcept {
-        return l.get_hash() == r.get_hash();
-    }
-
-    [[nodiscard]] constexpr bool operator!=(hashed_string l, hashed_string r) noexcept {
-        return l.get_hash() != r.get_hash();
-    }
+    constexpr void swap(hashed_string& l, hashed_string& r) noexcept { l.swap(r); }
+    [[nodiscard]] constexpr bool operator<(hashed_string l, hashed_string r) noexcept { return l.get_hash() < r.get_hash(); }
+    [[nodiscard]] constexpr bool operator==(hashed_string l, hashed_string r) noexcept { return l.get_hash() == r.get_hash(); }
+    [[nodiscard]] constexpr bool operator!=(hashed_string l, hashed_string r) noexcept { return l.get_hash() != r.get_hash(); }
 }
 
 namespace std
@@ -821,16 +822,14 @@ namespace meta_hpp::detail
         T* ptr_{};
     };
 
-    template < typename T >
-    void swap(intrusive_ptr<T>& l, intrusive_ptr<T>& r) noexcept {
-        return l.swap(r);
-    }
-
     template < typename T, typename... Args >
     intrusive_ptr<T> make_intrusive(Args&&... args) {
         // NOLINTNEXTLINE(*-owning-memory)
         return new T(std::forward<Args>(args)...);
     }
+
+    template < typename T >
+    void swap(intrusive_ptr<T>& l, intrusive_ptr<T>& r) noexcept { return l.swap(r); }
 
     template < typename T >
     [[nodiscard]] bool operator==(const intrusive_ptr<T>& l, const intrusive_ptr<T>& r) noexcept { return l.get() == r.get(); }
@@ -890,10 +889,10 @@ namespace meta_hpp::detail
         memory_buffer& operator=(const memory_buffer&) = delete;
 
         memory_buffer(memory_buffer&& other) noexcept
-        : memory_{other.memory_}
+        : data_{other.data_}
         , size_{other.size_}
         , align_{other.align_} {
-            other.memory_ = nullptr;
+            other.data_ = nullptr;
             other.size_ = 0;
             other.align_ = std::align_val_t{};
         }
@@ -906,16 +905,23 @@ namespace meta_hpp::detail
         }
 
         explicit memory_buffer(std::size_t size, std::align_val_t align)
-        : memory_{::operator new(size, align)}
+        : data_{::operator new(size, align)}
         , size_{size}
         , align_{align} {}
+
+        explicit memory_buffer(const void* mem, std::size_t size, std::align_val_t align)
+        : memory_buffer{size, align} {
+            if ( mem != nullptr && size > 0 ) {
+                std::memcpy(data_, mem, size);
+            }
+        }
 
         ~memory_buffer() noexcept {
             reset();
         }
 
         [[nodiscard]] bool is_valid() const noexcept {
-            return memory_ != nullptr;
+            return data_ != nullptr;
         }
 
         [[nodiscard]] explicit operator bool() const noexcept {
@@ -923,26 +929,40 @@ namespace meta_hpp::detail
         }
 
         void reset() noexcept {
-            if ( memory_ != nullptr ) {
-                ::operator delete(memory_, align_);
-                memory_ = nullptr;
+            if ( data_ != nullptr ) {
+                ::operator delete(data_, align_);
+                data_ = nullptr;
                 size_ = 0;
                 align_ = std::align_val_t{};
             }
         }
 
         void swap(memory_buffer& other) noexcept {
-            std::swap(memory_, other.memory_);
+            std::swap(data_, other.data_);
             std::swap(size_, other.size_);
             std::swap(align_, other.align_);
         }
 
-        [[nodiscard]] void* get_memory() noexcept {
-            return memory_;
+        [[nodiscard]] int compare(const memory_buffer& other) const noexcept {
+            if ( size_ < other.size_ ) {
+                return -1;
+            }
+
+            if ( size_ > other.size_ ) {
+                return +1;
+            }
+
+            return size_ != 0
+                ? std::memcmp(data_, other.data_, size_)
+                : 0;
         }
 
-        [[nodiscard]] const void* get_memory() const noexcept {
-            return memory_;
+        [[nodiscard]] void* get_data() noexcept {
+            return data_;
+        }
+
+        [[nodiscard]] const void* get_data() const noexcept {
+            return data_;
         }
 
         [[nodiscard]] std::size_t get_size() const noexcept {
@@ -952,15 +972,27 @@ namespace meta_hpp::detail
         [[nodiscard]] std::align_val_t get_align() const noexcept {
             return align_;
         }
+
     private:
-        void* memory_{};
+        void* data_{};
         std::size_t size_{};
         std::align_val_t align_{};
     };
 
-    inline void swap(memory_buffer& l, memory_buffer& r) noexcept {
-        l.swap(r);
-    }
+    inline void swap(memory_buffer& l, memory_buffer& r) noexcept { l.swap(r); }
+    [[nodiscard]] inline bool operator<(const memory_buffer& l, const memory_buffer& r) noexcept { return l.compare(r) < 0; }
+    [[nodiscard]] inline bool operator==(const memory_buffer& l, const memory_buffer& r) noexcept { return l.compare(r) == 0; }
+    [[nodiscard]] inline bool operator!=(const memory_buffer& l, const memory_buffer& r) noexcept { return l.compare(r) != 0; }
+}
+
+namespace std
+{
+    template <>
+    struct hash<meta_hpp::detail::memory_buffer> {
+        size_t operator()(const meta_hpp::detail::memory_buffer& mb) const noexcept {
+            return meta_hpp::detail::fnv1a_hash(mb.get_data(), mb.get_size());
+        }
+    };
 }
 
 namespace meta_hpp::detail

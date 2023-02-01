@@ -17,6 +17,12 @@
         "files.trimFinalNewlines": true,
         "files.trimTrailingWhitespace": true
     },
+    "[yaml]": {
+        "files.encoding": "utf8",
+        "files.insertFinalNewline": true,
+        "files.trimFinalNewlines": true,
+        "files.trimTrailingWhitespace": true
+    },
     "clangd.arguments": [
         "--header-insertion=never"
     ],
