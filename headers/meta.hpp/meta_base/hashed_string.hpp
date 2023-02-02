@@ -32,14 +32,19 @@ namespace meta_hpp::detail
         [[nodiscard]] constexpr std::size_t get_hash() const noexcept {
             return hash_;
         }
+
+        [[nodiscard]] constexpr bool operator==(hashed_string other) const noexcept {
+            return hash_ == other.hash_;
+        }
+
+        [[nodiscard]] constexpr std::strong_ordering operator<=>(hashed_string other) const noexcept {
+            return hash_ <=> other.hash_;
+        }
     private:
         std::size_t hash_{fnv1a_hash("", 0)};
     };
 
     constexpr void swap(hashed_string& l, hashed_string& r) noexcept { l.swap(r); }
-    [[nodiscard]] constexpr bool operator<(hashed_string l, hashed_string r) noexcept { return l.get_hash() < r.get_hash(); }
-    [[nodiscard]] constexpr bool operator==(hashed_string l, hashed_string r) noexcept { return l.get_hash() == r.get_hash(); }
-    [[nodiscard]] constexpr bool operator!=(hashed_string l, hashed_string r) noexcept { return l.get_hash() != r.get_hash(); }
 }
 
 namespace std

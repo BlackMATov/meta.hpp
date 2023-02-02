@@ -7,10 +7,62 @@
 #include <meta.hpp/meta_all.hpp>
 #include <doctest/doctest.h>
 
+namespace
+{
+    struct ivec2 {
+        int x{};
+        int y{};
+    };
+}
+
+TEST_CASE("meta/meta_states/ops/_") {
+    namespace meta = meta_hpp;
+
+    meta::class_<ivec2>()
+        .member_("x", &ivec2::x)
+        .member_("y", &ivec2::y);
+}
+
 TEST_CASE("meta/meta_states/ops") {
     namespace meta = meta_hpp;
 
+    const meta::class_type ivec2_type = meta::resolve_type<ivec2>();
+    REQUIRE(ivec2_type);
+
+    const meta::member ivec2_x = ivec2_type.get_member("x");
+    REQUIRE(ivec2_x);
+
+    const meta::member ivec2_y = ivec2_type.get_member("y");
+    REQUIRE(ivec2_y);
+
     SUBCASE("operator<") {
+        {
+            CHECK(meta::member{} < ivec2_x);
+            CHECK_FALSE(meta::member{} == ivec2_x);
+            CHECK(meta::member{} < ivec2_x.get_index());
+            CHECK_FALSE(meta::member{} == ivec2_x.get_index());
+
+            CHECK_FALSE(ivec2_x < meta::member{});
+            CHECK_FALSE(ivec2_x == meta::member{});
+            CHECK_FALSE(ivec2_x.get_index() < meta::member{});
+            CHECK_FALSE(ivec2_x.get_index() == meta::member{});
+
+            CHECK(meta::member{} == meta::member{});
+            CHECK_FALSE(meta::member{} < meta::member{});
+
+            CHECK(ivec2_x == ivec2_x);
+            CHECK(ivec2_x == ivec2_x.get_index());
+            CHECK(ivec2_x.get_index() == ivec2_x);
+
+            CHECK_FALSE(ivec2_x != ivec2_x);
+            CHECK_FALSE(ivec2_x != ivec2_x.get_index());
+            CHECK_FALSE(ivec2_x.get_index() != ivec2_x);
+
+            CHECK(ivec2_x < ivec2_y);
+            CHECK_FALSE(ivec2_y < ivec2_x);
+            CHECK_FALSE(ivec2_x == ivec2_y);
+        }
+
         // NOLINTBEGIN(*-redundant-expression)
         static_assert(std::is_same_v<bool, decltype(std::declval<meta::argument>() < std::declval<meta::argument>())>);
         static_assert(std::is_same_v<bool, decltype(std::declval<meta::constructor>() < std::declval<meta::constructor>())>);

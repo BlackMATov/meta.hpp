@@ -9,6 +9,7 @@
 #include <atomic>
 #include <cassert>
 #include <climits>
+#include <compare>
 #include <concepts>
 #include <cstddef>
 #include <cstdint>
@@ -595,14 +596,19 @@ namespace meta_hpp::detail
         [[nodiscard]] constexpr std::size_t get_hash() const noexcept {
             return hash_;
         }
+
+        [[nodiscard]] constexpr bool operator==(hashed_string other) const noexcept {
+            return hash_ == other.hash_;
+        }
+
+        [[nodiscard]] constexpr std::strong_ordering operator<=>(hashed_string other) const noexcept {
+            return hash_ <=> other.hash_;
+        }
     private:
         std::size_t hash_{fnv1a_hash("", 0)};
     };
 
     constexpr void swap(hashed_string& l, hashed_string& r) noexcept { l.swap(r); }
-    [[nodiscard]] constexpr bool operator<(hashed_string l, hashed_string r) noexcept { return l.get_hash() < r.get_hash(); }
-    [[nodiscard]] constexpr bool operator==(hashed_string l, hashed_string r) noexcept { return l.get_hash() == r.get_hash(); }
-    [[nodiscard]] constexpr bool operator!=(hashed_string l, hashed_string r) noexcept { return l.get_hash() != r.get_hash(); }
 }
 
 namespace std
@@ -818,6 +824,18 @@ namespace meta_hpp::detail
         void swap(intrusive_ptr& other) noexcept {
             ptr_ = std::exchange(other.ptr_, ptr_);
         }
+
+        [[nodiscard]] std::size_t get_hash() const noexcept {
+            return std::hash<T*>{}(ptr_);
+        }
+
+        [[nodiscard]] bool operator==(const intrusive_ptr& other) const noexcept {
+            return ptr_ == other.ptr_;
+        }
+
+        [[nodiscard]] std::strong_ordering operator<=>(const intrusive_ptr& other) const noexcept {
+            return ptr_ <=> other.ptr_;
+        }
     private:
         T* ptr_{};
     };
@@ -832,19 +850,14 @@ namespace meta_hpp::detail
     void swap(intrusive_ptr<T>& l, intrusive_ptr<T>& r) noexcept { return l.swap(r); }
 
     template < typename T >
-    [[nodiscard]] bool operator==(const intrusive_ptr<T>& l, const intrusive_ptr<T>& r) noexcept { return l.get() == r.get(); }
-    template < typename T >
-    [[nodiscard]] bool operator!=(const intrusive_ptr<T>& l, const intrusive_ptr<T>& r) noexcept { return l.get() != r.get(); }
-
-    template < typename T >
     [[nodiscard]] bool operator==(const intrusive_ptr<T>& l, const T* r) noexcept { return l.get() == r; }
     template < typename T >
     [[nodiscard]] bool operator==(const T* l, const intrusive_ptr<T>& r) noexcept { return l == r.get(); }
 
     template < typename T >
-    [[nodiscard]] bool operator!=(const intrusive_ptr<T>& l, const T* r) noexcept { return l.get() != r; }
+    [[nodiscard]] std::strong_ordering operator<=>(const intrusive_ptr<T>& l, const T* r) noexcept { return l.get() <=> r; }
     template < typename T >
-    [[nodiscard]] bool operator!=(const T* l, const intrusive_ptr<T>& r) noexcept { return l != r.get(); }
+    [[nodiscard]] std::strong_ordering operator<=>(const T* l, const intrusive_ptr<T>& r) noexcept { return l <=> r.get(); }
 
     template < typename T >
     [[nodiscard]] bool operator==(const intrusive_ptr<T>& l, std::nullptr_t) noexcept { return !l; }
@@ -852,17 +865,17 @@ namespace meta_hpp::detail
     [[nodiscard]] bool operator==(std::nullptr_t, const intrusive_ptr<T>& r) noexcept { return !r; }
 
     template < typename T >
-    [[nodiscard]] bool operator!=(const intrusive_ptr<T>& l, std::nullptr_t) noexcept { return !!l; }
+    [[nodiscard]] std::strong_ordering operator<=>(const intrusive_ptr<T>& l, std::nullptr_t) noexcept { return l <=> nullptr; }
     template < typename T >
-    [[nodiscard]] bool operator!=(std::nullptr_t, const intrusive_ptr<T>& r) noexcept { return !!r; }
+    [[nodiscard]] std::strong_ordering operator<=>(std::nullptr_t, const intrusive_ptr<T>& r) noexcept { return nullptr <=> r; }
 }
 
 namespace std
 {
     template < typename T >
     struct hash<meta_hpp::detail::intrusive_ptr<T>> {
-        size_t operator()(const meta_hpp::detail::intrusive_ptr<T>& ptr) const noexcept {
-            return hash<T*>{}(ptr.get());
+        size_t operator()(const meta_hpp::detail::intrusive_ptr<T>& ip) const noexcept {
+            return ip.get_hash();
         }
     };
 }
@@ -937,26 +950,6 @@ namespace meta_hpp::detail
             }
         }
 
-        void swap(memory_buffer& other) noexcept {
-            std::swap(data_, other.data_);
-            std::swap(size_, other.size_);
-            std::swap(align_, other.align_);
-        }
-
-        [[nodiscard]] int compare(const memory_buffer& other) const noexcept {
-            if ( size_ < other.size_ ) {
-                return -1;
-            }
-
-            if ( size_ > other.size_ ) {
-                return +1;
-            }
-
-            return size_ != 0
-                ? std::memcmp(data_, other.data_, size_)
-                : 0;
-        }
-
         [[nodiscard]] void* get_data() noexcept {
             return data_;
         }
@@ -973,6 +966,28 @@ namespace meta_hpp::detail
             return align_;
         }
 
+        void swap(memory_buffer& other) noexcept {
+            std::swap(data_, other.data_);
+            std::swap(size_, other.size_);
+            std::swap(align_, other.align_);
+        }
+
+        [[nodiscard]] std::size_t get_hash() const noexcept {
+            return fnv1a_hash(data_, size_);
+        }
+
+        [[nodiscard]] bool operator==(const memory_buffer& other) const noexcept {
+            return (size_ == other.size_)
+                && (size_ == 0 || std::memcmp(data_, other.data_, size_) == 0);
+        }
+
+        [[nodiscard]] std::strong_ordering operator<=>(const memory_buffer& other) const noexcept {
+            if ( const auto cmp{size_ <=> other.size_}; cmp != std::strong_ordering::equal ) {
+                return cmp;
+            }
+            return (size_ == 0 ? 0 : std::memcmp(data_, other.data_, size_)) <=> 0;
+        }
+
     private:
         void* data_{};
         std::size_t size_{};
@@ -980,9 +995,6 @@ namespace meta_hpp::detail
     };
 
     inline void swap(memory_buffer& l, memory_buffer& r) noexcept { l.swap(r); }
-    [[nodiscard]] inline bool operator<(const memory_buffer& l, const memory_buffer& r) noexcept { return l.compare(r) < 0; }
-    [[nodiscard]] inline bool operator==(const memory_buffer& l, const memory_buffer& r) noexcept { return l.compare(r) == 0; }
-    [[nodiscard]] inline bool operator!=(const memory_buffer& l, const memory_buffer& r) noexcept { return l.compare(r) != 0; }
 }
 
 namespace std
@@ -990,7 +1002,7 @@ namespace std
     template <>
     struct hash<meta_hpp::detail::memory_buffer> {
         size_t operator()(const meta_hpp::detail::memory_buffer& mb) const noexcept {
-            return meta_hpp::detail::fnv1a_hash(mb.get_data(), mb.get_size());
+            return mb.get_hash();
         }
     };
 }
@@ -1094,20 +1106,20 @@ namespace meta_hpp::detail
 
         ~type_id() = default;
 
+        void swap(type_id& other) noexcept {
+            std::swap(id_, other.id_);
+        }
+
         [[nodiscard]] std::size_t get_hash() const noexcept {
             return std::hash<underlying_type>{}(id_);
         }
 
-        [[nodiscard]] friend bool operator<(type_id l, type_id r) noexcept {
-            return l.id_ < r.id_;
+        [[nodiscard]] bool operator==(type_id other) const noexcept {
+            return id_ == other.id_;
         }
 
-        [[nodiscard]] friend bool operator==(type_id l, type_id r) noexcept {
-            return l.id_ == r.id_;
-        }
-
-        [[nodiscard]] friend bool operator!=(type_id l, type_id r) noexcept {
-            return l.id_ != r.id_;
+        [[nodiscard]] std::strong_ordering operator<=>(type_id other) const noexcept {
+            return id_ <=> other.id_;
         }
     private:
         using underlying_type = std::uint32_t;
@@ -2325,67 +2337,39 @@ namespace std
 namespace meta_hpp
 {
     template < detail::type_family T, detail::type_family U >
-    [[nodiscard]] bool operator<(const T& l, const U& r) noexcept {
-        if ( !static_cast<bool>(r) ) {
-            return false;
-        }
-
-        if ( !static_cast<bool>(l) ) {
-            return true;
-        }
-
-        return l.get_id() < r.get_id();
-    }
-
-    template < detail::type_family T, detail::type_family U >
     [[nodiscard]] bool operator==(const T& l, const U& r) noexcept {
-        if ( static_cast<bool>(l) != static_cast<bool>(r) ) {
-            return false;
-        }
-
-        if ( !static_cast<bool>(l) ) {
-            return true;
-        }
-
-        return l.get_id() == r.get_id();
+        return l.is_valid() == r.is_valid() && (!l.is_valid() || l.get_id() == r.get_id());
     }
 
     template < detail::type_family T, detail::type_family U >
-    [[nodiscard]] bool operator!=(const T& l, const U& r) noexcept {
-        return !(l == r);
+    [[nodiscard]] std::strong_ordering operator<=>(const T& l, const U& r) noexcept {
+        if ( const auto cmp{l.is_valid() <=> r.is_valid()}; cmp != std::strong_ordering::equal ) {
+            return cmp;
+        }
+        return l.is_valid() ? l.get_id() <=> r.get_id() : std::strong_ordering::equal;
     }
 }
 
 namespace meta_hpp
 {
     template < detail::type_family T >
-    [[nodiscard]] bool operator<(const T& l, type_id r) noexcept {
-        return !static_cast<bool>(l) || l.get_id() < r;
-    }
-
-    template < detail::type_family U >
-    [[nodiscard]] bool operator<(type_id l, const U& r) noexcept {
-        return static_cast<bool>(r) && l < r.get_id();
-    }
-
-    template < detail::type_family T >
     [[nodiscard]] bool operator==(const T& l, type_id r) noexcept {
-        return static_cast<bool>(l) || l.get_id() == r;
+        return l.is_valid() && l.get_id() == r;
     }
 
     template < detail::type_family U >
     [[nodiscard]] bool operator==(type_id l, const U& r) noexcept {
-        return static_cast<bool>(r) && l == r.get_id();
+        return r.is_valid() && l == r.get_id();
     }
 
     template < detail::type_family T >
-    [[nodiscard]] bool operator!=(const T& l, type_id r) noexcept {
-        return !(l == r);
+    [[nodiscard]] std::strong_ordering operator<=>(const T& l, type_id r) noexcept {
+        return l.is_valid() ? l.get_id() <=> r : std::strong_ordering::less;
     }
 
     template < detail::type_family U >
-    [[nodiscard]] bool operator!=(type_id l, const U& r) noexcept {
-        return !(l == r);
+    [[nodiscard]] std::strong_ordering operator<=>(type_id l, const U& r) noexcept {
+        return r.is_valid() ? l <=> r.get_id() : std::strong_ordering::greater;
     }
 }
 
@@ -2556,19 +2540,14 @@ namespace meta_hpp
 {
     class argument_index final {
     public:
-        argument_index() = delete;
-        [[nodiscard]] std::size_t get_hash() const noexcept;
         [[nodiscard]] const any_type& get_type() const noexcept;
         [[nodiscard]] std::size_t get_position() const noexcept;
+
+        [[nodiscard]] std::size_t get_hash() const noexcept;
+        [[nodiscard]] std::strong_ordering operator<=>(const argument_index&) const = default;
     private:
         friend detail::argument_state;
-        template < typename Argument >
-        [[nodiscard]] static argument_index make(std::size_t position);
-    private:
         explicit argument_index(any_type type, std::size_t position);
-        friend bool operator<(const argument_index& l, const argument_index& r) noexcept;
-        friend bool operator==(const argument_index& l, const argument_index& r) noexcept;
-        friend bool operator!=(const argument_index& l, const argument_index& r) noexcept;
     private:
         any_type type_;
         std::size_t position_{};
@@ -2576,55 +2555,40 @@ namespace meta_hpp
 
     class constructor_index final {
     public:
-        constructor_index() = delete;
-        [[nodiscard]] std::size_t get_hash() const noexcept;
         [[nodiscard]] const constructor_type& get_type() const noexcept;
+
+        [[nodiscard]] std::size_t get_hash() const noexcept;
+        [[nodiscard]] std::strong_ordering operator<=>(const constructor_index&) const = default;
     private:
         friend detail::constructor_state;
-        template < detail::class_kind Class, typename... Args >
-        [[nodiscard]] static constructor_index make();
-    private:
         explicit constructor_index(constructor_type type);
-        friend bool operator<(const constructor_index& l, const constructor_index& r) noexcept;
-        friend bool operator==(const constructor_index& l, const constructor_index& r) noexcept;
-        friend bool operator!=(const constructor_index& l, const constructor_index& r) noexcept;
     private:
         constructor_type type_;
     };
 
     class destructor_index final {
     public:
-        destructor_index() = delete;
-        [[nodiscard]] std::size_t get_hash() const noexcept;
         [[nodiscard]] const destructor_type& get_type() const noexcept;
+
+        [[nodiscard]] std::size_t get_hash() const noexcept;
+        [[nodiscard]] std::strong_ordering operator<=>(const destructor_index&) const = default;
     private:
         friend detail::destructor_state;
-        template < detail::class_kind Class >
-        [[nodiscard]] static destructor_index make();
-    private:
         explicit destructor_index(destructor_type type);
-        friend bool operator<(const destructor_index& l, const destructor_index& r) noexcept;
-        friend bool operator==(const destructor_index& l, const destructor_index& r) noexcept;
-        friend bool operator!=(const destructor_index& l, const destructor_index& r) noexcept;
     private:
         destructor_type type_;
     };
 
     class evalue_index final {
     public:
-        evalue_index() = delete;
-        [[nodiscard]] std::size_t get_hash() const noexcept;
         [[nodiscard]] const enum_type& get_type() const noexcept;
         [[nodiscard]] const std::string& get_name() const noexcept;
+
+        [[nodiscard]] std::size_t get_hash() const noexcept;
+        [[nodiscard]] std::strong_ordering operator<=>(const evalue_index&) const = default;
     private:
         friend detail::evalue_state;
-        template < detail::enum_kind Enum >
-        [[nodiscard]] static evalue_index make(std::string name);
-    private:
         explicit evalue_index(enum_type type, std::string name);
-        friend bool operator<(const evalue_index& l, const evalue_index& r) noexcept;
-        friend bool operator==(const evalue_index& l, const evalue_index& r) noexcept;
-        friend bool operator!=(const evalue_index& l, const evalue_index& r) noexcept;
     private:
         enum_type type_;
         std::string name_;
@@ -2632,19 +2596,14 @@ namespace meta_hpp
 
     class function_index final {
     public:
-        function_index() = delete;
-        [[nodiscard]] std::size_t get_hash() const noexcept;
         [[nodiscard]] const function_type& get_type() const noexcept;
         [[nodiscard]] const std::string& get_name() const noexcept;
+
+        [[nodiscard]] std::size_t get_hash() const noexcept;
+        [[nodiscard]] std::strong_ordering operator<=>(const function_index&) const = default;
     private:
         friend detail::function_state;
-        template < detail::function_kind Function >
-        [[nodiscard]] static function_index make(std::string name);
-    private:
         explicit function_index(function_type type, std::string name);
-        friend bool operator<(const function_index& l, const function_index& r) noexcept;
-        friend bool operator==(const function_index& l, const function_index& r) noexcept;
-        friend bool operator!=(const function_index& l, const function_index& r) noexcept;
     private:
         function_type type_;
         std::string name_;
@@ -2652,19 +2611,14 @@ namespace meta_hpp
 
     class member_index final {
     public:
-        member_index() = delete;
-        [[nodiscard]] std::size_t get_hash() const noexcept;
         [[nodiscard]] const member_type& get_type() const noexcept;
         [[nodiscard]] const std::string& get_name() const noexcept;
+
+        [[nodiscard]] std::size_t get_hash() const noexcept;
+        [[nodiscard]] std::strong_ordering operator<=>(const member_index&) const = default;
     private:
         friend detail::member_state;
-        template < detail::member_kind Member >
-        [[nodiscard]] static member_index make(std::string name);
-    private:
         explicit member_index(member_type type, std::string name);
-        friend bool operator<(const member_index& l, const member_index& r) noexcept;
-        friend bool operator==(const member_index& l, const member_index& r) noexcept;
-        friend bool operator!=(const member_index& l, const member_index& r) noexcept;
     private:
         member_type type_;
         std::string name_;
@@ -2672,19 +2626,14 @@ namespace meta_hpp
 
     class method_index final {
     public:
-        method_index() = delete;
         [[nodiscard]] std::size_t get_hash() const noexcept;
         [[nodiscard]] const method_type& get_type() const noexcept;
         [[nodiscard]] const std::string& get_name() const noexcept;
+
+        [[nodiscard]] std::strong_ordering operator<=>(const method_index&) const = default;
     private:
         friend detail::method_state;
-        template < detail::method_kind Method >
-        [[nodiscard]] static method_index make(std::string name);
-    private:
         explicit method_index(method_type type, std::string name);
-        friend bool operator<(const method_index& l, const method_index& r) noexcept;
-        friend bool operator==(const method_index& l, const method_index& r) noexcept;
-        friend bool operator!=(const method_index& l, const method_index& r) noexcept;
     private:
         method_type type_;
         std::string name_;
@@ -2692,36 +2641,27 @@ namespace meta_hpp
 
     class scope_index final {
     public:
-        scope_index() = delete;
-        [[nodiscard]] std::size_t get_hash() const noexcept;
         [[nodiscard]] const std::string& get_name() const noexcept;
+
+        [[nodiscard]] std::size_t get_hash() const noexcept;
+        [[nodiscard]] std::strong_ordering operator<=>(const scope_index&) const = default;
     private:
         friend detail::scope_state;
-        [[nodiscard]] static scope_index make(std::string name);
-    private:
         explicit scope_index(std::string name);
-        friend bool operator<(const scope_index& l, const scope_index& r) noexcept;
-        friend bool operator==(const scope_index& l, const scope_index& r) noexcept;
-        friend bool operator!=(const scope_index& l, const scope_index& r) noexcept;
     private:
         std::string name_;
     };
 
     class variable_index final {
     public:
-        variable_index() = delete;
-        [[nodiscard]] std::size_t get_hash() const noexcept;
         [[nodiscard]] const pointer_type& get_type() const noexcept;
         [[nodiscard]] const std::string& get_name() const noexcept;
+
+        [[nodiscard]] std::size_t get_hash() const noexcept;
+        [[nodiscard]] std::strong_ordering operator<=>(const variable_index&) const = default;
     private:
         friend detail::variable_state;
-        template < detail::pointer_kind Pointer >
-        [[nodiscard]] static variable_index make(std::string name);
-    private:
         explicit variable_index(pointer_type type, std::string name);
-        friend bool operator<(const variable_index& l, const variable_index& r) noexcept;
-        friend bool operator==(const variable_index& l, const variable_index& r) noexcept;
-        friend bool operator!=(const variable_index& l, const variable_index& r) noexcept;
     private:
         pointer_type type_;
         std::string name_;
@@ -3309,34 +3249,16 @@ namespace meta_hpp
 namespace meta_hpp
 {
     template < detail::state_family T, detail::state_family U >
-    [[nodiscard]] bool operator<(const T& l, const U& r) noexcept {
-        if ( !static_cast<bool>(r) ) {
-            return false;
-        }
-
-        if ( !static_cast<bool>(l) ) {
-            return true;
-        }
-
-        return l.get_index() < r.get_index();
-    }
-
-    template < detail::state_family T, detail::state_family U >
     [[nodiscard]] bool operator==(const T& l, const U& r) noexcept {
-        if ( static_cast<bool>(l) != static_cast<bool>(r) ) {
-            return false;
-        }
-
-        if ( !static_cast<bool>(l) ) {
-            return true;
-        }
-
-        return l.get_index() == r.get_index();
+        return l.is_valid() == r.is_valid() && (!l.is_valid() || l.get_index() == r.get_index());
     }
 
     template < detail::state_family T, detail::state_family U >
-    [[nodiscard]] bool operator!=(const T& l, const U& r) noexcept {
-        return !(l == r);
+    [[nodiscard]] std::strong_ordering operator<=>(const T& l, const U& r) noexcept {
+        if ( const auto cmp{l.is_valid() <=> r.is_valid()}; cmp != std::strong_ordering::equal ) {
+            return cmp;
+        }
+        return l.is_valid() ? l.get_index() <=> r.get_index() : std::strong_ordering::equal;
     }
 }
 
@@ -3344,38 +3266,26 @@ namespace meta_hpp
 {
     template < detail::state_family T, typename U >
         requires std::is_same_v<U, typename T::index_type>
-    [[nodiscard]] bool operator<(const T& l, const U& r) noexcept {
-        return !static_cast<bool>(l) || l.get_index() < r;
-    }
-
-    template < typename T, detail::state_family U >
-        requires std::is_same_v<T, typename U::index_type>
-    [[nodiscard]] bool operator<(const T& l, const U& r) noexcept {
-        return static_cast<bool>(r) && l < r.get_index();
-    }
-
-    template < detail::state_family T, typename U >
-        requires std::is_same_v<U, typename T::index_type>
     [[nodiscard]] bool operator==(const T& l, const U& r) noexcept {
-        return static_cast<bool>(l) || l.get_index() == r;
+        return l.is_valid() && l.get_index() == r;
     }
 
     template < typename T, detail::state_family U >
         requires std::is_same_v<T, typename U::index_type>
     [[nodiscard]] bool operator==(const T& l, const U& r) noexcept {
-        return static_cast<bool>(r) && l == r.get_index();
+        return r.is_valid() && l == r.get_index();
     }
 
     template < detail::state_family T, typename U >
         requires std::is_same_v<U, typename T::index_type>
-    [[nodiscard]] bool operator!=(const T& l, const U& r) noexcept {
-        return !(l == r);
+    [[nodiscard]] std::strong_ordering operator<=>(const T& l, const U& r) noexcept {
+        return l.is_valid() ? l.get_index() <=> r : std::strong_ordering::less;
     }
 
     template < typename T, detail::state_family U >
         requires std::is_same_v<T, typename U::index_type>
-    [[nodiscard]] bool operator!=(const T& l, const U& r) noexcept {
-        return !(l == r);
+    [[nodiscard]] std::strong_ordering operator<=>(const T& l, const U& r) noexcept {
+        return r.is_valid() ? l <=> r.get_index() : std::strong_ordering::greater;
     }
 }
 
@@ -4895,15 +4805,6 @@ namespace meta_hpp
     : type_{type}
     , position_{position} {}
 
-    template < typename Argument >
-    inline argument_index argument_index::make(std::size_t position) {
-        return argument_index{resolve_type<Argument>(), position};
-    }
-
-    inline std::size_t argument_index::get_hash() const noexcept {
-        return detail::hash_combiner{}(detail::hash_combiner{}(type_), position_);
-    }
-
     inline const any_type& argument_index::get_type() const noexcept {
         return type_;
     }
@@ -4912,16 +4813,8 @@ namespace meta_hpp
         return position_;
     }
 
-    inline bool operator<(const argument_index& l, const argument_index& r) noexcept {
-        return l.type_ < r.type_ || (l.type_ == r.type_ && l.position_ < r.position_);
-    }
-
-    inline bool operator==(const argument_index& l, const argument_index& r) noexcept {
-        return l.type_ == r.type_ && l.position_ == r.position_;
-    }
-
-    inline bool operator!=(const argument_index& l, const argument_index& r) noexcept {
-        return !(l == r);
+    inline std::size_t argument_index::get_hash() const noexcept {
+        return detail::hash_combiner{}(detail::hash_combiner{}(type_), position_);
     }
 }
 
@@ -4930,29 +4823,12 @@ namespace meta_hpp
     inline constructor_index::constructor_index(constructor_type type)
     : type_{type} {}
 
-    template < detail::class_kind Class, typename... Args >
-    constructor_index constructor_index::make() {
-        return constructor_index{resolve_constructor_type<Class, Args...>()};
-    }
-
-    inline std::size_t constructor_index::get_hash() const noexcept {
-        return detail::hash_combiner{}(type_);
-    }
-
     inline const constructor_type& constructor_index::get_type() const noexcept {
         return type_;
     }
 
-    inline bool operator<(const constructor_index& l, const constructor_index& r) noexcept {
-        return l.type_ < r.type_;
-    }
-
-    inline bool operator==(const constructor_index& l, const constructor_index& r) noexcept {
-        return l.type_ == r.type_;
-    }
-
-    inline bool operator!=(const constructor_index& l, const constructor_index& r) noexcept {
-        return !(l == r);
+    inline std::size_t constructor_index::get_hash() const noexcept {
+        return detail::hash_combiner{}(type_);
     }
 }
 
@@ -4961,29 +4837,12 @@ namespace meta_hpp
     inline destructor_index::destructor_index(destructor_type type)
     : type_{type} {}
 
-    template < detail::class_kind Class >
-    destructor_index destructor_index::make() {
-        return destructor_index{resolve_destructor_type<Class>()};
-    }
-
-    inline std::size_t destructor_index::get_hash() const noexcept {
-        return detail::hash_combiner{}(type_);
-    }
-
     inline const destructor_type& destructor_index::get_type() const noexcept {
         return type_;
     }
 
-    inline bool operator<(const destructor_index& l, const destructor_index& r) noexcept {
-        return l.type_ < r.type_;
-    }
-
-    inline bool operator==(const destructor_index& l, const destructor_index& r) noexcept {
-        return l.type_ == r.type_;
-    }
-
-    inline bool operator!=(const destructor_index& l, const destructor_index& r) noexcept {
-        return !(l == r);
+    inline std::size_t destructor_index::get_hash() const noexcept {
+        return detail::hash_combiner{}(type_);
     }
 }
 
@@ -4993,15 +4852,6 @@ namespace meta_hpp
     : type_{type}
     , name_{std::move(name)} {}
 
-    template < detail::enum_kind Enum >
-    evalue_index evalue_index::make(std::string name) {
-        return evalue_index{resolve_type<Enum>(), std::move(name)};
-    }
-
-    inline std::size_t evalue_index::get_hash() const noexcept {
-        return detail::hash_combiner{}(detail::hash_combiner{}(type_), name_);
-    }
-
     inline const enum_type& evalue_index::get_type() const noexcept {
         return type_;
     }
@@ -5010,16 +4860,8 @@ namespace meta_hpp
         return name_;
     }
 
-    inline bool operator<(const evalue_index& l, const evalue_index& r) noexcept {
-        return l.type_ < r.type_ || (l.type_ == r.type_ && std::less<>{}(l.name_, r.name_));
-    }
-
-    inline bool operator==(const evalue_index& l, const evalue_index& r) noexcept {
-        return l.type_ == r.type_ && std::equal_to<>{}(l.name_, r.name_);
-    }
-
-    inline bool operator!=(const evalue_index& l, const evalue_index& r) noexcept {
-        return !(l == r);
+    inline std::size_t evalue_index::get_hash() const noexcept {
+        return detail::hash_combiner{}(detail::hash_combiner{}(type_), name_);
     }
 }
 
@@ -5029,15 +4871,6 @@ namespace meta_hpp
     : type_{type}
     , name_{std::move(name)} {}
 
-    template < detail::function_kind Function >
-    function_index function_index::make(std::string name) {
-        return function_index{resolve_type<Function>(), std::move(name)};
-    }
-
-    inline std::size_t function_index::get_hash() const noexcept {
-        return detail::hash_combiner{}(detail::hash_combiner{}(type_), name_);
-    }
-
     inline const function_type& function_index::get_type() const noexcept {
         return type_;
     }
@@ -5046,16 +4879,8 @@ namespace meta_hpp
         return name_;
     }
 
-    inline bool operator<(const function_index& l, const function_index& r) noexcept {
-        return l.type_ < r.type_ || (l.type_ == r.type_ && std::less<>{}(l.name_, r.name_));
-    }
-
-    inline bool operator==(const function_index& l, const function_index& r) noexcept {
-        return l.type_ == r.type_ && std::equal_to<>{}(l.name_, r.name_);
-    }
-
-    inline bool operator!=(const function_index& l, const function_index& r) noexcept {
-        return !(l == r);
+    inline std::size_t function_index::get_hash() const noexcept {
+        return detail::hash_combiner{}(detail::hash_combiner{}(type_), name_);
     }
 }
 
@@ -5065,15 +4890,6 @@ namespace meta_hpp
     : type_{type}
     , name_{std::move(name)} {}
 
-    template < detail::member_kind Member >
-    member_index member_index::make(std::string name) {
-        return member_index{resolve_type<Member>(), std::move(name)};
-    }
-
-    inline std::size_t member_index::get_hash() const noexcept {
-        return detail::hash_combiner{}(detail::hash_combiner{}(type_), name_);
-    }
-
     inline const member_type& member_index::get_type() const noexcept {
         return type_;
     }
@@ -5082,16 +4898,8 @@ namespace meta_hpp
         return name_;
     }
 
-    inline bool operator<(const member_index& l, const member_index& r) noexcept {
-        return l.type_ < r.type_ || (l.type_ == r.type_ && std::less<>{}(l.name_, r.name_));
-    }
-
-    inline bool operator==(const member_index& l, const member_index& r) noexcept {
-        return l.type_ == r.type_ && std::equal_to<>{}(l.name_, r.name_);
-    }
-
-    inline bool operator!=(const member_index& l, const member_index& r) noexcept {
-        return !(l == r);
+    inline std::size_t member_index::get_hash() const noexcept {
+        return detail::hash_combiner{}(detail::hash_combiner{}(type_), name_);
     }
 }
 
@@ -5101,15 +4909,6 @@ namespace meta_hpp
     : type_{type}
     , name_{std::move(name)} {}
 
-    template < detail::method_kind Method >
-    method_index method_index::make(std::string name) {
-        return method_index{resolve_type<Method>(), std::move(name)};
-    }
-
-    inline std::size_t method_index::get_hash() const noexcept {
-        return detail::hash_combiner{}(detail::hash_combiner{}(type_), name_);
-    }
-
     inline const method_type& method_index::get_type() const noexcept {
         return type_;
     }
@@ -5118,16 +4917,8 @@ namespace meta_hpp
         return name_;
     }
 
-    inline bool operator<(const method_index& l, const method_index& r) noexcept {
-        return l.type_ < r.type_ || (l.type_ == r.type_ && std::less<>{}(l.name_, r.name_));
-    }
-
-    inline bool operator==(const method_index& l, const method_index& r) noexcept {
-        return l.type_ == r.type_ && std::equal_to<>{}(l.name_, r.name_);
-    }
-
-    inline bool operator!=(const method_index& l, const method_index& r) noexcept {
-        return !(l == r);
+    inline std::size_t method_index::get_hash() const noexcept {
+        return detail::hash_combiner{}(detail::hash_combiner{}(type_), name_);
     }
 }
 
@@ -5136,28 +4927,12 @@ namespace meta_hpp
     inline scope_index::scope_index(std::string name)
     : name_{std::move(name)} {}
 
-    inline scope_index scope_index::make(std::string name) {
-        return scope_index{std::move(name)};
-    }
-
-    inline std::size_t scope_index::get_hash() const noexcept {
-        return detail::hash_combiner{}(name_);
-    }
-
     inline const std::string& scope_index::get_name() const noexcept {
         return name_;
     }
 
-    inline bool operator<(const scope_index& l, const scope_index& r) noexcept {
-        return std::less<>{}(l.name_, r.name_);
-    }
-
-    inline bool operator==(const scope_index& l, const scope_index& r) noexcept {
-        return std::equal_to<>{}(l.name_, r.name_);
-    }
-
-    inline bool operator!=(const scope_index& l, const scope_index& r) noexcept {
-        return !(l == r);
+    inline std::size_t scope_index::get_hash() const noexcept {
+        return detail::hash_combiner{}(name_);
     }
 }
 
@@ -5167,15 +4942,6 @@ namespace meta_hpp
     : type_{type}
     , name_{std::move(name)} {}
 
-    template < detail::pointer_kind Pointer >
-    variable_index variable_index::make(std::string name) {
-        return variable_index{resolve_type<Pointer>(), std::move(name)};
-    }
-
-    inline std::size_t variable_index::get_hash() const noexcept {
-        return detail::hash_combiner{}(detail::hash_combiner{}(type_), name_);
-    }
-
     inline const pointer_type& variable_index::get_type() const noexcept {
         return type_;
     }
@@ -5184,16 +4950,8 @@ namespace meta_hpp
         return name_;
     }
 
-    inline bool operator<(const variable_index& l, const variable_index& r) noexcept {
-        return l.type_ < r.type_ || (l.type_ == r.type_ && std::less<>{}(l.name_, r.name_));
-    }
-
-    inline bool operator==(const variable_index& l, const variable_index& r) noexcept {
-        return l.type_ == r.type_ && std::equal_to<>{}(l.name_, r.name_);
-    }
-
-    inline bool operator!=(const variable_index& l, const variable_index& r) noexcept {
-        return !(l == r);
+    inline std::size_t variable_index::get_hash() const noexcept {
+        return detail::hash_combiner{}(detail::hash_combiner{}(type_), name_);
     }
 }
 
@@ -5205,7 +4963,7 @@ namespace meta_hpp::detail
 
     template < typename Argument >
     inline argument_state_ptr argument_state::make(std::size_t position, metadata_map metadata) {
-        argument_state state{argument_index::make<Argument>(position), std::move(metadata)};
+        argument_state state{argument_index{resolve_type<Argument>(), position}, std::move(metadata)};
         return make_intrusive<argument_state>(std::move(state));
     }
 }
@@ -5884,7 +5642,7 @@ namespace meta_hpp::detail
 
     template < constructor_policy_kind Policy, class_kind Class, typename... Args >
     constructor_state_ptr constructor_state::make(metadata_map metadata) {
-        constructor_state state{constructor_index::make<Class, Args...>(), std::move(metadata)};
+        constructor_state state{constructor_index{resolve_constructor_type<Class, Args...>()}, std::move(metadata)};
         state.create = make_constructor_create<Policy, Class, Args...>();
         state.create_at = make_constructor_create_at<Class, Args...>();
         state.is_invocable_with = make_constructor_is_invocable_with<Class, Args...>();
@@ -6058,7 +5816,7 @@ namespace meta_hpp::detail
 
     template < class_kind Class >
     destructor_state_ptr destructor_state::make(metadata_map metadata) {
-        destructor_state state{destructor_index::make<Class>(), std::move(metadata)};
+        destructor_state state{destructor_index{resolve_destructor_type<Class>()}, std::move(metadata)};
         state.destroy = make_destructor_destroy<Class>();
         state.destroy_at = make_destructor_destroy_at<Class>();
         return make_intrusive<destructor_state>(std::move(state));
@@ -6193,7 +5951,7 @@ namespace meta_hpp::detail
 
     template < enum_kind Enum >
     evalue_state_ptr evalue_state::make(std::string name, Enum evalue, metadata_map metadata) {
-        evalue_state state{evalue_index::make<Enum>(std::move(name)), std::move(metadata)};
+        evalue_state state{evalue_index{resolve_type<Enum>(), std::move(name)}, std::move(metadata)};
         state.enum_value = uvalue{evalue};
         state.underlying_value = uvalue{to_underlying(evalue)};
         return make_intrusive<evalue_state>(std::move(state));
@@ -6407,7 +6165,7 @@ namespace meta_hpp::detail
 
     template < function_policy_kind Policy, function_kind Function >
     function_state_ptr function_state::make(std::string name, Function function, metadata_map metadata) {
-        function_state state{function_index::make<Function>(std::move(name)), std::move(metadata)};
+        function_state state{function_index{resolve_type<Function>(), std::move(name)}, std::move(metadata)};
         state.invoke = make_function_invoke<Policy>(std::move(function));
         state.is_invocable_with = make_function_is_invocable_with<Function>();
         state.arguments = make_function_arguments<Function>();
@@ -6906,7 +6664,7 @@ namespace meta_hpp::detail
 
     template < member_policy_kind Policy, member_kind Member >
     member_state_ptr member_state::make(std::string name, Member member, metadata_map metadata) {
-        member_state state{member_index::make<Member>(std::move(name)), std::move(metadata)};
+        member_state state{member_index{resolve_type<Member>(), std::move(name)}, std::move(metadata)};
         state.getter = make_member_getter<Policy>(member);
         state.setter = make_member_setter(member);
         state.is_gettable_with = make_member_is_gettable_with<Member>();
@@ -7179,7 +6937,7 @@ namespace meta_hpp::detail
 
     template < method_policy_kind Policy, method_kind Method >
     method_state_ptr method_state::make(std::string name, Method method, metadata_map metadata) {
-        method_state state{method_index::make<Method>(std::move(name)), std::move(metadata)};
+        method_state state{method_index{resolve_type<Method>(), std::move(name)}, std::move(metadata)};
         state.invoke = make_method_invoke<Policy>(std::move(method));
         state.is_invocable_with = make_method_is_invocable_with<Method>();
         state.arguments = make_method_arguments<Method>();
@@ -7397,7 +7155,7 @@ namespace meta_hpp::detail
 
     template < variable_policy_kind Policy, pointer_kind Pointer >
     variable_state_ptr variable_state::make(std::string name, Pointer pointer, metadata_map metadata) {
-        variable_state state{variable_index::make<Pointer>(std::move(name)), std::move(metadata)};
+        variable_state state{variable_index{resolve_type<Pointer>(), std::move(name)}, std::move(metadata)};
         state.getter = make_variable_getter<Policy>(pointer);
         state.setter = make_variable_setter(pointer);
         state.is_settable_with = make_variable_is_settable_with<Pointer>();
@@ -7852,7 +7610,7 @@ namespace meta_hpp::detail
     , metadata{std::move(nmetadata)} {}
 
     inline scope_state_ptr scope_state::make(std::string name, metadata_map metadata) {
-        scope_state state{scope_index::make(std::move(name)), std::move(metadata)};
+        scope_state state{scope_index{std::move(name)}, std::move(metadata)};
         return make_intrusive<scope_state>(std::move(state));
     }
 }

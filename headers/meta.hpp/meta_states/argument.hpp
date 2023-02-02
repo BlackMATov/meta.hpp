@@ -17,7 +17,7 @@ namespace meta_hpp::detail
 
     template < typename Argument >
     inline argument_state_ptr argument_state::make(std::size_t position, metadata_map metadata) {
-        argument_state state{argument_index::make<Argument>(position), std::move(metadata)};
+        argument_state state{argument_index{resolve_type<Argument>(), position}, std::move(metadata)};
         return make_intrusive<argument_state>(std::move(state));
     }
 }

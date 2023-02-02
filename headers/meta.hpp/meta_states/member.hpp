@@ -152,7 +152,7 @@ namespace meta_hpp::detail
 
     template < member_policy_kind Policy, member_kind Member >
     member_state_ptr member_state::make(std::string name, Member member, metadata_map metadata) {
-        member_state state{member_index::make<Member>(std::move(name)), std::move(metadata)};
+        member_state state{member_index{resolve_type<Member>(), std::move(name)}, std::move(metadata)};
         state.getter = make_member_getter<Policy>(member);
         state.setter = make_member_setter(member);
         state.is_gettable_with = make_member_is_gettable_with<Member>();

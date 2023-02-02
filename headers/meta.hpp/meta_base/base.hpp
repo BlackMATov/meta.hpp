@@ -24,6 +24,7 @@
 #include <algorithm>
 #include <array>
 #include <atomic>
+#include <compare>
 #include <concepts>
 #include <deque>
 #include <functional>

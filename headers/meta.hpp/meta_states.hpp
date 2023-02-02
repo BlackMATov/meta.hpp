@@ -415,34 +415,16 @@ namespace meta_hpp
 namespace meta_hpp
 {
     template < detail::state_family T, detail::state_family U >
-    [[nodiscard]] bool operator<(const T& l, const U& r) noexcept {
-        if ( !static_cast<bool>(r) ) {
-            return false;
-        }
-
-        if ( !static_cast<bool>(l) ) {
-            return true;
-        }
-
-        return l.get_index() < r.get_index();
-    }
-
-    template < detail::state_family T, detail::state_family U >
     [[nodiscard]] bool operator==(const T& l, const U& r) noexcept {
-        if ( static_cast<bool>(l) != static_cast<bool>(r) ) {
-            return false;
-        }
-
-        if ( !static_cast<bool>(l) ) {
-            return true;
-        }
-
-        return l.get_index() == r.get_index();
+        return l.is_valid() == r.is_valid() && (!l.is_valid() || l.get_index() == r.get_index());
     }
 
     template < detail::state_family T, detail::state_family U >
-    [[nodiscard]] bool operator!=(const T& l, const U& r) noexcept {
-        return !(l == r);
+    [[nodiscard]] std::strong_ordering operator<=>(const T& l, const U& r) noexcept {
+        if ( const auto cmp{l.is_valid() <=> r.is_valid()}; cmp != std::strong_ordering::equal ) {
+            return cmp;
+        }
+        return l.is_valid() ? l.get_index() <=> r.get_index() : std::strong_ordering::equal;
     }
 }
 
@@ -450,38 +432,26 @@ namespace meta_hpp
 {
     template < detail::state_family T, typename U >
         requires std::is_same_v<U, typename T::index_type>
-    [[nodiscard]] bool operator<(const T& l, const U& r) noexcept {
-        return !static_cast<bool>(l) || l.get_index() < r;
-    }
-
-    template < typename T, detail::state_family U >
-        requires std::is_same_v<T, typename U::index_type>
-    [[nodiscard]] bool operator<(const T& l, const U& r) noexcept {
-        return static_cast<bool>(r) && l < r.get_index();
-    }
-
-    template < detail::state_family T, typename U >
-        requires std::is_same_v<U, typename T::index_type>
     [[nodiscard]] bool operator==(const T& l, const U& r) noexcept {
-        return static_cast<bool>(l) || l.get_index() == r;
+        return l.is_valid() && l.get_index() == r;
     }
 
     template < typename T, detail::state_family U >
         requires std::is_same_v<T, typename U::index_type>
     [[nodiscard]] bool operator==(const T& l, const U& r) noexcept {
-        return static_cast<bool>(r) && l == r.get_index();
+        return r.is_valid() && l == r.get_index();
     }
 
     template < detail::state_family T, typename U >
         requires std::is_same_v<U, typename T::index_type>
-    [[nodiscard]] bool operator!=(const T& l, const U& r) noexcept {
-        return !(l == r);
+    [[nodiscard]] std::strong_ordering operator<=>(const T& l, const U& r) noexcept {
+        return l.is_valid() ? l.get_index() <=> r : std::strong_ordering::less;
     }
 
     template < typename T, detail::state_family U >
         requires std::is_same_v<T, typename U::index_type>
-    [[nodiscard]] bool operator!=(const T& l, const U& r) noexcept {
-        return !(l == r);
+    [[nodiscard]] std::strong_ordering operator<=>(const T& l, const U& r) noexcept {
+        return r.is_valid() ? l <=> r.get_index() : std::strong_ordering::greater;
     }
 }
 

@@ -205,6 +205,9 @@ TEST_CASE("meta/meta_base/memory_buffer") {
         CHECK_FALSE(buf1 == buf3);
 
         CHECK(buf3 == buf4);
+
+        CHECK_FALSE(memory_buffer{} == buf1);
+        CHECK(memory_buffer{} == memory_buffer{});
     }
 
     SUBCASE("operator!=") {

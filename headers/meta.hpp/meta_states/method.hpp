@@ -127,7 +127,7 @@ namespace meta_hpp::detail
 
     template < method_policy_kind Policy, method_kind Method >
     method_state_ptr method_state::make(std::string name, Method method, metadata_map metadata) {
-        method_state state{method_index::make<Method>(std::move(name)), std::move(metadata)};
+        method_state state{method_index{resolve_type<Method>(), std::move(name)}, std::move(metadata)};
         state.invoke = make_method_invoke<Policy>(std::move(method));
         state.is_invocable_with = make_method_is_invocable_with<Method>();
         state.arguments = make_method_arguments<Method>();

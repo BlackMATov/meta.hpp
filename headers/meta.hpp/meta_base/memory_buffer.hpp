@@ -67,26 +67,6 @@ namespace meta_hpp::detail
             }
         }
 
-        void swap(memory_buffer& other) noexcept {
-            std::swap(data_, other.data_);
-            std::swap(size_, other.size_);
-            std::swap(align_, other.align_);
-        }
-
-        [[nodiscard]] int compare(const memory_buffer& other) const noexcept {
-            if ( size_ < other.size_ ) {
-                return -1;
-            }
-
-            if ( size_ > other.size_ ) {
-                return +1;
-            }
-
-            return size_ != 0
-                ? std::memcmp(data_, other.data_, size_)
-                : 0;
-        }
-
         [[nodiscard]] void* get_data() noexcept {
             return data_;
         }
@@ -103,6 +83,28 @@ namespace meta_hpp::detail
             return align_;
         }
 
+        void swap(memory_buffer& other) noexcept {
+            std::swap(data_, other.data_);
+            std::swap(size_, other.size_);
+            std::swap(align_, other.align_);
+        }
+
+        [[nodiscard]] std::size_t get_hash() const noexcept {
+            return fnv1a_hash(data_, size_);
+        }
+
+        [[nodiscard]] bool operator==(const memory_buffer& other) const noexcept {
+            return (size_ == other.size_)
+                && (size_ == 0 || std::memcmp(data_, other.data_, size_) == 0);
+        }
+
+        [[nodiscard]] std::strong_ordering operator<=>(const memory_buffer& other) const noexcept {
+            if ( const auto cmp{size_ <=> other.size_}; cmp != std::strong_ordering::equal ) {
+                return cmp;
+            }
+            return (size_ == 0 ? 0 : std::memcmp(data_, other.data_, size_)) <=> 0;
+        }
+
     private:
         void* data_{};
         std::size_t size_{};
@@ -110,9 +112,6 @@ namespace meta_hpp::detail
     };
 
     inline void swap(memory_buffer& l, memory_buffer& r) noexcept { l.swap(r); }
-    [[nodiscard]] inline bool operator<(const memory_buffer& l, const memory_buffer& r) noexcept { return l.compare(r) < 0; }
-    [[nodiscard]] inline bool operator==(const memory_buffer& l, const memory_buffer& r) noexcept { return l.compare(r) == 0; }
-    [[nodiscard]] inline bool operator!=(const memory_buffer& l, const memory_buffer& r) noexcept { return l.compare(r) != 0; }
 }
 
 namespace std
@@ -120,7 +119,7 @@ namespace std
     template <>
     struct hash<meta_hpp::detail::memory_buffer> {
         size_t operator()(const meta_hpp::detail::memory_buffer& mb) const noexcept {
-            return meta_hpp::detail::fnv1a_hash(mb.get_data(), mb.get_size());
+            return mb.get_hash();
         }
     };
 }
