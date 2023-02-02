@@ -45,6 +45,12 @@ namespace meta_hpp::detail
     };
 
     constexpr void swap(hashed_string& l, hashed_string& r) noexcept { l.swap(r); }
+
+    [[nodiscard]] constexpr bool operator==(hashed_string l, std::string_view r) noexcept { return l == hashed_string{r}; }
+    [[nodiscard]] constexpr bool operator==(std::string_view l, hashed_string r) noexcept { return hashed_string{l} == r; }
+
+    [[nodiscard]] constexpr std::strong_ordering operator<=>(hashed_string l, std::string_view r) noexcept { return l <=> hashed_string{r}; }
+    [[nodiscard]] constexpr std::strong_ordering operator<=>(std::string_view l, hashed_string r) noexcept { return hashed_string{l} <=> r; }
 }
 
 namespace std

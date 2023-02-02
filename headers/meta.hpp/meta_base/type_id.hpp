@@ -55,6 +55,8 @@ namespace meta_hpp::detail
             return id;
         }
     };
+
+    inline void swap(type_id& l, type_id& r) noexcept { l.swap(r); }
 }
 
 namespace std
