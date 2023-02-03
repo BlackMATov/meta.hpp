@@ -133,7 +133,7 @@ namespace meta_hpp::detail
 
     template < constructor_policy_kind Policy, class_kind Class, typename... Args >
     constructor_state_ptr constructor_state::make(metadata_map metadata) {
-        constructor_state state{constructor_index::make<Class, Args...>(), std::move(metadata)};
+        constructor_state state{constructor_index{resolve_constructor_type<Class, Args...>()}, std::move(metadata)};
         state.create = make_constructor_create<Policy, Class, Args...>();
         state.create_at = make_constructor_create_at<Class, Args...>();
         state.is_invocable_with = make_constructor_is_invocable_with<Class, Args...>();

@@ -22,7 +22,7 @@ TEST_CASE("meta/meta_base/hashed_string") {
 
     SUBCASE("ctor/1") {
         constexpr hashed_string hs{"hello"};
-        static_assert(hs.get_hash() == meta::detail::fnv1a_hash("hello"));
+        static_assert(hs.get_hash() == meta::detail::fnv1a_hash("hello", 5));
 
         CHECK(hs == hashed_string{std::string{"hello"}});
         CHECK(hs == hashed_string{std::string_view{"hello"}});
@@ -77,12 +77,17 @@ TEST_CASE("meta/meta_base/hashed_string") {
         constexpr hashed_string hs2{"hello"};
         static_assert(!(hs1 < hs2) && !(hs2 < hs1));
         static_assert(hs1 < hashed_string{"world"} || hashed_string{"world"} < hs1);
+        static_assert((hs1 < "world" || hs1 > "world"));
+        static_assert(("world" < hs1 || "world" > hs1));
     }
 
     SUBCASE("operator==") {
         constexpr hashed_string hs1{"hello"};
         static_assert(hs1 == hashed_string{"hello"});
         static_assert(hs1 != hashed_string{"world"});
+        static_assert(hs1 == "hello");
+        static_assert("hello" == hs1);
+        static_assert("world" != hs1);
     }
 
     SUBCASE("swap") {

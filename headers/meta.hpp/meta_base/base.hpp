@@ -15,13 +15,16 @@
 #endif
 
 #include <cassert>
+#include <climits>
 #include <cstddef>
 #include <cstdint>
 #include <cstdlib>
+#include <cstring>
 
 #include <algorithm>
 #include <array>
 #include <atomic>
+#include <compare>
 #include <concepts>
 #include <deque>
 #include <functional>

@@ -54,7 +54,7 @@ TEST_CASE("meta/meta_manuals/inplace") {
     // alignas(ivec2) std::byte ivec2_buffer[sizeof(ivec2)];
 
     // creates 'ivec2' on the memory buffer ('placement new' under the hood)
-    const meta::uvalue ivec2_ptr = ivec2_type.create_at(ivec2_buffer.get_memory(), 2, 3);
+    const meta::uvalue ivec2_ptr = ivec2_type.create_at(ivec2_buffer.get_data(), 2, 3);
 
     // 'create_at' returns a pointer to the constructed object
     CHECK(ivec2_ptr.get_type() == meta::resolve_type<ivec2*>());
@@ -65,5 +65,5 @@ TEST_CASE("meta/meta_manuals/inplace") {
     CHECK(ivec2_length2(ivec2_ptr).get_as<int>() == 13);
 
     // you must manually call the object's destructor
-    CHECK(ivec2_type.destroy_at(ivec2_buffer.get_memory()));
+    CHECK(ivec2_type.destroy_at(ivec2_buffer.get_data()));
 }

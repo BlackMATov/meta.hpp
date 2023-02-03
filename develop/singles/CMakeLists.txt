@@ -10,7 +10,7 @@ set(META_HPP_ROOT_DIR "${CMAKE_CURRENT_SOURCE_DIR}/../..")
 set(META_HPP_SINGLES_INPUT "${META_HPP_ROOT_DIR}/headers/meta.hpp/meta_all.hpp")
 set(META_HPP_SINGLES_OUTPUT "${META_HPP_ROOT_DIR}/develop/singles/headers/meta.hpp/meta_all.hpp")
 set(META_HPP_SINGLES_SCRIPT "${META_HPP_ROOT_DIR}/develop/singles/scripts/build_singles.py")
-file(GLOB_RECURSE META_SINGLES_DEPENDS "${META_HPP_ROOT_DIR}/headers/*.hpp")
+file(GLOB_RECURSE META_SINGLES_DEPENDS CONFIGURE_DEPENDS "${META_HPP_ROOT_DIR}/headers/*.hpp")
 
 add_custom_command(OUTPUT "${META_HPP_SINGLES_OUTPUT}"
     COMMAND "${Python3_EXECUTABLE}" "${META_HPP_SINGLES_SCRIPT}"

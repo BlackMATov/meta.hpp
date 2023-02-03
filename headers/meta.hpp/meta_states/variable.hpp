@@ -101,7 +101,7 @@ namespace meta_hpp::detail
 
     template < variable_policy_kind Policy, pointer_kind Pointer >
     variable_state_ptr variable_state::make(std::string name, Pointer pointer, metadata_map metadata) {
-        variable_state state{variable_index::make<Pointer>(std::move(name)), std::move(metadata)};
+        variable_state state{variable_index{resolve_type<Pointer>(), std::move(name)}, std::move(metadata)};
         state.getter = make_variable_getter<Policy>(pointer);
         state.setter = make_variable_setter(pointer);
         state.is_settable_with = make_variable_is_settable_with<Pointer>();

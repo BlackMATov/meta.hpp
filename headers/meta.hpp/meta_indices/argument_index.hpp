@@ -17,15 +17,6 @@ namespace meta_hpp
     : type_{type}
     , position_{position} {}
 
-    template < typename Argument >
-    inline argument_index argument_index::make(std::size_t position) {
-        return argument_index{resolve_type<Argument>(), position};
-    }
-
-    inline std::size_t argument_index::get_hash() const noexcept {
-        return detail::hash_combiner{}(detail::hash_combiner{}(type_), position_);
-    }
-
     inline const any_type& argument_index::get_type() const noexcept {
         return type_;
     }
@@ -34,15 +25,7 @@ namespace meta_hpp
         return position_;
     }
 
-    inline bool operator<(const argument_index& l, const argument_index& r) noexcept {
-        return l.type_ < r.type_ || (l.type_ == r.type_ && l.position_ < r.position_);
-    }
-
-    inline bool operator==(const argument_index& l, const argument_index& r) noexcept {
-        return l.type_ == r.type_ && l.position_ == r.position_;
-    }
-
-    inline bool operator!=(const argument_index& l, const argument_index& r) noexcept {
-        return !(l == r);
+    inline std::size_t argument_index::get_hash() const noexcept {
+        return detail::hash_combiner{}(detail::hash_combiner{}(type_), position_);
     }
 }

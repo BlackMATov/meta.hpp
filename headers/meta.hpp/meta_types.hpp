@@ -472,67 +472,29 @@ namespace std
 namespace meta_hpp
 {
     template < detail::type_family T, detail::type_family U >
-    [[nodiscard]] bool operator<(const T& l, const U& r) noexcept {
-        if ( !static_cast<bool>(r) ) {
-            return false;
-        }
-
-        if ( !static_cast<bool>(l) ) {
-            return true;
-        }
-
-        return l.get_id() < r.get_id();
-    }
-
-    template < detail::type_family T, detail::type_family U >
     [[nodiscard]] bool operator==(const T& l, const U& r) noexcept {
-        if ( static_cast<bool>(l) != static_cast<bool>(r) ) {
-            return false;
-        }
-
-        if ( !static_cast<bool>(l) ) {
-            return true;
-        }
-
-        return l.get_id() == r.get_id();
+        return l.is_valid() == r.is_valid() && (!l.is_valid() || l.get_id() == r.get_id());
     }
 
     template < detail::type_family T, detail::type_family U >
-    [[nodiscard]] bool operator!=(const T& l, const U& r) noexcept {
-        return !(l == r);
+    [[nodiscard]] std::strong_ordering operator<=>(const T& l, const U& r) noexcept {
+        if ( const auto cmp{l.is_valid() <=> r.is_valid()}; cmp != std::strong_ordering::equal ) {
+            return cmp;
+        }
+        return l.is_valid() ? l.get_id() <=> r.get_id() : std::strong_ordering::equal;
     }
 }
 
 namespace meta_hpp
 {
     template < detail::type_family T >
-    [[nodiscard]] bool operator<(const T& l, type_id r) noexcept {
-        return !static_cast<bool>(l) || l.get_id() < r;
-    }
-
-    template < detail::type_family U >
-    [[nodiscard]] bool operator<(type_id l, const U& r) noexcept {
-        return static_cast<bool>(r) && l < r.get_id();
-    }
-
-    template < detail::type_family T >
     [[nodiscard]] bool operator==(const T& l, type_id r) noexcept {
-        return static_cast<bool>(l) || l.get_id() == r;
-    }
-
-    template < detail::type_family U >
-    [[nodiscard]] bool operator==(type_id l, const U& r) noexcept {
-        return static_cast<bool>(r) && l == r.get_id();
+        return l.is_valid() && l.get_id() == r;
     }
 
     template < detail::type_family T >
-    [[nodiscard]] bool operator!=(const T& l, type_id r) noexcept {
-        return !(l == r);
-    }
-
-    template < detail::type_family U >
-    [[nodiscard]] bool operator!=(type_id l, const U& r) noexcept {
-        return !(l == r);
+    [[nodiscard]] std::strong_ordering operator<=>(const T& l, type_id r) noexcept {
+        return l.is_valid() ? l.get_id() <=> r : std::strong_ordering::less;
     }
 }
 

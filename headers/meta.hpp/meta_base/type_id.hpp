@@ -25,20 +25,20 @@ namespace meta_hpp::detail
 
         ~type_id() = default;
 
+        void swap(type_id& other) noexcept {
+            std::swap(id_, other.id_);
+        }
+
         [[nodiscard]] std::size_t get_hash() const noexcept {
             return std::hash<underlying_type>{}(id_);
         }
 
-        [[nodiscard]] friend bool operator<(type_id l, type_id r) noexcept {
-            return l.id_ < r.id_;
+        [[nodiscard]] bool operator==(type_id other) const noexcept {
+            return id_ == other.id_;
         }
 
-        [[nodiscard]] friend bool operator==(type_id l, type_id r) noexcept {
-            return l.id_ == r.id_;
-        }
-
-        [[nodiscard]] friend bool operator!=(type_id l, type_id r) noexcept {
-            return l.id_ != r.id_;
+        [[nodiscard]] std::strong_ordering operator<=>(type_id other) const noexcept {
+            return id_ <=> other.id_;
         }
     private:
         using underlying_type = std::uint32_t;
@@ -55,6 +55,10 @@ namespace meta_hpp::detail
             return id;
         }
     };
+
+    inline void swap(type_id& l, type_id& r) noexcept {
+        l.swap(r);
+    }
 }
 
 namespace std

@@ -57,7 +57,7 @@ namespace meta_hpp::detail
 
     template < class_kind Class >
     destructor_state_ptr destructor_state::make(metadata_map metadata) {
-        destructor_state state{destructor_index::make<Class>(), std::move(metadata)};
+        destructor_state state{destructor_index{resolve_destructor_type<Class>()}, std::move(metadata)};
         state.destroy = make_destructor_destroy<Class>();
         state.destroy_at = make_destructor_destroy_at<Class>();
         return make_intrusive<destructor_state>(std::move(state));
