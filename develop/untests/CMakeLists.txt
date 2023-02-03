@@ -1,6 +1,6 @@
 project(meta.hpp.untests)
 
-file(GLOB_RECURSE UNTESTS_SOURCES "*.cpp" "*.hpp")
+file(GLOB_RECURSE UNTESTS_SOURCES CONFIGURE_DEPENDS "*.cpp" "*.hpp")
 source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR} FILES ${UNTESTS_SOURCES})
 
 add_executable(${PROJECT_NAME} ${UNTESTS_SOURCES})

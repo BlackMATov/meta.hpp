@@ -1,6 +1,6 @@
 project(meta.hpp.manuals)
 
-file(GLOB_RECURSE MANUALS_SOURCES "*.cpp" "*.hpp")
+file(GLOB_RECURSE MANUALS_SOURCES CONFIGURE_DEPENDS "*.cpp" "*.hpp")
 source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR} FILES ${MANUALS_SOURCES})
 
 add_executable(${PROJECT_NAME} ${MANUALS_SOURCES})
