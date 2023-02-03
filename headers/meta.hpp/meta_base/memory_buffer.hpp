@@ -111,7 +111,9 @@ namespace meta_hpp::detail
         std::align_val_t align_{};
     };
 
-    inline void swap(memory_buffer& l, memory_buffer& r) noexcept { l.swap(r); }
+    inline void swap(memory_buffer& l, memory_buffer& r) noexcept {
+        l.swap(r);
+    }
 }
 
 namespace std

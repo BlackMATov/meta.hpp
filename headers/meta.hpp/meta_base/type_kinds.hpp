@@ -20,7 +20,7 @@ namespace meta_hpp::detail
     concept enum_kind = std::is_enum_v<T>;
 
     template < typename T >
-    concept function_kind = std::is_pointer_v<T> && std::is_function_v<std::remove_pointer_t<T>>;
+    concept function_kind = (std::is_pointer_v<T> && std::is_function_v<std::remove_pointer_t<T>>);
 
     template < typename T >
     concept member_kind = std::is_member_object_pointer_v<T>;
@@ -35,7 +35,7 @@ namespace meta_hpp::detail
     concept number_kind = std::is_arithmetic_v<T>;
 
     template < typename T >
-    concept pointer_kind = std::is_pointer_v<T> && !std::is_function_v<std::remove_pointer_t<T>>;
+    concept pointer_kind = (std::is_pointer_v<T> && !std::is_function_v<std::remove_pointer_t<T>>);
 
     template < typename T >
     concept reference_kind = std::is_reference_v<T>;

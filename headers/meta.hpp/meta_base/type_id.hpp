@@ -56,7 +56,9 @@ namespace meta_hpp::detail
         }
     };
 
-    inline void swap(type_id& l, type_id& r) noexcept { l.swap(r); }
+    inline void swap(type_id& l, type_id& r) noexcept {
+        l.swap(r);
+    }
 }
 
 namespace std

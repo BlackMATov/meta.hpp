@@ -436,22 +436,10 @@ namespace meta_hpp
         return l.is_valid() && l.get_index() == r;
     }
 
-    template < typename T, detail::state_family U >
-        requires std::is_same_v<T, typename U::index_type>
-    [[nodiscard]] bool operator==(const T& l, const U& r) noexcept {
-        return r.is_valid() && l == r.get_index();
-    }
-
     template < detail::state_family T, typename U >
         requires std::is_same_v<U, typename T::index_type>
     [[nodiscard]] std::strong_ordering operator<=>(const T& l, const U& r) noexcept {
         return l.is_valid() ? l.get_index() <=> r : std::strong_ordering::less;
-    }
-
-    template < typename T, detail::state_family U >
-        requires std::is_same_v<T, typename U::index_type>
-    [[nodiscard]] std::strong_ordering operator<=>(const T& l, const U& r) noexcept {
-        return r.is_valid() ? l <=> r.get_index() : std::strong_ordering::greater;
     }
 }
 

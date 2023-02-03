@@ -290,7 +290,7 @@ namespace meta_hpp::detail
 #  define META_HPP_TRY try
 #  define META_HPP_CATCH(e) catch(e)
 #  define META_HPP_RETHROW() throw
-#  define META_HPP_THROW_AS(e, m) throw e{m}
+#  define META_HPP_THROW_AS(e, m) throw e(m)
 #else
 #  define META_HPP_TRY if ( true )
 #  define META_HPP_CATCH(e) if ( false )
@@ -608,7 +608,17 @@ namespace meta_hpp::detail
         std::size_t hash_{fnv1a_hash("", 0)};
     };
 
-    constexpr void swap(hashed_string& l, hashed_string& r) noexcept { l.swap(r); }
+    constexpr void swap(hashed_string& l, hashed_string& r) noexcept {
+        l.swap(r);
+    }
+
+    [[nodiscard]] constexpr bool operator==(hashed_string l, std::string_view r) noexcept {
+        return l == hashed_string{r};
+    }
+
+    [[nodiscard]] constexpr std::strong_ordering operator<=>(hashed_string l, std::string_view r) noexcept {
+        return l <=> hashed_string{r};
+    }
 }
 
 namespace std
@@ -847,27 +857,29 @@ namespace meta_hpp::detail
     }
 
     template < typename T >
-    void swap(intrusive_ptr<T>& l, intrusive_ptr<T>& r) noexcept { return l.swap(r); }
+    void swap(intrusive_ptr<T>& l, intrusive_ptr<T>& r) noexcept {
+        return l.swap(r);
+    }
 
     template < typename T >
-    [[nodiscard]] bool operator==(const intrusive_ptr<T>& l, const T* r) noexcept { return l.get() == r; }
-    template < typename T >
-    [[nodiscard]] bool operator==(const T* l, const intrusive_ptr<T>& r) noexcept { return l == r.get(); }
+    [[nodiscard]] bool operator==(const intrusive_ptr<T>& l, const T* r) noexcept {
+        return l.get() == r;
+    }
 
     template < typename T >
-    [[nodiscard]] std::strong_ordering operator<=>(const intrusive_ptr<T>& l, const T* r) noexcept { return l.get() <=> r; }
-    template < typename T >
-    [[nodiscard]] std::strong_ordering operator<=>(const T* l, const intrusive_ptr<T>& r) noexcept { return l <=> r.get(); }
+    [[nodiscard]] std::strong_ordering operator<=>(const intrusive_ptr<T>& l, const T* r) noexcept {
+        return l.get() <=> r;
+    }
 
     template < typename T >
-    [[nodiscard]] bool operator==(const intrusive_ptr<T>& l, std::nullptr_t) noexcept { return !l; }
-    template < typename T >
-    [[nodiscard]] bool operator==(std::nullptr_t, const intrusive_ptr<T>& r) noexcept { return !r; }
+    [[nodiscard]] bool operator==(const intrusive_ptr<T>& l, std::nullptr_t) noexcept {
+        return !l;
+    }
 
     template < typename T >
-    [[nodiscard]] std::strong_ordering operator<=>(const intrusive_ptr<T>& l, std::nullptr_t) noexcept { return l <=> nullptr; }
-    template < typename T >
-    [[nodiscard]] std::strong_ordering operator<=>(std::nullptr_t, const intrusive_ptr<T>& r) noexcept { return nullptr <=> r; }
+    [[nodiscard]] std::strong_ordering operator<=>(const intrusive_ptr<T>& l, std::nullptr_t) noexcept {
+        return l <=> nullptr;
+    }
 }
 
 namespace std
@@ -994,7 +1006,9 @@ namespace meta_hpp::detail
         std::align_val_t align_{};
     };
 
-    inline void swap(memory_buffer& l, memory_buffer& r) noexcept { l.swap(r); }
+    inline void swap(memory_buffer& l, memory_buffer& r) noexcept {
+        l.swap(r);
+    }
 }
 
 namespace std
@@ -1136,6 +1150,10 @@ namespace meta_hpp::detail
             return id;
         }
     };
+
+    inline void swap(type_id& l, type_id& r) noexcept {
+        l.swap(r);
+    }
 }
 
 namespace std
@@ -1160,7 +1178,7 @@ namespace meta_hpp::detail
     concept enum_kind = std::is_enum_v<T>;
 
     template < typename T >
-    concept function_kind = std::is_pointer_v<T> && std::is_function_v<std::remove_pointer_t<T>>;
+    concept function_kind = (std::is_pointer_v<T> && std::is_function_v<std::remove_pointer_t<T>>);
 
     template < typename T >
     concept member_kind = std::is_member_object_pointer_v<T>;
@@ -1175,7 +1193,7 @@ namespace meta_hpp::detail
     concept number_kind = std::is_arithmetic_v<T>;
 
     template < typename T >
-    concept pointer_kind = std::is_pointer_v<T> && !std::is_function_v<std::remove_pointer_t<T>>;
+    concept pointer_kind = (std::is_pointer_v<T> && !std::is_function_v<std::remove_pointer_t<T>>);
 
     template < typename T >
     concept reference_kind = std::is_reference_v<T>;
@@ -2357,19 +2375,9 @@ namespace meta_hpp
         return l.is_valid() && l.get_id() == r;
     }
 
-    template < detail::type_family U >
-    [[nodiscard]] bool operator==(type_id l, const U& r) noexcept {
-        return r.is_valid() && l == r.get_id();
-    }
-
     template < detail::type_family T >
     [[nodiscard]] std::strong_ordering operator<=>(const T& l, type_id r) noexcept {
         return l.is_valid() ? l.get_id() <=> r : std::strong_ordering::less;
-    }
-
-    template < detail::type_family U >
-    [[nodiscard]] std::strong_ordering operator<=>(type_id l, const U& r) noexcept {
-        return r.is_valid() ? l <=> r.get_id() : std::strong_ordering::greater;
     }
 }
 
@@ -3270,22 +3278,10 @@ namespace meta_hpp
         return l.is_valid() && l.get_index() == r;
     }
 
-    template < typename T, detail::state_family U >
-        requires std::is_same_v<T, typename U::index_type>
-    [[nodiscard]] bool operator==(const T& l, const U& r) noexcept {
-        return r.is_valid() && l == r.get_index();
-    }
-
     template < detail::state_family T, typename U >
         requires std::is_same_v<U, typename T::index_type>
     [[nodiscard]] std::strong_ordering operator<=>(const T& l, const U& r) noexcept {
         return l.is_valid() ? l.get_index() <=> r : std::strong_ordering::less;
-    }
-
-    template < typename T, detail::state_family U >
-        requires std::is_same_v<T, typename U::index_type>
-    [[nodiscard]] std::strong_ordering operator<=>(const T& l, const U& r) noexcept {
-        return r.is_valid() ? l <=> r.get_index() : std::strong_ordering::greater;
     }
 }
 

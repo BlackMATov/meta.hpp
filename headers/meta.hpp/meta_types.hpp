@@ -492,19 +492,9 @@ namespace meta_hpp
         return l.is_valid() && l.get_id() == r;
     }
 
-    template < detail::type_family U >
-    [[nodiscard]] bool operator==(type_id l, const U& r) noexcept {
-        return r.is_valid() && l == r.get_id();
-    }
-
     template < detail::type_family T >
     [[nodiscard]] std::strong_ordering operator<=>(const T& l, type_id r) noexcept {
         return l.is_valid() ? l.get_id() <=> r : std::strong_ordering::less;
-    }
-
-    template < detail::type_family U >
-    [[nodiscard]] std::strong_ordering operator<=>(type_id l, const U& r) noexcept {
-        return r.is_valid() ? l <=> r.get_id() : std::strong_ordering::greater;
     }
 }
 

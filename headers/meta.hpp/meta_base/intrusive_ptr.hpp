@@ -160,27 +160,29 @@ namespace meta_hpp::detail
     }
 
     template < typename T >
-    void swap(intrusive_ptr<T>& l, intrusive_ptr<T>& r) noexcept { return l.swap(r); }
+    void swap(intrusive_ptr<T>& l, intrusive_ptr<T>& r) noexcept {
+        return l.swap(r);
+    }
 
     template < typename T >
-    [[nodiscard]] bool operator==(const intrusive_ptr<T>& l, const T* r) noexcept { return l.get() == r; }
-    template < typename T >
-    [[nodiscard]] bool operator==(const T* l, const intrusive_ptr<T>& r) noexcept { return l == r.get(); }
+    [[nodiscard]] bool operator==(const intrusive_ptr<T>& l, const T* r) noexcept {
+        return l.get() == r;
+    }
 
     template < typename T >
-    [[nodiscard]] std::strong_ordering operator<=>(const intrusive_ptr<T>& l, const T* r) noexcept { return l.get() <=> r; }
-    template < typename T >
-    [[nodiscard]] std::strong_ordering operator<=>(const T* l, const intrusive_ptr<T>& r) noexcept { return l <=> r.get(); }
+    [[nodiscard]] std::strong_ordering operator<=>(const intrusive_ptr<T>& l, const T* r) noexcept {
+        return l.get() <=> r;
+    }
 
     template < typename T >
-    [[nodiscard]] bool operator==(const intrusive_ptr<T>& l, std::nullptr_t) noexcept { return !l; }
-    template < typename T >
-    [[nodiscard]] bool operator==(std::nullptr_t, const intrusive_ptr<T>& r) noexcept { return !r; }
+    [[nodiscard]] bool operator==(const intrusive_ptr<T>& l, std::nullptr_t) noexcept {
+        return !l;
+    }
 
     template < typename T >
-    [[nodiscard]] std::strong_ordering operator<=>(const intrusive_ptr<T>& l, std::nullptr_t) noexcept { return l <=> nullptr; }
-    template < typename T >
-    [[nodiscard]] std::strong_ordering operator<=>(std::nullptr_t, const intrusive_ptr<T>& r) noexcept { return nullptr <=> r; }
+    [[nodiscard]] std::strong_ordering operator<=>(const intrusive_ptr<T>& l, std::nullptr_t) noexcept {
+        return l <=> nullptr;
+    }
 }
 
 namespace std
