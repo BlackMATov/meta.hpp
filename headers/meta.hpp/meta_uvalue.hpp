@@ -12,11 +12,11 @@
 namespace meta_hpp::detail
 {
     template < typename T >
-    concept uvalue_kind
-        = std::is_same_v<T, uvalue>;
+    concept uvalue_kind = //
+        std::is_same_v<T, uvalue>;
 
     template < typename T >
-    concept any_uvalue_kind =
+    concept any_uvalue_kind = //
         std::is_same_v<T, uarg_base> ||
         std::is_same_v<T, uarg> ||
         std::is_same_v<T, uinst_base> ||

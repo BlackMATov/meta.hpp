@@ -114,14 +114,14 @@ namespace meta_hpp::detail
             static_assert(std::is_same_v<Fp, std::decay_t<Fp>>);
 
             static vtable_t table{
-                .call = +[](const fixed_function& self, Args... args) -> R {
+                .call{[](const fixed_function& self, Args... args) -> R {
                     assert(self); // NOLINT
 
                     const Fp& src = *buffer_cast<Fp>(self.buffer_);
                     return std::invoke(src, std::forward<Args>(args)...);
-                },
+                }},
 
-                .move = +[](fixed_function& from, fixed_function& to) noexcept {
+                .move{[](fixed_function& from, fixed_function& to) noexcept {
                     assert(from && !to); // NOLINT
 
                     Fp& src = *buffer_cast<Fp>(from.buffer_);
@@ -130,16 +130,16 @@ namespace meta_hpp::detail
 
                     to.vtable_ = from.vtable_;
                     from.vtable_ = nullptr;
-                },
+                }},
 
-                .destroy = +[](fixed_function& self){
+                .destroy{[](fixed_function& self){
                     assert(self); // NOLINT
 
                     Fp& src = *buffer_cast<Fp>(self.buffer_);
                     std::destroy_at(&src);
 
                     self.vtable_ = nullptr;
-                },
+                }},
             };
             return &table;
         }

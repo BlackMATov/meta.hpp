@@ -13,27 +13,27 @@
 namespace meta_hpp::detail
 {
     template < typename Class, typename... Args >
-    concept class_bind_constructor_kind =
+    concept class_bind_constructor_kind = //
         class_kind<Class> &&
         std::is_constructible_v<Class, Args...>;
 
     template < typename Class >
-    concept class_bind_destructor_kind =
+    concept class_bind_destructor_kind = //
         class_kind<Class> &&
         std::is_destructible_v<Class>;
 
     template < typename Class, typename Base >
-    concept class_bind_base_kind =
+    concept class_bind_base_kind = //
         class_kind<Class> && class_kind<Base> &&
         std::derived_from<Class, Base>;
 
     template < typename Class, typename Member >
-    concept class_bind_member_kind =
+    concept class_bind_member_kind = //
         class_kind<Class> && member_kind<Member> &&
         std::is_same_v<Class, typename member_traits<Member>::class_type>;
 
     template < typename Class, typename Method >
-    concept class_bind_method_kind =
+    concept class_bind_method_kind = //
         class_kind<Class> && method_kind<Method> &&
         std::is_same_v<Class, typename method_traits<Method>::class_type>;
 }
@@ -147,20 +147,20 @@ namespace meta_hpp
         // base_
 
         template < detail::class_kind... Bases >
-        class_bind& base_()
-            requires (... && detail::class_bind_base_kind<Class, Bases>);
+            requires (... && detail::class_bind_base_kind<Class, Bases>)
+        class_bind& base_();
 
         // constructor_
 
         template < typename... Args
                  , constructor_policy_kind Policy = constructor_policy::as_object_t >
-        class_bind& constructor_(Policy = Policy{})
-            requires detail::class_bind_constructor_kind<Class, Args...>;
+            requires detail::class_bind_constructor_kind<Class, Args...>
+        class_bind& constructor_(Policy = {});
 
         template < typename... Args
                  , constructor_policy_kind Policy = constructor_policy::as_object_t >
-        class_bind& constructor_(constructor_opts opts, Policy = Policy{})
-            requires detail::class_bind_constructor_kind<Class, Args...>;
+            requires detail::class_bind_constructor_kind<Class, Args...>
+        class_bind& constructor_(constructor_opts opts, Policy = {});
 
         // destructor_
 
@@ -177,7 +177,7 @@ namespace meta_hpp
         class_bind& function_(
             std::string name,
             Function function,
-            Policy = Policy{});
+            Policy = {});
 
         template < detail::function_kind Function
                  , function_policy_kind Policy = function_policy::as_copy_t >
@@ -185,7 +185,7 @@ namespace meta_hpp
             std::string name,
             Function function,
             function_opts opts,
-            Policy = Policy{});
+            Policy = {});
 
         template < detail::function_kind Function
                  , function_policy_kind Policy = function_policy::as_copy_t >
@@ -193,54 +193,54 @@ namespace meta_hpp
             std::string name,
             Function function,
             std::initializer_list<std::string_view> arguments,
-            Policy = Policy{});
+            Policy = {});
 
         // member_
 
         template < detail::member_kind Member
                  , member_policy_kind Policy = member_policy::as_copy_t >
+            requires detail::class_bind_member_kind<Class, Member>
         class_bind& member_(
             std::string name,
             Member member,
-            Policy = Policy{})
-            requires detail::class_bind_member_kind<Class, Member>;
+            Policy = {});
 
         template < detail::member_kind Member
                  , member_policy_kind Policy = member_policy::as_copy_t >
+            requires detail::class_bind_member_kind<Class, Member>
         class_bind& member_(
             std::string name,
             Member member,
             member_opts opts,
-            Policy = Policy{})
-            requires detail::class_bind_member_kind<Class, Member>;
+            Policy = {});
 
         // method_
 
         template < detail::method_kind Method
                  , method_policy_kind Policy = method_policy::as_copy_t >
+            requires detail::class_bind_method_kind<Class, Method>
         class_bind& method_(
             std::string name,
             Method method,
-            Policy = Policy{})
-            requires detail::class_bind_method_kind<Class, Method>;
+            Policy = {});
 
         template < detail::method_kind Method
                  , method_policy_kind Policy = method_policy::as_copy_t >
+            requires detail::class_bind_method_kind<Class, Method>
         class_bind& method_(
             std::string name,
             Method method,
             method_opts opts,
-            Policy = Policy{})
-            requires detail::class_bind_method_kind<Class, Method>;
+            Policy = {});
 
         template < detail::method_kind Method
                  , method_policy_kind Policy = method_policy::as_copy_t >
+            requires detail::class_bind_method_kind<Class, Method>
         class_bind& method_(
             std::string name,
             Method method,
             std::initializer_list<std::string_view> arguments,
-            Policy = Policy{})
-            requires detail::class_bind_method_kind<Class, Method>;
+            Policy = {});
 
         // typdef_
 
@@ -254,7 +254,7 @@ namespace meta_hpp
         class_bind& variable_(
             std::string name,
             Pointer pointer,
-            Policy = Policy{});
+            Policy = {});
 
         template < detail::pointer_kind Pointer
                  , variable_policy_kind Policy = variable_policy::as_copy_t >
@@ -262,7 +262,7 @@ namespace meta_hpp
             std::string name,
             Pointer pointer,
             variable_opts opts,
-            Policy = Policy{});
+            Policy = {});
     };
 }
 
@@ -363,7 +363,7 @@ namespace meta_hpp
         scope_bind& function_(
             std::string name,
             Function function,
-            Policy = Policy{});
+            Policy = {});
 
         template < detail::function_kind Function
                  , function_policy_kind Policy = function_policy::as_copy_t >
@@ -371,7 +371,7 @@ namespace meta_hpp
             std::string name,
             Function function,
             function_opts opts,
-            Policy = Policy{});
+            Policy = {});
 
         template < detail::function_kind Function
                  , function_policy_kind Policy = function_policy::as_copy_t >
@@ -379,7 +379,7 @@ namespace meta_hpp
             std::string name,
             Function function,
             std::initializer_list<std::string_view> arguments,
-            Policy = Policy{});
+            Policy = {});
 
         // typedef_
 
@@ -393,7 +393,7 @@ namespace meta_hpp
         scope_bind& variable_(
             std::string name,
             Pointer pointer,
-            Policy = Policy{});
+            Policy = {});
 
         template < detail::pointer_kind Pointer
                  , variable_policy_kind Policy = variable_policy::as_copy_t >
@@ -401,7 +401,7 @@ namespace meta_hpp
             std::string name,
             Pointer pointer,
             variable_opts opts,
-            Policy = Policy{});
+            Policy = {});
     };
 }
 

@@ -478,7 +478,7 @@ namespace meta_hpp
 
     template < detail::type_family T, detail::type_family U >
     [[nodiscard]] std::strong_ordering operator<=>(const T& l, const U& r) noexcept {
-        if ( const auto cmp{l.is_valid() <=> r.is_valid()}; cmp != std::strong_ordering::equal ) {
+        if ( const std::strong_ordering cmp{l.is_valid() <=> r.is_valid()}; cmp != std::strong_ordering::equal ) {
             return cmp;
         }
         return l.is_valid() ? l.get_id() <=> r.get_id() : std::strong_ordering::equal;

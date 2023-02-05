@@ -99,7 +99,7 @@ namespace meta_hpp::detail
         }
 
         [[nodiscard]] std::strong_ordering operator<=>(const memory_buffer& other) const noexcept {
-            if ( const auto cmp{size_ <=> other.size_}; cmp != std::strong_ordering::equal ) {
+            if ( const std::strong_ordering cmp{size_ <=> other.size_}; cmp != std::strong_ordering::equal ) {
                 return cmp;
             }
             return (size_ == 0 ? 0 : std::memcmp(data_, other.data_, size_)) <=> 0;

@@ -36,7 +36,7 @@ namespace meta_hpp::detail
             META_HPP_THROW_AS(exception, "an attempt to call a constructor with an incorrect arity");
         }
 
-        return [args]<std::size_t... Is>(std::index_sequence<Is...>) -> uvalue {
+        return std::invoke([args]<std::size_t... Is>(std::index_sequence<Is...>) -> uvalue {
             if ( !(... && args[Is].can_cast_to<type_list_at_t<Is, argument_types>>()) ) {
                 META_HPP_THROW_AS(exception, "an attempt to call a constructor with incorrect argument types");
             }
@@ -55,7 +55,7 @@ namespace meta_hpp::detail
                 return uvalue{std::make_shared<class_type>(
                     args[Is].cast<type_list_at_t<Is, argument_types>>()...)};
             }
-        }(std::make_index_sequence<ct::arity>());
+        }, std::make_index_sequence<ct::arity>());
     }
 
     template < class_kind Class, typename... Args >
@@ -68,14 +68,14 @@ namespace meta_hpp::detail
             META_HPP_THROW_AS(exception, "an attempt to call a constructor with an incorrect arity");
         }
 
-        return [mem, args]<std::size_t... Is>(std::index_sequence<Is...>) -> uvalue {
+        return std::invoke([mem, args]<std::size_t... Is>(std::index_sequence<Is...>) -> uvalue {
             if ( !(... && args[Is].can_cast_to<type_list_at_t<Is, argument_types>>()) ) {
                 META_HPP_THROW_AS(exception, "an attempt to call a constructor with incorrect argument types");
             }
             return uvalue{std::construct_at(
                 static_cast<class_type*>(mem),
                 args[Is].cast<type_list_at_t<Is, argument_types>>()...)};
-        }(std::make_index_sequence<ct::arity>());
+        }, std::make_index_sequence<ct::arity>());
     }
 
     template < class_kind Class, typename... Args >
@@ -87,9 +87,9 @@ namespace meta_hpp::detail
             return false;
         }
 
-        return [args]<std::size_t... Is>(std::index_sequence<Is...>){
+        return std::invoke([args]<std::size_t... Is>(std::index_sequence<Is...>){
             return (... && args[Is].can_cast_to<type_list_at_t<Is, argument_types>>());
-        }(std::make_index_sequence<ct::arity>());
+        }, std::make_index_sequence<ct::arity>());
     }
 }
 
@@ -115,13 +115,13 @@ namespace meta_hpp::detail
         using ct = constructor_traits<Class, Args...>;
         using ct_argument_types = typename ct::argument_types;
 
-        return []<std::size_t... Is>(std::index_sequence<Is...>){
+        return std::invoke([]<std::size_t... Is>(std::index_sequence<Is...>){
             [[maybe_unused]] const auto make_argument = []<std::size_t I>(std::index_sequence<I>){
                 using P = type_list_at_t<I, ct_argument_types>;
                 return argument{argument_state::make<P>(I, metadata_map{})};
             };
             return argument_list{make_argument(std::index_sequence<Is>{})...};
-        }(std::make_index_sequence<ct::arity>());
+        }, std::make_index_sequence<ct::arity>());
     }
 }
 

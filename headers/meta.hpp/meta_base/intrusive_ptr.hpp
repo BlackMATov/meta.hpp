@@ -176,12 +176,12 @@ namespace meta_hpp::detail
 
     template < typename T >
     [[nodiscard]] bool operator==(const intrusive_ptr<T>& l, std::nullptr_t) noexcept {
-        return !l;
+        return l.get() == nullptr;
     }
 
     template < typename T >
     [[nodiscard]] std::strong_ordering operator<=>(const intrusive_ptr<T>& l, std::nullptr_t) noexcept {
-        return l <=> nullptr;
+        return l.get() <=> nullptr;
     }
 }
 

@@ -11,7 +11,7 @@
 namespace meta_hpp::detail
 {
     template < typename T >
-    concept state_family =
+    concept state_family = //
         std::is_same_v<T, argument> ||
         std::is_same_v<T, constructor> ||
         std::is_same_v<T, destructor> ||

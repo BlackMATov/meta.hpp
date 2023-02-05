@@ -15,9 +15,10 @@ namespace meta_hpp::detail
     struct index_traits;
 
     template < typename T >
-    concept has_index_traits = requires(const T& v, std::size_t i) {
-        { index_traits<T>{}(v, i) } -> std::convertible_to<uvalue>;
-    };
+    concept has_index_traits = //
+        requires(const T& v, std::size_t i) {
+            { index_traits<T>{}(v, i) } -> std::convertible_to<uvalue>;
+        };
 }
 
 namespace meta_hpp::detail

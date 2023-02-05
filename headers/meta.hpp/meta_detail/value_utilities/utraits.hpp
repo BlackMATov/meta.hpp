@@ -13,12 +13,12 @@
 namespace meta_hpp::detail
 {
     template < typename T, typename Tp = std::decay_t<T> >
-    concept arg_lvalue_ref_kind =
+    concept arg_lvalue_ref_kind = //
         (!any_uvalue_kind<Tp>) &&
         (std::is_lvalue_reference_v<T>);
 
     template < typename T, typename Tp = std::decay_t<T> >
-    concept arg_rvalue_ref_kind =
+    concept arg_rvalue_ref_kind = //
         (!any_uvalue_kind<Tp>) &&
         (!std::is_reference_v<T> || std::is_rvalue_reference_v<T>);
 }
@@ -26,18 +26,18 @@ namespace meta_hpp::detail
 namespace meta_hpp::detail
 {
     template < typename T >
-    concept inst_class_ref_kind =
+    concept inst_class_ref_kind = //
         (std::is_class_v<T>) ||
         (std::is_reference_v<T> && std::is_class_v<std::remove_reference_t<T>>);
 
     template < typename T, typename Tp = std::decay_t<T> >
-    concept inst_class_lvalue_ref_kind =
+    concept inst_class_lvalue_ref_kind = //
         (!any_uvalue_kind<Tp>) &&
         (std::is_lvalue_reference_v<T>) &&
         (std::is_class_v<std::remove_pointer_t<std::remove_reference_t<T>>>);
 
     template < typename T, typename Tp = std::decay_t<T> >
-    concept inst_class_rvalue_ref_kind =
+    concept inst_class_rvalue_ref_kind = //
         (!any_uvalue_kind<Tp>) &&
         (!std::is_reference_v<T> || std::is_rvalue_reference_v<T>) &&
         (std::is_class_v<std::remove_pointer_t<std::remove_reference_t<T>>>);

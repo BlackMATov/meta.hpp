@@ -218,11 +218,13 @@ namespace meta_hpp::detail
         template < bool yesno, template < typename > typename Q, typename V >
         using apply_t_if = std::conditional_t<yesno, Q<V>, V>;
 
+        // clang-format off
         template < typename To >
         using add_to =
             apply_t_if<is_const, std::add_const_t,
             apply_t_if<is_volatile, std::add_volatile_t,
             To>>;
+        // clang-format on
 
         template < typename To >
         using copy_to = add_to<std::remove_cv_t<To>>;
@@ -257,6 +259,7 @@ namespace meta_hpp::detail
         template < bool yesno, template < typename > typename Q, typename V >
         using apply_t_if = std::conditional_t<yesno, Q<V>, V>;
 
+        // clang-format off
         template < typename To >
         using add_to =
             apply_t_if<is_lvalue, std::add_lvalue_reference_t,
@@ -264,6 +267,7 @@ namespace meta_hpp::detail
             apply_t_if<is_const, std::add_const_t,
             apply_t_if<is_volatile, std::add_volatile_t,
             To>>>>;
+        // clang-format on
 
         template < typename To >
         using copy_to = add_to<std::remove_cvref_t<To>>;
@@ -415,14 +419,14 @@ namespace meta_hpp::detail
             static_assert(std::is_same_v<Fp, std::decay_t<Fp>>);
 
             static vtable_t table{
-                .call = +[](const fixed_function& self, Args... args) -> R {
+                .call{[](const fixed_function& self, Args... args) -> R {
                     assert(self); // NOLINT
 
                     const Fp& src = *buffer_cast<Fp>(self.buffer_);
                     return std::invoke(src, std::forward<Args>(args)...);
-                },
+                }},
 
-                .move = +[](fixed_function& from, fixed_function& to) noexcept {
+                .move{[](fixed_function& from, fixed_function& to) noexcept {
                     assert(from && !to); // NOLINT
 
                     Fp& src = *buffer_cast<Fp>(from.buffer_);
@@ -431,16 +435,16 @@ namespace meta_hpp::detail
 
                     to.vtable_ = from.vtable_;
                     from.vtable_ = nullptr;
-                },
+                }},
 
-                .destroy = +[](fixed_function& self){
+                .destroy{[](fixed_function& self){
                     assert(self); // NOLINT
 
                     Fp& src = *buffer_cast<Fp>(self.buffer_);
                     std::destroy_at(&src);
 
                     self.vtable_ = nullptr;
-                },
+                }},
             };
             return &table;
         }
@@ -873,12 +877,12 @@ namespace meta_hpp::detail
 
     template < typename T >
     [[nodiscard]] bool operator==(const intrusive_ptr<T>& l, std::nullptr_t) noexcept {
-        return !l;
+        return l.get() == nullptr;
     }
 
     template < typename T >
     [[nodiscard]] std::strong_ordering operator<=>(const intrusive_ptr<T>& l, std::nullptr_t) noexcept {
-        return l <=> nullptr;
+        return l.get() <=> nullptr;
     }
 }
 
@@ -994,7 +998,7 @@ namespace meta_hpp::detail
         }
 
         [[nodiscard]] std::strong_ordering operator<=>(const memory_buffer& other) const noexcept {
-            if ( const auto cmp{size_ <=> other.size_}; cmp != std::strong_ordering::equal ) {
+            if ( const std::strong_ordering cmp{size_ <=> other.size_}; cmp != std::strong_ordering::equal ) {
                 return cmp;
             }
             return (size_ == 0 ? 0 : std::memcmp(data_, other.data_, size_)) <=> 0;
@@ -1222,6 +1226,7 @@ namespace meta_hpp::detail
 
     template < typename T >
     constexpr type_kind make_type_kind() noexcept {
+        // clang-format off
         if constexpr ( array_kind<T> ) { return type_kind::array_; }
         if constexpr ( class_kind<T> ) { return type_kind::class_; }
         if constexpr ( enum_kind<T> ) { return type_kind::enum_; }
@@ -1233,6 +1238,7 @@ namespace meta_hpp::detail
         if constexpr ( pointer_kind<T> ) { return type_kind::pointer_; }
         if constexpr ( reference_kind<T> ) { return type_kind::reference_; }
         if constexpr ( void_kind<T> ) { return type_kind::void_; }
+        // clang-format on
     }
 }
 
@@ -1377,7 +1383,7 @@ namespace meta_hpp
 namespace meta_hpp::detail
 {
     template < typename T >
-    concept type_family =
+    concept type_family = //
         std::is_same_v<T, any_type> ||
         std::is_same_v<T, array_type> ||
         std::is_same_v<T, class_type> ||
@@ -2361,7 +2367,7 @@ namespace meta_hpp
 
     template < detail::type_family T, detail::type_family U >
     [[nodiscard]] std::strong_ordering operator<=>(const T& l, const U& r) noexcept {
-        if ( const auto cmp{l.is_valid() <=> r.is_valid()}; cmp != std::strong_ordering::equal ) {
+        if ( const std::strong_ordering cmp{l.is_valid() <=> r.is_valid()}; cmp != std::strong_ordering::equal ) {
             return cmp;
         }
         return l.is_valid() ? l.get_id() <=> r.get_id() : std::strong_ordering::equal;
@@ -2532,7 +2538,7 @@ namespace meta_hpp::detail
 namespace meta_hpp::detail
 {
     template < typename T >
-    concept index_family =
+    concept index_family = //
         std::is_same_v<T, argument_index> ||
         std::is_same_v<T, constructor_index> ||
         std::is_same_v<T, destructor_index> ||
@@ -2689,11 +2695,11 @@ namespace std
 namespace meta_hpp::detail
 {
     template < typename T >
-    concept uvalue_kind
-        = std::is_same_v<T, uvalue>;
+    concept uvalue_kind = //
+        std::is_same_v<T, uvalue>;
 
     template < typename T >
-    concept any_uvalue_kind =
+    concept any_uvalue_kind = //
         std::is_same_v<T, uarg_base> ||
         std::is_same_v<T, uarg> ||
         std::is_same_v<T, uinst_base> ||
@@ -2838,7 +2844,7 @@ namespace meta_hpp
 namespace meta_hpp::detail
 {
     template < typename T >
-    concept state_family =
+    concept state_family = //
         std::is_same_v<T, argument> ||
         std::is_same_v<T, constructor> ||
         std::is_same_v<T, destructor> ||
@@ -2913,31 +2919,31 @@ namespace meta_hpp
     }
 
     template < typename Policy >
-    concept constructor_policy_kind =
+    concept constructor_policy_kind = //
         std::is_same_v<Policy, constructor_policy::as_object_t> ||
         std::is_same_v<Policy, constructor_policy::as_raw_pointer_t> ||
         std::is_same_v<Policy, constructor_policy::as_shared_pointer_t>;
 
     template < typename Policy >
-    concept function_policy_kind =
+    concept function_policy_kind = //
         std::is_same_v<Policy, function_policy::as_copy_t> ||
         std::is_same_v<Policy, function_policy::discard_return_t> ||
         std::is_same_v<Policy, function_policy::return_reference_as_pointer_t>;
 
     template < typename Policy >
-    concept member_policy_kind =
+    concept member_policy_kind = //
         std::is_same_v<Policy, member_policy::as_copy_t> ||
         std::is_same_v<Policy, member_policy::as_pointer_t> ||
         std::is_same_v<Policy, member_policy::as_reference_wrapper_t>;
 
     template < typename Policy >
-    concept method_policy_kind =
+    concept method_policy_kind = //
         std::is_same_v<Policy, method_policy::as_copy_t> ||
         std::is_same_v<Policy, method_policy::discard_return_t> ||
         std::is_same_v<Policy, method_policy::return_reference_as_pointer_t>;
 
     template < typename Policy >
-    concept variable_policy_kind =
+    concept variable_policy_kind = //
         std::is_same_v<Policy, variable_policy::as_copy_t> ||
         std::is_same_v<Policy, variable_policy::as_pointer_t> ||
         std::is_same_v<Policy, variable_policy::as_reference_wrapper_t>;
@@ -3263,7 +3269,7 @@ namespace meta_hpp
 
     template < detail::state_family T, detail::state_family U >
     [[nodiscard]] std::strong_ordering operator<=>(const T& l, const U& r) noexcept {
-        if ( const auto cmp{l.is_valid() <=> r.is_valid()}; cmp != std::strong_ordering::equal ) {
+        if ( const std::strong_ordering cmp{l.is_valid() <=> r.is_valid()}; cmp != std::strong_ordering::equal ) {
             return cmp;
         }
         return l.is_valid() ? l.get_index() <=> r.get_index() : std::strong_ordering::equal;
@@ -3824,27 +3830,27 @@ namespace meta_hpp
 namespace meta_hpp::detail
 {
     template < typename Class, typename... Args >
-    concept class_bind_constructor_kind =
+    concept class_bind_constructor_kind = //
         class_kind<Class> &&
         std::is_constructible_v<Class, Args...>;
 
     template < typename Class >
-    concept class_bind_destructor_kind =
+    concept class_bind_destructor_kind = //
         class_kind<Class> &&
         std::is_destructible_v<Class>;
 
     template < typename Class, typename Base >
-    concept class_bind_base_kind =
+    concept class_bind_base_kind = //
         class_kind<Class> && class_kind<Base> &&
         std::derived_from<Class, Base>;
 
     template < typename Class, typename Member >
-    concept class_bind_member_kind =
+    concept class_bind_member_kind = //
         class_kind<Class> && member_kind<Member> &&
         std::is_same_v<Class, typename member_traits<Member>::class_type>;
 
     template < typename Class, typename Method >
-    concept class_bind_method_kind =
+    concept class_bind_method_kind = //
         class_kind<Class> && method_kind<Method> &&
         std::is_same_v<Class, typename method_traits<Method>::class_type>;
 }
@@ -3958,20 +3964,20 @@ namespace meta_hpp
         // base_
 
         template < detail::class_kind... Bases >
-        class_bind& base_()
-            requires (... && detail::class_bind_base_kind<Class, Bases>);
+            requires (... && detail::class_bind_base_kind<Class, Bases>)
+        class_bind& base_();
 
         // constructor_
 
         template < typename... Args
                  , constructor_policy_kind Policy = constructor_policy::as_object_t >
-        class_bind& constructor_(Policy = Policy{})
-            requires detail::class_bind_constructor_kind<Class, Args...>;
+            requires detail::class_bind_constructor_kind<Class, Args...>
+        class_bind& constructor_(Policy = {});
 
         template < typename... Args
                  , constructor_policy_kind Policy = constructor_policy::as_object_t >
-        class_bind& constructor_(constructor_opts opts, Policy = Policy{})
-            requires detail::class_bind_constructor_kind<Class, Args...>;
+            requires detail::class_bind_constructor_kind<Class, Args...>
+        class_bind& constructor_(constructor_opts opts, Policy = {});
 
         // destructor_
 
@@ -3988,7 +3994,7 @@ namespace meta_hpp
         class_bind& function_(
             std::string name,
             Function function,
-            Policy = Policy{});
+            Policy = {});
 
         template < detail::function_kind Function
                  , function_policy_kind Policy = function_policy::as_copy_t >
@@ -3996,7 +4002,7 @@ namespace meta_hpp
             std::string name,
             Function function,
             function_opts opts,
-            Policy = Policy{});
+            Policy = {});
 
         template < detail::function_kind Function
                  , function_policy_kind Policy = function_policy::as_copy_t >
@@ -4004,54 +4010,54 @@ namespace meta_hpp
             std::string name,
             Function function,
             std::initializer_list<std::string_view> arguments,
-            Policy = Policy{});
+            Policy = {});
 
         // member_
 
         template < detail::member_kind Member
                  , member_policy_kind Policy = member_policy::as_copy_t >
+            requires detail::class_bind_member_kind<Class, Member>
         class_bind& member_(
             std::string name,
             Member member,
-            Policy = Policy{})
-            requires detail::class_bind_member_kind<Class, Member>;
+            Policy = {});
 
         template < detail::member_kind Member
                  , member_policy_kind Policy = member_policy::as_copy_t >
+            requires detail::class_bind_member_kind<Class, Member>
         class_bind& member_(
             std::string name,
             Member member,
             member_opts opts,
-            Policy = Policy{})
-            requires detail::class_bind_member_kind<Class, Member>;
+            Policy = {});
 
         // method_
 
         template < detail::method_kind Method
                  , method_policy_kind Policy = method_policy::as_copy_t >
+            requires detail::class_bind_method_kind<Class, Method>
         class_bind& method_(
             std::string name,
             Method method,
-            Policy = Policy{})
-            requires detail::class_bind_method_kind<Class, Method>;
+            Policy = {});
 
         template < detail::method_kind Method
                  , method_policy_kind Policy = method_policy::as_copy_t >
+            requires detail::class_bind_method_kind<Class, Method>
         class_bind& method_(
             std::string name,
             Method method,
             method_opts opts,
-            Policy = Policy{})
-            requires detail::class_bind_method_kind<Class, Method>;
+            Policy = {});
 
         template < detail::method_kind Method
                  , method_policy_kind Policy = method_policy::as_copy_t >
+            requires detail::class_bind_method_kind<Class, Method>
         class_bind& method_(
             std::string name,
             Method method,
             std::initializer_list<std::string_view> arguments,
-            Policy = Policy{})
-            requires detail::class_bind_method_kind<Class, Method>;
+            Policy = {});
 
         // typdef_
 
@@ -4065,7 +4071,7 @@ namespace meta_hpp
         class_bind& variable_(
             std::string name,
             Pointer pointer,
-            Policy = Policy{});
+            Policy = {});
 
         template < detail::pointer_kind Pointer
                  , variable_policy_kind Policy = variable_policy::as_copy_t >
@@ -4073,7 +4079,7 @@ namespace meta_hpp
             std::string name,
             Pointer pointer,
             variable_opts opts,
-            Policy = Policy{});
+            Policy = {});
     };
 }
 
@@ -4174,7 +4180,7 @@ namespace meta_hpp
         scope_bind& function_(
             std::string name,
             Function function,
-            Policy = Policy{});
+            Policy = {});
 
         template < detail::function_kind Function
                  , function_policy_kind Policy = function_policy::as_copy_t >
@@ -4182,7 +4188,7 @@ namespace meta_hpp
             std::string name,
             Function function,
             function_opts opts,
-            Policy = Policy{});
+            Policy = {});
 
         template < detail::function_kind Function
                  , function_policy_kind Policy = function_policy::as_copy_t >
@@ -4190,7 +4196,7 @@ namespace meta_hpp
             std::string name,
             Function function,
             std::initializer_list<std::string_view> arguments,
-            Policy = Policy{});
+            Policy = {});
 
         // typedef_
 
@@ -4204,7 +4210,7 @@ namespace meta_hpp
         scope_bind& variable_(
             std::string name,
             Pointer pointer,
-            Policy = Policy{});
+            Policy = {});
 
         template < detail::pointer_kind Pointer
                  , variable_policy_kind Policy = variable_policy::as_copy_t >
@@ -4212,7 +4218,7 @@ namespace meta_hpp
             std::string name,
             Pointer pointer,
             variable_opts opts,
-            Policy = Policy{});
+            Policy = {});
     };
 }
 
@@ -4314,10 +4320,10 @@ namespace meta_hpp
 
     template < detail::class_kind Class >
     template < detail::class_kind... Bases >
-    class_bind<Class>& class_bind<Class>::base_()
         requires (... && detail::class_bind_base_kind<Class, Bases>)
+    class_bind<Class>& class_bind<Class>::base_()
     {
-        ([this]<detail::class_kind Base>(std::in_place_type_t<Base>) {
+        const auto register_base{[this]<detail::class_kind Base>(std::in_place_type_t<Base>) {
             const class_type& base_type = resolve_type<Base>();
 
             auto&& [position, emplaced] = get_data().bases.emplace(base_type);
@@ -4327,16 +4333,17 @@ namespace meta_hpp
 
             META_HPP_TRY {
                 get_data().bases_info.emplace(base_type, detail::class_type_data::base_info{
-                    .upcast = +[](void* derived) -> void* {
+                    .upcast{[](void* derived) -> void* {
                         return static_cast<Base*>(static_cast<Class*>(derived));
-                    }
+                    }}
                 });
             } META_HPP_CATCH(...) {
                 get_data().bases.erase(position);
                 META_HPP_RETHROW();
             }
-        }(std::in_place_type<Bases>), ...);
+        }};
 
+        (register_base(std::in_place_type<Bases>), ...);
         return *this;
     }
 
@@ -4346,18 +4353,18 @@ namespace meta_hpp
 
     template < detail::class_kind Class >
     template < typename... Args, constructor_policy_kind Policy >
-    class_bind<Class>& class_bind<Class>::constructor_(Policy policy)
         requires detail::class_bind_constructor_kind<Class, Args...>
+    class_bind<Class>& class_bind<Class>::constructor_(Policy policy)
     {
         return constructor_<Args...>({}, policy);
     }
 
     template < detail::class_kind Class >
     template < typename... Args, constructor_policy_kind Policy >
+        requires detail::class_bind_constructor_kind<Class, Args...>
     class_bind<Class>& class_bind<Class>::constructor_(
         constructor_opts opts,
         Policy)
-        requires detail::class_bind_constructor_kind<Class, Args...>
     {
         auto state = detail::constructor_state::make<Policy, Class, Args...>(std::move(opts.metadata));
 
@@ -4469,23 +4476,23 @@ namespace meta_hpp
 
     template < detail::class_kind Class >
     template < detail::member_kind Member, member_policy_kind Policy >
+        requires detail::class_bind_member_kind<Class, Member>
     class_bind<Class>& class_bind<Class>::member_(
         std::string name,
         Member member,
         Policy policy)
-        requires detail::class_bind_member_kind<Class, Member>
     {
         return member_(std::move(name), std::move(member), {}, policy);
     }
 
     template < detail::class_kind Class >
     template < detail::member_kind Member, member_policy_kind Policy >
+        requires detail::class_bind_member_kind<Class, Member>
     class_bind<Class>& class_bind<Class>::member_(
         std::string name,
         Member member,
         member_opts opts,
         Policy)
-        requires detail::class_bind_member_kind<Class, Member>
     {
         auto state = detail::member_state::make<Policy>(
             std::move(name),
@@ -4501,23 +4508,23 @@ namespace meta_hpp
 
     template < detail::class_kind Class >
     template < detail::method_kind Method, method_policy_kind Policy >
+        requires detail::class_bind_method_kind<Class, Method>
     class_bind<Class>& class_bind<Class>::method_(
         std::string name,
         Method method,
         Policy policy)
-        requires detail::class_bind_method_kind<Class, Method>
     {
         return method_(std::move(name), std::move(method), {}, policy);
     }
 
     template < detail::class_kind Class >
     template < detail::method_kind Method, method_policy_kind Policy >
+        requires detail::class_bind_method_kind<Class, Method>
     class_bind<Class>& class_bind<Class>::method_(
         std::string name,
         Method method,
         method_opts opts,
         Policy)
-        requires detail::class_bind_method_kind<Class, Method>
     {
         auto state = detail::method_state::make<Policy>(
             std::move(name),
@@ -4540,12 +4547,12 @@ namespace meta_hpp
 
     template < detail::class_kind Class >
     template < detail::method_kind Method, method_policy_kind Policy >
+        requires detail::class_bind_method_kind<Class, Method>
     class_bind<Class>& class_bind<Class>::method_(
         std::string name,
         Method method,
         std::initializer_list<std::string_view> arguments,
         Policy)
-        requires detail::class_bind_method_kind<Class, Method>
     {
         auto state = detail::method_state::make<Policy>(
             std::move(name),
@@ -5057,12 +5064,12 @@ namespace meta_hpp
 namespace meta_hpp::detail
 {
     template < typename T, typename Tp = std::decay_t<T> >
-    concept arg_lvalue_ref_kind =
+    concept arg_lvalue_ref_kind = //
         (!any_uvalue_kind<Tp>) &&
         (std::is_lvalue_reference_v<T>);
 
     template < typename T, typename Tp = std::decay_t<T> >
-    concept arg_rvalue_ref_kind =
+    concept arg_rvalue_ref_kind = //
         (!any_uvalue_kind<Tp>) &&
         (!std::is_reference_v<T> || std::is_rvalue_reference_v<T>);
 }
@@ -5070,18 +5077,18 @@ namespace meta_hpp::detail
 namespace meta_hpp::detail
 {
     template < typename T >
-    concept inst_class_ref_kind =
+    concept inst_class_ref_kind = //
         (std::is_class_v<T>) ||
         (std::is_reference_v<T> && std::is_class_v<std::remove_reference_t<T>>);
 
     template < typename T, typename Tp = std::decay_t<T> >
-    concept inst_class_lvalue_ref_kind =
+    concept inst_class_lvalue_ref_kind = //
         (!any_uvalue_kind<Tp>) &&
         (std::is_lvalue_reference_v<T>) &&
         (std::is_class_v<std::remove_pointer_t<std::remove_reference_t<T>>>);
 
     template < typename T, typename Tp = std::decay_t<T> >
-    concept inst_class_rvalue_ref_kind =
+    concept inst_class_rvalue_ref_kind = //
         (!any_uvalue_kind<Tp>) &&
         (!std::is_reference_v<T> || std::is_rvalue_reference_v<T>) &&
         (std::is_class_v<std::remove_pointer_t<std::remove_reference_t<T>>>);
@@ -5541,7 +5548,7 @@ namespace meta_hpp::detail
             META_HPP_THROW_AS(exception, "an attempt to call a constructor with an incorrect arity");
         }
 
-        return [args]<std::size_t... Is>(std::index_sequence<Is...>) -> uvalue {
+        return std::invoke([args]<std::size_t... Is>(std::index_sequence<Is...>) -> uvalue {
             if ( !(... && args[Is].can_cast_to<type_list_at_t<Is, argument_types>>()) ) {
                 META_HPP_THROW_AS(exception, "an attempt to call a constructor with incorrect argument types");
             }
@@ -5560,7 +5567,7 @@ namespace meta_hpp::detail
                 return uvalue{std::make_shared<class_type>(
                     args[Is].cast<type_list_at_t<Is, argument_types>>()...)};
             }
-        }(std::make_index_sequence<ct::arity>());
+        }, std::make_index_sequence<ct::arity>());
     }
 
     template < class_kind Class, typename... Args >
@@ -5573,14 +5580,14 @@ namespace meta_hpp::detail
             META_HPP_THROW_AS(exception, "an attempt to call a constructor with an incorrect arity");
         }
 
-        return [mem, args]<std::size_t... Is>(std::index_sequence<Is...>) -> uvalue {
+        return std::invoke([mem, args]<std::size_t... Is>(std::index_sequence<Is...>) -> uvalue {
             if ( !(... && args[Is].can_cast_to<type_list_at_t<Is, argument_types>>()) ) {
                 META_HPP_THROW_AS(exception, "an attempt to call a constructor with incorrect argument types");
             }
             return uvalue{std::construct_at(
                 static_cast<class_type*>(mem),
                 args[Is].cast<type_list_at_t<Is, argument_types>>()...)};
-        }(std::make_index_sequence<ct::arity>());
+        }, std::make_index_sequence<ct::arity>());
     }
 
     template < class_kind Class, typename... Args >
@@ -5592,9 +5599,9 @@ namespace meta_hpp::detail
             return false;
         }
 
-        return [args]<std::size_t... Is>(std::index_sequence<Is...>){
+        return std::invoke([args]<std::size_t... Is>(std::index_sequence<Is...>){
             return (... && args[Is].can_cast_to<type_list_at_t<Is, argument_types>>());
-        }(std::make_index_sequence<ct::arity>());
+        }, std::make_index_sequence<ct::arity>());
     }
 }
 
@@ -5620,13 +5627,13 @@ namespace meta_hpp::detail
         using ct = constructor_traits<Class, Args...>;
         using ct_argument_types = typename ct::argument_types;
 
-        return []<std::size_t... Is>(std::index_sequence<Is...>){
+        return std::invoke([]<std::size_t... Is>(std::index_sequence<Is...>){
             [[maybe_unused]] const auto make_argument = []<std::size_t I>(std::index_sequence<I>){
                 using P = type_list_at_t<I, ct_argument_types>;
                 return argument{argument_state::make<P>(I, metadata_map{})};
             };
             return argument_list{make_argument(std::index_sequence<Is>{})...};
-        }(std::make_index_sequence<ct::arity>());
+        }, std::make_index_sequence<ct::arity>());
     }
 }
 
@@ -6083,7 +6090,7 @@ namespace meta_hpp::detail
             META_HPP_THROW_AS(exception, "an attempt to call a function with an incorrect arity");
         }
 
-        return [&function, args]<std::size_t... Is>(std::index_sequence<Is...>) -> uvalue {
+        return std::invoke([&function, args]<std::size_t... Is>(std::index_sequence<Is...>) -> uvalue {
             if ( !(... && args[Is].can_cast_to<type_list_at_t<Is, argument_types>>()) ) {
                 META_HPP_THROW_AS(exception, "an attempt to call a function with incorrect argument types");
             }
@@ -6106,7 +6113,7 @@ namespace meta_hpp::detail
                     return uvalue{std::forward<decltype(return_value)>(return_value)};
                 }
             }
-        }(std::make_index_sequence<ft::arity>());
+        }, std::make_index_sequence<ft::arity>());
     }
 
     template < function_kind Function >
@@ -6118,9 +6125,9 @@ namespace meta_hpp::detail
             return false;
         }
 
-        return [args]<std::size_t... Is>(std::index_sequence<Is...>){
+        return std::invoke([args]<std::size_t... Is>(std::index_sequence<Is...>){
             return (... && args[Is].can_cast_to<type_list_at_t<Is, argument_types>>());
-        }(std::make_index_sequence<ft::arity>());
+        }, std::make_index_sequence<ft::arity>());
     }
 }
 
@@ -6143,13 +6150,13 @@ namespace meta_hpp::detail
         using ft = function_traits<Function>;
         using ft_argument_types = typename ft::argument_types;
 
-        return []<std::size_t... Is>(std::index_sequence<Is...>){
+        return std::invoke([]<std::size_t... Is>(std::index_sequence<Is...>){
             [[maybe_unused]] const auto make_argument = []<std::size_t I>(std::index_sequence<I>){
                 using P = type_list_at_t<I, ft_argument_types>;
                 return argument{argument_state::make<P>(I, metadata_map{})};
             };
             return argument_list{make_argument(std::index_sequence<Is>{})...};
-        }(std::make_index_sequence<ft::arity>());
+        }, std::make_index_sequence<ft::arity>());
     }
 }
 
@@ -6850,7 +6857,7 @@ namespace meta_hpp::detail
             META_HPP_THROW_AS(exception, "an attempt to call a method with an incorrect instance type");
         }
 
-        return [&method, &inst, args]<std::size_t... Is>(std::index_sequence<Is...>) -> uvalue {
+        return std::invoke([&method, &inst, args]<std::size_t... Is>(std::index_sequence<Is...>) -> uvalue {
             if ( !(... && args[Is].can_cast_to<type_list_at_t<Is, argument_types>>()) ) {
                 META_HPP_THROW_AS(exception, "an attempt to call a method with incorrect argument types");
             }
@@ -6873,7 +6880,7 @@ namespace meta_hpp::detail
                     return uvalue{std::forward<decltype(return_value)>(return_value)};
                 }
             }
-        }(std::make_index_sequence<mt::arity>());
+        }, std::make_index_sequence<mt::arity>());
     }
 
     template < method_kind Method >
@@ -6890,9 +6897,9 @@ namespace meta_hpp::detail
             return false;
         }
 
-        return [args]<std::size_t... Is>(std::index_sequence<Is...>){
+        return std::invoke([args]<std::size_t... Is>(std::index_sequence<Is...>){
             return (... && args[Is].can_cast_to<type_list_at_t<Is, argument_types>>());
-        }(std::make_index_sequence<mt::arity>());
+        }, std::make_index_sequence<mt::arity>());
     }
 }
 
@@ -6915,13 +6922,13 @@ namespace meta_hpp::detail
         using mt = method_traits<Method>;
         using mt_argument_types = typename mt::argument_types;
 
-        return []<std::size_t... Is>(std::index_sequence<Is...>){
+        return std::invoke([]<std::size_t... Is>(std::index_sequence<Is...>){
             [[maybe_unused]] const auto make_argument = []<std::size_t I>(std::index_sequence<I>){
                 using P = type_list_at_t<I, mt_argument_types>;
                 return argument{argument_state::make<P>(I, metadata_map{})};
             };
             return argument_list{make_argument(std::index_sequence<Is>{})...};
-        }(std::make_index_sequence<mt::arity>());
+        }, std::make_index_sequence<mt::arity>());
     }
 }
 
@@ -8246,9 +8253,10 @@ namespace meta_hpp::detail
     struct deref_traits;
 
     template < typename T >
-    concept has_deref_traits = requires(const T& v) {
-        { deref_traits<T>{}(v) } -> std::convertible_to<uvalue>;
-    };
+    concept has_deref_traits = //
+        requires(const T& v) {
+            { deref_traits<T>{}(v) } -> std::convertible_to<uvalue>;
+        };
 }
 
 namespace meta_hpp::detail
@@ -8292,9 +8300,10 @@ namespace meta_hpp::detail
     struct index_traits;
 
     template < typename T >
-    concept has_index_traits = requires(const T& v, std::size_t i) {
-        { index_traits<T>{}(v, i) } -> std::convertible_to<uvalue>;
-    };
+    concept has_index_traits = //
+        requires(const T& v, std::size_t i) {
+            { index_traits<T>{}(v, i) } -> std::convertible_to<uvalue>;
+        };
 }
 
 namespace meta_hpp::detail
@@ -8364,9 +8373,10 @@ namespace meta_hpp::detail
     struct unmap_traits;
 
     template < typename T >
-    concept has_unmap_traits = requires(const T& v) {
-        { unmap_traits<T>{}(v) } -> std::convertible_to<uvalue>;
-    };
+    concept has_unmap_traits = //
+        requires(const T& v) {
+            { unmap_traits<T>{}(v) } -> std::convertible_to<uvalue>;
+        };
 }
 
 namespace meta_hpp::detail
@@ -8552,7 +8562,7 @@ namespace meta_hpp
             static vtable_t table{
                 .type = resolve_type<Tp>(),
 
-                .move = [](uvalue&& self, uvalue& to) noexcept {
+                .move{[](uvalue&& self, uvalue& to) noexcept {
                     assert(self && !to); // NOLINT
 
                     Tp* src = storage_cast<Tp>(self.storage_);
@@ -8565,9 +8575,9 @@ namespace meta_hpp
                         to.storage_.external.ptr = src;
                         std::swap(to.storage_.vtag, self.storage_.vtag);
                     }
-                },
+                }},
 
-                .copy = [](const uvalue& self, uvalue& to){
+                .copy{[](const uvalue& self, uvalue& to){
                     assert(self && !to); // NOLINT
 
                     const Tp* src = storage_cast<Tp>(self.storage_);
@@ -8579,9 +8589,9 @@ namespace meta_hpp
                         to.storage_.external.ptr = new Tp(*src);
                         to.storage_.vtag = self.storage_.vtag;
                     }
-                },
+                }},
 
-                .reset = [](uvalue& self) noexcept {
+                .reset{[](uvalue& self) noexcept {
                     assert(self); // NOLINT
 
                     Tp* src = storage_cast<Tp>(self.storage_);
@@ -8594,9 +8604,9 @@ namespace meta_hpp
                     }
 
                     self.storage_.vtag = 0;
-                },
+                }},
 
-                .deref = [](){
+                .deref{[](){
                     if constexpr ( detail::has_deref_traits<Tp> ) {
                         return +[](const storage_u& self) -> uvalue {
                             return detail::deref_traits<Tp>{}(*storage_cast<Tp>(self));
@@ -8604,9 +8614,9 @@ namespace meta_hpp
                     } else {
                         return nullptr;
                     }
-                }(),
+                }()},
 
-                .index = [](){
+                .index{[](){
                     if constexpr ( detail::has_index_traits<Tp> ) {
                         return +[](const storage_u& self, std::size_t i) -> uvalue {
                             return detail::index_traits<Tp>{}(*storage_cast<Tp>(self), i);
@@ -8614,9 +8624,9 @@ namespace meta_hpp
                     } else {
                         return nullptr;
                     }
-                }(),
+                }()},
 
-                .unmap = [](){
+                .unmap{[](){
                     if constexpr ( detail::has_unmap_traits<Tp> ) {
                         return +[](const storage_u& self) -> uvalue {
                             return detail::unmap_traits<Tp>{}(*storage_cast<Tp>(self));
@@ -8624,7 +8634,7 @@ namespace meta_hpp
                     } else {
                         return nullptr;
                     }
-                }(),
+                }()},
             };
 
             return &table;

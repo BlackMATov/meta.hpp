@@ -71,31 +71,31 @@ namespace meta_hpp
     }
 
     template < typename Policy >
-    concept constructor_policy_kind =
+    concept constructor_policy_kind = //
         std::is_same_v<Policy, constructor_policy::as_object_t> ||
         std::is_same_v<Policy, constructor_policy::as_raw_pointer_t> ||
         std::is_same_v<Policy, constructor_policy::as_shared_pointer_t>;
 
     template < typename Policy >
-    concept function_policy_kind =
+    concept function_policy_kind = //
         std::is_same_v<Policy, function_policy::as_copy_t> ||
         std::is_same_v<Policy, function_policy::discard_return_t> ||
         std::is_same_v<Policy, function_policy::return_reference_as_pointer_t>;
 
     template < typename Policy >
-    concept member_policy_kind =
+    concept member_policy_kind = //
         std::is_same_v<Policy, member_policy::as_copy_t> ||
         std::is_same_v<Policy, member_policy::as_pointer_t> ||
         std::is_same_v<Policy, member_policy::as_reference_wrapper_t>;
 
     template < typename Policy >
-    concept method_policy_kind =
+    concept method_policy_kind = //
         std::is_same_v<Policy, method_policy::as_copy_t> ||
         std::is_same_v<Policy, method_policy::discard_return_t> ||
         std::is_same_v<Policy, method_policy::return_reference_as_pointer_t>;
 
     template < typename Policy >
-    concept variable_policy_kind =
+    concept variable_policy_kind = //
         std::is_same_v<Policy, variable_policy::as_copy_t> ||
         std::is_same_v<Policy, variable_policy::as_pointer_t> ||
         std::is_same_v<Policy, variable_policy::as_reference_wrapper_t>;
@@ -421,7 +421,7 @@ namespace meta_hpp
 
     template < detail::state_family T, detail::state_family U >
     [[nodiscard]] std::strong_ordering operator<=>(const T& l, const U& r) noexcept {
-        if ( const auto cmp{l.is_valid() <=> r.is_valid()}; cmp != std::strong_ordering::equal ) {
+        if ( const std::strong_ordering cmp{l.is_valid() <=> r.is_valid()}; cmp != std::strong_ordering::equal ) {
             return cmp;
         }
         return l.is_valid() ? l.get_index() <=> r.get_index() : std::strong_ordering::equal;

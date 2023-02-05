@@ -11,7 +11,7 @@
 namespace meta_hpp::detail
 {
     template < typename T >
-    concept type_family =
+    concept type_family = //
         std::is_same_v<T, any_type> ||
         std::is_same_v<T, array_type> ||
         std::is_same_v<T, class_type> ||

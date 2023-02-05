@@ -175,7 +175,7 @@ namespace meta_hpp
             static vtable_t table{
                 .type = resolve_type<Tp>(),
 
-                .move = [](uvalue&& self, uvalue& to) noexcept {
+                .move{[](uvalue&& self, uvalue& to) noexcept {
                     assert(self && !to); // NOLINT
 
                     Tp* src = storage_cast<Tp>(self.storage_);
@@ -188,9 +188,9 @@ namespace meta_hpp
                         to.storage_.external.ptr = src;
                         std::swap(to.storage_.vtag, self.storage_.vtag);
                     }
-                },
+                }},
 
-                .copy = [](const uvalue& self, uvalue& to){
+                .copy{[](const uvalue& self, uvalue& to){
                     assert(self && !to); // NOLINT
 
                     const Tp* src = storage_cast<Tp>(self.storage_);
@@ -202,9 +202,9 @@ namespace meta_hpp
                         to.storage_.external.ptr = new Tp(*src);
                         to.storage_.vtag = self.storage_.vtag;
                     }
-                },
+                }},
 
-                .reset = [](uvalue& self) noexcept {
+                .reset{[](uvalue& self) noexcept {
                     assert(self); // NOLINT
 
                     Tp* src = storage_cast<Tp>(self.storage_);
@@ -217,9 +217,9 @@ namespace meta_hpp
                     }
 
                     self.storage_.vtag = 0;
-                },
+                }},
 
-                .deref = [](){
+                .deref{[](){
                     if constexpr ( detail::has_deref_traits<Tp> ) {
                         return +[](const storage_u& self) -> uvalue {
                             return detail::deref_traits<Tp>{}(*storage_cast<Tp>(self));
@@ -227,9 +227,9 @@ namespace meta_hpp
                     } else {
                         return nullptr;
                     }
-                }(),
+                }()},
 
-                .index = [](){
+                .index{[](){
                     if constexpr ( detail::has_index_traits<Tp> ) {
                         return +[](const storage_u& self, std::size_t i) -> uvalue {
                             return detail::index_traits<Tp>{}(*storage_cast<Tp>(self), i);
@@ -237,9 +237,9 @@ namespace meta_hpp
                     } else {
                         return nullptr;
                     }
-                }(),
+                }()},
 
-                .unmap = [](){
+                .unmap{[](){
                     if constexpr ( detail::has_unmap_traits<Tp> ) {
                         return +[](const storage_u& self) -> uvalue {
                             return detail::unmap_traits<Tp>{}(*storage_cast<Tp>(self));
@@ -247,7 +247,7 @@ namespace meta_hpp
                     } else {
                         return nullptr;
                     }
-                }(),
+                }()},
             };
 
             return &table;

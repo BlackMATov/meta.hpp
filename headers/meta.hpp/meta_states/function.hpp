@@ -38,7 +38,7 @@ namespace meta_hpp::detail
             META_HPP_THROW_AS(exception, "an attempt to call a function with an incorrect arity");
         }
 
-        return [&function, args]<std::size_t... Is>(std::index_sequence<Is...>) -> uvalue {
+        return std::invoke([&function, args]<std::size_t... Is>(std::index_sequence<Is...>) -> uvalue {
             if ( !(... && args[Is].can_cast_to<type_list_at_t<Is, argument_types>>()) ) {
                 META_HPP_THROW_AS(exception, "an attempt to call a function with incorrect argument types");
             }
@@ -61,7 +61,7 @@ namespace meta_hpp::detail
                     return uvalue{std::forward<decltype(return_value)>(return_value)};
                 }
             }
-        }(std::make_index_sequence<ft::arity>());
+        }, std::make_index_sequence<ft::arity>());
     }
 
     template < function_kind Function >
@@ -73,9 +73,9 @@ namespace meta_hpp::detail
             return false;
         }
 
-        return [args]<std::size_t... Is>(std::index_sequence<Is...>){
+        return std::invoke([args]<std::size_t... Is>(std::index_sequence<Is...>){
             return (... && args[Is].can_cast_to<type_list_at_t<Is, argument_types>>());
-        }(std::make_index_sequence<ft::arity>());
+        }, std::make_index_sequence<ft::arity>());
     }
 }
 
@@ -98,13 +98,13 @@ namespace meta_hpp::detail
         using ft = function_traits<Function>;
         using ft_argument_types = typename ft::argument_types;
 
-        return []<std::size_t... Is>(std::index_sequence<Is...>){
+        return std::invoke([]<std::size_t... Is>(std::index_sequence<Is...>){
             [[maybe_unused]] const auto make_argument = []<std::size_t I>(std::index_sequence<I>){
                 using P = type_list_at_t<I, ft_argument_types>;
                 return argument{argument_state::make<P>(I, metadata_map{})};
             };
             return argument_list{make_argument(std::index_sequence<Is>{})...};
-        }(std::make_index_sequence<ft::arity>());
+        }, std::make_index_sequence<ft::arity>());
     }
 }
 
