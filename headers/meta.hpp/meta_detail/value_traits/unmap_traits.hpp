@@ -15,10 +15,10 @@ namespace meta_hpp::detail
     struct unmap_traits;
 
     template < typename T >
-    concept has_unmap_traits = //
-        requires(const T& v) {
-            { unmap_traits<T>{}(v) } -> std::convertible_to<uvalue>;
-        };
+    concept has_unmap_traits //
+        = requires(const T& v) {
+              { unmap_traits<T>{}(v) } -> std::convertible_to<uvalue>;
+          };
 }
 
 namespace meta_hpp::detail

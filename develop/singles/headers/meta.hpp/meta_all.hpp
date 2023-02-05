@@ -31,20 +31,20 @@
 #include <vector>
 
 #if !defined(META_HPP_NO_EXCEPTIONS) && !defined(__cpp_exceptions)
-#  define META_HPP_NO_EXCEPTIONS
+#    define META_HPP_NO_EXCEPTIONS
 #endif
 
 #if !defined(META_HPP_NO_RTTI) && !defined(__cpp_rtti)
-#  define META_HPP_NO_RTTI
+#    define META_HPP_NO_RTTI
 #endif
 
 #if !defined(META_HPP_NO_EXCEPTIONS)
-#  include <stdexcept>
+#    include <stdexcept>
 #endif
 
 #if !defined(META_HPP_NO_RTTI)
-#  include <typeindex>
-#  include <typeinfo>
+#    include <typeindex>
+#    include <typeinfo>
 #endif
 
 namespace meta_hpp::detail
@@ -52,6 +52,7 @@ namespace meta_hpp::detail
     template < typename Enum >
     class bitflags final {
         static_assert(std::is_enum_v<Enum>);
+
     public:
         using enum_type = Enum;
         using underlying_type = std::underlying_type_t<Enum>;
@@ -104,6 +105,7 @@ namespace meta_hpp::detail
             flags_ &= ~flags.flags_;
             return *this;
         }
+
     private:
         underlying_type flags_{};
     };
@@ -126,34 +128,34 @@ namespace std
 
 namespace meta_hpp::detail
 {
-    #define META_HPP_DEFINE_BINARY_OPERATOR(op)\
-        template < typename Enum >\
-        constexpr bool operator op(Enum l, bitflags<Enum> r) noexcept {\
-            return l op r.as_enum();\
-        }\
-        template < typename Enum >\
-        constexpr bool operator op(bitflags<Enum> l, Enum r) noexcept {\
-            return l.as_enum() op r;\
-        }\
-        template < typename Enum >\
-        constexpr bool operator op(std::underlying_type_t<Enum> l, bitflags<Enum> r) noexcept {\
-            return l op r.as_raw();\
-        }\
-        template < typename Enum >\
-        constexpr bool operator op(bitflags<Enum> l, std::underlying_type_t<Enum> r) noexcept {\
-            return l.as_raw() op r;\
-        }\
-        template < typename Enum >\
-        constexpr bool operator op(bitflags<Enum> l, bitflags<Enum> r) noexcept {\
-            return l.as_raw() op r.as_raw();\
-        }
-        META_HPP_DEFINE_BINARY_OPERATOR(<)
-        META_HPP_DEFINE_BINARY_OPERATOR(>)
-        META_HPP_DEFINE_BINARY_OPERATOR(<=)
-        META_HPP_DEFINE_BINARY_OPERATOR(>=)
-        META_HPP_DEFINE_BINARY_OPERATOR(==)
-        META_HPP_DEFINE_BINARY_OPERATOR(!=)
-    #undef META_HPP_DEFINE_BINARY_OPERATOR
+#define META_HPP_DEFINE_BINARY_OPERATOR(op) \
+    template < typename Enum > \
+    constexpr bool operator op(Enum l, bitflags<Enum> r) noexcept { \
+        return l op r.as_enum(); \
+    } \
+    template < typename Enum > \
+    constexpr bool operator op(bitflags<Enum> l, Enum r) noexcept { \
+        return l.as_enum() op r; \
+    } \
+    template < typename Enum > \
+    constexpr bool operator op(std::underlying_type_t<Enum> l, bitflags<Enum> r) noexcept { \
+        return l op r.as_raw(); \
+    } \
+    template < typename Enum > \
+    constexpr bool operator op(bitflags<Enum> l, std::underlying_type_t<Enum> r) noexcept { \
+        return l.as_raw() op r; \
+    } \
+    template < typename Enum > \
+    constexpr bool operator op(bitflags<Enum> l, bitflags<Enum> r) noexcept { \
+        return l.as_raw() op r.as_raw(); \
+    }
+    META_HPP_DEFINE_BINARY_OPERATOR(<)
+    META_HPP_DEFINE_BINARY_OPERATOR(>)
+    META_HPP_DEFINE_BINARY_OPERATOR(<=)
+    META_HPP_DEFINE_BINARY_OPERATOR(>=)
+    META_HPP_DEFINE_BINARY_OPERATOR(==)
+    META_HPP_DEFINE_BINARY_OPERATOR(!=)
+#undef META_HPP_DEFINE_BINARY_OPERATOR
 }
 
 namespace meta_hpp::detail
@@ -163,49 +165,49 @@ namespace meta_hpp::detail
         return static_cast<Enum>(~l.as_raw());
     }
 
-    #define META_HPP_DEFINE_BINARY_OPERATOR(op)\
-        template < typename Enum >\
-        constexpr bitflags<Enum> operator op (Enum l, bitflags<Enum> r) noexcept {\
-            return bitflags{l} op r;\
-        }\
-        template < typename Enum >\
-        constexpr bitflags<Enum> operator op (bitflags<Enum> l, Enum r) noexcept {\
-            return l op bitflags<Enum>{r};\
-        }\
-        template < typename Enum >\
-        constexpr bitflags<Enum> operator op (bitflags<Enum> l, bitflags<Enum> r) noexcept {\
-            return static_cast<Enum>(l.as_raw() op r.as_raw());\
-        }\
-        template < typename Enum >\
-        constexpr bitflags<Enum>& operator op##= (bitflags<Enum>& l, Enum r) noexcept {\
-            return l = l op bitflags<Enum>{r};\
-        }\
-        template < typename Enum >\
-        constexpr bitflags<Enum>& operator op##= (bitflags<Enum>& l, bitflags<Enum> r) noexcept {\
-            return l = l op r;\
-        }
-        META_HPP_DEFINE_BINARY_OPERATOR(|)
-        META_HPP_DEFINE_BINARY_OPERATOR(&)
-        META_HPP_DEFINE_BINARY_OPERATOR(^)
-    #undef META_HPP_DEFINE_BINARY_OPERATOR
+#define META_HPP_DEFINE_BINARY_OPERATOR(op) \
+    template < typename Enum > \
+    constexpr bitflags<Enum> operator op(Enum l, bitflags<Enum> r) noexcept { \
+        return bitflags{l} op r; \
+    } \
+    template < typename Enum > \
+    constexpr bitflags<Enum> operator op(bitflags<Enum> l, Enum r) noexcept { \
+        return l op bitflags<Enum>{r}; \
+    } \
+    template < typename Enum > \
+    constexpr bitflags<Enum> operator op(bitflags<Enum> l, bitflags<Enum> r) noexcept { \
+        return static_cast<Enum>(l.as_raw() op r.as_raw()); \
+    } \
+    template < typename Enum > \
+    constexpr bitflags<Enum>& operator op##=(bitflags<Enum>& l, Enum r) noexcept { \
+        return l = l op bitflags<Enum>{r}; \
+    } \
+    template < typename Enum > \
+    constexpr bitflags<Enum>& operator op##=(bitflags<Enum>& l, bitflags<Enum> r) noexcept { \
+        return l = l op r; \
+    }
+    META_HPP_DEFINE_BINARY_OPERATOR(|)
+    META_HPP_DEFINE_BINARY_OPERATOR(&)
+    META_HPP_DEFINE_BINARY_OPERATOR(^)
+#undef META_HPP_DEFINE_BINARY_OPERATOR
 }
 
 //
 // META_HPP_BITFLAGS_OPERATORS_DECL
 //
 
-#define META_HPP_BITFLAGS_OPERATORS_DECL(Enum)\
-    constexpr ::meta_hpp::detail::bitflags<Enum> operator~ [[maybe_unused]] (Enum l) noexcept {\
-        return ~::meta_hpp::detail::bitflags<Enum>(l);\
-    }\
-    constexpr ::meta_hpp::detail::bitflags<Enum> operator| [[maybe_unused]] (Enum l, Enum r) noexcept {\
-        return ::meta_hpp::detail::bitflags<Enum>(l) | ::meta_hpp::detail::bitflags<Enum>(r);\
-    }\
-    constexpr ::meta_hpp::detail::bitflags<Enum> operator& [[maybe_unused]] (Enum l, Enum r) noexcept {\
-        return ::meta_hpp::detail::bitflags<Enum>(l) & ::meta_hpp::detail::bitflags<Enum>(r);\
-    }\
-    constexpr ::meta_hpp::detail::bitflags<Enum> operator^ [[maybe_unused]] (Enum l, Enum r) noexcept {\
-        return ::meta_hpp::detail::bitflags<Enum>(l) ^ ::meta_hpp::detail::bitflags<Enum>(r);\
+#define META_HPP_BITFLAGS_OPERATORS_DECL(Enum) \
+    constexpr ::meta_hpp::detail::bitflags<Enum> operator~[[maybe_unused]] (Enum l) noexcept { \
+        return ~::meta_hpp::detail::bitflags<Enum>(l); \
+    } \
+    constexpr ::meta_hpp::detail::bitflags<Enum> operator| [[maybe_unused]] (Enum l, Enum r) noexcept { \
+        return ::meta_hpp::detail::bitflags<Enum>(l) | ::meta_hpp::detail::bitflags<Enum>(r); \
+    } \
+    constexpr ::meta_hpp::detail::bitflags<Enum> operator& [[maybe_unused]] (Enum l, Enum r) noexcept { \
+        return ::meta_hpp::detail::bitflags<Enum>(l) & ::meta_hpp::detail::bitflags<Enum>(r); \
+    } \
+    constexpr ::meta_hpp::detail::bitflags<Enum> operator^ [[maybe_unused]] (Enum l, Enum r) noexcept { \
+        return ::meta_hpp::detail::bitflags<Enum>(l) ^ ::meta_hpp::detail::bitflags<Enum>(r); \
     }
 
 namespace meta_hpp::detail
@@ -291,15 +293,15 @@ namespace meta_hpp::detail
 }
 
 #if !defined(META_HPP_NO_EXCEPTIONS)
-#  define META_HPP_TRY try
-#  define META_HPP_CATCH(e) catch(e)
-#  define META_HPP_RETHROW() throw
-#  define META_HPP_THROW_AS(e, m) throw e(m)
+#    define META_HPP_TRY try
+#    define META_HPP_CATCH(e) catch ( e )
+#    define META_HPP_RETHROW() throw
+#    define META_HPP_THROW_AS(e, m) throw e(m)
 #else
-#  define META_HPP_TRY if ( true )
-#  define META_HPP_CATCH(e) if ( false )
-#  define META_HPP_RETHROW() std::abort()
-#  define META_HPP_THROW_AS(e, m) std::terminate()
+#    define META_HPP_TRY if ( true )
+#    define META_HPP_CATCH(e) if ( false )
+#    define META_HPP_RETHROW() std::abort()
+#    define META_HPP_THROW_AS(e, m) std::terminate()
 #endif
 
 namespace meta_hpp::detail
@@ -324,7 +326,10 @@ namespace meta_hpp::detail
         using result_type = R;
 
         fixed_function() = default;
-        ~fixed_function() { reset(); }
+
+        ~fixed_function() {
+            reset();
+        }
 
         fixed_function(const fixed_function& other) = delete;
         fixed_function& operator=(const fixed_function& other) = delete;
@@ -343,14 +348,14 @@ namespace meta_hpp::detail
         }
 
         template < typename F >
-            requires (!std::is_same_v<fixed_function, std::decay_t<F>>)
+            requires(!std::is_same_v<fixed_function, std::decay_t<F>>)
         // NOLINTNEXTLINE(*-forwarding-reference-overload)
         fixed_function(F&& fun) {
             vtable_t::construct(*this, std::forward<F>(fun));
         }
 
         template < typename F >
-            requires (!std::is_same_v<fixed_function, std::decay_t<F>>)
+            requires(!std::is_same_v<fixed_function, std::decay_t<F>>)
         fixed_function& operator=(F&& fun) {
             fixed_function{std::forward<F>(fun)}.swap(*this);
             return *this;
@@ -378,9 +383,11 @@ namespace meta_hpp::detail
         void swap(fixed_function& other) noexcept {
             vtable_t::swap(*this, other);
         }
+
     private:
         struct vtable_t;
         vtable_t* vtable_{};
+
     private:
         struct buffer_t final {
             // NOLINTNEXTLINE(*-avoid-c-arrays)
@@ -437,7 +444,7 @@ namespace meta_hpp::detail
                     from.vtable_ = nullptr;
                 }},
 
-                .destroy{[](fixed_function& self){
+                .destroy{[](fixed_function& self) {
                     assert(self); // NOLINT
 
                     Fp& src = *buffer_cast<Fp>(self.buffer_);
@@ -458,9 +465,7 @@ namespace meta_hpp::detail
             static_assert(std::is_invocable_r_v<R, Fp, Args...>);
             static_assert(std::is_nothrow_move_constructible_v<Fp>);
 
-            std::construct_at(
-                buffer_cast<Fp>(dst.buffer_),
-                std::forward<F>(fun));
+            std::construct_at(buffer_cast<Fp>(dst.buffer_), std::forward<F>(fun));
 
             dst.vtable_ = vtable_t::get<Fp>();
         }
@@ -494,29 +499,51 @@ namespace meta_hpp::detail
         struct strip_signature_impl;
 
         template < typename R, typename C, typename... Args >
-        struct strip_signature_impl<R(C::*)(Args...)> { using type = R(Args...); };
-        template < typename R, typename C, typename... Args >
-        struct strip_signature_impl<R(C::*)(Args...) const> { using type = R(Args...); };
-        template < typename R, typename C, typename... Args >
-        struct strip_signature_impl<R(C::*)(Args...) &> { using type = R(Args...); };
-        template < typename R, typename C, typename... Args >
-        struct strip_signature_impl<R(C::*)(Args...) const &> { using type = R(Args...); };
+        struct strip_signature_impl<R (C::*)(Args...)> {
+            using type = R(Args...);
+        };
 
         template < typename R, typename C, typename... Args >
-        struct strip_signature_impl<R(C::*)(Args...) noexcept> { using type = R(Args...); };
+        struct strip_signature_impl<R (C::*)(Args...) const> {
+            using type = R(Args...);
+        };
+
         template < typename R, typename C, typename... Args >
-        struct strip_signature_impl<R(C::*)(Args...) const noexcept> { using type = R(Args...); };
+        struct strip_signature_impl<R (C::*)(Args...)&> {
+            using type = R(Args...);
+        };
+
         template < typename R, typename C, typename... Args >
-        struct strip_signature_impl<R(C::*)(Args...) & noexcept> { using type = R(Args...); };
+        struct strip_signature_impl<R (C::*)(Args...) const&> {
+            using type = R(Args...);
+        };
+
         template < typename R, typename C, typename... Args >
-        struct strip_signature_impl<R(C::*)(Args...) const & noexcept> { using type = R(Args...); };
+        struct strip_signature_impl<R (C::*)(Args...) noexcept> {
+            using type = R(Args...);
+        };
+
+        template < typename R, typename C, typename... Args >
+        struct strip_signature_impl<R (C::*)(Args...) const noexcept> {
+            using type = R(Args...);
+        };
+
+        template < typename R, typename C, typename... Args >
+        struct strip_signature_impl<R (C::*)(Args...) & noexcept> {
+            using type = R(Args...);
+        };
+
+        template < typename R, typename C, typename... Args >
+        struct strip_signature_impl<R (C::*)(Args...) const & noexcept> {
+            using type = R(Args...);
+        };
 
         template < typename F >
         using strip_signature_impl_t = typename strip_signature_impl<F>::type;
     }
 
     template < typename R, typename... Args >
-    fixed_function(R(*)(Args...)) -> fixed_function<R(Args...)>;
+    fixed_function(R (*)(Args...)) -> fixed_function<R(Args...)>;
 
     template < typename F, typename S = impl::strip_signature_impl_t<decltype(&F::operator())> >
     fixed_function(F) -> fixed_function<S>;
@@ -545,7 +572,7 @@ namespace meta_hpp::detail
     };
 
     template < typename T >
-        requires (std::is_same_v<T, std::byte>) || (std::is_integral_v<T> && sizeof(T) == 1)
+        requires(std::is_same_v<T, std::byte>) || (std::is_integral_v<T> && sizeof(T) == 1)
     constexpr std::size_t fnv1a_hash(const T* mem, std::size_t size) noexcept {
         using traits = fnv1a_hash_traits<>;
         std::size_t hash{traits::offset_basis};
@@ -608,6 +635,7 @@ namespace meta_hpp::detail
         [[nodiscard]] constexpr std::strong_ordering operator<=>(hashed_string other) const noexcept {
             return hash_ <=> other.hash_;
         }
+
     private:
         std::size_t hash_{fnv1a_hash("", 0)};
     };
@@ -638,10 +666,10 @@ namespace std
 namespace meta_hpp::detail
 {
     template < typename Key, typename Compare, typename Allocator >
-    typename std::set<Key, Compare, Allocator>::iterator
-    insert_or_assign(std::set<Key, Compare, Allocator>& set,
-        typename std::set<Key, Compare, Allocator>::value_type&& value)
-    {
+    typename std::set<Key, Compare, Allocator>::iterator insert_or_assign( //
+        std::set<Key, Compare, Allocator>& set,
+        typename std::set<Key, Compare, Allocator>::value_type&& value
+    ) {
         auto&& [position, inserted] = set.insert(std::move(value));
 
         if ( inserted ) {
@@ -654,10 +682,10 @@ namespace meta_hpp::detail
     }
 
     template < typename Key, typename Compare, typename Allocator >
-    typename std::set<Key, Compare, Allocator>::iterator
-    insert_or_assign(std::set<Key, Compare, Allocator>& set,
-        const typename std::set<Key, Compare, Allocator>::value_type& value)
-    {
+    typename std::set<Key, Compare, Allocator>::iterator insert_or_assign( //
+        std::set<Key, Compare, Allocator>& set,
+        const typename std::set<Key, Compare, Allocator>::value_type& value
+    ) {
         auto&& [position, inserted] = set.insert(value);
 
         if ( inserted ) {
@@ -673,37 +701,40 @@ namespace meta_hpp::detail
 namespace meta_hpp::detail
 {
     template < typename Key, typename Compare, typename Allocator >
-    void insert_or_assign(std::set<Key, Compare, Allocator>& set,
-        std::set<Key, Compare, Allocator>& value)
-    {
+    void insert_or_assign( //
+        std::set<Key, Compare, Allocator>& set,
+        std::set<Key, Compare, Allocator>& value
+    ) {
         set.swap(value);
         set.merge(value);
     }
 
     template < typename Key, typename Compare, typename Allocator >
-    void insert_or_assign(std::set<Key, Compare, Allocator>& set,
-        std::set<Key, Compare, Allocator>&& value)
-    {
+    void insert_or_assign( //
+        std::set<Key, Compare, Allocator>& set,
+        std::set<Key, Compare, Allocator>&& value
+    ) {
         set.swap(value);
         set.merge(std::move(value));
     }
 }
 
-
 namespace meta_hpp::detail
 {
     template < typename Key, typename Value, typename Compare, typename Allocator >
-    void insert_or_assign(std::map<Key, Value, Compare, Allocator>& map,
-        std::map<Key, Value, Compare, Allocator>& value)
-    {
+    void insert_or_assign( //
+        std::map<Key, Value, Compare, Allocator>& map,
+        std::map<Key, Value, Compare, Allocator>& value
+    ) {
         map.swap(value);
         map.merge(value);
     }
 
     template < typename Key, typename Value, typename Compare, typename Allocator >
-    void insert_or_assign(std::map<Key, Value, Compare, Allocator>& map,
-        std::map<Key, Value, Compare, Allocator>&& value)
-    {
+    void insert_or_assign( //
+        std::map<Key, Value, Compare, Allocator>& map,
+        std::map<Key, Value, Compare, Allocator>&& value
+    ) {
         map.swap(value);
         map.merge(std::move(value));
     }
@@ -726,16 +757,24 @@ namespace meta_hpp::detail
         intrusive_ref_counter() = default;
 
         intrusive_ref_counter(intrusive_ref_counter&&) noexcept {}
+
         intrusive_ref_counter(const intrusive_ref_counter&) noexcept {}
 
-        intrusive_ref_counter& operator=(intrusive_ref_counter&&) noexcept { return *this; }
-        intrusive_ref_counter& operator=(const intrusive_ref_counter&) noexcept { return *this; }
+        intrusive_ref_counter& operator=(intrusive_ref_counter&&) noexcept {
+            return *this;
+        }
+
+        intrusive_ref_counter& operator=(const intrusive_ref_counter&) noexcept {
+            return *this;
+        }
 
         [[nodiscard]] std::size_t get_use_count() const noexcept {
             return counter_.load(std::memory_order_acquire);
         }
+
     protected:
         ~intrusive_ref_counter() = default;
+
     private:
         mutable std::atomic_size_t counter_{};
         friend void intrusive_ptr_add_ref<Derived>(const intrusive_ref_counter* ptr);
@@ -850,6 +889,7 @@ namespace meta_hpp::detail
         [[nodiscard]] std::strong_ordering operator<=>(const intrusive_ptr& other) const noexcept {
             return ptr_ <=> other.ptr_;
         }
+
     private:
         T* ptr_{};
     };
@@ -993,7 +1033,7 @@ namespace meta_hpp::detail
         }
 
         [[nodiscard]] bool operator==(const memory_buffer& other) const noexcept {
-            return (size_ == other.size_)
+            return (size_ == other.size_) //
                 && (size_ == 0 || std::memcmp(data_, other.data_, size_) == 0);
         }
 
@@ -1031,6 +1071,7 @@ namespace meta_hpp::detail
     protected:
         noncopyable() = default;
         ~noncopyable() = default;
+
     public:
         noncopyable(noncopyable&&) = delete;
         noncopyable(const noncopyable&) = delete;
@@ -1139,9 +1180,11 @@ namespace meta_hpp::detail
         [[nodiscard]] std::strong_ordering operator<=>(type_id other) const noexcept {
             return id_ <=> other.id_;
         }
+
     private:
         using underlying_type = std::uint32_t;
         underlying_type id_{};
+
     private:
         [[nodiscard]] static underlying_type next() noexcept {
             static std::atomic<underlying_type> id{};
@@ -1383,21 +1426,21 @@ namespace meta_hpp
 namespace meta_hpp::detail
 {
     template < typename T >
-    concept type_family = //
-        std::is_same_v<T, any_type> ||
-        std::is_same_v<T, array_type> ||
-        std::is_same_v<T, class_type> ||
-        std::is_same_v<T, constructor_type> ||
-        std::is_same_v<T, destructor_type> ||
-        std::is_same_v<T, enum_type> ||
-        std::is_same_v<T, function_type> ||
-        std::is_same_v<T, member_type> ||
-        std::is_same_v<T, method_type> ||
-        std::is_same_v<T, nullptr_type> ||
-        std::is_same_v<T, number_type> ||
-        std::is_same_v<T, pointer_type> ||
-        std::is_same_v<T, reference_type> ||
-        std::is_same_v<T, void_type>;
+    concept type_family                       //
+        = std::is_same_v<T, any_type>         //
+       || std::is_same_v<T, array_type>       //
+       || std::is_same_v<T, class_type>       //
+       || std::is_same_v<T, constructor_type> //
+       || std::is_same_v<T, destructor_type>  //
+       || std::is_same_v<T, enum_type>        //
+       || std::is_same_v<T, function_type>    //
+       || std::is_same_v<T, member_type>      //
+       || std::is_same_v<T, method_type>      //
+       || std::is_same_v<T, nullptr_type>     //
+       || std::is_same_v<T, number_type>      //
+       || std::is_same_v<T, pointer_type>     //
+       || std::is_same_v<T, reference_type>   //
+       || std::is_same_v<T, void_type>;       //
 
     template < type_family T >
     [[nodiscard]] typename T::data_ptr type_access(const T& type) {
@@ -1618,7 +1661,7 @@ namespace meta_hpp::detail
     struct function_traits;
 
     template < typename R, typename... Args >
-    struct function_traits<R(*)(Args...)> {
+    struct function_traits<R (*)(Args...)> {
         static constexpr std::size_t arity{sizeof...(Args)};
 
         using return_type = R;
@@ -1630,7 +1673,7 @@ namespace meta_hpp::detail
     };
 
     template < typename R, typename... Args >
-    struct function_traits<R(*)(Args...) noexcept> : function_traits<R(*)(Args...)> {
+    struct function_traits<R (*)(Args...) noexcept> : function_traits<R (*)(Args...)> {
         [[nodiscard]] static constexpr function_bitflags make_flags() noexcept {
             return function_flags::is_noexcept;
         }
@@ -1688,7 +1731,7 @@ namespace meta_hpp::detail
     struct method_traits;
 
     template < typename R, typename C, typename... Args >
-    struct method_traits<R(C::*)(Args...)> {
+    struct method_traits<R (C::*)(Args...)> {
         static constexpr std::size_t arity{sizeof...(Args)};
 
         using class_type = C;
@@ -1702,7 +1745,7 @@ namespace meta_hpp::detail
     };
 
     template < typename R, typename C, typename... Args >
-    struct method_traits<R(C::*)(Args...) const> : method_traits<R(C::*)(Args...)> {
+    struct method_traits<R (C::*)(Args...) const> : method_traits<R (C::*)(Args...)> {
         using qualified_type = const C;
 
         [[nodiscard]] static constexpr method_bitflags make_flags() noexcept {
@@ -1711,7 +1754,7 @@ namespace meta_hpp::detail
     };
 
     template < typename R, typename C, typename... Args >
-    struct method_traits<R(C::*)(Args...) noexcept> : method_traits<R(C::*)(Args...)> {
+    struct method_traits<R (C::*)(Args...) noexcept> : method_traits<R (C::*)(Args...)> {
         using qualified_type = C;
 
         [[nodiscard]] static constexpr method_bitflags make_flags() noexcept {
@@ -1720,7 +1763,7 @@ namespace meta_hpp::detail
     };
 
     template < typename R, typename C, typename... Args >
-    struct method_traits<R(C::*)(Args...) const noexcept> : method_traits<R(C::*)(Args...)> {
+    struct method_traits<R (C::*)(Args...) const noexcept> : method_traits<R (C::*)(Args...)> {
         using qualified_type = const C;
 
         [[nodiscard]] static constexpr method_bitflags make_flags() noexcept {
@@ -1729,7 +1772,7 @@ namespace meta_hpp::detail
     };
 
     template < typename R, typename C, typename... Args >
-    struct method_traits<R(C::*)(Args...) &> : method_traits<R(C::*)(Args...)> {
+    struct method_traits<R (C::*)(Args...)&> : method_traits<R (C::*)(Args...)> {
         using qualified_type = C&;
 
         [[nodiscard]] static constexpr method_bitflags make_flags() noexcept {
@@ -1738,7 +1781,7 @@ namespace meta_hpp::detail
     };
 
     template < typename R, typename C, typename... Args >
-    struct method_traits<R(C::*)(Args...) & noexcept> : method_traits<R(C::*)(Args...)> {
+    struct method_traits<R (C::*)(Args...) & noexcept> : method_traits<R (C::*)(Args...)> {
         using qualified_type = C&;
 
         [[nodiscard]] static constexpr method_bitflags make_flags() noexcept {
@@ -1747,7 +1790,7 @@ namespace meta_hpp::detail
     };
 
     template < typename R, typename C, typename... Args >
-    struct method_traits<R(C::*)(Args...) const &> : method_traits<R(C::*)(Args...)> {
+    struct method_traits<R (C::*)(Args...) const&> : method_traits<R (C::*)(Args...)> {
         using qualified_type = const C&;
 
         [[nodiscard]] static constexpr method_bitflags make_flags() noexcept {
@@ -1756,7 +1799,7 @@ namespace meta_hpp::detail
     };
 
     template < typename R, typename C, typename... Args >
-    struct method_traits<R(C::*)(Args...) const & noexcept> : method_traits<R(C::*)(Args...)> {
+    struct method_traits<R (C::*)(Args...) const & noexcept> : method_traits<R (C::*)(Args...)> {
         using qualified_type = const C&;
 
         [[nodiscard]] static constexpr method_bitflags make_flags() noexcept {
@@ -1765,7 +1808,7 @@ namespace meta_hpp::detail
     };
 
     template < typename R, typename C, typename... Args >
-    struct method_traits<R(C::*)(Args...) &&> : method_traits<R(C::*)(Args...)> {
+    struct method_traits<R (C::*)(Args...) &&> : method_traits<R (C::*)(Args...)> {
         using qualified_type = C&&;
 
         [[nodiscard]] static constexpr method_bitflags make_flags() noexcept {
@@ -1774,7 +1817,7 @@ namespace meta_hpp::detail
     };
 
     template < typename R, typename C, typename... Args >
-    struct method_traits<R(C::*)(Args...) && noexcept> : method_traits<R(C::*)(Args...)> {
+    struct method_traits<R (C::*)(Args...) && noexcept> : method_traits<R (C::*)(Args...)> {
         using qualified_type = C&&;
 
         [[nodiscard]] static constexpr method_bitflags make_flags() noexcept {
@@ -1783,7 +1826,7 @@ namespace meta_hpp::detail
     };
 
     template < typename R, typename C, typename... Args >
-    struct method_traits<R(C::*)(Args...) const &&> : method_traits<R(C::*)(Args...)> {
+    struct method_traits<R (C::*)(Args...) const&&> : method_traits<R (C::*)(Args...)> {
         using qualified_type = const C&&;
 
         [[nodiscard]] static constexpr method_bitflags make_flags() noexcept {
@@ -1792,7 +1835,7 @@ namespace meta_hpp::detail
     };
 
     template < typename R, typename C, typename... Args >
-    struct method_traits<R(C::*)(Args...) const && noexcept> : method_traits<R(C::*)(Args...)> {
+    struct method_traits<R (C::*)(Args...) const && noexcept> : method_traits<R (C::*)(Args...)> {
         using qualified_type = const C&&;
 
         [[nodiscard]] static constexpr method_bitflags make_flags() noexcept {
@@ -2004,6 +2047,7 @@ namespace meta_hpp
         [[nodiscard]] pointer_type as_pointer() const noexcept;
         [[nodiscard]] reference_type as_reference() const noexcept;
         [[nodiscard]] void_type as_void() const noexcept;
+
     private:
         data_ptr data_{};
         friend data_ptr detail::type_access<any_type>(const any_type&);
@@ -2025,6 +2069,7 @@ namespace meta_hpp
 
         [[nodiscard]] std::size_t get_extent() const noexcept;
         [[nodiscard]] any_type get_data_type() const noexcept;
+
     private:
         data_ptr data_{};
         friend data_ptr detail::type_access<array_type>(const array_type&);
@@ -2105,6 +2150,7 @@ namespace meta_hpp
         [[nodiscard]] method get_method_with(std::string_view name, Iter first, Iter last) const noexcept;
         [[nodiscard]] method get_method_with(std::string_view name, std::span<const any_type> args) const noexcept;
         [[nodiscard]] method get_method_with(std::string_view name, std::initializer_list<any_type> args) const noexcept;
+
     private:
         data_ptr data_{};
         friend data_ptr detail::type_access<class_type>(const class_type&);
@@ -2128,6 +2174,7 @@ namespace meta_hpp
         [[nodiscard]] any_type get_class_type() const noexcept;
         [[nodiscard]] any_type get_argument_type(std::size_t position) const noexcept;
         [[nodiscard]] const any_type_list& get_argument_types() const noexcept;
+
     private:
         data_ptr data_{};
         friend data_ptr detail::type_access<constructor_type>(const constructor_type&);
@@ -2148,6 +2195,7 @@ namespace meta_hpp
         [[nodiscard]] const metadata_map& get_metadata() const noexcept;
 
         [[nodiscard]] any_type get_class_type() const noexcept;
+
     private:
         data_ptr data_{};
         friend data_ptr detail::type_access<destructor_type>(const destructor_type&);
@@ -2179,6 +2227,7 @@ namespace meta_hpp
 
         template < typename T >
         [[nodiscard]] T name_to_value_as(std::string_view name) const;
+
     private:
         data_ptr data_{};
         friend data_ptr detail::type_access<enum_type>(const enum_type&);
@@ -2202,6 +2251,7 @@ namespace meta_hpp
         [[nodiscard]] any_type get_return_type() const noexcept;
         [[nodiscard]] any_type get_argument_type(std::size_t position) const noexcept;
         [[nodiscard]] const any_type_list& get_argument_types() const noexcept;
+
     private:
         data_ptr data_{};
         friend data_ptr detail::type_access<function_type>(const function_type&);
@@ -2223,6 +2273,7 @@ namespace meta_hpp
 
         [[nodiscard]] class_type get_owner_type() const noexcept;
         [[nodiscard]] any_type get_value_type() const noexcept;
+
     private:
         data_ptr data_{};
         friend data_ptr detail::type_access<member_type>(const member_type&);
@@ -2247,6 +2298,7 @@ namespace meta_hpp
         [[nodiscard]] any_type get_return_type() const noexcept;
         [[nodiscard]] any_type get_argument_type(std::size_t position) const noexcept;
         [[nodiscard]] const any_type_list& get_argument_types() const noexcept;
+
     private:
         data_ptr data_{};
         friend data_ptr detail::type_access<method_type>(const method_type&);
@@ -2264,6 +2316,7 @@ namespace meta_hpp
 
         [[nodiscard]] type_id get_id() const noexcept;
         [[nodiscard]] const metadata_map& get_metadata() const noexcept;
+
     private:
         data_ptr data_{};
         friend data_ptr detail::type_access<nullptr_type>(const nullptr_type&);
@@ -2285,6 +2338,7 @@ namespace meta_hpp
 
         [[nodiscard]] std::size_t get_size() const noexcept;
         [[nodiscard]] std::size_t get_align() const noexcept;
+
     private:
         data_ptr data_{};
         friend data_ptr detail::type_access<number_type>(const number_type&);
@@ -2305,6 +2359,7 @@ namespace meta_hpp
         [[nodiscard]] const metadata_map& get_metadata() const noexcept;
 
         [[nodiscard]] any_type get_data_type() const noexcept;
+
     private:
         data_ptr data_{};
         friend data_ptr detail::type_access<pointer_type>(const pointer_type&);
@@ -2325,6 +2380,7 @@ namespace meta_hpp
         [[nodiscard]] const metadata_map& get_metadata() const noexcept;
 
         [[nodiscard]] any_type get_data_type() const noexcept;
+
     private:
         data_ptr data_{};
         friend data_ptr detail::type_access<reference_type>(const reference_type&);
@@ -2342,6 +2398,7 @@ namespace meta_hpp
 
         [[nodiscard]] type_id get_id() const noexcept;
         [[nodiscard]] const metadata_map& get_metadata() const noexcept;
+
     private:
         data_ptr data_{};
         friend data_ptr detail::type_access<void_type>(const void_type&);
@@ -2433,7 +2490,7 @@ namespace meta_hpp::detail
         variable_set variables;
 
         struct base_info final {
-            using upcast_fptr = void*(*)(void*);
+            using upcast_fptr = void* (*)(void*);
             const upcast_fptr upcast;
         };
 
@@ -2538,16 +2595,16 @@ namespace meta_hpp::detail
 namespace meta_hpp::detail
 {
     template < typename T >
-    concept index_family = //
-        std::is_same_v<T, argument_index> ||
-        std::is_same_v<T, constructor_index> ||
-        std::is_same_v<T, destructor_index> ||
-        std::is_same_v<T, evalue_index> ||
-        std::is_same_v<T, function_index> ||
-        std::is_same_v<T, member_index> ||
-        std::is_same_v<T, method_index> ||
-        std::is_same_v<T, scope_index> ||
-        std::is_same_v<T, variable_index>;
+    concept index_family                       //
+        = std::is_same_v<T, argument_index>    //
+       || std::is_same_v<T, constructor_index> //
+       || std::is_same_v<T, destructor_index>  //
+       || std::is_same_v<T, evalue_index>      //
+       || std::is_same_v<T, function_index>    //
+       || std::is_same_v<T, member_index>      //
+       || std::is_same_v<T, method_index>      //
+       || std::is_same_v<T, scope_index>       //
+       || std::is_same_v<T, variable_index>;   //
 }
 
 namespace meta_hpp
@@ -2559,9 +2616,11 @@ namespace meta_hpp
 
         [[nodiscard]] std::size_t get_hash() const noexcept;
         [[nodiscard]] std::strong_ordering operator<=>(const argument_index&) const = default;
+
     private:
         friend detail::argument_state;
         explicit argument_index(any_type type, std::size_t position);
+
     private:
         any_type type_;
         std::size_t position_{};
@@ -2573,9 +2632,11 @@ namespace meta_hpp
 
         [[nodiscard]] std::size_t get_hash() const noexcept;
         [[nodiscard]] std::strong_ordering operator<=>(const constructor_index&) const = default;
+
     private:
         friend detail::constructor_state;
         explicit constructor_index(constructor_type type);
+
     private:
         constructor_type type_;
     };
@@ -2586,9 +2647,11 @@ namespace meta_hpp
 
         [[nodiscard]] std::size_t get_hash() const noexcept;
         [[nodiscard]] std::strong_ordering operator<=>(const destructor_index&) const = default;
+
     private:
         friend detail::destructor_state;
         explicit destructor_index(destructor_type type);
+
     private:
         destructor_type type_;
     };
@@ -2600,9 +2663,11 @@ namespace meta_hpp
 
         [[nodiscard]] std::size_t get_hash() const noexcept;
         [[nodiscard]] std::strong_ordering operator<=>(const evalue_index&) const = default;
+
     private:
         friend detail::evalue_state;
         explicit evalue_index(enum_type type, std::string name);
+
     private:
         enum_type type_;
         std::string name_;
@@ -2615,9 +2680,11 @@ namespace meta_hpp
 
         [[nodiscard]] std::size_t get_hash() const noexcept;
         [[nodiscard]] std::strong_ordering operator<=>(const function_index&) const = default;
+
     private:
         friend detail::function_state;
         explicit function_index(function_type type, std::string name);
+
     private:
         function_type type_;
         std::string name_;
@@ -2630,9 +2697,11 @@ namespace meta_hpp
 
         [[nodiscard]] std::size_t get_hash() const noexcept;
         [[nodiscard]] std::strong_ordering operator<=>(const member_index&) const = default;
+
     private:
         friend detail::member_state;
         explicit member_index(member_type type, std::string name);
+
     private:
         member_type type_;
         std::string name_;
@@ -2645,9 +2714,11 @@ namespace meta_hpp
         [[nodiscard]] const std::string& get_name() const noexcept;
 
         [[nodiscard]] std::strong_ordering operator<=>(const method_index&) const = default;
+
     private:
         friend detail::method_state;
         explicit method_index(method_type type, std::string name);
+
     private:
         method_type type_;
         std::string name_;
@@ -2659,9 +2730,11 @@ namespace meta_hpp
 
         [[nodiscard]] std::size_t get_hash() const noexcept;
         [[nodiscard]] std::strong_ordering operator<=>(const scope_index&) const = default;
+
     private:
         friend detail::scope_state;
         explicit scope_index(std::string name);
+
     private:
         std::string name_;
     };
@@ -2673,9 +2746,11 @@ namespace meta_hpp
 
         [[nodiscard]] std::size_t get_hash() const noexcept;
         [[nodiscard]] std::strong_ordering operator<=>(const variable_index&) const = default;
+
     private:
         friend detail::variable_state;
         explicit variable_index(pointer_type type, std::string name);
+
     private:
         pointer_type type_;
         std::string name_;
@@ -2695,16 +2770,16 @@ namespace std
 namespace meta_hpp::detail
 {
     template < typename T >
-    concept uvalue_kind = //
-        std::is_same_v<T, uvalue>;
+    concept uvalue_kind              //
+        = std::is_same_v<T, uvalue>; //
 
     template < typename T >
-    concept any_uvalue_kind = //
-        std::is_same_v<T, uarg_base> ||
-        std::is_same_v<T, uarg> ||
-        std::is_same_v<T, uinst_base> ||
-        std::is_same_v<T, uinst> ||
-        std::is_same_v<T, uvalue>;
+    concept any_uvalue_kind             //
+        = std::is_same_v<T, uarg_base>  //
+       || std::is_same_v<T, uarg>       //
+       || std::is_same_v<T, uinst_base> //
+       || std::is_same_v<T, uinst>      //
+       || std::is_same_v<T, uvalue>;    //
 }
 
 namespace meta_hpp
@@ -2721,36 +2796,36 @@ namespace meta_hpp
         uvalue& operator=(const uvalue& other);
 
         template < typename T, typename Tp = std::decay_t<T> >
-            requires (!detail::any_uvalue_kind<Tp>)
-                  && (!detail::is_in_place_type_v<Tp>)
-                  && (std::is_copy_constructible_v<Tp>)
+            requires(!detail::any_uvalue_kind<Tp>)     //
+                 && (!detail::is_in_place_type_v<Tp>)  //
+                 && (std::is_copy_constructible_v<Tp>) //
         // NOLINTNEXTLINE(*-forwarding-reference-overload)
         uvalue(T&& val);
 
         template < typename T, typename Tp = std::decay_t<T> >
-            requires (!detail::any_uvalue_kind<Tp>)
-                  && (!detail::is_in_place_type_v<Tp>)
-                  && (std::is_copy_constructible_v<Tp>)
+            requires(!detail::any_uvalue_kind<Tp>)     //
+                 && (!detail::is_in_place_type_v<Tp>)  //
+                 && (std::is_copy_constructible_v<Tp>) //
         uvalue& operator=(T&& val);
 
         template < typename T, typename... Args, typename Tp = std::decay_t<T> >
-            requires std::is_copy_constructible_v<Tp>
-                  && std::is_constructible_v<Tp, Args...>
+            requires std::is_copy_constructible_v<Tp>     //
+                  && std::is_constructible_v<Tp, Args...> //
         explicit uvalue(std::in_place_type_t<T>, Args&&... args);
 
         template < typename T, typename U, typename... Args, typename Tp = std::decay_t<T> >
-            requires std::is_copy_constructible_v<Tp>
-                  && std::is_constructible_v<Tp, std::initializer_list<U>&, Args...>
+            requires std::is_copy_constructible_v<Tp>                                //
+                  && std::is_constructible_v<Tp, std::initializer_list<U>&, Args...> //
         explicit uvalue(std::in_place_type_t<T>, std::initializer_list<U> ilist, Args&&... args);
 
         template < typename T, typename... Args, typename Tp = std::decay_t<T> >
-            requires std::is_copy_constructible_v<Tp>
-                  && std::is_constructible_v<Tp, Args...>
+            requires std::is_copy_constructible_v<Tp>     //
+                  && std::is_constructible_v<Tp, Args...> //
         Tp& emplace(Args&&... args);
 
         template < typename T, typename U, typename... Args, typename Tp = std::decay_t<T> >
-            requires std::is_copy_constructible_v<Tp>
-                  && std::is_constructible_v<Tp, std::initializer_list<U>&, Args...>
+            requires std::is_copy_constructible_v<Tp>                                //
+                  && std::is_constructible_v<Tp, std::initializer_list<U>&, Args...> //
         Tp& emplace(std::initializer_list<U> ilist, Args&&... args);
 
         [[nodiscard]] bool is_valid() const noexcept;
@@ -2778,20 +2853,21 @@ namespace meta_hpp
         [[nodiscard]] T get_as() &&;
 
         template < typename T >
-        [[nodiscard]] auto get_as() &
+        [[nodiscard]] auto get_as() & //
             -> std::conditional_t<detail::pointer_kind<T>, T, T&>;
 
         template < typename T >
-        [[nodiscard]] auto get_as() const &
+        [[nodiscard]] auto get_as() const& //
             -> std::conditional_t<detail::pointer_kind<T>, T, const T&>;
 
         template < typename T >
-        [[nodiscard]] auto try_get_as() noexcept
+        [[nodiscard]] auto try_get_as() noexcept //
             -> std::conditional_t<detail::pointer_kind<T>, T, T*>;
 
         template < typename T >
-        [[nodiscard]] auto try_get_as() const noexcept
+        [[nodiscard]] auto try_get_as() const noexcept //
             -> std::conditional_t<detail::pointer_kind<T>, T, const T*>;
+
     private:
         struct vtable_t;
 
@@ -2818,6 +2894,7 @@ namespace meta_hpp
                 internal_storage_t internal;
                 external_storage_t external;
             };
+
             std::uintptr_t vtag;
         } storage_{};
 
@@ -2844,16 +2921,16 @@ namespace meta_hpp
 namespace meta_hpp::detail
 {
     template < typename T >
-    concept state_family = //
-        std::is_same_v<T, argument> ||
-        std::is_same_v<T, constructor> ||
-        std::is_same_v<T, destructor> ||
-        std::is_same_v<T, evalue> ||
-        std::is_same_v<T, function> ||
-        std::is_same_v<T, member> ||
-        std::is_same_v<T, method> ||
-        std::is_same_v<T, scope> ||
-        std::is_same_v<T, variable>;
+    concept state_family                 //
+        = std::is_same_v<T, argument>    //
+       || std::is_same_v<T, constructor> //
+       || std::is_same_v<T, destructor>  //
+       || std::is_same_v<T, evalue>      //
+       || std::is_same_v<T, function>    //
+       || std::is_same_v<T, member>      //
+       || std::is_same_v<T, method>      //
+       || std::is_same_v<T, scope>       //
+       || std::is_same_v<T, variable>;   //
 
     template < state_family T >
     [[nodiscard]] typename T::state_ptr state_access(const T& state) {
@@ -2866,7 +2943,9 @@ namespace meta_hpp
     namespace constructor_policy
     {
         struct as_object_t final {};
+
         struct as_raw_pointer_t final {};
+
         struct as_shared_pointer_t final {};
 
         inline constexpr as_object_t as_object{};
@@ -2877,7 +2956,9 @@ namespace meta_hpp
     namespace function_policy
     {
         struct as_copy_t final {};
+
         struct discard_return_t final {};
+
         struct return_reference_as_pointer_t final {};
 
         inline constexpr as_copy_t as_copy{};
@@ -2888,7 +2969,9 @@ namespace meta_hpp
     namespace member_policy
     {
         struct as_copy_t final {};
+
         struct as_pointer_t final {};
+
         struct as_reference_wrapper_t final {};
 
         inline constexpr as_copy_t as_copy{};
@@ -2899,7 +2982,9 @@ namespace meta_hpp
     namespace method_policy
     {
         struct as_copy_t final {};
+
         struct discard_return_t final {};
+
         struct return_reference_as_pointer_t final {};
 
         inline constexpr as_copy_t as_copy{};
@@ -2910,7 +2995,9 @@ namespace meta_hpp
     namespace variable_policy
     {
         struct as_copy_t final {};
+
         struct as_pointer_t final {};
+
         struct as_reference_wrapper_t final {};
 
         inline constexpr as_copy_t as_copy{};
@@ -2919,34 +3006,34 @@ namespace meta_hpp
     }
 
     template < typename Policy >
-    concept constructor_policy_kind = //
-        std::is_same_v<Policy, constructor_policy::as_object_t> ||
-        std::is_same_v<Policy, constructor_policy::as_raw_pointer_t> ||
-        std::is_same_v<Policy, constructor_policy::as_shared_pointer_t>;
+    concept constructor_policy_kind                                        //
+        = std::is_same_v<Policy, constructor_policy::as_object_t>          //
+       || std::is_same_v<Policy, constructor_policy::as_raw_pointer_t>     //
+       || std::is_same_v<Policy, constructor_policy::as_shared_pointer_t>; //
 
     template < typename Policy >
-    concept function_policy_kind = //
-        std::is_same_v<Policy, function_policy::as_copy_t> ||
-        std::is_same_v<Policy, function_policy::discard_return_t> ||
-        std::is_same_v<Policy, function_policy::return_reference_as_pointer_t>;
+    concept function_policy_kind                                                  //
+        = std::is_same_v<Policy, function_policy::as_copy_t>                      //
+       || std::is_same_v<Policy, function_policy::discard_return_t>               //
+       || std::is_same_v<Policy, function_policy::return_reference_as_pointer_t>; //
 
     template < typename Policy >
-    concept member_policy_kind = //
-        std::is_same_v<Policy, member_policy::as_copy_t> ||
-        std::is_same_v<Policy, member_policy::as_pointer_t> ||
-        std::is_same_v<Policy, member_policy::as_reference_wrapper_t>;
+    concept member_policy_kind                                           //
+        = std::is_same_v<Policy, member_policy::as_copy_t>               //
+       || std::is_same_v<Policy, member_policy::as_pointer_t>            //
+       || std::is_same_v<Policy, member_policy::as_reference_wrapper_t>; //
 
     template < typename Policy >
-    concept method_policy_kind = //
-        std::is_same_v<Policy, method_policy::as_copy_t> ||
-        std::is_same_v<Policy, method_policy::discard_return_t> ||
-        std::is_same_v<Policy, method_policy::return_reference_as_pointer_t>;
+    concept method_policy_kind                                                  //
+        = std::is_same_v<Policy, method_policy::as_copy_t>                      //
+       || std::is_same_v<Policy, method_policy::discard_return_t>               //
+       || std::is_same_v<Policy, method_policy::return_reference_as_pointer_t>; //
 
     template < typename Policy >
-    concept variable_policy_kind = //
-        std::is_same_v<Policy, variable_policy::as_copy_t> ||
-        std::is_same_v<Policy, variable_policy::as_pointer_t> ||
-        std::is_same_v<Policy, variable_policy::as_reference_wrapper_t>;
+    concept variable_policy_kind                                           //
+        = std::is_same_v<Policy, variable_policy::as_copy_t>               //
+       || std::is_same_v<Policy, variable_policy::as_pointer_t>            //
+       || std::is_same_v<Policy, variable_policy::as_reference_wrapper_t>; //
 }
 
 namespace meta_hpp
@@ -2969,6 +3056,7 @@ namespace meta_hpp
         [[nodiscard]] std::size_t get_position() const noexcept;
 
         [[nodiscard]] const std::string& get_name() const noexcept;
+
     private:
         state_ptr state_;
         friend state_ptr detail::state_access<argument>(const argument&);
@@ -3004,6 +3092,7 @@ namespace meta_hpp
 
         [[nodiscard]] argument get_argument(std::size_t position) const noexcept;
         [[nodiscard]] const argument_list& get_arguments() const noexcept;
+
     private:
         state_ptr state_;
         friend state_ptr detail::state_access<constructor>(const constructor&);
@@ -3029,6 +3118,7 @@ namespace meta_hpp
         bool destroy(Arg&& arg) const;
 
         void destroy_at(void* mem) const;
+
     private:
         state_ptr state_;
         friend state_ptr detail::state_access<destructor>(const destructor&);
@@ -3059,6 +3149,7 @@ namespace meta_hpp
 
         template < typename T >
         [[nodiscard]] T get_underlying_value_as() const;
+
     private:
         state_ptr state_;
         friend state_ptr detail::state_access<evalue>(const evalue&);
@@ -3095,6 +3186,7 @@ namespace meta_hpp
 
         [[nodiscard]] argument get_argument(std::size_t position) const noexcept;
         [[nodiscard]] const argument_list& get_arguments() const noexcept;
+
     private:
         state_ptr state_;
         friend state_ptr detail::state_access<function>(const function&);
@@ -3143,6 +3235,7 @@ namespace meta_hpp
 
         template < typename Instance, typename Value >
         [[nodiscard]] bool is_settable_with(Instance&& instance, Value&& value) const noexcept;
+
     private:
         state_ptr state_;
         friend state_ptr detail::state_access<member>(const member&);
@@ -3179,6 +3272,7 @@ namespace meta_hpp
 
         [[nodiscard]] argument get_argument(std::size_t position) const noexcept;
         [[nodiscard]] const argument_list& get_arguments() const noexcept;
+
     private:
         state_ptr state_;
         friend state_ptr detail::state_access<method>(const method&);
@@ -3214,6 +3308,7 @@ namespace meta_hpp
         [[nodiscard]] function get_function_with(std::string_view name, Iter first, Iter last) const noexcept;
         [[nodiscard]] function get_function_with(std::string_view name, std::span<const any_type> args) const noexcept;
         [[nodiscard]] function get_function_with(std::string_view name, std::initializer_list<any_type> args) const noexcept;
+
     private:
         state_ptr state_;
         friend state_ptr detail::state_access<scope>(const scope&);
@@ -3254,6 +3349,7 @@ namespace meta_hpp
 
         template < typename Value >
         [[nodiscard]] bool is_settable_with(Value&& value) const noexcept;
+
     private:
         state_ptr state_;
         friend state_ptr detail::state_access<variable>(const variable&);
@@ -3437,7 +3533,9 @@ namespace meta_hpp::detail
     public:
         class locker final {
         public:
-            explicit locker() : lock_{instance().mutex_} {}
+            explicit locker()
+            : lock_{instance().mutex_} {}
+
             ~locker() = default;
 
             locker(locker&&) = default;
@@ -3445,6 +3543,7 @@ namespace meta_hpp::detail
 
             locker(const locker&) = delete;
             locker& operator=(const locker&) = delete;
+
         private:
             std::unique_lock<std::recursive_mutex> lock_;
         };
@@ -3453,6 +3552,7 @@ namespace meta_hpp::detail
             static state_registry instance;
             return instance;
         }
+
     public:
         template < typename F >
         void for_each_scope(F&& f) const {
@@ -3480,14 +3580,17 @@ namespace meta_hpp::detail
                 return iter->second;
             }
 
-            auto&& [iter, _] = scopes_.emplace(
+            auto&& [iter, _] = scopes_.emplace( //
                 std::string{name},
-                scope_state::make(std::string{name}, metadata_map{}));
+                scope_state::make(std::string{name}, metadata_map{})
+            );
 
             return iter->second;
         }
+
     private:
         state_registry() = default;
+
     private:
         std::recursive_mutex mutex_;
         std::map<std::string, scope, std::less<>> scopes_;
@@ -3500,7 +3603,9 @@ namespace meta_hpp::detail
     public:
         class locker final {
         public:
-            explicit locker() : lock_{instance().mutex_} {}
+            explicit locker()
+            : lock_{instance().mutex_} {}
+
             ~locker() = default;
 
             locker(locker&&) = default;
@@ -3508,6 +3613,7 @@ namespace meta_hpp::detail
 
             locker(const locker&) = delete;
             locker& operator=(const locker&) = delete;
+
         private:
             std::unique_lock<std::recursive_mutex> lock_;
         };
@@ -3516,6 +3622,7 @@ namespace meta_hpp::detail
             static type_registry instance;
             return instance;
         }
+
     public:
         template < typename F >
         void for_each_type(F&& f) const {
@@ -3535,7 +3642,8 @@ namespace meta_hpp::detail
 
             return any_type{};
         }
-    #if !defined(META_HPP_NO_RTTI)
+
+#if !defined(META_HPP_NO_RTTI)
         [[nodiscard]] any_type get_type_by_rtti(const std::type_index& index) const noexcept {
             const locker lock;
 
@@ -3545,93 +3653,140 @@ namespace meta_hpp::detail
 
             return any_type{};
         }
-    #endif
+#endif
+
     public:
         template < array_kind Array >
-        [[nodiscard]] array_type resolve_type() { return resolve_array_type<Array>(); }
+        [[nodiscard]] array_type resolve_type() {
+            return resolve_array_type<Array>();
+        }
 
         template < class_kind Class >
-        [[nodiscard]] class_type resolve_type() { return resolve_class_type<Class>(); }
+        [[nodiscard]] class_type resolve_type() {
+            return resolve_class_type<Class>();
+        }
 
         template < enum_kind Enum >
-        [[nodiscard]] enum_type resolve_type() { return resolve_enum_type<Enum>(); }
+        [[nodiscard]] enum_type resolve_type() {
+            return resolve_enum_type<Enum>();
+        }
 
         template < function_kind Function >
-        [[nodiscard]] function_type resolve_type() { return resolve_function_type<Function>(); }
+        [[nodiscard]] function_type resolve_type() {
+            return resolve_function_type<Function>();
+        }
 
         template < member_kind Member >
-        [[nodiscard]] member_type resolve_type() { return resolve_member_type<Member>(); }
+        [[nodiscard]] member_type resolve_type() {
+            return resolve_member_type<Member>();
+        }
 
         template < method_kind Method >
-        [[nodiscard]] method_type resolve_type() { return resolve_method_type<Method>(); }
+        [[nodiscard]] method_type resolve_type() {
+            return resolve_method_type<Method>();
+        }
 
         template < nullptr_kind Nullptr >
-        [[nodiscard]] nullptr_type resolve_type() { return resolve_nullptr_type<Nullptr>(); }
+        [[nodiscard]] nullptr_type resolve_type() {
+            return resolve_nullptr_type<Nullptr>();
+        }
 
         template < number_kind Number >
-        [[nodiscard]] number_type resolve_type() { return resolve_number_type<Number>(); }
+        [[nodiscard]] number_type resolve_type() {
+            return resolve_number_type<Number>();
+        }
 
         template < pointer_kind Pointer >
-        [[nodiscard]] pointer_type resolve_type() { return resolve_pointer_type<Pointer>(); }
+        [[nodiscard]] pointer_type resolve_type() {
+            return resolve_pointer_type<Pointer>();
+        }
 
         template < reference_kind Reference >
-        [[nodiscard]] reference_type resolve_type() { return resolve_reference_type<Reference>(); }
+        [[nodiscard]] reference_type resolve_type() {
+            return resolve_reference_type<Reference>();
+        }
 
         template < void_kind Void >
-        [[nodiscard]] void_type resolve_type() { return resolve_void_type<Void>(); }
+        [[nodiscard]] void_type resolve_type() {
+            return resolve_void_type<Void>();
+        }
+
     public:
         template < array_kind Array >
-        [[nodiscard]] array_type resolve_array_type() { return array_type{resolve_array_type_data<Array>()}; }
+        [[nodiscard]] array_type resolve_array_type() {
+            return array_type{resolve_array_type_data<Array>()};
+        }
 
         template < class_kind Class >
-        [[nodiscard]] class_type resolve_class_type() { return class_type{resolve_class_type_data<Class>()}; }
+        [[nodiscard]] class_type resolve_class_type() {
+            return class_type{resolve_class_type_data<Class>()};
+        }
 
         template < class_kind Class, typename... Args >
-        [[nodiscard]] constructor_type resolve_constructor_type() { return constructor_type{resolve_constructor_type_data<Class, Args...>()}; }
+        [[nodiscard]] constructor_type resolve_constructor_type() {
+            return constructor_type{resolve_constructor_type_data<Class, Args...>()};
+        }
 
         template < class_kind Class >
-        [[nodiscard]] destructor_type resolve_destructor_type() { return destructor_type{resolve_destructor_type_data<Class>()}; }
+        [[nodiscard]] destructor_type resolve_destructor_type() {
+            return destructor_type{resolve_destructor_type_data<Class>()};
+        }
 
         template < enum_kind Enum >
-        [[nodiscard]] enum_type resolve_enum_type() { return enum_type{resolve_enum_type_data<Enum>()}; }
+        [[nodiscard]] enum_type resolve_enum_type() {
+            return enum_type{resolve_enum_type_data<Enum>()};
+        }
 
         template < function_kind Function >
-        [[nodiscard]] function_type resolve_function_type() { return function_type{resolve_function_type_data<Function>()}; }
+        [[nodiscard]] function_type resolve_function_type() {
+            return function_type{resolve_function_type_data<Function>()};
+        }
 
         template < member_kind Member >
-        [[nodiscard]] member_type resolve_member_type() { return member_type{resolve_member_type_data<Member>()}; }
+        [[nodiscard]] member_type resolve_member_type() {
+            return member_type{resolve_member_type_data<Member>()};
+        }
 
         template < method_kind Method >
-        [[nodiscard]] method_type resolve_method_type() { return method_type{resolve_method_type_data<Method>()}; }
+        [[nodiscard]] method_type resolve_method_type() {
+            return method_type{resolve_method_type_data<Method>()};
+        }
 
         template < nullptr_kind Nullptr >
-        [[nodiscard]] nullptr_type resolve_nullptr_type() { return nullptr_type{resolve_nullptr_type_data<Nullptr>()}; }
+        [[nodiscard]] nullptr_type resolve_nullptr_type() {
+            return nullptr_type{resolve_nullptr_type_data<Nullptr>()};
+        }
 
         template < number_kind Number >
-        [[nodiscard]] number_type resolve_number_type() { return number_type{resolve_number_type_data<Number>()}; }
+        [[nodiscard]] number_type resolve_number_type() {
+            return number_type{resolve_number_type_data<Number>()};
+        }
 
         template < pointer_kind Pointer >
-        [[nodiscard]] pointer_type resolve_pointer_type() { return pointer_type{resolve_pointer_type_data<Pointer>()}; }
+        [[nodiscard]] pointer_type resolve_pointer_type() {
+            return pointer_type{resolve_pointer_type_data<Pointer>()};
+        }
 
         template < reference_kind Reference >
-        [[nodiscard]] reference_type resolve_reference_type() { return reference_type{resolve_reference_type_data<Reference>()}; }
+        [[nodiscard]] reference_type resolve_reference_type() {
+            return reference_type{resolve_reference_type_data<Reference>()};
+        }
 
         template < void_kind Void >
-        [[nodiscard]] void_type resolve_void_type() { return void_type{resolve_void_type_data<Void>()}; }
+        [[nodiscard]] void_type resolve_void_type() {
+            return void_type{resolve_void_type_data<Void>()};
+        }
+
     private:
         template < array_kind Array >
         [[nodiscard]] array_type_data* resolve_array_type_data() {
-            static array_type_data data = (
-                ensure_type<Array>(data),
-                array_type_data{type_list<Array>{}});
+            static array_type_data data = (ensure_type<Array>(data), array_type_data{type_list<Array>{}});
             return &data;
         }
 
         template < class_kind Class >
         [[nodiscard]] class_type_data* resolve_class_type_data() {
-            static class_type_data data = (
-                ensure_type<Class>(data),
-                class_type_data{type_list<Class>{}});
+            static class_type_data data = (ensure_type<Class>(data), class_type_data{type_list<Class>{}});
             return &data;
         }
 
@@ -3649,75 +3804,58 @@ namespace meta_hpp::detail
 
         template < enum_kind Enum >
         [[nodiscard]] enum_type_data* resolve_enum_type_data() {
-            static enum_type_data data = (
-                ensure_type<Enum>(data),
-                enum_type_data{type_list<Enum>{}});
+            static enum_type_data data = (ensure_type<Enum>(data), enum_type_data{type_list<Enum>{}});
             return &data;
         }
 
         template < function_kind Function >
         [[nodiscard]] function_type_data* resolve_function_type_data() {
-            static function_type_data data = (
-                ensure_type<Function>(data),
-                function_type_data{type_list<Function>{}});
+            static function_type_data data = (ensure_type<Function>(data), function_type_data{type_list<Function>{}});
             return &data;
         }
 
         template < member_kind Member >
         [[nodiscard]] member_type_data* resolve_member_type_data() {
-            static member_type_data data = (
-                ensure_type<Member>(data),
-                member_type_data{type_list<Member>{}});
+            static member_type_data data = (ensure_type<Member>(data), member_type_data{type_list<Member>{}});
             return &data;
         }
 
         template < method_kind Method >
         [[nodiscard]] method_type_data* resolve_method_type_data() {
-            static method_type_data data = (
-                ensure_type<Method>(data),
-                method_type_data{type_list<Method>{}});
+            static method_type_data data = (ensure_type<Method>(data), method_type_data{type_list<Method>{}});
             return &data;
         }
 
         template < nullptr_kind Nullptr >
         [[nodiscard]] nullptr_type_data* resolve_nullptr_type_data() {
-            static nullptr_type_data data = (
-                ensure_type<Nullptr>(data),
-                nullptr_type_data{type_list<Nullptr>{}});
+            static nullptr_type_data data = (ensure_type<Nullptr>(data), nullptr_type_data{type_list<Nullptr>{}});
             return &data;
         }
 
         template < number_kind Number >
         [[nodiscard]] number_type_data* resolve_number_type_data() {
-            static number_type_data data = (
-                ensure_type<Number>(data),
-                number_type_data{type_list<Number>{}});
+            static number_type_data data = (ensure_type<Number>(data), number_type_data{type_list<Number>{}});
             return &data;
         }
 
         template < pointer_kind Pointer >
         [[nodiscard]] pointer_type_data* resolve_pointer_type_data() {
-            static pointer_type_data data = (
-                ensure_type<Pointer>(data),
-                pointer_type_data{type_list<Pointer>{}});
+            static pointer_type_data data = (ensure_type<Pointer>(data), pointer_type_data{type_list<Pointer>{}});
             return &data;
         }
 
         template < reference_kind Reference >
         [[nodiscard]] reference_type_data* resolve_reference_type_data() {
-            static reference_type_data data = (
-                ensure_type<Reference>(data),
-                reference_type_data{type_list<Reference>{}});
+            static reference_type_data data = (ensure_type<Reference>(data), reference_type_data{type_list<Reference>{}});
             return &data;
         }
 
         template < void_kind Void >
         [[nodiscard]] void_type_data* resolve_void_type_data() {
-            static void_type_data data = (
-                ensure_type<Void>(data),
-                void_type_data{type_list<Void>{}});
+            static void_type_data data = (ensure_type<Void>(data), void_type_data{type_list<Void>{}});
             return &data;
         }
+
     private:
         type_registry() = default;
 
@@ -3730,21 +3868,23 @@ namespace meta_hpp::detail
                 return;
             }
 
-        #if !defined(META_HPP_NO_RTTI)
+#if !defined(META_HPP_NO_RTTI)
             META_HPP_TRY {
                 rtti_types_.emplace(typeid(Type), any_type{&type_data});
-            } META_HPP_CATCH(...) {
+            }
+            META_HPP_CATCH(...) {
                 types_.erase(position);
                 META_HPP_RETHROW();
             }
-        #endif
+#endif
         }
+
     private:
         std::recursive_mutex mutex_;
         std::set<any_type, std::less<>> types_;
-    #if !defined(META_HPP_NO_RTTI)
+#if !defined(META_HPP_NO_RTTI)
         std::map<std::type_index, any_type, std::less<>> rtti_types_;
-    #endif
+#endif
     };
 }
 
@@ -3773,12 +3913,12 @@ namespace meta_hpp
 
     template < typename... Ts >
     [[nodiscard]] any_type_list resolve_types() {
-        return { resolve_type<Ts>()... };
+        return {resolve_type<Ts>()...};
     }
 
     template < typename... Ts >
     [[nodiscard]] any_type_list resolve_types(type_list<Ts...>) {
-        return { resolve_type<Ts>()... };
+        return {resolve_type<Ts>()...};
     }
 }
 
@@ -3800,14 +3940,14 @@ namespace meta_hpp
 
     template < typename T >
     [[nodiscard]] any_type resolve_polymorphic_type(T&& v) noexcept {
-    #if !defined(META_HPP_NO_RTTI)
+#if !defined(META_HPP_NO_RTTI)
         using namespace detail;
         type_registry& registry = type_registry::instance();
         return registry.get_type_by_rtti(typeid(v));
-    #else
+#else
         (void)v;
         return any_type{};
-    #endif
+#endif
     }
 }
 
@@ -3830,29 +3970,28 @@ namespace meta_hpp
 namespace meta_hpp::detail
 {
     template < typename Class, typename... Args >
-    concept class_bind_constructor_kind = //
-        class_kind<Class> &&
-        std::is_constructible_v<Class, Args...>;
+    concept class_bind_constructor_kind            //
+        = class_kind<Class>                        //
+       && std::is_constructible_v<Class, Args...>; //
 
     template < typename Class >
-    concept class_bind_destructor_kind = //
-        class_kind<Class> &&
-        std::is_destructible_v<Class>;
+    concept class_bind_destructor_kind                        //
+        = class_kind<Class> && std::is_destructible_v<Class>; //
 
     template < typename Class, typename Base >
-    concept class_bind_base_kind = //
-        class_kind<Class> && class_kind<Base> &&
-        std::derived_from<Class, Base>;
+    concept class_bind_base_kind                //
+        = class_kind<Class> && class_kind<Base> //
+       && std::derived_from<Class, Base>;       //
 
     template < typename Class, typename Member >
-    concept class_bind_member_kind = //
-        class_kind<Class> && member_kind<Member> &&
-        std::is_same_v<Class, typename member_traits<Member>::class_type>;
+    concept class_bind_member_kind                                           //
+        = class_kind<Class> && member_kind<Member>                           //
+       && std::is_same_v<Class, typename member_traits<Member>::class_type>; //
 
     template < typename Class, typename Method >
-    concept class_bind_method_kind = //
-        class_kind<Class> && method_kind<Method> &&
-        std::is_same_v<Class, typename method_traits<Method>::class_type>;
+    concept class_bind_method_kind                                           //
+        = class_kind<Class> && method_kind<Method>                           //
+       && std::is_same_v<Class, typename method_traits<Method>::class_type>; //
 }
 
 namespace meta_hpp
@@ -3909,6 +4048,7 @@ namespace meta_hpp
         operator Type() const noexcept {
             return Type{data_};
         }
+
     protected:
         using data_ptr = typename Type::data_ptr;
         using data_ref = decltype(*std::declval<data_ptr>());
@@ -3916,6 +4056,7 @@ namespace meta_hpp
         [[nodiscard]] data_ref get_data() noexcept {
             return *data_;
         }
+
     private:
         data_ptr data_;
         detail::type_registry::locker locker_;
@@ -3932,6 +4073,7 @@ namespace meta_hpp
         operator State() const noexcept {
             return State{state_};
         }
+
     protected:
         using state_ptr = typename State::state_ptr;
         using state_ref = decltype(*std::declval<state_ptr>());
@@ -3939,6 +4081,7 @@ namespace meta_hpp
         [[nodiscard]] state_ref get_state() noexcept {
             return *state_;
         }
+
     private:
         state_ptr state_;
         detail::state_registry::locker locker_;
@@ -3964,20 +4107,18 @@ namespace meta_hpp
         // base_
 
         template < detail::class_kind... Bases >
-            requires (... && detail::class_bind_base_kind<Class, Bases>)
+            requires(... && detail::class_bind_base_kind<Class, Bases>)
         class_bind& base_();
 
         // constructor_
 
-        template < typename... Args
-                 , constructor_policy_kind Policy = constructor_policy::as_object_t >
-            requires detail::class_bind_constructor_kind<Class, Args...>
-        class_bind& constructor_(Policy = {});
+        template < typename... Args, constructor_policy_kind Policy = constructor_policy::as_object_t >
+        class_bind& constructor_(Policy = {})
+            requires detail::class_bind_constructor_kind<Class, Args...>;
 
-        template < typename... Args
-                 , constructor_policy_kind Policy = constructor_policy::as_object_t >
-            requires detail::class_bind_constructor_kind<Class, Args...>
-        class_bind& constructor_(constructor_opts opts, Policy = {});
+        template < typename... Args, constructor_policy_kind Policy = constructor_policy::as_object_t >
+        class_bind& constructor_(constructor_opts opts, Policy = {})
+            requires detail::class_bind_constructor_kind<Class, Args...>;
 
         // destructor_
 
@@ -3989,75 +4130,75 @@ namespace meta_hpp
 
         // function_
 
-        template < detail::function_kind Function
-                 , function_policy_kind Policy = function_policy::as_copy_t >
-        class_bind& function_(
+        template < detail::function_kind Function, function_policy_kind Policy = function_policy::as_copy_t >
+        class_bind& function_( //
             std::string name,
             Function function,
-            Policy = {});
+            Policy = {}
+        );
 
-        template < detail::function_kind Function
-                 , function_policy_kind Policy = function_policy::as_copy_t >
-        class_bind& function_(
+        template < detail::function_kind Function, function_policy_kind Policy = function_policy::as_copy_t >
+        class_bind& function_( //
             std::string name,
             Function function,
             function_opts opts,
-            Policy = {});
+            Policy = {}
+        );
 
-        template < detail::function_kind Function
-                 , function_policy_kind Policy = function_policy::as_copy_t >
-        class_bind& function_(
+        template < detail::function_kind Function, function_policy_kind Policy = function_policy::as_copy_t >
+        class_bind& function_( //
             std::string name,
             Function function,
             std::initializer_list<std::string_view> arguments,
-            Policy = {});
+            Policy = {}
+        );
 
         // member_
 
-        template < detail::member_kind Member
-                 , member_policy_kind Policy = member_policy::as_copy_t >
+        template < detail::member_kind Member, member_policy_kind Policy = member_policy::as_copy_t >
             requires detail::class_bind_member_kind<Class, Member>
-        class_bind& member_(
+        class_bind& member_( //
             std::string name,
             Member member,
-            Policy = {});
+            Policy = {}
+        );
 
-        template < detail::member_kind Member
-                 , member_policy_kind Policy = member_policy::as_copy_t >
+        template < detail::member_kind Member, member_policy_kind Policy = member_policy::as_copy_t >
             requires detail::class_bind_member_kind<Class, Member>
-        class_bind& member_(
+        class_bind& member_( //
             std::string name,
             Member member,
             member_opts opts,
-            Policy = {});
+            Policy = {}
+        );
 
         // method_
 
-        template < detail::method_kind Method
-                 , method_policy_kind Policy = method_policy::as_copy_t >
+        template < detail::method_kind Method, method_policy_kind Policy = method_policy::as_copy_t >
             requires detail::class_bind_method_kind<Class, Method>
-        class_bind& method_(
+        class_bind& method_( //
             std::string name,
             Method method,
-            Policy = {});
+            Policy = {}
+        );
 
-        template < detail::method_kind Method
-                 , method_policy_kind Policy = method_policy::as_copy_t >
+        template < detail::method_kind Method, method_policy_kind Policy = method_policy::as_copy_t >
             requires detail::class_bind_method_kind<Class, Method>
-        class_bind& method_(
+        class_bind& method_( //
             std::string name,
             Method method,
             method_opts opts,
-            Policy = {});
+            Policy = {}
+        );
 
-        template < detail::method_kind Method
-                 , method_policy_kind Policy = method_policy::as_copy_t >
+        template < detail::method_kind Method, method_policy_kind Policy = method_policy::as_copy_t >
             requires detail::class_bind_method_kind<Class, Method>
-        class_bind& method_(
+        class_bind& method_( //
             std::string name,
             Method method,
             std::initializer_list<std::string_view> arguments,
-            Policy = {});
+            Policy = {}
+        );
 
         // typdef_
 
@@ -4066,20 +4207,20 @@ namespace meta_hpp
 
         // variable_
 
-        template < detail::pointer_kind Pointer
-                 , variable_policy_kind Policy = variable_policy::as_copy_t >
-        class_bind& variable_(
+        template < detail::pointer_kind Pointer, variable_policy_kind Policy = variable_policy::as_copy_t >
+        class_bind& variable_( //
             std::string name,
             Pointer pointer,
-            Policy = {});
+            Policy = {}
+        );
 
-        template < detail::pointer_kind Pointer
-                 , variable_policy_kind Policy = variable_policy::as_copy_t >
-        class_bind& variable_(
+        template < detail::pointer_kind Pointer, variable_policy_kind Policy = variable_policy::as_copy_t >
+        class_bind& variable_( //
             std::string name,
             Pointer pointer,
             variable_opts opts,
-            Policy = {});
+            Policy = {}
+        );
     };
 }
 
@@ -4175,28 +4316,28 @@ namespace meta_hpp
 
         // function_
 
-        template < detail::function_kind Function
-                 , function_policy_kind Policy = function_policy::as_copy_t >
-        scope_bind& function_(
+        template < detail::function_kind Function, function_policy_kind Policy = function_policy::as_copy_t >
+        scope_bind& function_( //
             std::string name,
             Function function,
-            Policy = {});
+            Policy = {}
+        );
 
-        template < detail::function_kind Function
-                 , function_policy_kind Policy = function_policy::as_copy_t >
-        scope_bind& function_(
+        template < detail::function_kind Function, function_policy_kind Policy = function_policy::as_copy_t >
+        scope_bind& function_( //
             std::string name,
             Function function,
             function_opts opts,
-            Policy = {});
+            Policy = {}
+        );
 
-        template < detail::function_kind Function
-                 , function_policy_kind Policy = function_policy::as_copy_t >
-        scope_bind& function_(
+        template < detail::function_kind Function, function_policy_kind Policy = function_policy::as_copy_t >
+        scope_bind& function_( //
             std::string name,
             Function function,
             std::initializer_list<std::string_view> arguments,
-            Policy = {});
+            Policy = {}
+        );
 
         // typedef_
 
@@ -4205,20 +4346,20 @@ namespace meta_hpp
 
         // variable_
 
-        template < detail::pointer_kind Pointer
-                 , variable_policy_kind Policy = variable_policy::as_copy_t >
-        scope_bind& variable_(
+        template < detail::pointer_kind Pointer, variable_policy_kind Policy = variable_policy::as_copy_t >
+        scope_bind& variable_( //
             std::string name,
             Pointer pointer,
-            Policy = {});
+            Policy = {}
+        );
 
-        template < detail::pointer_kind Pointer
-                 , variable_policy_kind Policy = variable_policy::as_copy_t >
-        scope_bind& variable_(
+        template < detail::pointer_kind Pointer, variable_policy_kind Policy = variable_policy::as_copy_t >
+        scope_bind& variable_( //
             std::string name,
             Pointer pointer,
             variable_opts opts,
-            Policy = {});
+            Policy = {}
+        );
     };
 }
 
@@ -4320,9 +4461,8 @@ namespace meta_hpp
 
     template < detail::class_kind Class >
     template < detail::class_kind... Bases >
-        requires (... && detail::class_bind_base_kind<Class, Bases>)
-    class_bind<Class>& class_bind<Class>::base_()
-    {
+        requires(... && detail::class_bind_base_kind<Class, Bases>)
+    class_bind<Class>& class_bind<Class>::base_() {
         const auto register_base{[this]<detail::class_kind Base>(std::in_place_type_t<Base>) {
             const class_type& base_type = resolve_type<Base>();
 
@@ -4332,12 +4472,13 @@ namespace meta_hpp
             }
 
             META_HPP_TRY {
-                get_data().bases_info.emplace(base_type, detail::class_type_data::base_info{
-                    .upcast{[](void* derived) -> void* {
-                        return static_cast<Base*>(static_cast<Class*>(derived));
-                    }}
-                });
-            } META_HPP_CATCH(...) {
+                get_data().bases_info.emplace( //
+                    base_type,
+                    detail::class_type_data::base_info{
+                        .upcast{[](void* derived) -> void* { return static_cast<Base*>(static_cast<Class*>(derived)); }}}
+                );
+            }
+            META_HPP_CATCH(...) {
                 get_data().bases.erase(position);
                 META_HPP_RETHROW();
             }
@@ -4353,18 +4494,16 @@ namespace meta_hpp
 
     template < detail::class_kind Class >
     template < typename... Args, constructor_policy_kind Policy >
-        requires detail::class_bind_constructor_kind<Class, Args...>
     class_bind<Class>& class_bind<Class>::constructor_(Policy policy)
+        requires detail::class_bind_constructor_kind<Class, Args...>
     {
         return constructor_<Args...>({}, policy);
     }
 
     template < detail::class_kind Class >
     template < typename... Args, constructor_policy_kind Policy >
+    class_bind<Class>& class_bind<Class>::constructor_(constructor_opts opts, Policy)
         requires detail::class_bind_constructor_kind<Class, Args...>
-    class_bind<Class>& class_bind<Class>::constructor_(
-        constructor_opts opts,
-        Policy)
     {
         auto state = detail::constructor_state::make<Policy, Class, Args...>(std::move(opts.metadata));
 
@@ -4408,26 +4547,23 @@ namespace meta_hpp
 
     template < detail::class_kind Class >
     template < detail::function_kind Function, function_policy_kind Policy >
-    class_bind<Class>& class_bind<Class>::function_(
+    class_bind<Class>& class_bind<Class>::function_( //
         std::string name,
         Function function,
-        Policy policy)
-    {
+        Policy policy
+    ) {
         return function_(std::move(name), std::move(function), {}, policy);
     }
 
     template < detail::class_kind Class >
     template < detail::function_kind Function, function_policy_kind Policy >
-    class_bind<Class>& class_bind<Class>::function_(
+    class_bind<Class>& class_bind<Class>::function_( //
         std::string name,
         Function function,
         function_opts opts,
-        Policy)
-    {
-        auto state = detail::function_state::make<Policy>(
-            std::move(name),
-            std::move(function),
-            std::move(opts.metadata));
+        Policy
+    ) {
+        auto state = detail::function_state::make<Policy>(std::move(name), std::move(function), std::move(opts.metadata));
 
         if ( opts.arguments.size() > state->arguments.size() ) {
             META_HPP_THROW_AS(exception, "provided arguments don't match function argument count");
@@ -4445,16 +4581,13 @@ namespace meta_hpp
 
     template < detail::class_kind Class >
     template < detail::function_kind Function, function_policy_kind Policy >
-    class_bind<Class>& class_bind<Class>::function_(
+    class_bind<Class>& class_bind<Class>::function_( //
         std::string name,
         Function function,
         std::initializer_list<std::string_view> arguments,
-        Policy)
-    {
-        auto state = detail::function_state::make<Policy>(
-            std::move(name),
-            std::move(function),
-            {});
+        Policy
+    ) {
+        auto state = detail::function_state::make<Policy>(std::move(name), std::move(function), {});
 
         if ( arguments.size() > state->arguments.size() ) {
             META_HPP_THROW_AS(exception, "provided argument names don't match function argument count");
@@ -4477,27 +4610,24 @@ namespace meta_hpp
     template < detail::class_kind Class >
     template < detail::member_kind Member, member_policy_kind Policy >
         requires detail::class_bind_member_kind<Class, Member>
-    class_bind<Class>& class_bind<Class>::member_(
+    class_bind<Class>& class_bind<Class>::member_( //
         std::string name,
         Member member,
-        Policy policy)
-    {
+        Policy policy
+    ) {
         return member_(std::move(name), std::move(member), {}, policy);
     }
 
     template < detail::class_kind Class >
     template < detail::member_kind Member, member_policy_kind Policy >
         requires detail::class_bind_member_kind<Class, Member>
-    class_bind<Class>& class_bind<Class>::member_(
+    class_bind<Class>& class_bind<Class>::member_( //
         std::string name,
         Member member,
         member_opts opts,
-        Policy)
-    {
-        auto state = detail::member_state::make<Policy>(
-            std::move(name),
-            std::move(member),
-            std::move(opts.metadata));
+        Policy
+    ) {
+        auto state = detail::member_state::make<Policy>(std::move(name), std::move(member), std::move(opts.metadata));
         detail::insert_or_assign(get_data().members, std::move(state));
         return *this;
     }
@@ -4509,27 +4639,24 @@ namespace meta_hpp
     template < detail::class_kind Class >
     template < detail::method_kind Method, method_policy_kind Policy >
         requires detail::class_bind_method_kind<Class, Method>
-    class_bind<Class>& class_bind<Class>::method_(
+    class_bind<Class>& class_bind<Class>::method_( //
         std::string name,
         Method method,
-        Policy policy)
-    {
+        Policy policy
+    ) {
         return method_(std::move(name), std::move(method), {}, policy);
     }
 
     template < detail::class_kind Class >
     template < detail::method_kind Method, method_policy_kind Policy >
         requires detail::class_bind_method_kind<Class, Method>
-    class_bind<Class>& class_bind<Class>::method_(
+    class_bind<Class>& class_bind<Class>::method_( //
         std::string name,
         Method method,
         method_opts opts,
-        Policy)
-    {
-        auto state = detail::method_state::make<Policy>(
-            std::move(name),
-            std::move(method),
-            std::move(opts.metadata));
+        Policy
+    ) {
+        auto state = detail::method_state::make<Policy>(std::move(name), std::move(method), std::move(opts.metadata));
 
         if ( opts.arguments.size() > state->arguments.size() ) {
             META_HPP_THROW_AS(exception, "provided arguments don't match method argument count");
@@ -4548,16 +4675,13 @@ namespace meta_hpp
     template < detail::class_kind Class >
     template < detail::method_kind Method, method_policy_kind Policy >
         requires detail::class_bind_method_kind<Class, Method>
-    class_bind<Class>& class_bind<Class>::method_(
+    class_bind<Class>& class_bind<Class>::method_( //
         std::string name,
         Method method,
         std::initializer_list<std::string_view> arguments,
-        Policy)
-    {
-        auto state = detail::method_state::make<Policy>(
-            std::move(name),
-            std::move(method),
-            {});
+        Policy
+    ) {
+        auto state = detail::method_state::make<Policy>(std::move(name), std::move(method), {});
 
         if ( arguments.size() > state->arguments.size() ) {
             META_HPP_THROW_AS(exception, "provided argument names don't match method argument count");
@@ -4590,26 +4714,23 @@ namespace meta_hpp
 
     template < detail::class_kind Class >
     template < detail::pointer_kind Pointer, variable_policy_kind Policy >
-    class_bind<Class>& class_bind<Class>::variable_(
+    class_bind<Class>& class_bind<Class>::variable_( //
         std::string name,
         Pointer pointer,
-        Policy policy)
-    {
+        Policy policy
+    ) {
         return variable_(std::move(name), std::move(pointer), {}, policy);
     }
 
     template < detail::class_kind Class >
     template < detail::pointer_kind Pointer, variable_policy_kind Policy >
-    class_bind<Class>& class_bind<Class>::variable_(
+    class_bind<Class>& class_bind<Class>::variable_( //
         std::string name,
         Pointer pointer,
         variable_opts opts,
-        Policy)
-    {
-        auto state = detail::variable_state::make<Policy>(
-            std::move(name),
-            std::move(pointer),
-            std::move(opts.metadata));
+        Policy
+    ) {
+        auto state = detail::variable_state::make<Policy>(std::move(name), std::move(pointer), std::move(opts.metadata));
         detail::insert_or_assign(get_data().variables, std::move(state));
         return *this;
     }
@@ -4628,10 +4749,7 @@ namespace meta_hpp
 
     template < detail::enum_kind Enum >
     enum_bind<Enum>& enum_bind<Enum>::evalue_(std::string name, Enum value, evalue_opts opts) {
-        auto state = detail::evalue_state::make(
-            std::move(name),
-            std::move(value),
-            std::move(opts.metadata));
+        auto state = detail::evalue_state::make(std::move(name), std::move(value), std::move(opts.metadata));
         detail::insert_or_assign(get_data().evalues, std::move(state));
         return *this;
     }
@@ -4696,25 +4814,22 @@ namespace meta_hpp
     //
 
     template < detail::function_kind Function, function_policy_kind Policy >
-    scope_bind& scope_bind::function_(
+    scope_bind& scope_bind::function_( //
         std::string name,
         Function function,
-        Policy policy)
-    {
+        Policy policy
+    ) {
         return function_(std::move(name), std::move(function), {}, policy);
     }
 
     template < detail::function_kind Function, function_policy_kind Policy >
-    scope_bind& scope_bind::function_(
+    scope_bind& scope_bind::function_( //
         std::string name,
         Function function,
         function_opts opts,
-        Policy)
-    {
-        auto state = detail::function_state::make<Policy>(
-            std::move(name),
-            std::move(function),
-            std::move(opts.metadata));
+        Policy
+    ) {
+        auto state = detail::function_state::make<Policy>(std::move(name), std::move(function), std::move(opts.metadata));
 
         if ( opts.arguments.size() > state->arguments.size() ) {
             META_HPP_THROW_AS(exception, "provided arguments don't match function argument count");
@@ -4731,16 +4846,13 @@ namespace meta_hpp
     }
 
     template < detail::function_kind Function, function_policy_kind Policy >
-    scope_bind& scope_bind::function_(
+    scope_bind& scope_bind::function_( //
         std::string name,
         Function function,
         std::initializer_list<std::string_view> arguments,
-        Policy)
-    {
-        auto state = detail::function_state::make<Policy>(
-            std::move(name),
-            std::move(function),
-            {});
+        Policy
+    ) {
+        auto state = detail::function_state::make<Policy>(std::move(name), std::move(function), {});
 
         if ( arguments.size() > state->arguments.size() ) {
             META_HPP_THROW_AS(exception, "provided argument names don't match function argument count");
@@ -4771,25 +4883,22 @@ namespace meta_hpp
     //
 
     template < detail::pointer_kind Pointer, variable_policy_kind Policy >
-    scope_bind& scope_bind::variable_(
+    scope_bind& scope_bind::variable_( //
         std::string name,
         Pointer pointer,
-        Policy policy)
-    {
+        Policy policy
+    ) {
         return variable_(std::move(name), std::move(pointer), {}, policy);
     }
 
     template < detail::pointer_kind Pointer, variable_policy_kind Policy >
-    scope_bind& scope_bind::variable_(
+    scope_bind& scope_bind::variable_( //
         std::string name,
         Pointer pointer,
         variable_opts opts,
-        Policy)
-    {
-        auto state = detail::variable_state::make<Policy>(
-            std::move(name),
-            std::move(pointer),
-            std::move(opts.metadata));
+        Policy
+    ) {
+        auto state = detail::variable_state::make<Policy>(std::move(name), std::move(pointer), std::move(opts.metadata));
         detail::insert_or_assign(get_state().variables, std::move(state));
         return *this;
     }
@@ -5008,90 +5117,35 @@ namespace meta_hpp
 
 namespace meta_hpp::detail
 {
-    template < class_kind Class, typename... Args >
-    struct constructor_tag {};
-
-    template < class_kind Class, typename... Args >
-    constructor_type_data::constructor_type_data(type_list<Class>, type_list<Args...>)
-    : type_data_base{type_id{type_list<constructor_tag<Class, Args...>>{}}, type_kind::constructor_}
-    , flags{constructor_traits<Class, Args...>::make_flags()}
-    , class_type{resolve_type<typename constructor_traits<Class, Args...>::class_type>()}
-    , argument_types{resolve_types(typename constructor_traits<Class, Args...>::argument_types{})} {}
-}
-
-namespace meta_hpp
-{
-    inline constructor_type::constructor_type(data_ptr data)
-    : data_{data} {}
-
-    inline bool constructor_type::is_valid() const noexcept {
-        return data_ != nullptr;
-    }
-
-    inline constructor_type::operator bool() const noexcept {
-        return is_valid();
-    }
-
-    inline type_id constructor_type::get_id() const noexcept {
-        return data_->id;
-    }
-
-    inline constructor_bitflags constructor_type::get_flags() const noexcept {
-        return data_->flags;
-    }
-
-    inline const metadata_map& constructor_type::get_metadata() const noexcept {
-        return data_->metadata;
-    }
-
-    inline std::size_t constructor_type::get_arity() const noexcept {
-        return data_->argument_types.size();
-    }
-
-    inline any_type constructor_type::get_class_type() const noexcept {
-        return data_->class_type;
-    }
-
-    inline any_type constructor_type::get_argument_type(std::size_t position) const noexcept {
-        return position < data_->argument_types.size() ? data_->argument_types[position] : any_type{};
-    }
-
-    inline const any_type_list& constructor_type::get_argument_types() const noexcept {
-        return data_->argument_types;
-    }
-}
-
-namespace meta_hpp::detail
-{
     template < typename T, typename Tp = std::decay_t<T> >
-    concept arg_lvalue_ref_kind = //
-        (!any_uvalue_kind<Tp>) &&
-        (std::is_lvalue_reference_v<T>);
+    concept arg_lvalue_ref_kind            //
+        = (!any_uvalue_kind<Tp>)           //
+       && (std::is_lvalue_reference_v<T>); //
 
     template < typename T, typename Tp = std::decay_t<T> >
-    concept arg_rvalue_ref_kind = //
-        (!any_uvalue_kind<Tp>) &&
-        (!std::is_reference_v<T> || std::is_rvalue_reference_v<T>);
+    concept arg_rvalue_ref_kind                                       //
+        = (!any_uvalue_kind<Tp>)                                      //
+       && (!std::is_reference_v<T> || std::is_rvalue_reference_v<T>); //
 }
 
 namespace meta_hpp::detail
 {
     template < typename T >
-    concept inst_class_ref_kind = //
-        (std::is_class_v<T>) ||
-        (std::is_reference_v<T> && std::is_class_v<std::remove_reference_t<T>>);
+    concept inst_class_ref_kind                                                    //
+        = (std::is_class_v<T>)                                                     //
+       || (std::is_reference_v<T> && std::is_class_v<std::remove_reference_t<T>>); //
 
     template < typename T, typename Tp = std::decay_t<T> >
-    concept inst_class_lvalue_ref_kind = //
-        (!any_uvalue_kind<Tp>) &&
-        (std::is_lvalue_reference_v<T>) &&
-        (std::is_class_v<std::remove_pointer_t<std::remove_reference_t<T>>>);
+    concept inst_class_lvalue_ref_kind                                          //
+        = (!any_uvalue_kind<Tp>)                                                //
+       && (std::is_lvalue_reference_v<T>)                                       //
+       && (std::is_class_v<std::remove_pointer_t<std::remove_reference_t<T>>>); //
 
     template < typename T, typename Tp = std::decay_t<T> >
-    concept inst_class_rvalue_ref_kind = //
-        (!any_uvalue_kind<Tp>) &&
-        (!std::is_reference_v<T> || std::is_rvalue_reference_v<T>) &&
-        (std::is_class_v<std::remove_pointer_t<std::remove_reference_t<T>>>);
+    concept inst_class_rvalue_ref_kind                                          //
+        = (!any_uvalue_kind<Tp>)                                                //
+       && (!std::is_reference_v<T> || std::is_rvalue_reference_v<T>)            //
+       && (std::is_class_v<std::remove_pointer_t<std::remove_reference_t<T>>>); //
 }
 
 namespace meta_hpp::detail
@@ -5104,45 +5158,47 @@ namespace meta_hpp::detail
         template < inst_class_ref_kind Q >
         struct inst_traits_impl<Q, false, false, false> {
             using class_type = std::remove_cvref_t<Q>;
-            using method_type = void(class_type::*)();
+            using method_type = void (class_type::*)();
         };
 
         template < inst_class_ref_kind Q >
         struct inst_traits_impl<Q, false, true, false> {
             using class_type = std::remove_cvref_t<Q>;
-            using method_type = void(class_type::*)() &;
+            using method_type = void (class_type::*)() &;
         };
 
         template < inst_class_ref_kind Q >
         struct inst_traits_impl<Q, false, false, true> {
             using class_type = std::remove_cvref_t<Q>;
-            using method_type = void(class_type::*)() &&;
+            using method_type = void (class_type::*)() &&;
         };
 
         template < inst_class_ref_kind Q >
         struct inst_traits_impl<Q, true, false, false> {
             using class_type = std::remove_cvref_t<Q>;
-            using method_type = void(class_type::*)() const;
+            using method_type = void (class_type::*)() const;
         };
 
         template < inst_class_ref_kind Q >
         struct inst_traits_impl<Q, true, true, false> {
             using class_type = std::remove_cvref_t<Q>;
-            using method_type = void(class_type::*)() const &;
+            using method_type = void (class_type::*)() const&;
         };
 
         template < inst_class_ref_kind Q >
         struct inst_traits_impl<Q, true, false, true> {
             using class_type = std::remove_cvref_t<Q>;
-            using method_type = void(class_type::*)() const &&;
+            using method_type = void (class_type::*)() const&&;
         };
     }
 
     template < inst_class_ref_kind Q >
-    struct inst_traits final : impl::inst_traits_impl<Q,
-        cvref_traits<Q>::is_const,
-        cvref_traits<Q>::is_lvalue,
-        cvref_traits<Q>::is_rvalue> {};
+    struct inst_traits final
+    : impl::inst_traits_impl< //
+          Q,
+          cvref_traits<Q>::is_const,
+          cvref_traits<Q>::is_lvalue,
+          cvref_traits<Q>::is_rvalue> {};
 }
 
 namespace meta_hpp::detail
@@ -5195,6 +5251,7 @@ namespace meta_hpp::detail
             rvalue,
             const_rvalue,
         };
+
     public:
         uarg_base() = delete;
         ~uarg_base() = default;
@@ -5209,23 +5266,19 @@ namespace meta_hpp::detail
         uarg_base(type_list<T>) = delete;
 
         template < typename T, typename Tp = std::decay_t<T> >
-            requires (!any_uvalue_kind<Tp>)
+            requires(!any_uvalue_kind<Tp>)
         // NOLINTNEXTLINE(*-forwarding-reference-overload)
         explicit uarg_base(T&&)
         : uarg_base{type_list<T&&>{}} {}
 
         template < arg_lvalue_ref_kind T >
         explicit uarg_base(type_list<T>)
-        : ref_type_{std::is_const_v<std::remove_reference_t<T>>
-            ? ref_types::const_lvalue
-            : ref_types::lvalue}
+        : ref_type_{std::is_const_v<std::remove_reference_t<T>> ? ref_types::const_lvalue : ref_types::lvalue}
         , raw_type_{resolve_type<std::remove_cvref_t<T>>()} {}
 
         template < arg_rvalue_ref_kind T >
         explicit uarg_base(type_list<T>)
-        : ref_type_{std::is_const_v<std::remove_reference_t<T>>
-            ? ref_types::const_rvalue
-            : ref_types::rvalue}
+        : ref_type_{std::is_const_v<std::remove_reference_t<T>> ? ref_types::const_rvalue : ref_types::rvalue}
         , raw_type_{resolve_type<std::remove_cvref_t<T>>()} {}
 
         explicit uarg_base(uvalue& v)
@@ -5245,7 +5298,7 @@ namespace meta_hpp::detail
         , raw_type_{v.get_type()} {}
 
         [[nodiscard]] bool is_ref_const() const noexcept {
-            return ref_type_ == ref_types::const_lvalue
+            return ref_type_ == ref_types::const_lvalue //
                 || ref_type_ == ref_types::const_rvalue;
         }
 
@@ -5259,6 +5312,7 @@ namespace meta_hpp::detail
 
         template < typename To >
         [[nodiscard]] bool can_cast_to() const noexcept;
+
     private:
         ref_types ref_type_{};
         any_type raw_type_{};
@@ -5281,20 +5335,19 @@ namespace meta_hpp::detail
         template < typename T, uvalue_kind Tp = std::decay_t<T> >
         // NOLINTNEXTLINE(*-forwarding-reference-overload)
         explicit uarg(T&& v)
-        : uarg_base{std::forward<T>(v)}
-        // NOLINTNEXTLINE(*-const-cast)
+        : uarg_base{std::forward<T>(v)} // NOLINTNEXTLINE(*-const-cast)
         , data_{const_cast<void*>(v.get_data())} {}
 
         template < typename T, typename Tp = std::decay_t<T> >
-            requires (!any_uvalue_kind<Tp>)
+            requires(!any_uvalue_kind<Tp>)
         // NOLINTNEXTLINE(*-forwarding-reference-overload)
         explicit uarg(T&& v)
-        : uarg_base{std::forward<T>(v)}
-        // NOLINTNEXTLINE(*-const-cast)
+        : uarg_base{std::forward<T>(v)} // NOLINTNEXTLINE(*-const-cast)
         , data_{const_cast<std::remove_cvref_t<T>*>(std::addressof(v))} {}
 
         template < typename To >
         [[nodiscard]] To cast() const;
+
     private:
         void* data_{};
     };
@@ -5308,15 +5361,16 @@ namespace meta_hpp::detail
         using to_raw_type_cv = std::remove_reference_t<To>;
         using to_raw_type = std::remove_cv_t<to_raw_type_cv>;
 
-        static_assert(
+        static_assert( //
             !(std::is_reference_v<To> && std::is_pointer_v<to_raw_type>),
-            "references to pointers are not supported yet");
+            "references to pointers are not supported yet"
+        );
 
         const any_type& from_type = get_raw_type();
         const any_type& to_type = resolve_type<to_raw_type>();
 
-        const auto is_a = [](const any_type& base, const any_type& derived){
-            return (base == derived)
+        const auto is_a = [](const any_type& base, const any_type& derived) {
+            return (base == derived) //
                 || (base.is_class() && derived.is_class() && base.as_class().is_base_of(derived.as_class()));
         };
 
@@ -5361,7 +5415,7 @@ namespace meta_hpp::detail
         }
 
         if constexpr ( std::is_reference_v<To> ) {
-            const auto is_convertible = [this](){
+            const auto is_convertible = [this]() {
                 switch ( get_ref_type() ) {
                 case ref_types::lvalue:
                     return std::is_convertible_v<noncopyable&, copy_cvref_t<To, noncopyable>>;
@@ -5381,7 +5435,7 @@ namespace meta_hpp::detail
         }
 
         if constexpr ( !std::is_pointer_v<To> && !std::is_reference_v<To> ) {
-            const auto is_constructible = [this](){
+            const auto is_constructible = [this]() {
                 switch ( get_ref_type() ) {
                 case ref_types::lvalue:
                     return std::is_constructible_v<To, to_raw_type&> && can_cast_to<to_raw_type&>();
@@ -5526,21 +5580,76 @@ namespace meta_hpp::detail
 
 namespace meta_hpp::detail
 {
+    template < class_kind Class, typename... Args >
+    struct constructor_tag {};
+
+    template < class_kind Class, typename... Args >
+    constructor_type_data::constructor_type_data(type_list<Class>, type_list<Args...>)
+    : type_data_base{type_id{type_list<constructor_tag<Class, Args...>>{}}, type_kind::constructor_}
+    , flags{constructor_traits<Class, Args...>::make_flags()}
+    , class_type{resolve_type<typename constructor_traits<Class, Args...>::class_type>()}
+    , argument_types{resolve_types(typename constructor_traits<Class, Args...>::argument_types{})} {}
+}
+
+namespace meta_hpp
+{
+    inline constructor_type::constructor_type(data_ptr data)
+    : data_{data} {}
+
+    inline bool constructor_type::is_valid() const noexcept {
+        return data_ != nullptr;
+    }
+
+    inline constructor_type::operator bool() const noexcept {
+        return is_valid();
+    }
+
+    inline type_id constructor_type::get_id() const noexcept {
+        return data_->id;
+    }
+
+    inline constructor_bitflags constructor_type::get_flags() const noexcept {
+        return data_->flags;
+    }
+
+    inline const metadata_map& constructor_type::get_metadata() const noexcept {
+        return data_->metadata;
+    }
+
+    inline std::size_t constructor_type::get_arity() const noexcept {
+        return data_->argument_types.size();
+    }
+
+    inline any_type constructor_type::get_class_type() const noexcept {
+        return data_->class_type;
+    }
+
+    inline any_type constructor_type::get_argument_type(std::size_t position) const noexcept {
+        return position < data_->argument_types.size() ? data_->argument_types[position] : any_type{};
+    }
+
+    inline const any_type_list& constructor_type::get_argument_types() const noexcept {
+        return data_->argument_types;
+    }
+}
+
+namespace meta_hpp::detail
+{
     template < constructor_policy_kind Policy, class_kind Class, typename... Args >
     uvalue raw_constructor_create(std::span<const uarg> args) {
         using ct = constructor_traits<Class, Args...>;
         using class_type = typename ct::class_type;
         using argument_types = typename ct::argument_types;
 
-        constexpr bool as_object =
-            std::is_copy_constructible_v<class_type> &&
-            std::is_same_v<Policy, constructor_policy::as_object_t>;
+        constexpr bool as_object                                       //
+            = std::is_copy_constructible_v<class_type>                 //
+           && std::is_same_v<Policy, constructor_policy::as_object_t>; //
 
-        constexpr bool as_raw_ptr =
-            std::is_same_v<Policy, constructor_policy::as_raw_pointer_t>;
+        constexpr bool as_raw_ptr                                           //
+            = std::is_same_v<Policy, constructor_policy::as_raw_pointer_t>; //
 
-        constexpr bool as_shared_ptr =
-            std::is_same_v<Policy, constructor_policy::as_shared_pointer_t>;
+        constexpr bool as_shared_ptr                                           //
+            = std::is_same_v<Policy, constructor_policy::as_shared_pointer_t>; //
 
         static_assert(as_object || as_raw_ptr || as_shared_ptr);
 
@@ -5548,26 +5657,26 @@ namespace meta_hpp::detail
             META_HPP_THROW_AS(exception, "an attempt to call a constructor with an incorrect arity");
         }
 
-        return std::invoke([args]<std::size_t... Is>(std::index_sequence<Is...>) -> uvalue {
-            if ( !(... && args[Is].can_cast_to<type_list_at_t<Is, argument_types>>()) ) {
-                META_HPP_THROW_AS(exception, "an attempt to call a constructor with incorrect argument types");
-            }
+        return std::invoke(
+            [args]<std::size_t... Is>(std::index_sequence<Is...>)->uvalue {
+                if ( !(... && args[Is].can_cast_to<type_list_at_t<Is, argument_types>>()) ) {
+                    META_HPP_THROW_AS(exception, "an attempt to call a constructor with incorrect argument types");
+                }
 
-            if constexpr ( as_object ) {
-                return make_uvalue<class_type>(
-                    args[Is].cast<type_list_at_t<Is, argument_types>>()...);
-            }
+                if constexpr ( as_object ) {
+                    return make_uvalue<class_type>(args[Is].cast<type_list_at_t<Is, argument_types>>()...);
+                }
 
-            if constexpr ( as_raw_ptr ) {
-                return uvalue{std::make_unique<class_type>(
-                    args[Is].cast<type_list_at_t<Is, argument_types>>()...).release()};
-            }
+                if constexpr ( as_raw_ptr ) {
+                    return uvalue{std::make_unique<class_type>(args[Is].cast<type_list_at_t<Is, argument_types>>()...).release()};
+                }
 
-            if constexpr ( as_shared_ptr ) {
-                return uvalue{std::make_shared<class_type>(
-                    args[Is].cast<type_list_at_t<Is, argument_types>>()...)};
-            }
-        }, std::make_index_sequence<ct::arity>());
+                if constexpr ( as_shared_ptr ) {
+                    return uvalue{std::make_shared<class_type>(args[Is].cast<type_list_at_t<Is, argument_types>>()...)};
+                }
+            },
+            std::make_index_sequence<ct::arity>()
+        );
     }
 
     template < class_kind Class, typename... Args >
@@ -5580,14 +5689,16 @@ namespace meta_hpp::detail
             META_HPP_THROW_AS(exception, "an attempt to call a constructor with an incorrect arity");
         }
 
-        return std::invoke([mem, args]<std::size_t... Is>(std::index_sequence<Is...>) -> uvalue {
-            if ( !(... && args[Is].can_cast_to<type_list_at_t<Is, argument_types>>()) ) {
-                META_HPP_THROW_AS(exception, "an attempt to call a constructor with incorrect argument types");
-            }
-            return uvalue{std::construct_at(
-                static_cast<class_type*>(mem),
-                args[Is].cast<type_list_at_t<Is, argument_types>>()...)};
-        }, std::make_index_sequence<ct::arity>());
+        return std::invoke(
+            [ mem, args ]<std::size_t... Is>(std::index_sequence<Is...>)->uvalue {
+                if ( !(... && args[Is].can_cast_to<type_list_at_t<Is, argument_types>>()) ) {
+                    META_HPP_THROW_AS(exception, "an attempt to call a constructor with incorrect argument types");
+                }
+                return uvalue{
+                    std::construct_at(static_cast<class_type*>(mem), args[Is].cast<type_list_at_t<Is, argument_types>>()...)};
+            },
+            std::make_index_sequence<ct::arity>()
+        );
     }
 
     template < class_kind Class, typename... Args >
@@ -5599,9 +5710,12 @@ namespace meta_hpp::detail
             return false;
         }
 
-        return std::invoke([args]<std::size_t... Is>(std::index_sequence<Is...>){
-            return (... && args[Is].can_cast_to<type_list_at_t<Is, argument_types>>());
-        }, std::make_index_sequence<ct::arity>());
+        return std::invoke(
+            [args]<std::size_t... Is>(std::index_sequence<Is...>) {
+                return (... && args[Is].can_cast_to<type_list_at_t<Is, argument_types>>());
+            },
+            std::make_index_sequence<ct::arity>()
+        );
     }
 }
 
@@ -5627,13 +5741,16 @@ namespace meta_hpp::detail
         using ct = constructor_traits<Class, Args...>;
         using ct_argument_types = typename ct::argument_types;
 
-        return std::invoke([]<std::size_t... Is>(std::index_sequence<Is...>){
-            [[maybe_unused]] const auto make_argument = []<std::size_t I>(std::index_sequence<I>){
-                using P = type_list_at_t<I, ct_argument_types>;
-                return argument{argument_state::make<P>(I, metadata_map{})};
-            };
-            return argument_list{make_argument(std::index_sequence<Is>{})...};
-        }, std::make_index_sequence<ct::arity>());
+        return std::invoke(
+            []<std::size_t... Is>(std::index_sequence<Is...>) {
+                [[maybe_unused]] const auto make_argument = []<std::size_t I>(std::index_sequence<I>) {
+                    using P = type_list_at_t<I, ct_argument_types>;
+                    return argument{argument_state::make<P>(I, metadata_map{})};
+                };
+                return argument_list{make_argument(std::index_sequence<Is>{})...};
+            },
+            std::make_index_sequence<ct::arity>()
+        );
     }
 }
 
@@ -6072,17 +6189,17 @@ namespace meta_hpp::detail
         using return_type = typename ft::return_type;
         using argument_types = typename ft::argument_types;
 
-        constexpr bool as_copy =
-            std::is_copy_constructible_v<return_type> &&
-            std::is_same_v<Policy, function_policy::as_copy_t>;
+        constexpr bool as_copy                                    //
+            = std::is_copy_constructible_v<return_type>           //
+           && std::is_same_v<Policy, function_policy::as_copy_t>; //
 
-        constexpr bool as_void =
-            std::is_void_v<return_type> ||
-            std::is_same_v<Policy, function_policy::discard_return_t>;
+        constexpr bool as_void                                           //
+            = std::is_void_v<return_type>                                //
+           || std::is_same_v<Policy, function_policy::discard_return_t>; //
 
-        constexpr bool ref_as_ptr =
-            std::is_reference_v<return_type> &&
-            std::is_same_v<Policy, function_policy::return_reference_as_pointer_t>;
+        constexpr bool ref_as_ptr                                                     //
+            = std::is_reference_v<return_type>                                        //
+           && std::is_same_v<Policy, function_policy::return_reference_as_pointer_t>; //
 
         static_assert(as_copy || as_void || ref_as_ptr);
 
@@ -6090,30 +6207,30 @@ namespace meta_hpp::detail
             META_HPP_THROW_AS(exception, "an attempt to call a function with an incorrect arity");
         }
 
-        return std::invoke([&function, args]<std::size_t... Is>(std::index_sequence<Is...>) -> uvalue {
-            if ( !(... && args[Is].can_cast_to<type_list_at_t<Is, argument_types>>()) ) {
-                META_HPP_THROW_AS(exception, "an attempt to call a function with incorrect argument types");
-            }
-
-            if constexpr ( std::is_void_v<return_type> ) {
-                function(
-                    args[Is].cast<type_list_at_t<Is, argument_types>>()...);
-                return uvalue{};
-            } else if constexpr ( std::is_same_v<Policy, function_policy::discard_return_t> ) {
-                std::ignore = function(
-                    args[Is].cast<type_list_at_t<Is, argument_types>>()...);
-                return uvalue{};
-            } else {
-                return_type&& return_value = function(
-                    args[Is].cast<type_list_at_t<Is, argument_types>>()...);
-
-                if constexpr ( ref_as_ptr ) {
-                    return uvalue{std::addressof(return_value)};
-                } else {
-                    return uvalue{std::forward<decltype(return_value)>(return_value)};
+        return std::invoke(
+            [&function, args ]<std::size_t... Is>(std::index_sequence<Is...>)->uvalue {
+                if ( !(... && args[Is].can_cast_to<type_list_at_t<Is, argument_types>>()) ) {
+                    META_HPP_THROW_AS(exception, "an attempt to call a function with incorrect argument types");
                 }
-            }
-        }, std::make_index_sequence<ft::arity>());
+
+                if constexpr ( std::is_void_v<return_type> ) {
+                    function(args[Is].cast<type_list_at_t<Is, argument_types>>()...);
+                    return uvalue{};
+                } else if constexpr ( std::is_same_v<Policy, function_policy::discard_return_t> ) {
+                    std::ignore = function(args[Is].cast<type_list_at_t<Is, argument_types>>()...);
+                    return uvalue{};
+                } else {
+                    return_type&& return_value = function(args[Is].cast<type_list_at_t<Is, argument_types>>()...);
+
+                    if constexpr ( ref_as_ptr ) {
+                        return uvalue{std::addressof(return_value)};
+                    } else {
+                        return uvalue{std::forward<decltype(return_value)>(return_value)};
+                    }
+                }
+            },
+            std::make_index_sequence<ft::arity>()
+        );
     }
 
     template < function_kind Function >
@@ -6125,9 +6242,12 @@ namespace meta_hpp::detail
             return false;
         }
 
-        return std::invoke([args]<std::size_t... Is>(std::index_sequence<Is...>){
-            return (... && args[Is].can_cast_to<type_list_at_t<Is, argument_types>>());
-        }, std::make_index_sequence<ft::arity>());
+        return std::invoke(
+            [args]<std::size_t... Is>(std::index_sequence<Is...>) {
+                return (... && args[Is].can_cast_to<type_list_at_t<Is, argument_types>>());
+            },
+            std::make_index_sequence<ft::arity>()
+        );
     }
 }
 
@@ -6135,7 +6255,7 @@ namespace meta_hpp::detail
 {
     template < function_policy_kind Policy, function_kind Function >
     function_state::invoke_impl make_function_invoke(Function function) {
-        return [function = std::move(function)](std::span<const uarg> args){
+        return [function = std::move(function)](std::span<const uarg> args) { //
             return raw_function_invoke<Policy>(function, args);
         };
     }
@@ -6150,13 +6270,16 @@ namespace meta_hpp::detail
         using ft = function_traits<Function>;
         using ft_argument_types = typename ft::argument_types;
 
-        return std::invoke([]<std::size_t... Is>(std::index_sequence<Is...>){
-            [[maybe_unused]] const auto make_argument = []<std::size_t I>(std::index_sequence<I>){
-                using P = type_list_at_t<I, ft_argument_types>;
-                return argument{argument_state::make<P>(I, metadata_map{})};
-            };
-            return argument_list{make_argument(std::index_sequence<Is>{})...};
-        }, std::make_index_sequence<ft::arity>());
+        return std::invoke(
+            []<std::size_t... Is>(std::index_sequence<Is...>) {
+                [[maybe_unused]] const auto make_argument = []<std::size_t I>(std::index_sequence<I>) {
+                    using P = type_list_at_t<I, ft_argument_types>;
+                    return argument{argument_state::make<P>(I, metadata_map{})};
+                };
+                return argument_list{make_argument(std::index_sequence<Is>{})...};
+            },
+            std::make_index_sequence<ft::arity>()
+        );
     }
 }
 
@@ -6254,53 +6377,6 @@ namespace meta_hpp
 
 namespace meta_hpp::detail
 {
-    template < member_kind Member >
-    struct member_tag {};
-
-    template < member_kind Member >
-    member_type_data::member_type_data(type_list<Member>)
-    : type_data_base{type_id{type_list<member_tag<Member>>{}}, type_kind::member_}
-    , flags{member_traits<Member>::make_flags()}
-    , owner_type{resolve_type<typename member_traits<Member>::class_type>()}
-    , value_type{resolve_type<typename member_traits<Member>::value_type>()} {}
-}
-
-namespace meta_hpp
-{
-    inline member_type::member_type(data_ptr data)
-    : data_{data} {}
-
-    inline bool member_type::is_valid() const noexcept {
-        return data_ != nullptr;
-    }
-
-    inline member_type::operator bool() const noexcept {
-        return is_valid();
-    }
-
-    inline type_id member_type::get_id() const noexcept {
-        return data_->id;
-    }
-
-    inline member_bitflags member_type::get_flags() const noexcept {
-        return data_->flags;
-    }
-
-    inline const metadata_map& member_type::get_metadata() const noexcept {
-        return data_->metadata;
-    }
-
-    inline class_type member_type::get_owner_type() const noexcept {
-        return data_->owner_type;
-    }
-
-    inline any_type member_type::get_value_type() const noexcept {
-        return data_->value_type;
-    }
-}
-
-namespace meta_hpp::detail
-{
     class uinst_base {
     public:
         enum class ref_types {
@@ -6309,6 +6385,7 @@ namespace meta_hpp::detail
             rvalue,
             const_rvalue,
         };
+
     public:
         uinst_base() = delete;
         ~uinst_base() = default;
@@ -6323,23 +6400,19 @@ namespace meta_hpp::detail
         uinst_base(type_list<T>) = delete;
 
         template < typename T, typename Tp = std::decay_t<T> >
-            requires (!any_uvalue_kind<Tp>)
+            requires(!any_uvalue_kind<Tp>)
         // NOLINTNEXTLINE(*-forwarding-reference-overload)
         explicit uinst_base(T&&)
         : uinst_base{type_list<T&&>{}} {}
 
         template < inst_class_lvalue_ref_kind T >
         explicit uinst_base(type_list<T>)
-        : ref_type_{std::is_const_v<std::remove_reference_t<T>>
-            ? ref_types::const_lvalue
-            : ref_types::lvalue}
+        : ref_type_{std::is_const_v<std::remove_reference_t<T>> ? ref_types::const_lvalue : ref_types::lvalue}
         , raw_type_{resolve_type<std::remove_cvref_t<T>>()} {}
 
         template < inst_class_rvalue_ref_kind T >
         explicit uinst_base(type_list<T>)
-        : ref_type_{std::is_const_v<std::remove_reference_t<T>>
-            ? ref_types::const_rvalue
-            : ref_types::rvalue}
+        : ref_type_{std::is_const_v<std::remove_reference_t<T>> ? ref_types::const_rvalue : ref_types::rvalue}
         , raw_type_{resolve_type<std::remove_cvref_t<T>>()} {}
 
         explicit uinst_base(uvalue& v)
@@ -6364,7 +6437,7 @@ namespace meta_hpp::detail
                 const bool from_type_ptr_readonly = from_type_ptr.get_flags().has(pointer_flags::is_readonly);
                 return from_type_ptr_readonly;
             }
-            return ref_type_ == ref_types::const_lvalue
+            return ref_type_ == ref_types::const_lvalue //
                 || ref_type_ == ref_types::const_rvalue;
         }
 
@@ -6378,6 +6451,7 @@ namespace meta_hpp::detail
 
         template < inst_class_ref_kind Q >
         [[nodiscard]] bool can_cast_to() const noexcept;
+
     private:
         ref_types ref_type_{};
         any_type raw_type_{};
@@ -6400,20 +6474,19 @@ namespace meta_hpp::detail
         template < typename T, uvalue_kind Tp = std::decay_t<T> >
         // NOLINTNEXTLINE(*-forwarding-reference-overload)
         explicit uinst(T&& v)
-        : uinst_base{std::forward<T>(v)}
-        // NOLINTNEXTLINE(*-const-cast)
+        : uinst_base{std::forward<T>(v)} // NOLINTNEXTLINE(*-const-cast)
         , data_{const_cast<void*>(v.get_data())} {}
 
         template < typename T, typename Tp = std::decay_t<T> >
-            requires (!any_uvalue_kind<Tp>)
+            requires(!any_uvalue_kind<Tp>)
         // NOLINTNEXTLINE(*-forwarding-reference-overload)
         explicit uinst(T&& v)
-        : uinst_base{std::forward<T>(v)}
-        // NOLINTNEXTLINE(*-const-cast)
+        : uinst_base{std::forward<T>(v)} // NOLINTNEXTLINE(*-const-cast)
         , data_{const_cast<std::remove_cvref_t<T>*>(std::addressof(v))} {}
 
         template < inst_class_ref_kind Q >
         [[nodiscard]] decltype(auto) cast() const;
+
     private:
         void* data_{};
     };
@@ -6429,13 +6502,13 @@ namespace meta_hpp::detail
         const any_type& from_type = get_raw_type();
         const any_type& to_type = resolve_type<inst_class>();
 
-        const auto is_a = [](const any_type& base, const any_type& derived){
-            return (base == derived)
+        const auto is_a = [](const any_type& base, const any_type& derived) {
+            return (base == derived) //
                 || (base.is_class() && derived.is_class() && base.as_class().is_base_of(derived.as_class()));
         };
 
         if ( from_type.is_class() ) {
-            const auto is_invocable = [this](){
+            const auto is_invocable = [this]() {
                 switch ( get_ref_type() ) {
                 case ref_types::lvalue:
                     return std::is_invocable_v<inst_method, inst_class&>;
@@ -6457,10 +6530,9 @@ namespace meta_hpp::detail
             const bool from_type_ptr_readonly = from_type_ptr.get_flags().has(pointer_flags::is_readonly);
             const any_type& from_data_type = from_type_ptr.get_data_type();
 
-            const auto is_invocable = [from_type_ptr_readonly](){
-                return from_type_ptr_readonly
-                    ? std::is_invocable_v<inst_method, const inst_class&>
-                    : std::is_invocable_v<inst_method, inst_class&>;
+            const auto is_invocable = [from_type_ptr_readonly]() {
+                return from_type_ptr_readonly ? std::is_invocable_v<inst_method, const inst_class&>
+                                              : std::is_invocable_v<inst_method, inst_class&>;
             };
 
             return is_invocable() && is_a(to_type, from_data_type);
@@ -6530,21 +6602,68 @@ namespace meta_hpp::detail
 
 namespace meta_hpp::detail
 {
+    template < member_kind Member >
+    struct member_tag {};
+
+    template < member_kind Member >
+    member_type_data::member_type_data(type_list<Member>)
+    : type_data_base{type_id{type_list<member_tag<Member>>{}}, type_kind::member_}
+    , flags{member_traits<Member>::make_flags()}
+    , owner_type{resolve_type<typename member_traits<Member>::class_type>()}
+    , value_type{resolve_type<typename member_traits<Member>::value_type>()} {}
+}
+
+namespace meta_hpp
+{
+    inline member_type::member_type(data_ptr data)
+    : data_{data} {}
+
+    inline bool member_type::is_valid() const noexcept {
+        return data_ != nullptr;
+    }
+
+    inline member_type::operator bool() const noexcept {
+        return is_valid();
+    }
+
+    inline type_id member_type::get_id() const noexcept {
+        return data_->id;
+    }
+
+    inline member_bitflags member_type::get_flags() const noexcept {
+        return data_->flags;
+    }
+
+    inline const metadata_map& member_type::get_metadata() const noexcept {
+        return data_->metadata;
+    }
+
+    inline class_type member_type::get_owner_type() const noexcept {
+        return data_->owner_type;
+    }
+
+    inline any_type member_type::get_value_type() const noexcept {
+        return data_->value_type;
+    }
+}
+
+namespace meta_hpp::detail
+{
     template < member_policy_kind Policy, member_kind Member >
     uvalue raw_member_getter(const Member& member, const uinst& inst) {
         using mt = member_traits<Member>;
         using class_type = typename mt::class_type;
         using value_type = typename mt::value_type;
 
-        constexpr bool as_copy =
-            std::is_copy_constructible_v<value_type> &&
-            std::is_same_v<Policy, member_policy::as_copy_t>;
+        constexpr bool as_copy                                  //
+            = std::is_copy_constructible_v<value_type>          //
+           && std::is_same_v<Policy, member_policy::as_copy_t>; //
 
-        constexpr bool as_ptr =
-            std::is_same_v<Policy, member_policy::as_pointer_t>;
+        constexpr bool as_ptr                                      //
+            = std::is_same_v<Policy, member_policy::as_pointer_t>; //
 
-        constexpr bool as_ref_wrap =
-            std::is_same_v<Policy, member_policy::as_reference_wrapper_t>;
+        constexpr bool as_ref_wrap                                           //
+            = std::is_same_v<Policy, member_policy::as_reference_wrapper_t>; //
 
         static_assert(as_copy || as_ptr || as_ref_wrap);
 
@@ -6625,9 +6744,7 @@ namespace meta_hpp::detail
         using class_type = typename mt::class_type;
         using value_type = typename mt::value_type;
 
-        return !std::is_const_v<value_type>
-            && !inst.is_inst_const()
-            && inst.can_cast_to<class_type>()
+        return !std::is_const_v<value_type> && !inst.is_inst_const() && inst.can_cast_to<class_type>()
             && arg.can_cast_to<value_type>();
     }
 }
@@ -6636,7 +6753,7 @@ namespace meta_hpp::detail
 {
     template < member_policy_kind Policy, member_kind Member >
     member_state::getter_impl make_member_getter(Member member) {
-        return [member = std::move(member)](const uinst& inst){
+        return [member = std::move(member)](const uinst& inst) { //
             return raw_member_getter<Policy>(member, inst);
         };
     }
@@ -6648,7 +6765,7 @@ namespace meta_hpp::detail
 
     template < member_kind Member >
     member_state::setter_impl make_member_setter(Member member) {
-        return [member = std::move(member)](const uinst& inst, const uarg& arg){
+        return [member = std::move(member)](const uinst& inst, const uarg& arg) { //
             return raw_member_setter(member, inst, arg);
         };
     }
@@ -6835,17 +6952,17 @@ namespace meta_hpp::detail
         using qualified_type = typename mt::qualified_type;
         using argument_types = typename mt::argument_types;
 
-        constexpr bool as_copy =
-            std::is_copy_constructible_v<return_type> &&
-            std::is_same_v<Policy, method_policy::as_copy_t>;
+        constexpr bool as_copy                                  //
+            = std::is_copy_constructible_v<return_type>         //
+           && std::is_same_v<Policy, method_policy::as_copy_t>; //
 
-        constexpr bool as_void =
-            std::is_void_v<return_type> ||
-            std::is_same_v<Policy, method_policy::discard_return_t>;
+        constexpr bool as_void                                         //
+            = std::is_void_v<return_type>                              //
+           || std::is_same_v<Policy, method_policy::discard_return_t>; //
 
-        constexpr bool ref_as_ptr =
-            std::is_reference_v<return_type> &&
-            std::is_same_v<Policy, method_policy::return_reference_as_pointer_t>;
+        constexpr bool ref_as_ptr                                                   //
+            = std::is_reference_v<return_type>                                      //
+           && std::is_same_v<Policy, method_policy::return_reference_as_pointer_t>; //
 
         static_assert(as_copy || as_void || ref_as_ptr);
 
@@ -6857,30 +6974,32 @@ namespace meta_hpp::detail
             META_HPP_THROW_AS(exception, "an attempt to call a method with an incorrect instance type");
         }
 
-        return std::invoke([&method, &inst, args]<std::size_t... Is>(std::index_sequence<Is...>) -> uvalue {
-            if ( !(... && args[Is].can_cast_to<type_list_at_t<Is, argument_types>>()) ) {
-                META_HPP_THROW_AS(exception, "an attempt to call a method with incorrect argument types");
-            }
-
-            if constexpr ( std::is_void_v<return_type> ) {
-                (inst.cast<qualified_type>().*method)(
-                    args[Is].cast<type_list_at_t<Is, argument_types>>()...);
-                return uvalue{};
-            } else if constexpr ( std::is_same_v<Policy, method_policy::discard_return_t> ) {
-                std::ignore = (inst.cast<qualified_type>().*method)(
-                    args[Is].cast<type_list_at_t<Is, argument_types>>()...);
-                return uvalue{};
-            } else {
-                return_type&& return_value = (inst.cast<qualified_type>().*method)(
-                    args[Is].cast<type_list_at_t<Is, argument_types>>()...);
-
-                if constexpr ( ref_as_ptr ) {
-                    return uvalue{std::addressof(return_value)};
-                } else {
-                    return uvalue{std::forward<decltype(return_value)>(return_value)};
+        return std::invoke(
+            [&method, &inst, args ]<std::size_t... Is>(std::index_sequence<Is...>)->uvalue {
+                if ( !(... && args[Is].can_cast_to<type_list_at_t<Is, argument_types>>()) ) {
+                    META_HPP_THROW_AS(exception, "an attempt to call a method with incorrect argument types");
                 }
-            }
-        }, std::make_index_sequence<mt::arity>());
+
+                if constexpr ( std::is_void_v<return_type> ) {
+                    (inst.cast<qualified_type>().*method)(args[Is].cast<type_list_at_t<Is, argument_types>>()...);
+                    return uvalue{};
+                } else if constexpr ( std::is_same_v<Policy, method_policy::discard_return_t> ) {
+                    std::ignore = (inst.cast<qualified_type>().*method)(args[Is].cast<type_list_at_t<Is, argument_types>>()...);
+                    return uvalue{};
+                } else {
+                    return_type&& return_value = (inst.cast<qualified_type>().*method)(
+                        args[Is].cast<type_list_at_t<Is, argument_types>>()...
+                    );
+
+                    if constexpr ( ref_as_ptr ) {
+                        return uvalue{std::addressof(return_value)};
+                    } else {
+                        return uvalue{std::forward<decltype(return_value)>(return_value)};
+                    }
+                }
+            },
+            std::make_index_sequence<mt::arity>()
+        );
     }
 
     template < method_kind Method >
@@ -6897,9 +7016,12 @@ namespace meta_hpp::detail
             return false;
         }
 
-        return std::invoke([args]<std::size_t... Is>(std::index_sequence<Is...>){
-            return (... && args[Is].can_cast_to<type_list_at_t<Is, argument_types>>());
-        }, std::make_index_sequence<mt::arity>());
+        return std::invoke(
+            [args]<std::size_t... Is>(std::index_sequence<Is...>) {
+                return (... && args[Is].can_cast_to<type_list_at_t<Is, argument_types>>());
+            },
+            std::make_index_sequence<mt::arity>()
+        );
     }
 }
 
@@ -6907,7 +7029,7 @@ namespace meta_hpp::detail
 {
     template < method_policy_kind Policy, method_kind Method >
     method_state::invoke_impl make_method_invoke(Method method) {
-        return [method = std::move(method)](const uinst& inst, std::span<const uarg> args){
+        return [method = std::move(method)](const uinst& inst, std::span<const uarg> args) {
             return raw_method_invoke<Policy>(method, inst, args);
         };
     }
@@ -6922,13 +7044,16 @@ namespace meta_hpp::detail
         using mt = method_traits<Method>;
         using mt_argument_types = typename mt::argument_types;
 
-        return std::invoke([]<std::size_t... Is>(std::index_sequence<Is...>){
-            [[maybe_unused]] const auto make_argument = []<std::size_t I>(std::index_sequence<I>){
-                using P = type_list_at_t<I, mt_argument_types>;
-                return argument{argument_state::make<P>(I, metadata_map{})};
-            };
-            return argument_list{make_argument(std::index_sequence<Is>{})...};
-        }, std::make_index_sequence<mt::arity>());
+        return std::invoke(
+            []<std::size_t... Is>(std::index_sequence<Is...>) {
+                [[maybe_unused]] const auto make_argument = []<std::size_t I>(std::index_sequence<I>) {
+                    using P = type_list_at_t<I, mt_argument_types>;
+                    return argument{argument_state::make<P>(I, metadata_map{})};
+                };
+                return argument_list{make_argument(std::index_sequence<Is>{})...};
+            },
+            std::make_index_sequence<mt::arity>()
+        );
     }
 }
 
@@ -7076,15 +7201,15 @@ namespace meta_hpp::detail
         using pt = pointer_traits<Pointer>;
         using data_type = typename pt::data_type;
 
-        constexpr bool as_copy =
-            std::is_copy_constructible_v<data_type> &&
-            std::is_same_v<Policy, variable_policy::as_copy_t>;
+        constexpr bool as_copy                                    //
+            = std::is_copy_constructible_v<data_type>             //
+           && std::is_same_v<Policy, variable_policy::as_copy_t>; //
 
-        constexpr bool as_ptr =
-            std::is_same_v<Policy, variable_policy::as_pointer_t>;
+        constexpr bool as_ptr                                        //
+            = std::is_same_v<Policy, variable_policy::as_pointer_t>; //
 
-        constexpr bool as_ref_wrap =
-            std::is_same_v<Policy, variable_policy::as_reference_wrapper_t>;
+        constexpr bool as_ref_wrap                                             //
+            = std::is_same_v<Policy, variable_policy::as_reference_wrapper_t>; //
 
         static_assert(as_copy || as_ptr || as_ref_wrap);
 
@@ -7098,7 +7223,7 @@ namespace meta_hpp::detail
             return uvalue{std::addressof(return_value)};
         }
 
-        if constexpr ( as_ref_wrap) {
+        if constexpr ( as_ref_wrap ) {
             return uvalue{std::ref(return_value)};
         }
     }
@@ -7123,8 +7248,7 @@ namespace meta_hpp::detail
         using pt = pointer_traits<Pointer>;
         using data_type = typename pt::data_type;
 
-        return !std::is_const_v<data_type>
-            && arg.can_cast_to<data_type>();
+        return !std::is_const_v<data_type> && arg.can_cast_to<data_type>();
     }
 }
 
@@ -7132,14 +7256,14 @@ namespace meta_hpp::detail
 {
     template < variable_policy_kind Policy, pointer_kind Pointer >
     variable_state::getter_impl make_variable_getter(Pointer pointer) {
-        return [pointer = std::move(pointer)](){
+        return [pointer = std::move(pointer)]() { //
             return raw_variable_getter<Policy>(pointer);
         };
     }
 
     template < pointer_kind Pointer >
     variable_state::setter_impl make_variable_setter(Pointer pointer) {
-        return [pointer = std::move(pointer)](const uarg& arg){
+        return [pointer = std::move(pointer)](const uarg& arg) { //
             return raw_variable_setter(pointer, arg);
         };
     }
@@ -8253,10 +8377,10 @@ namespace meta_hpp::detail
     struct deref_traits;
 
     template < typename T >
-    concept has_deref_traits = //
-        requires(const T& v) {
-            { deref_traits<T>{}(v) } -> std::convertible_to<uvalue>;
-        };
+    concept has_deref_traits //
+        = requires(const T& v) {
+              { deref_traits<T>{}(v) } -> std::convertible_to<uvalue>;
+          };
 }
 
 namespace meta_hpp::detail
@@ -8300,10 +8424,10 @@ namespace meta_hpp::detail
     struct index_traits;
 
     template < typename T >
-    concept has_index_traits = //
-        requires(const T& v, std::size_t i) {
-            { index_traits<T>{}(v, i) } -> std::convertible_to<uvalue>;
-        };
+    concept has_index_traits //
+        = requires(const T& v, std::size_t i) {
+              { index_traits<T>{}(v, i) } -> std::convertible_to<uvalue>;
+          };
 }
 
 namespace meta_hpp::detail
@@ -8373,10 +8497,10 @@ namespace meta_hpp::detail
     struct unmap_traits;
 
     template < typename T >
-    concept has_unmap_traits = //
-        requires(const T& v) {
-            { unmap_traits<T>{}(v) } -> std::convertible_to<uvalue>;
-        };
+    concept has_unmap_traits //
+        = requires(const T& v) {
+              { unmap_traits<T>{}(v) } -> std::convertible_to<uvalue>;
+          };
 }
 
 namespace meta_hpp::detail
@@ -8417,16 +8541,13 @@ namespace meta_hpp
         uvalue (*const unmap)(const storage_u& self);
 
         template < typename T >
-        inline static constexpr bool in_internal_v =
-            (sizeof(T) <= sizeof(internal_storage_t)) &&
-            (alignof(internal_storage_t) % alignof(T) == 0) &&
-            std::is_nothrow_destructible_v<T> &&
-            std::is_nothrow_move_constructible_v<T>;
+        inline static constexpr bool in_internal_v = //
+            (sizeof(T) <= sizeof(internal_storage_t)) && (alignof(internal_storage_t) % alignof(T) == 0)
+            && std::is_nothrow_destructible_v<T> && std::is_nothrow_move_constructible_v<T>;
 
         template < typename T >
-        inline static constexpr bool in_trivial_internal_v =
-            in_internal_v<T> &&
-            std::is_trivially_copyable_v<T>;
+        inline static constexpr bool in_trivial_internal_v = //
+            in_internal_v<T> && std::is_trivially_copyable_v<T>;
 
         static std::pair<storage_e, const vtable_t*> unpack_vtag(const uvalue& self) noexcept {
             constexpr std::uintptr_t tag_mask{0b11};
@@ -8434,7 +8555,8 @@ namespace meta_hpp
             return std::make_pair(
                 static_cast<storage_e>(vtag & tag_mask),
                 // NOLINTNEXTLINE(*-no-int-to-ptr, *-reinterpret-cast)
-                reinterpret_cast<const vtable_t*>(vtag & ~tag_mask));
+                reinterpret_cast<const vtable_t*>(vtag & ~tag_mask)
+            );
         }
 
         template < typename T >
@@ -8464,12 +8586,9 @@ namespace meta_hpp
             assert(!dst); // NOLINT
 
             if constexpr ( in_internal_v<Tp> ) {
-                std::construct_at(
-                    storage_cast<Tp>(dst.storage_),
-                    std::forward<Args>(args)...);
-                dst.storage_.vtag = in_trivial_internal_v<Tp>
-                    ? detail::to_underlying(storage_e::trivial)
-                    : detail::to_underlying(storage_e::internal);
+                std::construct_at(storage_cast<Tp>(dst.storage_), std::forward<Args>(args)...);
+                dst.storage_.vtag = in_trivial_internal_v<Tp> ? detail::to_underlying(storage_e::trivial)
+                                                              : detail::to_underlying(storage_e::internal);
             } else {
                 // NOLINTNEXTLINE(*-union-access, *-owning-memory)
                 dst.storage_.external.ptr = new Tp(std::forward<Args>(args)...);
@@ -8577,7 +8696,7 @@ namespace meta_hpp
                     }
                 }},
 
-                .copy{[](const uvalue& self, uvalue& to){
+                .copy{[](const uvalue& self, uvalue& to) {
                     assert(self && !to); // NOLINT
 
                     const Tp* src = storage_cast<Tp>(self.storage_);
@@ -8606,7 +8725,7 @@ namespace meta_hpp
                     self.storage_.vtag = 0;
                 }},
 
-                .deref{[](){
+                .deref{[]() {
                     if constexpr ( detail::has_deref_traits<Tp> ) {
                         return +[](const storage_u& self) -> uvalue {
                             return detail::deref_traits<Tp>{}(*storage_cast<Tp>(self));
@@ -8616,7 +8735,7 @@ namespace meta_hpp
                     }
                 }()},
 
-                .index{[](){
+                .index{[]() {
                     if constexpr ( detail::has_index_traits<Tp> ) {
                         return +[](const storage_u& self, std::size_t i) -> uvalue {
                             return detail::index_traits<Tp>{}(*storage_cast<Tp>(self), i);
@@ -8626,7 +8745,7 @@ namespace meta_hpp
                     }
                 }()},
 
-                .unmap{[](){
+                .unmap{[]() {
                     if constexpr ( detail::has_unmap_traits<Tp> ) {
                         return +[](const storage_u& self) -> uvalue {
                             return detail::unmap_traits<Tp>{}(*storage_cast<Tp>(self));
@@ -8673,18 +8792,18 @@ namespace meta_hpp
     }
 
     template < typename T, typename Tp >
-        requires (!detail::any_uvalue_kind<Tp>)
-              && (!detail::is_in_place_type_v<Tp>)
-              && (std::is_copy_constructible_v<Tp>)
+        requires(!detail::any_uvalue_kind<Tp>)     //
+             && (!detail::is_in_place_type_v<Tp>)  //
+             && (std::is_copy_constructible_v<Tp>) //
     // NOLINTNEXTLINE(*-forwarding-reference-overload)
     uvalue::uvalue(T&& val) {
         vtable_t::do_ctor<T>(*this, std::forward<T>(val));
     }
 
     template < typename T, typename Tp >
-        requires (!detail::any_uvalue_kind<Tp>)
-              && (!detail::is_in_place_type_v<Tp>)
-              && (std::is_copy_constructible_v<Tp>)
+        requires(!detail::any_uvalue_kind<Tp>)     //
+             && (!detail::is_in_place_type_v<Tp>)  //
+             && (std::is_copy_constructible_v<Tp>) //
     uvalue& uvalue::operator=(T&& val) {
         vtable_t::do_reset(*this);
         vtable_t::do_ctor<T>(*this, std::forward<T>(val));
@@ -8692,21 +8811,21 @@ namespace meta_hpp
     }
 
     template < typename T, typename... Args, typename Tp >
-        requires std::is_copy_constructible_v<Tp>
+        requires std::is_copy_constructible_v<Tp> //
               && std::is_constructible_v<Tp, Args...>
     uvalue::uvalue(std::in_place_type_t<T>, Args&&... args) {
         vtable_t::do_ctor<T>(*this, std::forward<Args>(args)...);
     }
 
     template < typename T, typename U, typename... Args, typename Tp >
-        requires std::is_copy_constructible_v<Tp>
+        requires std::is_copy_constructible_v<Tp> //
               && std::is_constructible_v<Tp, std::initializer_list<U>&, Args...>
     uvalue::uvalue(std::in_place_type_t<T>, std::initializer_list<U> ilist, Args&&... args) {
         vtable_t::do_ctor<T>(*this, ilist, std::forward<Args>(args)...);
     }
 
     template < typename T, typename... Args, typename Tp >
-        requires std::is_copy_constructible_v<Tp>
+        requires std::is_copy_constructible_v<Tp> //
               && std::is_constructible_v<Tp, Args...>
     Tp& uvalue::emplace(Args&&... args) {
         vtable_t::do_reset(*this);
@@ -8714,7 +8833,7 @@ namespace meta_hpp
     }
 
     template < typename T, typename U, typename... Args, typename Tp >
-        requires std::is_copy_constructible_v<Tp>
+        requires std::is_copy_constructible_v<Tp> //
               && std::is_constructible_v<Tp, std::initializer_list<U>&, Args...>
     Tp& uvalue::emplace(std::initializer_list<U> ilist, Args&&... args) {
         vtable_t::do_reset(*this);
@@ -8796,9 +8915,9 @@ namespace meta_hpp
 
     inline uvalue uvalue::operator*() const {
         auto&& [tag, vtable] = vtable_t::unpack_vtag(*this);
-        return tag != storage_e::nothing && vtable->deref != nullptr
-            ? vtable->deref(storage_)
-            : uvalue{};
+        return tag != storage_e::nothing && vtable->deref != nullptr //
+                 ? vtable->deref(storage_)
+                 : uvalue{};
     }
 
     inline bool uvalue::has_deref_op() const noexcept {
@@ -8808,9 +8927,9 @@ namespace meta_hpp
 
     inline uvalue uvalue::operator[](std::size_t index) const {
         auto&& [tag, vtable] = vtable_t::unpack_vtag(*this);
-        return tag != storage_e::nothing && vtable->index != nullptr
-            ? vtable->index(storage_, index)
-            : uvalue{};
+        return tag != storage_e::nothing && vtable->index != nullptr //
+                 ? vtable->index(storage_, index)
+                 : uvalue{};
     }
 
     inline bool uvalue::has_index_op() const noexcept {
@@ -8820,9 +8939,9 @@ namespace meta_hpp
 
     inline uvalue uvalue::unmap() const {
         auto&& [tag, vtable] = vtable_t::unpack_vtag(*this);
-        return tag != storage_e::nothing && vtable->unmap != nullptr
-            ? vtable->unmap(storage_)
-            : uvalue{};
+        return tag != storage_e::nothing && vtable->unmap != nullptr //
+                 ? vtable->unmap(storage_)
+                 : uvalue{};
     }
 
     inline bool uvalue::has_unmap_op() const noexcept {
@@ -8865,7 +8984,7 @@ namespace meta_hpp
     }
 
     template < typename T >
-    auto uvalue::get_as() const & -> std::conditional_t<detail::pointer_kind<T>, T, const T&> {
+    auto uvalue::get_as() const& -> std::conditional_t<detail::pointer_kind<T>, T, const T&> {
         static_assert(std::is_same_v<T, std::decay_t<T>>);
 
         if constexpr ( detail::pointer_kind<T> ) {
@@ -8889,8 +9008,8 @@ namespace meta_hpp
         const any_type& from_type = get_type();
         const any_type& to_type = resolve_type<T>();
 
-        const auto is_a = [](const any_type& base, const any_type& derived){
-            return (base == derived)
+        const auto is_a = [](const any_type& base, const any_type& derived) {
+            return (base == derived) //
                 || (base.is_class() && derived.is_class() && base.as_class().is_base_of(derived.as_class()));
         };
 
@@ -8954,8 +9073,8 @@ namespace meta_hpp
         const any_type& from_type = get_type();
         const any_type& to_type = resolve_type<T>();
 
-        const auto is_a = [](const any_type& base, const any_type& derived){
-            return (base == derived)
+        const auto is_a = [](const any_type& base, const any_type& derived) {
+            return (base == derived) //
                 || (base.is_class() && derived.is_class() && base.as_class().is_base_of(derived.as_class()));
         };
 

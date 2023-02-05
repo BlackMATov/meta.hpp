@@ -14,6 +14,7 @@ namespace meta_hpp::detail
     protected:
         noncopyable() = default;
         ~noncopyable() = default;
+
     public:
         noncopyable(noncopyable&&) = delete;
         noncopyable(const noncopyable&) = delete;

@@ -9,15 +9,15 @@
 #include "base.hpp"
 
 #if !defined(META_HPP_NO_EXCEPTIONS)
-#  define META_HPP_TRY try
-#  define META_HPP_CATCH(e) catch(e)
-#  define META_HPP_RETHROW() throw
-#  define META_HPP_THROW_AS(e, m) throw e(m)
+#    define META_HPP_TRY try
+#    define META_HPP_CATCH(e) catch ( e )
+#    define META_HPP_RETHROW() throw
+#    define META_HPP_THROW_AS(e, m) throw e(m)
 #else
-#  define META_HPP_TRY if ( true )
-#  define META_HPP_CATCH(e) if ( false )
-#  define META_HPP_RETHROW() std::abort()
-#  define META_HPP_THROW_AS(e, m) std::terminate()
+#    define META_HPP_TRY if ( true )
+#    define META_HPP_CATCH(e) if ( false )
+#    define META_HPP_RETHROW() std::abort()
+#    define META_HPP_THROW_AS(e, m) std::terminate()
 #endif
 
 namespace meta_hpp::detail

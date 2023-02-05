@@ -31,7 +31,7 @@ namespace meta_hpp::detail
     };
 
     template < typename T >
-        requires (std::is_same_v<T, std::byte>) || (std::is_integral_v<T> && sizeof(T) == 1)
+        requires(std::is_same_v<T, std::byte>) || (std::is_integral_v<T> && sizeof(T) == 1)
     constexpr std::size_t fnv1a_hash(const T* mem, std::size_t size) noexcept {
         using traits = fnv1a_hash_traits<>;
         std::size_t hash{traits::offset_basis};

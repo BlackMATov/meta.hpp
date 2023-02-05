@@ -23,10 +23,7 @@ namespace meta_hpp
 
     template < detail::enum_kind Enum >
     enum_bind<Enum>& enum_bind<Enum>::evalue_(std::string name, Enum value, evalue_opts opts) {
-        auto state = detail::evalue_state::make(
-            std::move(name),
-            std::move(value),
-            std::move(opts.metadata));
+        auto state = detail::evalue_state::make(std::move(name), std::move(value), std::move(opts.metadata));
         detail::insert_or_assign(get_data().evalues, std::move(state));
         return *this;
     }

@@ -94,7 +94,7 @@ namespace meta_hpp::detail
         }
 
         [[nodiscard]] bool operator==(const memory_buffer& other) const noexcept {
-            return (size_ == other.size_)
+            return (size_ == other.size_) //
                 && (size_ == 0 || std::memcmp(data_, other.data_, size_) == 0);
         }
 

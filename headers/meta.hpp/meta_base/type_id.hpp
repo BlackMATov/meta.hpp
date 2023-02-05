@@ -40,9 +40,11 @@ namespace meta_hpp::detail
         [[nodiscard]] std::strong_ordering operator<=>(type_id other) const noexcept {
             return id_ <=> other.id_;
         }
+
     private:
         using underlying_type = std::uint32_t;
         underlying_type id_{};
+
     private:
         [[nodiscard]] static underlying_type next() noexcept {
             static std::atomic<underlying_type> id{};

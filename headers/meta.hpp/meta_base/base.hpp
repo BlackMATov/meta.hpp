@@ -7,11 +7,11 @@
 #pragma once
 
 #if !defined(META_HPP_NO_EXCEPTIONS) && !defined(__cpp_exceptions)
-#  define META_HPP_NO_EXCEPTIONS
+#    define META_HPP_NO_EXCEPTIONS
 #endif
 
 #if !defined(META_HPP_NO_RTTI) && !defined(__cpp_rtti)
-#  define META_HPP_NO_RTTI
+#    define META_HPP_NO_RTTI
 #endif
 
 #include <cassert>
@@ -34,18 +34,18 @@
 #include <mutex>
 #include <set>
 #include <span>
-#include <string_view>
 #include <string>
+#include <string_view>
 #include <tuple>
 #include <type_traits>
 #include <utility>
 #include <vector>
 
 #if !defined(META_HPP_NO_EXCEPTIONS)
-#  include <stdexcept>
+#    include <stdexcept>
 #endif
 
 #if !defined(META_HPP_NO_RTTI)
-#  include <typeindex>
-#  include <typeinfo>
+#    include <typeindex>
+#    include <typeinfo>
 #endif

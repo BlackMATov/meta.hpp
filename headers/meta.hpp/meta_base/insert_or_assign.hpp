@@ -11,10 +11,10 @@
 namespace meta_hpp::detail
 {
     template < typename Key, typename Compare, typename Allocator >
-    typename std::set<Key, Compare, Allocator>::iterator
-    insert_or_assign(std::set<Key, Compare, Allocator>& set,
-        typename std::set<Key, Compare, Allocator>::value_type&& value)
-    {
+    typename std::set<Key, Compare, Allocator>::iterator insert_or_assign( //
+        std::set<Key, Compare, Allocator>& set,
+        typename std::set<Key, Compare, Allocator>::value_type&& value
+    ) {
         auto&& [position, inserted] = set.insert(std::move(value));
 
         if ( inserted ) {
@@ -27,10 +27,10 @@ namespace meta_hpp::detail
     }
 
     template < typename Key, typename Compare, typename Allocator >
-    typename std::set<Key, Compare, Allocator>::iterator
-    insert_or_assign(std::set<Key, Compare, Allocator>& set,
-        const typename std::set<Key, Compare, Allocator>::value_type& value)
-    {
+    typename std::set<Key, Compare, Allocator>::iterator insert_or_assign( //
+        std::set<Key, Compare, Allocator>& set,
+        const typename std::set<Key, Compare, Allocator>::value_type& value
+    ) {
         auto&& [position, inserted] = set.insert(value);
 
         if ( inserted ) {
@@ -46,37 +46,40 @@ namespace meta_hpp::detail
 namespace meta_hpp::detail
 {
     template < typename Key, typename Compare, typename Allocator >
-    void insert_or_assign(std::set<Key, Compare, Allocator>& set,
-        std::set<Key, Compare, Allocator>& value)
-    {
+    void insert_or_assign( //
+        std::set<Key, Compare, Allocator>& set,
+        std::set<Key, Compare, Allocator>& value
+    ) {
         set.swap(value);
         set.merge(value);
     }
 
     template < typename Key, typename Compare, typename Allocator >
-    void insert_or_assign(std::set<Key, Compare, Allocator>& set,
-        std::set<Key, Compare, Allocator>&& value)
-    {
+    void insert_or_assign( //
+        std::set<Key, Compare, Allocator>& set,
+        std::set<Key, Compare, Allocator>&& value
+    ) {
         set.swap(value);
         set.merge(std::move(value));
     }
 }
 
-
 namespace meta_hpp::detail
 {
     template < typename Key, typename Value, typename Compare, typename Allocator >
-    void insert_or_assign(std::map<Key, Value, Compare, Allocator>& map,
-        std::map<Key, Value, Compare, Allocator>& value)
-    {
+    void insert_or_assign( //
+        std::map<Key, Value, Compare, Allocator>& map,
+        std::map<Key, Value, Compare, Allocator>& value
+    ) {
         map.swap(value);
         map.merge(value);
     }
 
     template < typename Key, typename Value, typename Compare, typename Allocator >
-    void insert_or_assign(std::map<Key, Value, Compare, Allocator>& map,
-        std::map<Key, Value, Compare, Allocator>&& value)
-    {
+    void insert_or_assign( //
+        std::map<Key, Value, Compare, Allocator>& map,
+        std::map<Key, Value, Compare, Allocator>&& value
+    ) {
         map.swap(value);
         map.merge(std::move(value));
     }

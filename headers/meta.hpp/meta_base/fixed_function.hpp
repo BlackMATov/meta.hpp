@@ -19,7 +19,10 @@ namespace meta_hpp::detail
         using result_type = R;
 
         fixed_function() = default;
-        ~fixed_function() { reset(); }
+
+        ~fixed_function() {
+            reset();
+        }
 
         fixed_function(const fixed_function& other) = delete;
         fixed_function& operator=(const fixed_function& other) = delete;
@@ -38,14 +41,14 @@ namespace meta_hpp::detail
         }
 
         template < typename F >
-            requires (!std::is_same_v<fixed_function, std::decay_t<F>>)
+            requires(!std::is_same_v<fixed_function, std::decay_t<F>>)
         // NOLINTNEXTLINE(*-forwarding-reference-overload)
         fixed_function(F&& fun) {
             vtable_t::construct(*this, std::forward<F>(fun));
         }
 
         template < typename F >
-            requires (!std::is_same_v<fixed_function, std::decay_t<F>>)
+            requires(!std::is_same_v<fixed_function, std::decay_t<F>>)
         fixed_function& operator=(F&& fun) {
             fixed_function{std::forward<F>(fun)}.swap(*this);
             return *this;
@@ -73,9 +76,11 @@ namespace meta_hpp::detail
         void swap(fixed_function& other) noexcept {
             vtable_t::swap(*this, other);
         }
+
     private:
         struct vtable_t;
         vtable_t* vtable_{};
+
     private:
         struct buffer_t final {
             // NOLINTNEXTLINE(*-avoid-c-arrays)
@@ -132,7 +137,7 @@ namespace meta_hpp::detail
                     from.vtable_ = nullptr;
                 }},
 
-                .destroy{[](fixed_function& self){
+                .destroy{[](fixed_function& self) {
                     assert(self); // NOLINT
 
                     Fp& src = *buffer_cast<Fp>(self.buffer_);
@@ -153,9 +158,7 @@ namespace meta_hpp::detail
             static_assert(std::is_invocable_r_v<R, Fp, Args...>);
             static_assert(std::is_nothrow_move_constructible_v<Fp>);
 
-            std::construct_at(
-                buffer_cast<Fp>(dst.buffer_),
-                std::forward<F>(fun));
+            std::construct_at(buffer_cast<Fp>(dst.buffer_), std::forward<F>(fun));
 
             dst.vtable_ = vtable_t::get<Fp>();
         }
@@ -189,29 +192,51 @@ namespace meta_hpp::detail
         struct strip_signature_impl;
 
         template < typename R, typename C, typename... Args >
-        struct strip_signature_impl<R(C::*)(Args...)> { using type = R(Args...); };
-        template < typename R, typename C, typename... Args >
-        struct strip_signature_impl<R(C::*)(Args...) const> { using type = R(Args...); };
-        template < typename R, typename C, typename... Args >
-        struct strip_signature_impl<R(C::*)(Args...) &> { using type = R(Args...); };
-        template < typename R, typename C, typename... Args >
-        struct strip_signature_impl<R(C::*)(Args...) const &> { using type = R(Args...); };
+        struct strip_signature_impl<R (C::*)(Args...)> {
+            using type = R(Args...);
+        };
 
         template < typename R, typename C, typename... Args >
-        struct strip_signature_impl<R(C::*)(Args...) noexcept> { using type = R(Args...); };
+        struct strip_signature_impl<R (C::*)(Args...) const> {
+            using type = R(Args...);
+        };
+
         template < typename R, typename C, typename... Args >
-        struct strip_signature_impl<R(C::*)(Args...) const noexcept> { using type = R(Args...); };
+        struct strip_signature_impl<R (C::*)(Args...)&> {
+            using type = R(Args...);
+        };
+
         template < typename R, typename C, typename... Args >
-        struct strip_signature_impl<R(C::*)(Args...) & noexcept> { using type = R(Args...); };
+        struct strip_signature_impl<R (C::*)(Args...) const&> {
+            using type = R(Args...);
+        };
+
         template < typename R, typename C, typename... Args >
-        struct strip_signature_impl<R(C::*)(Args...) const & noexcept> { using type = R(Args...); };
+        struct strip_signature_impl<R (C::*)(Args...) noexcept> {
+            using type = R(Args...);
+        };
+
+        template < typename R, typename C, typename... Args >
+        struct strip_signature_impl<R (C::*)(Args...) const noexcept> {
+            using type = R(Args...);
+        };
+
+        template < typename R, typename C, typename... Args >
+        struct strip_signature_impl<R (C::*)(Args...) & noexcept> {
+            using type = R(Args...);
+        };
+
+        template < typename R, typename C, typename... Args >
+        struct strip_signature_impl<R (C::*)(Args...) const & noexcept> {
+            using type = R(Args...);
+        };
 
         template < typename F >
         using strip_signature_impl_t = typename strip_signature_impl<F>::type;
     }
 
     template < typename R, typename... Args >
-    fixed_function(R(*)(Args...)) -> fixed_function<R(Args...)>;
+    fixed_function(R (*)(Args...)) -> fixed_function<R(Args...)>;
 
     template < typename F, typename S = impl::strip_signature_impl_t<decltype(&F::operator())> >
     fixed_function(F) -> fixed_function<S>;
