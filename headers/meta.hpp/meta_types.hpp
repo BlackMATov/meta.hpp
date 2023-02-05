@@ -24,38 +24,38 @@
 
 namespace meta_hpp
 {
-    using array_flags = detail::array_flags;
-    using array_bitflags = detail::array_bitflags;
+    using detail::array_bitflags;
+    using detail::array_flags;
 
-    using class_flags = detail::class_flags;
-    using class_bitflags = detail::class_bitflags;
+    using detail::class_bitflags;
+    using detail::class_flags;
 
-    using constructor_flags = detail::constructor_flags;
-    using constructor_bitflags = detail::constructor_bitflags;
+    using detail::constructor_bitflags;
+    using detail::constructor_flags;
 
-    using destructor_flags = detail::destructor_flags;
-    using destructor_bitflags = detail::destructor_bitflags;
+    using detail::destructor_bitflags;
+    using detail::destructor_flags;
 
-    using enum_flags = detail::enum_flags;
-    using enum_bitflags = detail::enum_bitflags;
+    using detail::enum_bitflags;
+    using detail::enum_flags;
 
-    using function_flags = detail::function_flags;
-    using function_bitflags = detail::function_bitflags;
+    using detail::function_bitflags;
+    using detail::function_flags;
 
-    using member_flags = detail::member_flags;
-    using member_bitflags = detail::member_bitflags;
+    using detail::member_bitflags;
+    using detail::member_flags;
 
-    using method_flags = detail::method_flags;
-    using method_bitflags = detail::method_bitflags;
+    using detail::method_bitflags;
+    using detail::method_flags;
 
-    using number_flags = detail::number_flags;
-    using number_bitflags = detail::number_bitflags;
+    using detail::number_bitflags;
+    using detail::number_flags;
 
-    using pointer_flags = detail::pointer_flags;
-    using pointer_bitflags = detail::pointer_bitflags;
+    using detail::pointer_bitflags;
+    using detail::pointer_flags;
 
-    using reference_flags = detail::reference_flags;
-    using reference_bitflags = detail::reference_bitflags;
+    using detail::reference_bitflags;
+    using detail::reference_flags;
 }
 
 namespace meta_hpp

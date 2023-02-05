@@ -148,6 +148,7 @@ namespace meta_hpp
 {
     using any_type_list = std::vector<any_type>;
     using argument_list = std::vector<argument>;
+    using string_ilist = std::initializer_list<std::string_view>;
 
     using metadata_map = std::map<std::string, uvalue, std::less<>>;
     using typedef_map = std::map<std::string, any_type, std::less<>>;
