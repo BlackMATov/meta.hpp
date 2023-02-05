@@ -9,8 +9,8 @@
 #include "../meta_base.hpp"
 #include "../meta_states.hpp"
 
-#include "../meta_types/function_type.hpp"
 #include "../meta_detail/value_utilities/uarg.hpp"
+#include "../meta_types/function_type.hpp"
 
 namespace meta_hpp::detail
 {
@@ -20,17 +20,17 @@ namespace meta_hpp::detail
         using return_type = typename ft::return_type;
         using argument_types = typename ft::argument_types;
 
-        constexpr bool as_copy =
-            std::is_copy_constructible_v<return_type> &&
-            std::is_same_v<Policy, function_policy::as_copy_t>;
+        constexpr bool as_copy                                    //
+            = std::is_copy_constructible_v<return_type>           //
+           && std::is_same_v<Policy, function_policy::as_copy_t>; //
 
-        constexpr bool as_void =
-            std::is_void_v<return_type> ||
-            std::is_same_v<Policy, function_policy::discard_return_t>;
+        constexpr bool as_void                                           //
+            = std::is_void_v<return_type>                                //
+           || std::is_same_v<Policy, function_policy::discard_return_t>; //
 
-        constexpr bool ref_as_ptr =
-            std::is_reference_v<return_type> &&
-            std::is_same_v<Policy, function_policy::return_reference_as_pointer_t>;
+        constexpr bool ref_as_ptr                                                     //
+            = std::is_reference_v<return_type>                                        //
+           && std::is_same_v<Policy, function_policy::return_reference_as_pointer_t>; //
 
         static_assert(as_copy || as_void || ref_as_ptr);
 
@@ -38,30 +38,30 @@ namespace meta_hpp::detail
             META_HPP_THROW_AS(exception, "an attempt to call a function with an incorrect arity");
         }
 
-        return [&function, args]<std::size_t... Is>(std::index_sequence<Is...>) -> uvalue {
-            if ( !(... && args[Is].can_cast_to<type_list_at_t<Is, argument_types>>()) ) {
-                META_HPP_THROW_AS(exception, "an attempt to call a function with incorrect argument types");
-            }
-
-            if constexpr ( std::is_void_v<return_type> ) {
-                function(
-                    args[Is].cast<type_list_at_t<Is, argument_types>>()...);
-                return uvalue{};
-            } else if constexpr ( std::is_same_v<Policy, function_policy::discard_return_t> ) {
-                std::ignore = function(
-                    args[Is].cast<type_list_at_t<Is, argument_types>>()...);
-                return uvalue{};
-            } else {
-                return_type&& return_value = function(
-                    args[Is].cast<type_list_at_t<Is, argument_types>>()...);
-
-                if constexpr ( ref_as_ptr ) {
-                    return uvalue{std::addressof(return_value)};
-                } else {
-                    return uvalue{std::forward<decltype(return_value)>(return_value)};
+        return std::invoke(
+            [&function, args ]<std::size_t... Is>(std::index_sequence<Is...>)->uvalue {
+                if ( !(... && args[Is].can_cast_to<type_list_at_t<Is, argument_types>>()) ) {
+                    META_HPP_THROW_AS(exception, "an attempt to call a function with incorrect argument types");
                 }
-            }
-        }(std::make_index_sequence<ft::arity>());
+
+                if constexpr ( std::is_void_v<return_type> ) {
+                    function(args[Is].cast<type_list_at_t<Is, argument_types>>()...);
+                    return uvalue{};
+                } else if constexpr ( std::is_same_v<Policy, function_policy::discard_return_t> ) {
+                    std::ignore = function(args[Is].cast<type_list_at_t<Is, argument_types>>()...);
+                    return uvalue{};
+                } else {
+                    return_type&& return_value = function(args[Is].cast<type_list_at_t<Is, argument_types>>()...);
+
+                    if constexpr ( ref_as_ptr ) {
+                        return uvalue{std::addressof(return_value)};
+                    } else {
+                        return uvalue{std::forward<decltype(return_value)>(return_value)};
+                    }
+                }
+            },
+            std::make_index_sequence<ft::arity>()
+        );
     }
 
     template < function_kind Function >
@@ -73,9 +73,12 @@ namespace meta_hpp::detail
             return false;
         }
 
-        return [args]<std::size_t... Is>(std::index_sequence<Is...>){
-            return (... && args[Is].can_cast_to<type_list_at_t<Is, argument_types>>());
-        }(std::make_index_sequence<ft::arity>());
+        return std::invoke(
+            [args]<std::size_t... Is>(std::index_sequence<Is...>) {
+                return (... && args[Is].can_cast_to<type_list_at_t<Is, argument_types>>());
+            },
+            std::make_index_sequence<ft::arity>()
+        );
     }
 }
 
@@ -83,7 +86,7 @@ namespace meta_hpp::detail
 {
     template < function_policy_kind Policy, function_kind Function >
     function_state::invoke_impl make_function_invoke(Function function) {
-        return [function = std::move(function)](std::span<const uarg> args){
+        return [function = std::move(function)](std::span<const uarg> args) { //
             return raw_function_invoke<Policy>(function, args);
         };
     }
@@ -98,13 +101,16 @@ namespace meta_hpp::detail
         using ft = function_traits<Function>;
         using ft_argument_types = typename ft::argument_types;
 
-        return []<std::size_t... Is>(std::index_sequence<Is...>){
-            [[maybe_unused]] const auto make_argument = []<std::size_t I>(std::index_sequence<I>){
-                using P = type_list_at_t<I, ft_argument_types>;
-                return argument{argument_state::make<P>(I, metadata_map{})};
-            };
-            return argument_list{make_argument(std::index_sequence<Is>{})...};
-        }(std::make_index_sequence<ft::arity>());
+        return std::invoke(
+            []<std::size_t... Is>(std::index_sequence<Is...>) {
+                [[maybe_unused]] const auto make_argument = []<std::size_t I>(std::index_sequence<I>) {
+                    using P = type_list_at_t<I, ft_argument_types>;
+                    return argument{argument_state::make<P>(I, metadata_map{})};
+                };
+                return argument_list{make_argument(std::index_sequence<Is>{})...};
+            },
+            std::make_index_sequence<ft::arity>()
+        );
     }
 }
 

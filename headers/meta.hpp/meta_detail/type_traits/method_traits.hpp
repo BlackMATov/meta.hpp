@@ -27,7 +27,7 @@ namespace meta_hpp::detail
     struct method_traits;
 
     template < typename R, typename C, typename... Args >
-    struct method_traits<R(C::*)(Args...)> {
+    struct method_traits<R (C::*)(Args...)> {
         static constexpr std::size_t arity{sizeof...(Args)};
 
         using class_type = C;
@@ -41,7 +41,7 @@ namespace meta_hpp::detail
     };
 
     template < typename R, typename C, typename... Args >
-    struct method_traits<R(C::*)(Args...) const> : method_traits<R(C::*)(Args...)> {
+    struct method_traits<R (C::*)(Args...) const> : method_traits<R (C::*)(Args...)> {
         using qualified_type = const C;
 
         [[nodiscard]] static constexpr method_bitflags make_flags() noexcept {
@@ -50,7 +50,7 @@ namespace meta_hpp::detail
     };
 
     template < typename R, typename C, typename... Args >
-    struct method_traits<R(C::*)(Args...) noexcept> : method_traits<R(C::*)(Args...)> {
+    struct method_traits<R (C::*)(Args...) noexcept> : method_traits<R (C::*)(Args...)> {
         using qualified_type = C;
 
         [[nodiscard]] static constexpr method_bitflags make_flags() noexcept {
@@ -59,7 +59,7 @@ namespace meta_hpp::detail
     };
 
     template < typename R, typename C, typename... Args >
-    struct method_traits<R(C::*)(Args...) const noexcept> : method_traits<R(C::*)(Args...)> {
+    struct method_traits<R (C::*)(Args...) const noexcept> : method_traits<R (C::*)(Args...)> {
         using qualified_type = const C;
 
         [[nodiscard]] static constexpr method_bitflags make_flags() noexcept {
@@ -68,7 +68,7 @@ namespace meta_hpp::detail
     };
 
     template < typename R, typename C, typename... Args >
-    struct method_traits<R(C::*)(Args...) &> : method_traits<R(C::*)(Args...)> {
+    struct method_traits<R (C::*)(Args...)&> : method_traits<R (C::*)(Args...)> {
         using qualified_type = C&;
 
         [[nodiscard]] static constexpr method_bitflags make_flags() noexcept {
@@ -77,7 +77,7 @@ namespace meta_hpp::detail
     };
 
     template < typename R, typename C, typename... Args >
-    struct method_traits<R(C::*)(Args...) & noexcept> : method_traits<R(C::*)(Args...)> {
+    struct method_traits<R (C::*)(Args...) & noexcept> : method_traits<R (C::*)(Args...)> {
         using qualified_type = C&;
 
         [[nodiscard]] static constexpr method_bitflags make_flags() noexcept {
@@ -86,7 +86,7 @@ namespace meta_hpp::detail
     };
 
     template < typename R, typename C, typename... Args >
-    struct method_traits<R(C::*)(Args...) const &> : method_traits<R(C::*)(Args...)> {
+    struct method_traits<R (C::*)(Args...) const&> : method_traits<R (C::*)(Args...)> {
         using qualified_type = const C&;
 
         [[nodiscard]] static constexpr method_bitflags make_flags() noexcept {
@@ -95,7 +95,7 @@ namespace meta_hpp::detail
     };
 
     template < typename R, typename C, typename... Args >
-    struct method_traits<R(C::*)(Args...) const & noexcept> : method_traits<R(C::*)(Args...)> {
+    struct method_traits<R (C::*)(Args...) const & noexcept> : method_traits<R (C::*)(Args...)> {
         using qualified_type = const C&;
 
         [[nodiscard]] static constexpr method_bitflags make_flags() noexcept {
@@ -104,7 +104,7 @@ namespace meta_hpp::detail
     };
 
     template < typename R, typename C, typename... Args >
-    struct method_traits<R(C::*)(Args...) &&> : method_traits<R(C::*)(Args...)> {
+    struct method_traits<R (C::*)(Args...) &&> : method_traits<R (C::*)(Args...)> {
         using qualified_type = C&&;
 
         [[nodiscard]] static constexpr method_bitflags make_flags() noexcept {
@@ -113,7 +113,7 @@ namespace meta_hpp::detail
     };
 
     template < typename R, typename C, typename... Args >
-    struct method_traits<R(C::*)(Args...) && noexcept> : method_traits<R(C::*)(Args...)> {
+    struct method_traits<R (C::*)(Args...) && noexcept> : method_traits<R (C::*)(Args...)> {
         using qualified_type = C&&;
 
         [[nodiscard]] static constexpr method_bitflags make_flags() noexcept {
@@ -122,7 +122,7 @@ namespace meta_hpp::detail
     };
 
     template < typename R, typename C, typename... Args >
-    struct method_traits<R(C::*)(Args...) const &&> : method_traits<R(C::*)(Args...)> {
+    struct method_traits<R (C::*)(Args...) const&&> : method_traits<R (C::*)(Args...)> {
         using qualified_type = const C&&;
 
         [[nodiscard]] static constexpr method_bitflags make_flags() noexcept {
@@ -131,7 +131,7 @@ namespace meta_hpp::detail
     };
 
     template < typename R, typename C, typename... Args >
-    struct method_traits<R(C::*)(Args...) const && noexcept> : method_traits<R(C::*)(Args...)> {
+    struct method_traits<R (C::*)(Args...) const && noexcept> : method_traits<R (C::*)(Args...)> {
         using qualified_type = const C&&;
 
         [[nodiscard]] static constexpr method_bitflags make_flags() noexcept {

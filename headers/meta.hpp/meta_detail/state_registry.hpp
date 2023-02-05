@@ -15,7 +15,9 @@ namespace meta_hpp::detail
     public:
         class locker final {
         public:
-            explicit locker() : lock_{instance().mutex_} {}
+            explicit locker()
+            : lock_{instance().mutex_} {}
+
             ~locker() = default;
 
             locker(locker&&) = default;
@@ -23,6 +25,7 @@ namespace meta_hpp::detail
 
             locker(const locker&) = delete;
             locker& operator=(const locker&) = delete;
+
         private:
             std::unique_lock<std::recursive_mutex> lock_;
         };
@@ -31,6 +34,7 @@ namespace meta_hpp::detail
             static state_registry instance;
             return instance;
         }
+
     public:
         template < typename F >
         void for_each_scope(F&& f) const {
@@ -58,14 +62,17 @@ namespace meta_hpp::detail
                 return iter->second;
             }
 
-            auto&& [iter, _] = scopes_.emplace(
+            auto&& [iter, _] = scopes_.emplace( //
                 std::string{name},
-                scope_state::make(std::string{name}, metadata_map{}));
+                scope_state::make(std::string{name}, metadata_map{})
+            );
 
             return iter->second;
         }
+
     private:
         state_registry() = default;
+
     private:
         std::recursive_mutex mutex_;
         std::map<std::string, scope, std::less<>> scopes_;

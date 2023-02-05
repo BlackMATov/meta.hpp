@@ -1,23 +1,8 @@
 {
-    "[cpp]": {
-        "files.encoding": "utf8",
-        "files.insertFinalNewline": true,
-        "files.trimFinalNewlines": true,
-        "files.trimTrailingWhitespace": true
+    "[c][cpp][json][jsonc][python][yaml]": {
+        "editor.formatOnSave": true,
     },
-    "[cmake]": {
-        "files.encoding": "utf8",
-        "files.insertFinalNewline": true,
-        "files.trimFinalNewlines": true,
-        "files.trimTrailingWhitespace": true
-    },
-    "[python]": {
-        "files.encoding": "utf8",
-        "files.insertFinalNewline": true,
-        "files.trimFinalNewlines": true,
-        "files.trimTrailingWhitespace": true
-    },
-    "[yaml]": {
+    "[c][cmake][cpp][json][jsonc][markdown][python][yaml]": {
         "files.encoding": "utf8",
         "files.insertFinalNewline": true,
         "files.trimFinalNewlines": true,

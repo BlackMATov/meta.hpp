@@ -22,6 +22,7 @@ namespace meta_hpp::detail
             rvalue,
             const_rvalue,
         };
+
     public:
         uinst_base() = delete;
         ~uinst_base() = default;
@@ -36,23 +37,19 @@ namespace meta_hpp::detail
         uinst_base(type_list<T>) = delete;
 
         template < typename T, typename Tp = std::decay_t<T> >
-            requires (!any_uvalue_kind<Tp>)
+            requires(!any_uvalue_kind<Tp>)
         // NOLINTNEXTLINE(*-forwarding-reference-overload)
         explicit uinst_base(T&&)
         : uinst_base{type_list<T&&>{}} {}
 
         template < inst_class_lvalue_ref_kind T >
         explicit uinst_base(type_list<T>)
-        : ref_type_{std::is_const_v<std::remove_reference_t<T>>
-            ? ref_types::const_lvalue
-            : ref_types::lvalue}
+        : ref_type_{std::is_const_v<std::remove_reference_t<T>> ? ref_types::const_lvalue : ref_types::lvalue}
         , raw_type_{resolve_type<std::remove_cvref_t<T>>()} {}
 
         template < inst_class_rvalue_ref_kind T >
         explicit uinst_base(type_list<T>)
-        : ref_type_{std::is_const_v<std::remove_reference_t<T>>
-            ? ref_types::const_rvalue
-            : ref_types::rvalue}
+        : ref_type_{std::is_const_v<std::remove_reference_t<T>> ? ref_types::const_rvalue : ref_types::rvalue}
         , raw_type_{resolve_type<std::remove_cvref_t<T>>()} {}
 
         explicit uinst_base(uvalue& v)
@@ -77,7 +74,7 @@ namespace meta_hpp::detail
                 const bool from_type_ptr_readonly = from_type_ptr.get_flags().has(pointer_flags::is_readonly);
                 return from_type_ptr_readonly;
             }
-            return ref_type_ == ref_types::const_lvalue
+            return ref_type_ == ref_types::const_lvalue //
                 || ref_type_ == ref_types::const_rvalue;
         }
 
@@ -91,6 +88,7 @@ namespace meta_hpp::detail
 
         template < inst_class_ref_kind Q >
         [[nodiscard]] bool can_cast_to() const noexcept;
+
     private:
         ref_types ref_type_{};
         any_type raw_type_{};
@@ -113,20 +111,19 @@ namespace meta_hpp::detail
         template < typename T, uvalue_kind Tp = std::decay_t<T> >
         // NOLINTNEXTLINE(*-forwarding-reference-overload)
         explicit uinst(T&& v)
-        : uinst_base{std::forward<T>(v)}
-        // NOLINTNEXTLINE(*-const-cast)
+        : uinst_base{std::forward<T>(v)} // NOLINTNEXTLINE(*-const-cast)
         , data_{const_cast<void*>(v.get_data())} {}
 
         template < typename T, typename Tp = std::decay_t<T> >
-            requires (!any_uvalue_kind<Tp>)
+            requires(!any_uvalue_kind<Tp>)
         // NOLINTNEXTLINE(*-forwarding-reference-overload)
         explicit uinst(T&& v)
-        : uinst_base{std::forward<T>(v)}
-        // NOLINTNEXTLINE(*-const-cast)
+        : uinst_base{std::forward<T>(v)} // NOLINTNEXTLINE(*-const-cast)
         , data_{const_cast<std::remove_cvref_t<T>*>(std::addressof(v))} {}
 
         template < inst_class_ref_kind Q >
         [[nodiscard]] decltype(auto) cast() const;
+
     private:
         void* data_{};
     };
@@ -142,13 +139,13 @@ namespace meta_hpp::detail
         const any_type& from_type = get_raw_type();
         const any_type& to_type = resolve_type<inst_class>();
 
-        const auto is_a = [](const any_type& base, const any_type& derived){
-            return (base == derived)
+        const auto is_a = [](const any_type& base, const any_type& derived) {
+            return (base == derived) //
                 || (base.is_class() && derived.is_class() && base.as_class().is_base_of(derived.as_class()));
         };
 
         if ( from_type.is_class() ) {
-            const auto is_invocable = [this](){
+            const auto is_invocable = [this]() {
                 switch ( get_ref_type() ) {
                 case ref_types::lvalue:
                     return std::is_invocable_v<inst_method, inst_class&>;
@@ -170,10 +167,9 @@ namespace meta_hpp::detail
             const bool from_type_ptr_readonly = from_type_ptr.get_flags().has(pointer_flags::is_readonly);
             const any_type& from_data_type = from_type_ptr.get_data_type();
 
-            const auto is_invocable = [from_type_ptr_readonly](){
-                return from_type_ptr_readonly
-                    ? std::is_invocable_v<inst_method, const inst_class&>
-                    : std::is_invocable_v<inst_method, inst_class&>;
+            const auto is_invocable = [from_type_ptr_readonly]() {
+                return from_type_ptr_readonly ? std::is_invocable_v<inst_method, const inst_class&>
+                                              : std::is_invocable_v<inst_method, inst_class&>;
             };
 
             return is_invocable() && is_a(to_type, from_data_type);

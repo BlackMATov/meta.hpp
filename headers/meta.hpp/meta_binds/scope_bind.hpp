@@ -20,25 +20,22 @@ namespace meta_hpp
     //
 
     template < detail::function_kind Function, function_policy_kind Policy >
-    scope_bind& scope_bind::function_(
+    scope_bind& scope_bind::function_( //
         std::string name,
         Function function,
-        Policy policy)
-    {
+        Policy policy
+    ) {
         return function_(std::move(name), std::move(function), {}, policy);
     }
 
     template < detail::function_kind Function, function_policy_kind Policy >
-    scope_bind& scope_bind::function_(
+    scope_bind& scope_bind::function_( //
         std::string name,
         Function function,
         function_opts opts,
-        Policy)
-    {
-        auto state = detail::function_state::make<Policy>(
-            std::move(name),
-            std::move(function),
-            std::move(opts.metadata));
+        Policy
+    ) {
+        auto state = detail::function_state::make<Policy>(std::move(name), std::move(function), std::move(opts.metadata));
 
         if ( opts.arguments.size() > state->arguments.size() ) {
             META_HPP_THROW_AS(exception, "provided arguments don't match function argument count");
@@ -55,16 +52,13 @@ namespace meta_hpp
     }
 
     template < detail::function_kind Function, function_policy_kind Policy >
-    scope_bind& scope_bind::function_(
+    scope_bind& scope_bind::function_( //
         std::string name,
         Function function,
         std::initializer_list<std::string_view> arguments,
-        Policy)
-    {
-        auto state = detail::function_state::make<Policy>(
-            std::move(name),
-            std::move(function),
-            {});
+        Policy
+    ) {
+        auto state = detail::function_state::make<Policy>(std::move(name), std::move(function), {});
 
         if ( arguments.size() > state->arguments.size() ) {
             META_HPP_THROW_AS(exception, "provided argument names don't match function argument count");
@@ -95,25 +89,22 @@ namespace meta_hpp
     //
 
     template < detail::pointer_kind Pointer, variable_policy_kind Policy >
-    scope_bind& scope_bind::variable_(
+    scope_bind& scope_bind::variable_( //
         std::string name,
         Pointer pointer,
-        Policy policy)
-    {
+        Policy policy
+    ) {
         return variable_(std::move(name), std::move(pointer), {}, policy);
     }
 
     template < detail::pointer_kind Pointer, variable_policy_kind Policy >
-    scope_bind& scope_bind::variable_(
+    scope_bind& scope_bind::variable_( //
         std::string name,
         Pointer pointer,
         variable_opts opts,
-        Policy)
-    {
-        auto state = detail::variable_state::make<Policy>(
-            std::move(name),
-            std::move(pointer),
-            std::move(opts.metadata));
+        Policy
+    ) {
+        auto state = detail::variable_state::make<Policy>(std::move(name), std::move(pointer), std::move(opts.metadata));
         detail::insert_or_assign(get_state().variables, std::move(state));
         return *this;
     }

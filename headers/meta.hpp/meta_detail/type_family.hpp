@@ -11,21 +11,21 @@
 namespace meta_hpp::detail
 {
     template < typename T >
-    concept type_family =
-        std::is_same_v<T, any_type> ||
-        std::is_same_v<T, array_type> ||
-        std::is_same_v<T, class_type> ||
-        std::is_same_v<T, constructor_type> ||
-        std::is_same_v<T, destructor_type> ||
-        std::is_same_v<T, enum_type> ||
-        std::is_same_v<T, function_type> ||
-        std::is_same_v<T, member_type> ||
-        std::is_same_v<T, method_type> ||
-        std::is_same_v<T, nullptr_type> ||
-        std::is_same_v<T, number_type> ||
-        std::is_same_v<T, pointer_type> ||
-        std::is_same_v<T, reference_type> ||
-        std::is_same_v<T, void_type>;
+    concept type_family                       //
+        = std::is_same_v<T, any_type>         //
+       || std::is_same_v<T, array_type>       //
+       || std::is_same_v<T, class_type>       //
+       || std::is_same_v<T, constructor_type> //
+       || std::is_same_v<T, destructor_type>  //
+       || std::is_same_v<T, enum_type>        //
+       || std::is_same_v<T, function_type>    //
+       || std::is_same_v<T, member_type>      //
+       || std::is_same_v<T, method_type>      //
+       || std::is_same_v<T, nullptr_type>     //
+       || std::is_same_v<T, number_type>      //
+       || std::is_same_v<T, pointer_type>     //
+       || std::is_same_v<T, reference_type>   //
+       || std::is_same_v<T, void_type>;       //
 
     template < type_family T >
     [[nodiscard]] typename T::data_ptr type_access(const T& type) {

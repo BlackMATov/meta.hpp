@@ -22,6 +22,7 @@ namespace meta_hpp::detail
             rvalue,
             const_rvalue,
         };
+
     public:
         uarg_base() = delete;
         ~uarg_base() = default;
@@ -36,23 +37,19 @@ namespace meta_hpp::detail
         uarg_base(type_list<T>) = delete;
 
         template < typename T, typename Tp = std::decay_t<T> >
-            requires (!any_uvalue_kind<Tp>)
+            requires(!any_uvalue_kind<Tp>)
         // NOLINTNEXTLINE(*-forwarding-reference-overload)
         explicit uarg_base(T&&)
         : uarg_base{type_list<T&&>{}} {}
 
         template < arg_lvalue_ref_kind T >
         explicit uarg_base(type_list<T>)
-        : ref_type_{std::is_const_v<std::remove_reference_t<T>>
-            ? ref_types::const_lvalue
-            : ref_types::lvalue}
+        : ref_type_{std::is_const_v<std::remove_reference_t<T>> ? ref_types::const_lvalue : ref_types::lvalue}
         , raw_type_{resolve_type<std::remove_cvref_t<T>>()} {}
 
         template < arg_rvalue_ref_kind T >
         explicit uarg_base(type_list<T>)
-        : ref_type_{std::is_const_v<std::remove_reference_t<T>>
-            ? ref_types::const_rvalue
-            : ref_types::rvalue}
+        : ref_type_{std::is_const_v<std::remove_reference_t<T>> ? ref_types::const_rvalue : ref_types::rvalue}
         , raw_type_{resolve_type<std::remove_cvref_t<T>>()} {}
 
         explicit uarg_base(uvalue& v)
@@ -72,7 +69,7 @@ namespace meta_hpp::detail
         , raw_type_{v.get_type()} {}
 
         [[nodiscard]] bool is_ref_const() const noexcept {
-            return ref_type_ == ref_types::const_lvalue
+            return ref_type_ == ref_types::const_lvalue //
                 || ref_type_ == ref_types::const_rvalue;
         }
 
@@ -86,6 +83,7 @@ namespace meta_hpp::detail
 
         template < typename To >
         [[nodiscard]] bool can_cast_to() const noexcept;
+
     private:
         ref_types ref_type_{};
         any_type raw_type_{};
@@ -108,20 +106,19 @@ namespace meta_hpp::detail
         template < typename T, uvalue_kind Tp = std::decay_t<T> >
         // NOLINTNEXTLINE(*-forwarding-reference-overload)
         explicit uarg(T&& v)
-        : uarg_base{std::forward<T>(v)}
-        // NOLINTNEXTLINE(*-const-cast)
+        : uarg_base{std::forward<T>(v)} // NOLINTNEXTLINE(*-const-cast)
         , data_{const_cast<void*>(v.get_data())} {}
 
         template < typename T, typename Tp = std::decay_t<T> >
-            requires (!any_uvalue_kind<Tp>)
+            requires(!any_uvalue_kind<Tp>)
         // NOLINTNEXTLINE(*-forwarding-reference-overload)
         explicit uarg(T&& v)
-        : uarg_base{std::forward<T>(v)}
-        // NOLINTNEXTLINE(*-const-cast)
+        : uarg_base{std::forward<T>(v)} // NOLINTNEXTLINE(*-const-cast)
         , data_{const_cast<std::remove_cvref_t<T>*>(std::addressof(v))} {}
 
         template < typename To >
         [[nodiscard]] To cast() const;
+
     private:
         void* data_{};
     };
@@ -135,15 +132,16 @@ namespace meta_hpp::detail
         using to_raw_type_cv = std::remove_reference_t<To>;
         using to_raw_type = std::remove_cv_t<to_raw_type_cv>;
 
-        static_assert(
+        static_assert( //
             !(std::is_reference_v<To> && std::is_pointer_v<to_raw_type>),
-            "references to pointers are not supported yet");
+            "references to pointers are not supported yet"
+        );
 
         const any_type& from_type = get_raw_type();
         const any_type& to_type = resolve_type<to_raw_type>();
 
-        const auto is_a = [](const any_type& base, const any_type& derived){
-            return (base == derived)
+        const auto is_a = [](const any_type& base, const any_type& derived) {
+            return (base == derived) //
                 || (base.is_class() && derived.is_class() && base.as_class().is_base_of(derived.as_class()));
         };
 
@@ -188,7 +186,7 @@ namespace meta_hpp::detail
         }
 
         if constexpr ( std::is_reference_v<To> ) {
-            const auto is_convertible = [this](){
+            const auto is_convertible = [this]() {
                 switch ( get_ref_type() ) {
                 case ref_types::lvalue:
                     return std::is_convertible_v<noncopyable&, copy_cvref_t<To, noncopyable>>;
@@ -208,7 +206,7 @@ namespace meta_hpp::detail
         }
 
         if constexpr ( !std::is_pointer_v<To> && !std::is_reference_v<To> ) {
-            const auto is_constructible = [this](){
+            const auto is_constructible = [this]() {
                 switch ( get_ref_type() ) {
                 case ref_types::lvalue:
                     return std::is_constructible_v<To, to_raw_type&> && can_cast_to<to_raw_type&>();

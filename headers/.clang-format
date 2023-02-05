@@ -1,0 +1,33 @@
+Language: Cpp
+BasedOnStyle: LLVM
+
+AccessModifierOffset: -4
+AlignAfterOpenBracket: BlockIndent
+AlignEscapedNewlines: DontAlign
+AlignOperands: AlignAfterOperator
+AllowAllArgumentsOnNextLine: true
+AllowAllParametersOfDeclarationOnNextLine: true
+AllowShortFunctionsOnASingleLine: Empty
+AlwaysBreakTemplateDeclarations: Yes
+BinPackArguments: false
+BinPackParameters: false
+BraceWrapping: { AfterNamespace: true }
+BreakBeforeBinaryOperators: NonAssignment
+BreakBeforeBraces: Custom
+BreakConstructorInitializers: BeforeComma
+BreakInheritanceList: BeforeComma
+ColumnLimit: 130
+ConstructorInitializerIndentWidth: 0
+FixNamespaceComments: false
+IndentPPDirectives: AfterHash
+IndentWidth: 4
+LambdaBodyIndentation: OuterScope
+NamespaceIndentation: All
+PackConstructorInitializers: Never
+PenaltyBreakAssignment: 100
+PenaltyReturnTypeOnItsOwnLine: 200
+PointerAlignment: Left
+PPIndentWidth: 4
+SeparateDefinitionBlocks: Always
+SpacesInAngles: Leave
+SpacesInConditionalStatement: true

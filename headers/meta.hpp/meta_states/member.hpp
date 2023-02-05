@@ -9,9 +9,9 @@
 #include "../meta_base.hpp"
 #include "../meta_states.hpp"
 
-#include "../meta_types/member_type.hpp"
 #include "../meta_detail/value_utilities/uarg.hpp"
 #include "../meta_detail/value_utilities/uinst.hpp"
+#include "../meta_types/member_type.hpp"
 
 namespace meta_hpp::detail
 {
@@ -21,15 +21,15 @@ namespace meta_hpp::detail
         using class_type = typename mt::class_type;
         using value_type = typename mt::value_type;
 
-        constexpr bool as_copy =
-            std::is_copy_constructible_v<value_type> &&
-            std::is_same_v<Policy, member_policy::as_copy_t>;
+        constexpr bool as_copy                                  //
+            = std::is_copy_constructible_v<value_type>          //
+           && std::is_same_v<Policy, member_policy::as_copy_t>; //
 
-        constexpr bool as_ptr =
-            std::is_same_v<Policy, member_policy::as_pointer_t>;
+        constexpr bool as_ptr                                      //
+            = std::is_same_v<Policy, member_policy::as_pointer_t>; //
 
-        constexpr bool as_ref_wrap =
-            std::is_same_v<Policy, member_policy::as_reference_wrapper_t>;
+        constexpr bool as_ref_wrap                                           //
+            = std::is_same_v<Policy, member_policy::as_reference_wrapper_t>; //
 
         static_assert(as_copy || as_ptr || as_ref_wrap);
 
@@ -110,9 +110,7 @@ namespace meta_hpp::detail
         using class_type = typename mt::class_type;
         using value_type = typename mt::value_type;
 
-        return !std::is_const_v<value_type>
-            && !inst.is_inst_const()
-            && inst.can_cast_to<class_type>()
+        return !std::is_const_v<value_type> && !inst.is_inst_const() && inst.can_cast_to<class_type>()
             && arg.can_cast_to<value_type>();
     }
 }
@@ -121,7 +119,7 @@ namespace meta_hpp::detail
 {
     template < member_policy_kind Policy, member_kind Member >
     member_state::getter_impl make_member_getter(Member member) {
-        return [member = std::move(member)](const uinst& inst){
+        return [member = std::move(member)](const uinst& inst) { //
             return raw_member_getter<Policy>(member, inst);
         };
     }
@@ -133,7 +131,7 @@ namespace meta_hpp::detail
 
     template < member_kind Member >
     member_state::setter_impl make_member_setter(Member member) {
-        return [member = std::move(member)](const uinst& inst, const uarg& arg){
+        return [member = std::move(member)](const uinst& inst, const uarg& arg) { //
             return raw_member_setter(member, inst, arg);
         };
     }

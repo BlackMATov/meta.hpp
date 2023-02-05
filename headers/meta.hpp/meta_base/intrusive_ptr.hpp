@@ -25,16 +25,24 @@ namespace meta_hpp::detail
         intrusive_ref_counter() = default;
 
         intrusive_ref_counter(intrusive_ref_counter&&) noexcept {}
+
         intrusive_ref_counter(const intrusive_ref_counter&) noexcept {}
 
-        intrusive_ref_counter& operator=(intrusive_ref_counter&&) noexcept { return *this; }
-        intrusive_ref_counter& operator=(const intrusive_ref_counter&) noexcept { return *this; }
+        intrusive_ref_counter& operator=(intrusive_ref_counter&&) noexcept {
+            return *this;
+        }
+
+        intrusive_ref_counter& operator=(const intrusive_ref_counter&) noexcept {
+            return *this;
+        }
 
         [[nodiscard]] std::size_t get_use_count() const noexcept {
             return counter_.load(std::memory_order_acquire);
         }
+
     protected:
         ~intrusive_ref_counter() = default;
+
     private:
         mutable std::atomic_size_t counter_{};
         friend void intrusive_ptr_add_ref<Derived>(const intrusive_ref_counter* ptr);
@@ -149,6 +157,7 @@ namespace meta_hpp::detail
         [[nodiscard]] std::strong_ordering operator<=>(const intrusive_ptr& other) const noexcept {
             return ptr_ <=> other.ptr_;
         }
+
     private:
         T* ptr_{};
     };
@@ -176,12 +185,12 @@ namespace meta_hpp::detail
 
     template < typename T >
     [[nodiscard]] bool operator==(const intrusive_ptr<T>& l, std::nullptr_t) noexcept {
-        return !l;
+        return l.get() == nullptr;
     }
 
     template < typename T >
     [[nodiscard]] std::strong_ordering operator<=>(const intrusive_ptr<T>& l, std::nullptr_t) noexcept {
-        return l <=> nullptr;
+        return l.get() <=> nullptr;
     }
 }
 

@@ -9,8 +9,8 @@
 #include "../meta_base.hpp"
 #include "../meta_states.hpp"
 
-#include "../meta_types/pointer_type.hpp"
 #include "../meta_detail/value_utilities/uarg.hpp"
+#include "../meta_types/pointer_type.hpp"
 
 namespace meta_hpp::detail
 {
@@ -19,15 +19,15 @@ namespace meta_hpp::detail
         using pt = pointer_traits<Pointer>;
         using data_type = typename pt::data_type;
 
-        constexpr bool as_copy =
-            std::is_copy_constructible_v<data_type> &&
-            std::is_same_v<Policy, variable_policy::as_copy_t>;
+        constexpr bool as_copy                                    //
+            = std::is_copy_constructible_v<data_type>             //
+           && std::is_same_v<Policy, variable_policy::as_copy_t>; //
 
-        constexpr bool as_ptr =
-            std::is_same_v<Policy, variable_policy::as_pointer_t>;
+        constexpr bool as_ptr                                        //
+            = std::is_same_v<Policy, variable_policy::as_pointer_t>; //
 
-        constexpr bool as_ref_wrap =
-            std::is_same_v<Policy, variable_policy::as_reference_wrapper_t>;
+        constexpr bool as_ref_wrap                                             //
+            = std::is_same_v<Policy, variable_policy::as_reference_wrapper_t>; //
 
         static_assert(as_copy || as_ptr || as_ref_wrap);
 
@@ -41,7 +41,7 @@ namespace meta_hpp::detail
             return uvalue{std::addressof(return_value)};
         }
 
-        if constexpr ( as_ref_wrap) {
+        if constexpr ( as_ref_wrap ) {
             return uvalue{std::ref(return_value)};
         }
     }
@@ -66,8 +66,7 @@ namespace meta_hpp::detail
         using pt = pointer_traits<Pointer>;
         using data_type = typename pt::data_type;
 
-        return !std::is_const_v<data_type>
-            && arg.can_cast_to<data_type>();
+        return !std::is_const_v<data_type> && arg.can_cast_to<data_type>();
     }
 }
 
@@ -75,14 +74,14 @@ namespace meta_hpp::detail
 {
     template < variable_policy_kind Policy, pointer_kind Pointer >
     variable_state::getter_impl make_variable_getter(Pointer pointer) {
-        return [pointer = std::move(pointer)](){
+        return [pointer = std::move(pointer)]() { //
             return raw_variable_getter<Policy>(pointer);
         };
     }
 
     template < pointer_kind Pointer >
     variable_state::setter_impl make_variable_setter(Pointer pointer) {
-        return [pointer = std::move(pointer)](const uarg& arg){
+        return [pointer = std::move(pointer)](const uarg& arg) { //
             return raw_variable_setter(pointer, arg);
         };
     }

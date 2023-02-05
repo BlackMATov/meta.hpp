@@ -115,6 +115,7 @@ namespace meta_hpp
         [[nodiscard]] pointer_type as_pointer() const noexcept;
         [[nodiscard]] reference_type as_reference() const noexcept;
         [[nodiscard]] void_type as_void() const noexcept;
+
     private:
         data_ptr data_{};
         friend data_ptr detail::type_access<any_type>(const any_type&);
@@ -136,6 +137,7 @@ namespace meta_hpp
 
         [[nodiscard]] std::size_t get_extent() const noexcept;
         [[nodiscard]] any_type get_data_type() const noexcept;
+
     private:
         data_ptr data_{};
         friend data_ptr detail::type_access<array_type>(const array_type&);
@@ -216,6 +218,7 @@ namespace meta_hpp
         [[nodiscard]] method get_method_with(std::string_view name, Iter first, Iter last) const noexcept;
         [[nodiscard]] method get_method_with(std::string_view name, std::span<const any_type> args) const noexcept;
         [[nodiscard]] method get_method_with(std::string_view name, std::initializer_list<any_type> args) const noexcept;
+
     private:
         data_ptr data_{};
         friend data_ptr detail::type_access<class_type>(const class_type&);
@@ -239,6 +242,7 @@ namespace meta_hpp
         [[nodiscard]] any_type get_class_type() const noexcept;
         [[nodiscard]] any_type get_argument_type(std::size_t position) const noexcept;
         [[nodiscard]] const any_type_list& get_argument_types() const noexcept;
+
     private:
         data_ptr data_{};
         friend data_ptr detail::type_access<constructor_type>(const constructor_type&);
@@ -259,6 +263,7 @@ namespace meta_hpp
         [[nodiscard]] const metadata_map& get_metadata() const noexcept;
 
         [[nodiscard]] any_type get_class_type() const noexcept;
+
     private:
         data_ptr data_{};
         friend data_ptr detail::type_access<destructor_type>(const destructor_type&);
@@ -290,6 +295,7 @@ namespace meta_hpp
 
         template < typename T >
         [[nodiscard]] T name_to_value_as(std::string_view name) const;
+
     private:
         data_ptr data_{};
         friend data_ptr detail::type_access<enum_type>(const enum_type&);
@@ -313,6 +319,7 @@ namespace meta_hpp
         [[nodiscard]] any_type get_return_type() const noexcept;
         [[nodiscard]] any_type get_argument_type(std::size_t position) const noexcept;
         [[nodiscard]] const any_type_list& get_argument_types() const noexcept;
+
     private:
         data_ptr data_{};
         friend data_ptr detail::type_access<function_type>(const function_type&);
@@ -334,6 +341,7 @@ namespace meta_hpp
 
         [[nodiscard]] class_type get_owner_type() const noexcept;
         [[nodiscard]] any_type get_value_type() const noexcept;
+
     private:
         data_ptr data_{};
         friend data_ptr detail::type_access<member_type>(const member_type&);
@@ -358,6 +366,7 @@ namespace meta_hpp
         [[nodiscard]] any_type get_return_type() const noexcept;
         [[nodiscard]] any_type get_argument_type(std::size_t position) const noexcept;
         [[nodiscard]] const any_type_list& get_argument_types() const noexcept;
+
     private:
         data_ptr data_{};
         friend data_ptr detail::type_access<method_type>(const method_type&);
@@ -375,6 +384,7 @@ namespace meta_hpp
 
         [[nodiscard]] type_id get_id() const noexcept;
         [[nodiscard]] const metadata_map& get_metadata() const noexcept;
+
     private:
         data_ptr data_{};
         friend data_ptr detail::type_access<nullptr_type>(const nullptr_type&);
@@ -396,6 +406,7 @@ namespace meta_hpp
 
         [[nodiscard]] std::size_t get_size() const noexcept;
         [[nodiscard]] std::size_t get_align() const noexcept;
+
     private:
         data_ptr data_{};
         friend data_ptr detail::type_access<number_type>(const number_type&);
@@ -416,6 +427,7 @@ namespace meta_hpp
         [[nodiscard]] const metadata_map& get_metadata() const noexcept;
 
         [[nodiscard]] any_type get_data_type() const noexcept;
+
     private:
         data_ptr data_{};
         friend data_ptr detail::type_access<pointer_type>(const pointer_type&);
@@ -436,6 +448,7 @@ namespace meta_hpp
         [[nodiscard]] const metadata_map& get_metadata() const noexcept;
 
         [[nodiscard]] any_type get_data_type() const noexcept;
+
     private:
         data_ptr data_{};
         friend data_ptr detail::type_access<reference_type>(const reference_type&);
@@ -453,6 +466,7 @@ namespace meta_hpp
 
         [[nodiscard]] type_id get_id() const noexcept;
         [[nodiscard]] const metadata_map& get_metadata() const noexcept;
+
     private:
         data_ptr data_{};
         friend data_ptr detail::type_access<void_type>(const void_type&);
@@ -478,7 +492,7 @@ namespace meta_hpp
 
     template < detail::type_family T, detail::type_family U >
     [[nodiscard]] std::strong_ordering operator<=>(const T& l, const U& r) noexcept {
-        if ( const auto cmp{l.is_valid() <=> r.is_valid()}; cmp != std::strong_ordering::equal ) {
+        if ( const std::strong_ordering cmp{l.is_valid() <=> r.is_valid()}; cmp != std::strong_ordering::equal ) {
             return cmp;
         }
         return l.is_valid() ? l.get_id() <=> r.get_id() : std::strong_ordering::equal;
@@ -544,7 +558,7 @@ namespace meta_hpp::detail
         variable_set variables;
 
         struct base_info final {
-            using upcast_fptr = void*(*)(void*);
+            using upcast_fptr = void* (*)(void*);
             const upcast_fptr upcast;
         };
 

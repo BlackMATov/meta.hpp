@@ -18,7 +18,9 @@ namespace meta_hpp
     namespace constructor_policy
     {
         struct as_object_t final {};
+
         struct as_raw_pointer_t final {};
+
         struct as_shared_pointer_t final {};
 
         inline constexpr as_object_t as_object{};
@@ -29,7 +31,9 @@ namespace meta_hpp
     namespace function_policy
     {
         struct as_copy_t final {};
+
         struct discard_return_t final {};
+
         struct return_reference_as_pointer_t final {};
 
         inline constexpr as_copy_t as_copy{};
@@ -40,7 +44,9 @@ namespace meta_hpp
     namespace member_policy
     {
         struct as_copy_t final {};
+
         struct as_pointer_t final {};
+
         struct as_reference_wrapper_t final {};
 
         inline constexpr as_copy_t as_copy{};
@@ -51,7 +57,9 @@ namespace meta_hpp
     namespace method_policy
     {
         struct as_copy_t final {};
+
         struct discard_return_t final {};
+
         struct return_reference_as_pointer_t final {};
 
         inline constexpr as_copy_t as_copy{};
@@ -62,7 +70,9 @@ namespace meta_hpp
     namespace variable_policy
     {
         struct as_copy_t final {};
+
         struct as_pointer_t final {};
+
         struct as_reference_wrapper_t final {};
 
         inline constexpr as_copy_t as_copy{};
@@ -71,34 +81,34 @@ namespace meta_hpp
     }
 
     template < typename Policy >
-    concept constructor_policy_kind =
-        std::is_same_v<Policy, constructor_policy::as_object_t> ||
-        std::is_same_v<Policy, constructor_policy::as_raw_pointer_t> ||
-        std::is_same_v<Policy, constructor_policy::as_shared_pointer_t>;
+    concept constructor_policy_kind                                        //
+        = std::is_same_v<Policy, constructor_policy::as_object_t>          //
+       || std::is_same_v<Policy, constructor_policy::as_raw_pointer_t>     //
+       || std::is_same_v<Policy, constructor_policy::as_shared_pointer_t>; //
 
     template < typename Policy >
-    concept function_policy_kind =
-        std::is_same_v<Policy, function_policy::as_copy_t> ||
-        std::is_same_v<Policy, function_policy::discard_return_t> ||
-        std::is_same_v<Policy, function_policy::return_reference_as_pointer_t>;
+    concept function_policy_kind                                                  //
+        = std::is_same_v<Policy, function_policy::as_copy_t>                      //
+       || std::is_same_v<Policy, function_policy::discard_return_t>               //
+       || std::is_same_v<Policy, function_policy::return_reference_as_pointer_t>; //
 
     template < typename Policy >
-    concept member_policy_kind =
-        std::is_same_v<Policy, member_policy::as_copy_t> ||
-        std::is_same_v<Policy, member_policy::as_pointer_t> ||
-        std::is_same_v<Policy, member_policy::as_reference_wrapper_t>;
+    concept member_policy_kind                                           //
+        = std::is_same_v<Policy, member_policy::as_copy_t>               //
+       || std::is_same_v<Policy, member_policy::as_pointer_t>            //
+       || std::is_same_v<Policy, member_policy::as_reference_wrapper_t>; //
 
     template < typename Policy >
-    concept method_policy_kind =
-        std::is_same_v<Policy, method_policy::as_copy_t> ||
-        std::is_same_v<Policy, method_policy::discard_return_t> ||
-        std::is_same_v<Policy, method_policy::return_reference_as_pointer_t>;
+    concept method_policy_kind                                                  //
+        = std::is_same_v<Policy, method_policy::as_copy_t>                      //
+       || std::is_same_v<Policy, method_policy::discard_return_t>               //
+       || std::is_same_v<Policy, method_policy::return_reference_as_pointer_t>; //
 
     template < typename Policy >
-    concept variable_policy_kind =
-        std::is_same_v<Policy, variable_policy::as_copy_t> ||
-        std::is_same_v<Policy, variable_policy::as_pointer_t> ||
-        std::is_same_v<Policy, variable_policy::as_reference_wrapper_t>;
+    concept variable_policy_kind                                           //
+        = std::is_same_v<Policy, variable_policy::as_copy_t>               //
+       || std::is_same_v<Policy, variable_policy::as_pointer_t>            //
+       || std::is_same_v<Policy, variable_policy::as_reference_wrapper_t>; //
 }
 
 namespace meta_hpp
@@ -121,6 +131,7 @@ namespace meta_hpp
         [[nodiscard]] std::size_t get_position() const noexcept;
 
         [[nodiscard]] const std::string& get_name() const noexcept;
+
     private:
         state_ptr state_;
         friend state_ptr detail::state_access<argument>(const argument&);
@@ -156,6 +167,7 @@ namespace meta_hpp
 
         [[nodiscard]] argument get_argument(std::size_t position) const noexcept;
         [[nodiscard]] const argument_list& get_arguments() const noexcept;
+
     private:
         state_ptr state_;
         friend state_ptr detail::state_access<constructor>(const constructor&);
@@ -181,6 +193,7 @@ namespace meta_hpp
         bool destroy(Arg&& arg) const;
 
         void destroy_at(void* mem) const;
+
     private:
         state_ptr state_;
         friend state_ptr detail::state_access<destructor>(const destructor&);
@@ -211,6 +224,7 @@ namespace meta_hpp
 
         template < typename T >
         [[nodiscard]] T get_underlying_value_as() const;
+
     private:
         state_ptr state_;
         friend state_ptr detail::state_access<evalue>(const evalue&);
@@ -247,6 +261,7 @@ namespace meta_hpp
 
         [[nodiscard]] argument get_argument(std::size_t position) const noexcept;
         [[nodiscard]] const argument_list& get_arguments() const noexcept;
+
     private:
         state_ptr state_;
         friend state_ptr detail::state_access<function>(const function&);
@@ -295,6 +310,7 @@ namespace meta_hpp
 
         template < typename Instance, typename Value >
         [[nodiscard]] bool is_settable_with(Instance&& instance, Value&& value) const noexcept;
+
     private:
         state_ptr state_;
         friend state_ptr detail::state_access<member>(const member&);
@@ -331,6 +347,7 @@ namespace meta_hpp
 
         [[nodiscard]] argument get_argument(std::size_t position) const noexcept;
         [[nodiscard]] const argument_list& get_arguments() const noexcept;
+
     private:
         state_ptr state_;
         friend state_ptr detail::state_access<method>(const method&);
@@ -366,6 +383,7 @@ namespace meta_hpp
         [[nodiscard]] function get_function_with(std::string_view name, Iter first, Iter last) const noexcept;
         [[nodiscard]] function get_function_with(std::string_view name, std::span<const any_type> args) const noexcept;
         [[nodiscard]] function get_function_with(std::string_view name, std::initializer_list<any_type> args) const noexcept;
+
     private:
         state_ptr state_;
         friend state_ptr detail::state_access<scope>(const scope&);
@@ -406,6 +424,7 @@ namespace meta_hpp
 
         template < typename Value >
         [[nodiscard]] bool is_settable_with(Value&& value) const noexcept;
+
     private:
         state_ptr state_;
         friend state_ptr detail::state_access<variable>(const variable&);
@@ -421,7 +440,7 @@ namespace meta_hpp
 
     template < detail::state_family T, detail::state_family U >
     [[nodiscard]] std::strong_ordering operator<=>(const T& l, const U& r) noexcept {
-        if ( const auto cmp{l.is_valid() <=> r.is_valid()}; cmp != std::strong_ordering::equal ) {
+        if ( const std::strong_ordering cmp{l.is_valid() <=> r.is_valid()}; cmp != std::strong_ordering::equal ) {
             return cmp;
         }
         return l.is_valid() ? l.get_index() <=> r.get_index() : std::strong_ordering::equal;

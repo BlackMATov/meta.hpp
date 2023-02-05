@@ -30,16 +30,13 @@ namespace meta_hpp
         uvalue (*const unmap)(const storage_u& self);
 
         template < typename T >
-        inline static constexpr bool in_internal_v =
-            (sizeof(T) <= sizeof(internal_storage_t)) &&
-            (alignof(internal_storage_t) % alignof(T) == 0) &&
-            std::is_nothrow_destructible_v<T> &&
-            std::is_nothrow_move_constructible_v<T>;
+        inline static constexpr bool in_internal_v = //
+            (sizeof(T) <= sizeof(internal_storage_t)) && (alignof(internal_storage_t) % alignof(T) == 0)
+            && std::is_nothrow_destructible_v<T> && std::is_nothrow_move_constructible_v<T>;
 
         template < typename T >
-        inline static constexpr bool in_trivial_internal_v =
-            in_internal_v<T> &&
-            std::is_trivially_copyable_v<T>;
+        inline static constexpr bool in_trivial_internal_v = //
+            in_internal_v<T> && std::is_trivially_copyable_v<T>;
 
         static std::pair<storage_e, const vtable_t*> unpack_vtag(const uvalue& self) noexcept {
             constexpr std::uintptr_t tag_mask{0b11};
@@ -47,7 +44,8 @@ namespace meta_hpp
             return std::make_pair(
                 static_cast<storage_e>(vtag & tag_mask),
                 // NOLINTNEXTLINE(*-no-int-to-ptr, *-reinterpret-cast)
-                reinterpret_cast<const vtable_t*>(vtag & ~tag_mask));
+                reinterpret_cast<const vtable_t*>(vtag & ~tag_mask)
+            );
         }
 
         template < typename T >
@@ -77,12 +75,9 @@ namespace meta_hpp
             assert(!dst); // NOLINT
 
             if constexpr ( in_internal_v<Tp> ) {
-                std::construct_at(
-                    storage_cast<Tp>(dst.storage_),
-                    std::forward<Args>(args)...);
-                dst.storage_.vtag = in_trivial_internal_v<Tp>
-                    ? detail::to_underlying(storage_e::trivial)
-                    : detail::to_underlying(storage_e::internal);
+                std::construct_at(storage_cast<Tp>(dst.storage_), std::forward<Args>(args)...);
+                dst.storage_.vtag = in_trivial_internal_v<Tp> ? detail::to_underlying(storage_e::trivial)
+                                                              : detail::to_underlying(storage_e::internal);
             } else {
                 // NOLINTNEXTLINE(*-union-access, *-owning-memory)
                 dst.storage_.external.ptr = new Tp(std::forward<Args>(args)...);
@@ -175,7 +170,7 @@ namespace meta_hpp
             static vtable_t table{
                 .type = resolve_type<Tp>(),
 
-                .move = [](uvalue&& self, uvalue& to) noexcept {
+                .move{[](uvalue&& self, uvalue& to) noexcept {
                     assert(self && !to); // NOLINT
 
                     Tp* src = storage_cast<Tp>(self.storage_);
@@ -188,9 +183,9 @@ namespace meta_hpp
                         to.storage_.external.ptr = src;
                         std::swap(to.storage_.vtag, self.storage_.vtag);
                     }
-                },
+                }},
 
-                .copy = [](const uvalue& self, uvalue& to){
+                .copy{[](const uvalue& self, uvalue& to) {
                     assert(self && !to); // NOLINT
 
                     const Tp* src = storage_cast<Tp>(self.storage_);
@@ -202,9 +197,9 @@ namespace meta_hpp
                         to.storage_.external.ptr = new Tp(*src);
                         to.storage_.vtag = self.storage_.vtag;
                     }
-                },
+                }},
 
-                .reset = [](uvalue& self) noexcept {
+                .reset{[](uvalue& self) noexcept {
                     assert(self); // NOLINT
 
                     Tp* src = storage_cast<Tp>(self.storage_);
@@ -217,9 +212,9 @@ namespace meta_hpp
                     }
 
                     self.storage_.vtag = 0;
-                },
+                }},
 
-                .deref = [](){
+                .deref{[]() {
                     if constexpr ( detail::has_deref_traits<Tp> ) {
                         return +[](const storage_u& self) -> uvalue {
                             return detail::deref_traits<Tp>{}(*storage_cast<Tp>(self));
@@ -227,9 +222,9 @@ namespace meta_hpp
                     } else {
                         return nullptr;
                     }
-                }(),
+                }()},
 
-                .index = [](){
+                .index{[]() {
                     if constexpr ( detail::has_index_traits<Tp> ) {
                         return +[](const storage_u& self, std::size_t i) -> uvalue {
                             return detail::index_traits<Tp>{}(*storage_cast<Tp>(self), i);
@@ -237,9 +232,9 @@ namespace meta_hpp
                     } else {
                         return nullptr;
                     }
-                }(),
+                }()},
 
-                .unmap = [](){
+                .unmap{[]() {
                     if constexpr ( detail::has_unmap_traits<Tp> ) {
                         return +[](const storage_u& self) -> uvalue {
                             return detail::unmap_traits<Tp>{}(*storage_cast<Tp>(self));
@@ -247,7 +242,7 @@ namespace meta_hpp
                     } else {
                         return nullptr;
                     }
-                }(),
+                }()},
             };
 
             return &table;
@@ -286,18 +281,18 @@ namespace meta_hpp
     }
 
     template < typename T, typename Tp >
-        requires (!detail::any_uvalue_kind<Tp>)
-              && (!detail::is_in_place_type_v<Tp>)
-              && (std::is_copy_constructible_v<Tp>)
+        requires(!detail::any_uvalue_kind<Tp>)     //
+             && (!detail::is_in_place_type_v<Tp>)  //
+             && (std::is_copy_constructible_v<Tp>) //
     // NOLINTNEXTLINE(*-forwarding-reference-overload)
     uvalue::uvalue(T&& val) {
         vtable_t::do_ctor<T>(*this, std::forward<T>(val));
     }
 
     template < typename T, typename Tp >
-        requires (!detail::any_uvalue_kind<Tp>)
-              && (!detail::is_in_place_type_v<Tp>)
-              && (std::is_copy_constructible_v<Tp>)
+        requires(!detail::any_uvalue_kind<Tp>)     //
+             && (!detail::is_in_place_type_v<Tp>)  //
+             && (std::is_copy_constructible_v<Tp>) //
     uvalue& uvalue::operator=(T&& val) {
         vtable_t::do_reset(*this);
         vtable_t::do_ctor<T>(*this, std::forward<T>(val));
@@ -305,21 +300,21 @@ namespace meta_hpp
     }
 
     template < typename T, typename... Args, typename Tp >
-        requires std::is_copy_constructible_v<Tp>
+        requires std::is_copy_constructible_v<Tp> //
               && std::is_constructible_v<Tp, Args...>
     uvalue::uvalue(std::in_place_type_t<T>, Args&&... args) {
         vtable_t::do_ctor<T>(*this, std::forward<Args>(args)...);
     }
 
     template < typename T, typename U, typename... Args, typename Tp >
-        requires std::is_copy_constructible_v<Tp>
+        requires std::is_copy_constructible_v<Tp> //
               && std::is_constructible_v<Tp, std::initializer_list<U>&, Args...>
     uvalue::uvalue(std::in_place_type_t<T>, std::initializer_list<U> ilist, Args&&... args) {
         vtable_t::do_ctor<T>(*this, ilist, std::forward<Args>(args)...);
     }
 
     template < typename T, typename... Args, typename Tp >
-        requires std::is_copy_constructible_v<Tp>
+        requires std::is_copy_constructible_v<Tp> //
               && std::is_constructible_v<Tp, Args...>
     Tp& uvalue::emplace(Args&&... args) {
         vtable_t::do_reset(*this);
@@ -327,7 +322,7 @@ namespace meta_hpp
     }
 
     template < typename T, typename U, typename... Args, typename Tp >
-        requires std::is_copy_constructible_v<Tp>
+        requires std::is_copy_constructible_v<Tp> //
               && std::is_constructible_v<Tp, std::initializer_list<U>&, Args...>
     Tp& uvalue::emplace(std::initializer_list<U> ilist, Args&&... args) {
         vtable_t::do_reset(*this);
@@ -409,9 +404,9 @@ namespace meta_hpp
 
     inline uvalue uvalue::operator*() const {
         auto&& [tag, vtable] = vtable_t::unpack_vtag(*this);
-        return tag != storage_e::nothing && vtable->deref != nullptr
-            ? vtable->deref(storage_)
-            : uvalue{};
+        return tag != storage_e::nothing && vtable->deref != nullptr //
+                 ? vtable->deref(storage_)
+                 : uvalue{};
     }
 
     inline bool uvalue::has_deref_op() const noexcept {
@@ -421,9 +416,9 @@ namespace meta_hpp
 
     inline uvalue uvalue::operator[](std::size_t index) const {
         auto&& [tag, vtable] = vtable_t::unpack_vtag(*this);
-        return tag != storage_e::nothing && vtable->index != nullptr
-            ? vtable->index(storage_, index)
-            : uvalue{};
+        return tag != storage_e::nothing && vtable->index != nullptr //
+                 ? vtable->index(storage_, index)
+                 : uvalue{};
     }
 
     inline bool uvalue::has_index_op() const noexcept {
@@ -433,9 +428,9 @@ namespace meta_hpp
 
     inline uvalue uvalue::unmap() const {
         auto&& [tag, vtable] = vtable_t::unpack_vtag(*this);
-        return tag != storage_e::nothing && vtable->unmap != nullptr
-            ? vtable->unmap(storage_)
-            : uvalue{};
+        return tag != storage_e::nothing && vtable->unmap != nullptr //
+                 ? vtable->unmap(storage_)
+                 : uvalue{};
     }
 
     inline bool uvalue::has_unmap_op() const noexcept {
@@ -478,7 +473,7 @@ namespace meta_hpp
     }
 
     template < typename T >
-    auto uvalue::get_as() const & -> std::conditional_t<detail::pointer_kind<T>, T, const T&> {
+    auto uvalue::get_as() const& -> std::conditional_t<detail::pointer_kind<T>, T, const T&> {
         static_assert(std::is_same_v<T, std::decay_t<T>>);
 
         if constexpr ( detail::pointer_kind<T> ) {
@@ -502,8 +497,8 @@ namespace meta_hpp
         const any_type& from_type = get_type();
         const any_type& to_type = resolve_type<T>();
 
-        const auto is_a = [](const any_type& base, const any_type& derived){
-            return (base == derived)
+        const auto is_a = [](const any_type& base, const any_type& derived) {
+            return (base == derived) //
                 || (base.is_class() && derived.is_class() && base.as_class().is_base_of(derived.as_class()));
         };
 
@@ -567,8 +562,8 @@ namespace meta_hpp
         const any_type& from_type = get_type();
         const any_type& to_type = resolve_type<T>();
 
-        const auto is_a = [](const any_type& base, const any_type& derived){
-            return (base == derived)
+        const auto is_a = [](const any_type& base, const any_type& derived) {
+            return (base == derived) //
                 || (base.is_class() && derived.is_class() && base.as_class().is_base_of(derived.as_class()));
         };
 

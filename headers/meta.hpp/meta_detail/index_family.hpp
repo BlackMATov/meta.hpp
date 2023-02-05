@@ -11,14 +11,14 @@
 namespace meta_hpp::detail
 {
     template < typename T >
-    concept index_family =
-        std::is_same_v<T, argument_index> ||
-        std::is_same_v<T, constructor_index> ||
-        std::is_same_v<T, destructor_index> ||
-        std::is_same_v<T, evalue_index> ||
-        std::is_same_v<T, function_index> ||
-        std::is_same_v<T, member_index> ||
-        std::is_same_v<T, method_index> ||
-        std::is_same_v<T, scope_index> ||
-        std::is_same_v<T, variable_index>;
+    concept index_family                       //
+        = std::is_same_v<T, argument_index>    //
+       || std::is_same_v<T, constructor_index> //
+       || std::is_same_v<T, destructor_index>  //
+       || std::is_same_v<T, evalue_index>      //
+       || std::is_same_v<T, function_index>    //
+       || std::is_same_v<T, member_index>      //
+       || std::is_same_v<T, method_index>      //
+       || std::is_same_v<T, scope_index>       //
+       || std::is_same_v<T, variable_index>;   //
 }

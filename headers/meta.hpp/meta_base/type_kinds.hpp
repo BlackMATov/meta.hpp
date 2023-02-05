@@ -64,6 +64,7 @@ namespace meta_hpp::detail
 
     template < typename T >
     constexpr type_kind make_type_kind() noexcept {
+        // clang-format off
         if constexpr ( array_kind<T> ) { return type_kind::array_; }
         if constexpr ( class_kind<T> ) { return type_kind::class_; }
         if constexpr ( enum_kind<T> ) { return type_kind::enum_; }
@@ -75,5 +76,6 @@ namespace meta_hpp::detail
         if constexpr ( pointer_kind<T> ) { return type_kind::pointer_; }
         if constexpr ( reference_kind<T> ) { return type_kind::reference_; }
         if constexpr ( void_kind<T> ) { return type_kind::void_; }
+        // clang-format on
     }
 }

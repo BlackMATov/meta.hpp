@@ -26,10 +26,9 @@ namespace meta_hpp
 
     template < detail::class_kind Class >
     template < detail::class_kind... Bases >
-    class_bind<Class>& class_bind<Class>::base_()
-        requires (... && detail::class_bind_base_kind<Class, Bases>)
-    {
-        ([this]<detail::class_kind Base>(std::in_place_type_t<Base>) {
+        requires(... && detail::class_bind_base_kind<Class, Bases>)
+    class_bind<Class>& class_bind<Class>::base_() {
+        const auto register_base{[this]<detail::class_kind Base>(std::in_place_type_t<Base>) {
             const class_type& base_type = resolve_type<Base>();
 
             auto&& [position, emplaced] = get_data().bases.emplace(base_type);
@@ -38,17 +37,19 @@ namespace meta_hpp
             }
 
             META_HPP_TRY {
-                get_data().bases_info.emplace(base_type, detail::class_type_data::base_info{
-                    .upcast = +[](void* derived) -> void* {
-                        return static_cast<Base*>(static_cast<Class*>(derived));
-                    }
-                });
-            } META_HPP_CATCH(...) {
+                get_data().bases_info.emplace( //
+                    base_type,
+                    detail::class_type_data::base_info{
+                        .upcast{[](void* derived) -> void* { return static_cast<Base*>(static_cast<Class*>(derived)); }}}
+                );
+            }
+            META_HPP_CATCH(...) {
                 get_data().bases.erase(position);
                 META_HPP_RETHROW();
             }
-        }(std::in_place_type<Bases>), ...);
+        }};
 
+        (register_base(std::in_place_type<Bases>), ...);
         return *this;
     }
 
@@ -66,9 +67,7 @@ namespace meta_hpp
 
     template < detail::class_kind Class >
     template < typename... Args, constructor_policy_kind Policy >
-    class_bind<Class>& class_bind<Class>::constructor_(
-        constructor_opts opts,
-        Policy)
+    class_bind<Class>& class_bind<Class>::constructor_(constructor_opts opts, Policy)
         requires detail::class_bind_constructor_kind<Class, Args...>
     {
         auto state = detail::constructor_state::make<Policy, Class, Args...>(std::move(opts.metadata));
@@ -113,26 +112,23 @@ namespace meta_hpp
 
     template < detail::class_kind Class >
     template < detail::function_kind Function, function_policy_kind Policy >
-    class_bind<Class>& class_bind<Class>::function_(
+    class_bind<Class>& class_bind<Class>::function_( //
         std::string name,
         Function function,
-        Policy policy)
-    {
+        Policy policy
+    ) {
         return function_(std::move(name), std::move(function), {}, policy);
     }
 
     template < detail::class_kind Class >
     template < detail::function_kind Function, function_policy_kind Policy >
-    class_bind<Class>& class_bind<Class>::function_(
+    class_bind<Class>& class_bind<Class>::function_( //
         std::string name,
         Function function,
         function_opts opts,
-        Policy)
-    {
-        auto state = detail::function_state::make<Policy>(
-            std::move(name),
-            std::move(function),
-            std::move(opts.metadata));
+        Policy
+    ) {
+        auto state = detail::function_state::make<Policy>(std::move(name), std::move(function), std::move(opts.metadata));
 
         if ( opts.arguments.size() > state->arguments.size() ) {
             META_HPP_THROW_AS(exception, "provided arguments don't match function argument count");
@@ -150,16 +146,13 @@ namespace meta_hpp
 
     template < detail::class_kind Class >
     template < detail::function_kind Function, function_policy_kind Policy >
-    class_bind<Class>& class_bind<Class>::function_(
+    class_bind<Class>& class_bind<Class>::function_( //
         std::string name,
         Function function,
         std::initializer_list<std::string_view> arguments,
-        Policy)
-    {
-        auto state = detail::function_state::make<Policy>(
-            std::move(name),
-            std::move(function),
-            {});
+        Policy
+    ) {
+        auto state = detail::function_state::make<Policy>(std::move(name), std::move(function), {});
 
         if ( arguments.size() > state->arguments.size() ) {
             META_HPP_THROW_AS(exception, "provided argument names don't match function argument count");
@@ -181,28 +174,25 @@ namespace meta_hpp
 
     template < detail::class_kind Class >
     template < detail::member_kind Member, member_policy_kind Policy >
-    class_bind<Class>& class_bind<Class>::member_(
+        requires detail::class_bind_member_kind<Class, Member>
+    class_bind<Class>& class_bind<Class>::member_( //
         std::string name,
         Member member,
-        Policy policy)
-        requires detail::class_bind_member_kind<Class, Member>
-    {
+        Policy policy
+    ) {
         return member_(std::move(name), std::move(member), {}, policy);
     }
 
     template < detail::class_kind Class >
     template < detail::member_kind Member, member_policy_kind Policy >
-    class_bind<Class>& class_bind<Class>::member_(
+        requires detail::class_bind_member_kind<Class, Member>
+    class_bind<Class>& class_bind<Class>::member_( //
         std::string name,
         Member member,
         member_opts opts,
-        Policy)
-        requires detail::class_bind_member_kind<Class, Member>
-    {
-        auto state = detail::member_state::make<Policy>(
-            std::move(name),
-            std::move(member),
-            std::move(opts.metadata));
+        Policy
+    ) {
+        auto state = detail::member_state::make<Policy>(std::move(name), std::move(member), std::move(opts.metadata));
         detail::insert_or_assign(get_data().members, std::move(state));
         return *this;
     }
@@ -213,28 +203,25 @@ namespace meta_hpp
 
     template < detail::class_kind Class >
     template < detail::method_kind Method, method_policy_kind Policy >
-    class_bind<Class>& class_bind<Class>::method_(
+        requires detail::class_bind_method_kind<Class, Method>
+    class_bind<Class>& class_bind<Class>::method_( //
         std::string name,
         Method method,
-        Policy policy)
-        requires detail::class_bind_method_kind<Class, Method>
-    {
+        Policy policy
+    ) {
         return method_(std::move(name), std::move(method), {}, policy);
     }
 
     template < detail::class_kind Class >
     template < detail::method_kind Method, method_policy_kind Policy >
-    class_bind<Class>& class_bind<Class>::method_(
+        requires detail::class_bind_method_kind<Class, Method>
+    class_bind<Class>& class_bind<Class>::method_( //
         std::string name,
         Method method,
         method_opts opts,
-        Policy)
-        requires detail::class_bind_method_kind<Class, Method>
-    {
-        auto state = detail::method_state::make<Policy>(
-            std::move(name),
-            std::move(method),
-            std::move(opts.metadata));
+        Policy
+    ) {
+        auto state = detail::method_state::make<Policy>(std::move(name), std::move(method), std::move(opts.metadata));
 
         if ( opts.arguments.size() > state->arguments.size() ) {
             META_HPP_THROW_AS(exception, "provided arguments don't match method argument count");
@@ -252,17 +239,14 @@ namespace meta_hpp
 
     template < detail::class_kind Class >
     template < detail::method_kind Method, method_policy_kind Policy >
-    class_bind<Class>& class_bind<Class>::method_(
+        requires detail::class_bind_method_kind<Class, Method>
+    class_bind<Class>& class_bind<Class>::method_( //
         std::string name,
         Method method,
         std::initializer_list<std::string_view> arguments,
-        Policy)
-        requires detail::class_bind_method_kind<Class, Method>
-    {
-        auto state = detail::method_state::make<Policy>(
-            std::move(name),
-            std::move(method),
-            {});
+        Policy
+    ) {
+        auto state = detail::method_state::make<Policy>(std::move(name), std::move(method), {});
 
         if ( arguments.size() > state->arguments.size() ) {
             META_HPP_THROW_AS(exception, "provided argument names don't match method argument count");
@@ -295,26 +279,23 @@ namespace meta_hpp
 
     template < detail::class_kind Class >
     template < detail::pointer_kind Pointer, variable_policy_kind Policy >
-    class_bind<Class>& class_bind<Class>::variable_(
+    class_bind<Class>& class_bind<Class>::variable_( //
         std::string name,
         Pointer pointer,
-        Policy policy)
-    {
+        Policy policy
+    ) {
         return variable_(std::move(name), std::move(pointer), {}, policy);
     }
 
     template < detail::class_kind Class >
     template < detail::pointer_kind Pointer, variable_policy_kind Policy >
-    class_bind<Class>& class_bind<Class>::variable_(
+    class_bind<Class>& class_bind<Class>::variable_( //
         std::string name,
         Pointer pointer,
         variable_opts opts,
-        Policy)
-    {
-        auto state = detail::variable_state::make<Policy>(
-            std::move(name),
-            std::move(pointer),
-            std::move(opts.metadata));
+        Policy
+    ) {
+        auto state = detail::variable_state::make<Policy>(std::move(name), std::move(pointer), std::move(opts.metadata));
         detail::insert_or_assign(get_data().variables, std::move(state));
         return *this;
     }

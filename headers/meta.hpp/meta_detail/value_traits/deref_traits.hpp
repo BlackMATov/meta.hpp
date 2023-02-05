@@ -15,9 +15,10 @@ namespace meta_hpp::detail
     struct deref_traits;
 
     template < typename T >
-    concept has_deref_traits = requires(const T& v) {
-        { deref_traits<T>{}(v) } -> std::convertible_to<uvalue>;
-    };
+    concept has_deref_traits //
+        = requires(const T& v) {
+              { deref_traits<T>{}(v) } -> std::convertible_to<uvalue>;
+          };
 }
 
 namespace meta_hpp::detail

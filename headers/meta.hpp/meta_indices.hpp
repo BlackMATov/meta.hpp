@@ -20,9 +20,11 @@ namespace meta_hpp
 
         [[nodiscard]] std::size_t get_hash() const noexcept;
         [[nodiscard]] std::strong_ordering operator<=>(const argument_index&) const = default;
+
     private:
         friend detail::argument_state;
         explicit argument_index(any_type type, std::size_t position);
+
     private:
         any_type type_;
         std::size_t position_{};
@@ -34,9 +36,11 @@ namespace meta_hpp
 
         [[nodiscard]] std::size_t get_hash() const noexcept;
         [[nodiscard]] std::strong_ordering operator<=>(const constructor_index&) const = default;
+
     private:
         friend detail::constructor_state;
         explicit constructor_index(constructor_type type);
+
     private:
         constructor_type type_;
     };
@@ -47,9 +51,11 @@ namespace meta_hpp
 
         [[nodiscard]] std::size_t get_hash() const noexcept;
         [[nodiscard]] std::strong_ordering operator<=>(const destructor_index&) const = default;
+
     private:
         friend detail::destructor_state;
         explicit destructor_index(destructor_type type);
+
     private:
         destructor_type type_;
     };
@@ -61,9 +67,11 @@ namespace meta_hpp
 
         [[nodiscard]] std::size_t get_hash() const noexcept;
         [[nodiscard]] std::strong_ordering operator<=>(const evalue_index&) const = default;
+
     private:
         friend detail::evalue_state;
         explicit evalue_index(enum_type type, std::string name);
+
     private:
         enum_type type_;
         std::string name_;
@@ -76,9 +84,11 @@ namespace meta_hpp
 
         [[nodiscard]] std::size_t get_hash() const noexcept;
         [[nodiscard]] std::strong_ordering operator<=>(const function_index&) const = default;
+
     private:
         friend detail::function_state;
         explicit function_index(function_type type, std::string name);
+
     private:
         function_type type_;
         std::string name_;
@@ -91,9 +101,11 @@ namespace meta_hpp
 
         [[nodiscard]] std::size_t get_hash() const noexcept;
         [[nodiscard]] std::strong_ordering operator<=>(const member_index&) const = default;
+
     private:
         friend detail::member_state;
         explicit member_index(member_type type, std::string name);
+
     private:
         member_type type_;
         std::string name_;
@@ -106,9 +118,11 @@ namespace meta_hpp
         [[nodiscard]] const std::string& get_name() const noexcept;
 
         [[nodiscard]] std::strong_ordering operator<=>(const method_index&) const = default;
+
     private:
         friend detail::method_state;
         explicit method_index(method_type type, std::string name);
+
     private:
         method_type type_;
         std::string name_;
@@ -120,9 +134,11 @@ namespace meta_hpp
 
         [[nodiscard]] std::size_t get_hash() const noexcept;
         [[nodiscard]] std::strong_ordering operator<=>(const scope_index&) const = default;
+
     private:
         friend detail::scope_state;
         explicit scope_index(std::string name);
+
     private:
         std::string name_;
     };
@@ -134,9 +150,11 @@ namespace meta_hpp
 
         [[nodiscard]] std::size_t get_hash() const noexcept;
         [[nodiscard]] std::strong_ordering operator<=>(const variable_index&) const = default;
+
     private:
         friend detail::variable_state;
         explicit variable_index(pointer_type type, std::string name);
+
     private:
         pointer_type type_;
         std::string name_;

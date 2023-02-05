@@ -40,6 +40,7 @@ namespace meta_hpp::detail
         [[nodiscard]] constexpr std::strong_ordering operator<=>(hashed_string other) const noexcept {
             return hash_ <=> other.hash_;
         }
+
     private:
         std::size_t hash_{fnv1a_hash("", 0)};
     };
