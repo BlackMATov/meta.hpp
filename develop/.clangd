@@ -5,3 +5,6 @@ Diagnostics:
       - modernize-*
       - performance-*
       - readability-*
+
+CompileFlags:
+  CompilationDatabase: .cdb
