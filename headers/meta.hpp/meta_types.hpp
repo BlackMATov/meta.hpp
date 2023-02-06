@@ -239,7 +239,7 @@ namespace meta_hpp
         [[nodiscard]] const metadata_map& get_metadata() const noexcept;
 
         [[nodiscard]] std::size_t get_arity() const noexcept;
-        [[nodiscard]] any_type get_class_type() const noexcept;
+        [[nodiscard]] class_type get_owner_type() const noexcept;
         [[nodiscard]] any_type get_argument_type(std::size_t position) const noexcept;
         [[nodiscard]] const any_type_list& get_argument_types() const noexcept;
 
@@ -262,7 +262,7 @@ namespace meta_hpp
         [[nodiscard]] destructor_bitflags get_flags() const noexcept;
         [[nodiscard]] const metadata_map& get_metadata() const noexcept;
 
-        [[nodiscard]] any_type get_class_type() const noexcept;
+        [[nodiscard]] class_type get_owner_type() const noexcept;
 
     private:
         data_ptr data_{};
@@ -571,7 +571,7 @@ namespace meta_hpp::detail
 
     struct constructor_type_data final : type_data_base {
         const constructor_bitflags flags;
-        const any_type class_type;
+        const class_type owner_type;
         const any_type_list argument_types;
 
         template < class_kind Class, typename... Args >
@@ -580,7 +580,7 @@ namespace meta_hpp::detail
 
     struct destructor_type_data final : type_data_base {
         const destructor_bitflags flags;
-        const any_type class_type;
+        const class_type owner_type;
 
         template < class_kind Class >
         explicit destructor_type_data(type_list<Class>);

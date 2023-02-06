@@ -2172,7 +2172,7 @@ namespace meta_hpp
         [[nodiscard]] const metadata_map& get_metadata() const noexcept;
 
         [[nodiscard]] std::size_t get_arity() const noexcept;
-        [[nodiscard]] any_type get_class_type() const noexcept;
+        [[nodiscard]] class_type get_owner_type() const noexcept;
         [[nodiscard]] any_type get_argument_type(std::size_t position) const noexcept;
         [[nodiscard]] const any_type_list& get_argument_types() const noexcept;
 
@@ -2195,7 +2195,7 @@ namespace meta_hpp
         [[nodiscard]] destructor_bitflags get_flags() const noexcept;
         [[nodiscard]] const metadata_map& get_metadata() const noexcept;
 
-        [[nodiscard]] any_type get_class_type() const noexcept;
+        [[nodiscard]] class_type get_owner_type() const noexcept;
 
     private:
         data_ptr data_{};
@@ -2504,7 +2504,7 @@ namespace meta_hpp::detail
 
     struct constructor_type_data final : type_data_base {
         const constructor_bitflags flags;
-        const any_type class_type;
+        const class_type owner_type;
         const any_type_list argument_types;
 
         template < class_kind Class, typename... Args >
@@ -2513,7 +2513,7 @@ namespace meta_hpp::detail
 
     struct destructor_type_data final : type_data_base {
         const destructor_bitflags flags;
-        const any_type class_type;
+        const class_type owner_type;
 
         template < class_kind Class >
         explicit destructor_type_data(type_list<Class>);
@@ -5450,7 +5450,7 @@ namespace meta_hpp::detail
     constructor_type_data::constructor_type_data(type_list<Class>, type_list<Args...>)
     : type_data_base{type_id{type_list<constructor_tag<Class, Args...>>{}}, type_kind::constructor_}
     , flags{constructor_traits<Class, Args...>::make_flags()}
-    , class_type{resolve_type<typename constructor_traits<Class, Args...>::class_type>()}
+    , owner_type{resolve_type<typename constructor_traits<Class, Args...>::class_type>()}
     , argument_types{resolve_types(typename constructor_traits<Class, Args...>::argument_types{})} {}
 }
 
@@ -5483,8 +5483,8 @@ namespace meta_hpp
         return data_->argument_types.size();
     }
 
-    inline any_type constructor_type::get_class_type() const noexcept {
-        return data_->class_type;
+    inline class_type constructor_type::get_owner_type() const noexcept {
+        return data_->owner_type;
     }
 
     inline any_type constructor_type::get_argument_type(std::size_t position) const noexcept {
@@ -5721,7 +5721,7 @@ namespace meta_hpp::detail
     destructor_type_data::destructor_type_data(type_list<Class>)
     : type_data_base{type_id{type_list<destructor_tag<Class>>{}}, type_kind::destructor_}
     , flags{destructor_traits<Class>::make_flags()}
-    , class_type{resolve_type<typename destructor_traits<Class>::class_type>()} {}
+    , owner_type{resolve_type<typename destructor_traits<Class>::class_type>()} {}
 }
 
 namespace meta_hpp
@@ -5749,8 +5749,8 @@ namespace meta_hpp
         return data_->metadata;
     }
 
-    inline any_type destructor_type::get_class_type() const noexcept {
-        return data_->class_type;
+    inline class_type destructor_type::get_owner_type() const noexcept {
+        return data_->owner_type;
     }
 }
 
