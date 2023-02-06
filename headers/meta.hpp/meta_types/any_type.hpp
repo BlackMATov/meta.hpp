@@ -11,6 +11,9 @@
 
 namespace meta_hpp
 {
+    inline any_type::any_type(data_ptr data)
+    : data_{data} {}
+
     inline bool any_type::is_valid() const noexcept {
         return data_ != nullptr;
     }
@@ -70,120 +73,121 @@ namespace meta_hpp
     inline any_type::any_type(const void_type& other) noexcept
     : data_{detail::type_access(other)} {}
 
+    template < detail::type_family Type >
+    bool any_type::is() const noexcept {
+        if constexpr ( std::is_same_v<Type, any_type> ) {
+            return data_ != nullptr;
+        } else {
+            return data_ != nullptr && data_->kind == Type::kind;
+        }
+    }
+
+    template < detail::type_family Type >
+    Type any_type::as() const noexcept {
+        return is<Type>() ? Type{static_cast<typename Type::data_ptr>(data_)} : Type{};
+    }
+
     inline bool any_type::is_array() const noexcept {
-        return is_valid() && data_->kind == type_kind::array_;
+        return is<array_type>();
     }
 
     inline bool any_type::is_class() const noexcept {
-        return is_valid() && data_->kind == type_kind::class_;
+        return is<class_type>();
     }
 
     inline bool any_type::is_constructor() const noexcept {
-        return is_valid() && data_->kind == type_kind::constructor_;
+        return is<constructor_type>();
     }
 
     inline bool any_type::is_destructor() const noexcept {
-        return is_valid() && data_->kind == type_kind::destructor_;
+        return is<destructor_type>();
     }
 
     inline bool any_type::is_enum() const noexcept {
-        return is_valid() && data_->kind == type_kind::enum_;
+        return is<enum_type>();
     }
 
     inline bool any_type::is_function() const noexcept {
-        return is_valid() && data_->kind == type_kind::function_;
+        return is<function_type>();
     }
 
     inline bool any_type::is_member() const noexcept {
-        return is_valid() && data_->kind == type_kind::member_;
+        return is<member_type>();
     }
 
     inline bool any_type::is_method() const noexcept {
-        return is_valid() && data_->kind == type_kind::method_;
+        return is<method_type>();
     }
 
     inline bool any_type::is_nullptr() const noexcept {
-        return is_valid() && data_->kind == type_kind::nullptr_;
+        return is<nullptr_type>();
     }
 
     inline bool any_type::is_number() const noexcept {
-        return is_valid() && data_->kind == type_kind::number_;
+        return is<number_type>();
     }
 
     inline bool any_type::is_pointer() const noexcept {
-        return is_valid() && data_->kind == type_kind::pointer_;
+        return is<pointer_type>();
     }
 
     inline bool any_type::is_reference() const noexcept {
-        return is_valid() && data_->kind == type_kind::reference_;
+        return is<reference_type>();
     }
 
     inline bool any_type::is_void() const noexcept {
-        return is_valid() && data_->kind == type_kind::void_;
+        return is<void_type>();
     }
 
     inline array_type any_type::as_array() const noexcept {
-        // NOLINTNEXTLINE(*-static-cast-downcast)
-        return is_array() ? array_type{static_cast<detail::array_type_data*>(data_)} : array_type{};
+        return as<array_type>();
     }
 
     inline class_type any_type::as_class() const noexcept {
-        // NOLINTNEXTLINE(*-static-cast-downcast)
-        return is_class() ? class_type{static_cast<detail::class_type_data*>(data_)} : class_type{};
+        return as<class_type>();
     }
 
     inline constructor_type any_type::as_constructor() const noexcept {
-        // NOLINTNEXTLINE(*-static-cast-downcast)
-        return is_constructor() ? constructor_type{static_cast<detail::constructor_type_data*>(data_)} : constructor_type{};
+        return as<constructor_type>();
     }
 
     inline destructor_type any_type::as_destructor() const noexcept {
-        // NOLINTNEXTLINE(*-static-cast-downcast)
-        return is_destructor() ? destructor_type{static_cast<detail::destructor_type_data*>(data_)} : destructor_type{};
+        return as<destructor_type>();
     }
 
     inline enum_type any_type::as_enum() const noexcept {
-        // NOLINTNEXTLINE(*-static-cast-downcast)
-        return is_enum() ? enum_type{static_cast<detail::enum_type_data*>(data_)} : enum_type{};
+        return as<enum_type>();
     }
 
     inline function_type any_type::as_function() const noexcept {
-        // NOLINTNEXTLINE(*-static-cast-downcast)
-        return is_function() ? function_type{static_cast<detail::function_type_data*>(data_)} : function_type{};
+        return as<function_type>();
     }
 
     inline member_type any_type::as_member() const noexcept {
-        // NOLINTNEXTLINE(*-static-cast-downcast)
-        return is_member() ? member_type{static_cast<detail::member_type_data*>(data_)} : member_type{};
+        return as<member_type>();
     }
 
     inline method_type any_type::as_method() const noexcept {
-        // NOLINTNEXTLINE(*-static-cast-downcast)
-        return is_method() ? method_type{static_cast<detail::method_type_data*>(data_)} : method_type{};
+        return as<method_type>();
     }
 
     inline nullptr_type any_type::as_nullptr() const noexcept {
-        // NOLINTNEXTLINE(*-static-cast-downcast)
-        return is_nullptr() ? nullptr_type{static_cast<detail::nullptr_type_data*>(data_)} : nullptr_type{};
+        return as<nullptr_type>();
     }
 
     inline number_type any_type::as_number() const noexcept {
-        // NOLINTNEXTLINE(*-static-cast-downcast)
-        return is_number() ? number_type{static_cast<detail::number_type_data*>(data_)} : number_type{};
+        return as<number_type>();
     }
 
     inline pointer_type any_type::as_pointer() const noexcept {
-        // NOLINTNEXTLINE(*-static-cast-downcast)
-        return is_pointer() ? pointer_type{static_cast<detail::pointer_type_data*>(data_)} : pointer_type{};
+        return as<pointer_type>();
     }
 
     inline reference_type any_type::as_reference() const noexcept {
-        // NOLINTNEXTLINE(*-static-cast-downcast)
-        return is_reference() ? reference_type{static_cast<detail::reference_type_data*>(data_)} : reference_type{};
+        return as<reference_type>();
     }
 
     inline void_type any_type::as_void() const noexcept {
-        // NOLINTNEXTLINE(*-static-cast-downcast)
-        return is_void() ? void_type{static_cast<detail::void_type_data*>(data_)} : void_type{};
+        return as<void_type>();
     }
 }

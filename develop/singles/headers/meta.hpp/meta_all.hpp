@@ -1998,6 +1998,7 @@ namespace meta_hpp
         using data_ptr = detail::type_data_base*;
 
         any_type() = default;
+        any_type(data_ptr data);
 
         [[nodiscard]] bool is_valid() const noexcept;
         [[nodiscard]] explicit operator bool() const noexcept;
@@ -2020,6 +2021,12 @@ namespace meta_hpp
         any_type(const pointer_type& other) noexcept;
         any_type(const reference_type& other) noexcept;
         any_type(const void_type& other) noexcept;
+
+        template < detail::type_family Type >
+        [[nodiscard]] bool is() const noexcept;
+
+        template < detail::type_family Type >
+        [[nodiscard]] Type as() const noexcept;
 
         [[nodiscard]] bool is_array() const noexcept;
         [[nodiscard]] bool is_class() const noexcept;
@@ -2057,6 +2064,7 @@ namespace meta_hpp
     class array_type final {
     public:
         using data_ptr = detail::array_type_data*;
+        inline static constexpr type_kind kind{type_kind::array_};
 
         array_type() = default;
         array_type(data_ptr data);
@@ -2079,6 +2087,7 @@ namespace meta_hpp
     class class_type final {
     public:
         using data_ptr = detail::class_type_data*;
+        inline static constexpr type_kind kind{type_kind::class_};
 
         class_type() = default;
         class_type(data_ptr data);
@@ -2160,6 +2169,7 @@ namespace meta_hpp
     class constructor_type final {
     public:
         using data_ptr = detail::constructor_type_data*;
+        inline static constexpr type_kind kind{type_kind::constructor_};
 
         constructor_type() = default;
         constructor_type(data_ptr data);
@@ -2184,6 +2194,7 @@ namespace meta_hpp
     class destructor_type final {
     public:
         using data_ptr = detail::destructor_type_data*;
+        inline static constexpr type_kind kind{type_kind::destructor_};
 
         destructor_type() = default;
         destructor_type(data_ptr data);
@@ -2205,6 +2216,7 @@ namespace meta_hpp
     class enum_type final {
     public:
         using data_ptr = detail::enum_type_data*;
+        inline static constexpr type_kind kind{type_kind::enum_};
 
         enum_type() = default;
         enum_type(data_ptr data);
@@ -2237,6 +2249,7 @@ namespace meta_hpp
     class function_type final {
     public:
         using data_ptr = detail::function_type_data*;
+        inline static constexpr type_kind kind{type_kind::function_};
 
         function_type() = default;
         function_type(data_ptr data);
@@ -2261,6 +2274,7 @@ namespace meta_hpp
     class member_type final {
     public:
         using data_ptr = detail::member_type_data*;
+        inline static constexpr type_kind kind{type_kind::member_};
 
         member_type() = default;
         member_type(data_ptr data);
@@ -2283,6 +2297,7 @@ namespace meta_hpp
     class method_type final {
     public:
         using data_ptr = detail::method_type_data*;
+        inline static constexpr type_kind kind{type_kind::method_};
 
         method_type() = default;
         method_type(data_ptr data);
@@ -2308,6 +2323,7 @@ namespace meta_hpp
     class nullptr_type final {
     public:
         using data_ptr = detail::nullptr_type_data*;
+        inline static constexpr type_kind kind{type_kind::nullptr_};
 
         nullptr_type() = default;
         nullptr_type(data_ptr data);
@@ -2326,6 +2342,7 @@ namespace meta_hpp
     class number_type final {
     public:
         using data_ptr = detail::number_type_data*;
+        inline static constexpr type_kind kind{type_kind::number_};
 
         number_type() = default;
         number_type(data_ptr data);
@@ -2348,6 +2365,7 @@ namespace meta_hpp
     class pointer_type final {
     public:
         using data_ptr = detail::pointer_type_data*;
+        inline static constexpr type_kind kind{type_kind::pointer_};
 
         pointer_type() = default;
         pointer_type(data_ptr data);
@@ -2369,6 +2387,7 @@ namespace meta_hpp
     class reference_type final {
     public:
         using data_ptr = detail::reference_type_data*;
+        inline static constexpr type_kind kind{type_kind::reference_};
 
         reference_type() = default;
         reference_type(data_ptr data);
@@ -2390,6 +2409,7 @@ namespace meta_hpp
     class void_type final {
     public:
         using data_ptr = detail::void_type_data*;
+        inline static constexpr type_kind kind{type_kind::void_};
 
         void_type() = default;
         void_type(data_ptr data);
@@ -7698,6 +7718,9 @@ namespace meta_hpp
 
 namespace meta_hpp
 {
+    inline any_type::any_type(data_ptr data)
+    : data_{data} {}
+
     inline bool any_type::is_valid() const noexcept {
         return data_ != nullptr;
     }
@@ -7757,121 +7780,122 @@ namespace meta_hpp
     inline any_type::any_type(const void_type& other) noexcept
     : data_{detail::type_access(other)} {}
 
+    template < detail::type_family Type >
+    bool any_type::is() const noexcept {
+        if constexpr ( std::is_same_v<Type, any_type> ) {
+            return data_ != nullptr;
+        } else {
+            return data_ != nullptr && data_->kind == Type::kind;
+        }
+    }
+
+    template < detail::type_family Type >
+    Type any_type::as() const noexcept {
+        return is<Type>() ? Type{static_cast<typename Type::data_ptr>(data_)} : Type{};
+    }
+
     inline bool any_type::is_array() const noexcept {
-        return is_valid() && data_->kind == type_kind::array_;
+        return is<array_type>();
     }
 
     inline bool any_type::is_class() const noexcept {
-        return is_valid() && data_->kind == type_kind::class_;
+        return is<class_type>();
     }
 
     inline bool any_type::is_constructor() const noexcept {
-        return is_valid() && data_->kind == type_kind::constructor_;
+        return is<constructor_type>();
     }
 
     inline bool any_type::is_destructor() const noexcept {
-        return is_valid() && data_->kind == type_kind::destructor_;
+        return is<destructor_type>();
     }
 
     inline bool any_type::is_enum() const noexcept {
-        return is_valid() && data_->kind == type_kind::enum_;
+        return is<enum_type>();
     }
 
     inline bool any_type::is_function() const noexcept {
-        return is_valid() && data_->kind == type_kind::function_;
+        return is<function_type>();
     }
 
     inline bool any_type::is_member() const noexcept {
-        return is_valid() && data_->kind == type_kind::member_;
+        return is<member_type>();
     }
 
     inline bool any_type::is_method() const noexcept {
-        return is_valid() && data_->kind == type_kind::method_;
+        return is<method_type>();
     }
 
     inline bool any_type::is_nullptr() const noexcept {
-        return is_valid() && data_->kind == type_kind::nullptr_;
+        return is<nullptr_type>();
     }
 
     inline bool any_type::is_number() const noexcept {
-        return is_valid() && data_->kind == type_kind::number_;
+        return is<number_type>();
     }
 
     inline bool any_type::is_pointer() const noexcept {
-        return is_valid() && data_->kind == type_kind::pointer_;
+        return is<pointer_type>();
     }
 
     inline bool any_type::is_reference() const noexcept {
-        return is_valid() && data_->kind == type_kind::reference_;
+        return is<reference_type>();
     }
 
     inline bool any_type::is_void() const noexcept {
-        return is_valid() && data_->kind == type_kind::void_;
+        return is<void_type>();
     }
 
     inline array_type any_type::as_array() const noexcept {
-        // NOLINTNEXTLINE(*-static-cast-downcast)
-        return is_array() ? array_type{static_cast<detail::array_type_data*>(data_)} : array_type{};
+        return as<array_type>();
     }
 
     inline class_type any_type::as_class() const noexcept {
-        // NOLINTNEXTLINE(*-static-cast-downcast)
-        return is_class() ? class_type{static_cast<detail::class_type_data*>(data_)} : class_type{};
+        return as<class_type>();
     }
 
     inline constructor_type any_type::as_constructor() const noexcept {
-        // NOLINTNEXTLINE(*-static-cast-downcast)
-        return is_constructor() ? constructor_type{static_cast<detail::constructor_type_data*>(data_)} : constructor_type{};
+        return as<constructor_type>();
     }
 
     inline destructor_type any_type::as_destructor() const noexcept {
-        // NOLINTNEXTLINE(*-static-cast-downcast)
-        return is_destructor() ? destructor_type{static_cast<detail::destructor_type_data*>(data_)} : destructor_type{};
+        return as<destructor_type>();
     }
 
     inline enum_type any_type::as_enum() const noexcept {
-        // NOLINTNEXTLINE(*-static-cast-downcast)
-        return is_enum() ? enum_type{static_cast<detail::enum_type_data*>(data_)} : enum_type{};
+        return as<enum_type>();
     }
 
     inline function_type any_type::as_function() const noexcept {
-        // NOLINTNEXTLINE(*-static-cast-downcast)
-        return is_function() ? function_type{static_cast<detail::function_type_data*>(data_)} : function_type{};
+        return as<function_type>();
     }
 
     inline member_type any_type::as_member() const noexcept {
-        // NOLINTNEXTLINE(*-static-cast-downcast)
-        return is_member() ? member_type{static_cast<detail::member_type_data*>(data_)} : member_type{};
+        return as<member_type>();
     }
 
     inline method_type any_type::as_method() const noexcept {
-        // NOLINTNEXTLINE(*-static-cast-downcast)
-        return is_method() ? method_type{static_cast<detail::method_type_data*>(data_)} : method_type{};
+        return as<method_type>();
     }
 
     inline nullptr_type any_type::as_nullptr() const noexcept {
-        // NOLINTNEXTLINE(*-static-cast-downcast)
-        return is_nullptr() ? nullptr_type{static_cast<detail::nullptr_type_data*>(data_)} : nullptr_type{};
+        return as<nullptr_type>();
     }
 
     inline number_type any_type::as_number() const noexcept {
-        // NOLINTNEXTLINE(*-static-cast-downcast)
-        return is_number() ? number_type{static_cast<detail::number_type_data*>(data_)} : number_type{};
+        return as<number_type>();
     }
 
     inline pointer_type any_type::as_pointer() const noexcept {
-        // NOLINTNEXTLINE(*-static-cast-downcast)
-        return is_pointer() ? pointer_type{static_cast<detail::pointer_type_data*>(data_)} : pointer_type{};
+        return as<pointer_type>();
     }
 
     inline reference_type any_type::as_reference() const noexcept {
-        // NOLINTNEXTLINE(*-static-cast-downcast)
-        return is_reference() ? reference_type{static_cast<detail::reference_type_data*>(data_)} : reference_type{};
+        return as<reference_type>();
     }
 
     inline void_type any_type::as_void() const noexcept {
-        // NOLINTNEXTLINE(*-static-cast-downcast)
-        return is_void() ? void_type{static_cast<detail::void_type_data*>(data_)} : void_type{};
+        return as<void_type>();
     }
 }
 

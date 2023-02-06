@@ -65,6 +65,7 @@ namespace meta_hpp
         using data_ptr = detail::type_data_base*;
 
         any_type() = default;
+        any_type(data_ptr data);
 
         [[nodiscard]] bool is_valid() const noexcept;
         [[nodiscard]] explicit operator bool() const noexcept;
@@ -87,6 +88,12 @@ namespace meta_hpp
         any_type(const pointer_type& other) noexcept;
         any_type(const reference_type& other) noexcept;
         any_type(const void_type& other) noexcept;
+
+        template < detail::type_family Type >
+        [[nodiscard]] bool is() const noexcept;
+
+        template < detail::type_family Type >
+        [[nodiscard]] Type as() const noexcept;
 
         [[nodiscard]] bool is_array() const noexcept;
         [[nodiscard]] bool is_class() const noexcept;
@@ -124,6 +131,7 @@ namespace meta_hpp
     class array_type final {
     public:
         using data_ptr = detail::array_type_data*;
+        inline static constexpr type_kind kind{type_kind::array_};
 
         array_type() = default;
         array_type(data_ptr data);
@@ -146,6 +154,7 @@ namespace meta_hpp
     class class_type final {
     public:
         using data_ptr = detail::class_type_data*;
+        inline static constexpr type_kind kind{type_kind::class_};
 
         class_type() = default;
         class_type(data_ptr data);
@@ -227,6 +236,7 @@ namespace meta_hpp
     class constructor_type final {
     public:
         using data_ptr = detail::constructor_type_data*;
+        inline static constexpr type_kind kind{type_kind::constructor_};
 
         constructor_type() = default;
         constructor_type(data_ptr data);
@@ -251,6 +261,7 @@ namespace meta_hpp
     class destructor_type final {
     public:
         using data_ptr = detail::destructor_type_data*;
+        inline static constexpr type_kind kind{type_kind::destructor_};
 
         destructor_type() = default;
         destructor_type(data_ptr data);
@@ -272,6 +283,7 @@ namespace meta_hpp
     class enum_type final {
     public:
         using data_ptr = detail::enum_type_data*;
+        inline static constexpr type_kind kind{type_kind::enum_};
 
         enum_type() = default;
         enum_type(data_ptr data);
@@ -304,6 +316,7 @@ namespace meta_hpp
     class function_type final {
     public:
         using data_ptr = detail::function_type_data*;
+        inline static constexpr type_kind kind{type_kind::function_};
 
         function_type() = default;
         function_type(data_ptr data);
@@ -328,6 +341,7 @@ namespace meta_hpp
     class member_type final {
     public:
         using data_ptr = detail::member_type_data*;
+        inline static constexpr type_kind kind{type_kind::member_};
 
         member_type() = default;
         member_type(data_ptr data);
@@ -350,6 +364,7 @@ namespace meta_hpp
     class method_type final {
     public:
         using data_ptr = detail::method_type_data*;
+        inline static constexpr type_kind kind{type_kind::method_};
 
         method_type() = default;
         method_type(data_ptr data);
@@ -375,6 +390,7 @@ namespace meta_hpp
     class nullptr_type final {
     public:
         using data_ptr = detail::nullptr_type_data*;
+        inline static constexpr type_kind kind{type_kind::nullptr_};
 
         nullptr_type() = default;
         nullptr_type(data_ptr data);
@@ -393,6 +409,7 @@ namespace meta_hpp
     class number_type final {
     public:
         using data_ptr = detail::number_type_data*;
+        inline static constexpr type_kind kind{type_kind::number_};
 
         number_type() = default;
         number_type(data_ptr data);
@@ -415,6 +432,7 @@ namespace meta_hpp
     class pointer_type final {
     public:
         using data_ptr = detail::pointer_type_data*;
+        inline static constexpr type_kind kind{type_kind::pointer_};
 
         pointer_type() = default;
         pointer_type(data_ptr data);
@@ -436,6 +454,7 @@ namespace meta_hpp
     class reference_type final {
     public:
         using data_ptr = detail::reference_type_data*;
+        inline static constexpr type_kind kind{type_kind::reference_};
 
         reference_type() = default;
         reference_type(data_ptr data);
@@ -457,6 +476,7 @@ namespace meta_hpp
     class void_type final {
     public:
         using data_ptr = detail::void_type_data*;
+        inline static constexpr type_kind kind{type_kind::void_};
 
         void_type() = default;
         void_type(data_ptr data);
