@@ -21,7 +21,7 @@ namespace meta_hpp::detail
     destructor_type_data::destructor_type_data(type_list<Class>)
     : type_data_base{type_id{type_list<destructor_tag<Class>>{}}, type_kind::destructor_}
     , flags{destructor_traits<Class>::make_flags()}
-    , class_type{resolve_type<typename destructor_traits<Class>::class_type>()} {}
+    , owner_type{resolve_type<typename destructor_traits<Class>::class_type>()} {}
 }
 
 namespace meta_hpp
@@ -49,7 +49,7 @@ namespace meta_hpp
         return data_->metadata;
     }
 
-    inline any_type destructor_type::get_class_type() const noexcept {
-        return data_->class_type;
+    inline class_type destructor_type::get_owner_type() const noexcept {
+        return data_->owner_type;
     }
 }

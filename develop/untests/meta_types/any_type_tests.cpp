@@ -256,4 +256,12 @@ TEST_CASE("meta/meta_types/any_type") {
         REQUIRE(specific_type);
         CHECK(specific_type.get_id() == type.get_id());
     }
+
+    SUBCASE("is/as") {
+        const meta::any_type type{meta::resolve_type<class_t>()};
+        CHECK(type.is<meta::any_type>());
+
+        const meta::any_type type2{type.as<meta::any_type>()};
+        CHECK(type2.as<meta::class_type>() == meta::resolve_type<class_t>());
+    }
 }

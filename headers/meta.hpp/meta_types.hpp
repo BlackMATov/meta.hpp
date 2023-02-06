@@ -24,38 +24,38 @@
 
 namespace meta_hpp
 {
-    using array_flags = detail::array_flags;
-    using array_bitflags = detail::array_bitflags;
+    using detail::array_bitflags;
+    using detail::array_flags;
 
-    using class_flags = detail::class_flags;
-    using class_bitflags = detail::class_bitflags;
+    using detail::class_bitflags;
+    using detail::class_flags;
 
-    using constructor_flags = detail::constructor_flags;
-    using constructor_bitflags = detail::constructor_bitflags;
+    using detail::constructor_bitflags;
+    using detail::constructor_flags;
 
-    using destructor_flags = detail::destructor_flags;
-    using destructor_bitflags = detail::destructor_bitflags;
+    using detail::destructor_bitflags;
+    using detail::destructor_flags;
 
-    using enum_flags = detail::enum_flags;
-    using enum_bitflags = detail::enum_bitflags;
+    using detail::enum_bitflags;
+    using detail::enum_flags;
 
-    using function_flags = detail::function_flags;
-    using function_bitflags = detail::function_bitflags;
+    using detail::function_bitflags;
+    using detail::function_flags;
 
-    using member_flags = detail::member_flags;
-    using member_bitflags = detail::member_bitflags;
+    using detail::member_bitflags;
+    using detail::member_flags;
 
-    using method_flags = detail::method_flags;
-    using method_bitflags = detail::method_bitflags;
+    using detail::method_bitflags;
+    using detail::method_flags;
 
-    using number_flags = detail::number_flags;
-    using number_bitflags = detail::number_bitflags;
+    using detail::number_bitflags;
+    using detail::number_flags;
 
-    using pointer_flags = detail::pointer_flags;
-    using pointer_bitflags = detail::pointer_bitflags;
+    using detail::pointer_bitflags;
+    using detail::pointer_flags;
 
-    using reference_flags = detail::reference_flags;
-    using reference_bitflags = detail::reference_bitflags;
+    using detail::reference_bitflags;
+    using detail::reference_flags;
 }
 
 namespace meta_hpp
@@ -65,6 +65,7 @@ namespace meta_hpp
         using data_ptr = detail::type_data_base*;
 
         any_type() = default;
+        any_type(data_ptr data);
 
         [[nodiscard]] bool is_valid() const noexcept;
         [[nodiscard]] explicit operator bool() const noexcept;
@@ -87,6 +88,12 @@ namespace meta_hpp
         any_type(const pointer_type& other) noexcept;
         any_type(const reference_type& other) noexcept;
         any_type(const void_type& other) noexcept;
+
+        template < detail::type_family Type >
+        [[nodiscard]] bool is() const noexcept;
+
+        template < detail::type_family Type >
+        [[nodiscard]] Type as() const noexcept;
 
         [[nodiscard]] bool is_array() const noexcept;
         [[nodiscard]] bool is_class() const noexcept;
@@ -124,6 +131,7 @@ namespace meta_hpp
     class array_type final {
     public:
         using data_ptr = detail::array_type_data*;
+        inline static constexpr type_kind kind{type_kind::array_};
 
         array_type() = default;
         array_type(data_ptr data);
@@ -146,6 +154,7 @@ namespace meta_hpp
     class class_type final {
     public:
         using data_ptr = detail::class_type_data*;
+        inline static constexpr type_kind kind{type_kind::class_};
 
         class_type() = default;
         class_type(data_ptr data);
@@ -227,6 +236,7 @@ namespace meta_hpp
     class constructor_type final {
     public:
         using data_ptr = detail::constructor_type_data*;
+        inline static constexpr type_kind kind{type_kind::constructor_};
 
         constructor_type() = default;
         constructor_type(data_ptr data);
@@ -239,7 +249,7 @@ namespace meta_hpp
         [[nodiscard]] const metadata_map& get_metadata() const noexcept;
 
         [[nodiscard]] std::size_t get_arity() const noexcept;
-        [[nodiscard]] any_type get_class_type() const noexcept;
+        [[nodiscard]] class_type get_owner_type() const noexcept;
         [[nodiscard]] any_type get_argument_type(std::size_t position) const noexcept;
         [[nodiscard]] const any_type_list& get_argument_types() const noexcept;
 
@@ -251,6 +261,7 @@ namespace meta_hpp
     class destructor_type final {
     public:
         using data_ptr = detail::destructor_type_data*;
+        inline static constexpr type_kind kind{type_kind::destructor_};
 
         destructor_type() = default;
         destructor_type(data_ptr data);
@@ -262,7 +273,7 @@ namespace meta_hpp
         [[nodiscard]] destructor_bitflags get_flags() const noexcept;
         [[nodiscard]] const metadata_map& get_metadata() const noexcept;
 
-        [[nodiscard]] any_type get_class_type() const noexcept;
+        [[nodiscard]] class_type get_owner_type() const noexcept;
 
     private:
         data_ptr data_{};
@@ -272,6 +283,7 @@ namespace meta_hpp
     class enum_type final {
     public:
         using data_ptr = detail::enum_type_data*;
+        inline static constexpr type_kind kind{type_kind::enum_};
 
         enum_type() = default;
         enum_type(data_ptr data);
@@ -304,6 +316,7 @@ namespace meta_hpp
     class function_type final {
     public:
         using data_ptr = detail::function_type_data*;
+        inline static constexpr type_kind kind{type_kind::function_};
 
         function_type() = default;
         function_type(data_ptr data);
@@ -328,6 +341,7 @@ namespace meta_hpp
     class member_type final {
     public:
         using data_ptr = detail::member_type_data*;
+        inline static constexpr type_kind kind{type_kind::member_};
 
         member_type() = default;
         member_type(data_ptr data);
@@ -350,6 +364,7 @@ namespace meta_hpp
     class method_type final {
     public:
         using data_ptr = detail::method_type_data*;
+        inline static constexpr type_kind kind{type_kind::method_};
 
         method_type() = default;
         method_type(data_ptr data);
@@ -375,6 +390,7 @@ namespace meta_hpp
     class nullptr_type final {
     public:
         using data_ptr = detail::nullptr_type_data*;
+        inline static constexpr type_kind kind{type_kind::nullptr_};
 
         nullptr_type() = default;
         nullptr_type(data_ptr data);
@@ -393,6 +409,7 @@ namespace meta_hpp
     class number_type final {
     public:
         using data_ptr = detail::number_type_data*;
+        inline static constexpr type_kind kind{type_kind::number_};
 
         number_type() = default;
         number_type(data_ptr data);
@@ -415,6 +432,7 @@ namespace meta_hpp
     class pointer_type final {
     public:
         using data_ptr = detail::pointer_type_data*;
+        inline static constexpr type_kind kind{type_kind::pointer_};
 
         pointer_type() = default;
         pointer_type(data_ptr data);
@@ -436,6 +454,7 @@ namespace meta_hpp
     class reference_type final {
     public:
         using data_ptr = detail::reference_type_data*;
+        inline static constexpr type_kind kind{type_kind::reference_};
 
         reference_type() = default;
         reference_type(data_ptr data);
@@ -457,6 +476,7 @@ namespace meta_hpp
     class void_type final {
     public:
         using data_ptr = detail::void_type_data*;
+        inline static constexpr type_kind kind{type_kind::void_};
 
         void_type() = default;
         void_type(data_ptr data);
@@ -571,7 +591,7 @@ namespace meta_hpp::detail
 
     struct constructor_type_data final : type_data_base {
         const constructor_bitflags flags;
-        const any_type class_type;
+        const class_type owner_type;
         const any_type_list argument_types;
 
         template < class_kind Class, typename... Args >
@@ -580,7 +600,7 @@ namespace meta_hpp::detail
 
     struct destructor_type_data final : type_data_base {
         const destructor_bitflags flags;
-        const any_type class_type;
+        const class_type owner_type;
 
         template < class_kind Class >
         explicit destructor_type_data(type_list<Class>);

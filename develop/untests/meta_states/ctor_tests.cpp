@@ -17,7 +17,7 @@ namespace
             ++constructor_counter;
         }
 
-        clazz(clazz&& other) : i{other.i} {
+        clazz(clazz&& other) noexcept : i{other.i} {
             other.i = 0;
             ++move_constructor_counter;
         }
@@ -147,6 +147,8 @@ TEST_CASE("meta/meta_states/ctor/as_object") {
             const meta::constructor ctor = clazz_type.get_constructor_with<int>();
             REQUIRE(ctor);
             CHECK(ctor.get_type() == meta::resolve_constructor_type<clazz_t, int>());
+            CHECK(ctor.get_type().get_owner_type() == meta::resolve_type<clazz_t>());
+            CHECK(ctor.get_type().get_flags() == meta::constructor_bitflags{});
         }
         {
             const meta::uvalue v = clazz_type.create(42);
@@ -182,6 +184,8 @@ TEST_CASE("meta/meta_states/ctor/as_object") {
             const meta::constructor ctor = clazz_type.get_constructor_with<clazz_t&&>();
             REQUIRE(ctor);
             CHECK(ctor.get_type() == meta::resolve_constructor_type<clazz_t, clazz_t&&>());
+            CHECK(ctor.get_type().get_owner_type() == meta::resolve_type<clazz_t>());
+            CHECK(ctor.get_type().get_flags() == meta::constructor_flags::is_noexcept);
         }
         {
             clazz_t o{42};
