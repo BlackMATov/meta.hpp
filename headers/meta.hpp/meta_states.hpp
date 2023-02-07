@@ -531,7 +531,7 @@ namespace meta_hpp::detail
         is_invocable_with_impl is_invocable_with{};
         argument_list arguments{};
 
-        template < function_policy_kind Policy, function_kind Function >
+        template < function_policy_kind Policy, function_pointer_kind Function >
         [[nodiscard]] static function_state_ptr make(std::string name, Function function_ptr, metadata_map metadata);
         explicit function_state(function_index index, metadata_map metadata);
     };
@@ -551,7 +551,7 @@ namespace meta_hpp::detail
         is_gettable_with_impl is_gettable_with{};
         is_settable_with_impl is_settable_with{};
 
-        template < member_policy_kind Policy, member_kind Member >
+        template < member_policy_kind Policy, member_pointer_kind Member >
         [[nodiscard]] static member_state_ptr make(std::string name, Member member_ptr, metadata_map metadata);
         explicit member_state(member_index index, metadata_map metadata);
     };
@@ -567,7 +567,7 @@ namespace meta_hpp::detail
         is_invocable_with_impl is_invocable_with{};
         argument_list arguments{};
 
-        template < method_policy_kind Policy, method_kind Method >
+        template < method_policy_kind Policy, method_pointer_kind Method >
         [[nodiscard]] static method_state_ptr make(std::string name, Method method_ptr, metadata_map metadata);
         explicit method_state(method_index index, metadata_map metadata);
     };

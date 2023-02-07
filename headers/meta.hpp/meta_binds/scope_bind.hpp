@@ -19,12 +19,12 @@ namespace meta_hpp
     // function_
     //
 
-    template < detail::function_kind Function, function_policy_kind Policy >
+    template < detail::function_pointer_kind Function, function_policy_kind Policy >
     scope_bind& scope_bind::function_(std::string name, Function function_ptr, Policy policy) {
         return function_(std::move(name), function_ptr, {}, policy);
     }
 
-    template < detail::function_kind Function, function_policy_kind Policy >
+    template < detail::function_pointer_kind Function, function_policy_kind Policy >
     scope_bind& scope_bind::function_(std::string name, Function function_ptr, function_opts opts, Policy) {
         auto state = detail::function_state::make<Policy>(std::move(name), function_ptr, std::move(opts.metadata));
 
@@ -42,7 +42,7 @@ namespace meta_hpp
         return *this;
     }
 
-    template < detail::function_kind Function, function_policy_kind Policy >
+    template < detail::function_pointer_kind Function, function_policy_kind Policy >
     scope_bind& scope_bind::function_(std::string name, Function function_ptr, string_ilist arguments, Policy) {
         auto state = detail::function_state::make<Policy>(std::move(name), function_ptr, {});
 

@@ -83,17 +83,17 @@ namespace meta_hpp::detail
             return resolve_enum_type<Enum>();
         }
 
-        template < function_kind Function >
+        template < function_pointer_kind Function >
         [[nodiscard]] function_type resolve_type() {
             return resolve_function_type<Function>();
         }
 
-        template < member_kind Member >
+        template < member_pointer_kind Member >
         [[nodiscard]] member_type resolve_type() {
             return resolve_member_type<Member>();
         }
 
-        template < method_kind Method >
+        template < method_pointer_kind Method >
         [[nodiscard]] method_type resolve_type() {
             return resolve_method_type<Method>();
         }
@@ -149,17 +149,17 @@ namespace meta_hpp::detail
             return enum_type{resolve_enum_type_data<Enum>()};
         }
 
-        template < function_kind Function >
+        template < function_pointer_kind Function >
         [[nodiscard]] function_type resolve_function_type() {
             return function_type{resolve_function_type_data<Function>()};
         }
 
-        template < member_kind Member >
+        template < member_pointer_kind Member >
         [[nodiscard]] member_type resolve_member_type() {
             return member_type{resolve_member_type_data<Member>()};
         }
 
-        template < method_kind Method >
+        template < method_pointer_kind Method >
         [[nodiscard]] method_type resolve_method_type() {
             return method_type{resolve_method_type_data<Method>()};
         }
@@ -220,19 +220,19 @@ namespace meta_hpp::detail
             return &data;
         }
 
-        template < function_kind Function >
+        template < function_pointer_kind Function >
         [[nodiscard]] function_type_data* resolve_function_type_data() {
             static function_type_data data = (ensure_type<Function>(data), function_type_data{type_list<Function>{}});
             return &data;
         }
 
-        template < member_kind Member >
+        template < member_pointer_kind Member >
         [[nodiscard]] member_type_data* resolve_member_type_data() {
             static member_type_data data = (ensure_type<Member>(data), member_type_data{type_list<Member>{}});
             return &data;
         }
 
-        template < method_kind Method >
+        template < method_pointer_kind Method >
         [[nodiscard]] method_type_data* resolve_method_type_data() {
             static method_type_data data = (ensure_type<Method>(data), method_type_data{type_list<Method>{}});
             return &data;

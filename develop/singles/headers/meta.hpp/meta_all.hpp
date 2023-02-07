@@ -1225,13 +1225,13 @@ namespace meta_hpp::detail
     concept enum_kind = std::is_enum_v<T>;
 
     template < typename T >
-    concept function_kind = (std::is_pointer_v<T> && std::is_function_v<std::remove_pointer_t<T>>);
+    concept function_pointer_kind = (std::is_pointer_v<T> && std::is_function_v<std::remove_pointer_t<T>>);
 
     template < typename T >
-    concept member_kind = std::is_member_object_pointer_v<T>;
+    concept member_pointer_kind = std::is_member_object_pointer_v<T>;
 
     template < typename T >
-    concept method_kind = std::is_member_function_pointer_v<T>;
+    concept method_pointer_kind = std::is_member_function_pointer_v<T>;
 
     template < typename T >
     concept nullptr_kind = std::is_null_pointer_v<T>;
@@ -1273,9 +1273,9 @@ namespace meta_hpp::detail
         if constexpr ( array_kind<T> ) { return type_kind::array_; }
         if constexpr ( class_kind<T> ) { return type_kind::class_; }
         if constexpr ( enum_kind<T> ) { return type_kind::enum_; }
-        if constexpr ( function_kind<T> ) { return type_kind::function_; }
-        if constexpr ( member_kind<T> ) { return type_kind::member_; }
-        if constexpr ( method_kind<T> ) { return type_kind::method_; }
+        if constexpr ( function_pointer_kind<T> ) { return type_kind::function_; }
+        if constexpr ( member_pointer_kind<T> ) { return type_kind::member_; }
+        if constexpr ( method_pointer_kind<T> ) { return type_kind::method_; }
         if constexpr ( nullptr_kind<T> ) { return type_kind::nullptr_; }
         if constexpr ( number_kind<T> ) { return type_kind::number_; }
         if constexpr ( pointer_kind<T> ) { return type_kind::pointer_; }
@@ -1658,7 +1658,7 @@ namespace meta_hpp::detail
 
 namespace meta_hpp::detail
 {
-    template < function_kind Function >
+    template < function_pointer_kind Function >
     struct function_traits;
 
     template < typename R, typename... Args >
@@ -1693,7 +1693,7 @@ namespace meta_hpp::detail
 
 namespace meta_hpp::detail
 {
-    template < member_kind Member >
+    template < member_pointer_kind Member >
     struct member_traits;
 
     template < typename V, typename C >
@@ -1728,7 +1728,7 @@ namespace meta_hpp::detail
 
 namespace meta_hpp::detail
 {
-    template < method_kind Method >
+    template < method_pointer_kind Method >
     struct method_traits;
 
     template < typename R, typename C, typename... Args >
@@ -2543,7 +2543,7 @@ namespace meta_hpp::detail
         const any_type return_type;
         const any_type_list argument_types;
 
-        template < function_kind Function >
+        template < function_pointer_kind Function >
         explicit function_type_data(type_list<Function>);
     };
 
@@ -2552,7 +2552,7 @@ namespace meta_hpp::detail
         const class_type owner_type;
         const any_type value_type;
 
-        template < member_kind Member >
+        template < member_pointer_kind Member >
         explicit member_type_data(type_list<Member>);
     };
 
@@ -2562,7 +2562,7 @@ namespace meta_hpp::detail
         const any_type return_type;
         const any_type_list argument_types;
 
-        template < method_kind Method >
+        template < method_pointer_kind Method >
         explicit method_type_data(type_list<Method>);
     };
 
@@ -3466,7 +3466,7 @@ namespace meta_hpp::detail
         is_invocable_with_impl is_invocable_with{};
         argument_list arguments{};
 
-        template < function_policy_kind Policy, function_kind Function >
+        template < function_policy_kind Policy, function_pointer_kind Function >
         [[nodiscard]] static function_state_ptr make(std::string name, Function function_ptr, metadata_map metadata);
         explicit function_state(function_index index, metadata_map metadata);
     };
@@ -3486,7 +3486,7 @@ namespace meta_hpp::detail
         is_gettable_with_impl is_gettable_with{};
         is_settable_with_impl is_settable_with{};
 
-        template < member_policy_kind Policy, member_kind Member >
+        template < member_policy_kind Policy, member_pointer_kind Member >
         [[nodiscard]] static member_state_ptr make(std::string name, Member member_ptr, metadata_map metadata);
         explicit member_state(member_index index, metadata_map metadata);
     };
@@ -3502,7 +3502,7 @@ namespace meta_hpp::detail
         is_invocable_with_impl is_invocable_with{};
         argument_list arguments{};
 
-        template < method_policy_kind Policy, method_kind Method >
+        template < method_policy_kind Policy, method_pointer_kind Method >
         [[nodiscard]] static method_state_ptr make(std::string name, Method method_ptr, metadata_map metadata);
         explicit method_state(method_index index, metadata_map metadata);
     };
@@ -3681,17 +3681,17 @@ namespace meta_hpp::detail
             return resolve_enum_type<Enum>();
         }
 
-        template < function_kind Function >
+        template < function_pointer_kind Function >
         [[nodiscard]] function_type resolve_type() {
             return resolve_function_type<Function>();
         }
 
-        template < member_kind Member >
+        template < member_pointer_kind Member >
         [[nodiscard]] member_type resolve_type() {
             return resolve_member_type<Member>();
         }
 
-        template < method_kind Method >
+        template < method_pointer_kind Method >
         [[nodiscard]] method_type resolve_type() {
             return resolve_method_type<Method>();
         }
@@ -3747,17 +3747,17 @@ namespace meta_hpp::detail
             return enum_type{resolve_enum_type_data<Enum>()};
         }
 
-        template < function_kind Function >
+        template < function_pointer_kind Function >
         [[nodiscard]] function_type resolve_function_type() {
             return function_type{resolve_function_type_data<Function>()};
         }
 
-        template < member_kind Member >
+        template < member_pointer_kind Member >
         [[nodiscard]] member_type resolve_member_type() {
             return member_type{resolve_member_type_data<Member>()};
         }
 
-        template < method_kind Method >
+        template < method_pointer_kind Method >
         [[nodiscard]] method_type resolve_method_type() {
             return method_type{resolve_method_type_data<Method>()};
         }
@@ -3818,19 +3818,19 @@ namespace meta_hpp::detail
             return &data;
         }
 
-        template < function_kind Function >
+        template < function_pointer_kind Function >
         [[nodiscard]] function_type_data* resolve_function_type_data() {
             static function_type_data data = (ensure_type<Function>(data), function_type_data{type_list<Function>{}});
             return &data;
         }
 
-        template < member_kind Member >
+        template < member_pointer_kind Member >
         [[nodiscard]] member_type_data* resolve_member_type_data() {
             static member_type_data data = (ensure_type<Member>(data), member_type_data{type_list<Member>{}});
             return &data;
         }
 
-        template < method_kind Method >
+        template < method_pointer_kind Method >
         [[nodiscard]] method_type_data* resolve_method_type_data() {
             static method_type_data data = (ensure_type<Method>(data), method_type_data{type_list<Method>{}});
             return &data;
@@ -3995,12 +3995,12 @@ namespace meta_hpp::detail
 
     template < typename Class, typename Member >
     concept class_bind_member_kind                                           //
-        = class_kind<Class> && member_kind<Member>                           //
+        = class_kind<Class> && member_pointer_kind<Member>                   //
        && std::is_same_v<Class, typename member_traits<Member>::class_type>; //
 
     template < typename Class, typename Method >
     concept class_bind_method_kind                                           //
-        = class_kind<Class> && method_kind<Method>                           //
+        = class_kind<Class> && method_pointer_kind<Method>                   //
        && std::is_same_v<Class, typename method_traits<Method>::class_type>; //
 }
 
@@ -4140,36 +4140,36 @@ namespace meta_hpp
 
         // function_
 
-        template < detail::function_kind Function, function_policy_kind Policy = function_policy::as_copy_t >
+        template < detail::function_pointer_kind Function, function_policy_kind Policy = function_policy::as_copy_t >
         class_bind& function_(std::string name, Function function_ptr, Policy = {});
 
-        template < detail::function_kind Function, function_policy_kind Policy = function_policy::as_copy_t >
+        template < detail::function_pointer_kind Function, function_policy_kind Policy = function_policy::as_copy_t >
         class_bind& function_(std::string name, Function function_ptr, function_opts opts, Policy = {});
 
-        template < detail::function_kind Function, function_policy_kind Policy = function_policy::as_copy_t >
+        template < detail::function_pointer_kind Function, function_policy_kind Policy = function_policy::as_copy_t >
         class_bind& function_(std::string name, Function function_ptr, string_ilist arguments, Policy = {});
 
         // member_
 
-        template < detail::member_kind Member, member_policy_kind Policy = member_policy::as_copy_t >
+        template < detail::member_pointer_kind Member, member_policy_kind Policy = member_policy::as_copy_t >
             requires detail::class_bind_member_kind<Class, Member>
         class_bind& member_(std::string name, Member member_ptr, Policy = {});
 
-        template < detail::member_kind Member, member_policy_kind Policy = member_policy::as_copy_t >
+        template < detail::member_pointer_kind Member, member_policy_kind Policy = member_policy::as_copy_t >
             requires detail::class_bind_member_kind<Class, Member>
         class_bind& member_(std::string name, Member member_ptr, member_opts opts, Policy = {});
 
         // method_
 
-        template < detail::method_kind Method, method_policy_kind Policy = method_policy::as_copy_t >
+        template < detail::method_pointer_kind Method, method_policy_kind Policy = method_policy::as_copy_t >
             requires detail::class_bind_method_kind<Class, Method>
         class_bind& method_(std::string name, Method method_ptr, Policy = {});
 
-        template < detail::method_kind Method, method_policy_kind Policy = method_policy::as_copy_t >
+        template < detail::method_pointer_kind Method, method_policy_kind Policy = method_policy::as_copy_t >
             requires detail::class_bind_method_kind<Class, Method>
         class_bind& method_(std::string name, Method method_ptr, method_opts opts, Policy = {});
 
-        template < detail::method_kind Method, method_policy_kind Policy = method_policy::as_copy_t >
+        template < detail::method_pointer_kind Method, method_policy_kind Policy = method_policy::as_copy_t >
             requires detail::class_bind_method_kind<Class, Method>
         class_bind& method_(std::string name, Method method_ptr, string_ilist arguments, Policy = {});
 
@@ -4202,7 +4202,7 @@ namespace meta_hpp
 
 namespace meta_hpp
 {
-    template < detail::function_kind Function >
+    template < detail::function_pointer_kind Function >
     class function_bind final : public type_bind_base<function_type> {
     public:
         explicit function_bind(metadata_map metadata);
@@ -4211,7 +4211,7 @@ namespace meta_hpp
 
 namespace meta_hpp
 {
-    template < detail::member_kind Member >
+    template < detail::member_pointer_kind Member >
     class member_bind final : public type_bind_base<member_type> {
     public:
         explicit member_bind(metadata_map metadata);
@@ -4220,7 +4220,7 @@ namespace meta_hpp
 
 namespace meta_hpp
 {
-    template < detail::method_kind Method >
+    template < detail::method_pointer_kind Method >
     class method_bind final : public type_bind_base<method_type> {
     public:
         explicit method_bind(metadata_map metadata);
@@ -4280,13 +4280,13 @@ namespace meta_hpp
 
         // function_
 
-        template < detail::function_kind Function, function_policy_kind Policy = function_policy::as_copy_t >
+        template < detail::function_pointer_kind Function, function_policy_kind Policy = function_policy::as_copy_t >
         scope_bind& function_(std::string name, Function function_ptr, Policy = {});
 
-        template < detail::function_kind Function, function_policy_kind Policy = function_policy::as_copy_t >
+        template < detail::function_pointer_kind Function, function_policy_kind Policy = function_policy::as_copy_t >
         scope_bind& function_(std::string name, Function function_ptr, function_opts opts, Policy = {});
 
-        template < detail::function_kind Function, function_policy_kind Policy = function_policy::as_copy_t >
+        template < detail::function_pointer_kind Function, function_policy_kind Policy = function_policy::as_copy_t >
         scope_bind& function_(std::string name, Function function_ptr, string_ilist arguments, Policy = {});
 
         // typedef_
@@ -4321,17 +4321,17 @@ namespace meta_hpp
         return enum_bind<Enum>{std::move(metadata)};
     }
 
-    template < detail::function_kind Function >
+    template < detail::function_pointer_kind Function >
     function_bind<Function> function_(metadata_map metadata = {}) {
         return function_bind<Function>{std::move(metadata)};
     }
 
-    template < detail::member_kind Member >
+    template < detail::member_pointer_kind Member >
     member_bind<Member> member_(metadata_map metadata = {}) {
         return member_bind<Member>{std::move(metadata)};
     }
 
-    template < detail::method_kind Method >
+    template < detail::method_pointer_kind Method >
     method_bind<Method> method_(metadata_map metadata = {}) {
         return method_bind<Method>{std::move(metadata)};
     }
@@ -4487,13 +4487,13 @@ namespace meta_hpp
     //
 
     template < detail::class_kind Class >
-    template < detail::function_kind Function, function_policy_kind Policy >
+    template < detail::function_pointer_kind Function, function_policy_kind Policy >
     class_bind<Class>& class_bind<Class>::function_(std::string name, Function function_ptr, Policy policy) {
         return function_(std::move(name), function_ptr, {}, policy);
     }
 
     template < detail::class_kind Class >
-    template < detail::function_kind Function, function_policy_kind Policy >
+    template < detail::function_pointer_kind Function, function_policy_kind Policy >
     class_bind<Class>& class_bind<Class>::function_(std::string name, Function function_ptr, function_opts opts, Policy) {
         auto state = detail::function_state::make<Policy>(std::move(name), function_ptr, std::move(opts.metadata));
 
@@ -4512,7 +4512,7 @@ namespace meta_hpp
     }
 
     template < detail::class_kind Class >
-    template < detail::function_kind Function, function_policy_kind Policy >
+    template < detail::function_pointer_kind Function, function_policy_kind Policy >
     class_bind<Class>& class_bind<Class>::function_(std::string name, Function function_ptr, string_ilist arguments, Policy) {
         auto state = detail::function_state::make<Policy>(std::move(name), function_ptr, {});
 
@@ -4535,14 +4535,14 @@ namespace meta_hpp
     //
 
     template < detail::class_kind Class >
-    template < detail::member_kind Member, member_policy_kind Policy >
+    template < detail::member_pointer_kind Member, member_policy_kind Policy >
         requires detail::class_bind_member_kind<Class, Member>
     class_bind<Class>& class_bind<Class>::member_(std::string name, Member member_ptr, Policy policy) {
         return member_(std::move(name), member_ptr, {}, policy);
     }
 
     template < detail::class_kind Class >
-    template < detail::member_kind Member, member_policy_kind Policy >
+    template < detail::member_pointer_kind Member, member_policy_kind Policy >
         requires detail::class_bind_member_kind<Class, Member>
     class_bind<Class>& class_bind<Class>::member_(std::string name, Member member_ptr, member_opts opts, Policy) {
         auto state = detail::member_state::make<Policy>(std::move(name), member_ptr, std::move(opts.metadata));
@@ -4555,14 +4555,14 @@ namespace meta_hpp
     //
 
     template < detail::class_kind Class >
-    template < detail::method_kind Method, method_policy_kind Policy >
+    template < detail::method_pointer_kind Method, method_policy_kind Policy >
         requires detail::class_bind_method_kind<Class, Method>
     class_bind<Class>& class_bind<Class>::method_(std::string name, Method method_ptr, Policy policy) {
         return method_(std::move(name), method_ptr, {}, policy);
     }
 
     template < detail::class_kind Class >
-    template < detail::method_kind Method, method_policy_kind Policy >
+    template < detail::method_pointer_kind Method, method_policy_kind Policy >
         requires detail::class_bind_method_kind<Class, Method>
     class_bind<Class>& class_bind<Class>::method_(std::string name, Method method_ptr, method_opts opts, Policy) {
         auto state = detail::method_state::make<Policy>(std::move(name), method_ptr, std::move(opts.metadata));
@@ -4582,7 +4582,7 @@ namespace meta_hpp
     }
 
     template < detail::class_kind Class >
-    template < detail::method_kind Method, method_policy_kind Policy >
+    template < detail::method_pointer_kind Method, method_policy_kind Policy >
         requires detail::class_bind_method_kind<Class, Method>
     class_bind<Class>& class_bind<Class>::method_(std::string name, Method method_ptr, string_ilist arguments, Policy) {
         auto state = detail::method_state::make<Policy>(std::move(name), method_ptr, {});
@@ -4652,21 +4652,21 @@ namespace meta_hpp
 
 namespace meta_hpp
 {
-    template < detail::function_kind Function >
+    template < detail::function_pointer_kind Function >
     function_bind<Function>::function_bind(metadata_map metadata)
     : type_bind_base{resolve_type<Function>(), std::move(metadata)} {}
 }
 
 namespace meta_hpp
 {
-    template < detail::member_kind Member >
+    template < detail::member_pointer_kind Member >
     member_bind<Member>::member_bind(metadata_map metadata)
     : type_bind_base{resolve_type<Member>(), std::move(metadata)} {}
 }
 
 namespace meta_hpp
 {
-    template < detail::method_kind Method >
+    template < detail::method_pointer_kind Method >
     method_bind<Method>::method_bind(metadata_map metadata)
     : type_bind_base{resolve_type<Method>(), std::move(metadata)} {}
 }
@@ -4708,12 +4708,12 @@ namespace meta_hpp
     // function_
     //
 
-    template < detail::function_kind Function, function_policy_kind Policy >
+    template < detail::function_pointer_kind Function, function_policy_kind Policy >
     scope_bind& scope_bind::function_(std::string name, Function function_ptr, Policy policy) {
         return function_(std::move(name), function_ptr, {}, policy);
     }
 
-    template < detail::function_kind Function, function_policy_kind Policy >
+    template < detail::function_pointer_kind Function, function_policy_kind Policy >
     scope_bind& scope_bind::function_(std::string name, Function function_ptr, function_opts opts, Policy) {
         auto state = detail::function_state::make<Policy>(std::move(name), function_ptr, std::move(opts.metadata));
 
@@ -4731,7 +4731,7 @@ namespace meta_hpp
         return *this;
     }
 
-    template < detail::function_kind Function, function_policy_kind Policy >
+    template < detail::function_pointer_kind Function, function_policy_kind Policy >
     scope_bind& scope_bind::function_(std::string name, Function function_ptr, string_ilist arguments, Policy) {
         auto state = detail::function_state::make<Policy>(std::move(name), function_ptr, {});
 
@@ -6000,10 +6000,10 @@ namespace meta_hpp
 
 namespace meta_hpp::detail
 {
-    template < function_kind Function >
+    template < function_pointer_kind Function >
     struct function_tag {};
 
-    template < function_kind Function >
+    template < function_pointer_kind Function >
     function_type_data::function_type_data(type_list<Function>)
     : type_data_base{type_id{type_list<function_tag<Function>>{}}, type_kind::function_}
     , flags{function_traits<Function>::make_flags()}
@@ -6055,7 +6055,7 @@ namespace meta_hpp
 
 namespace meta_hpp::detail
 {
-    template < function_policy_kind Policy, function_kind Function >
+    template < function_policy_kind Policy, function_pointer_kind Function >
     uvalue raw_function_invoke(Function function_ptr, std::span<const uarg> args) {
         using ft = function_traits<Function>;
         using return_type = typename ft::return_type;
@@ -6105,7 +6105,7 @@ namespace meta_hpp::detail
         );
     }
 
-    template < function_kind Function >
+    template < function_pointer_kind Function >
     bool raw_function_is_invocable_with(std::span<const uarg_base> args) {
         using ft = function_traits<Function>;
         using argument_types = typename ft::argument_types;
@@ -6125,19 +6125,19 @@ namespace meta_hpp::detail
 
 namespace meta_hpp::detail
 {
-    template < function_policy_kind Policy, function_kind Function >
+    template < function_policy_kind Policy, function_pointer_kind Function >
     function_state::invoke_impl make_function_invoke(Function function_ptr) {
         return [function_ptr](std::span<const uarg> args) { //
             return raw_function_invoke<Policy>(function_ptr, args);
         };
     }
 
-    template < function_kind Function >
+    template < function_pointer_kind Function >
     function_state::is_invocable_with_impl make_function_is_invocable_with() {
         return &raw_function_is_invocable_with<Function>;
     }
 
-    template < function_kind Function >
+    template < function_pointer_kind Function >
     argument_list make_function_arguments() {
         using ft = function_traits<Function>;
         using ft_argument_types = typename ft::argument_types;
@@ -6161,7 +6161,7 @@ namespace meta_hpp::detail
     : index{std::move(nindex)}
     , metadata{std::move(nmetadata)} {}
 
-    template < function_policy_kind Policy, function_kind Function >
+    template < function_policy_kind Policy, function_pointer_kind Function >
     function_state_ptr function_state::make(std::string name, Function function_ptr, metadata_map metadata) {
         function_state state{function_index{resolve_type<Function>(), std::move(name)}, std::move(metadata)};
         state.invoke = make_function_invoke<Policy>(function_ptr);
@@ -6474,10 +6474,10 @@ namespace meta_hpp::detail
 
 namespace meta_hpp::detail
 {
-    template < member_kind Member >
+    template < member_pointer_kind Member >
     struct member_tag {};
 
-    template < member_kind Member >
+    template < member_pointer_kind Member >
     member_type_data::member_type_data(type_list<Member>)
     : type_data_base{type_id{type_list<member_tag<Member>>{}}, type_kind::member_}
     , flags{member_traits<Member>::make_flags()}
@@ -6521,7 +6521,7 @@ namespace meta_hpp
 
 namespace meta_hpp::detail
 {
-    template < member_policy_kind Policy, member_kind Member >
+    template < member_policy_kind Policy, member_pointer_kind Member >
     uvalue raw_member_getter(Member member_ptr, const uinst& inst) {
         using mt = member_traits<Member>;
         using class_type = typename mt::class_type;
@@ -6574,7 +6574,7 @@ namespace meta_hpp::detail
         }
     }
 
-    template < member_kind Member >
+    template < member_pointer_kind Member >
     bool raw_member_is_gettable_with(const uinst_base& inst) {
         using mt = member_traits<Member>;
         using class_type = typename mt::class_type;
@@ -6585,7 +6585,7 @@ namespace meta_hpp::detail
 
 namespace meta_hpp::detail
 {
-    template < member_kind Member >
+    template < member_pointer_kind Member >
     void raw_member_setter([[maybe_unused]] Member member_ptr, const uinst& inst, const uarg& arg) {
         using mt = member_traits<Member>;
         using class_type = typename mt::class_type;
@@ -6610,7 +6610,7 @@ namespace meta_hpp::detail
         }
     }
 
-    template < member_kind Member >
+    template < member_pointer_kind Member >
     bool raw_member_is_settable_with(const uinst_base& inst, const uarg_base& arg) {
         using mt = member_traits<Member>;
         using class_type = typename mt::class_type;
@@ -6623,26 +6623,26 @@ namespace meta_hpp::detail
 
 namespace meta_hpp::detail
 {
-    template < member_policy_kind Policy, member_kind Member >
+    template < member_policy_kind Policy, member_pointer_kind Member >
     member_state::getter_impl make_member_getter(Member member_ptr) {
         return [member_ptr](const uinst& inst) { //
             return raw_member_getter<Policy>(member_ptr, inst);
         };
     }
 
-    template < member_kind Member >
+    template < member_pointer_kind Member >
     member_state::is_gettable_with_impl make_member_is_gettable_with() {
         return &raw_member_is_gettable_with<Member>;
     }
 
-    template < member_kind Member >
+    template < member_pointer_kind Member >
     member_state::setter_impl make_member_setter(Member member_ptr) {
         return [member_ptr](const uinst& inst, const uarg& arg) { //
             return raw_member_setter(member_ptr, inst, arg);
         };
     }
 
-    template < member_kind Member >
+    template < member_pointer_kind Member >
     member_state::is_settable_with_impl make_member_is_settable_with() {
         return &raw_member_is_settable_with<Member>;
     }
@@ -6654,7 +6654,7 @@ namespace meta_hpp::detail
     : index{std::move(nindex)}
     , metadata{std::move(nmetadata)} {}
 
-    template < member_policy_kind Policy, member_kind Member >
+    template < member_policy_kind Policy, member_pointer_kind Member >
     member_state_ptr member_state::make(std::string name, Member member_ptr, metadata_map metadata) {
         member_state state{member_index{resolve_type<Member>(), std::move(name)}, std::move(metadata)};
         state.getter = make_member_getter<Policy>(member_ptr);
@@ -6757,10 +6757,10 @@ namespace meta_hpp
 
 namespace meta_hpp::detail
 {
-    template < method_kind Method >
+    template < method_pointer_kind Method >
     struct method_tag {};
 
-    template < method_kind Method >
+    template < method_pointer_kind Method >
     method_type_data::method_type_data(type_list<Method>)
     : type_data_base{type_id{type_list<method_tag<Method>>{}}, type_kind::method_}
     , flags{method_traits<Method>::make_flags()}
@@ -6817,7 +6817,7 @@ namespace meta_hpp
 
 namespace meta_hpp::detail
 {
-    template < method_policy_kind Policy, method_kind Method >
+    template < method_policy_kind Policy, method_pointer_kind Method >
     uvalue raw_method_invoke(Method method_ptr, const uinst& inst, std::span<const uarg> args) {
         using mt = method_traits<Method>;
         using return_type = typename mt::return_type;
@@ -6875,7 +6875,7 @@ namespace meta_hpp::detail
         );
     }
 
-    template < method_kind Method >
+    template < method_pointer_kind Method >
     bool raw_method_is_invocable_with(const uinst_base& inst, std::span<const uarg_base> args) {
         using mt = method_traits<Method>;
         using qualified_type = typename mt::qualified_type;
@@ -6900,19 +6900,19 @@ namespace meta_hpp::detail
 
 namespace meta_hpp::detail
 {
-    template < method_policy_kind Policy, method_kind Method >
+    template < method_policy_kind Policy, method_pointer_kind Method >
     method_state::invoke_impl make_method_invoke(Method method_ptr) {
         return [method_ptr](const uinst& inst, std::span<const uarg> args) {
             return raw_method_invoke<Policy>(method_ptr, inst, args);
         };
     }
 
-    template < method_kind Method >
+    template < method_pointer_kind Method >
     method_state::is_invocable_with_impl make_method_is_invocable_with() {
         return &raw_method_is_invocable_with<Method>;
     }
 
-    template < method_kind Method >
+    template < method_pointer_kind Method >
     argument_list make_method_arguments() {
         using mt = method_traits<Method>;
         using mt_argument_types = typename mt::argument_types;
@@ -6936,7 +6936,7 @@ namespace meta_hpp::detail
     : index{std::move(nindex)}
     , metadata{std::move(nmetadata)} {}
 
-    template < method_policy_kind Policy, method_kind Method >
+    template < method_policy_kind Policy, method_pointer_kind Method >
     method_state_ptr method_state::make(std::string name, Method method_ptr, metadata_map metadata) {
         method_state state{method_index{resolve_type<Method>(), std::move(name)}, std::move(metadata)};
         state.invoke = make_method_invoke<Policy>(method_ptr);
@@ -8061,7 +8061,7 @@ namespace meta_hpp
         return function.invoke(std::forward<Args>(args)...);
     }
 
-    template < detail::function_kind Function, typename... Args >
+    template < detail::function_pointer_kind Function, typename... Args >
     uvalue invoke(Function function_ptr, Args&&... args) {
         using namespace detail;
         if constexpr ( sizeof...(Args) > 0 ) {
@@ -8080,7 +8080,7 @@ namespace meta_hpp
         return member.get(std::forward<Instance>(instance));
     }
 
-    template < detail::member_kind Member, typename Instance >
+    template < detail::member_pointer_kind Member, typename Instance >
     uvalue invoke(Member member_ptr, Instance&& instance) {
         using namespace detail;
         const uinst vinst{std::forward<Instance>(instance)};
@@ -8095,7 +8095,7 @@ namespace meta_hpp
         return method.invoke(std::forward<Instance>(instance), std::forward<Args>(args)...);
     }
 
-    template < detail::method_kind Method, typename Instance, typename... Args >
+    template < detail::method_pointer_kind Method, typename Instance, typename... Args >
     uvalue invoke(Method method_ptr, Instance&& instance, Args&&... args) {
         using namespace detail;
         const uinst vinst{std::forward<Instance>(instance)};
@@ -8120,7 +8120,7 @@ namespace meta_hpp
         return function.is_invocable_with(std::forward<Args>(args)...);
     }
 
-    template < detail::function_kind Function, typename... Args >
+    template < detail::function_pointer_kind Function, typename... Args >
     bool is_invocable_with() {
         if constexpr ( sizeof...(Args) > 0 ) {
             using namespace detail;
@@ -8131,7 +8131,7 @@ namespace meta_hpp
         }
     }
 
-    template < detail::function_kind Function, typename... Args >
+    template < detail::function_pointer_kind Function, typename... Args >
     bool is_invocable_with(Args&&... args) {
         if constexpr ( sizeof...(Args) > 0 ) {
             using namespace detail;
@@ -8171,14 +8171,14 @@ namespace meta_hpp
 
 namespace meta_hpp
 {
-    template < detail::member_kind Member, typename Instance >
+    template < detail::member_pointer_kind Member, typename Instance >
     bool is_invocable_with() {
         using namespace detail;
         const uinst_base vinst{type_list<Instance>{}};
         return raw_member_is_gettable_with<Member>(vinst);
     }
 
-    template < detail::member_kind Member, typename Instance >
+    template < detail::member_pointer_kind Member, typename Instance >
     bool is_invocable_with(Instance&& instance) {
         using namespace detail;
         const uinst_base vinst{std::forward<Instance>(instance)};
@@ -8188,7 +8188,7 @@ namespace meta_hpp
 
 namespace meta_hpp
 {
-    template < detail::method_kind Method, typename Instance, typename... Args >
+    template < detail::method_pointer_kind Method, typename Instance, typename... Args >
     bool is_invocable_with() {
         using namespace detail;
         const uinst_base vinst{type_list<Instance>{}};
@@ -8200,7 +8200,7 @@ namespace meta_hpp
         }
     }
 
-    template < detail::method_kind Method, typename Instance, typename... Args >
+    template < detail::method_pointer_kind Method, typename Instance, typename... Args >
     bool is_invocable_with(Instance&& instance, Args&&... args) {
         using namespace detail;
         const uinst_base vinst{std::forward<Instance>(instance)};

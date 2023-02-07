@@ -12,7 +12,7 @@
 
 namespace meta_hpp
 {
-    template < detail::method_kind Method >
+    template < detail::method_pointer_kind Method >
     method_bind<Method>::method_bind(metadata_map metadata)
     : type_bind_base{resolve_type<Method>(), std::move(metadata)} {}
 }

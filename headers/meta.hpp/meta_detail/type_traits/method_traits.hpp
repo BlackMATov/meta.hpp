@@ -23,7 +23,7 @@ namespace meta_hpp::detail
 
 namespace meta_hpp::detail
 {
-    template < method_kind Method >
+    template < method_pointer_kind Method >
     struct method_traits;
 
     template < typename R, typename C, typename... Args >

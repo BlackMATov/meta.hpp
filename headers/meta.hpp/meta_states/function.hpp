@@ -14,7 +14,7 @@
 
 namespace meta_hpp::detail
 {
-    template < function_policy_kind Policy, function_kind Function >
+    template < function_policy_kind Policy, function_pointer_kind Function >
     uvalue raw_function_invoke(Function function_ptr, std::span<const uarg> args) {
         using ft = function_traits<Function>;
         using return_type = typename ft::return_type;
@@ -64,7 +64,7 @@ namespace meta_hpp::detail
         );
     }
 
-    template < function_kind Function >
+    template < function_pointer_kind Function >
     bool raw_function_is_invocable_with(std::span<const uarg_base> args) {
         using ft = function_traits<Function>;
         using argument_types = typename ft::argument_types;
@@ -84,19 +84,19 @@ namespace meta_hpp::detail
 
 namespace meta_hpp::detail
 {
-    template < function_policy_kind Policy, function_kind Function >
+    template < function_policy_kind Policy, function_pointer_kind Function >
     function_state::invoke_impl make_function_invoke(Function function_ptr) {
         return [function_ptr](std::span<const uarg> args) { //
             return raw_function_invoke<Policy>(function_ptr, args);
         };
     }
 
-    template < function_kind Function >
+    template < function_pointer_kind Function >
     function_state::is_invocable_with_impl make_function_is_invocable_with() {
         return &raw_function_is_invocable_with<Function>;
     }
 
-    template < function_kind Function >
+    template < function_pointer_kind Function >
     argument_list make_function_arguments() {
         using ft = function_traits<Function>;
         using ft_argument_types = typename ft::argument_types;
@@ -120,7 +120,7 @@ namespace meta_hpp::detail
     : index{std::move(nindex)}
     , metadata{std::move(nmetadata)} {}
 
-    template < function_policy_kind Policy, function_kind Function >
+    template < function_policy_kind Policy, function_pointer_kind Function >
     function_state_ptr function_state::make(std::string name, Function function_ptr, metadata_map metadata) {
         function_state state{function_index{resolve_type<Function>(), std::move(name)}, std::move(metadata)};
         state.invoke = make_function_invoke<Policy>(function_ptr);

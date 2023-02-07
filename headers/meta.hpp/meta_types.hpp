@@ -610,7 +610,7 @@ namespace meta_hpp::detail
         const any_type return_type;
         const any_type_list argument_types;
 
-        template < function_kind Function >
+        template < function_pointer_kind Function >
         explicit function_type_data(type_list<Function>);
     };
 
@@ -619,7 +619,7 @@ namespace meta_hpp::detail
         const class_type owner_type;
         const any_type value_type;
 
-        template < member_kind Member >
+        template < member_pointer_kind Member >
         explicit member_type_data(type_list<Member>);
     };
 
@@ -629,7 +629,7 @@ namespace meta_hpp::detail
         const any_type return_type;
         const any_type_list argument_types;
 
-        template < method_kind Method >
+        template < method_pointer_kind Method >
         explicit method_type_data(type_list<Method>);
     };
 

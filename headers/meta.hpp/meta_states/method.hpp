@@ -15,7 +15,7 @@
 
 namespace meta_hpp::detail
 {
-    template < method_policy_kind Policy, method_kind Method >
+    template < method_policy_kind Policy, method_pointer_kind Method >
     uvalue raw_method_invoke(Method method_ptr, const uinst& inst, std::span<const uarg> args) {
         using mt = method_traits<Method>;
         using return_type = typename mt::return_type;
@@ -73,7 +73,7 @@ namespace meta_hpp::detail
         );
     }
 
-    template < method_kind Method >
+    template < method_pointer_kind Method >
     bool raw_method_is_invocable_with(const uinst_base& inst, std::span<const uarg_base> args) {
         using mt = method_traits<Method>;
         using qualified_type = typename mt::qualified_type;
@@ -98,19 +98,19 @@ namespace meta_hpp::detail
 
 namespace meta_hpp::detail
 {
-    template < method_policy_kind Policy, method_kind Method >
+    template < method_policy_kind Policy, method_pointer_kind Method >
     method_state::invoke_impl make_method_invoke(Method method_ptr) {
         return [method_ptr](const uinst& inst, std::span<const uarg> args) {
             return raw_method_invoke<Policy>(method_ptr, inst, args);
         };
     }
 
-    template < method_kind Method >
+    template < method_pointer_kind Method >
     method_state::is_invocable_with_impl make_method_is_invocable_with() {
         return &raw_method_is_invocable_with<Method>;
     }
 
-    template < method_kind Method >
+    template < method_pointer_kind Method >
     argument_list make_method_arguments() {
         using mt = method_traits<Method>;
         using mt_argument_types = typename mt::argument_types;
@@ -134,7 +134,7 @@ namespace meta_hpp::detail
     : index{std::move(nindex)}
     , metadata{std::move(nmetadata)} {}
 
-    template < method_policy_kind Policy, method_kind Method >
+    template < method_policy_kind Policy, method_pointer_kind Method >
     method_state_ptr method_state::make(std::string name, Method method_ptr, metadata_map metadata) {
         method_state state{method_index{resolve_type<Method>(), std::move(name)}, std::move(metadata)};
         state.invoke = make_method_invoke<Policy>(method_ptr);

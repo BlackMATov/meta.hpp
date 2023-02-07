@@ -28,12 +28,12 @@ namespace meta_hpp::detail
 
     template < typename Class, typename Member >
     concept class_bind_member_kind                                           //
-        = class_kind<Class> && member_kind<Member>                           //
+        = class_kind<Class> && member_pointer_kind<Member>                   //
        && std::is_same_v<Class, typename member_traits<Member>::class_type>; //
 
     template < typename Class, typename Method >
     concept class_bind_method_kind                                           //
-        = class_kind<Class> && method_kind<Method>                           //
+        = class_kind<Class> && method_pointer_kind<Method>                   //
        && std::is_same_v<Class, typename method_traits<Method>::class_type>; //
 }
 
@@ -173,36 +173,36 @@ namespace meta_hpp
 
         // function_
 
-        template < detail::function_kind Function, function_policy_kind Policy = function_policy::as_copy_t >
+        template < detail::function_pointer_kind Function, function_policy_kind Policy = function_policy::as_copy_t >
         class_bind& function_(std::string name, Function function_ptr, Policy = {});
 
-        template < detail::function_kind Function, function_policy_kind Policy = function_policy::as_copy_t >
+        template < detail::function_pointer_kind Function, function_policy_kind Policy = function_policy::as_copy_t >
         class_bind& function_(std::string name, Function function_ptr, function_opts opts, Policy = {});
 
-        template < detail::function_kind Function, function_policy_kind Policy = function_policy::as_copy_t >
+        template < detail::function_pointer_kind Function, function_policy_kind Policy = function_policy::as_copy_t >
         class_bind& function_(std::string name, Function function_ptr, string_ilist arguments, Policy = {});
 
         // member_
 
-        template < detail::member_kind Member, member_policy_kind Policy = member_policy::as_copy_t >
+        template < detail::member_pointer_kind Member, member_policy_kind Policy = member_policy::as_copy_t >
             requires detail::class_bind_member_kind<Class, Member>
         class_bind& member_(std::string name, Member member_ptr, Policy = {});
 
-        template < detail::member_kind Member, member_policy_kind Policy = member_policy::as_copy_t >
+        template < detail::member_pointer_kind Member, member_policy_kind Policy = member_policy::as_copy_t >
             requires detail::class_bind_member_kind<Class, Member>
         class_bind& member_(std::string name, Member member_ptr, member_opts opts, Policy = {});
 
         // method_
 
-        template < detail::method_kind Method, method_policy_kind Policy = method_policy::as_copy_t >
+        template < detail::method_pointer_kind Method, method_policy_kind Policy = method_policy::as_copy_t >
             requires detail::class_bind_method_kind<Class, Method>
         class_bind& method_(std::string name, Method method_ptr, Policy = {});
 
-        template < detail::method_kind Method, method_policy_kind Policy = method_policy::as_copy_t >
+        template < detail::method_pointer_kind Method, method_policy_kind Policy = method_policy::as_copy_t >
             requires detail::class_bind_method_kind<Class, Method>
         class_bind& method_(std::string name, Method method_ptr, method_opts opts, Policy = {});
 
-        template < detail::method_kind Method, method_policy_kind Policy = method_policy::as_copy_t >
+        template < detail::method_pointer_kind Method, method_policy_kind Policy = method_policy::as_copy_t >
             requires detail::class_bind_method_kind<Class, Method>
         class_bind& method_(std::string name, Method method_ptr, string_ilist arguments, Policy = {});
 
@@ -235,7 +235,7 @@ namespace meta_hpp
 
 namespace meta_hpp
 {
-    template < detail::function_kind Function >
+    template < detail::function_pointer_kind Function >
     class function_bind final : public type_bind_base<function_type> {
     public:
         explicit function_bind(metadata_map metadata);
@@ -244,7 +244,7 @@ namespace meta_hpp
 
 namespace meta_hpp
 {
-    template < detail::member_kind Member >
+    template < detail::member_pointer_kind Member >
     class member_bind final : public type_bind_base<member_type> {
     public:
         explicit member_bind(metadata_map metadata);
@@ -253,7 +253,7 @@ namespace meta_hpp
 
 namespace meta_hpp
 {
-    template < detail::method_kind Method >
+    template < detail::method_pointer_kind Method >
     class method_bind final : public type_bind_base<method_type> {
     public:
         explicit method_bind(metadata_map metadata);
@@ -313,13 +313,13 @@ namespace meta_hpp
 
         // function_
 
-        template < detail::function_kind Function, function_policy_kind Policy = function_policy::as_copy_t >
+        template < detail::function_pointer_kind Function, function_policy_kind Policy = function_policy::as_copy_t >
         scope_bind& function_(std::string name, Function function_ptr, Policy = {});
 
-        template < detail::function_kind Function, function_policy_kind Policy = function_policy::as_copy_t >
+        template < detail::function_pointer_kind Function, function_policy_kind Policy = function_policy::as_copy_t >
         scope_bind& function_(std::string name, Function function_ptr, function_opts opts, Policy = {});
 
-        template < detail::function_kind Function, function_policy_kind Policy = function_policy::as_copy_t >
+        template < detail::function_pointer_kind Function, function_policy_kind Policy = function_policy::as_copy_t >
         scope_bind& function_(std::string name, Function function_ptr, string_ilist arguments, Policy = {});
 
         // typedef_
@@ -354,17 +354,17 @@ namespace meta_hpp
         return enum_bind<Enum>{std::move(metadata)};
     }
 
-    template < detail::function_kind Function >
+    template < detail::function_pointer_kind Function >
     function_bind<Function> function_(metadata_map metadata = {}) {
         return function_bind<Function>{std::move(metadata)};
     }
 
-    template < detail::member_kind Member >
+    template < detail::member_pointer_kind Member >
     member_bind<Member> member_(metadata_map metadata = {}) {
         return member_bind<Member>{std::move(metadata)};
     }
 
-    template < detail::method_kind Method >
+    template < detail::method_pointer_kind Method >
     method_bind<Method> method_(metadata_map metadata = {}) {
         return method_bind<Method>{std::move(metadata)};
     }

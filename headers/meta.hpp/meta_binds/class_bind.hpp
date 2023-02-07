@@ -111,13 +111,13 @@ namespace meta_hpp
     //
 
     template < detail::class_kind Class >
-    template < detail::function_kind Function, function_policy_kind Policy >
+    template < detail::function_pointer_kind Function, function_policy_kind Policy >
     class_bind<Class>& class_bind<Class>::function_(std::string name, Function function_ptr, Policy policy) {
         return function_(std::move(name), function_ptr, {}, policy);
     }
 
     template < detail::class_kind Class >
-    template < detail::function_kind Function, function_policy_kind Policy >
+    template < detail::function_pointer_kind Function, function_policy_kind Policy >
     class_bind<Class>& class_bind<Class>::function_(std::string name, Function function_ptr, function_opts opts, Policy) {
         auto state = detail::function_state::make<Policy>(std::move(name), function_ptr, std::move(opts.metadata));
 
@@ -136,7 +136,7 @@ namespace meta_hpp
     }
 
     template < detail::class_kind Class >
-    template < detail::function_kind Function, function_policy_kind Policy >
+    template < detail::function_pointer_kind Function, function_policy_kind Policy >
     class_bind<Class>& class_bind<Class>::function_(std::string name, Function function_ptr, string_ilist arguments, Policy) {
         auto state = detail::function_state::make<Policy>(std::move(name), function_ptr, {});
 
@@ -159,14 +159,14 @@ namespace meta_hpp
     //
 
     template < detail::class_kind Class >
-    template < detail::member_kind Member, member_policy_kind Policy >
+    template < detail::member_pointer_kind Member, member_policy_kind Policy >
         requires detail::class_bind_member_kind<Class, Member>
     class_bind<Class>& class_bind<Class>::member_(std::string name, Member member_ptr, Policy policy) {
         return member_(std::move(name), member_ptr, {}, policy);
     }
 
     template < detail::class_kind Class >
-    template < detail::member_kind Member, member_policy_kind Policy >
+    template < detail::member_pointer_kind Member, member_policy_kind Policy >
         requires detail::class_bind_member_kind<Class, Member>
     class_bind<Class>& class_bind<Class>::member_(std::string name, Member member_ptr, member_opts opts, Policy) {
         auto state = detail::member_state::make<Policy>(std::move(name), member_ptr, std::move(opts.metadata));
@@ -179,14 +179,14 @@ namespace meta_hpp
     //
 
     template < detail::class_kind Class >
-    template < detail::method_kind Method, method_policy_kind Policy >
+    template < detail::method_pointer_kind Method, method_policy_kind Policy >
         requires detail::class_bind_method_kind<Class, Method>
     class_bind<Class>& class_bind<Class>::method_(std::string name, Method method_ptr, Policy policy) {
         return method_(std::move(name), method_ptr, {}, policy);
     }
 
     template < detail::class_kind Class >
-    template < detail::method_kind Method, method_policy_kind Policy >
+    template < detail::method_pointer_kind Method, method_policy_kind Policy >
         requires detail::class_bind_method_kind<Class, Method>
     class_bind<Class>& class_bind<Class>::method_(std::string name, Method method_ptr, method_opts opts, Policy) {
         auto state = detail::method_state::make<Policy>(std::move(name), method_ptr, std::move(opts.metadata));
@@ -206,7 +206,7 @@ namespace meta_hpp
     }
 
     template < detail::class_kind Class >
-    template < detail::method_kind Method, method_policy_kind Policy >
+    template < detail::method_pointer_kind Method, method_policy_kind Policy >
         requires detail::class_bind_method_kind<Class, Method>
     class_bind<Class>& class_bind<Class>::method_(std::string name, Method method_ptr, string_ilist arguments, Policy) {
         auto state = detail::method_state::make<Policy>(std::move(name), method_ptr, {});

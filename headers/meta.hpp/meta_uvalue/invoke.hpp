@@ -20,7 +20,7 @@ namespace meta_hpp
         return function.invoke(std::forward<Args>(args)...);
     }
 
-    template < detail::function_kind Function, typename... Args >
+    template < detail::function_pointer_kind Function, typename... Args >
     uvalue invoke(Function function_ptr, Args&&... args) {
         using namespace detail;
         if constexpr ( sizeof...(Args) > 0 ) {
@@ -39,7 +39,7 @@ namespace meta_hpp
         return member.get(std::forward<Instance>(instance));
     }
 
-    template < detail::member_kind Member, typename Instance >
+    template < detail::member_pointer_kind Member, typename Instance >
     uvalue invoke(Member member_ptr, Instance&& instance) {
         using namespace detail;
         const uinst vinst{std::forward<Instance>(instance)};
@@ -54,7 +54,7 @@ namespace meta_hpp
         return method.invoke(std::forward<Instance>(instance), std::forward<Args>(args)...);
     }
 
-    template < detail::method_kind Method, typename Instance, typename... Args >
+    template < detail::method_pointer_kind Method, typename Instance, typename... Args >
     uvalue invoke(Method method_ptr, Instance&& instance, Args&&... args) {
         using namespace detail;
         const uinst vinst{std::forward<Instance>(instance)};
@@ -79,7 +79,7 @@ namespace meta_hpp
         return function.is_invocable_with(std::forward<Args>(args)...);
     }
 
-    template < detail::function_kind Function, typename... Args >
+    template < detail::function_pointer_kind Function, typename... Args >
     bool is_invocable_with() {
         if constexpr ( sizeof...(Args) > 0 ) {
             using namespace detail;
@@ -90,7 +90,7 @@ namespace meta_hpp
         }
     }
 
-    template < detail::function_kind Function, typename... Args >
+    template < detail::function_pointer_kind Function, typename... Args >
     bool is_invocable_with(Args&&... args) {
         if constexpr ( sizeof...(Args) > 0 ) {
             using namespace detail;
@@ -130,14 +130,14 @@ namespace meta_hpp
 
 namespace meta_hpp
 {
-    template < detail::member_kind Member, typename Instance >
+    template < detail::member_pointer_kind Member, typename Instance >
     bool is_invocable_with() {
         using namespace detail;
         const uinst_base vinst{type_list<Instance>{}};
         return raw_member_is_gettable_with<Member>(vinst);
     }
 
-    template < detail::member_kind Member, typename Instance >
+    template < detail::member_pointer_kind Member, typename Instance >
     bool is_invocable_with(Instance&& instance) {
         using namespace detail;
         const uinst_base vinst{std::forward<Instance>(instance)};
@@ -147,7 +147,7 @@ namespace meta_hpp
 
 namespace meta_hpp
 {
-    template < detail::method_kind Method, typename Instance, typename... Args >
+    template < detail::method_pointer_kind Method, typename Instance, typename... Args >
     bool is_invocable_with() {
         using namespace detail;
         const uinst_base vinst{type_list<Instance>{}};
@@ -159,7 +159,7 @@ namespace meta_hpp
         }
     }
 
-    template < detail::method_kind Method, typename Instance, typename... Args >
+    template < detail::method_pointer_kind Method, typename Instance, typename... Args >
     bool is_invocable_with(Instance&& instance, Args&&... args) {
         using namespace detail;
         const uinst_base vinst{std::forward<Instance>(instance)};

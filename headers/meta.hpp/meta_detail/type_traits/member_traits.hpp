@@ -20,7 +20,7 @@ namespace meta_hpp::detail
 
 namespace meta_hpp::detail
 {
-    template < member_kind Member >
+    template < member_pointer_kind Member >
     struct member_traits;
 
     template < typename V, typename C >

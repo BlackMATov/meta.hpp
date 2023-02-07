@@ -15,7 +15,7 @@
 
 namespace meta_hpp::detail
 {
-    template < member_policy_kind Policy, member_kind Member >
+    template < member_policy_kind Policy, member_pointer_kind Member >
     uvalue raw_member_getter(Member member_ptr, const uinst& inst) {
         using mt = member_traits<Member>;
         using class_type = typename mt::class_type;
@@ -68,7 +68,7 @@ namespace meta_hpp::detail
         }
     }
 
-    template < member_kind Member >
+    template < member_pointer_kind Member >
     bool raw_member_is_gettable_with(const uinst_base& inst) {
         using mt = member_traits<Member>;
         using class_type = typename mt::class_type;
@@ -79,7 +79,7 @@ namespace meta_hpp::detail
 
 namespace meta_hpp::detail
 {
-    template < member_kind Member >
+    template < member_pointer_kind Member >
     void raw_member_setter([[maybe_unused]] Member member_ptr, const uinst& inst, const uarg& arg) {
         using mt = member_traits<Member>;
         using class_type = typename mt::class_type;
@@ -104,7 +104,7 @@ namespace meta_hpp::detail
         }
     }
 
-    template < member_kind Member >
+    template < member_pointer_kind Member >
     bool raw_member_is_settable_with(const uinst_base& inst, const uarg_base& arg) {
         using mt = member_traits<Member>;
         using class_type = typename mt::class_type;
@@ -117,26 +117,26 @@ namespace meta_hpp::detail
 
 namespace meta_hpp::detail
 {
-    template < member_policy_kind Policy, member_kind Member >
+    template < member_policy_kind Policy, member_pointer_kind Member >
     member_state::getter_impl make_member_getter(Member member_ptr) {
         return [member_ptr](const uinst& inst) { //
             return raw_member_getter<Policy>(member_ptr, inst);
         };
     }
 
-    template < member_kind Member >
+    template < member_pointer_kind Member >
     member_state::is_gettable_with_impl make_member_is_gettable_with() {
         return &raw_member_is_gettable_with<Member>;
     }
 
-    template < member_kind Member >
+    template < member_pointer_kind Member >
     member_state::setter_impl make_member_setter(Member member_ptr) {
         return [member_ptr](const uinst& inst, const uarg& arg) { //
             return raw_member_setter(member_ptr, inst, arg);
         };
     }
 
-    template < member_kind Member >
+    template < member_pointer_kind Member >
     member_state::is_settable_with_impl make_member_is_settable_with() {
         return &raw_member_is_settable_with<Member>;
     }
@@ -148,7 +148,7 @@ namespace meta_hpp::detail
     : index{std::move(nindex)}
     , metadata{std::move(nmetadata)} {}
 
-    template < member_policy_kind Policy, member_kind Member >
+    template < member_policy_kind Policy, member_pointer_kind Member >
     member_state_ptr member_state::make(std::string name, Member member_ptr, metadata_map metadata) {
         member_state state{member_index{resolve_type<Member>(), std::move(name)}, std::move(metadata)};
         state.getter = make_member_getter<Policy>(member_ptr);

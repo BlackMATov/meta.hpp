@@ -12,7 +12,7 @@
 
 namespace meta_hpp
 {
-    template < detail::member_kind Member >
+    template < detail::member_pointer_kind Member >
     member_bind<Member>::member_bind(metadata_map metadata)
     : type_bind_base{resolve_type<Member>(), std::move(metadata)} {}
 }
