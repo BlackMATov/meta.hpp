@@ -345,10 +345,9 @@ namespace meta_hpp
         vtable_t::do_swap(*this, other);
     }
 
-    inline const any_type& uvalue::get_type() const noexcept {
-        static any_type void_type = resolve_type<void>();
+    inline any_type uvalue::get_type() const noexcept {
         auto&& [tag, vtable] = vtable_t::unpack_vtag(*this);
-        return tag == storage_e::nothing ? void_type : vtable->type;
+        return tag == storage_e::nothing ? any_type{} : vtable->type;
     }
 
     inline void* uvalue::get_data() noexcept {

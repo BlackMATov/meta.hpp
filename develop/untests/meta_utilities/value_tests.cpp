@@ -178,7 +178,7 @@ TEST_CASE("meta/meta_utilities/value") {
             CHECK_THROWS(std::ignore = std::move(std::as_const(val)).get_as<int>());
         }
 
-        CHECK(meta::uvalue{}.get_type() == meta::resolve_type<void>());
+        CHECK_FALSE(meta::uvalue{}.get_type());
     }
 
     SUBCASE("ivec2&") {
