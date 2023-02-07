@@ -119,7 +119,7 @@ namespace meta_hpp
         using state_ptr = detail::argument_state_ptr;
 
         argument() = default;
-        argument(state_ptr state) noexcept;
+        explicit argument(state_ptr state) noexcept;
 
         [[nodiscard]] bool is_valid() const noexcept;
         [[nodiscard]] explicit operator bool() const noexcept;
@@ -143,7 +143,7 @@ namespace meta_hpp
         using state_ptr = detail::constructor_state_ptr;
 
         constructor() = default;
-        constructor(state_ptr state) noexcept;
+        explicit constructor(state_ptr state) noexcept;
 
         [[nodiscard]] bool is_valid() const noexcept;
         [[nodiscard]] explicit operator bool() const noexcept;
@@ -179,7 +179,7 @@ namespace meta_hpp
         using state_ptr = detail::destructor_state_ptr;
 
         destructor() = default;
-        destructor(state_ptr state) noexcept;
+        explicit destructor(state_ptr state) noexcept;
 
         [[nodiscard]] bool is_valid() const noexcept;
         [[nodiscard]] explicit operator bool() const noexcept;
@@ -205,7 +205,7 @@ namespace meta_hpp
         using state_ptr = detail::evalue_state_ptr;
 
         evalue() = default;
-        evalue(state_ptr state) noexcept;
+        explicit evalue(state_ptr state) noexcept;
 
         [[nodiscard]] bool is_valid() const noexcept;
         [[nodiscard]] explicit operator bool() const noexcept;
@@ -236,7 +236,7 @@ namespace meta_hpp
         using state_ptr = detail::function_state_ptr;
 
         function() = default;
-        function(state_ptr state) noexcept;
+        explicit function(state_ptr state) noexcept;
 
         [[nodiscard]] bool is_valid() const noexcept;
         [[nodiscard]] explicit operator bool() const noexcept;
@@ -273,7 +273,7 @@ namespace meta_hpp
         using state_ptr = detail::member_state_ptr;
 
         member() = default;
-        member(state_ptr state) noexcept;
+        explicit member(state_ptr state) noexcept;
 
         [[nodiscard]] bool is_valid() const noexcept;
         [[nodiscard]] explicit operator bool() const noexcept;
@@ -322,7 +322,7 @@ namespace meta_hpp
         using state_ptr = detail::method_state_ptr;
 
         method() = default;
-        method(state_ptr state) noexcept;
+        explicit method(state_ptr state) noexcept;
 
         [[nodiscard]] bool is_valid() const noexcept;
         [[nodiscard]] explicit operator bool() const noexcept;
@@ -359,7 +359,7 @@ namespace meta_hpp
         using state_ptr = detail::scope_state_ptr;
 
         scope() = default;
-        scope(state_ptr state) noexcept;
+        explicit scope(state_ptr state) noexcept;
 
         [[nodiscard]] bool is_valid() const noexcept;
         [[nodiscard]] explicit operator bool() const noexcept;
@@ -395,7 +395,7 @@ namespace meta_hpp
         using state_ptr = detail::variable_state_ptr;
 
         variable() = default;
-        variable(state_ptr state) noexcept;
+        explicit variable(state_ptr state) noexcept;
 
         [[nodiscard]] bool is_valid() const noexcept;
         [[nodiscard]] explicit operator bool() const noexcept;
@@ -532,7 +532,7 @@ namespace meta_hpp::detail
         argument_list arguments{};
 
         template < function_policy_kind Policy, function_kind Function >
-        [[nodiscard]] static function_state_ptr make(std::string name, Function function, metadata_map metadata);
+        [[nodiscard]] static function_state_ptr make(std::string name, Function function_ptr, metadata_map metadata);
         explicit function_state(function_index index, metadata_map metadata);
     };
 
@@ -552,7 +552,7 @@ namespace meta_hpp::detail
         is_settable_with_impl is_settable_with{};
 
         template < member_policy_kind Policy, member_kind Member >
-        [[nodiscard]] static member_state_ptr make(std::string name, Member member, metadata_map metadata);
+        [[nodiscard]] static member_state_ptr make(std::string name, Member member_ptr, metadata_map metadata);
         explicit member_state(member_index index, metadata_map metadata);
     };
 
@@ -568,7 +568,7 @@ namespace meta_hpp::detail
         argument_list arguments{};
 
         template < method_policy_kind Policy, method_kind Method >
-        [[nodiscard]] static method_state_ptr make(std::string name, Method method, metadata_map metadata);
+        [[nodiscard]] static method_state_ptr make(std::string name, Method method_ptr, metadata_map metadata);
         explicit method_state(method_index index, metadata_map metadata);
     };
 
@@ -597,7 +597,7 @@ namespace meta_hpp::detail
         is_settable_with_impl is_settable_with{};
 
         template < variable_policy_kind Policy, pointer_kind Pointer >
-        [[nodiscard]] static variable_state_ptr make(std::string name, Pointer pointer, metadata_map metadata);
+        [[nodiscard]] static variable_state_ptr make(std::string name, Pointer variable_ptr, metadata_map metadata);
         explicit variable_state(variable_index index, metadata_map metadata);
     };
 }

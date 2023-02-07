@@ -21,13 +21,13 @@ namespace meta_hpp
     }
 
     template < detail::function_kind Function, typename... Args >
-    uvalue invoke(Function&& function, Args&&... args) {
+    uvalue invoke(Function function_ptr, Args&&... args) {
         using namespace detail;
         if constexpr ( sizeof...(Args) > 0 ) {
             const std::array<uarg, sizeof...(Args)> vargs{uarg{std::forward<Args>(args)}...};
-            return raw_function_invoke<function_policy::as_copy_t>(std::forward<Function>(function), vargs);
+            return raw_function_invoke<function_policy::as_copy_t>(function_ptr, vargs);
         } else {
-            return raw_function_invoke<function_policy::as_copy_t>(std::forward<Function>(function), {});
+            return raw_function_invoke<function_policy::as_copy_t>(function_ptr, {});
         }
     }
 }
@@ -40,10 +40,10 @@ namespace meta_hpp
     }
 
     template < detail::member_kind Member, typename Instance >
-    uvalue invoke(Member&& member, Instance&& instance) {
+    uvalue invoke(Member member_ptr, Instance&& instance) {
         using namespace detail;
         const uinst vinst{std::forward<Instance>(instance)};
-        return raw_member_getter<member_policy::as_copy_t>(std::forward<Member>(member), vinst);
+        return raw_member_getter<member_policy::as_copy_t>(member_ptr, vinst);
     }
 }
 
@@ -55,14 +55,14 @@ namespace meta_hpp
     }
 
     template < detail::method_kind Method, typename Instance, typename... Args >
-    uvalue invoke(Method&& method, Instance&& instance, Args&&... args) {
+    uvalue invoke(Method method_ptr, Instance&& instance, Args&&... args) {
         using namespace detail;
         const uinst vinst{std::forward<Instance>(instance)};
         if constexpr ( sizeof...(Args) > 0 ) {
             const std::array<uarg, sizeof...(Args)> vargs{uarg{std::forward<Args>(args)}...};
-            return raw_method_invoke<method_policy::as_copy_t>(std::forward<Method>(method), vinst, vargs);
+            return raw_method_invoke<method_policy::as_copy_t>(method_ptr, vinst, vargs);
         } else {
-            return raw_method_invoke<method_policy::as_copy_t>(std::forward<Method>(method), vinst, {});
+            return raw_method_invoke<method_policy::as_copy_t>(method_ptr, vinst, {});
         }
     }
 }

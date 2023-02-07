@@ -1998,7 +1998,7 @@ namespace meta_hpp
         using data_ptr = detail::type_data_base*;
 
         any_type() = default;
-        any_type(data_ptr data);
+        explicit any_type(data_ptr data);
 
         [[nodiscard]] bool is_valid() const noexcept;
         [[nodiscard]] explicit operator bool() const noexcept;
@@ -2056,7 +2056,7 @@ namespace meta_hpp
         inline static constexpr type_kind kind{type_kind::array_};
 
         array_type() = default;
-        array_type(data_ptr data);
+        explicit array_type(data_ptr data);
 
         [[nodiscard]] bool is_valid() const noexcept;
         [[nodiscard]] explicit operator bool() const noexcept;
@@ -2079,7 +2079,7 @@ namespace meta_hpp
         inline static constexpr type_kind kind{type_kind::class_};
 
         class_type() = default;
-        class_type(data_ptr data);
+        explicit class_type(data_ptr data);
 
         [[nodiscard]] bool is_valid() const noexcept;
         [[nodiscard]] explicit operator bool() const noexcept;
@@ -2161,7 +2161,7 @@ namespace meta_hpp
         inline static constexpr type_kind kind{type_kind::constructor_};
 
         constructor_type() = default;
-        constructor_type(data_ptr data);
+        explicit constructor_type(data_ptr data);
 
         [[nodiscard]] bool is_valid() const noexcept;
         [[nodiscard]] explicit operator bool() const noexcept;
@@ -2186,7 +2186,7 @@ namespace meta_hpp
         inline static constexpr type_kind kind{type_kind::destructor_};
 
         destructor_type() = default;
-        destructor_type(data_ptr data);
+        explicit destructor_type(data_ptr data);
 
         [[nodiscard]] bool is_valid() const noexcept;
         [[nodiscard]] explicit operator bool() const noexcept;
@@ -2208,7 +2208,7 @@ namespace meta_hpp
         inline static constexpr type_kind kind{type_kind::enum_};
 
         enum_type() = default;
-        enum_type(data_ptr data);
+        explicit enum_type(data_ptr data);
 
         [[nodiscard]] bool is_valid() const noexcept;
         [[nodiscard]] explicit operator bool() const noexcept;
@@ -2241,7 +2241,7 @@ namespace meta_hpp
         inline static constexpr type_kind kind{type_kind::function_};
 
         function_type() = default;
-        function_type(data_ptr data);
+        explicit function_type(data_ptr data);
 
         [[nodiscard]] bool is_valid() const noexcept;
         [[nodiscard]] explicit operator bool() const noexcept;
@@ -2266,7 +2266,7 @@ namespace meta_hpp
         inline static constexpr type_kind kind{type_kind::member_};
 
         member_type() = default;
-        member_type(data_ptr data);
+        explicit member_type(data_ptr data);
 
         [[nodiscard]] bool is_valid() const noexcept;
         [[nodiscard]] explicit operator bool() const noexcept;
@@ -2289,7 +2289,7 @@ namespace meta_hpp
         inline static constexpr type_kind kind{type_kind::method_};
 
         method_type() = default;
-        method_type(data_ptr data);
+        explicit method_type(data_ptr data);
 
         [[nodiscard]] bool is_valid() const noexcept;
         [[nodiscard]] explicit operator bool() const noexcept;
@@ -2315,7 +2315,7 @@ namespace meta_hpp
         inline static constexpr type_kind kind{type_kind::nullptr_};
 
         nullptr_type() = default;
-        nullptr_type(data_ptr data);
+        explicit nullptr_type(data_ptr data);
 
         [[nodiscard]] bool is_valid() const noexcept;
         [[nodiscard]] explicit operator bool() const noexcept;
@@ -2334,7 +2334,7 @@ namespace meta_hpp
         inline static constexpr type_kind kind{type_kind::number_};
 
         number_type() = default;
-        number_type(data_ptr data);
+        explicit number_type(data_ptr data);
 
         [[nodiscard]] bool is_valid() const noexcept;
         [[nodiscard]] explicit operator bool() const noexcept;
@@ -2357,7 +2357,7 @@ namespace meta_hpp
         inline static constexpr type_kind kind{type_kind::pointer_};
 
         pointer_type() = default;
-        pointer_type(data_ptr data);
+        explicit pointer_type(data_ptr data);
 
         [[nodiscard]] bool is_valid() const noexcept;
         [[nodiscard]] explicit operator bool() const noexcept;
@@ -2379,7 +2379,7 @@ namespace meta_hpp
         inline static constexpr type_kind kind{type_kind::reference_};
 
         reference_type() = default;
-        reference_type(data_ptr data);
+        explicit reference_type(data_ptr data);
 
         [[nodiscard]] bool is_valid() const noexcept;
         [[nodiscard]] explicit operator bool() const noexcept;
@@ -2401,7 +2401,7 @@ namespace meta_hpp
         inline static constexpr type_kind kind{type_kind::void_};
 
         void_type() = default;
-        void_type(data_ptr data);
+        explicit void_type(data_ptr data);
 
         [[nodiscard]] bool is_valid() const noexcept;
         [[nodiscard]] explicit operator bool() const noexcept;
@@ -3054,7 +3054,7 @@ namespace meta_hpp
         using state_ptr = detail::argument_state_ptr;
 
         argument() = default;
-        argument(state_ptr state) noexcept;
+        explicit argument(state_ptr state) noexcept;
 
         [[nodiscard]] bool is_valid() const noexcept;
         [[nodiscard]] explicit operator bool() const noexcept;
@@ -3078,7 +3078,7 @@ namespace meta_hpp
         using state_ptr = detail::constructor_state_ptr;
 
         constructor() = default;
-        constructor(state_ptr state) noexcept;
+        explicit constructor(state_ptr state) noexcept;
 
         [[nodiscard]] bool is_valid() const noexcept;
         [[nodiscard]] explicit operator bool() const noexcept;
@@ -3114,7 +3114,7 @@ namespace meta_hpp
         using state_ptr = detail::destructor_state_ptr;
 
         destructor() = default;
-        destructor(state_ptr state) noexcept;
+        explicit destructor(state_ptr state) noexcept;
 
         [[nodiscard]] bool is_valid() const noexcept;
         [[nodiscard]] explicit operator bool() const noexcept;
@@ -3140,7 +3140,7 @@ namespace meta_hpp
         using state_ptr = detail::evalue_state_ptr;
 
         evalue() = default;
-        evalue(state_ptr state) noexcept;
+        explicit evalue(state_ptr state) noexcept;
 
         [[nodiscard]] bool is_valid() const noexcept;
         [[nodiscard]] explicit operator bool() const noexcept;
@@ -3171,7 +3171,7 @@ namespace meta_hpp
         using state_ptr = detail::function_state_ptr;
 
         function() = default;
-        function(state_ptr state) noexcept;
+        explicit function(state_ptr state) noexcept;
 
         [[nodiscard]] bool is_valid() const noexcept;
         [[nodiscard]] explicit operator bool() const noexcept;
@@ -3208,7 +3208,7 @@ namespace meta_hpp
         using state_ptr = detail::member_state_ptr;
 
         member() = default;
-        member(state_ptr state) noexcept;
+        explicit member(state_ptr state) noexcept;
 
         [[nodiscard]] bool is_valid() const noexcept;
         [[nodiscard]] explicit operator bool() const noexcept;
@@ -3257,7 +3257,7 @@ namespace meta_hpp
         using state_ptr = detail::method_state_ptr;
 
         method() = default;
-        method(state_ptr state) noexcept;
+        explicit method(state_ptr state) noexcept;
 
         [[nodiscard]] bool is_valid() const noexcept;
         [[nodiscard]] explicit operator bool() const noexcept;
@@ -3294,7 +3294,7 @@ namespace meta_hpp
         using state_ptr = detail::scope_state_ptr;
 
         scope() = default;
-        scope(state_ptr state) noexcept;
+        explicit scope(state_ptr state) noexcept;
 
         [[nodiscard]] bool is_valid() const noexcept;
         [[nodiscard]] explicit operator bool() const noexcept;
@@ -3330,7 +3330,7 @@ namespace meta_hpp
         using state_ptr = detail::variable_state_ptr;
 
         variable() = default;
-        variable(state_ptr state) noexcept;
+        explicit variable(state_ptr state) noexcept;
 
         [[nodiscard]] bool is_valid() const noexcept;
         [[nodiscard]] explicit operator bool() const noexcept;
@@ -3467,7 +3467,7 @@ namespace meta_hpp::detail
         argument_list arguments{};
 
         template < function_policy_kind Policy, function_kind Function >
-        [[nodiscard]] static function_state_ptr make(std::string name, Function function, metadata_map metadata);
+        [[nodiscard]] static function_state_ptr make(std::string name, Function function_ptr, metadata_map metadata);
         explicit function_state(function_index index, metadata_map metadata);
     };
 
@@ -3487,7 +3487,7 @@ namespace meta_hpp::detail
         is_settable_with_impl is_settable_with{};
 
         template < member_policy_kind Policy, member_kind Member >
-        [[nodiscard]] static member_state_ptr make(std::string name, Member member, metadata_map metadata);
+        [[nodiscard]] static member_state_ptr make(std::string name, Member member_ptr, metadata_map metadata);
         explicit member_state(member_index index, metadata_map metadata);
     };
 
@@ -3503,7 +3503,7 @@ namespace meta_hpp::detail
         argument_list arguments{};
 
         template < method_policy_kind Policy, method_kind Method >
-        [[nodiscard]] static method_state_ptr make(std::string name, Method method, metadata_map metadata);
+        [[nodiscard]] static method_state_ptr make(std::string name, Method method_ptr, metadata_map metadata);
         explicit method_state(method_index index, metadata_map metadata);
     };
 
@@ -3532,7 +3532,7 @@ namespace meta_hpp::detail
         is_settable_with_impl is_settable_with{};
 
         template < variable_policy_kind Policy, pointer_kind Pointer >
-        [[nodiscard]] static variable_state_ptr make(std::string name, Pointer pointer, metadata_map metadata);
+        [[nodiscard]] static variable_state_ptr make(std::string name, Pointer variable_ptr, metadata_map metadata);
         explicit variable_state(variable_index index, metadata_map metadata);
     };
 }
@@ -4141,37 +4141,37 @@ namespace meta_hpp
         // function_
 
         template < detail::function_kind Function, function_policy_kind Policy = function_policy::as_copy_t >
-        class_bind& function_(std::string name, Function function, Policy = {});
+        class_bind& function_(std::string name, Function function_ptr, Policy = {});
 
         template < detail::function_kind Function, function_policy_kind Policy = function_policy::as_copy_t >
-        class_bind& function_(std::string name, Function function, function_opts opts, Policy = {});
+        class_bind& function_(std::string name, Function function_ptr, function_opts opts, Policy = {});
 
         template < detail::function_kind Function, function_policy_kind Policy = function_policy::as_copy_t >
-        class_bind& function_(std::string name, Function function, string_ilist arguments, Policy = {});
+        class_bind& function_(std::string name, Function function_ptr, string_ilist arguments, Policy = {});
 
         // member_
 
         template < detail::member_kind Member, member_policy_kind Policy = member_policy::as_copy_t >
             requires detail::class_bind_member_kind<Class, Member>
-        class_bind& member_(std::string name, Member member, Policy = {});
+        class_bind& member_(std::string name, Member member_ptr, Policy = {});
 
         template < detail::member_kind Member, member_policy_kind Policy = member_policy::as_copy_t >
             requires detail::class_bind_member_kind<Class, Member>
-        class_bind& member_(std::string name, Member member, member_opts opts, Policy = {});
+        class_bind& member_(std::string name, Member member_ptr, member_opts opts, Policy = {});
 
         // method_
 
         template < detail::method_kind Method, method_policy_kind Policy = method_policy::as_copy_t >
             requires detail::class_bind_method_kind<Class, Method>
-        class_bind& method_(std::string name, Method method, Policy = {});
+        class_bind& method_(std::string name, Method method_ptr, Policy = {});
 
         template < detail::method_kind Method, method_policy_kind Policy = method_policy::as_copy_t >
             requires detail::class_bind_method_kind<Class, Method>
-        class_bind& method_(std::string name, Method method, method_opts opts, Policy = {});
+        class_bind& method_(std::string name, Method method_ptr, method_opts opts, Policy = {});
 
         template < detail::method_kind Method, method_policy_kind Policy = method_policy::as_copy_t >
             requires detail::class_bind_method_kind<Class, Method>
-        class_bind& method_(std::string name, Method method, string_ilist arguments, Policy = {});
+        class_bind& method_(std::string name, Method method_ptr, string_ilist arguments, Policy = {});
 
         // typdef_
 
@@ -4181,10 +4181,10 @@ namespace meta_hpp
         // variable_
 
         template < detail::pointer_kind Pointer, variable_policy_kind Policy = variable_policy::as_copy_t >
-        class_bind& variable_(std::string name, Pointer pointer, Policy = {});
+        class_bind& variable_(std::string name, Pointer variable_ptr, Policy = {});
 
         template < detail::pointer_kind Pointer, variable_policy_kind Policy = variable_policy::as_copy_t >
-        class_bind& variable_(std::string name, Pointer pointer, variable_opts opts, Policy = {});
+        class_bind& variable_(std::string name, Pointer variable_ptr, variable_opts opts, Policy = {});
     };
 }
 
@@ -4281,13 +4281,13 @@ namespace meta_hpp
         // function_
 
         template < detail::function_kind Function, function_policy_kind Policy = function_policy::as_copy_t >
-        scope_bind& function_(std::string name, Function function, Policy = {});
+        scope_bind& function_(std::string name, Function function_ptr, Policy = {});
 
         template < detail::function_kind Function, function_policy_kind Policy = function_policy::as_copy_t >
-        scope_bind& function_(std::string name, Function function, function_opts opts, Policy = {});
+        scope_bind& function_(std::string name, Function function_ptr, function_opts opts, Policy = {});
 
         template < detail::function_kind Function, function_policy_kind Policy = function_policy::as_copy_t >
-        scope_bind& function_(std::string name, Function function, string_ilist arguments, Policy = {});
+        scope_bind& function_(std::string name, Function function_ptr, string_ilist arguments, Policy = {});
 
         // typedef_
 
@@ -4297,10 +4297,10 @@ namespace meta_hpp
         // variable_
 
         template < detail::pointer_kind Pointer, variable_policy_kind Policy = variable_policy::as_copy_t >
-        scope_bind& variable_(std::string name, Pointer pointer, Policy = {});
+        scope_bind& variable_(std::string name, Pointer variable_ptr, Policy = {});
 
         template < detail::pointer_kind Pointer, variable_policy_kind Policy = variable_policy::as_copy_t >
-        scope_bind& variable_(std::string name, Pointer pointer, variable_opts opts, Policy = {});
+        scope_bind& variable_(std::string name, Pointer variable_ptr, variable_opts opts, Policy = {});
     };
 }
 
@@ -4458,7 +4458,7 @@ namespace meta_hpp
             detail::state_access(arg)->metadata = std::move(opts.arguments[i].metadata);
         }
 
-        detail::insert_or_assign(get_data().constructors, std::move(state));
+        detail::insert_or_assign(get_data().constructors, constructor{std::move(state)});
         return *this;
     }
 
@@ -4478,7 +4478,7 @@ namespace meta_hpp
         requires detail::class_bind_destructor_kind<Class>
     {
         auto state = detail::destructor_state::make<Class>(std::move(opts.metadata));
-        detail::insert_or_assign(get_data().destructors, std::move(state));
+        detail::insert_or_assign(get_data().destructors, destructor{std::move(state)});
         return *this;
     }
 
@@ -4488,14 +4488,14 @@ namespace meta_hpp
 
     template < detail::class_kind Class >
     template < detail::function_kind Function, function_policy_kind Policy >
-    class_bind<Class>& class_bind<Class>::function_(std::string name, Function function, Policy policy) {
-        return function_(std::move(name), std::move(function), {}, policy);
+    class_bind<Class>& class_bind<Class>::function_(std::string name, Function function_ptr, Policy policy) {
+        return function_(std::move(name), function_ptr, {}, policy);
     }
 
     template < detail::class_kind Class >
     template < detail::function_kind Function, function_policy_kind Policy >
-    class_bind<Class>& class_bind<Class>::function_(std::string name, Function function, function_opts opts, Policy) {
-        auto state = detail::function_state::make<Policy>(std::move(name), std::move(function), std::move(opts.metadata));
+    class_bind<Class>& class_bind<Class>::function_(std::string name, Function function_ptr, function_opts opts, Policy) {
+        auto state = detail::function_state::make<Policy>(std::move(name), function_ptr, std::move(opts.metadata));
 
         if ( opts.arguments.size() > state->arguments.size() ) {
             META_HPP_THROW_AS(exception, "provided arguments don't match function argument count");
@@ -4507,14 +4507,14 @@ namespace meta_hpp
             detail::state_access(arg)->metadata = std::move(opts.arguments[i].metadata);
         }
 
-        detail::insert_or_assign(get_data().functions, std::move(state));
+        detail::insert_or_assign(get_data().functions, function{std::move(state)});
         return *this;
     }
 
     template < detail::class_kind Class >
     template < detail::function_kind Function, function_policy_kind Policy >
-    class_bind<Class>& class_bind<Class>::function_(std::string name, Function function, string_ilist arguments, Policy) {
-        auto state = detail::function_state::make<Policy>(std::move(name), std::move(function), {});
+    class_bind<Class>& class_bind<Class>::function_(std::string name, Function function_ptr, string_ilist arguments, Policy) {
+        auto state = detail::function_state::make<Policy>(std::move(name), function_ptr, {});
 
         if ( arguments.size() > state->arguments.size() ) {
             META_HPP_THROW_AS(exception, "provided argument names don't match function argument count");
@@ -4526,7 +4526,7 @@ namespace meta_hpp
             detail::state_access(arg)->name = std::data(arguments)[i];
         }
 
-        detail::insert_or_assign(get_data().functions, std::move(state));
+        detail::insert_or_assign(get_data().functions, function{std::move(state)});
         return *this;
     }
 
@@ -4537,16 +4537,16 @@ namespace meta_hpp
     template < detail::class_kind Class >
     template < detail::member_kind Member, member_policy_kind Policy >
         requires detail::class_bind_member_kind<Class, Member>
-    class_bind<Class>& class_bind<Class>::member_(std::string name, Member member, Policy policy) {
-        return member_(std::move(name), std::move(member), {}, policy);
+    class_bind<Class>& class_bind<Class>::member_(std::string name, Member member_ptr, Policy policy) {
+        return member_(std::move(name), member_ptr, {}, policy);
     }
 
     template < detail::class_kind Class >
     template < detail::member_kind Member, member_policy_kind Policy >
         requires detail::class_bind_member_kind<Class, Member>
-    class_bind<Class>& class_bind<Class>::member_(std::string name, Member member, member_opts opts, Policy) {
-        auto state = detail::member_state::make<Policy>(std::move(name), std::move(member), std::move(opts.metadata));
-        detail::insert_or_assign(get_data().members, std::move(state));
+    class_bind<Class>& class_bind<Class>::member_(std::string name, Member member_ptr, member_opts opts, Policy) {
+        auto state = detail::member_state::make<Policy>(std::move(name), member_ptr, std::move(opts.metadata));
+        detail::insert_or_assign(get_data().members, member{std::move(state)});
         return *this;
     }
 
@@ -4557,15 +4557,15 @@ namespace meta_hpp
     template < detail::class_kind Class >
     template < detail::method_kind Method, method_policy_kind Policy >
         requires detail::class_bind_method_kind<Class, Method>
-    class_bind<Class>& class_bind<Class>::method_(std::string name, Method method, Policy policy) {
-        return method_(std::move(name), std::move(method), {}, policy);
+    class_bind<Class>& class_bind<Class>::method_(std::string name, Method method_ptr, Policy policy) {
+        return method_(std::move(name), method_ptr, {}, policy);
     }
 
     template < detail::class_kind Class >
     template < detail::method_kind Method, method_policy_kind Policy >
         requires detail::class_bind_method_kind<Class, Method>
-    class_bind<Class>& class_bind<Class>::method_(std::string name, Method method, method_opts opts, Policy) {
-        auto state = detail::method_state::make<Policy>(std::move(name), std::move(method), std::move(opts.metadata));
+    class_bind<Class>& class_bind<Class>::method_(std::string name, Method method_ptr, method_opts opts, Policy) {
+        auto state = detail::method_state::make<Policy>(std::move(name), method_ptr, std::move(opts.metadata));
 
         if ( opts.arguments.size() > state->arguments.size() ) {
             META_HPP_THROW_AS(exception, "provided arguments don't match method argument count");
@@ -4577,15 +4577,15 @@ namespace meta_hpp
             detail::state_access(arg)->metadata = std::move(opts.arguments[i].metadata);
         }
 
-        detail::insert_or_assign(get_data().methods, std::move(state));
+        detail::insert_or_assign(get_data().methods, method{std::move(state)});
         return *this;
     }
 
     template < detail::class_kind Class >
     template < detail::method_kind Method, method_policy_kind Policy >
         requires detail::class_bind_method_kind<Class, Method>
-    class_bind<Class>& class_bind<Class>::method_(std::string name, Method method, string_ilist arguments, Policy) {
-        auto state = detail::method_state::make<Policy>(std::move(name), std::move(method), {});
+    class_bind<Class>& class_bind<Class>::method_(std::string name, Method method_ptr, string_ilist arguments, Policy) {
+        auto state = detail::method_state::make<Policy>(std::move(name), method_ptr, {});
 
         if ( arguments.size() > state->arguments.size() ) {
             META_HPP_THROW_AS(exception, "provided argument names don't match method argument count");
@@ -4597,7 +4597,7 @@ namespace meta_hpp
             detail::state_access(arg)->name = std::data(arguments)[i];
         }
 
-        detail::insert_or_assign(get_data().methods, std::move(state));
+        detail::insert_or_assign(get_data().methods, method{std::move(state)});
         return *this;
     }
 
@@ -4618,15 +4618,15 @@ namespace meta_hpp
 
     template < detail::class_kind Class >
     template < detail::pointer_kind Pointer, variable_policy_kind Policy >
-    class_bind<Class>& class_bind<Class>::variable_(std::string name, Pointer pointer, Policy policy) {
-        return variable_(std::move(name), std::move(pointer), {}, policy);
+    class_bind<Class>& class_bind<Class>::variable_(std::string name, Pointer variable_ptr, Policy policy) {
+        return variable_(std::move(name), variable_ptr, {}, policy);
     }
 
     template < detail::class_kind Class >
     template < detail::pointer_kind Pointer, variable_policy_kind Policy >
-    class_bind<Class>& class_bind<Class>::variable_(std::string name, Pointer pointer, variable_opts opts, Policy) {
-        auto state = detail::variable_state::make<Policy>(std::move(name), std::move(pointer), std::move(opts.metadata));
-        detail::insert_or_assign(get_data().variables, std::move(state));
+    class_bind<Class>& class_bind<Class>::variable_(std::string name, Pointer variable_ptr, variable_opts opts, Policy) {
+        auto state = detail::variable_state::make<Policy>(std::move(name), variable_ptr, std::move(opts.metadata));
+        detail::insert_or_assign(get_data().variables, variable{std::move(state)});
         return *this;
     }
 }
@@ -4645,7 +4645,7 @@ namespace meta_hpp
     template < detail::enum_kind Enum >
     enum_bind<Enum>& enum_bind<Enum>::evalue_(std::string name, Enum value, evalue_opts opts) {
         auto state = detail::evalue_state::make(std::move(name), std::move(value), std::move(opts.metadata));
-        detail::insert_or_assign(get_data().evalues, std::move(state));
+        detail::insert_or_assign(get_data().evalues, evalue{std::move(state)});
         return *this;
     }
 }
@@ -4709,13 +4709,13 @@ namespace meta_hpp
     //
 
     template < detail::function_kind Function, function_policy_kind Policy >
-    scope_bind& scope_bind::function_(std::string name, Function function, Policy policy) {
-        return function_(std::move(name), std::move(function), {}, policy);
+    scope_bind& scope_bind::function_(std::string name, Function function_ptr, Policy policy) {
+        return function_(std::move(name), function_ptr, {}, policy);
     }
 
     template < detail::function_kind Function, function_policy_kind Policy >
-    scope_bind& scope_bind::function_(std::string name, Function function, function_opts opts, Policy) {
-        auto state = detail::function_state::make<Policy>(std::move(name), std::move(function), std::move(opts.metadata));
+    scope_bind& scope_bind::function_(std::string name, Function function_ptr, function_opts opts, Policy) {
+        auto state = detail::function_state::make<Policy>(std::move(name), function_ptr, std::move(opts.metadata));
 
         if ( opts.arguments.size() > state->arguments.size() ) {
             META_HPP_THROW_AS(exception, "provided arguments don't match function argument count");
@@ -4727,13 +4727,13 @@ namespace meta_hpp
             detail::state_access(arg)->metadata = std::move(opts.arguments[i].metadata);
         }
 
-        detail::insert_or_assign(get_state().functions, std::move(state));
+        detail::insert_or_assign(get_state().functions, function{std::move(state)});
         return *this;
     }
 
     template < detail::function_kind Function, function_policy_kind Policy >
-    scope_bind& scope_bind::function_(std::string name, Function function, string_ilist arguments, Policy) {
-        auto state = detail::function_state::make<Policy>(std::move(name), std::move(function), {});
+    scope_bind& scope_bind::function_(std::string name, Function function_ptr, string_ilist arguments, Policy) {
+        auto state = detail::function_state::make<Policy>(std::move(name), function_ptr, {});
 
         if ( arguments.size() > state->arguments.size() ) {
             META_HPP_THROW_AS(exception, "provided argument names don't match function argument count");
@@ -4745,7 +4745,7 @@ namespace meta_hpp
             detail::state_access(arg)->name = std::data(arguments)[i];
         }
 
-        detail::insert_or_assign(get_state().functions, std::move(state));
+        detail::insert_or_assign(get_state().functions, function{std::move(state)});
         return *this;
     }
 
@@ -4764,14 +4764,14 @@ namespace meta_hpp
     //
 
     template < detail::pointer_kind Pointer, variable_policy_kind Policy >
-    scope_bind& scope_bind::variable_(std::string name, Pointer pointer, Policy policy) {
-        return variable_(std::move(name), std::move(pointer), {}, policy);
+    scope_bind& scope_bind::variable_(std::string name, Pointer variable_ptr, Policy policy) {
+        return variable_(std::move(name), variable_ptr, {}, policy);
     }
 
     template < detail::pointer_kind Pointer, variable_policy_kind Policy >
-    scope_bind& scope_bind::variable_(std::string name, Pointer pointer, variable_opts opts, Policy) {
-        auto state = detail::variable_state::make<Policy>(std::move(name), std::move(pointer), std::move(opts.metadata));
-        detail::insert_or_assign(get_state().variables, std::move(state));
+    scope_bind& scope_bind::variable_(std::string name, Pointer variable_ptr, variable_opts opts, Policy) {
+        auto state = detail::variable_state::make<Policy>(std::move(name), variable_ptr, std::move(opts.metadata));
+        detail::insert_or_assign(get_state().variables, variable{std::move(state)});
         return *this;
     }
 }
@@ -6056,7 +6056,7 @@ namespace meta_hpp
 namespace meta_hpp::detail
 {
     template < function_policy_kind Policy, function_kind Function >
-    uvalue raw_function_invoke(const Function& function, std::span<const uarg> args) {
+    uvalue raw_function_invoke(Function function_ptr, std::span<const uarg> args) {
         using ft = function_traits<Function>;
         using return_type = typename ft::return_type;
         using argument_types = typename ft::argument_types;
@@ -6080,19 +6080,19 @@ namespace meta_hpp::detail
         }
 
         return std::invoke(
-            [&function, args ]<std::size_t... Is>(std::index_sequence<Is...>)->uvalue {
+            [ function_ptr, args ]<std::size_t... Is>(std::index_sequence<Is...>)->uvalue {
                 if ( !(... && args[Is].can_cast_to<type_list_at_t<Is, argument_types>>()) ) {
                     META_HPP_THROW_AS(exception, "an attempt to call a function with incorrect argument types");
                 }
 
                 if constexpr ( std::is_void_v<return_type> ) {
-                    function(args[Is].cast<type_list_at_t<Is, argument_types>>()...);
+                    function_ptr(args[Is].cast<type_list_at_t<Is, argument_types>>()...);
                     return uvalue{};
                 } else if constexpr ( std::is_same_v<Policy, function_policy::discard_return_t> ) {
-                    std::ignore = function(args[Is].cast<type_list_at_t<Is, argument_types>>()...);
+                    std::ignore = function_ptr(args[Is].cast<type_list_at_t<Is, argument_types>>()...);
                     return uvalue{};
                 } else {
-                    return_type&& return_value = function(args[Is].cast<type_list_at_t<Is, argument_types>>()...);
+                    return_type&& return_value = function_ptr(args[Is].cast<type_list_at_t<Is, argument_types>>()...);
 
                     if constexpr ( ref_as_ptr ) {
                         return uvalue{std::addressof(return_value)};
@@ -6126,9 +6126,9 @@ namespace meta_hpp::detail
 namespace meta_hpp::detail
 {
     template < function_policy_kind Policy, function_kind Function >
-    function_state::invoke_impl make_function_invoke(Function function) {
-        return [function = std::move(function)](std::span<const uarg> args) { //
-            return raw_function_invoke<Policy>(function, args);
+    function_state::invoke_impl make_function_invoke(Function function_ptr) {
+        return [function_ptr](std::span<const uarg> args) { //
+            return raw_function_invoke<Policy>(function_ptr, args);
         };
     }
 
@@ -6162,9 +6162,9 @@ namespace meta_hpp::detail
     , metadata{std::move(nmetadata)} {}
 
     template < function_policy_kind Policy, function_kind Function >
-    function_state_ptr function_state::make(std::string name, Function function, metadata_map metadata) {
+    function_state_ptr function_state::make(std::string name, Function function_ptr, metadata_map metadata) {
         function_state state{function_index{resolve_type<Function>(), std::move(name)}, std::move(metadata)};
-        state.invoke = make_function_invoke<Policy>(std::move(function));
+        state.invoke = make_function_invoke<Policy>(function_ptr);
         state.is_invocable_with = make_function_is_invocable_with<Function>();
         state.arguments = make_function_arguments<Function>();
         return make_intrusive<function_state>(std::move(state));
@@ -6522,7 +6522,7 @@ namespace meta_hpp
 namespace meta_hpp::detail
 {
     template < member_policy_kind Policy, member_kind Member >
-    uvalue raw_member_getter(const Member& member, const uinst& inst) {
+    uvalue raw_member_getter(Member member_ptr, const uinst& inst) {
         using mt = member_traits<Member>;
         using class_type = typename mt::class_type;
         using value_type = typename mt::value_type;
@@ -6544,7 +6544,7 @@ namespace meta_hpp::detail
         }
 
         if ( inst.is_inst_const() ) {
-            auto&& return_value = inst.cast<const class_type>().*member;
+            auto&& return_value = inst.cast<const class_type>().*member_ptr;
 
             if constexpr ( as_copy ) {
                 return uvalue{std::forward<decltype(return_value)>(return_value)};
@@ -6558,7 +6558,7 @@ namespace meta_hpp::detail
                 return uvalue{std::ref(return_value)};
             }
         } else {
-            auto&& return_value = inst.cast<class_type>().*member;
+            auto&& return_value = inst.cast<class_type>().*member_ptr;
 
             if constexpr ( as_copy ) {
                 return uvalue{std::forward<decltype(return_value)>(return_value)};
@@ -6586,7 +6586,7 @@ namespace meta_hpp::detail
 namespace meta_hpp::detail
 {
     template < member_kind Member >
-    void raw_member_setter([[maybe_unused]] const Member& member, const uinst& inst, const uarg& arg) {
+    void raw_member_setter([[maybe_unused]] Member member_ptr, const uinst& inst, const uarg& arg) {
         using mt = member_traits<Member>;
         using class_type = typename mt::class_type;
         using value_type = typename mt::value_type;
@@ -6606,7 +6606,7 @@ namespace meta_hpp::detail
                 META_HPP_THROW_AS(exception, "an attempt to set a member with an incorrect argument type");
             }
 
-            inst.cast<class_type>().*member = arg.cast<value_type>();
+            inst.cast<class_type>().*member_ptr = arg.cast<value_type>();
         }
     }
 
@@ -6624,9 +6624,9 @@ namespace meta_hpp::detail
 namespace meta_hpp::detail
 {
     template < member_policy_kind Policy, member_kind Member >
-    member_state::getter_impl make_member_getter(Member member) {
-        return [member = std::move(member)](const uinst& inst) { //
-            return raw_member_getter<Policy>(member, inst);
+    member_state::getter_impl make_member_getter(Member member_ptr) {
+        return [member_ptr](const uinst& inst) { //
+            return raw_member_getter<Policy>(member_ptr, inst);
         };
     }
 
@@ -6636,9 +6636,9 @@ namespace meta_hpp::detail
     }
 
     template < member_kind Member >
-    member_state::setter_impl make_member_setter(Member member) {
-        return [member = std::move(member)](const uinst& inst, const uarg& arg) { //
-            return raw_member_setter(member, inst, arg);
+    member_state::setter_impl make_member_setter(Member member_ptr) {
+        return [member_ptr](const uinst& inst, const uarg& arg) { //
+            return raw_member_setter(member_ptr, inst, arg);
         };
     }
 
@@ -6655,10 +6655,10 @@ namespace meta_hpp::detail
     , metadata{std::move(nmetadata)} {}
 
     template < member_policy_kind Policy, member_kind Member >
-    member_state_ptr member_state::make(std::string name, Member member, metadata_map metadata) {
+    member_state_ptr member_state::make(std::string name, Member member_ptr, metadata_map metadata) {
         member_state state{member_index{resolve_type<Member>(), std::move(name)}, std::move(metadata)};
-        state.getter = make_member_getter<Policy>(member);
-        state.setter = make_member_setter(member);
+        state.getter = make_member_getter<Policy>(member_ptr);
+        state.setter = make_member_setter(member_ptr);
         state.is_gettable_with = make_member_is_gettable_with<Member>();
         state.is_settable_with = make_member_is_settable_with<Member>();
         return make_intrusive<member_state>(std::move(state));
@@ -6818,7 +6818,7 @@ namespace meta_hpp
 namespace meta_hpp::detail
 {
     template < method_policy_kind Policy, method_kind Method >
-    uvalue raw_method_invoke(const Method& method, const uinst& inst, std::span<const uarg> args) {
+    uvalue raw_method_invoke(Method method_ptr, const uinst& inst, std::span<const uarg> args) {
         using mt = method_traits<Method>;
         using return_type = typename mt::return_type;
         using qualified_type = typename mt::qualified_type;
@@ -6847,19 +6847,20 @@ namespace meta_hpp::detail
         }
 
         return std::invoke(
-            [&method, &inst, args ]<std::size_t... Is>(std::index_sequence<Is...>)->uvalue {
+            [ method_ptr, &inst, args ]<std::size_t... Is>(std::index_sequence<Is...>)->uvalue {
                 if ( !(... && args[Is].can_cast_to<type_list_at_t<Is, argument_types>>()) ) {
                     META_HPP_THROW_AS(exception, "an attempt to call a method with incorrect argument types");
                 }
 
                 if constexpr ( std::is_void_v<return_type> ) {
-                    (inst.cast<qualified_type>().*method)(args[Is].cast<type_list_at_t<Is, argument_types>>()...);
+                    (inst.cast<qualified_type>().*method_ptr)(args[Is].cast<type_list_at_t<Is, argument_types>>()...);
                     return uvalue{};
                 } else if constexpr ( std::is_same_v<Policy, method_policy::discard_return_t> ) {
-                    std::ignore = (inst.cast<qualified_type>().*method)(args[Is].cast<type_list_at_t<Is, argument_types>>()...);
+                    std::ignore = (inst.cast<qualified_type>().*method_ptr)(args[Is].cast<type_list_at_t<Is, argument_types>>()...
+                    );
                     return uvalue{};
                 } else {
-                    return_type&& return_value = (inst.cast<qualified_type>().*method)(
+                    return_type&& return_value = (inst.cast<qualified_type>().*method_ptr)(
                         args[Is].cast<type_list_at_t<Is, argument_types>>()...
                     );
 
@@ -6900,9 +6901,9 @@ namespace meta_hpp::detail
 namespace meta_hpp::detail
 {
     template < method_policy_kind Policy, method_kind Method >
-    method_state::invoke_impl make_method_invoke(Method method) {
-        return [method = std::move(method)](const uinst& inst, std::span<const uarg> args) {
-            return raw_method_invoke<Policy>(method, inst, args);
+    method_state::invoke_impl make_method_invoke(Method method_ptr) {
+        return [method_ptr](const uinst& inst, std::span<const uarg> args) {
+            return raw_method_invoke<Policy>(method_ptr, inst, args);
         };
     }
 
@@ -6936,9 +6937,9 @@ namespace meta_hpp::detail
     , metadata{std::move(nmetadata)} {}
 
     template < method_policy_kind Policy, method_kind Method >
-    method_state_ptr method_state::make(std::string name, Method method, metadata_map metadata) {
+    method_state_ptr method_state::make(std::string name, Method method_ptr, metadata_map metadata) {
         method_state state{method_index{resolve_type<Method>(), std::move(name)}, std::move(metadata)};
-        state.invoke = make_method_invoke<Policy>(std::move(method));
+        state.invoke = make_method_invoke<Policy>(method_ptr);
         state.is_invocable_with = make_method_is_invocable_with<Method>();
         state.arguments = make_method_arguments<Method>();
         return make_intrusive<method_state>(std::move(state));
@@ -7069,7 +7070,7 @@ namespace meta_hpp
 namespace meta_hpp::detail
 {
     template < variable_policy_kind Policy, pointer_kind Pointer >
-    uvalue raw_variable_getter(const Pointer& pointer) {
+    uvalue raw_variable_getter(Pointer variable_ptr) {
         using pt = pointer_traits<Pointer>;
         using data_type = typename pt::data_type;
 
@@ -7085,7 +7086,7 @@ namespace meta_hpp::detail
 
         static_assert(as_copy || as_ptr || as_ref_wrap);
 
-        auto&& return_value = *pointer;
+        auto&& return_value = *variable_ptr;
 
         if constexpr ( as_copy ) {
             return uvalue{std::forward<decltype(return_value)>(return_value)};
@@ -7101,7 +7102,7 @@ namespace meta_hpp::detail
     }
 
     template < pointer_kind Pointer >
-    void raw_variable_setter([[maybe_unused]] const Pointer& pointer, const uarg& arg) {
+    void raw_variable_setter([[maybe_unused]] Pointer variable_ptr, const uarg& arg) {
         using pt = pointer_traits<Pointer>;
         using data_type = typename pt::data_type;
 
@@ -7111,7 +7112,7 @@ namespace meta_hpp::detail
             if ( !arg.can_cast_to<data_type>() ) {
                 META_HPP_THROW_AS(exception, "an attempt to set a variable with an incorrect argument type");
             }
-            *pointer = arg.cast<data_type>();
+            *variable_ptr = arg.cast<data_type>();
         }
     }
 
@@ -7127,16 +7128,16 @@ namespace meta_hpp::detail
 namespace meta_hpp::detail
 {
     template < variable_policy_kind Policy, pointer_kind Pointer >
-    variable_state::getter_impl make_variable_getter(Pointer pointer) {
-        return [pointer = std::move(pointer)]() { //
-            return raw_variable_getter<Policy>(pointer);
+    variable_state::getter_impl make_variable_getter(Pointer variable_ptr) {
+        return [variable_ptr]() { //
+            return raw_variable_getter<Policy>(variable_ptr);
         };
     }
 
     template < pointer_kind Pointer >
-    variable_state::setter_impl make_variable_setter(Pointer pointer) {
-        return [pointer = std::move(pointer)](const uarg& arg) { //
-            return raw_variable_setter(pointer, arg);
+    variable_state::setter_impl make_variable_setter(Pointer variable_ptr) {
+        return [variable_ptr](const uarg& arg) { //
+            return raw_variable_setter(variable_ptr, arg);
         };
     }
 
@@ -7153,10 +7154,10 @@ namespace meta_hpp::detail
     , metadata{std::move(nmetadata)} {}
 
     template < variable_policy_kind Policy, pointer_kind Pointer >
-    variable_state_ptr variable_state::make(std::string name, Pointer pointer, metadata_map metadata) {
+    variable_state_ptr variable_state::make(std::string name, Pointer variable_ptr, metadata_map metadata) {
         variable_state state{variable_index{resolve_type<Pointer>(), std::move(name)}, std::move(metadata)};
-        state.getter = make_variable_getter<Policy>(pointer);
-        state.setter = make_variable_setter(pointer);
+        state.getter = make_variable_getter<Policy>(variable_ptr);
+        state.setter = make_variable_setter(variable_ptr);
         state.is_settable_with = make_variable_is_settable_with<Pointer>();
         return make_intrusive<variable_state>(std::move(state));
     }
@@ -8061,13 +8062,13 @@ namespace meta_hpp
     }
 
     template < detail::function_kind Function, typename... Args >
-    uvalue invoke(Function&& function, Args&&... args) {
+    uvalue invoke(Function function_ptr, Args&&... args) {
         using namespace detail;
         if constexpr ( sizeof...(Args) > 0 ) {
             const std::array<uarg, sizeof...(Args)> vargs{uarg{std::forward<Args>(args)}...};
-            return raw_function_invoke<function_policy::as_copy_t>(std::forward<Function>(function), vargs);
+            return raw_function_invoke<function_policy::as_copy_t>(function_ptr, vargs);
         } else {
-            return raw_function_invoke<function_policy::as_copy_t>(std::forward<Function>(function), {});
+            return raw_function_invoke<function_policy::as_copy_t>(function_ptr, {});
         }
     }
 }
@@ -8080,10 +8081,10 @@ namespace meta_hpp
     }
 
     template < detail::member_kind Member, typename Instance >
-    uvalue invoke(Member&& member, Instance&& instance) {
+    uvalue invoke(Member member_ptr, Instance&& instance) {
         using namespace detail;
         const uinst vinst{std::forward<Instance>(instance)};
-        return raw_member_getter<member_policy::as_copy_t>(std::forward<Member>(member), vinst);
+        return raw_member_getter<member_policy::as_copy_t>(member_ptr, vinst);
     }
 }
 
@@ -8095,14 +8096,14 @@ namespace meta_hpp
     }
 
     template < detail::method_kind Method, typename Instance, typename... Args >
-    uvalue invoke(Method&& method, Instance&& instance, Args&&... args) {
+    uvalue invoke(Method method_ptr, Instance&& instance, Args&&... args) {
         using namespace detail;
         const uinst vinst{std::forward<Instance>(instance)};
         if constexpr ( sizeof...(Args) > 0 ) {
             const std::array<uarg, sizeof...(Args)> vargs{uarg{std::forward<Args>(args)}...};
-            return raw_method_invoke<method_policy::as_copy_t>(std::forward<Method>(method), vinst, vargs);
+            return raw_method_invoke<method_policy::as_copy_t>(method_ptr, vinst, vargs);
         } else {
-            return raw_method_invoke<method_policy::as_copy_t>(std::forward<Method>(method), vinst, {});
+            return raw_method_invoke<method_policy::as_copy_t>(method_ptr, vinst, {});
         }
     }
 }

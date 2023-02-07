@@ -65,7 +65,7 @@ namespace meta_hpp
         using data_ptr = detail::type_data_base*;
 
         any_type() = default;
-        any_type(data_ptr data);
+        explicit any_type(data_ptr data);
 
         [[nodiscard]] bool is_valid() const noexcept;
         [[nodiscard]] explicit operator bool() const noexcept;
@@ -123,7 +123,7 @@ namespace meta_hpp
         inline static constexpr type_kind kind{type_kind::array_};
 
         array_type() = default;
-        array_type(data_ptr data);
+        explicit array_type(data_ptr data);
 
         [[nodiscard]] bool is_valid() const noexcept;
         [[nodiscard]] explicit operator bool() const noexcept;
@@ -146,7 +146,7 @@ namespace meta_hpp
         inline static constexpr type_kind kind{type_kind::class_};
 
         class_type() = default;
-        class_type(data_ptr data);
+        explicit class_type(data_ptr data);
 
         [[nodiscard]] bool is_valid() const noexcept;
         [[nodiscard]] explicit operator bool() const noexcept;
@@ -228,7 +228,7 @@ namespace meta_hpp
         inline static constexpr type_kind kind{type_kind::constructor_};
 
         constructor_type() = default;
-        constructor_type(data_ptr data);
+        explicit constructor_type(data_ptr data);
 
         [[nodiscard]] bool is_valid() const noexcept;
         [[nodiscard]] explicit operator bool() const noexcept;
@@ -253,7 +253,7 @@ namespace meta_hpp
         inline static constexpr type_kind kind{type_kind::destructor_};
 
         destructor_type() = default;
-        destructor_type(data_ptr data);
+        explicit destructor_type(data_ptr data);
 
         [[nodiscard]] bool is_valid() const noexcept;
         [[nodiscard]] explicit operator bool() const noexcept;
@@ -275,7 +275,7 @@ namespace meta_hpp
         inline static constexpr type_kind kind{type_kind::enum_};
 
         enum_type() = default;
-        enum_type(data_ptr data);
+        explicit enum_type(data_ptr data);
 
         [[nodiscard]] bool is_valid() const noexcept;
         [[nodiscard]] explicit operator bool() const noexcept;
@@ -308,7 +308,7 @@ namespace meta_hpp
         inline static constexpr type_kind kind{type_kind::function_};
 
         function_type() = default;
-        function_type(data_ptr data);
+        explicit function_type(data_ptr data);
 
         [[nodiscard]] bool is_valid() const noexcept;
         [[nodiscard]] explicit operator bool() const noexcept;
@@ -333,7 +333,7 @@ namespace meta_hpp
         inline static constexpr type_kind kind{type_kind::member_};
 
         member_type() = default;
-        member_type(data_ptr data);
+        explicit member_type(data_ptr data);
 
         [[nodiscard]] bool is_valid() const noexcept;
         [[nodiscard]] explicit operator bool() const noexcept;
@@ -356,7 +356,7 @@ namespace meta_hpp
         inline static constexpr type_kind kind{type_kind::method_};
 
         method_type() = default;
-        method_type(data_ptr data);
+        explicit method_type(data_ptr data);
 
         [[nodiscard]] bool is_valid() const noexcept;
         [[nodiscard]] explicit operator bool() const noexcept;
@@ -382,7 +382,7 @@ namespace meta_hpp
         inline static constexpr type_kind kind{type_kind::nullptr_};
 
         nullptr_type() = default;
-        nullptr_type(data_ptr data);
+        explicit nullptr_type(data_ptr data);
 
         [[nodiscard]] bool is_valid() const noexcept;
         [[nodiscard]] explicit operator bool() const noexcept;
@@ -401,7 +401,7 @@ namespace meta_hpp
         inline static constexpr type_kind kind{type_kind::number_};
 
         number_type() = default;
-        number_type(data_ptr data);
+        explicit number_type(data_ptr data);
 
         [[nodiscard]] bool is_valid() const noexcept;
         [[nodiscard]] explicit operator bool() const noexcept;
@@ -424,7 +424,7 @@ namespace meta_hpp
         inline static constexpr type_kind kind{type_kind::pointer_};
 
         pointer_type() = default;
-        pointer_type(data_ptr data);
+        explicit pointer_type(data_ptr data);
 
         [[nodiscard]] bool is_valid() const noexcept;
         [[nodiscard]] explicit operator bool() const noexcept;
@@ -446,7 +446,7 @@ namespace meta_hpp
         inline static constexpr type_kind kind{type_kind::reference_};
 
         reference_type() = default;
-        reference_type(data_ptr data);
+        explicit reference_type(data_ptr data);
 
         [[nodiscard]] bool is_valid() const noexcept;
         [[nodiscard]] explicit operator bool() const noexcept;
@@ -468,7 +468,7 @@ namespace meta_hpp
         inline static constexpr type_kind kind{type_kind::void_};
 
         void_type() = default;
-        void_type(data_ptr data);
+        explicit void_type(data_ptr data);
 
         [[nodiscard]] bool is_valid() const noexcept;
         [[nodiscard]] explicit operator bool() const noexcept;
