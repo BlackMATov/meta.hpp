@@ -34,43 +34,8 @@ namespace meta_hpp
         return data_->metadata;
     }
 
-    inline any_type::any_type(const array_type& other) noexcept
-    : data_{detail::type_access(other)} {}
-
-    inline any_type::any_type(const class_type& other) noexcept
-    : data_{detail::type_access(other)} {}
-
-    inline any_type::any_type(const constructor_type& other) noexcept
-    : data_{detail::type_access(other)} {}
-
-    inline any_type::any_type(const destructor_type& other) noexcept
-    : data_{detail::type_access(other)} {}
-
-    inline any_type::any_type(const enum_type& other) noexcept
-    : data_{detail::type_access(other)} {}
-
-    inline any_type::any_type(const function_type& other) noexcept
-    : data_{detail::type_access(other)} {}
-
-    inline any_type::any_type(const member_type& other) noexcept
-    : data_{detail::type_access(other)} {}
-
-    inline any_type::any_type(const method_type& other) noexcept
-    : data_{detail::type_access(other)} {}
-
-    inline any_type::any_type(const nullptr_type& other) noexcept
-    : data_{detail::type_access(other)} {}
-
-    inline any_type::any_type(const number_type& other) noexcept
-    : data_{detail::type_access(other)} {}
-
-    inline any_type::any_type(const pointer_type& other) noexcept
-    : data_{detail::type_access(other)} {}
-
-    inline any_type::any_type(const reference_type& other) noexcept
-    : data_{detail::type_access(other)} {}
-
-    inline any_type::any_type(const void_type& other) noexcept
+    template < detail::type_family Type >
+    any_type::any_type(const Type& other) noexcept
     : data_{detail::type_access(other)} {}
 
     template < detail::type_family Type >

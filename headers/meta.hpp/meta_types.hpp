@@ -75,19 +75,8 @@ namespace meta_hpp
 
         [[nodiscard]] const metadata_map& get_metadata() const noexcept;
 
-        any_type(const array_type& other) noexcept;
-        any_type(const class_type& other) noexcept;
-        any_type(const constructor_type& other) noexcept;
-        any_type(const destructor_type& other) noexcept;
-        any_type(const enum_type& other) noexcept;
-        any_type(const function_type& other) noexcept;
-        any_type(const member_type& other) noexcept;
-        any_type(const method_type& other) noexcept;
-        any_type(const nullptr_type& other) noexcept;
-        any_type(const number_type& other) noexcept;
-        any_type(const pointer_type& other) noexcept;
-        any_type(const reference_type& other) noexcept;
-        any_type(const void_type& other) noexcept;
+        template < detail::type_family Type >
+        any_type(const Type& other) noexcept;
 
         template < detail::type_family Type >
         [[nodiscard]] bool is() const noexcept;
