@@ -44,7 +44,7 @@ namespace meta_hpp
         return state_->metadata;
     }
 
-    inline const any_type& argument::get_type() const noexcept {
+    inline any_type argument::get_type() const noexcept {
         return state_->index.get_type();
     }
 

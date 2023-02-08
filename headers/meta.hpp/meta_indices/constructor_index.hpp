@@ -16,7 +16,7 @@ namespace meta_hpp
     inline constructor_index::constructor_index(constructor_type type)
     : type_{type} {}
 
-    inline const constructor_type& constructor_index::get_type() const noexcept {
+    inline constructor_type constructor_index::get_type() const noexcept {
         return type_;
     }
 

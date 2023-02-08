@@ -15,7 +15,7 @@ namespace meta_hpp
 {
     class argument_index final {
     public:
-        [[nodiscard]] const any_type& get_type() const noexcept;
+        [[nodiscard]] any_type get_type() const noexcept;
         [[nodiscard]] std::size_t get_position() const noexcept;
 
         [[nodiscard]] std::size_t get_hash() const noexcept;
@@ -32,7 +32,7 @@ namespace meta_hpp
 
     class constructor_index final {
     public:
-        [[nodiscard]] const constructor_type& get_type() const noexcept;
+        [[nodiscard]] constructor_type get_type() const noexcept;
 
         [[nodiscard]] std::size_t get_hash() const noexcept;
         [[nodiscard]] std::strong_ordering operator<=>(const constructor_index&) const = default;
@@ -47,7 +47,7 @@ namespace meta_hpp
 
     class destructor_index final {
     public:
-        [[nodiscard]] const destructor_type& get_type() const noexcept;
+        [[nodiscard]] destructor_type get_type() const noexcept;
 
         [[nodiscard]] std::size_t get_hash() const noexcept;
         [[nodiscard]] std::strong_ordering operator<=>(const destructor_index&) const = default;
@@ -62,7 +62,7 @@ namespace meta_hpp
 
     class evalue_index final {
     public:
-        [[nodiscard]] const enum_type& get_type() const noexcept;
+        [[nodiscard]] enum_type get_type() const noexcept;
         [[nodiscard]] const std::string& get_name() const noexcept;
 
         [[nodiscard]] std::size_t get_hash() const noexcept;
@@ -79,7 +79,7 @@ namespace meta_hpp
 
     class function_index final {
     public:
-        [[nodiscard]] const function_type& get_type() const noexcept;
+        [[nodiscard]] function_type get_type() const noexcept;
         [[nodiscard]] const std::string& get_name() const noexcept;
 
         [[nodiscard]] std::size_t get_hash() const noexcept;
@@ -96,7 +96,7 @@ namespace meta_hpp
 
     class member_index final {
     public:
-        [[nodiscard]] const member_type& get_type() const noexcept;
+        [[nodiscard]] member_type get_type() const noexcept;
         [[nodiscard]] const std::string& get_name() const noexcept;
 
         [[nodiscard]] std::size_t get_hash() const noexcept;
@@ -113,10 +113,10 @@ namespace meta_hpp
 
     class method_index final {
     public:
-        [[nodiscard]] std::size_t get_hash() const noexcept;
-        [[nodiscard]] const method_type& get_type() const noexcept;
+        [[nodiscard]] method_type get_type() const noexcept;
         [[nodiscard]] const std::string& get_name() const noexcept;
 
+        [[nodiscard]] std::size_t get_hash() const noexcept;
         [[nodiscard]] std::strong_ordering operator<=>(const method_index&) const = default;
 
     private:
@@ -145,7 +145,7 @@ namespace meta_hpp
 
     class variable_index final {
     public:
-        [[nodiscard]] const pointer_type& get_type() const noexcept;
+        [[nodiscard]] pointer_type get_type() const noexcept;
         [[nodiscard]] const std::string& get_name() const noexcept;
 
         [[nodiscard]] std::size_t get_hash() const noexcept;

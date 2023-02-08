@@ -17,7 +17,7 @@ namespace meta_hpp
     : type_{type}
     , position_{position} {}
 
-    inline const any_type& argument_index::get_type() const noexcept {
+    inline any_type argument_index::get_type() const noexcept {
         return type_;
     }
 

@@ -151,7 +151,7 @@ namespace meta_hpp
         return state_->metadata;
     }
 
-    inline const function_type& function::get_type() const noexcept {
+    inline function_type function::get_type() const noexcept {
         return state_->index.get_type();
     }
 

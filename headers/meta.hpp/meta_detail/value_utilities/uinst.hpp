@@ -82,7 +82,7 @@ namespace meta_hpp::detail
             return ref_type_;
         }
 
-        [[nodiscard]] const any_type& get_raw_type() const noexcept {
+        [[nodiscard]] any_type get_raw_type() const noexcept {
             return raw_type_;
         }
 

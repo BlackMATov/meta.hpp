@@ -16,7 +16,7 @@ namespace meta_hpp
     inline destructor_index::destructor_index(destructor_type type)
     : type_{type} {}
 
-    inline const destructor_type& destructor_index::get_type() const noexcept {
+    inline destructor_type destructor_index::get_type() const noexcept {
         return type_;
     }
 

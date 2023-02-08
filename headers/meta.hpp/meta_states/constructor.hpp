@@ -171,7 +171,7 @@ namespace meta_hpp
         return state_->metadata;
     }
 
-    inline const constructor_type& constructor::get_type() const noexcept {
+    inline constructor_type constructor::get_type() const noexcept {
         return state_->index.get_type();
     }
 

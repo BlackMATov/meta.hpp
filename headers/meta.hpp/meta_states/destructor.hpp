@@ -85,7 +85,7 @@ namespace meta_hpp
         return state_->metadata;
     }
 
-    inline const destructor_type& destructor::get_type() const noexcept {
+    inline destructor_type destructor::get_type() const noexcept {
         return state_->index.get_type();
     }
 

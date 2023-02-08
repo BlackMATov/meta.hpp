@@ -127,7 +127,7 @@ namespace meta_hpp
         [[nodiscard]] const argument_index& get_index() const noexcept;
         [[nodiscard]] const metadata_map& get_metadata() const noexcept;
 
-        [[nodiscard]] const any_type& get_type() const noexcept;
+        [[nodiscard]] any_type get_type() const noexcept;
         [[nodiscard]] std::size_t get_position() const noexcept;
 
         [[nodiscard]] const std::string& get_name() const noexcept;
@@ -151,7 +151,7 @@ namespace meta_hpp
         [[nodiscard]] const constructor_index& get_index() const noexcept;
         [[nodiscard]] const metadata_map& get_metadata() const noexcept;
 
-        [[nodiscard]] const constructor_type& get_type() const noexcept;
+        [[nodiscard]] constructor_type get_type() const noexcept;
 
         template < typename... Args >
         [[nodiscard]] uvalue create(Args&&... args) const;
@@ -187,7 +187,7 @@ namespace meta_hpp
         [[nodiscard]] const destructor_index& get_index() const noexcept;
         [[nodiscard]] const metadata_map& get_metadata() const noexcept;
 
-        [[nodiscard]] const destructor_type& get_type() const noexcept;
+        [[nodiscard]] destructor_type get_type() const noexcept;
 
         template < typename Arg >
         bool destroy(Arg&& arg) const;
@@ -213,7 +213,7 @@ namespace meta_hpp
         [[nodiscard]] const evalue_index& get_index() const noexcept;
         [[nodiscard]] const metadata_map& get_metadata() const noexcept;
 
-        [[nodiscard]] const enum_type& get_type() const noexcept;
+        [[nodiscard]] enum_type get_type() const noexcept;
         [[nodiscard]] const std::string& get_name() const noexcept;
 
         [[nodiscard]] const uvalue& get_value() const noexcept;
@@ -244,7 +244,7 @@ namespace meta_hpp
         [[nodiscard]] const function_index& get_index() const noexcept;
         [[nodiscard]] const metadata_map& get_metadata() const noexcept;
 
-        [[nodiscard]] const function_type& get_type() const noexcept;
+        [[nodiscard]] function_type get_type() const noexcept;
         [[nodiscard]] const std::string& get_name() const noexcept;
 
         template < typename... Args >
@@ -281,7 +281,7 @@ namespace meta_hpp
         [[nodiscard]] const member_index& get_index() const noexcept;
         [[nodiscard]] const metadata_map& get_metadata() const noexcept;
 
-        [[nodiscard]] const member_type& get_type() const noexcept;
+        [[nodiscard]] member_type get_type() const noexcept;
         [[nodiscard]] const std::string& get_name() const noexcept;
 
         template < typename Instance >
@@ -330,7 +330,7 @@ namespace meta_hpp
         [[nodiscard]] const method_index& get_index() const noexcept;
         [[nodiscard]] const metadata_map& get_metadata() const noexcept;
 
-        [[nodiscard]] const method_type& get_type() const noexcept;
+        [[nodiscard]] method_type get_type() const noexcept;
         [[nodiscard]] const std::string& get_name() const noexcept;
 
         template < typename Instance, typename... Args >
@@ -403,7 +403,7 @@ namespace meta_hpp
         [[nodiscard]] const variable_index& get_index() const noexcept;
         [[nodiscard]] const metadata_map& get_metadata() const noexcept;
 
-        [[nodiscard]] const pointer_type& get_type() const noexcept;
+        [[nodiscard]] pointer_type get_type() const noexcept;
         [[nodiscard]] const std::string& get_name() const noexcept;
 
         [[nodiscard]] uvalue get() const;

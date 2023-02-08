@@ -2621,7 +2621,7 @@ namespace meta_hpp
 {
     class argument_index final {
     public:
-        [[nodiscard]] const any_type& get_type() const noexcept;
+        [[nodiscard]] any_type get_type() const noexcept;
         [[nodiscard]] std::size_t get_position() const noexcept;
 
         [[nodiscard]] std::size_t get_hash() const noexcept;
@@ -2638,7 +2638,7 @@ namespace meta_hpp
 
     class constructor_index final {
     public:
-        [[nodiscard]] const constructor_type& get_type() const noexcept;
+        [[nodiscard]] constructor_type get_type() const noexcept;
 
         [[nodiscard]] std::size_t get_hash() const noexcept;
         [[nodiscard]] std::strong_ordering operator<=>(const constructor_index&) const = default;
@@ -2653,7 +2653,7 @@ namespace meta_hpp
 
     class destructor_index final {
     public:
-        [[nodiscard]] const destructor_type& get_type() const noexcept;
+        [[nodiscard]] destructor_type get_type() const noexcept;
 
         [[nodiscard]] std::size_t get_hash() const noexcept;
         [[nodiscard]] std::strong_ordering operator<=>(const destructor_index&) const = default;
@@ -2668,7 +2668,7 @@ namespace meta_hpp
 
     class evalue_index final {
     public:
-        [[nodiscard]] const enum_type& get_type() const noexcept;
+        [[nodiscard]] enum_type get_type() const noexcept;
         [[nodiscard]] const std::string& get_name() const noexcept;
 
         [[nodiscard]] std::size_t get_hash() const noexcept;
@@ -2685,7 +2685,7 @@ namespace meta_hpp
 
     class function_index final {
     public:
-        [[nodiscard]] const function_type& get_type() const noexcept;
+        [[nodiscard]] function_type get_type() const noexcept;
         [[nodiscard]] const std::string& get_name() const noexcept;
 
         [[nodiscard]] std::size_t get_hash() const noexcept;
@@ -2702,7 +2702,7 @@ namespace meta_hpp
 
     class member_index final {
     public:
-        [[nodiscard]] const member_type& get_type() const noexcept;
+        [[nodiscard]] member_type get_type() const noexcept;
         [[nodiscard]] const std::string& get_name() const noexcept;
 
         [[nodiscard]] std::size_t get_hash() const noexcept;
@@ -2719,10 +2719,10 @@ namespace meta_hpp
 
     class method_index final {
     public:
-        [[nodiscard]] std::size_t get_hash() const noexcept;
-        [[nodiscard]] const method_type& get_type() const noexcept;
+        [[nodiscard]] method_type get_type() const noexcept;
         [[nodiscard]] const std::string& get_name() const noexcept;
 
+        [[nodiscard]] std::size_t get_hash() const noexcept;
         [[nodiscard]] std::strong_ordering operator<=>(const method_index&) const = default;
 
     private:
@@ -2751,7 +2751,7 @@ namespace meta_hpp
 
     class variable_index final {
     public:
-        [[nodiscard]] const pointer_type& get_type() const noexcept;
+        [[nodiscard]] pointer_type get_type() const noexcept;
         [[nodiscard]] const std::string& get_name() const noexcept;
 
         [[nodiscard]] std::size_t get_hash() const noexcept;
@@ -3062,7 +3062,7 @@ namespace meta_hpp
         [[nodiscard]] const argument_index& get_index() const noexcept;
         [[nodiscard]] const metadata_map& get_metadata() const noexcept;
 
-        [[nodiscard]] const any_type& get_type() const noexcept;
+        [[nodiscard]] any_type get_type() const noexcept;
         [[nodiscard]] std::size_t get_position() const noexcept;
 
         [[nodiscard]] const std::string& get_name() const noexcept;
@@ -3086,7 +3086,7 @@ namespace meta_hpp
         [[nodiscard]] const constructor_index& get_index() const noexcept;
         [[nodiscard]] const metadata_map& get_metadata() const noexcept;
 
-        [[nodiscard]] const constructor_type& get_type() const noexcept;
+        [[nodiscard]] constructor_type get_type() const noexcept;
 
         template < typename... Args >
         [[nodiscard]] uvalue create(Args&&... args) const;
@@ -3122,7 +3122,7 @@ namespace meta_hpp
         [[nodiscard]] const destructor_index& get_index() const noexcept;
         [[nodiscard]] const metadata_map& get_metadata() const noexcept;
 
-        [[nodiscard]] const destructor_type& get_type() const noexcept;
+        [[nodiscard]] destructor_type get_type() const noexcept;
 
         template < typename Arg >
         bool destroy(Arg&& arg) const;
@@ -3148,7 +3148,7 @@ namespace meta_hpp
         [[nodiscard]] const evalue_index& get_index() const noexcept;
         [[nodiscard]] const metadata_map& get_metadata() const noexcept;
 
-        [[nodiscard]] const enum_type& get_type() const noexcept;
+        [[nodiscard]] enum_type get_type() const noexcept;
         [[nodiscard]] const std::string& get_name() const noexcept;
 
         [[nodiscard]] const uvalue& get_value() const noexcept;
@@ -3179,7 +3179,7 @@ namespace meta_hpp
         [[nodiscard]] const function_index& get_index() const noexcept;
         [[nodiscard]] const metadata_map& get_metadata() const noexcept;
 
-        [[nodiscard]] const function_type& get_type() const noexcept;
+        [[nodiscard]] function_type get_type() const noexcept;
         [[nodiscard]] const std::string& get_name() const noexcept;
 
         template < typename... Args >
@@ -3216,7 +3216,7 @@ namespace meta_hpp
         [[nodiscard]] const member_index& get_index() const noexcept;
         [[nodiscard]] const metadata_map& get_metadata() const noexcept;
 
-        [[nodiscard]] const member_type& get_type() const noexcept;
+        [[nodiscard]] member_type get_type() const noexcept;
         [[nodiscard]] const std::string& get_name() const noexcept;
 
         template < typename Instance >
@@ -3265,7 +3265,7 @@ namespace meta_hpp
         [[nodiscard]] const method_index& get_index() const noexcept;
         [[nodiscard]] const metadata_map& get_metadata() const noexcept;
 
-        [[nodiscard]] const method_type& get_type() const noexcept;
+        [[nodiscard]] method_type get_type() const noexcept;
         [[nodiscard]] const std::string& get_name() const noexcept;
 
         template < typename Instance, typename... Args >
@@ -3338,7 +3338,7 @@ namespace meta_hpp
         [[nodiscard]] const variable_index& get_index() const noexcept;
         [[nodiscard]] const metadata_map& get_metadata() const noexcept;
 
-        [[nodiscard]] const pointer_type& get_type() const noexcept;
+        [[nodiscard]] pointer_type get_type() const noexcept;
         [[nodiscard]] const std::string& get_name() const noexcept;
 
         [[nodiscard]] uvalue get() const;
@@ -4789,7 +4789,7 @@ namespace meta_hpp
     : type_{type}
     , position_{position} {}
 
-    inline const any_type& argument_index::get_type() const noexcept {
+    inline any_type argument_index::get_type() const noexcept {
         return type_;
     }
 
@@ -4807,7 +4807,7 @@ namespace meta_hpp
     inline constructor_index::constructor_index(constructor_type type)
     : type_{type} {}
 
-    inline const constructor_type& constructor_index::get_type() const noexcept {
+    inline constructor_type constructor_index::get_type() const noexcept {
         return type_;
     }
 
@@ -4821,7 +4821,7 @@ namespace meta_hpp
     inline destructor_index::destructor_index(destructor_type type)
     : type_{type} {}
 
-    inline const destructor_type& destructor_index::get_type() const noexcept {
+    inline destructor_type destructor_index::get_type() const noexcept {
         return type_;
     }
 
@@ -4836,7 +4836,7 @@ namespace meta_hpp
     : type_{type}
     , name_{std::move(name)} {}
 
-    inline const enum_type& evalue_index::get_type() const noexcept {
+    inline enum_type evalue_index::get_type() const noexcept {
         return type_;
     }
 
@@ -4855,7 +4855,7 @@ namespace meta_hpp
     : type_{type}
     , name_{std::move(name)} {}
 
-    inline const function_type& function_index::get_type() const noexcept {
+    inline function_type function_index::get_type() const noexcept {
         return type_;
     }
 
@@ -4874,7 +4874,7 @@ namespace meta_hpp
     : type_{type}
     , name_{std::move(name)} {}
 
-    inline const member_type& member_index::get_type() const noexcept {
+    inline member_type member_index::get_type() const noexcept {
         return type_;
     }
 
@@ -4893,7 +4893,7 @@ namespace meta_hpp
     : type_{type}
     , name_{std::move(name)} {}
 
-    inline const method_type& method_index::get_type() const noexcept {
+    inline method_type method_index::get_type() const noexcept {
         return type_;
     }
 
@@ -4926,7 +4926,7 @@ namespace meta_hpp
     : type_{type}
     , name_{std::move(name)} {}
 
-    inline const pointer_type& variable_index::get_type() const noexcept {
+    inline pointer_type variable_index::get_type() const noexcept {
         return type_;
     }
 
@@ -4974,7 +4974,7 @@ namespace meta_hpp
         return state_->metadata;
     }
 
-    inline const any_type& argument::get_type() const noexcept {
+    inline any_type argument::get_type() const noexcept {
         return state_->index.get_type();
     }
 
@@ -5178,7 +5178,7 @@ namespace meta_hpp::detail
             return ref_type_;
         }
 
-        [[nodiscard]] const any_type& get_raw_type() const noexcept {
+        [[nodiscard]] any_type get_raw_type() const noexcept {
             return raw_type_;
         }
 
@@ -5664,7 +5664,7 @@ namespace meta_hpp
         return state_->metadata;
     }
 
-    inline const constructor_type& constructor::get_type() const noexcept {
+    inline constructor_type constructor::get_type() const noexcept {
         return state_->index.get_type();
     }
 
@@ -5836,7 +5836,7 @@ namespace meta_hpp
         return state_->metadata;
     }
 
-    inline const destructor_type& destructor::get_type() const noexcept {
+    inline destructor_type destructor::get_type() const noexcept {
         return state_->index.get_type();
     }
 
@@ -5971,7 +5971,7 @@ namespace meta_hpp
         return state_->metadata;
     }
 
-    inline const enum_type& evalue::get_type() const noexcept {
+    inline enum_type evalue::get_type() const noexcept {
         return state_->index.get_type();
     }
 
@@ -6192,7 +6192,7 @@ namespace meta_hpp
         return state_->metadata;
     }
 
-    inline const function_type& function::get_type() const noexcept {
+    inline function_type function::get_type() const noexcept {
         return state_->index.get_type();
     }
 
@@ -6317,7 +6317,7 @@ namespace meta_hpp::detail
             return ref_type_;
         }
 
-        [[nodiscard]] const any_type& get_raw_type() const noexcept {
+        [[nodiscard]] any_type get_raw_type() const noexcept {
             return raw_type_;
         }
 
@@ -6686,7 +6686,7 @@ namespace meta_hpp
         return state_->metadata;
     }
 
-    inline const member_type& member::get_type() const noexcept {
+    inline member_type member::get_type() const noexcept {
         return state_->index.get_type();
     }
 
@@ -6967,7 +6967,7 @@ namespace meta_hpp
         return state_->metadata;
     }
 
-    inline const method_type& method::get_type() const noexcept {
+    inline method_type method::get_type() const noexcept {
         return state_->index.get_type();
     }
 
@@ -7184,7 +7184,7 @@ namespace meta_hpp
         return state_->metadata;
     }
 
-    inline const pointer_type& variable::get_type() const noexcept {
+    inline pointer_type variable::get_type() const noexcept {
         return state_->index.get_type();
     }
 

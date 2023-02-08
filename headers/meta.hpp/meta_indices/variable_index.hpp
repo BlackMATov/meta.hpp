@@ -17,7 +17,7 @@ namespace meta_hpp
     : type_{type}
     , name_{std::move(name)} {}
 
-    inline const pointer_type& variable_index::get_type() const noexcept {
+    inline pointer_type variable_index::get_type() const noexcept {
         return type_;
     }
 

@@ -17,7 +17,7 @@ namespace meta_hpp
     : type_{type}
     , name_{std::move(name)} {}
 
-    inline const enum_type& evalue_index::get_type() const noexcept {
+    inline enum_type evalue_index::get_type() const noexcept {
         return type_;
     }
 

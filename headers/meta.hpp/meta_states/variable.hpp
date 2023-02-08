@@ -129,7 +129,7 @@ namespace meta_hpp
         return state_->metadata;
     }
 
-    inline const pointer_type& variable::get_type() const noexcept {
+    inline pointer_type variable::get_type() const noexcept {
         return state_->index.get_type();
     }
 

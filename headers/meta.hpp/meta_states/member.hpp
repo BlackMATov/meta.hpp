@@ -180,7 +180,7 @@ namespace meta_hpp
         return state_->metadata;
     }
 
-    inline const member_type& member::get_type() const noexcept {
+    inline member_type member::get_type() const noexcept {
         return state_->index.get_type();
     }
 
