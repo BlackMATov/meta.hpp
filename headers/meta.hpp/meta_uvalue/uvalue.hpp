@@ -72,7 +72,7 @@ namespace meta_hpp
 
         template < typename T, typename... Args, typename Tp = std::decay_t<T> >
         static Tp& do_ctor(uvalue& dst, Args&&... args) {
-            assert(!dst); // NOLINT
+            META_HPP_ASSERT(!dst);
 
             if constexpr ( in_internal_v<Tp> ) {
                 std::construct_at(storage_cast<Tp>(dst.storage_), std::forward<Args>(args)...);
@@ -90,7 +90,7 @@ namespace meta_hpp
         }
 
         static void do_move(uvalue&& self, uvalue& to) noexcept {
-            assert(!to); // NOLINT
+            META_HPP_ASSERT(!to);
 
             auto&& [tag, vtable] = unpack_vtag(self);
 
@@ -109,7 +109,7 @@ namespace meta_hpp
         }
 
         static void do_copy(const uvalue& self, uvalue& to) noexcept {
-            assert(!to); // NOLINT
+            META_HPP_ASSERT(!to);
 
             auto&& [tag, vtable] = unpack_vtag(self);
 
@@ -171,7 +171,8 @@ namespace meta_hpp
                 .type = resolve_type<Tp>(),
 
                 .move{[](uvalue&& self, uvalue& to) noexcept {
-                    assert(self && !to); // NOLINT
+                    META_HPP_ASSERT(!to);
+                    META_HPP_ASSERT(self);
 
                     Tp* src = storage_cast<Tp>(self.storage_);
 
@@ -186,7 +187,8 @@ namespace meta_hpp
                 }},
 
                 .copy{[](const uvalue& self, uvalue& to) {
-                    assert(self && !to); // NOLINT
+                    META_HPP_ASSERT(!to);
+                    META_HPP_ASSERT(self);
 
                     const Tp* src = storage_cast<Tp>(self.storage_);
 
@@ -200,7 +202,7 @@ namespace meta_hpp
                 }},
 
                 .reset{[](uvalue& self) noexcept {
-                    assert(self); // NOLINT
+                    META_HPP_ASSERT(self);
 
                     Tp* src = storage_cast<Tp>(self.storage_);
 
@@ -363,7 +365,7 @@ namespace meta_hpp
             return storage_.external.ptr;
         }
 
-        assert(false); // NOLINT
+        META_HPP_ASSERT(false);
         return nullptr;
     }
 
@@ -380,7 +382,7 @@ namespace meta_hpp
             return storage_.external.ptr;
         }
 
-        assert(false); // NOLINT
+        META_HPP_ASSERT(false);
         return nullptr;
     }
 
@@ -397,7 +399,7 @@ namespace meta_hpp
             return storage_.external.ptr;
         }
 
-        assert(false); // NOLINT
+        META_HPP_ASSERT(false);
         return nullptr;
     }
 

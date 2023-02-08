@@ -7,6 +7,7 @@
 #pragma once
 
 #include "base.hpp"
+#include "exceptions.hpp"
 
 namespace meta_hpp::detail
 {
@@ -63,7 +64,7 @@ namespace meta_hpp::detail
         }
 
         R operator()(Args... args) const {
-            assert(vtable_ && "bad function call"); // NOLINT
+            META_HPP_ASSERT(vtable_ && "bad function call");
             return vtable_->call(*this, std::forward<Args>(args)...);
         }
 
@@ -120,14 +121,15 @@ namespace meta_hpp::detail
 
             static vtable_t table{
                 .call{[](const fixed_function& self, Args... args) -> R {
-                    assert(self); // NOLINT
+                    META_HPP_ASSERT(self);
 
                     const Fp& src = *buffer_cast<Fp>(self.buffer_);
                     return std::invoke(src, std::forward<Args>(args)...);
                 }},
 
                 .move{[](fixed_function& from, fixed_function& to) noexcept {
-                    assert(from && !to); // NOLINT
+                    META_HPP_ASSERT(!to);
+                    META_HPP_ASSERT(from);
 
                     Fp& src = *buffer_cast<Fp>(from.buffer_);
                     std::construct_at(buffer_cast<Fp>(to.buffer_), std::move(src));
@@ -138,7 +140,7 @@ namespace meta_hpp::detail
                 }},
 
                 .destroy{[](fixed_function& self) {
-                    assert(self); // NOLINT
+                    META_HPP_ASSERT(self);
 
                     Fp& src = *buffer_cast<Fp>(self.buffer_);
                     std::destroy_at(&src);
@@ -151,7 +153,7 @@ namespace meta_hpp::detail
 
         template < typename F, typename Fp = std::decay_t<F> >
         static void construct(fixed_function& dst, F&& fun) {
-            assert(!dst); // NOLINT
+            META_HPP_ASSERT(!dst);
 
             static_assert(sizeof(Fp) <= sizeof(buffer_t));
             static_assert(alignof(buffer_t) % alignof(Fp) == 0);
