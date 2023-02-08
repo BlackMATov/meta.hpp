@@ -431,15 +431,25 @@ namespace meta_hpp
     };
 }
 
+namespace std
+{
+    template < meta_hpp::detail::state_family State >
+    struct hash<State> {
+        size_t operator()(const State& state) const noexcept {
+            return state.is_valid() ? state.get_index().get_hash() : 0;
+        }
+    };
+}
+
 namespace meta_hpp
 {
-    template < detail::state_family T, detail::state_family U >
-    [[nodiscard]] bool operator==(const T& l, const U& r) noexcept {
+    template < detail::state_family L, detail::state_family R >
+    [[nodiscard]] bool operator==(const L& l, const R& r) noexcept {
         return l.is_valid() == r.is_valid() && (!l.is_valid() || l.get_index() == r.get_index());
     }
 
-    template < detail::state_family T, detail::state_family U >
-    [[nodiscard]] std::strong_ordering operator<=>(const T& l, const U& r) noexcept {
+    template < detail::state_family L, detail::state_family R >
+    [[nodiscard]] std::strong_ordering operator<=>(const L& l, const R& r) noexcept {
         if ( const std::strong_ordering cmp{l.is_valid() <=> r.is_valid()}; cmp != std::strong_ordering::equal ) {
             return cmp;
         }
@@ -449,15 +459,13 @@ namespace meta_hpp
 
 namespace meta_hpp
 {
-    template < detail::state_family T, typename U >
-        requires std::is_same_v<U, typename T::index_type>
-    [[nodiscard]] bool operator==(const T& l, const U& r) noexcept {
+    template < detail::state_family L >
+    [[nodiscard]] bool operator==(const L& l, const typename L::index_type& r) noexcept {
         return l.is_valid() && l.get_index() == r;
     }
 
-    template < detail::state_family T, typename U >
-        requires std::is_same_v<U, typename T::index_type>
-    [[nodiscard]] std::strong_ordering operator<=>(const T& l, const U& r) noexcept {
+    template < detail::state_family L >
+    [[nodiscard]] std::strong_ordering operator<=>(const L& l, const typename L::index_type& r) noexcept {
         return l.is_valid() ? l.get_index() <=> r : std::strong_ordering::less;
     }
 }

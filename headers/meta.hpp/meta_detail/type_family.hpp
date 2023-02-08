@@ -27,8 +27,8 @@ namespace meta_hpp::detail
        || std::is_same_v<T, reference_type>   //
        || std::is_same_v<T, void_type>;       //
 
-    template < type_family T >
-    [[nodiscard]] typename T::data_ptr type_access(const T& type) {
+    template < type_family Type >
+    [[nodiscard]] typename Type::data_ptr type_access(const Type& type) {
         return type.data_;
     }
 }

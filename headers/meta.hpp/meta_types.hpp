@@ -484,23 +484,23 @@ namespace meta_hpp
 
 namespace std
 {
-    template < meta_hpp::detail::type_family T >
-    struct hash<T> {
-        size_t operator()(const T& t) const noexcept {
-            return meta_hpp::detail::hash_combiner{}(t.get_id());
+    template < meta_hpp::detail::type_family Type >
+    struct hash<Type> {
+        size_t operator()(const Type& type) const noexcept {
+            return type.is_valid() ? type.get_id().get_hash() : 0;
         }
     };
 }
 
 namespace meta_hpp
 {
-    template < detail::type_family T, detail::type_family U >
-    [[nodiscard]] bool operator==(const T& l, const U& r) noexcept {
+    template < detail::type_family L, detail::type_family R >
+    [[nodiscard]] bool operator==(const L& l, const R& r) noexcept {
         return l.is_valid() == r.is_valid() && (!l.is_valid() || l.get_id() == r.get_id());
     }
 
-    template < detail::type_family T, detail::type_family U >
-    [[nodiscard]] std::strong_ordering operator<=>(const T& l, const U& r) noexcept {
+    template < detail::type_family L, detail::type_family R >
+    [[nodiscard]] std::strong_ordering operator<=>(const L& l, const R& r) noexcept {
         if ( const std::strong_ordering cmp{l.is_valid() <=> r.is_valid()}; cmp != std::strong_ordering::equal ) {
             return cmp;
         }
@@ -510,13 +510,13 @@ namespace meta_hpp
 
 namespace meta_hpp
 {
-    template < detail::type_family T >
-    [[nodiscard]] bool operator==(const T& l, type_id r) noexcept {
+    template < detail::type_family L >
+    [[nodiscard]] bool operator==(const L& l, type_id r) noexcept {
         return l.is_valid() && l.get_id() == r;
     }
 
-    template < detail::type_family T >
-    [[nodiscard]] std::strong_ordering operator<=>(const T& l, type_id r) noexcept {
+    template < detail::type_family L >
+    [[nodiscard]] std::strong_ordering operator<=>(const L& l, type_id r) noexcept {
         return l.is_valid() ? l.get_id() <=> r : std::strong_ordering::less;
     }
 }

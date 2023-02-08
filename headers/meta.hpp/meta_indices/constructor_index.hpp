@@ -8,7 +8,6 @@
 
 #include "../meta_base.hpp"
 #include "../meta_indices.hpp"
-#include "../meta_registry.hpp"
 #include "../meta_types.hpp"
 
 namespace meta_hpp
@@ -18,6 +17,10 @@ namespace meta_hpp
 
     inline constructor_type constructor_index::get_type() const noexcept {
         return type_;
+    }
+
+    inline void constructor_index::swap(constructor_index& other) noexcept {
+        std::swap(type_, other.type_);
     }
 
     inline std::size_t constructor_index::get_hash() const noexcept {

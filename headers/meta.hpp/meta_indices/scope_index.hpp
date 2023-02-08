@@ -8,7 +8,6 @@
 
 #include "../meta_base.hpp"
 #include "../meta_indices.hpp"
-#include "../meta_registry.hpp"
 #include "../meta_states.hpp"
 
 namespace meta_hpp
@@ -16,8 +15,16 @@ namespace meta_hpp
     inline scope_index::scope_index(std::string name)
     : name_{std::move(name)} {}
 
-    inline const std::string& scope_index::get_name() const noexcept {
+    inline std::string&& scope_index::get_name() && noexcept {
+        return std::move(name_);
+    }
+
+    inline const std::string& scope_index::get_name() const& noexcept {
         return name_;
+    }
+
+    inline void scope_index::swap(scope_index& other) noexcept {
+        std::swap(name_, other.name_);
     }
 
     inline std::size_t scope_index::get_hash() const noexcept {

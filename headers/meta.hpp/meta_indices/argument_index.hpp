@@ -8,7 +8,6 @@
 
 #include "../meta_base.hpp"
 #include "../meta_indices.hpp"
-#include "../meta_registry.hpp"
 #include "../meta_types.hpp"
 
 namespace meta_hpp
@@ -23,6 +22,11 @@ namespace meta_hpp
 
     inline std::size_t argument_index::get_position() const noexcept {
         return position_;
+    }
+
+    inline void argument_index::swap(argument_index& other) noexcept {
+        std::swap(type_, other.type_);
+        std::swap(position_, other.position_);
     }
 
     inline std::size_t argument_index::get_hash() const noexcept {

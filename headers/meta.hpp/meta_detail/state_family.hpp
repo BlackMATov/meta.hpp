@@ -22,8 +22,8 @@ namespace meta_hpp::detail
        || std::is_same_v<T, scope>       //
        || std::is_same_v<T, variable>;   //
 
-    template < state_family T >
-    [[nodiscard]] typename T::state_ptr state_access(const T& state) {
+    template < state_family State >
+    [[nodiscard]] typename State::state_ptr state_access(const State& state) {
         return state.state_;
     }
 }

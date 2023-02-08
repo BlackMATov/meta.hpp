@@ -8,7 +8,6 @@
 
 #include "../meta_base.hpp"
 #include "../meta_indices.hpp"
-#include "../meta_registry.hpp"
 #include "../meta_types.hpp"
 
 namespace meta_hpp
@@ -21,8 +20,17 @@ namespace meta_hpp
         return type_;
     }
 
-    inline const std::string& evalue_index::get_name() const noexcept {
+    inline std::string&& evalue_index::get_name() && noexcept {
+        return std::move(name_);
+    }
+
+    inline const std::string& evalue_index::get_name() const& noexcept {
         return name_;
+    }
+
+    inline void evalue_index::swap(evalue_index& other) noexcept {
+        std::swap(type_, other.type_);
+        std::swap(name_, other.name_);
     }
 
     inline std::size_t evalue_index::get_hash() const noexcept {
