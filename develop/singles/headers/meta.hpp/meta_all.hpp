@@ -298,15 +298,22 @@ namespace meta_hpp::detail
 
 #if !defined(META_HPP_NO_EXCEPTIONS)
 #    define META_HPP_TRY try
-#    define META_HPP_CATCH(e) catch ( e )
+#    define META_HPP_CATCH(...) catch ( __VA_ARGS__ )
 #    define META_HPP_RETHROW() throw
-#    define META_HPP_THROW_AS(e, m) throw e(m)
+#    define META_HPP_THROW(...) throw ::meta_hpp::detail::exception(__VA_ARGS__)
 #else
 #    define META_HPP_TRY if ( true )
-#    define META_HPP_CATCH(e) if ( false )
-#    define META_HPP_RETHROW() std::abort()
-#    define META_HPP_THROW_AS(e, m) std::terminate()
+#    define META_HPP_CATCH(...) if ( false )
+#    define META_HPP_RETHROW() std::terminate()
+#    define META_HPP_THROW(...) std::terminate()
 #endif
+
+#define META_HPP_THROW_IF(yesno, ...) \
+    do { \
+        if ( yesno ) { \
+            META_HPP_THROW(__VA_ARGS__); \
+        } \
+    } while ( false )
 
 namespace meta_hpp::detail
 {
@@ -374,7 +381,7 @@ namespace meta_hpp::detail
         }
 
         R operator()(Args... args) const {
-            META_HPP_ASSERT(vtable_ && "bad function call");
+            META_HPP_THROW_IF(!vtable_, "bad function call");
             return vtable_->call(*this, std::forward<Args>(args)...);
         }
 
@@ -2677,6 +2684,7 @@ namespace meta_hpp
         explicit evalue_index(enum_type type, std::string name);
 
         [[nodiscard]] enum_type get_type() const noexcept;
+
         [[nodiscard]] std::string&& get_name() && noexcept;
         [[nodiscard]] const std::string& get_name() const& noexcept;
 
@@ -2695,6 +2703,7 @@ namespace meta_hpp
         explicit function_index(function_type type, std::string name);
 
         [[nodiscard]] function_type get_type() const noexcept;
+
         [[nodiscard]] std::string&& get_name() && noexcept;
         [[nodiscard]] const std::string& get_name() const& noexcept;
 
@@ -2713,6 +2722,7 @@ namespace meta_hpp
         explicit member_index(member_type type, std::string name);
 
         [[nodiscard]] member_type get_type() const noexcept;
+
         [[nodiscard]] std::string&& get_name() && noexcept;
         [[nodiscard]] const std::string& get_name() const& noexcept;
 
@@ -2731,6 +2741,7 @@ namespace meta_hpp
         explicit method_index(method_type type, std::string name);
 
         [[nodiscard]] method_type get_type() const noexcept;
+
         [[nodiscard]] std::string&& get_name() && noexcept;
         [[nodiscard]] const std::string& get_name() const& noexcept;
 
@@ -2765,6 +2776,7 @@ namespace meta_hpp
         explicit variable_index(pointer_type type, std::string name);
 
         [[nodiscard]] pointer_type get_type() const noexcept;
+
         [[nodiscard]] std::string&& get_name() && noexcept;
         [[nodiscard]] const std::string& get_name() const& noexcept;
 
@@ -4472,9 +4484,10 @@ namespace meta_hpp
     {
         auto state = detail::constructor_state::make<Policy, Class, Args...>(std::move(opts.metadata));
 
-        if ( opts.arguments.size() > state->arguments.size() ) {
-            META_HPP_THROW_AS(exception, "provided argument names don't match constructor argument count");
-        }
+        META_HPP_THROW_IF( //
+            opts.arguments.size() > state->arguments.size(),
+            "provided argument names don't match constructor argument count"
+        );
 
         for ( std::size_t i = 0; i < opts.arguments.size(); ++i ) {
             argument& arg = state->arguments[i];
@@ -4521,9 +4534,10 @@ namespace meta_hpp
     class_bind<Class>& class_bind<Class>::function_(std::string name, Function function_ptr, function_opts opts, Policy) {
         auto state = detail::function_state::make<Policy>(std::move(name), function_ptr, std::move(opts.metadata));
 
-        if ( opts.arguments.size() > state->arguments.size() ) {
-            META_HPP_THROW_AS(exception, "provided arguments don't match function argument count");
-        }
+        META_HPP_THROW_IF( //
+            opts.arguments.size() > state->arguments.size(),
+            "provided arguments don't match function argument count"
+        );
 
         for ( std::size_t i = 0; i < opts.arguments.size(); ++i ) {
             argument& arg = state->arguments[i];
@@ -4540,9 +4554,10 @@ namespace meta_hpp
     class_bind<Class>& class_bind<Class>::function_(std::string name, Function function_ptr, string_ilist arguments, Policy) {
         auto state = detail::function_state::make<Policy>(std::move(name), function_ptr, {});
 
-        if ( arguments.size() > state->arguments.size() ) {
-            META_HPP_THROW_AS(exception, "provided argument names don't match function argument count");
-        }
+        META_HPP_THROW_IF( //
+            arguments.size() > state->arguments.size(),
+            "provided argument names don't match function argument count"
+        );
 
         for ( std::size_t i = 0; i < arguments.size(); ++i ) {
             argument& arg = state->arguments[i];
@@ -4591,9 +4606,10 @@ namespace meta_hpp
     class_bind<Class>& class_bind<Class>::method_(std::string name, Method method_ptr, method_opts opts, Policy) {
         auto state = detail::method_state::make<Policy>(std::move(name), method_ptr, std::move(opts.metadata));
 
-        if ( opts.arguments.size() > state->arguments.size() ) {
-            META_HPP_THROW_AS(exception, "provided arguments don't match method argument count");
-        }
+        META_HPP_THROW_IF( //
+            opts.arguments.size() > state->arguments.size(),
+            "provided arguments don't match method argument count"
+        );
 
         for ( std::size_t i = 0; i < opts.arguments.size(); ++i ) {
             argument& arg = state->arguments[i];
@@ -4611,9 +4627,10 @@ namespace meta_hpp
     class_bind<Class>& class_bind<Class>::method_(std::string name, Method method_ptr, string_ilist arguments, Policy) {
         auto state = detail::method_state::make<Policy>(std::move(name), method_ptr, {});
 
-        if ( arguments.size() > state->arguments.size() ) {
-            META_HPP_THROW_AS(exception, "provided argument names don't match method argument count");
-        }
+        META_HPP_THROW_IF( //
+            arguments.size() > state->arguments.size(),
+            "provided argument names don't match method argument count"
+        );
 
         for ( std::size_t i = 0; i < arguments.size(); ++i ) {
             argument& arg = state->arguments[i];
@@ -4741,9 +4758,10 @@ namespace meta_hpp
     scope_bind& scope_bind::function_(std::string name, Function function_ptr, function_opts opts, Policy) {
         auto state = detail::function_state::make<Policy>(std::move(name), function_ptr, std::move(opts.metadata));
 
-        if ( opts.arguments.size() > state->arguments.size() ) {
-            META_HPP_THROW_AS(exception, "provided arguments don't match function argument count");
-        }
+        META_HPP_THROW_IF( //
+            opts.arguments.size() > state->arguments.size(),
+            "provided arguments don't match function argument count"
+        );
 
         for ( std::size_t i = 0; i < opts.arguments.size(); ++i ) {
             argument& arg = state->arguments[i];
@@ -4759,9 +4777,10 @@ namespace meta_hpp
     scope_bind& scope_bind::function_(std::string name, Function function_ptr, string_ilist arguments, Policy) {
         auto state = detail::function_state::make<Policy>(std::move(name), function_ptr, {});
 
-        if ( arguments.size() > state->arguments.size() ) {
-            META_HPP_THROW_AS(exception, "provided argument names don't match function argument count");
-        }
+        META_HPP_THROW_IF( //
+            arguments.size() > state->arguments.size(),
+            "provided argument names don't match function argument count"
+        );
 
         for ( std::size_t i = 0; i < arguments.size(); ++i ) {
             argument& arg = state->arguments[i];
@@ -5425,9 +5444,7 @@ namespace meta_hpp::detail
     template < typename To >
     // NOLINTNEXTLINE(*-cognitive-complexity)
     To uarg::cast() const {
-        if ( !can_cast_to<To>() ) {
-            META_HPP_THROW_AS(exception, "bad argument cast");
-        }
+        META_HPP_THROW_IF(!can_cast_to<To>(), "bad argument cast");
 
         using to_raw_type_cv = std::remove_reference_t<To>;
         using to_raw_type = std::remove_cv_t<to_raw_type_cv>;
@@ -5536,7 +5553,7 @@ namespace meta_hpp::detail
             }
         }
 
-        META_HPP_THROW_AS(exception, "bad argument cast");
+        META_HPP_THROW("bad argument cast");
     }
 }
 
@@ -5615,15 +5632,17 @@ namespace meta_hpp::detail
 
         static_assert(as_object || as_raw_ptr || as_shared_ptr);
 
-        if ( args.size() != ct::arity ) {
-            META_HPP_THROW_AS(exception, "an attempt to call a constructor with an incorrect arity");
-        }
+        META_HPP_THROW_IF( //
+            args.size() != ct::arity,
+            "an attempt to call a constructor with an incorrect arity"
+        );
 
         return std::invoke(
             [args]<std::size_t... Is>(std::index_sequence<Is...>)->uvalue {
-                if ( !(... && args[Is].can_cast_to<type_list_at_t<Is, argument_types>>()) ) {
-                    META_HPP_THROW_AS(exception, "an attempt to call a constructor with incorrect argument types");
-                }
+                META_HPP_THROW_IF( //
+                    !(... && args[Is].can_cast_to<type_list_at_t<Is, argument_types>>()),
+                    "an attempt to call a constructor with incorrect argument types"
+                );
 
                 if constexpr ( as_object ) {
                     return make_uvalue<class_type>(args[Is].cast<type_list_at_t<Is, argument_types>>()...);
@@ -5647,17 +5666,22 @@ namespace meta_hpp::detail
         using class_type = typename ct::class_type;
         using argument_types = typename ct::argument_types;
 
-        if ( args.size() != ct::arity ) {
-            META_HPP_THROW_AS(exception, "an attempt to call a constructor with an incorrect arity");
-        }
+        META_HPP_THROW_IF( //
+            args.size() != ct::arity,
+            "an attempt to call a constructor with an incorrect arity"
+        );
 
         return std::invoke(
             [ mem, args ]<std::size_t... Is>(std::index_sequence<Is...>)->uvalue {
-                if ( !(... && args[Is].can_cast_to<type_list_at_t<Is, argument_types>>()) ) {
-                    META_HPP_THROW_AS(exception, "an attempt to call a constructor with incorrect argument types");
-                }
-                return uvalue{
-                    std::construct_at(static_cast<class_type*>(mem), args[Is].cast<type_list_at_t<Is, argument_types>>()...)};
+                META_HPP_THROW_IF( //
+                    !(... && args[Is].can_cast_to<type_list_at_t<Is, argument_types>>()),
+                    "an attempt to call a constructor with incorrect argument types"
+                );
+
+                return uvalue{std::construct_at( //
+                    static_cast<class_type*>(mem),
+                    args[Is].cast<type_list_at_t<Is, argument_types>>()...
+                )};
             },
             std::make_index_sequence<ct::arity>()
         );
@@ -6165,15 +6189,17 @@ namespace meta_hpp::detail
 
         static_assert(as_copy || as_void || ref_as_ptr);
 
-        if ( args.size() != ft::arity ) {
-            META_HPP_THROW_AS(exception, "an attempt to call a function with an incorrect arity");
-        }
+        META_HPP_THROW_IF( //
+            args.size() != ft::arity,
+            "an attempt to call a function with an incorrect arity"
+        );
 
         return std::invoke(
             [ function_ptr, args ]<std::size_t... Is>(std::index_sequence<Is...>)->uvalue {
-                if ( !(... && args[Is].can_cast_to<type_list_at_t<Is, argument_types>>()) ) {
-                    META_HPP_THROW_AS(exception, "an attempt to call a function with incorrect argument types");
-                }
+                META_HPP_THROW_IF( //
+                    !(... && args[Is].can_cast_to<type_list_at_t<Is, argument_types>>()),
+                    "an attempt to call a function with incorrect argument types"
+                );
 
                 if constexpr ( std::is_void_v<return_type> ) {
                     function_ptr(args[Is].cast<type_list_at_t<Is, argument_types>>()...);
@@ -6508,9 +6534,7 @@ namespace meta_hpp::detail
 {
     template < inst_class_ref_kind Q >
     decltype(auto) uinst::cast() const {
-        if ( !can_cast_to<Q>() ) {
-            META_HPP_THROW_AS(exception, "bad instance cast");
-        }
+        META_HPP_THROW_IF(!can_cast_to<Q>(), "bad instance cast");
 
         using inst_class_cv = std::remove_reference_t<Q>;
         using inst_class = std::remove_cv_t<inst_class_cv>;
@@ -6558,7 +6582,7 @@ namespace meta_hpp::detail
             }
         }
 
-        META_HPP_THROW_AS(exception, "bad instance cast");
+        META_HPP_THROW("bad instance cast");
     }
 }
 
@@ -6629,9 +6653,10 @@ namespace meta_hpp::detail
 
         static_assert(as_copy || as_ptr || as_ref_wrap);
 
-        if ( !inst.can_cast_to<const class_type>() ) {
-            META_HPP_THROW_AS(exception, "an attempt to get a member with an incorrect instance type");
-        }
+        META_HPP_THROW_IF( //
+            !inst.can_cast_to<const class_type>(),
+            "an attempt to get a member with an incorrect instance type"
+        );
 
         if ( inst.is_inst_const() ) {
             auto&& return_value = inst.cast<const class_type>().*member_ptr;
@@ -6682,19 +6707,22 @@ namespace meta_hpp::detail
         using value_type = typename mt::value_type;
 
         if constexpr ( std::is_const_v<value_type> ) {
-            META_HPP_THROW_AS(exception, "an attempt to set a constant member");
+            META_HPP_THROW("an attempt to set a constant member");
         } else {
-            if ( inst.is_inst_const() ) {
-                META_HPP_THROW_AS(exception, "an attempt to set a member with an const instance type");
-            }
+            META_HPP_THROW_IF( //
+                inst.is_inst_const(),
+                "an attempt to set a member with an const instance type"
+            );
 
-            if ( !inst.can_cast_to<class_type>() ) {
-                META_HPP_THROW_AS(exception, "an attempt to set a member with an incorrect instance type");
-            }
+            META_HPP_THROW_IF( //
+                !inst.can_cast_to<class_type>(),
+                "an attempt to set a member with an incorrect instance type"
+            );
 
-            if ( !arg.can_cast_to<value_type>() ) {
-                META_HPP_THROW_AS(exception, "an attempt to set a member with an incorrect argument type");
-            }
+            META_HPP_THROW_IF( //
+                !arg.can_cast_to<value_type>(),
+                "an attempt to set a member with an incorrect argument type"
+            );
 
             inst.cast<class_type>().*member_ptr = arg.cast<value_type>();
         }
@@ -6928,19 +6956,22 @@ namespace meta_hpp::detail
 
         static_assert(as_copy || as_void || ref_as_ptr);
 
-        if ( args.size() != mt::arity ) {
-            META_HPP_THROW_AS(exception, "an attempt to call a method with an incorrect arity");
-        }
+        META_HPP_THROW_IF( //
+            args.size() != mt::arity,
+            "an attempt to call a method with an incorrect arity"
+        );
 
-        if ( !inst.can_cast_to<qualified_type>() ) {
-            META_HPP_THROW_AS(exception, "an attempt to call a method with an incorrect instance type");
-        }
+        META_HPP_THROW_IF( //
+            !inst.can_cast_to<qualified_type>(),
+            "an attempt to call a method with an incorrect instance type"
+        );
 
         return std::invoke(
             [ method_ptr, &inst, args ]<std::size_t... Is>(std::index_sequence<Is...>)->uvalue {
-                if ( !(... && args[Is].can_cast_to<type_list_at_t<Is, argument_types>>()) ) {
-                    META_HPP_THROW_AS(exception, "an attempt to call a method with incorrect argument types");
-                }
+                META_HPP_THROW_IF( //
+                    !(... && args[Is].can_cast_to<type_list_at_t<Is, argument_types>>()),
+                    "an attempt to call a method with incorrect argument types"
+                );
 
                 if constexpr ( std::is_void_v<return_type> ) {
                     (inst.cast<qualified_type>().*method_ptr)(args[Is].cast<type_list_at_t<Is, argument_types>>()...);
@@ -7197,11 +7228,12 @@ namespace meta_hpp::detail
         using data_type = typename pt::data_type;
 
         if constexpr ( std::is_const_v<data_type> ) {
-            META_HPP_THROW_AS(exception, "an attempt to set a constant variable");
+            META_HPP_THROW("an attempt to set a constant variable");
         } else {
-            if ( !arg.can_cast_to<data_type>() ) {
-                META_HPP_THROW_AS(exception, "an attempt to set a variable with an incorrect argument type");
-            }
+            META_HPP_THROW_IF( //
+                !arg.can_cast_to<data_type>(),
+                "an attempt to set a variable with an incorrect argument type"
+            );
             *variable_ptr = arg.cast<data_type>();
         }
     }
@@ -8896,7 +8928,7 @@ namespace meta_hpp
             }
         }
 
-        META_HPP_THROW_AS(exception, "bad value cast");
+        META_HPP_THROW("bad value cast");
     }
 
     template < typename T >
@@ -8913,7 +8945,7 @@ namespace meta_hpp
             }
         }
 
-        META_HPP_THROW_AS(exception, "bad value cast");
+        META_HPP_THROW("bad value cast");
     }
 
     template < typename T >
@@ -8930,7 +8962,7 @@ namespace meta_hpp
             }
         }
 
-        META_HPP_THROW_AS(exception, "bad value cast");
+        META_HPP_THROW("bad value cast");
     }
 
     template < typename T >

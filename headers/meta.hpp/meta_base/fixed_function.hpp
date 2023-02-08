@@ -64,7 +64,7 @@ namespace meta_hpp::detail
         }
 
         R operator()(Args... args) const {
-            META_HPP_ASSERT(vtable_ && "bad function call");
+            META_HPP_THROW_IF(!vtable_, "bad function call");
             return vtable_->call(*this, std::forward<Args>(args)...);
         }
 

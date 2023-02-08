@@ -72,9 +72,10 @@ namespace meta_hpp
     {
         auto state = detail::constructor_state::make<Policy, Class, Args...>(std::move(opts.metadata));
 
-        if ( opts.arguments.size() > state->arguments.size() ) {
-            META_HPP_THROW_AS(exception, "provided argument names don't match constructor argument count");
-        }
+        META_HPP_THROW_IF( //
+            opts.arguments.size() > state->arguments.size(),
+            "provided argument names don't match constructor argument count"
+        );
 
         for ( std::size_t i = 0; i < opts.arguments.size(); ++i ) {
             argument& arg = state->arguments[i];
@@ -121,9 +122,10 @@ namespace meta_hpp
     class_bind<Class>& class_bind<Class>::function_(std::string name, Function function_ptr, function_opts opts, Policy) {
         auto state = detail::function_state::make<Policy>(std::move(name), function_ptr, std::move(opts.metadata));
 
-        if ( opts.arguments.size() > state->arguments.size() ) {
-            META_HPP_THROW_AS(exception, "provided arguments don't match function argument count");
-        }
+        META_HPP_THROW_IF( //
+            opts.arguments.size() > state->arguments.size(),
+            "provided arguments don't match function argument count"
+        );
 
         for ( std::size_t i = 0; i < opts.arguments.size(); ++i ) {
             argument& arg = state->arguments[i];
@@ -140,9 +142,10 @@ namespace meta_hpp
     class_bind<Class>& class_bind<Class>::function_(std::string name, Function function_ptr, string_ilist arguments, Policy) {
         auto state = detail::function_state::make<Policy>(std::move(name), function_ptr, {});
 
-        if ( arguments.size() > state->arguments.size() ) {
-            META_HPP_THROW_AS(exception, "provided argument names don't match function argument count");
-        }
+        META_HPP_THROW_IF( //
+            arguments.size() > state->arguments.size(),
+            "provided argument names don't match function argument count"
+        );
 
         for ( std::size_t i = 0; i < arguments.size(); ++i ) {
             argument& arg = state->arguments[i];
@@ -191,9 +194,10 @@ namespace meta_hpp
     class_bind<Class>& class_bind<Class>::method_(std::string name, Method method_ptr, method_opts opts, Policy) {
         auto state = detail::method_state::make<Policy>(std::move(name), method_ptr, std::move(opts.metadata));
 
-        if ( opts.arguments.size() > state->arguments.size() ) {
-            META_HPP_THROW_AS(exception, "provided arguments don't match method argument count");
-        }
+        META_HPP_THROW_IF( //
+            opts.arguments.size() > state->arguments.size(),
+            "provided arguments don't match method argument count"
+        );
 
         for ( std::size_t i = 0; i < opts.arguments.size(); ++i ) {
             argument& arg = state->arguments[i];
@@ -211,9 +215,10 @@ namespace meta_hpp
     class_bind<Class>& class_bind<Class>::method_(std::string name, Method method_ptr, string_ilist arguments, Policy) {
         auto state = detail::method_state::make<Policy>(std::move(name), method_ptr, {});
 
-        if ( arguments.size() > state->arguments.size() ) {
-            META_HPP_THROW_AS(exception, "provided argument names don't match method argument count");
-        }
+        META_HPP_THROW_IF( //
+            arguments.size() > state->arguments.size(),
+            "provided argument names don't match method argument count"
+        );
 
         for ( std::size_t i = 0; i < arguments.size(); ++i ) {
             argument& arg = state->arguments[i];

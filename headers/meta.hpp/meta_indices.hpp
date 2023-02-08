@@ -66,6 +66,7 @@ namespace meta_hpp
         explicit evalue_index(enum_type type, std::string name);
 
         [[nodiscard]] enum_type get_type() const noexcept;
+
         [[nodiscard]] std::string&& get_name() && noexcept;
         [[nodiscard]] const std::string& get_name() const& noexcept;
 
@@ -84,6 +85,7 @@ namespace meta_hpp
         explicit function_index(function_type type, std::string name);
 
         [[nodiscard]] function_type get_type() const noexcept;
+
         [[nodiscard]] std::string&& get_name() && noexcept;
         [[nodiscard]] const std::string& get_name() const& noexcept;
 
@@ -102,6 +104,7 @@ namespace meta_hpp
         explicit member_index(member_type type, std::string name);
 
         [[nodiscard]] member_type get_type() const noexcept;
+
         [[nodiscard]] std::string&& get_name() && noexcept;
         [[nodiscard]] const std::string& get_name() const& noexcept;
 
@@ -120,6 +123,7 @@ namespace meta_hpp
         explicit method_index(method_type type, std::string name);
 
         [[nodiscard]] method_type get_type() const noexcept;
+
         [[nodiscard]] std::string&& get_name() && noexcept;
         [[nodiscard]] const std::string& get_name() const& noexcept;
 
@@ -154,6 +158,7 @@ namespace meta_hpp
         explicit variable_index(pointer_type type, std::string name);
 
         [[nodiscard]] pointer_type get_type() const noexcept;
+
         [[nodiscard]] std::string&& get_name() && noexcept;
         [[nodiscard]] const std::string& get_name() const& noexcept;
 

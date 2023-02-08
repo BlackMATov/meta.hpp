@@ -453,7 +453,7 @@ namespace meta_hpp
             }
         }
 
-        META_HPP_THROW_AS(exception, "bad value cast");
+        META_HPP_THROW("bad value cast");
     }
 
     template < typename T >
@@ -470,7 +470,7 @@ namespace meta_hpp
             }
         }
 
-        META_HPP_THROW_AS(exception, "bad value cast");
+        META_HPP_THROW("bad value cast");
     }
 
     template < typename T >
@@ -487,7 +487,7 @@ namespace meta_hpp
             }
         }
 
-        META_HPP_THROW_AS(exception, "bad value cast");
+        META_HPP_THROW("bad value cast");
     }
 
     template < typename T >
