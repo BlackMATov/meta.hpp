@@ -10,18 +10,6 @@
 
 #include "meta_detail/type_family.hpp"
 
-#include "meta_detail/type_traits/array_traits.hpp"
-#include "meta_detail/type_traits/class_traits.hpp"
-#include "meta_detail/type_traits/constructor_traits.hpp"
-#include "meta_detail/type_traits/destructor_traits.hpp"
-#include "meta_detail/type_traits/enum_traits.hpp"
-#include "meta_detail/type_traits/function_traits.hpp"
-#include "meta_detail/type_traits/member_traits.hpp"
-#include "meta_detail/type_traits/method_traits.hpp"
-#include "meta_detail/type_traits/number_traits.hpp"
-#include "meta_detail/type_traits/pointer_traits.hpp"
-#include "meta_detail/type_traits/reference_traits.hpp"
-
 namespace meta_hpp
 {
     using detail::array_bitflags;
@@ -60,20 +48,55 @@ namespace meta_hpp
 
 namespace meta_hpp
 {
-    class any_type final {
+    template < detail::type_family Type >
+    class type_base {
+        using data_ptr = typename detail::type_traits<Type>::data_ptr;
+        friend data_ptr detail::type_access<Type>(const Type&);
+
     public:
-        using data_ptr = detail::type_data_base*;
+        type_base() = default;
 
-        any_type() = default;
-        explicit any_type(data_ptr data);
+        explicit type_base(data_ptr data)
+        : data_{data} {}
 
-        [[nodiscard]] bool is_valid() const noexcept;
-        [[nodiscard]] explicit operator bool() const noexcept;
+        type_base(type_base&&) noexcept = default;
+        type_base(const type_base&) = default;
 
-        [[nodiscard]] type_id get_id() const noexcept;
-        [[nodiscard]] type_kind get_kind() const noexcept;
+        type_base& operator=(type_base&&) noexcept = default;
+        type_base& operator=(const type_base&) = default;
 
-        [[nodiscard]] const metadata_map& get_metadata() const noexcept;
+        [[nodiscard]] bool is_valid() const noexcept {
+            return data_ != nullptr;
+        }
+
+        [[nodiscard]] explicit operator bool() const noexcept {
+            return data_ != nullptr;
+        }
+
+        [[nodiscard]] type_id get_id() const noexcept {
+            return data_->id;
+        }
+
+        [[nodiscard]] type_kind get_kind() const noexcept {
+            return data_->kind;
+        }
+
+        [[nodiscard]] const metadata_map& get_metadata() const noexcept {
+            return data_->metadata;
+        }
+
+    protected:
+        ~type_base() = default;
+
+        data_ptr data_{};
+    };
+}
+
+namespace meta_hpp
+{
+    class any_type final : public type_base<any_type> {
+    public:
+        using type_base<any_type>::type_base;
 
         template < detail::type_family Type >
         any_type(const Type& other) noexcept;
@@ -111,49 +134,21 @@ namespace meta_hpp
         [[nodiscard]] pointer_type as_pointer() const noexcept;
         [[nodiscard]] reference_type as_reference() const noexcept;
         [[nodiscard]] void_type as_void() const noexcept;
-
-    private:
-        data_ptr data_{};
-        friend data_ptr detail::type_access<any_type>(const any_type&);
     };
 
-    class array_type final {
+    class array_type final : public type_base<array_type> {
     public:
-        using data_ptr = detail::array_type_data*;
-        inline static constexpr type_kind kind{type_kind::array_};
-
-        array_type() = default;
-        explicit array_type(data_ptr data);
-
-        [[nodiscard]] bool is_valid() const noexcept;
-        [[nodiscard]] explicit operator bool() const noexcept;
-
-        [[nodiscard]] type_id get_id() const noexcept;
+        using type_base<array_type>::type_base;
         [[nodiscard]] array_bitflags get_flags() const noexcept;
-        [[nodiscard]] const metadata_map& get_metadata() const noexcept;
 
         [[nodiscard]] std::size_t get_extent() const noexcept;
         [[nodiscard]] any_type get_data_type() const noexcept;
-
-    private:
-        data_ptr data_{};
-        friend data_ptr detail::type_access<array_type>(const array_type&);
     };
 
-    class class_type final {
+    class class_type final : public type_base<class_type> {
     public:
-        using data_ptr = detail::class_type_data*;
-        inline static constexpr type_kind kind{type_kind::class_};
-
-        class_type() = default;
-        explicit class_type(data_ptr data);
-
-        [[nodiscard]] bool is_valid() const noexcept;
-        [[nodiscard]] explicit operator bool() const noexcept;
-
-        [[nodiscard]] type_id get_id() const noexcept;
+        using type_base<class_type>::type_base;
         [[nodiscard]] class_bitflags get_flags() const noexcept;
-        [[nodiscard]] const metadata_map& get_metadata() const noexcept;
 
         [[nodiscard]] std::size_t get_size() const noexcept;
         [[nodiscard]] std::size_t get_align() const noexcept;
@@ -216,73 +211,31 @@ namespace meta_hpp
         [[nodiscard]] method get_method_with(std::string_view name, Iter first, Iter last) const noexcept;
         [[nodiscard]] method get_method_with(std::string_view name, std::span<const any_type> args) const noexcept;
         [[nodiscard]] method get_method_with(std::string_view name, std::initializer_list<any_type> args) const noexcept;
-
-    private:
-        data_ptr data_{};
-        friend data_ptr detail::type_access<class_type>(const class_type&);
     };
 
-    class constructor_type final {
+    class constructor_type final : public type_base<constructor_type> {
     public:
-        using data_ptr = detail::constructor_type_data*;
-        inline static constexpr type_kind kind{type_kind::constructor_};
-
-        constructor_type() = default;
-        explicit constructor_type(data_ptr data);
-
-        [[nodiscard]] bool is_valid() const noexcept;
-        [[nodiscard]] explicit operator bool() const noexcept;
-
-        [[nodiscard]] type_id get_id() const noexcept;
+        using type_base<constructor_type>::type_base;
         [[nodiscard]] constructor_bitflags get_flags() const noexcept;
-        [[nodiscard]] const metadata_map& get_metadata() const noexcept;
 
         [[nodiscard]] std::size_t get_arity() const noexcept;
         [[nodiscard]] class_type get_owner_type() const noexcept;
         [[nodiscard]] any_type get_argument_type(std::size_t position) const noexcept;
         [[nodiscard]] const any_type_list& get_argument_types() const noexcept;
-
-    private:
-        data_ptr data_{};
-        friend data_ptr detail::type_access<constructor_type>(const constructor_type&);
     };
 
-    class destructor_type final {
+    class destructor_type final : public type_base<destructor_type> {
     public:
-        using data_ptr = detail::destructor_type_data*;
-        inline static constexpr type_kind kind{type_kind::destructor_};
-
-        destructor_type() = default;
-        explicit destructor_type(data_ptr data);
-
-        [[nodiscard]] bool is_valid() const noexcept;
-        [[nodiscard]] explicit operator bool() const noexcept;
-
-        [[nodiscard]] type_id get_id() const noexcept;
+        using type_base<destructor_type>::type_base;
         [[nodiscard]] destructor_bitflags get_flags() const noexcept;
-        [[nodiscard]] const metadata_map& get_metadata() const noexcept;
 
         [[nodiscard]] class_type get_owner_type() const noexcept;
-
-    private:
-        data_ptr data_{};
-        friend data_ptr detail::type_access<destructor_type>(const destructor_type&);
     };
 
-    class enum_type final {
+    class enum_type final : public type_base<enum_type> {
     public:
-        using data_ptr = detail::enum_type_data*;
-        inline static constexpr type_kind kind{type_kind::enum_};
-
-        enum_type() = default;
-        explicit enum_type(data_ptr data);
-
-        [[nodiscard]] bool is_valid() const noexcept;
-        [[nodiscard]] explicit operator bool() const noexcept;
-
-        [[nodiscard]] type_id get_id() const noexcept;
+        using type_base<enum_type>::type_base;
         [[nodiscard]] enum_bitflags get_flags() const noexcept;
-        [[nodiscard]] const metadata_map& get_metadata() const noexcept;
 
         [[nodiscard]] number_type get_underlying_type() const noexcept;
 
@@ -296,189 +249,73 @@ namespace meta_hpp
 
         template < typename T >
         [[nodiscard]] T name_to_value_as(std::string_view name) const;
-
-    private:
-        data_ptr data_{};
-        friend data_ptr detail::type_access<enum_type>(const enum_type&);
     };
 
-    class function_type final {
+    class function_type final : public type_base<function_type> {
     public:
-        using data_ptr = detail::function_type_data*;
-        inline static constexpr type_kind kind{type_kind::function_};
-
-        function_type() = default;
-        explicit function_type(data_ptr data);
-
-        [[nodiscard]] bool is_valid() const noexcept;
-        [[nodiscard]] explicit operator bool() const noexcept;
-
-        [[nodiscard]] type_id get_id() const noexcept;
+        using type_base<function_type>::type_base;
         [[nodiscard]] function_bitflags get_flags() const noexcept;
-        [[nodiscard]] const metadata_map& get_metadata() const noexcept;
 
         [[nodiscard]] std::size_t get_arity() const noexcept;
         [[nodiscard]] any_type get_return_type() const noexcept;
         [[nodiscard]] any_type get_argument_type(std::size_t position) const noexcept;
         [[nodiscard]] const any_type_list& get_argument_types() const noexcept;
-
-    private:
-        data_ptr data_{};
-        friend data_ptr detail::type_access<function_type>(const function_type&);
     };
 
-    class member_type final {
+    class member_type final : public type_base<member_type> {
     public:
-        using data_ptr = detail::member_type_data*;
-        inline static constexpr type_kind kind{type_kind::member_};
-
-        member_type() = default;
-        explicit member_type(data_ptr data);
-
-        [[nodiscard]] bool is_valid() const noexcept;
-        [[nodiscard]] explicit operator bool() const noexcept;
-
-        [[nodiscard]] type_id get_id() const noexcept;
+        using type_base<member_type>::type_base;
         [[nodiscard]] member_bitflags get_flags() const noexcept;
-        [[nodiscard]] const metadata_map& get_metadata() const noexcept;
 
         [[nodiscard]] class_type get_owner_type() const noexcept;
         [[nodiscard]] any_type get_value_type() const noexcept;
-
-    private:
-        data_ptr data_{};
-        friend data_ptr detail::type_access<member_type>(const member_type&);
     };
 
-    class method_type final {
+    class method_type final : public type_base<method_type> {
     public:
-        using data_ptr = detail::method_type_data*;
-        inline static constexpr type_kind kind{type_kind::method_};
-
-        method_type() = default;
-        explicit method_type(data_ptr data);
-
-        [[nodiscard]] bool is_valid() const noexcept;
-        [[nodiscard]] explicit operator bool() const noexcept;
-
-        [[nodiscard]] type_id get_id() const noexcept;
+        using type_base<method_type>::type_base;
         [[nodiscard]] method_bitflags get_flags() const noexcept;
-        [[nodiscard]] const metadata_map& get_metadata() const noexcept;
 
         [[nodiscard]] std::size_t get_arity() const noexcept;
         [[nodiscard]] class_type get_owner_type() const noexcept;
         [[nodiscard]] any_type get_return_type() const noexcept;
         [[nodiscard]] any_type get_argument_type(std::size_t position) const noexcept;
         [[nodiscard]] const any_type_list& get_argument_types() const noexcept;
-
-    private:
-        data_ptr data_{};
-        friend data_ptr detail::type_access<method_type>(const method_type&);
     };
 
-    class nullptr_type final {
+    class nullptr_type final : public type_base<nullptr_type> {
     public:
-        using data_ptr = detail::nullptr_type_data*;
-        inline static constexpr type_kind kind{type_kind::nullptr_};
-
-        nullptr_type() = default;
-        explicit nullptr_type(data_ptr data);
-
-        [[nodiscard]] bool is_valid() const noexcept;
-        [[nodiscard]] explicit operator bool() const noexcept;
-
-        [[nodiscard]] type_id get_id() const noexcept;
-        [[nodiscard]] const metadata_map& get_metadata() const noexcept;
-
-    private:
-        data_ptr data_{};
-        friend data_ptr detail::type_access<nullptr_type>(const nullptr_type&);
+        using type_base<nullptr_type>::type_base;
     };
 
-    class number_type final {
+    class number_type final : public type_base<number_type> {
     public:
-        using data_ptr = detail::number_type_data*;
-        inline static constexpr type_kind kind{type_kind::number_};
-
-        number_type() = default;
-        explicit number_type(data_ptr data);
-
-        [[nodiscard]] bool is_valid() const noexcept;
-        [[nodiscard]] explicit operator bool() const noexcept;
-
-        [[nodiscard]] type_id get_id() const noexcept;
+        using type_base<number_type>::type_base;
         [[nodiscard]] number_bitflags get_flags() const noexcept;
-        [[nodiscard]] const metadata_map& get_metadata() const noexcept;
 
         [[nodiscard]] std::size_t get_size() const noexcept;
         [[nodiscard]] std::size_t get_align() const noexcept;
-
-    private:
-        data_ptr data_{};
-        friend data_ptr detail::type_access<number_type>(const number_type&);
     };
 
-    class pointer_type final {
+    class pointer_type final : public type_base<pointer_type> {
     public:
-        using data_ptr = detail::pointer_type_data*;
-        inline static constexpr type_kind kind{type_kind::pointer_};
-
-        pointer_type() = default;
-        explicit pointer_type(data_ptr data);
-
-        [[nodiscard]] bool is_valid() const noexcept;
-        [[nodiscard]] explicit operator bool() const noexcept;
-
-        [[nodiscard]] type_id get_id() const noexcept;
+        using type_base<pointer_type>::type_base;
         [[nodiscard]] pointer_bitflags get_flags() const noexcept;
-        [[nodiscard]] const metadata_map& get_metadata() const noexcept;
 
         [[nodiscard]] any_type get_data_type() const noexcept;
-
-    private:
-        data_ptr data_{};
-        friend data_ptr detail::type_access<pointer_type>(const pointer_type&);
     };
 
-    class reference_type final {
+    class reference_type final : public type_base<reference_type> {
     public:
-        using data_ptr = detail::reference_type_data*;
-        inline static constexpr type_kind kind{type_kind::reference_};
-
-        reference_type() = default;
-        explicit reference_type(data_ptr data);
-
-        [[nodiscard]] bool is_valid() const noexcept;
-        [[nodiscard]] explicit operator bool() const noexcept;
-
-        [[nodiscard]] type_id get_id() const noexcept;
+        using type_base<reference_type>::type_base;
         [[nodiscard]] reference_bitflags get_flags() const noexcept;
-        [[nodiscard]] const metadata_map& get_metadata() const noexcept;
 
         [[nodiscard]] any_type get_data_type() const noexcept;
-
-    private:
-        data_ptr data_{};
-        friend data_ptr detail::type_access<reference_type>(const reference_type&);
     };
 
-    class void_type final {
+    class void_type final : public type_base<void_type> {
     public:
-        using data_ptr = detail::void_type_data*;
-        inline static constexpr type_kind kind{type_kind::void_};
-
-        void_type() = default;
-        explicit void_type(data_ptr data);
-
-        [[nodiscard]] bool is_valid() const noexcept;
-        [[nodiscard]] explicit operator bool() const noexcept;
-
-        [[nodiscard]] type_id get_id() const noexcept;
-        [[nodiscard]] const metadata_map& get_metadata() const noexcept;
-
-    private:
-        data_ptr data_{};
-        friend data_ptr detail::type_access<void_type>(const void_type&);
+        using type_base<void_type>::type_base;
     };
 }
 

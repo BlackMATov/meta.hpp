@@ -29,27 +29,8 @@ namespace meta_hpp::detail
 
 namespace meta_hpp
 {
-    inline enum_type::enum_type(data_ptr data)
-    : data_{data} {}
-
-    inline bool enum_type::is_valid() const noexcept {
-        return data_ != nullptr;
-    }
-
-    inline enum_type::operator bool() const noexcept {
-        return is_valid();
-    }
-
-    inline type_id enum_type::get_id() const noexcept {
-        return data_->id;
-    }
-
     inline enum_bitflags enum_type::get_flags() const noexcept {
         return data_->flags;
-    }
-
-    inline const metadata_map& enum_type::get_metadata() const noexcept {
-        return data_->metadata;
     }
 
     inline number_type enum_type::get_underlying_type() const noexcept {

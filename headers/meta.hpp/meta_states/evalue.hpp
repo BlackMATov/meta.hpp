@@ -28,25 +28,6 @@ namespace meta_hpp::detail
 
 namespace meta_hpp
 {
-    inline evalue::evalue(state_ptr state) noexcept
-    : state_{std::move(state)} {}
-
-    inline bool evalue::is_valid() const noexcept {
-        return !!state_;
-    }
-
-    inline evalue::operator bool() const noexcept {
-        return is_valid();
-    }
-
-    inline const evalue_index& evalue::get_index() const noexcept {
-        return state_->index;
-    }
-
-    inline const metadata_map& evalue::get_metadata() const noexcept {
-        return state_->metadata;
-    }
-
     inline enum_type evalue::get_type() const noexcept {
         return state_->index.get_type();
     }

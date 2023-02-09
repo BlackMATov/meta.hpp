@@ -113,43 +113,63 @@ namespace meta_hpp
 
 namespace meta_hpp
 {
-    class argument final {
+    template < detail::state_family State >
+    class state_base {
+        using state_ptr = typename detail::state_traits<State>::state_ptr;
+        friend state_ptr detail::state_access<State>(const State&);
+
     public:
-        using index_type = argument_index;
-        using state_ptr = detail::argument_state_ptr;
+        using index_type = typename detail::state_traits<State>::index_type;
 
-        argument() = default;
-        explicit argument(state_ptr state) noexcept;
+        state_base() = default;
 
-        [[nodiscard]] bool is_valid() const noexcept;
-        [[nodiscard]] explicit operator bool() const noexcept;
+        explicit state_base(state_ptr state)
+        : state_{state} {}
 
-        [[nodiscard]] const argument_index& get_index() const noexcept;
-        [[nodiscard]] const metadata_map& get_metadata() const noexcept;
+        state_base(state_base&&) noexcept = default;
+        state_base(const state_base&) = default;
+
+        state_base& operator=(state_base&&) noexcept = default;
+        state_base& operator=(const state_base&) = default;
+
+        [[nodiscard]] bool is_valid() const noexcept {
+            return state_ != nullptr;
+        }
+
+        [[nodiscard]] explicit operator bool() const noexcept {
+            return state_ != nullptr;
+        }
+
+        [[nodiscard]] const index_type& get_index() const noexcept {
+            return state_->index;
+        }
+
+        [[nodiscard]] const metadata_map& get_metadata() const noexcept {
+            return state_->metadata;
+        }
+
+    protected:
+        ~state_base() = default;
+
+        state_ptr state_{};
+    };
+};
+
+namespace meta_hpp
+{
+    class argument final : public state_base<argument> {
+    public:
+        using state_base<argument>::state_base;
 
         [[nodiscard]] any_type get_type() const noexcept;
         [[nodiscard]] std::size_t get_position() const noexcept;
 
         [[nodiscard]] const std::string& get_name() const noexcept;
-
-    private:
-        state_ptr state_;
-        friend state_ptr detail::state_access<argument>(const argument&);
     };
 
-    class constructor final {
+    class constructor final : public state_base<constructor> {
     public:
-        using index_type = constructor_index;
-        using state_ptr = detail::constructor_state_ptr;
-
-        constructor() = default;
-        explicit constructor(state_ptr state) noexcept;
-
-        [[nodiscard]] bool is_valid() const noexcept;
-        [[nodiscard]] explicit operator bool() const noexcept;
-
-        [[nodiscard]] const constructor_index& get_index() const noexcept;
-        [[nodiscard]] const metadata_map& get_metadata() const noexcept;
+        using state_base<constructor>::state_base;
 
         [[nodiscard]] constructor_type get_type() const noexcept;
 
@@ -167,25 +187,11 @@ namespace meta_hpp
 
         [[nodiscard]] argument get_argument(std::size_t position) const noexcept;
         [[nodiscard]] const argument_list& get_arguments() const noexcept;
-
-    private:
-        state_ptr state_;
-        friend state_ptr detail::state_access<constructor>(const constructor&);
     };
 
-    class destructor final {
+    class destructor final : public state_base<destructor> {
     public:
-        using index_type = destructor_index;
-        using state_ptr = detail::destructor_state_ptr;
-
-        destructor() = default;
-        explicit destructor(state_ptr state) noexcept;
-
-        [[nodiscard]] bool is_valid() const noexcept;
-        [[nodiscard]] explicit operator bool() const noexcept;
-
-        [[nodiscard]] const destructor_index& get_index() const noexcept;
-        [[nodiscard]] const metadata_map& get_metadata() const noexcept;
+        using state_base<destructor>::state_base;
 
         [[nodiscard]] destructor_type get_type() const noexcept;
 
@@ -193,25 +199,11 @@ namespace meta_hpp
         bool destroy(Arg&& arg) const;
 
         void destroy_at(void* mem) const;
-
-    private:
-        state_ptr state_;
-        friend state_ptr detail::state_access<destructor>(const destructor&);
     };
 
-    class evalue final {
+    class evalue final : public state_base<evalue> {
     public:
-        using index_type = evalue_index;
-        using state_ptr = detail::evalue_state_ptr;
-
-        evalue() = default;
-        explicit evalue(state_ptr state) noexcept;
-
-        [[nodiscard]] bool is_valid() const noexcept;
-        [[nodiscard]] explicit operator bool() const noexcept;
-
-        [[nodiscard]] const evalue_index& get_index() const noexcept;
-        [[nodiscard]] const metadata_map& get_metadata() const noexcept;
+        using state_base<evalue>::state_base;
 
         [[nodiscard]] enum_type get_type() const noexcept;
         [[nodiscard]] const std::string& get_name() const noexcept;
@@ -224,25 +216,11 @@ namespace meta_hpp
 
         template < typename T >
         [[nodiscard]] T get_underlying_value_as() const;
-
-    private:
-        state_ptr state_;
-        friend state_ptr detail::state_access<evalue>(const evalue&);
     };
 
-    class function final {
+    class function final : public state_base<function> {
     public:
-        using index_type = function_index;
-        using state_ptr = detail::function_state_ptr;
-
-        function() = default;
-        explicit function(state_ptr state) noexcept;
-
-        [[nodiscard]] bool is_valid() const noexcept;
-        [[nodiscard]] explicit operator bool() const noexcept;
-
-        [[nodiscard]] const function_index& get_index() const noexcept;
-        [[nodiscard]] const metadata_map& get_metadata() const noexcept;
+        using state_base<function>::state_base;
 
         [[nodiscard]] function_type get_type() const noexcept;
         [[nodiscard]] const std::string& get_name() const noexcept;
@@ -261,25 +239,11 @@ namespace meta_hpp
 
         [[nodiscard]] argument get_argument(std::size_t position) const noexcept;
         [[nodiscard]] const argument_list& get_arguments() const noexcept;
-
-    private:
-        state_ptr state_;
-        friend state_ptr detail::state_access<function>(const function&);
     };
 
-    class member final {
+    class member final : public state_base<member> {
     public:
-        using index_type = member_index;
-        using state_ptr = detail::member_state_ptr;
-
-        member() = default;
-        explicit member(state_ptr state) noexcept;
-
-        [[nodiscard]] bool is_valid() const noexcept;
-        [[nodiscard]] explicit operator bool() const noexcept;
-
-        [[nodiscard]] const member_index& get_index() const noexcept;
-        [[nodiscard]] const metadata_map& get_metadata() const noexcept;
+        using state_base<member>::state_base;
 
         [[nodiscard]] member_type get_type() const noexcept;
         [[nodiscard]] const std::string& get_name() const noexcept;
@@ -310,25 +274,11 @@ namespace meta_hpp
 
         template < typename Instance, typename Value >
         [[nodiscard]] bool is_settable_with(Instance&& instance, Value&& value) const noexcept;
-
-    private:
-        state_ptr state_;
-        friend state_ptr detail::state_access<member>(const member&);
     };
 
-    class method final {
+    class method final : public state_base<method> {
     public:
-        using index_type = method_index;
-        using state_ptr = detail::method_state_ptr;
-
-        method() = default;
-        explicit method(state_ptr state) noexcept;
-
-        [[nodiscard]] bool is_valid() const noexcept;
-        [[nodiscard]] explicit operator bool() const noexcept;
-
-        [[nodiscard]] const method_index& get_index() const noexcept;
-        [[nodiscard]] const metadata_map& get_metadata() const noexcept;
+        using state_base<method>::state_base;
 
         [[nodiscard]] method_type get_type() const noexcept;
         [[nodiscard]] const std::string& get_name() const noexcept;
@@ -347,25 +297,11 @@ namespace meta_hpp
 
         [[nodiscard]] argument get_argument(std::size_t position) const noexcept;
         [[nodiscard]] const argument_list& get_arguments() const noexcept;
-
-    private:
-        state_ptr state_;
-        friend state_ptr detail::state_access<method>(const method&);
     };
 
-    class scope final {
+    class scope final : public state_base<scope> {
     public:
-        using index_type = scope_index;
-        using state_ptr = detail::scope_state_ptr;
-
-        scope() = default;
-        explicit scope(state_ptr state) noexcept;
-
-        [[nodiscard]] bool is_valid() const noexcept;
-        [[nodiscard]] explicit operator bool() const noexcept;
-
-        [[nodiscard]] const scope_index& get_index() const noexcept;
-        [[nodiscard]] const metadata_map& get_metadata() const noexcept;
+        using state_base<scope>::state_base;
 
         [[nodiscard]] const std::string& get_name() const noexcept;
 
@@ -383,25 +319,11 @@ namespace meta_hpp
         [[nodiscard]] function get_function_with(std::string_view name, Iter first, Iter last) const noexcept;
         [[nodiscard]] function get_function_with(std::string_view name, std::span<const any_type> args) const noexcept;
         [[nodiscard]] function get_function_with(std::string_view name, std::initializer_list<any_type> args) const noexcept;
-
-    private:
-        state_ptr state_;
-        friend state_ptr detail::state_access<scope>(const scope&);
     };
 
-    class variable final {
+    class variable final : public state_base<variable> {
     public:
-        using index_type = variable_index;
-        using state_ptr = detail::variable_state_ptr;
-
-        variable() = default;
-        explicit variable(state_ptr state) noexcept;
-
-        [[nodiscard]] bool is_valid() const noexcept;
-        [[nodiscard]] explicit operator bool() const noexcept;
-
-        [[nodiscard]] const variable_index& get_index() const noexcept;
-        [[nodiscard]] const metadata_map& get_metadata() const noexcept;
+        using state_base<variable>::state_base;
 
         [[nodiscard]] pointer_type get_type() const noexcept;
         [[nodiscard]] const std::string& get_name() const noexcept;
@@ -424,10 +346,6 @@ namespace meta_hpp
 
         template < typename Value >
         [[nodiscard]] bool is_settable_with(Value&& value) const noexcept;
-
-    private:
-        state_ptr state_;
-        friend state_ptr detail::state_access<variable>(const variable&);
     };
 }
 
@@ -459,13 +377,13 @@ namespace meta_hpp
 
 namespace meta_hpp
 {
-    template < detail::state_family L >
-    [[nodiscard]] bool operator==(const L& l, const typename L::index_type& r) noexcept {
+    template < detail::state_family L, detail::index_family R >
+    [[nodiscard]] bool operator==(const L& l, const R& r) noexcept {
         return l.is_valid() && l.get_index() == r;
     }
 
-    template < detail::state_family L >
-    [[nodiscard]] std::strong_ordering operator<=>(const L& l, const typename L::index_type& r) noexcept {
+    template < detail::state_family L, detail::index_family R >
+    [[nodiscard]] std::strong_ordering operator<=>(const L& l, const R& r) noexcept {
         return l.is_valid() ? l.get_index() <=> r : std::strong_ordering::less;
     }
 }

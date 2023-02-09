@@ -93,7 +93,7 @@ namespace meta_hpp
         }
 
     protected:
-        using data_ptr = typename Type::data_ptr;
+        using data_ptr = typename detail::type_traits<Type>::data_ptr;
         using data_ref = decltype(*std::declval<data_ptr>());
 
         [[nodiscard]] data_ref get_data() noexcept {
@@ -118,7 +118,7 @@ namespace meta_hpp
         }
 
     protected:
-        using state_ptr = typename State::state_ptr;
+        using state_ptr = typename detail::state_traits<State>::state_ptr;
         using state_ref = decltype(*std::declval<state_ptr>());
 
         [[nodiscard]] state_ref get_state() noexcept {

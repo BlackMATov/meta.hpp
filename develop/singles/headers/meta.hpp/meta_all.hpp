@@ -1094,6 +1094,19 @@ namespace meta_hpp::detail
 
 namespace meta_hpp::detail
 {
+    class nonesuch {
+    public:
+        nonesuch() = delete;
+        ~nonesuch() = delete;
+        nonesuch(nonesuch&&) = delete;
+        nonesuch(const nonesuch&) = delete;
+        nonesuch& operator=(nonesuch&&) = delete;
+        nonesuch& operator=(const nonesuch&) = delete;
+    };
+}
+
+namespace meta_hpp::detail
+{
     template < typename... Ts >
     struct overloaded : Ts... {
         using Ts::operator()...;
@@ -1434,31 +1447,6 @@ namespace meta_hpp
     using method_set = std::set<method, std::less<>>;
     using scope_set = std::set<scope, std::less<>>;
     using variable_set = std::set<variable, std::less<>>;
-}
-
-namespace meta_hpp::detail
-{
-    template < typename T >
-    concept type_family                       //
-        = std::is_same_v<T, any_type>         //
-       || std::is_same_v<T, array_type>       //
-       || std::is_same_v<T, class_type>       //
-       || std::is_same_v<T, constructor_type> //
-       || std::is_same_v<T, destructor_type>  //
-       || std::is_same_v<T, enum_type>        //
-       || std::is_same_v<T, function_type>    //
-       || std::is_same_v<T, member_type>      //
-       || std::is_same_v<T, method_type>      //
-       || std::is_same_v<T, nullptr_type>     //
-       || std::is_same_v<T, number_type>      //
-       || std::is_same_v<T, pointer_type>     //
-       || std::is_same_v<T, reference_type>   //
-       || std::is_same_v<T, void_type>;       //
-
-    template < type_family Type >
-    [[nodiscard]] typename Type::data_ptr type_access(const Type& type) {
-        return type.data_;
-    }
 }
 
 namespace meta_hpp::detail
@@ -1967,6 +1955,120 @@ namespace meta_hpp::detail
     };
 }
 
+namespace meta_hpp::detail
+{
+    template < typename T >
+    concept type_family                       //
+        = std::is_same_v<T, any_type>         //
+       || std::is_same_v<T, array_type>       //
+       || std::is_same_v<T, class_type>       //
+       || std::is_same_v<T, constructor_type> //
+       || std::is_same_v<T, destructor_type>  //
+       || std::is_same_v<T, enum_type>        //
+       || std::is_same_v<T, function_type>    //
+       || std::is_same_v<T, member_type>      //
+       || std::is_same_v<T, method_type>      //
+       || std::is_same_v<T, nullptr_type>     //
+       || std::is_same_v<T, number_type>      //
+       || std::is_same_v<T, pointer_type>     //
+       || std::is_same_v<T, reference_type>   //
+       || std::is_same_v<T, void_type>;       //
+
+    template <type_family Type>
+    struct type_traits;
+
+    template < type_family Type >
+    [[nodiscard]] typename type_traits<Type>::data_ptr type_access(const Type& type) {
+        return type.data_;
+    }
+}
+
+namespace meta_hpp::detail
+{
+    template <>
+    struct type_traits<any_type> {
+        using data_ptr = type_data_base*;
+    };
+
+    template <>
+    struct type_traits<array_type> {
+        using data_ptr = array_type_data*;
+        inline static constexpr type_kind kind{type_kind::array_};
+    };
+
+    template <>
+    struct type_traits<class_type> {
+        using data_ptr = class_type_data*;
+        inline static constexpr type_kind kind{type_kind::class_};
+    };
+
+    template <>
+    struct type_traits<constructor_type> {
+        using data_ptr = constructor_type_data*;
+        inline static constexpr type_kind kind{type_kind::constructor_};
+    };
+
+    template <>
+    struct type_traits<destructor_type> {
+        using data_ptr = destructor_type_data*;
+        inline static constexpr type_kind kind{type_kind::destructor_};
+    };
+
+    template <>
+    struct type_traits<enum_type> {
+        using data_ptr = enum_type_data*;
+        inline static constexpr type_kind kind{type_kind::enum_};
+    };
+
+    template <>
+    struct type_traits<function_type> {
+        using data_ptr = function_type_data*;
+        inline static constexpr type_kind kind{type_kind::function_};
+    };
+
+    template <>
+    struct type_traits<member_type> {
+        using data_ptr = member_type_data*;
+        inline static constexpr type_kind kind{type_kind::member_};
+    };
+
+    template <>
+    struct type_traits<method_type> {
+        using data_ptr = method_type_data*;
+        inline static constexpr type_kind kind{type_kind::method_};
+    };
+
+    template <>
+    struct type_traits<nullptr_type> {
+        using data_ptr = nullptr_type_data*;
+        inline static constexpr type_kind kind{type_kind::nullptr_};
+    };
+
+    template <>
+    struct type_traits<number_type> {
+        using data_ptr = number_type_data*;
+        inline static constexpr type_kind kind{type_kind::number_};
+    };
+
+    template <>
+    struct type_traits<pointer_type> {
+        using data_ptr = pointer_type_data*;
+        inline static constexpr type_kind kind{type_kind::pointer_};
+    };
+
+    template <>
+    struct type_traits<reference_type> {
+        using data_ptr = reference_type_data*;
+        inline static constexpr type_kind kind{type_kind::reference_};
+    };
+
+    template <>
+    struct type_traits<void_type> {
+        using data_ptr = void_type_data*;
+        inline static constexpr type_kind kind{type_kind::void_};
+    };
+}
+
 namespace meta_hpp
 {
     using detail::array_bitflags;
@@ -2005,20 +2107,55 @@ namespace meta_hpp
 
 namespace meta_hpp
 {
-    class any_type final {
+    template < detail::type_family Type >
+    class type_base {
+        using data_ptr = typename detail::type_traits<Type>::data_ptr;
+        friend data_ptr detail::type_access<Type>(const Type&);
+
     public:
-        using data_ptr = detail::type_data_base*;
+        type_base() = default;
 
-        any_type() = default;
-        explicit any_type(data_ptr data);
+        explicit type_base(data_ptr data)
+        : data_{data} {}
 
-        [[nodiscard]] bool is_valid() const noexcept;
-        [[nodiscard]] explicit operator bool() const noexcept;
+        type_base(type_base&&) noexcept = default;
+        type_base(const type_base&) = default;
 
-        [[nodiscard]] type_id get_id() const noexcept;
-        [[nodiscard]] type_kind get_kind() const noexcept;
+        type_base& operator=(type_base&&) noexcept = default;
+        type_base& operator=(const type_base&) = default;
 
-        [[nodiscard]] const metadata_map& get_metadata() const noexcept;
+        [[nodiscard]] bool is_valid() const noexcept {
+            return data_ != nullptr;
+        }
+
+        [[nodiscard]] explicit operator bool() const noexcept {
+            return data_ != nullptr;
+        }
+
+        [[nodiscard]] type_id get_id() const noexcept {
+            return data_->id;
+        }
+
+        [[nodiscard]] type_kind get_kind() const noexcept {
+            return data_->kind;
+        }
+
+        [[nodiscard]] const metadata_map& get_metadata() const noexcept {
+            return data_->metadata;
+        }
+
+    protected:
+        ~type_base() = default;
+
+        data_ptr data_{};
+    };
+}
+
+namespace meta_hpp
+{
+    class any_type final : public type_base<any_type> {
+    public:
+        using type_base<any_type>::type_base;
 
         template < detail::type_family Type >
         any_type(const Type& other) noexcept;
@@ -2056,49 +2193,21 @@ namespace meta_hpp
         [[nodiscard]] pointer_type as_pointer() const noexcept;
         [[nodiscard]] reference_type as_reference() const noexcept;
         [[nodiscard]] void_type as_void() const noexcept;
-
-    private:
-        data_ptr data_{};
-        friend data_ptr detail::type_access<any_type>(const any_type&);
     };
 
-    class array_type final {
+    class array_type final : public type_base<array_type> {
     public:
-        using data_ptr = detail::array_type_data*;
-        inline static constexpr type_kind kind{type_kind::array_};
-
-        array_type() = default;
-        explicit array_type(data_ptr data);
-
-        [[nodiscard]] bool is_valid() const noexcept;
-        [[nodiscard]] explicit operator bool() const noexcept;
-
-        [[nodiscard]] type_id get_id() const noexcept;
+        using type_base<array_type>::type_base;
         [[nodiscard]] array_bitflags get_flags() const noexcept;
-        [[nodiscard]] const metadata_map& get_metadata() const noexcept;
 
         [[nodiscard]] std::size_t get_extent() const noexcept;
         [[nodiscard]] any_type get_data_type() const noexcept;
-
-    private:
-        data_ptr data_{};
-        friend data_ptr detail::type_access<array_type>(const array_type&);
     };
 
-    class class_type final {
+    class class_type final : public type_base<class_type> {
     public:
-        using data_ptr = detail::class_type_data*;
-        inline static constexpr type_kind kind{type_kind::class_};
-
-        class_type() = default;
-        explicit class_type(data_ptr data);
-
-        [[nodiscard]] bool is_valid() const noexcept;
-        [[nodiscard]] explicit operator bool() const noexcept;
-
-        [[nodiscard]] type_id get_id() const noexcept;
+        using type_base<class_type>::type_base;
         [[nodiscard]] class_bitflags get_flags() const noexcept;
-        [[nodiscard]] const metadata_map& get_metadata() const noexcept;
 
         [[nodiscard]] std::size_t get_size() const noexcept;
         [[nodiscard]] std::size_t get_align() const noexcept;
@@ -2161,73 +2270,31 @@ namespace meta_hpp
         [[nodiscard]] method get_method_with(std::string_view name, Iter first, Iter last) const noexcept;
         [[nodiscard]] method get_method_with(std::string_view name, std::span<const any_type> args) const noexcept;
         [[nodiscard]] method get_method_with(std::string_view name, std::initializer_list<any_type> args) const noexcept;
-
-    private:
-        data_ptr data_{};
-        friend data_ptr detail::type_access<class_type>(const class_type&);
     };
 
-    class constructor_type final {
+    class constructor_type final : public type_base<constructor_type> {
     public:
-        using data_ptr = detail::constructor_type_data*;
-        inline static constexpr type_kind kind{type_kind::constructor_};
-
-        constructor_type() = default;
-        explicit constructor_type(data_ptr data);
-
-        [[nodiscard]] bool is_valid() const noexcept;
-        [[nodiscard]] explicit operator bool() const noexcept;
-
-        [[nodiscard]] type_id get_id() const noexcept;
+        using type_base<constructor_type>::type_base;
         [[nodiscard]] constructor_bitflags get_flags() const noexcept;
-        [[nodiscard]] const metadata_map& get_metadata() const noexcept;
 
         [[nodiscard]] std::size_t get_arity() const noexcept;
         [[nodiscard]] class_type get_owner_type() const noexcept;
         [[nodiscard]] any_type get_argument_type(std::size_t position) const noexcept;
         [[nodiscard]] const any_type_list& get_argument_types() const noexcept;
-
-    private:
-        data_ptr data_{};
-        friend data_ptr detail::type_access<constructor_type>(const constructor_type&);
     };
 
-    class destructor_type final {
+    class destructor_type final : public type_base<destructor_type> {
     public:
-        using data_ptr = detail::destructor_type_data*;
-        inline static constexpr type_kind kind{type_kind::destructor_};
-
-        destructor_type() = default;
-        explicit destructor_type(data_ptr data);
-
-        [[nodiscard]] bool is_valid() const noexcept;
-        [[nodiscard]] explicit operator bool() const noexcept;
-
-        [[nodiscard]] type_id get_id() const noexcept;
+        using type_base<destructor_type>::type_base;
         [[nodiscard]] destructor_bitflags get_flags() const noexcept;
-        [[nodiscard]] const metadata_map& get_metadata() const noexcept;
 
         [[nodiscard]] class_type get_owner_type() const noexcept;
-
-    private:
-        data_ptr data_{};
-        friend data_ptr detail::type_access<destructor_type>(const destructor_type&);
     };
 
-    class enum_type final {
+    class enum_type final : public type_base<enum_type> {
     public:
-        using data_ptr = detail::enum_type_data*;
-        inline static constexpr type_kind kind{type_kind::enum_};
-
-        enum_type() = default;
-        explicit enum_type(data_ptr data);
-
-        [[nodiscard]] bool is_valid() const noexcept;
-        [[nodiscard]] explicit operator bool() const noexcept;
-
-        [[nodiscard]] type_id get_id() const noexcept;
+        using type_base<enum_type>::type_base;
         [[nodiscard]] enum_bitflags get_flags() const noexcept;
-        [[nodiscard]] const metadata_map& get_metadata() const noexcept;
 
         [[nodiscard]] number_type get_underlying_type() const noexcept;
 
@@ -2241,189 +2308,73 @@ namespace meta_hpp
 
         template < typename T >
         [[nodiscard]] T name_to_value_as(std::string_view name) const;
-
-    private:
-        data_ptr data_{};
-        friend data_ptr detail::type_access<enum_type>(const enum_type&);
     };
 
-    class function_type final {
+    class function_type final : public type_base<function_type> {
     public:
-        using data_ptr = detail::function_type_data*;
-        inline static constexpr type_kind kind{type_kind::function_};
-
-        function_type() = default;
-        explicit function_type(data_ptr data);
-
-        [[nodiscard]] bool is_valid() const noexcept;
-        [[nodiscard]] explicit operator bool() const noexcept;
-
-        [[nodiscard]] type_id get_id() const noexcept;
+        using type_base<function_type>::type_base;
         [[nodiscard]] function_bitflags get_flags() const noexcept;
-        [[nodiscard]] const metadata_map& get_metadata() const noexcept;
 
         [[nodiscard]] std::size_t get_arity() const noexcept;
         [[nodiscard]] any_type get_return_type() const noexcept;
         [[nodiscard]] any_type get_argument_type(std::size_t position) const noexcept;
         [[nodiscard]] const any_type_list& get_argument_types() const noexcept;
-
-    private:
-        data_ptr data_{};
-        friend data_ptr detail::type_access<function_type>(const function_type&);
     };
 
-    class member_type final {
+    class member_type final : public type_base<member_type> {
     public:
-        using data_ptr = detail::member_type_data*;
-        inline static constexpr type_kind kind{type_kind::member_};
-
-        member_type() = default;
-        explicit member_type(data_ptr data);
-
-        [[nodiscard]] bool is_valid() const noexcept;
-        [[nodiscard]] explicit operator bool() const noexcept;
-
-        [[nodiscard]] type_id get_id() const noexcept;
+        using type_base<member_type>::type_base;
         [[nodiscard]] member_bitflags get_flags() const noexcept;
-        [[nodiscard]] const metadata_map& get_metadata() const noexcept;
 
         [[nodiscard]] class_type get_owner_type() const noexcept;
         [[nodiscard]] any_type get_value_type() const noexcept;
-
-    private:
-        data_ptr data_{};
-        friend data_ptr detail::type_access<member_type>(const member_type&);
     };
 
-    class method_type final {
+    class method_type final : public type_base<method_type> {
     public:
-        using data_ptr = detail::method_type_data*;
-        inline static constexpr type_kind kind{type_kind::method_};
-
-        method_type() = default;
-        explicit method_type(data_ptr data);
-
-        [[nodiscard]] bool is_valid() const noexcept;
-        [[nodiscard]] explicit operator bool() const noexcept;
-
-        [[nodiscard]] type_id get_id() const noexcept;
+        using type_base<method_type>::type_base;
         [[nodiscard]] method_bitflags get_flags() const noexcept;
-        [[nodiscard]] const metadata_map& get_metadata() const noexcept;
 
         [[nodiscard]] std::size_t get_arity() const noexcept;
         [[nodiscard]] class_type get_owner_type() const noexcept;
         [[nodiscard]] any_type get_return_type() const noexcept;
         [[nodiscard]] any_type get_argument_type(std::size_t position) const noexcept;
         [[nodiscard]] const any_type_list& get_argument_types() const noexcept;
-
-    private:
-        data_ptr data_{};
-        friend data_ptr detail::type_access<method_type>(const method_type&);
     };
 
-    class nullptr_type final {
+    class nullptr_type final : public type_base<nullptr_type> {
     public:
-        using data_ptr = detail::nullptr_type_data*;
-        inline static constexpr type_kind kind{type_kind::nullptr_};
-
-        nullptr_type() = default;
-        explicit nullptr_type(data_ptr data);
-
-        [[nodiscard]] bool is_valid() const noexcept;
-        [[nodiscard]] explicit operator bool() const noexcept;
-
-        [[nodiscard]] type_id get_id() const noexcept;
-        [[nodiscard]] const metadata_map& get_metadata() const noexcept;
-
-    private:
-        data_ptr data_{};
-        friend data_ptr detail::type_access<nullptr_type>(const nullptr_type&);
+        using type_base<nullptr_type>::type_base;
     };
 
-    class number_type final {
+    class number_type final : public type_base<number_type> {
     public:
-        using data_ptr = detail::number_type_data*;
-        inline static constexpr type_kind kind{type_kind::number_};
-
-        number_type() = default;
-        explicit number_type(data_ptr data);
-
-        [[nodiscard]] bool is_valid() const noexcept;
-        [[nodiscard]] explicit operator bool() const noexcept;
-
-        [[nodiscard]] type_id get_id() const noexcept;
+        using type_base<number_type>::type_base;
         [[nodiscard]] number_bitflags get_flags() const noexcept;
-        [[nodiscard]] const metadata_map& get_metadata() const noexcept;
 
         [[nodiscard]] std::size_t get_size() const noexcept;
         [[nodiscard]] std::size_t get_align() const noexcept;
-
-    private:
-        data_ptr data_{};
-        friend data_ptr detail::type_access<number_type>(const number_type&);
     };
 
-    class pointer_type final {
+    class pointer_type final : public type_base<pointer_type> {
     public:
-        using data_ptr = detail::pointer_type_data*;
-        inline static constexpr type_kind kind{type_kind::pointer_};
-
-        pointer_type() = default;
-        explicit pointer_type(data_ptr data);
-
-        [[nodiscard]] bool is_valid() const noexcept;
-        [[nodiscard]] explicit operator bool() const noexcept;
-
-        [[nodiscard]] type_id get_id() const noexcept;
+        using type_base<pointer_type>::type_base;
         [[nodiscard]] pointer_bitflags get_flags() const noexcept;
-        [[nodiscard]] const metadata_map& get_metadata() const noexcept;
 
         [[nodiscard]] any_type get_data_type() const noexcept;
-
-    private:
-        data_ptr data_{};
-        friend data_ptr detail::type_access<pointer_type>(const pointer_type&);
     };
 
-    class reference_type final {
+    class reference_type final : public type_base<reference_type> {
     public:
-        using data_ptr = detail::reference_type_data*;
-        inline static constexpr type_kind kind{type_kind::reference_};
-
-        reference_type() = default;
-        explicit reference_type(data_ptr data);
-
-        [[nodiscard]] bool is_valid() const noexcept;
-        [[nodiscard]] explicit operator bool() const noexcept;
-
-        [[nodiscard]] type_id get_id() const noexcept;
+        using type_base<reference_type>::type_base;
         [[nodiscard]] reference_bitflags get_flags() const noexcept;
-        [[nodiscard]] const metadata_map& get_metadata() const noexcept;
 
         [[nodiscard]] any_type get_data_type() const noexcept;
-
-    private:
-        data_ptr data_{};
-        friend data_ptr detail::type_access<reference_type>(const reference_type&);
     };
 
-    class void_type final {
+    class void_type final : public type_base<void_type> {
     public:
-        using data_ptr = detail::void_type_data*;
-        inline static constexpr type_kind kind{type_kind::void_};
-
-        void_type() = default;
-        explicit void_type(data_ptr data);
-
-        [[nodiscard]] bool is_valid() const noexcept;
-        [[nodiscard]] explicit operator bool() const noexcept;
-
-        [[nodiscard]] type_id get_id() const noexcept;
-        [[nodiscard]] const metadata_map& get_metadata() const noexcept;
-
-    private:
-        data_ptr data_{};
-        friend data_ptr detail::type_access<void_type>(const void_type&);
+        using type_base<void_type>::type_base;
     };
 }
 
@@ -2971,9 +2922,69 @@ namespace meta_hpp::detail
        || std::is_same_v<T, variable>;   //
 
     template < state_family State >
-    [[nodiscard]] typename State::state_ptr state_access(const State& state) {
+    struct state_traits;
+
+    template < state_family State >
+    [[nodiscard]] typename state_traits<State>::state_ptr state_access(const State& state) {
         return state.state_;
     }
+}
+
+namespace meta_hpp::detail
+{
+    template <>
+    struct state_traits<argument> {
+        using index_type = argument_index;
+        using state_ptr = argument_state_ptr;
+    };
+
+    template <>
+    struct state_traits<constructor> {
+        using index_type = constructor_index;
+        using state_ptr = constructor_state_ptr;
+    };
+
+    template <>
+    struct state_traits<destructor> {
+        using index_type = destructor_index;
+        using state_ptr = destructor_state_ptr;
+    };
+
+    template <>
+    struct state_traits<evalue> {
+        using index_type = evalue_index;
+        using state_ptr = evalue_state_ptr;
+    };
+
+    template <>
+    struct state_traits<function> {
+        using index_type = function_index;
+        using state_ptr = function_state_ptr;
+    };
+
+    template <>
+    struct state_traits<member> {
+        using index_type = member_index;
+        using state_ptr = member_state_ptr;
+    };
+
+    template <>
+    struct state_traits<method> {
+        using index_type = method_index;
+        using state_ptr = method_state_ptr;
+    };
+
+    template <>
+    struct state_traits<scope> {
+        using index_type = scope_index;
+        using state_ptr = scope_state_ptr;
+    };
+
+    template <>
+    struct state_traits<variable> {
+        using index_type = variable_index;
+        using state_ptr = variable_state_ptr;
+    };
 }
 
 namespace meta_hpp
@@ -3076,43 +3087,63 @@ namespace meta_hpp
 
 namespace meta_hpp
 {
-    class argument final {
+    template < detail::state_family State >
+    class state_base {
+        using state_ptr = typename detail::state_traits<State>::state_ptr;
+        friend state_ptr detail::state_access<State>(const State&);
+
     public:
-        using index_type = argument_index;
-        using state_ptr = detail::argument_state_ptr;
+        using index_type = typename detail::state_traits<State>::index_type;
 
-        argument() = default;
-        explicit argument(state_ptr state) noexcept;
+        state_base() = default;
 
-        [[nodiscard]] bool is_valid() const noexcept;
-        [[nodiscard]] explicit operator bool() const noexcept;
+        explicit state_base(state_ptr state)
+        : state_{state} {}
 
-        [[nodiscard]] const argument_index& get_index() const noexcept;
-        [[nodiscard]] const metadata_map& get_metadata() const noexcept;
+        state_base(state_base&&) noexcept = default;
+        state_base(const state_base&) = default;
+
+        state_base& operator=(state_base&&) noexcept = default;
+        state_base& operator=(const state_base&) = default;
+
+        [[nodiscard]] bool is_valid() const noexcept {
+            return state_ != nullptr;
+        }
+
+        [[nodiscard]] explicit operator bool() const noexcept {
+            return state_ != nullptr;
+        }
+
+        [[nodiscard]] const index_type& get_index() const noexcept {
+            return state_->index;
+        }
+
+        [[nodiscard]] const metadata_map& get_metadata() const noexcept {
+            return state_->metadata;
+        }
+
+    protected:
+        ~state_base() = default;
+
+        state_ptr state_{};
+    };
+};
+
+namespace meta_hpp
+{
+    class argument final : public state_base<argument> {
+    public:
+        using state_base<argument>::state_base;
 
         [[nodiscard]] any_type get_type() const noexcept;
         [[nodiscard]] std::size_t get_position() const noexcept;
 
         [[nodiscard]] const std::string& get_name() const noexcept;
-
-    private:
-        state_ptr state_;
-        friend state_ptr detail::state_access<argument>(const argument&);
     };
 
-    class constructor final {
+    class constructor final : public state_base<constructor> {
     public:
-        using index_type = constructor_index;
-        using state_ptr = detail::constructor_state_ptr;
-
-        constructor() = default;
-        explicit constructor(state_ptr state) noexcept;
-
-        [[nodiscard]] bool is_valid() const noexcept;
-        [[nodiscard]] explicit operator bool() const noexcept;
-
-        [[nodiscard]] const constructor_index& get_index() const noexcept;
-        [[nodiscard]] const metadata_map& get_metadata() const noexcept;
+        using state_base<constructor>::state_base;
 
         [[nodiscard]] constructor_type get_type() const noexcept;
 
@@ -3130,25 +3161,11 @@ namespace meta_hpp
 
         [[nodiscard]] argument get_argument(std::size_t position) const noexcept;
         [[nodiscard]] const argument_list& get_arguments() const noexcept;
-
-    private:
-        state_ptr state_;
-        friend state_ptr detail::state_access<constructor>(const constructor&);
     };
 
-    class destructor final {
+    class destructor final : public state_base<destructor> {
     public:
-        using index_type = destructor_index;
-        using state_ptr = detail::destructor_state_ptr;
-
-        destructor() = default;
-        explicit destructor(state_ptr state) noexcept;
-
-        [[nodiscard]] bool is_valid() const noexcept;
-        [[nodiscard]] explicit operator bool() const noexcept;
-
-        [[nodiscard]] const destructor_index& get_index() const noexcept;
-        [[nodiscard]] const metadata_map& get_metadata() const noexcept;
+        using state_base<destructor>::state_base;
 
         [[nodiscard]] destructor_type get_type() const noexcept;
 
@@ -3156,25 +3173,11 @@ namespace meta_hpp
         bool destroy(Arg&& arg) const;
 
         void destroy_at(void* mem) const;
-
-    private:
-        state_ptr state_;
-        friend state_ptr detail::state_access<destructor>(const destructor&);
     };
 
-    class evalue final {
+    class evalue final : public state_base<evalue> {
     public:
-        using index_type = evalue_index;
-        using state_ptr = detail::evalue_state_ptr;
-
-        evalue() = default;
-        explicit evalue(state_ptr state) noexcept;
-
-        [[nodiscard]] bool is_valid() const noexcept;
-        [[nodiscard]] explicit operator bool() const noexcept;
-
-        [[nodiscard]] const evalue_index& get_index() const noexcept;
-        [[nodiscard]] const metadata_map& get_metadata() const noexcept;
+        using state_base<evalue>::state_base;
 
         [[nodiscard]] enum_type get_type() const noexcept;
         [[nodiscard]] const std::string& get_name() const noexcept;
@@ -3187,25 +3190,11 @@ namespace meta_hpp
 
         template < typename T >
         [[nodiscard]] T get_underlying_value_as() const;
-
-    private:
-        state_ptr state_;
-        friend state_ptr detail::state_access<evalue>(const evalue&);
     };
 
-    class function final {
+    class function final : public state_base<function> {
     public:
-        using index_type = function_index;
-        using state_ptr = detail::function_state_ptr;
-
-        function() = default;
-        explicit function(state_ptr state) noexcept;
-
-        [[nodiscard]] bool is_valid() const noexcept;
-        [[nodiscard]] explicit operator bool() const noexcept;
-
-        [[nodiscard]] const function_index& get_index() const noexcept;
-        [[nodiscard]] const metadata_map& get_metadata() const noexcept;
+        using state_base<function>::state_base;
 
         [[nodiscard]] function_type get_type() const noexcept;
         [[nodiscard]] const std::string& get_name() const noexcept;
@@ -3224,25 +3213,11 @@ namespace meta_hpp
 
         [[nodiscard]] argument get_argument(std::size_t position) const noexcept;
         [[nodiscard]] const argument_list& get_arguments() const noexcept;
-
-    private:
-        state_ptr state_;
-        friend state_ptr detail::state_access<function>(const function&);
     };
 
-    class member final {
+    class member final : public state_base<member> {
     public:
-        using index_type = member_index;
-        using state_ptr = detail::member_state_ptr;
-
-        member() = default;
-        explicit member(state_ptr state) noexcept;
-
-        [[nodiscard]] bool is_valid() const noexcept;
-        [[nodiscard]] explicit operator bool() const noexcept;
-
-        [[nodiscard]] const member_index& get_index() const noexcept;
-        [[nodiscard]] const metadata_map& get_metadata() const noexcept;
+        using state_base<member>::state_base;
 
         [[nodiscard]] member_type get_type() const noexcept;
         [[nodiscard]] const std::string& get_name() const noexcept;
@@ -3273,25 +3248,11 @@ namespace meta_hpp
 
         template < typename Instance, typename Value >
         [[nodiscard]] bool is_settable_with(Instance&& instance, Value&& value) const noexcept;
-
-    private:
-        state_ptr state_;
-        friend state_ptr detail::state_access<member>(const member&);
     };
 
-    class method final {
+    class method final : public state_base<method> {
     public:
-        using index_type = method_index;
-        using state_ptr = detail::method_state_ptr;
-
-        method() = default;
-        explicit method(state_ptr state) noexcept;
-
-        [[nodiscard]] bool is_valid() const noexcept;
-        [[nodiscard]] explicit operator bool() const noexcept;
-
-        [[nodiscard]] const method_index& get_index() const noexcept;
-        [[nodiscard]] const metadata_map& get_metadata() const noexcept;
+        using state_base<method>::state_base;
 
         [[nodiscard]] method_type get_type() const noexcept;
         [[nodiscard]] const std::string& get_name() const noexcept;
@@ -3310,25 +3271,11 @@ namespace meta_hpp
 
         [[nodiscard]] argument get_argument(std::size_t position) const noexcept;
         [[nodiscard]] const argument_list& get_arguments() const noexcept;
-
-    private:
-        state_ptr state_;
-        friend state_ptr detail::state_access<method>(const method&);
     };
 
-    class scope final {
+    class scope final : public state_base<scope> {
     public:
-        using index_type = scope_index;
-        using state_ptr = detail::scope_state_ptr;
-
-        scope() = default;
-        explicit scope(state_ptr state) noexcept;
-
-        [[nodiscard]] bool is_valid() const noexcept;
-        [[nodiscard]] explicit operator bool() const noexcept;
-
-        [[nodiscard]] const scope_index& get_index() const noexcept;
-        [[nodiscard]] const metadata_map& get_metadata() const noexcept;
+        using state_base<scope>::state_base;
 
         [[nodiscard]] const std::string& get_name() const noexcept;
 
@@ -3346,25 +3293,11 @@ namespace meta_hpp
         [[nodiscard]] function get_function_with(std::string_view name, Iter first, Iter last) const noexcept;
         [[nodiscard]] function get_function_with(std::string_view name, std::span<const any_type> args) const noexcept;
         [[nodiscard]] function get_function_with(std::string_view name, std::initializer_list<any_type> args) const noexcept;
-
-    private:
-        state_ptr state_;
-        friend state_ptr detail::state_access<scope>(const scope&);
     };
 
-    class variable final {
+    class variable final : public state_base<variable> {
     public:
-        using index_type = variable_index;
-        using state_ptr = detail::variable_state_ptr;
-
-        variable() = default;
-        explicit variable(state_ptr state) noexcept;
-
-        [[nodiscard]] bool is_valid() const noexcept;
-        [[nodiscard]] explicit operator bool() const noexcept;
-
-        [[nodiscard]] const variable_index& get_index() const noexcept;
-        [[nodiscard]] const metadata_map& get_metadata() const noexcept;
+        using state_base<variable>::state_base;
 
         [[nodiscard]] pointer_type get_type() const noexcept;
         [[nodiscard]] const std::string& get_name() const noexcept;
@@ -3387,10 +3320,6 @@ namespace meta_hpp
 
         template < typename Value >
         [[nodiscard]] bool is_settable_with(Value&& value) const noexcept;
-
-    private:
-        state_ptr state_;
-        friend state_ptr detail::state_access<variable>(const variable&);
     };
 }
 
@@ -3422,13 +3351,13 @@ namespace meta_hpp
 
 namespace meta_hpp
 {
-    template < detail::state_family L >
-    [[nodiscard]] bool operator==(const L& l, const typename L::index_type& r) noexcept {
+    template < detail::state_family L, detail::index_family R >
+    [[nodiscard]] bool operator==(const L& l, const R& r) noexcept {
         return l.is_valid() && l.get_index() == r;
     }
 
-    template < detail::state_family L >
-    [[nodiscard]] std::strong_ordering operator<=>(const L& l, const typename L::index_type& r) noexcept {
+    template < detail::state_family L, detail::index_family R >
+    [[nodiscard]] std::strong_ordering operator<=>(const L& l, const R& r) noexcept {
         return l.is_valid() ? l.get_index() <=> r : std::strong_ordering::less;
     }
 }
@@ -4096,7 +4025,7 @@ namespace meta_hpp
         }
 
     protected:
-        using data_ptr = typename Type::data_ptr;
+        using data_ptr = typename detail::type_traits<Type>::data_ptr;
         using data_ref = decltype(*std::declval<data_ptr>());
 
         [[nodiscard]] data_ref get_data() noexcept {
@@ -4121,7 +4050,7 @@ namespace meta_hpp
         }
 
     protected:
-        using state_ptr = typename State::state_ptr;
+        using state_ptr = typename detail::state_traits<State>::state_ptr;
         using state_ref = decltype(*std::declval<state_ptr>());
 
         [[nodiscard]] state_ref get_state() noexcept {
@@ -5063,26 +4992,6 @@ namespace meta_hpp::detail
 
 namespace meta_hpp
 {
-
-    inline argument::argument(state_ptr state) noexcept
-    : state_{std::move(state)} {}
-
-    inline bool argument::is_valid() const noexcept {
-        return !!state_;
-    }
-
-    inline argument::operator bool() const noexcept {
-        return is_valid();
-    }
-
-    inline const argument_index& argument::get_index() const noexcept {
-        return state_->index;
-    }
-
-    inline const metadata_map& argument::get_metadata() const noexcept {
-        return state_->metadata;
-    }
-
     inline any_type argument::get_type() const noexcept {
         return state_->index.get_type();
     }
@@ -5572,27 +5481,8 @@ namespace meta_hpp::detail
 
 namespace meta_hpp
 {
-    inline constructor_type::constructor_type(data_ptr data)
-    : data_{data} {}
-
-    inline bool constructor_type::is_valid() const noexcept {
-        return data_ != nullptr;
-    }
-
-    inline constructor_type::operator bool() const noexcept {
-        return is_valid();
-    }
-
-    inline type_id constructor_type::get_id() const noexcept {
-        return data_->id;
-    }
-
     inline constructor_bitflags constructor_type::get_flags() const noexcept {
         return data_->flags;
-    }
-
-    inline const metadata_map& constructor_type::get_metadata() const noexcept {
-        return data_->metadata;
     }
 
     inline std::size_t constructor_type::get_arity() const noexcept {
@@ -5759,25 +5649,6 @@ namespace meta_hpp::detail
 
 namespace meta_hpp
 {
-    inline constructor::constructor(state_ptr state) noexcept
-    : state_{std::move(state)} {}
-
-    inline bool constructor::is_valid() const noexcept {
-        return !!state_;
-    }
-
-    inline constructor::operator bool() const noexcept {
-        return is_valid();
-    }
-
-    inline const constructor_index& constructor::get_index() const noexcept {
-        return state_->index;
-    }
-
-    inline const metadata_map& constructor::get_metadata() const noexcept {
-        return state_->metadata;
-    }
-
     inline constructor_type constructor::get_type() const noexcept {
         return state_->index.get_type();
     }
@@ -5849,27 +5720,8 @@ namespace meta_hpp::detail
 
 namespace meta_hpp
 {
-    inline destructor_type::destructor_type(data_ptr data)
-    : data_{data} {}
-
-    inline bool destructor_type::is_valid() const noexcept {
-        return data_ != nullptr;
-    }
-
-    inline destructor_type::operator bool() const noexcept {
-        return is_valid();
-    }
-
-    inline type_id destructor_type::get_id() const noexcept {
-        return data_->id;
-    }
-
     inline destructor_bitflags destructor_type::get_flags() const noexcept {
         return data_->flags;
-    }
-
-    inline const metadata_map& destructor_type::get_metadata() const noexcept {
-        return data_->metadata;
     }
 
     inline class_type destructor_type::get_owner_type() const noexcept {
@@ -5931,25 +5783,6 @@ namespace meta_hpp::detail
 
 namespace meta_hpp
 {
-    inline destructor::destructor(state_ptr state) noexcept
-    : state_{std::move(state)} {}
-
-    inline bool destructor::is_valid() const noexcept {
-        return !!state_;
-    }
-
-    inline destructor::operator bool() const noexcept {
-        return is_valid();
-    }
-
-    inline const destructor_index& destructor::get_index() const noexcept {
-        return state_->index;
-    }
-
-    inline const metadata_map& destructor::get_metadata() const noexcept {
-        return state_->metadata;
-    }
-
     inline destructor_type destructor::get_type() const noexcept {
         return state_->index.get_type();
     }
@@ -5980,27 +5813,8 @@ namespace meta_hpp::detail
 
 namespace meta_hpp
 {
-    inline enum_type::enum_type(data_ptr data)
-    : data_{data} {}
-
-    inline bool enum_type::is_valid() const noexcept {
-        return data_ != nullptr;
-    }
-
-    inline enum_type::operator bool() const noexcept {
-        return is_valid();
-    }
-
-    inline type_id enum_type::get_id() const noexcept {
-        return data_->id;
-    }
-
     inline enum_bitflags enum_type::get_flags() const noexcept {
         return data_->flags;
-    }
-
-    inline const metadata_map& enum_type::get_metadata() const noexcept {
-        return data_->metadata;
     }
 
     inline number_type enum_type::get_underlying_type() const noexcept {
@@ -6066,25 +5880,6 @@ namespace meta_hpp::detail
 
 namespace meta_hpp
 {
-    inline evalue::evalue(state_ptr state) noexcept
-    : state_{std::move(state)} {}
-
-    inline bool evalue::is_valid() const noexcept {
-        return !!state_;
-    }
-
-    inline evalue::operator bool() const noexcept {
-        return is_valid();
-    }
-
-    inline const evalue_index& evalue::get_index() const noexcept {
-        return state_->index;
-    }
-
-    inline const metadata_map& evalue::get_metadata() const noexcept {
-        return state_->metadata;
-    }
-
     inline enum_type evalue::get_type() const noexcept {
         return state_->index.get_type();
     }
@@ -6127,27 +5922,8 @@ namespace meta_hpp::detail
 
 namespace meta_hpp
 {
-    inline function_type::function_type(data_ptr data)
-    : data_{data} {}
-
-    inline bool function_type::is_valid() const noexcept {
-        return data_ != nullptr;
-    }
-
-    inline function_type::operator bool() const noexcept {
-        return is_valid();
-    }
-
-    inline type_id function_type::get_id() const noexcept {
-        return data_->id;
-    }
-
     inline function_bitflags function_type::get_flags() const noexcept {
         return data_->flags;
-    }
-
-    inline const metadata_map& function_type::get_metadata() const noexcept {
-        return data_->metadata;
     }
 
     inline std::size_t function_type::get_arity() const noexcept {
@@ -6289,25 +6065,6 @@ namespace meta_hpp::detail
 
 namespace meta_hpp
 {
-    inline function::function(state_ptr state) noexcept
-    : state_{std::move(state)} {}
-
-    inline bool function::is_valid() const noexcept {
-        return !!state_;
-    }
-
-    inline function::operator bool() const noexcept {
-        return is_valid();
-    }
-
-    inline const function_index& function::get_index() const noexcept {
-        return state_->index;
-    }
-
-    inline const metadata_map& function::get_metadata() const noexcept {
-        return state_->metadata;
-    }
-
     inline function_type function::get_type() const noexcept {
         return state_->index.get_type();
     }
@@ -6601,27 +6358,8 @@ namespace meta_hpp::detail
 
 namespace meta_hpp
 {
-    inline member_type::member_type(data_ptr data)
-    : data_{data} {}
-
-    inline bool member_type::is_valid() const noexcept {
-        return data_ != nullptr;
-    }
-
-    inline member_type::operator bool() const noexcept {
-        return is_valid();
-    }
-
-    inline type_id member_type::get_id() const noexcept {
-        return data_->id;
-    }
-
     inline member_bitflags member_type::get_flags() const noexcept {
         return data_->flags;
-    }
-
-    inline const metadata_map& member_type::get_metadata() const noexcept {
-        return data_->metadata;
     }
 
     inline class_type member_type::get_owner_type() const noexcept {
@@ -6785,25 +6523,6 @@ namespace meta_hpp::detail
 
 namespace meta_hpp
 {
-    inline member::member(state_ptr state) noexcept
-    : state_{std::move(state)} {}
-
-    inline bool member::is_valid() const noexcept {
-        return !!state_;
-    }
-
-    inline member::operator bool() const noexcept {
-        return is_valid();
-    }
-
-    inline const member_index& member::get_index() const noexcept {
-        return state_->index;
-    }
-
-    inline const metadata_map& member::get_metadata() const noexcept {
-        return state_->metadata;
-    }
-
     inline member_type member::get_type() const noexcept {
         return state_->index.get_type();
     }
@@ -6889,27 +6608,8 @@ namespace meta_hpp::detail
 
 namespace meta_hpp
 {
-    inline method_type::method_type(data_ptr data)
-    : data_{data} {}
-
-    inline bool method_type::is_valid() const noexcept {
-        return data_ != nullptr;
-    }
-
-    inline method_type::operator bool() const noexcept {
-        return is_valid();
-    }
-
-    inline type_id method_type::get_id() const noexcept {
-        return data_->id;
-    }
-
     inline method_bitflags method_type::get_flags() const noexcept {
         return data_->flags;
-    }
-
-    inline const metadata_map& method_type::get_metadata() const noexcept {
-        return data_->metadata;
     }
 
     inline std::size_t method_type::get_arity() const noexcept {
@@ -7069,25 +6769,6 @@ namespace meta_hpp::detail
 
 namespace meta_hpp
 {
-    inline method::method(state_ptr state) noexcept
-    : state_{std::move(state)} {}
-
-    inline bool method::is_valid() const noexcept {
-        return !!state_;
-    }
-
-    inline method::operator bool() const noexcept {
-        return is_valid();
-    }
-
-    inline const method_index& method::get_index() const noexcept {
-        return state_->index;
-    }
-
-    inline const metadata_map& method::get_metadata() const noexcept {
-        return state_->metadata;
-    }
-
     inline method_type method::get_type() const noexcept {
         return state_->index.get_type();
     }
@@ -7160,27 +6841,8 @@ namespace meta_hpp::detail
 
 namespace meta_hpp
 {
-    inline pointer_type::pointer_type(data_ptr data)
-    : data_{data} {}
-
-    inline bool pointer_type::is_valid() const noexcept {
-        return data_ != nullptr;
-    }
-
-    inline pointer_type::operator bool() const noexcept {
-        return is_valid();
-    }
-
-    inline type_id pointer_type::get_id() const noexcept {
-        return data_->id;
-    }
-
     inline pointer_bitflags pointer_type::get_flags() const noexcept {
         return data_->flags;
-    }
-
-    inline const metadata_map& pointer_type::get_metadata() const noexcept {
-        return data_->metadata;
     }
 
     inline any_type pointer_type::get_data_type() const noexcept {
@@ -7287,25 +6949,6 @@ namespace meta_hpp::detail
 
 namespace meta_hpp
 {
-    inline variable::variable(state_ptr state) noexcept
-    : state_{std::move(state)} {}
-
-    inline bool variable::is_valid() const noexcept {
-        return !!state_;
-    }
-
-    inline variable::operator bool() const noexcept {
-        return is_valid();
-    }
-
-    inline const variable_index& variable::get_index() const noexcept {
-        return state_->index;
-    }
-
-    inline const metadata_map& variable::get_metadata() const noexcept {
-        return state_->metadata;
-    }
-
     inline pointer_type variable::get_type() const noexcept {
         return state_->index.get_type();
     }
@@ -7370,27 +7013,8 @@ namespace meta_hpp::detail
 
 namespace meta_hpp
 {
-    inline class_type::class_type(data_ptr data)
-    : data_{data} {}
-
-    inline bool class_type::is_valid() const noexcept {
-        return data_ != nullptr;
-    }
-
-    inline class_type::operator bool() const noexcept {
-        return is_valid();
-    }
-
-    inline type_id class_type::get_id() const noexcept {
-        return data_->id;
-    }
-
     inline class_bitflags class_type::get_flags() const noexcept {
         return data_->flags;
-    }
-
-    inline const metadata_map& class_type::get_metadata() const noexcept {
-        return data_->metadata;
     }
 
     inline std::size_t class_type::get_size() const noexcept {
@@ -7739,25 +7363,6 @@ namespace meta_hpp::detail
 
 namespace meta_hpp
 {
-    inline scope::scope(state_ptr state) noexcept
-    : state_{std::move(state)} {}
-
-    inline bool scope::is_valid() const noexcept {
-        return !!state_;
-    }
-
-    inline scope::operator bool() const noexcept {
-        return is_valid();
-    }
-
-    inline const scope_index& scope::get_index() const noexcept {
-        return state_->index;
-    }
-
-    inline const metadata_map& scope::get_metadata() const noexcept {
-        return state_->metadata;
-    }
-
     inline const std::string& scope::get_name() const noexcept {
         return state_->index.get_name();
     }
@@ -7830,45 +7435,28 @@ namespace meta_hpp
 
 namespace meta_hpp
 {
-    inline any_type::any_type(data_ptr data)
-    : data_{data} {}
-
-    inline bool any_type::is_valid() const noexcept {
-        return data_ != nullptr;
-    }
-
-    inline any_type::operator bool() const noexcept {
-        return is_valid();
-    }
-
-    inline type_id any_type::get_id() const noexcept {
-        return data_->id;
-    }
-
-    inline type_kind any_type::get_kind() const noexcept {
-        return data_->kind;
-    }
-
-    inline const metadata_map& any_type::get_metadata() const noexcept {
-        return data_->metadata;
-    }
-
     template < detail::type_family Type >
     any_type::any_type(const Type& other) noexcept
-    : data_{detail::type_access(other)} {}
+    : any_type{detail::type_access(other)} {}
 
     template < detail::type_family Type >
     bool any_type::is() const noexcept {
         if constexpr ( std::is_same_v<Type, any_type> ) {
             return data_ != nullptr;
         } else {
-            return data_ != nullptr && data_->kind == Type::kind;
+            constexpr type_kind is_kind{detail::type_traits<Type>::kind};
+            return data_ != nullptr && data_->kind == is_kind;
         }
     }
 
     template < detail::type_family Type >
     Type any_type::as() const noexcept {
-        return is<Type>() ? Type{static_cast<typename Type::data_ptr>(data_)} : Type{};
+        if constexpr ( std::is_same_v<Type, any_type> ) {
+            return *this;
+        } else {
+            using as_data_ptr = typename detail::type_traits<Type>::data_ptr;
+            return is<Type>() ? Type{static_cast<as_data_ptr>(data_)} : Type{};
+        }
     }
 
     inline bool any_type::is_array() const noexcept {
@@ -7991,27 +7579,8 @@ namespace meta_hpp::detail
 
 namespace meta_hpp
 {
-    inline array_type::array_type(data_ptr data)
-    : data_{data} {}
-
-    inline bool array_type::is_valid() const noexcept {
-        return data_ != nullptr;
-    }
-
-    inline array_type::operator bool() const noexcept {
-        return is_valid();
-    }
-
-    inline type_id array_type::get_id() const noexcept {
-        return data_->id;
-    }
-
     inline array_bitflags array_type::get_flags() const noexcept {
         return data_->flags;
-    }
-
-    inline const metadata_map& array_type::get_metadata() const noexcept {
-        return data_->metadata;
     }
 
     inline std::size_t array_type::get_extent() const noexcept {
@@ -8033,28 +7602,6 @@ namespace meta_hpp::detail
     : type_data_base{type_id{type_list<nullptr_tag<Nullptr>>{}}, type_kind::nullptr_} {}
 }
 
-namespace meta_hpp
-{
-    inline nullptr_type::nullptr_type(data_ptr data)
-    : data_{data} {}
-
-    inline bool nullptr_type::is_valid() const noexcept {
-        return data_ != nullptr;
-    }
-
-    inline nullptr_type::operator bool() const noexcept {
-        return is_valid();
-    }
-
-    inline type_id nullptr_type::get_id() const noexcept {
-        return data_->id;
-    }
-
-    inline const metadata_map& nullptr_type::get_metadata() const noexcept {
-        return data_->metadata;
-    }
-}
-
 namespace meta_hpp::detail
 {
     template < number_kind Number >
@@ -8070,27 +7617,8 @@ namespace meta_hpp::detail
 
 namespace meta_hpp
 {
-    inline number_type::number_type(data_ptr data)
-    : data_{data} {}
-
-    inline bool number_type::is_valid() const noexcept {
-        return data_ != nullptr;
-    }
-
-    inline number_type::operator bool() const noexcept {
-        return is_valid();
-    }
-
-    inline type_id number_type::get_id() const noexcept {
-        return data_->id;
-    }
-
     inline number_bitflags number_type::get_flags() const noexcept {
         return data_->flags;
-    }
-
-    inline const metadata_map& number_type::get_metadata() const noexcept {
-        return data_->metadata;
     }
 
     inline std::size_t number_type::get_size() const noexcept {
@@ -8116,27 +7644,8 @@ namespace meta_hpp::detail
 
 namespace meta_hpp
 {
-    inline reference_type::reference_type(data_ptr data)
-    : data_{data} {}
-
-    inline bool reference_type::is_valid() const noexcept {
-        return data_ != nullptr;
-    }
-
-    inline reference_type::operator bool() const noexcept {
-        return is_valid();
-    }
-
-    inline type_id reference_type::get_id() const noexcept {
-        return data_->id;
-    }
-
     inline reference_bitflags reference_type::get_flags() const noexcept {
         return data_->flags;
-    }
-
-    inline const metadata_map& reference_type::get_metadata() const noexcept {
-        return data_->metadata;
     }
 
     inline any_type reference_type::get_data_type() const noexcept {
@@ -8152,28 +7661,6 @@ namespace meta_hpp::detail
     template < void_kind Void >
     void_type_data::void_type_data(type_list<Void>)
     : type_data_base{type_id{type_list<void_tag<Void>>{}}, type_kind::void_} {}
-}
-
-namespace meta_hpp
-{
-    inline void_type::void_type(data_ptr data)
-    : data_{data} {}
-
-    inline bool void_type::is_valid() const noexcept {
-        return data_ != nullptr;
-    }
-
-    inline void_type::operator bool() const noexcept {
-        return is_valid();
-    }
-
-    inline type_id void_type::get_id() const noexcept {
-        return data_->id;
-    }
-
-    inline const metadata_map& void_type::get_metadata() const noexcept {
-        return data_->metadata;
-    }
 }
 
 namespace meta_hpp

@@ -165,25 +165,6 @@ namespace meta_hpp::detail
 
 namespace meta_hpp
 {
-    inline member::member(state_ptr state) noexcept
-    : state_{std::move(state)} {}
-
-    inline bool member::is_valid() const noexcept {
-        return !!state_;
-    }
-
-    inline member::operator bool() const noexcept {
-        return is_valid();
-    }
-
-    inline const member_index& member::get_index() const noexcept {
-        return state_->index;
-    }
-
-    inline const metadata_map& member::get_metadata() const noexcept {
-        return state_->metadata;
-    }
-
     inline member_type member::get_type() const noexcept {
         return state_->index.get_type();
     }

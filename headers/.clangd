@@ -14,6 +14,7 @@ Diagnostics:
       - bugprone-easily-swappable-parameters
       - bugprone-macro-parentheses
       - cppcoreguidelines-macro-usage
+      - cppcoreguidelines-non-private-member-variables-in-classes
       - misc-no-recursion
       - misc-non-private-member-variables-in-classes
       - misc-unused-using-decls

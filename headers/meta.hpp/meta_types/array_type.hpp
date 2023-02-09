@@ -27,27 +27,8 @@ namespace meta_hpp::detail
 
 namespace meta_hpp
 {
-    inline array_type::array_type(data_ptr data)
-    : data_{data} {}
-
-    inline bool array_type::is_valid() const noexcept {
-        return data_ != nullptr;
-    }
-
-    inline array_type::operator bool() const noexcept {
-        return is_valid();
-    }
-
-    inline type_id array_type::get_id() const noexcept {
-        return data_->id;
-    }
-
     inline array_bitflags array_type::get_flags() const noexcept {
         return data_->flags;
-    }
-
-    inline const metadata_map& array_type::get_metadata() const noexcept {
-        return data_->metadata;
     }
 
     inline std::size_t array_type::get_extent() const noexcept {
