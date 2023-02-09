@@ -14,8 +14,12 @@ target_include_directories(${PROJECT_NAME}.doctest SYSTEM
     PUBLIC doctest)
 
 target_compile_definitions(${PROJECT_NAME}.doctest
-    PRIVATE DOCTEST_CONFIG_IMPLEMENT_WITH_MAIN
-    INTERFACE DOCTEST_CONFIG_USE_STD_HEADERS)
+    PRIVATE
+        DOCTEST_CONFIG_IMPLEMENT_WITH_MAIN
+    PUBLIC
+        DOCTEST_CONFIG_USE_STD_HEADERS
+        $<$<BOOL:${BUILD_WITH_NO_EXCEPTIONS}>:
+            DOCTEST_CONFIG_NO_EXCEPTIONS_BUT_WITH_ALL_ASSERTS>)
 
 #
 # fmt
@@ -32,3 +36,33 @@ target_include_directories(${PROJECT_NAME}.fmt SYSTEM
 
 target_compile_definitions(${PROJECT_NAME}.fmt
     INTERFACE FMT_HEADER_ONLY)
+
+#
+# gbench
+#
+
+file(GLOB_RECURSE GBENCH_SOURCES CONFIGURE_DEPENDS "gbench/src/*.cc")
+add_library(${PROJECT_NAME}.gbench STATIC ${GBENCH_SOURCES})
+add_library(${PROJECT_NAME}::gbench ALIAS ${PROJECT_NAME}.gbench)
+
+target_compile_features(${PROJECT_NAME}.gbench
+    PUBLIC cxx_std_20)
+
+target_include_directories(${PROJECT_NAME}.gbench SYSTEM
+    PUBLIC gbench/include)
+
+target_compile_definitions(${PROJECT_NAME}.gbench
+    PUBLIC BENCHMARK_STATIC_DEFINE)
+
+#
+# vmath
+#
+
+add_library(${PROJECT_NAME}.vmath.hpp INTERFACE)
+add_library(${PROJECT_NAME}::vmath.hpp ALIAS ${PROJECT_NAME}.vmath.hpp)
+
+target_compile_features(${PROJECT_NAME}.vmath.hpp
+    INTERFACE cxx_std_20)
+
+target_include_directories(${PROJECT_NAME}.vmath.hpp SYSTEM
+    INTERFACE vmath.hpp/headers)

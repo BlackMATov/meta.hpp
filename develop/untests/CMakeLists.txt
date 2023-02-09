@@ -8,11 +8,13 @@ add_executable(${PROJECT_NAME}.singles ${UNTESTS_SOURCES})
 
 target_link_libraries(${PROJECT_NAME} PRIVATE
     meta.hpp::meta.hpp
-    meta.hpp::setup_targets)
+    meta.hpp::setup_targets
+    meta.hpp.vendors::doctest)
 
 target_link_libraries(${PROJECT_NAME}.singles PRIVATE
     meta.hpp::singles
-    meta.hpp::setup_targets)
+    meta.hpp::setup_targets
+    meta.hpp.vendors::doctest)
 
 add_test(${PROJECT_NAME} ${PROJECT_NAME})
 add_test(${PROJECT_NAME} ${PROJECT_NAME}.singles)
