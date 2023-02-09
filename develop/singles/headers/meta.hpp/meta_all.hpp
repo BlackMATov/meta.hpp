@@ -4977,32 +4977,76 @@ namespace meta_hpp
     }
 }
 
-namespace meta_hpp::detail
+namespace meta_hpp
 {
-    inline argument_state::argument_state(argument_index nindex, metadata_map nmetadata)
-    : index{nindex}
-    , metadata{std::move(nmetadata)} {}
+    template < typename... Args >
+    uvalue invoke(const function& function, Args&&... args);
 
-    template < typename Argument >
-    inline argument_state_ptr argument_state::make(std::size_t position, metadata_map metadata) {
-        argument_state state{argument_index{resolve_type<Argument>(), position}, std::move(metadata)};
-        return make_intrusive<argument_state>(std::move(state));
-    }
+    template < detail::function_pointer_kind Function, typename... Args >
+    uvalue invoke(Function function_ptr, Args&&... args);
 }
 
 namespace meta_hpp
 {
-    inline any_type argument::get_type() const noexcept {
-        return state_->index.get_type();
-    }
+    template < typename Instance >
+    uvalue invoke(const member& member, Instance&& instance);
 
-    inline std::size_t argument::get_position() const noexcept {
-        return state_->index.get_position();
-    }
+    template < detail::member_pointer_kind Member, typename Instance >
+    uvalue invoke(Member member_ptr, Instance&& instance);
+}
 
-    inline const std::string& argument::get_name() const noexcept {
-        return state_->name;
-    }
+namespace meta_hpp
+{
+    template < typename Instance, typename... Args >
+    uvalue invoke(const method& method, Instance&& instance, Args&&... args);
+
+    template < detail::method_pointer_kind Method, typename Instance, typename... Args >
+    uvalue invoke(Method method_ptr, Instance&& instance, Args&&... args);
+}
+
+namespace meta_hpp
+{
+    template < typename... Args >
+    bool is_invocable_with(const function& function);
+
+    template < typename... Args >
+    bool is_invocable_with(const function& function, Args&&... args);
+
+    template < detail::function_pointer_kind Function, typename... Args >
+    bool is_invocable_with();
+
+    template < detail::function_pointer_kind Function, typename... Args >
+    bool is_invocable_with(Args&&... args);
+}
+
+namespace meta_hpp
+{
+    template < typename Instance >
+    bool is_invocable_with(const member& member);
+
+    template < typename Instance >
+    bool is_invocable_with(const member& member, Instance&& instance);
+
+    template < detail::member_pointer_kind Member, typename Instance >
+    bool is_invocable_with();
+
+    template < detail::member_pointer_kind Member, typename Instance >
+    bool is_invocable_with(Instance&& instance);
+}
+
+namespace meta_hpp
+{
+    template < typename Instance, typename... Args >
+    bool is_invocable_with(const method& method);
+
+    template < typename Instance, typename... Args >
+    bool is_invocable_with(const method& method, Instance&& instance, Args&&... args);
+
+    template < detail::method_pointer_kind Method, typename Instance, typename... Args >
+    bool is_invocable_with();
+
+    template < detail::method_pointer_kind Method, typename Instance, typename... Args >
+    bool is_invocable_with(Instance&& instance, Args&&... args);
 }
 
 namespace meta_hpp::detail
@@ -5463,447 +5507,6 @@ namespace meta_hpp::detail
         }
 
         META_HPP_THROW("bad argument cast");
-    }
-}
-
-namespace meta_hpp::detail
-{
-    template < class_kind Class, typename... Args >
-    struct constructor_tag {};
-
-    template < class_kind Class, typename... Args >
-    constructor_type_data::constructor_type_data(type_list<Class>, type_list<Args...>)
-    : type_data_base{type_id{type_list<constructor_tag<Class, Args...>>{}}, type_kind::constructor_}
-    , flags{constructor_traits<Class, Args...>::make_flags()}
-    , owner_type{resolve_type<typename constructor_traits<Class, Args...>::class_type>()}
-    , argument_types{resolve_types(typename constructor_traits<Class, Args...>::argument_types{})} {}
-}
-
-namespace meta_hpp
-{
-    inline constructor_bitflags constructor_type::get_flags() const noexcept {
-        return data_->flags;
-    }
-
-    inline std::size_t constructor_type::get_arity() const noexcept {
-        return data_->argument_types.size();
-    }
-
-    inline class_type constructor_type::get_owner_type() const noexcept {
-        return data_->owner_type;
-    }
-
-    inline any_type constructor_type::get_argument_type(std::size_t position) const noexcept {
-        return position < data_->argument_types.size() ? data_->argument_types[position] : any_type{};
-    }
-
-    inline const any_type_list& constructor_type::get_argument_types() const noexcept {
-        return data_->argument_types;
-    }
-}
-
-namespace meta_hpp::detail
-{
-    template < constructor_policy_kind Policy, class_kind Class, typename... Args >
-    uvalue raw_constructor_create(std::span<const uarg> args) {
-        using ct = constructor_traits<Class, Args...>;
-        using class_type = typename ct::class_type;
-        using argument_types = typename ct::argument_types;
-
-        constexpr bool as_object                                       //
-            = std::is_copy_constructible_v<class_type>                 //
-           && std::is_same_v<Policy, constructor_policy::as_object_t>; //
-
-        constexpr bool as_raw_ptr                                           //
-            = std::is_same_v<Policy, constructor_policy::as_raw_pointer_t>; //
-
-        constexpr bool as_shared_ptr                                           //
-            = std::is_same_v<Policy, constructor_policy::as_shared_pointer_t>; //
-
-        static_assert(as_object || as_raw_ptr || as_shared_ptr);
-
-        META_HPP_THROW_IF( //
-            args.size() != ct::arity,
-            "an attempt to call a constructor with an incorrect arity"
-        );
-
-        return std::invoke(
-            [args]<std::size_t... Is>(std::index_sequence<Is...>)->uvalue {
-                META_HPP_THROW_IF( //
-                    !(... && args[Is].can_cast_to<type_list_at_t<Is, argument_types>>()),
-                    "an attempt to call a constructor with incorrect argument types"
-                );
-
-                if constexpr ( as_object ) {
-                    return make_uvalue<class_type>(args[Is].cast<type_list_at_t<Is, argument_types>>()...);
-                }
-
-                if constexpr ( as_raw_ptr ) {
-                    return uvalue{std::make_unique<class_type>(args[Is].cast<type_list_at_t<Is, argument_types>>()...).release()};
-                }
-
-                if constexpr ( as_shared_ptr ) {
-                    return uvalue{std::make_shared<class_type>(args[Is].cast<type_list_at_t<Is, argument_types>>()...)};
-                }
-            },
-            std::make_index_sequence<ct::arity>()
-        );
-    }
-
-    template < class_kind Class, typename... Args >
-    uvalue raw_constructor_create_at(void* mem, std::span<const uarg> args) {
-        using ct = constructor_traits<Class, Args...>;
-        using class_type = typename ct::class_type;
-        using argument_types = typename ct::argument_types;
-
-        META_HPP_THROW_IF( //
-            args.size() != ct::arity,
-            "an attempt to call a constructor with an incorrect arity"
-        );
-
-        return std::invoke(
-            [ mem, args ]<std::size_t... Is>(std::index_sequence<Is...>)->uvalue {
-                META_HPP_THROW_IF( //
-                    !(... && args[Is].can_cast_to<type_list_at_t<Is, argument_types>>()),
-                    "an attempt to call a constructor with incorrect argument types"
-                );
-
-                return uvalue{std::construct_at( //
-                    static_cast<class_type*>(mem),
-                    args[Is].cast<type_list_at_t<Is, argument_types>>()...
-                )};
-            },
-            std::make_index_sequence<ct::arity>()
-        );
-    }
-
-    template < class_kind Class, typename... Args >
-    bool raw_constructor_is_invocable_with(std::span<const uarg_base> args) {
-        using ct = constructor_traits<Class, Args...>;
-        using argument_types = typename ct::argument_types;
-
-        if ( args.size() != ct::arity ) {
-            return false;
-        }
-
-        return std::invoke(
-            [args]<std::size_t... Is>(std::index_sequence<Is...>) {
-                return (... && args[Is].can_cast_to<type_list_at_t<Is, argument_types>>());
-            },
-            std::make_index_sequence<ct::arity>()
-        );
-    }
-}
-
-namespace meta_hpp::detail
-{
-    template < constructor_policy_kind Policy, class_kind Class, typename... Args >
-    constructor_state::create_impl make_constructor_create() {
-        return &raw_constructor_create<Policy, Class, Args...>;
-    }
-
-    template < class_kind Class, typename... Args >
-    constructor_state::create_at_impl make_constructor_create_at() {
-        return &raw_constructor_create_at<Class, Args...>;
-    }
-
-    template < class_kind Class, typename... Args >
-    constructor_state::is_invocable_with_impl make_constructor_is_invocable_with() {
-        return &raw_constructor_is_invocable_with<Class, Args...>;
-    }
-
-    template < class_kind Class, typename... Args >
-    argument_list make_constructor_arguments() {
-        using ct = constructor_traits<Class, Args...>;
-        using ct_argument_types = typename ct::argument_types;
-
-        return std::invoke(
-            []<std::size_t... Is>(std::index_sequence<Is...>) {
-                [[maybe_unused]] const auto make_argument = []<std::size_t I>(std::index_sequence<I>) {
-                    using P = type_list_at_t<I, ct_argument_types>;
-                    return argument{argument_state::make<P>(I, metadata_map{})};
-                };
-                return argument_list{make_argument(std::index_sequence<Is>{})...};
-            },
-            std::make_index_sequence<ct::arity>()
-        );
-    }
-}
-
-namespace meta_hpp::detail
-{
-    inline constructor_state::constructor_state(constructor_index nindex, metadata_map nmetadata)
-    : index{nindex}
-    , metadata{std::move(nmetadata)} {}
-
-    template < constructor_policy_kind Policy, class_kind Class, typename... Args >
-    constructor_state_ptr constructor_state::make(metadata_map metadata) {
-        constructor_state state{constructor_index{resolve_constructor_type<Class, Args...>()}, std::move(metadata)};
-        state.create = make_constructor_create<Policy, Class, Args...>();
-        state.create_at = make_constructor_create_at<Class, Args...>();
-        state.is_invocable_with = make_constructor_is_invocable_with<Class, Args...>();
-        state.arguments = make_constructor_arguments<Class, Args...>();
-        return make_intrusive<constructor_state>(std::move(state));
-    }
-}
-
-namespace meta_hpp
-{
-    inline constructor_type constructor::get_type() const noexcept {
-        return state_->index.get_type();
-    }
-
-    template < typename... Args >
-    uvalue constructor::create(Args&&... args) const {
-        if constexpr ( sizeof...(Args) > 0 ) {
-            using namespace detail;
-            const std::array<uarg, sizeof...(Args)> vargs{uarg{std::forward<Args>(args)}...};
-            return state_->create(vargs);
-        } else {
-            return state_->create({});
-        }
-    }
-
-    template < typename... Args >
-    uvalue constructor::create_at(void* mem, Args&&... args) const {
-        if constexpr ( sizeof...(Args) > 0 ) {
-            using namespace detail;
-            const std::array<uarg, sizeof...(Args)> vargs{uarg{std::forward<Args>(args)}...};
-            return state_->create_at(mem, vargs);
-        } else {
-            return state_->create_at(mem, {});
-        }
-    }
-
-    template < typename... Args >
-    bool constructor::is_invocable_with() const noexcept {
-        if constexpr ( sizeof...(Args) > 0 ) {
-            using namespace detail;
-            const std::array<uarg_base, sizeof...(Args)> vargs{uarg_base{type_list<Args>{}}...};
-            return state_->is_invocable_with(vargs);
-        } else {
-            return state_->is_invocable_with({});
-        }
-    }
-
-    template < typename... Args >
-    bool constructor::is_invocable_with(Args&&... args) const noexcept {
-        if constexpr ( sizeof...(Args) > 0 ) {
-            using namespace detail;
-            const std::array<uarg_base, sizeof...(Args)> vargs{uarg_base{std::forward<Args>(args)}...};
-            return state_->is_invocable_with(vargs);
-        } else {
-            return state_->is_invocable_with({});
-        }
-    }
-
-    inline argument constructor::get_argument(std::size_t position) const noexcept {
-        return position < state_->arguments.size() ? state_->arguments[position] : argument{};
-    }
-
-    inline const argument_list& constructor::get_arguments() const noexcept {
-        return state_->arguments;
-    }
-}
-
-namespace meta_hpp::detail
-{
-    template < class_kind Class >
-    struct destructor_tag {};
-
-    template < class_kind Class >
-    destructor_type_data::destructor_type_data(type_list<Class>)
-    : type_data_base{type_id{type_list<destructor_tag<Class>>{}}, type_kind::destructor_}
-    , flags{destructor_traits<Class>::make_flags()}
-    , owner_type{resolve_type<typename destructor_traits<Class>::class_type>()} {}
-}
-
-namespace meta_hpp
-{
-    inline destructor_bitflags destructor_type::get_flags() const noexcept {
-        return data_->flags;
-    }
-
-    inline class_type destructor_type::get_owner_type() const noexcept {
-        return data_->owner_type;
-    }
-}
-
-namespace meta_hpp::detail
-{
-    template < class_kind Class >
-    bool raw_destructor_destroy(const uarg& arg) {
-        using dt = destructor_traits<Class>;
-        using class_type = typename dt::class_type;
-
-        if ( !arg.can_cast_to<class_type*>() ) {
-            return false;
-        }
-
-        std::unique_ptr<class_type>{arg.cast<class_type*>()}.reset();
-        return true;
-    }
-
-    template < class_kind Class >
-    void raw_destructor_destroy_at(void* mem) {
-        using dt = destructor_traits<Class>;
-        using class_type = typename dt::class_type;
-
-        std::destroy_at(static_cast<class_type*>(mem));
-    }
-}
-
-namespace meta_hpp::detail
-{
-    template < class_kind Class >
-    destructor_state::destroy_impl make_destructor_destroy() {
-        return &raw_destructor_destroy<Class>;
-    }
-
-    template < class_kind Class >
-    destructor_state::destroy_at_impl make_destructor_destroy_at() {
-        return &raw_destructor_destroy_at<Class>;
-    }
-}
-
-namespace meta_hpp::detail
-{
-    inline destructor_state::destructor_state(destructor_index nindex, metadata_map nmetadata)
-    : index{nindex}
-    , metadata{std::move(nmetadata)} {}
-
-    template < class_kind Class >
-    destructor_state_ptr destructor_state::make(metadata_map metadata) {
-        destructor_state state{destructor_index{resolve_destructor_type<Class>()}, std::move(metadata)};
-        state.destroy = make_destructor_destroy<Class>();
-        state.destroy_at = make_destructor_destroy_at<Class>();
-        return make_intrusive<destructor_state>(std::move(state));
-    }
-}
-
-namespace meta_hpp
-{
-    inline destructor_type destructor::get_type() const noexcept {
-        return state_->index.get_type();
-    }
-
-    template < typename Arg >
-    bool destructor::destroy(Arg&& arg) const {
-        using namespace detail;
-        const uarg varg{std::forward<Arg>(arg)};
-        return state_->destroy(varg);
-    }
-
-    inline void destructor::destroy_at(void* mem) const {
-        state_->destroy_at(mem);
-    }
-}
-
-namespace meta_hpp::detail
-{
-    template < enum_kind Enum >
-    struct enum_tag {};
-
-    template < enum_kind Enum >
-    enum_type_data::enum_type_data(type_list<Enum>)
-    : type_data_base{type_id{type_list<enum_tag<Enum>>{}}, type_kind::enum_}
-    , flags{enum_traits<Enum>::make_flags()}
-    , underlying_type{resolve_type<typename enum_traits<Enum>::underlying_type>()} {}
-}
-
-namespace meta_hpp
-{
-    inline enum_bitflags enum_type::get_flags() const noexcept {
-        return data_->flags;
-    }
-
-    inline number_type enum_type::get_underlying_type() const noexcept {
-        return data_->underlying_type;
-    }
-
-    inline const evalue_set& enum_type::get_evalues() const noexcept {
-        return data_->evalues;
-    }
-
-    inline evalue enum_type::get_evalue(std::string_view name) const noexcept {
-        for ( const evalue& evalue : data_->evalues ) {
-            if ( evalue.get_name() == name ) {
-                return evalue;
-            }
-        }
-        return evalue{};
-    }
-
-    template < detail::enum_kind Enum >
-    std::string_view enum_type::value_to_name(Enum value) const noexcept {
-        if ( resolve_type<Enum>() != *this ) {
-            return std::string_view{};
-        }
-
-        for ( const evalue& evalue : data_->evalues ) {
-            if ( evalue.get_value_as<Enum>() == value ) {
-                return evalue.get_name();
-            }
-        }
-
-        return std::string_view{};
-    }
-
-    inline uvalue enum_type::name_to_value(std::string_view name) const noexcept {
-        if ( const evalue& value = get_evalue(name); value ) {
-            return value.get_value();
-        }
-
-        return uvalue{};
-    }
-
-    template < typename T >
-    T enum_type::name_to_value_as(std::string_view name) const {
-        return name_to_value(name).get_as<T>();
-    }
-}
-
-namespace meta_hpp::detail
-{
-    inline evalue_state::evalue_state(evalue_index nindex, metadata_map nmetadata)
-    : index{std::move(nindex)}
-    , metadata{std::move(nmetadata)} {}
-
-    template < enum_kind Enum >
-    evalue_state_ptr evalue_state::make(std::string name, Enum evalue, metadata_map metadata) {
-        evalue_state state{evalue_index{resolve_type<Enum>(), std::move(name)}, std::move(metadata)};
-        state.enum_value = uvalue{evalue};
-        state.underlying_value = uvalue{to_underlying(evalue)};
-        return make_intrusive<evalue_state>(std::move(state));
-    }
-}
-
-namespace meta_hpp
-{
-    inline enum_type evalue::get_type() const noexcept {
-        return state_->index.get_type();
-    }
-
-    inline const std::string& evalue::get_name() const noexcept {
-        return state_->index.get_name();
-    }
-
-    inline const uvalue& evalue::get_value() const noexcept {
-        return state_->enum_value;
-    }
-
-    inline const uvalue& evalue::get_underlying_value() const noexcept {
-        return state_->underlying_value;
-    }
-
-    template < typename T >
-    T evalue::get_value_as() const {
-        return get_value().get_as<T>();
-    }
-
-    template < typename T >
-    T evalue::get_underlying_value_as() const {
-        return get_underlying_value().get_as<T>();
     }
 }
 
@@ -6827,6 +6430,628 @@ namespace meta_hpp
     }
 }
 
+namespace meta_hpp
+{
+    template < typename... Args >
+    uvalue invoke(const function& function, Args&&... args) {
+        return function.invoke(std::forward<Args>(args)...);
+    }
+
+    template < detail::function_pointer_kind Function, typename... Args >
+    uvalue invoke(Function function_ptr, Args&&... args) {
+        using namespace detail;
+        if constexpr ( sizeof...(Args) > 0 ) {
+            const std::array<uarg, sizeof...(Args)> vargs{uarg{std::forward<Args>(args)}...};
+            return raw_function_invoke<function_policy::as_copy_t>(function_ptr, vargs);
+        } else {
+            return raw_function_invoke<function_policy::as_copy_t>(function_ptr, {});
+        }
+    }
+}
+
+namespace meta_hpp
+{
+    template < typename Instance >
+    uvalue invoke(const member& member, Instance&& instance) {
+        return member.get(std::forward<Instance>(instance));
+    }
+
+    template < detail::member_pointer_kind Member, typename Instance >
+    uvalue invoke(Member member_ptr, Instance&& instance) {
+        using namespace detail;
+        const uinst vinst{std::forward<Instance>(instance)};
+        return raw_member_getter<member_policy::as_copy_t>(member_ptr, vinst);
+    }
+}
+
+namespace meta_hpp
+{
+    template < typename Instance, typename... Args >
+    uvalue invoke(const method& method, Instance&& instance, Args&&... args) {
+        return method.invoke(std::forward<Instance>(instance), std::forward<Args>(args)...);
+    }
+
+    template < detail::method_pointer_kind Method, typename Instance, typename... Args >
+    uvalue invoke(Method method_ptr, Instance&& instance, Args&&... args) {
+        using namespace detail;
+        const uinst vinst{std::forward<Instance>(instance)};
+        if constexpr ( sizeof...(Args) > 0 ) {
+            const std::array<uarg, sizeof...(Args)> vargs{uarg{std::forward<Args>(args)}...};
+            return raw_method_invoke<method_policy::as_copy_t>(method_ptr, vinst, vargs);
+        } else {
+            return raw_method_invoke<method_policy::as_copy_t>(method_ptr, vinst, {});
+        }
+    }
+}
+
+namespace meta_hpp
+{
+    template < typename... Args >
+    bool is_invocable_with(const function& function) {
+        return function.is_invocable_with<Args...>();
+    }
+
+    template < typename... Args >
+    bool is_invocable_with(const function& function, Args&&... args) {
+        return function.is_invocable_with(std::forward<Args>(args)...);
+    }
+
+    template < detail::function_pointer_kind Function, typename... Args >
+    bool is_invocable_with() {
+        if constexpr ( sizeof...(Args) > 0 ) {
+            using namespace detail;
+            const std::array<uarg_base, sizeof...(Args)> vargs{uarg_base{type_list<Args>{}}...};
+            return raw_function_is_invocable_with<Function>(vargs);
+        } else {
+            return raw_function_is_invocable_with<Function>({});
+        }
+    }
+
+    template < detail::function_pointer_kind Function, typename... Args >
+    bool is_invocable_with(Args&&... args) {
+        if constexpr ( sizeof...(Args) > 0 ) {
+            using namespace detail;
+            const std::array<uarg_base, sizeof...(Args)> vargs{uarg_base{std::forward<Args>(args)}...};
+            return raw_function_is_invocable_with<Function>(vargs);
+        } else {
+            return raw_function_is_invocable_with<Function>({});
+        }
+    }
+}
+
+namespace meta_hpp
+{
+    template < typename Instance >
+    bool is_invocable_with(const member& member) {
+        return member.is_gettable_with<Instance>();
+    }
+
+    template < typename Instance >
+    bool is_invocable_with(const member& member, Instance&& instance) {
+        return member.is_gettable_with(std::forward<Instance>(instance));
+    }
+
+    template < detail::member_pointer_kind Member, typename Instance >
+    bool is_invocable_with() {
+        using namespace detail;
+        const uinst_base vinst{type_list<Instance>{}};
+        return raw_member_is_gettable_with<Member>(vinst);
+    }
+
+    template < detail::member_pointer_kind Member, typename Instance >
+    bool is_invocable_with(Instance&& instance) {
+        using namespace detail;
+        const uinst_base vinst{std::forward<Instance>(instance)};
+        return raw_member_is_gettable_with<Member>(vinst);
+    }
+}
+
+namespace meta_hpp
+{
+    template < typename Instance, typename... Args >
+    bool is_invocable_with(const method& method) {
+        return method.is_invocable_with<Instance, Args...>();
+    }
+
+    template < typename Instance, typename... Args >
+    bool is_invocable_with(const method& method, Instance&& instance, Args&&... args) {
+        return method.is_invocable_with(std::forward<Instance>(instance), std::forward<Args>(args)...);
+    }
+
+    template < detail::method_pointer_kind Method, typename Instance, typename... Args >
+    bool is_invocable_with() {
+        using namespace detail;
+        const uinst_base vinst{type_list<Instance>{}};
+        if constexpr ( sizeof...(Args) > 0 ) {
+            const std::array<uarg_base, sizeof...(Args)> vargs{uarg_base{type_list<Args>{}}...};
+            return raw_method_is_invocable_with<Method>(vinst, vargs);
+        } else {
+            return raw_method_is_invocable_with<Method>(vinst, {});
+        }
+    }
+
+    template < detail::method_pointer_kind Method, typename Instance, typename... Args >
+    bool is_invocable_with(Instance&& instance, Args&&... args) {
+        using namespace detail;
+        const uinst_base vinst{std::forward<Instance>(instance)};
+        if constexpr ( sizeof...(Args) > 0 ) {
+            const std::array<uarg_base, sizeof...(Args)> vargs{uarg_base{std::forward<Args>(args)}...};
+            return raw_method_is_invocable_with<Method>(vinst, vargs);
+        } else {
+            return raw_method_is_invocable_with<Method>(vinst, {});
+        }
+    }
+}
+
+namespace meta_hpp::detail
+{
+    inline argument_state::argument_state(argument_index nindex, metadata_map nmetadata)
+    : index{nindex}
+    , metadata{std::move(nmetadata)} {}
+
+    template < typename Argument >
+    inline argument_state_ptr argument_state::make(std::size_t position, metadata_map metadata) {
+        argument_state state{argument_index{resolve_type<Argument>(), position}, std::move(metadata)};
+        return make_intrusive<argument_state>(std::move(state));
+    }
+}
+
+namespace meta_hpp
+{
+    inline any_type argument::get_type() const noexcept {
+        return state_->index.get_type();
+    }
+
+    inline std::size_t argument::get_position() const noexcept {
+        return state_->index.get_position();
+    }
+
+    inline const std::string& argument::get_name() const noexcept {
+        return state_->name;
+    }
+}
+
+namespace meta_hpp::detail
+{
+    template < class_kind Class, typename... Args >
+    struct constructor_tag {};
+
+    template < class_kind Class, typename... Args >
+    constructor_type_data::constructor_type_data(type_list<Class>, type_list<Args...>)
+    : type_data_base{type_id{type_list<constructor_tag<Class, Args...>>{}}, type_kind::constructor_}
+    , flags{constructor_traits<Class, Args...>::make_flags()}
+    , owner_type{resolve_type<typename constructor_traits<Class, Args...>::class_type>()}
+    , argument_types{resolve_types(typename constructor_traits<Class, Args...>::argument_types{})} {}
+}
+
+namespace meta_hpp
+{
+    inline constructor_bitflags constructor_type::get_flags() const noexcept {
+        return data_->flags;
+    }
+
+    inline std::size_t constructor_type::get_arity() const noexcept {
+        return data_->argument_types.size();
+    }
+
+    inline class_type constructor_type::get_owner_type() const noexcept {
+        return data_->owner_type;
+    }
+
+    inline any_type constructor_type::get_argument_type(std::size_t position) const noexcept {
+        return position < data_->argument_types.size() ? data_->argument_types[position] : any_type{};
+    }
+
+    inline const any_type_list& constructor_type::get_argument_types() const noexcept {
+        return data_->argument_types;
+    }
+}
+
+namespace meta_hpp::detail
+{
+    template < constructor_policy_kind Policy, class_kind Class, typename... Args >
+    uvalue raw_constructor_create(std::span<const uarg> args) {
+        using ct = constructor_traits<Class, Args...>;
+        using class_type = typename ct::class_type;
+        using argument_types = typename ct::argument_types;
+
+        constexpr bool as_object                                       //
+            = std::is_copy_constructible_v<class_type>                 //
+           && std::is_same_v<Policy, constructor_policy::as_object_t>; //
+
+        constexpr bool as_raw_ptr                                           //
+            = std::is_same_v<Policy, constructor_policy::as_raw_pointer_t>; //
+
+        constexpr bool as_shared_ptr                                           //
+            = std::is_same_v<Policy, constructor_policy::as_shared_pointer_t>; //
+
+        static_assert(as_object || as_raw_ptr || as_shared_ptr);
+
+        META_HPP_THROW_IF( //
+            args.size() != ct::arity,
+            "an attempt to call a constructor with an incorrect arity"
+        );
+
+        return std::invoke(
+            [args]<std::size_t... Is>(std::index_sequence<Is...>)->uvalue {
+                META_HPP_THROW_IF( //
+                    !(... && args[Is].can_cast_to<type_list_at_t<Is, argument_types>>()),
+                    "an attempt to call a constructor with incorrect argument types"
+                );
+
+                if constexpr ( as_object ) {
+                    return make_uvalue<class_type>(args[Is].cast<type_list_at_t<Is, argument_types>>()...);
+                }
+
+                if constexpr ( as_raw_ptr ) {
+                    return uvalue{std::make_unique<class_type>(args[Is].cast<type_list_at_t<Is, argument_types>>()...).release()};
+                }
+
+                if constexpr ( as_shared_ptr ) {
+                    return uvalue{std::make_shared<class_type>(args[Is].cast<type_list_at_t<Is, argument_types>>()...)};
+                }
+            },
+            std::make_index_sequence<ct::arity>()
+        );
+    }
+
+    template < class_kind Class, typename... Args >
+    uvalue raw_constructor_create_at(void* mem, std::span<const uarg> args) {
+        using ct = constructor_traits<Class, Args...>;
+        using class_type = typename ct::class_type;
+        using argument_types = typename ct::argument_types;
+
+        META_HPP_THROW_IF( //
+            args.size() != ct::arity,
+            "an attempt to call a constructor with an incorrect arity"
+        );
+
+        return std::invoke(
+            [ mem, args ]<std::size_t... Is>(std::index_sequence<Is...>)->uvalue {
+                META_HPP_THROW_IF( //
+                    !(... && args[Is].can_cast_to<type_list_at_t<Is, argument_types>>()),
+                    "an attempt to call a constructor with incorrect argument types"
+                );
+
+                return uvalue{std::construct_at( //
+                    static_cast<class_type*>(mem),
+                    args[Is].cast<type_list_at_t<Is, argument_types>>()...
+                )};
+            },
+            std::make_index_sequence<ct::arity>()
+        );
+    }
+
+    template < class_kind Class, typename... Args >
+    bool raw_constructor_is_invocable_with(std::span<const uarg_base> args) {
+        using ct = constructor_traits<Class, Args...>;
+        using argument_types = typename ct::argument_types;
+
+        if ( args.size() != ct::arity ) {
+            return false;
+        }
+
+        return std::invoke(
+            [args]<std::size_t... Is>(std::index_sequence<Is...>) {
+                return (... && args[Is].can_cast_to<type_list_at_t<Is, argument_types>>());
+            },
+            std::make_index_sequence<ct::arity>()
+        );
+    }
+}
+
+namespace meta_hpp::detail
+{
+    template < constructor_policy_kind Policy, class_kind Class, typename... Args >
+    constructor_state::create_impl make_constructor_create() {
+        return &raw_constructor_create<Policy, Class, Args...>;
+    }
+
+    template < class_kind Class, typename... Args >
+    constructor_state::create_at_impl make_constructor_create_at() {
+        return &raw_constructor_create_at<Class, Args...>;
+    }
+
+    template < class_kind Class, typename... Args >
+    constructor_state::is_invocable_with_impl make_constructor_is_invocable_with() {
+        return &raw_constructor_is_invocable_with<Class, Args...>;
+    }
+
+    template < class_kind Class, typename... Args >
+    argument_list make_constructor_arguments() {
+        using ct = constructor_traits<Class, Args...>;
+        using ct_argument_types = typename ct::argument_types;
+
+        return std::invoke(
+            []<std::size_t... Is>(std::index_sequence<Is...>) {
+                [[maybe_unused]] const auto make_argument = []<std::size_t I>(std::index_sequence<I>) {
+                    using P = type_list_at_t<I, ct_argument_types>;
+                    return argument{argument_state::make<P>(I, metadata_map{})};
+                };
+                return argument_list{make_argument(std::index_sequence<Is>{})...};
+            },
+            std::make_index_sequence<ct::arity>()
+        );
+    }
+}
+
+namespace meta_hpp::detail
+{
+    inline constructor_state::constructor_state(constructor_index nindex, metadata_map nmetadata)
+    : index{nindex}
+    , metadata{std::move(nmetadata)} {}
+
+    template < constructor_policy_kind Policy, class_kind Class, typename... Args >
+    constructor_state_ptr constructor_state::make(metadata_map metadata) {
+        constructor_state state{constructor_index{resolve_constructor_type<Class, Args...>()}, std::move(metadata)};
+        state.create = make_constructor_create<Policy, Class, Args...>();
+        state.create_at = make_constructor_create_at<Class, Args...>();
+        state.is_invocable_with = make_constructor_is_invocable_with<Class, Args...>();
+        state.arguments = make_constructor_arguments<Class, Args...>();
+        return make_intrusive<constructor_state>(std::move(state));
+    }
+}
+
+namespace meta_hpp
+{
+    inline constructor_type constructor::get_type() const noexcept {
+        return state_->index.get_type();
+    }
+
+    template < typename... Args >
+    uvalue constructor::create(Args&&... args) const {
+        if constexpr ( sizeof...(Args) > 0 ) {
+            using namespace detail;
+            const std::array<uarg, sizeof...(Args)> vargs{uarg{std::forward<Args>(args)}...};
+            return state_->create(vargs);
+        } else {
+            return state_->create({});
+        }
+    }
+
+    template < typename... Args >
+    uvalue constructor::create_at(void* mem, Args&&... args) const {
+        if constexpr ( sizeof...(Args) > 0 ) {
+            using namespace detail;
+            const std::array<uarg, sizeof...(Args)> vargs{uarg{std::forward<Args>(args)}...};
+            return state_->create_at(mem, vargs);
+        } else {
+            return state_->create_at(mem, {});
+        }
+    }
+
+    template < typename... Args >
+    bool constructor::is_invocable_with() const noexcept {
+        if constexpr ( sizeof...(Args) > 0 ) {
+            using namespace detail;
+            const std::array<uarg_base, sizeof...(Args)> vargs{uarg_base{type_list<Args>{}}...};
+            return state_->is_invocable_with(vargs);
+        } else {
+            return state_->is_invocable_with({});
+        }
+    }
+
+    template < typename... Args >
+    bool constructor::is_invocable_with(Args&&... args) const noexcept {
+        if constexpr ( sizeof...(Args) > 0 ) {
+            using namespace detail;
+            const std::array<uarg_base, sizeof...(Args)> vargs{uarg_base{std::forward<Args>(args)}...};
+            return state_->is_invocable_with(vargs);
+        } else {
+            return state_->is_invocable_with({});
+        }
+    }
+
+    inline argument constructor::get_argument(std::size_t position) const noexcept {
+        return position < state_->arguments.size() ? state_->arguments[position] : argument{};
+    }
+
+    inline const argument_list& constructor::get_arguments() const noexcept {
+        return state_->arguments;
+    }
+}
+
+namespace meta_hpp::detail
+{
+    template < class_kind Class >
+    struct destructor_tag {};
+
+    template < class_kind Class >
+    destructor_type_data::destructor_type_data(type_list<Class>)
+    : type_data_base{type_id{type_list<destructor_tag<Class>>{}}, type_kind::destructor_}
+    , flags{destructor_traits<Class>::make_flags()}
+    , owner_type{resolve_type<typename destructor_traits<Class>::class_type>()} {}
+}
+
+namespace meta_hpp
+{
+    inline destructor_bitflags destructor_type::get_flags() const noexcept {
+        return data_->flags;
+    }
+
+    inline class_type destructor_type::get_owner_type() const noexcept {
+        return data_->owner_type;
+    }
+}
+
+namespace meta_hpp::detail
+{
+    template < class_kind Class >
+    bool raw_destructor_destroy(const uarg& arg) {
+        using dt = destructor_traits<Class>;
+        using class_type = typename dt::class_type;
+
+        if ( !arg.can_cast_to<class_type*>() ) {
+            return false;
+        }
+
+        std::unique_ptr<class_type>{arg.cast<class_type*>()}.reset();
+        return true;
+    }
+
+    template < class_kind Class >
+    void raw_destructor_destroy_at(void* mem) {
+        using dt = destructor_traits<Class>;
+        using class_type = typename dt::class_type;
+
+        std::destroy_at(static_cast<class_type*>(mem));
+    }
+}
+
+namespace meta_hpp::detail
+{
+    template < class_kind Class >
+    destructor_state::destroy_impl make_destructor_destroy() {
+        return &raw_destructor_destroy<Class>;
+    }
+
+    template < class_kind Class >
+    destructor_state::destroy_at_impl make_destructor_destroy_at() {
+        return &raw_destructor_destroy_at<Class>;
+    }
+}
+
+namespace meta_hpp::detail
+{
+    inline destructor_state::destructor_state(destructor_index nindex, metadata_map nmetadata)
+    : index{nindex}
+    , metadata{std::move(nmetadata)} {}
+
+    template < class_kind Class >
+    destructor_state_ptr destructor_state::make(metadata_map metadata) {
+        destructor_state state{destructor_index{resolve_destructor_type<Class>()}, std::move(metadata)};
+        state.destroy = make_destructor_destroy<Class>();
+        state.destroy_at = make_destructor_destroy_at<Class>();
+        return make_intrusive<destructor_state>(std::move(state));
+    }
+}
+
+namespace meta_hpp
+{
+    inline destructor_type destructor::get_type() const noexcept {
+        return state_->index.get_type();
+    }
+
+    template < typename Arg >
+    bool destructor::destroy(Arg&& arg) const {
+        using namespace detail;
+        const uarg varg{std::forward<Arg>(arg)};
+        return state_->destroy(varg);
+    }
+
+    inline void destructor::destroy_at(void* mem) const {
+        state_->destroy_at(mem);
+    }
+}
+
+namespace meta_hpp::detail
+{
+    template < enum_kind Enum >
+    struct enum_tag {};
+
+    template < enum_kind Enum >
+    enum_type_data::enum_type_data(type_list<Enum>)
+    : type_data_base{type_id{type_list<enum_tag<Enum>>{}}, type_kind::enum_}
+    , flags{enum_traits<Enum>::make_flags()}
+    , underlying_type{resolve_type<typename enum_traits<Enum>::underlying_type>()} {}
+}
+
+namespace meta_hpp
+{
+    inline enum_bitflags enum_type::get_flags() const noexcept {
+        return data_->flags;
+    }
+
+    inline number_type enum_type::get_underlying_type() const noexcept {
+        return data_->underlying_type;
+    }
+
+    inline const evalue_set& enum_type::get_evalues() const noexcept {
+        return data_->evalues;
+    }
+
+    inline evalue enum_type::get_evalue(std::string_view name) const noexcept {
+        for ( const evalue& evalue : data_->evalues ) {
+            if ( evalue.get_name() == name ) {
+                return evalue;
+            }
+        }
+        return evalue{};
+    }
+
+    template < detail::enum_kind Enum >
+    std::string_view enum_type::value_to_name(Enum value) const noexcept {
+        if ( resolve_type<Enum>() != *this ) {
+            return std::string_view{};
+        }
+
+        for ( const evalue& evalue : data_->evalues ) {
+            if ( evalue.get_value_as<Enum>() == value ) {
+                return evalue.get_name();
+            }
+        }
+
+        return std::string_view{};
+    }
+
+    inline uvalue enum_type::name_to_value(std::string_view name) const noexcept {
+        if ( const evalue& value = get_evalue(name); value ) {
+            return value.get_value();
+        }
+
+        return uvalue{};
+    }
+
+    template < typename T >
+    T enum_type::name_to_value_as(std::string_view name) const {
+        return name_to_value(name).get_as<T>();
+    }
+}
+
+namespace meta_hpp::detail
+{
+    inline evalue_state::evalue_state(evalue_index nindex, metadata_map nmetadata)
+    : index{std::move(nindex)}
+    , metadata{std::move(nmetadata)} {}
+
+    template < enum_kind Enum >
+    evalue_state_ptr evalue_state::make(std::string name, Enum evalue, metadata_map metadata) {
+        evalue_state state{evalue_index{resolve_type<Enum>(), std::move(name)}, std::move(metadata)};
+        state.enum_value = uvalue{evalue};
+        state.underlying_value = uvalue{to_underlying(evalue)};
+        return make_intrusive<evalue_state>(std::move(state));
+    }
+}
+
+namespace meta_hpp
+{
+    inline enum_type evalue::get_type() const noexcept {
+        return state_->index.get_type();
+    }
+
+    inline const std::string& evalue::get_name() const noexcept {
+        return state_->index.get_name();
+    }
+
+    inline const uvalue& evalue::get_value() const noexcept {
+        return state_->enum_value;
+    }
+
+    inline const uvalue& evalue::get_underlying_value() const noexcept {
+        return state_->underlying_value;
+    }
+
+    template < typename T >
+    T evalue::get_value_as() const {
+        return get_value().get_as<T>();
+    }
+
+    template < typename T >
+    T evalue::get_underlying_value_as() const {
+        return get_underlying_value().get_as<T>();
+    }
+}
+
 namespace meta_hpp::detail
 {
     template < pointer_kind Pointer >
@@ -7661,165 +7886,6 @@ namespace meta_hpp::detail
     template < void_kind Void >
     void_type_data::void_type_data(type_list<Void>)
     : type_data_base{type_id{type_list<void_tag<Void>>{}}, type_kind::void_} {}
-}
-
-namespace meta_hpp
-{
-    template < typename... Args >
-    uvalue invoke(const function& function, Args&&... args) {
-        return function.invoke(std::forward<Args>(args)...);
-    }
-
-    template < detail::function_pointer_kind Function, typename... Args >
-    uvalue invoke(Function function_ptr, Args&&... args) {
-        using namespace detail;
-        if constexpr ( sizeof...(Args) > 0 ) {
-            const std::array<uarg, sizeof...(Args)> vargs{uarg{std::forward<Args>(args)}...};
-            return raw_function_invoke<function_policy::as_copy_t>(function_ptr, vargs);
-        } else {
-            return raw_function_invoke<function_policy::as_copy_t>(function_ptr, {});
-        }
-    }
-}
-
-namespace meta_hpp
-{
-    template < typename Instance >
-    uvalue invoke(const member& member, Instance&& instance) {
-        return member.get(std::forward<Instance>(instance));
-    }
-
-    template < detail::member_pointer_kind Member, typename Instance >
-    uvalue invoke(Member member_ptr, Instance&& instance) {
-        using namespace detail;
-        const uinst vinst{std::forward<Instance>(instance)};
-        return raw_member_getter<member_policy::as_copy_t>(member_ptr, vinst);
-    }
-}
-
-namespace meta_hpp
-{
-    template < typename Instance, typename... Args >
-    uvalue invoke(const method& method, Instance&& instance, Args&&... args) {
-        return method.invoke(std::forward<Instance>(instance), std::forward<Args>(args)...);
-    }
-
-    template < detail::method_pointer_kind Method, typename Instance, typename... Args >
-    uvalue invoke(Method method_ptr, Instance&& instance, Args&&... args) {
-        using namespace detail;
-        const uinst vinst{std::forward<Instance>(instance)};
-        if constexpr ( sizeof...(Args) > 0 ) {
-            const std::array<uarg, sizeof...(Args)> vargs{uarg{std::forward<Args>(args)}...};
-            return raw_method_invoke<method_policy::as_copy_t>(method_ptr, vinst, vargs);
-        } else {
-            return raw_method_invoke<method_policy::as_copy_t>(method_ptr, vinst, {});
-        }
-    }
-}
-
-namespace meta_hpp
-{
-    template < typename... Args >
-    bool is_invocable_with(const function& function) {
-        return function.is_invocable_with<Args...>();
-    }
-
-    template < typename... Args >
-    bool is_invocable_with(const function& function, Args&&... args) {
-        return function.is_invocable_with(std::forward<Args>(args)...);
-    }
-
-    template < detail::function_pointer_kind Function, typename... Args >
-    bool is_invocable_with() {
-        if constexpr ( sizeof...(Args) > 0 ) {
-            using namespace detail;
-            const std::array<uarg_base, sizeof...(Args)> vargs{uarg_base{type_list<Args>{}}...};
-            return raw_function_is_invocable_with<Function>(vargs);
-        } else {
-            return raw_function_is_invocable_with<Function>({});
-        }
-    }
-
-    template < detail::function_pointer_kind Function, typename... Args >
-    bool is_invocable_with(Args&&... args) {
-        if constexpr ( sizeof...(Args) > 0 ) {
-            using namespace detail;
-            const std::array<uarg_base, sizeof...(Args)> vargs{uarg_base{std::forward<Args>(args)}...};
-            return raw_function_is_invocable_with<Function>(vargs);
-        } else {
-            return raw_function_is_invocable_with<Function>({});
-        }
-    }
-}
-
-namespace meta_hpp
-{
-    template < typename Instance >
-    bool is_invocable_with(const member& member) {
-        return member.is_gettable_with<Instance>();
-    }
-
-    template < typename Instance >
-    bool is_invocable_with(const member& member, Instance&& instance) {
-        return member.is_gettable_with(std::forward<Instance>(instance));
-    }
-}
-
-namespace meta_hpp
-{
-    template < typename Instance, typename... Args >
-    bool is_invocable_with(const method& method) {
-        return method.is_invocable_with<Instance, Args...>();
-    }
-
-    template < typename Instance, typename... Args >
-    bool is_invocable_with(const method& method, Instance&& instance, Args&&... args) {
-        return method.is_invocable_with(std::forward<Instance>(instance), std::forward<Args>(args)...);
-    }
-}
-
-namespace meta_hpp
-{
-    template < detail::member_pointer_kind Member, typename Instance >
-    bool is_invocable_with() {
-        using namespace detail;
-        const uinst_base vinst{type_list<Instance>{}};
-        return raw_member_is_gettable_with<Member>(vinst);
-    }
-
-    template < detail::member_pointer_kind Member, typename Instance >
-    bool is_invocable_with(Instance&& instance) {
-        using namespace detail;
-        const uinst_base vinst{std::forward<Instance>(instance)};
-        return raw_member_is_gettable_with<Member>(vinst);
-    }
-}
-
-namespace meta_hpp
-{
-    template < detail::method_pointer_kind Method, typename Instance, typename... Args >
-    bool is_invocable_with() {
-        using namespace detail;
-        const uinst_base vinst{type_list<Instance>{}};
-        if constexpr ( sizeof...(Args) > 0 ) {
-            const std::array<uarg_base, sizeof...(Args)> vargs{uarg_base{type_list<Args>{}}...};
-            return raw_method_is_invocable_with<Method>(vinst, vargs);
-        } else {
-            return raw_method_is_invocable_with<Method>(vinst, {});
-        }
-    }
-
-    template < detail::method_pointer_kind Method, typename Instance, typename... Args >
-    bool is_invocable_with(Instance&& instance, Args&&... args) {
-        using namespace detail;
-        const uinst_base vinst{std::forward<Instance>(instance)};
-        if constexpr ( sizeof...(Args) > 0 ) {
-            const std::array<uarg_base, sizeof...(Args)> vargs{uarg_base{std::forward<Args>(args)}...};
-            return raw_method_is_invocable_with<Method>(vinst, vargs);
-        } else {
-            return raw_method_is_invocable_with<Method>(vinst, {});
-        }
-    }
 }
 
 namespace meta_hpp::detail

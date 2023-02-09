@@ -33,6 +33,9 @@
 #include "meta_indices/scope_index.hpp"
 #include "meta_indices/variable_index.hpp"
 
+#include "meta_invoke.hpp"
+#include "meta_invoke/invoke.hpp"
+
 #include "meta_registry.hpp"
 
 #include "meta_states.hpp"
@@ -63,5 +66,4 @@
 #include "meta_types/void_type.hpp"
 
 #include "meta_uvalue.hpp"
-#include "meta_uvalue/invoke.hpp"
 #include "meta_uvalue/uvalue.hpp"

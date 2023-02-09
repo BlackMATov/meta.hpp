@@ -7,8 +7,12 @@
 #pragma once
 
 #include "../meta_base.hpp"
+#include "../meta_invoke.hpp"
 #include "../meta_states.hpp"
-#include "../meta_uvalue.hpp"
+
+#include "../meta_states/function.hpp"
+#include "../meta_states/member.hpp"
+#include "../meta_states/method.hpp"
 
 #include "../meta_detail/value_utilities/uarg.hpp"
 #include "../meta_detail/value_utilities/uinst.hpp"
@@ -113,23 +117,7 @@ namespace meta_hpp
     bool is_invocable_with(const member& member, Instance&& instance) {
         return member.is_gettable_with(std::forward<Instance>(instance));
     }
-}
 
-namespace meta_hpp
-{
-    template < typename Instance, typename... Args >
-    bool is_invocable_with(const method& method) {
-        return method.is_invocable_with<Instance, Args...>();
-    }
-
-    template < typename Instance, typename... Args >
-    bool is_invocable_with(const method& method, Instance&& instance, Args&&... args) {
-        return method.is_invocable_with(std::forward<Instance>(instance), std::forward<Args>(args)...);
-    }
-}
-
-namespace meta_hpp
-{
     template < detail::member_pointer_kind Member, typename Instance >
     bool is_invocable_with() {
         using namespace detail;
@@ -147,6 +135,16 @@ namespace meta_hpp
 
 namespace meta_hpp
 {
+    template < typename Instance, typename... Args >
+    bool is_invocable_with(const method& method) {
+        return method.is_invocable_with<Instance, Args...>();
+    }
+
+    template < typename Instance, typename... Args >
+    bool is_invocable_with(const method& method, Instance&& instance, Args&&... args) {
+        return method.is_invocable_with(std::forward<Instance>(instance), std::forward<Args>(args)...);
+    }
+
     template < detail::method_pointer_kind Method, typename Instance, typename... Args >
     bool is_invocable_with() {
         using namespace detail;
