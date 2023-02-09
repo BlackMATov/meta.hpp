@@ -14,7 +14,6 @@
 #    define META_HPP_NO_RTTI
 #endif
 
-#include <cassert>
 #include <climits>
 #include <cstddef>
 #include <cstdint>
@@ -48,4 +47,9 @@
 #if !defined(META_HPP_NO_RTTI)
 #    include <typeindex>
 #    include <typeinfo>
+#endif
+
+#if !defined(META_HPP_ASSERT)
+#    include <cassert>
+#    define META_HPP_ASSERT(...) assert(__VA_ARGS__) // NOLINT
 #endif

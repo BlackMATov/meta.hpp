@@ -34,27 +34,8 @@ namespace meta_hpp::detail
 
 namespace meta_hpp
 {
-    inline class_type::class_type(data_ptr data)
-    : data_{data} {}
-
-    inline bool class_type::is_valid() const noexcept {
-        return data_ != nullptr;
-    }
-
-    inline class_type::operator bool() const noexcept {
-        return is_valid();
-    }
-
-    inline type_id class_type::get_id() const noexcept {
-        return data_->id;
-    }
-
     inline class_bitflags class_type::get_flags() const noexcept {
         return data_->flags;
-    }
-
-    inline const metadata_map& class_type::get_metadata() const noexcept {
-        return data_->metadata;
     }
 
     inline std::size_t class_type::get_size() const noexcept {

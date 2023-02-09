@@ -20,7 +20,7 @@ namespace meta_hpp::detail
 
 namespace meta_hpp::detail
 {
-    template < function_kind Function >
+    template < function_pointer_kind Function >
     struct function_traits;
 
     template < typename R, typename... Args >

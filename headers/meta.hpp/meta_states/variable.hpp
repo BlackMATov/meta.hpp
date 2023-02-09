@@ -15,7 +15,7 @@
 namespace meta_hpp::detail
 {
     template < variable_policy_kind Policy, pointer_kind Pointer >
-    uvalue raw_variable_getter(const Pointer& pointer) {
+    uvalue raw_variable_getter(Pointer variable_ptr) {
         using pt = pointer_traits<Pointer>;
         using data_type = typename pt::data_type;
 
@@ -31,7 +31,7 @@ namespace meta_hpp::detail
 
         static_assert(as_copy || as_ptr || as_ref_wrap);
 
-        auto&& return_value = *pointer;
+        auto&& return_value = *variable_ptr;
 
         if constexpr ( as_copy ) {
             return uvalue{std::forward<decltype(return_value)>(return_value)};
@@ -47,17 +47,18 @@ namespace meta_hpp::detail
     }
 
     template < pointer_kind Pointer >
-    void raw_variable_setter([[maybe_unused]] const Pointer& pointer, const uarg& arg) {
+    void raw_variable_setter([[maybe_unused]] Pointer variable_ptr, const uarg& arg) {
         using pt = pointer_traits<Pointer>;
         using data_type = typename pt::data_type;
 
         if constexpr ( std::is_const_v<data_type> ) {
-            META_HPP_THROW_AS(exception, "an attempt to set a constant variable");
+            META_HPP_THROW("an attempt to set a constant variable");
         } else {
-            if ( !arg.can_cast_to<data_type>() ) {
-                META_HPP_THROW_AS(exception, "an attempt to set a variable with an incorrect argument type");
-            }
-            *pointer = arg.cast<data_type>();
+            META_HPP_THROW_IF( //
+                !arg.can_cast_to<data_type>(),
+                "an attempt to set a variable with an incorrect argument type"
+            );
+            *variable_ptr = arg.cast<data_type>();
         }
     }
 
@@ -73,16 +74,16 @@ namespace meta_hpp::detail
 namespace meta_hpp::detail
 {
     template < variable_policy_kind Policy, pointer_kind Pointer >
-    variable_state::getter_impl make_variable_getter(Pointer pointer) {
-        return [pointer = std::move(pointer)]() { //
-            return raw_variable_getter<Policy>(pointer);
+    variable_state::getter_impl make_variable_getter(Pointer variable_ptr) {
+        return [variable_ptr]() { //
+            return raw_variable_getter<Policy>(variable_ptr);
         };
     }
 
     template < pointer_kind Pointer >
-    variable_state::setter_impl make_variable_setter(Pointer pointer) {
-        return [pointer = std::move(pointer)](const uarg& arg) { //
-            return raw_variable_setter(pointer, arg);
+    variable_state::setter_impl make_variable_setter(Pointer variable_ptr) {
+        return [variable_ptr](const uarg& arg) { //
+            return raw_variable_setter(variable_ptr, arg);
         };
     }
 
@@ -99,10 +100,10 @@ namespace meta_hpp::detail
     , metadata{std::move(nmetadata)} {}
 
     template < variable_policy_kind Policy, pointer_kind Pointer >
-    variable_state_ptr variable_state::make(std::string name, Pointer pointer, metadata_map metadata) {
+    variable_state_ptr variable_state::make(std::string name, Pointer variable_ptr, metadata_map metadata) {
         variable_state state{variable_index{resolve_type<Pointer>(), std::move(name)}, std::move(metadata)};
-        state.getter = make_variable_getter<Policy>(pointer);
-        state.setter = make_variable_setter(pointer);
+        state.getter = make_variable_getter<Policy>(variable_ptr);
+        state.setter = make_variable_setter(variable_ptr);
         state.is_settable_with = make_variable_is_settable_with<Pointer>();
         return make_intrusive<variable_state>(std::move(state));
     }
@@ -110,26 +111,7 @@ namespace meta_hpp::detail
 
 namespace meta_hpp
 {
-    inline variable::variable(state_ptr state) noexcept
-    : state_{std::move(state)} {}
-
-    inline bool variable::is_valid() const noexcept {
-        return !!state_;
-    }
-
-    inline variable::operator bool() const noexcept {
-        return is_valid();
-    }
-
-    inline const variable_index& variable::get_index() const noexcept {
-        return state_->index;
-    }
-
-    inline const metadata_map& variable::get_metadata() const noexcept {
-        return state_->metadata;
-    }
-
-    inline const pointer_type& variable::get_type() const noexcept {
+    inline pointer_type variable::get_type() const noexcept {
         return state_->index.get_type();
     }
 

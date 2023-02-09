@@ -11,80 +11,28 @@
 
 namespace meta_hpp
 {
-    inline any_type::any_type(data_ptr data)
-    : data_{data} {}
-
-    inline bool any_type::is_valid() const noexcept {
-        return data_ != nullptr;
-    }
-
-    inline any_type::operator bool() const noexcept {
-        return is_valid();
-    }
-
-    inline type_id any_type::get_id() const noexcept {
-        return data_->id;
-    }
-
-    inline type_kind any_type::get_kind() const noexcept {
-        return data_->kind;
-    }
-
-    inline const metadata_map& any_type::get_metadata() const noexcept {
-        return data_->metadata;
-    }
-
-    inline any_type::any_type(const array_type& other) noexcept
-    : data_{detail::type_access(other)} {}
-
-    inline any_type::any_type(const class_type& other) noexcept
-    : data_{detail::type_access(other)} {}
-
-    inline any_type::any_type(const constructor_type& other) noexcept
-    : data_{detail::type_access(other)} {}
-
-    inline any_type::any_type(const destructor_type& other) noexcept
-    : data_{detail::type_access(other)} {}
-
-    inline any_type::any_type(const enum_type& other) noexcept
-    : data_{detail::type_access(other)} {}
-
-    inline any_type::any_type(const function_type& other) noexcept
-    : data_{detail::type_access(other)} {}
-
-    inline any_type::any_type(const member_type& other) noexcept
-    : data_{detail::type_access(other)} {}
-
-    inline any_type::any_type(const method_type& other) noexcept
-    : data_{detail::type_access(other)} {}
-
-    inline any_type::any_type(const nullptr_type& other) noexcept
-    : data_{detail::type_access(other)} {}
-
-    inline any_type::any_type(const number_type& other) noexcept
-    : data_{detail::type_access(other)} {}
-
-    inline any_type::any_type(const pointer_type& other) noexcept
-    : data_{detail::type_access(other)} {}
-
-    inline any_type::any_type(const reference_type& other) noexcept
-    : data_{detail::type_access(other)} {}
-
-    inline any_type::any_type(const void_type& other) noexcept
-    : data_{detail::type_access(other)} {}
+    template < detail::type_family Type >
+    any_type::any_type(const Type& other) noexcept
+    : any_type{detail::type_access(other)} {}
 
     template < detail::type_family Type >
     bool any_type::is() const noexcept {
         if constexpr ( std::is_same_v<Type, any_type> ) {
             return data_ != nullptr;
         } else {
-            return data_ != nullptr && data_->kind == Type::kind;
+            constexpr type_kind is_kind{detail::type_traits<Type>::kind};
+            return data_ != nullptr && data_->kind == is_kind;
         }
     }
 
     template < detail::type_family Type >
     Type any_type::as() const noexcept {
-        return is<Type>() ? Type{static_cast<typename Type::data_ptr>(data_)} : Type{};
+        if constexpr ( std::is_same_v<Type, any_type> ) {
+            return *this;
+        } else {
+            using as_data_ptr = typename detail::type_traits<Type>::data_ptr;
+            return is<Type>() ? Type{static_cast<as_data_ptr>(data_)} : Type{};
+        }
     }
 
     inline bool any_type::is_array() const noexcept {

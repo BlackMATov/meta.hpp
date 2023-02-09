@@ -10,15 +10,22 @@
 
 #if !defined(META_HPP_NO_EXCEPTIONS)
 #    define META_HPP_TRY try
-#    define META_HPP_CATCH(e) catch ( e )
+#    define META_HPP_CATCH(...) catch ( __VA_ARGS__ )
 #    define META_HPP_RETHROW() throw
-#    define META_HPP_THROW_AS(e, m) throw e(m)
+#    define META_HPP_THROW(...) throw ::meta_hpp::detail::exception(__VA_ARGS__)
 #else
 #    define META_HPP_TRY if ( true )
-#    define META_HPP_CATCH(e) if ( false )
-#    define META_HPP_RETHROW() std::abort()
-#    define META_HPP_THROW_AS(e, m) std::terminate()
+#    define META_HPP_CATCH(...) if ( false )
+#    define META_HPP_RETHROW() std::terminate()
+#    define META_HPP_THROW(...) std::terminate()
 #endif
+
+#define META_HPP_THROW_IF(yesno, ...) \
+    do { \
+        if ( yesno ) { \
+            META_HPP_THROW(__VA_ARGS__); \
+        } \
+    } while ( false )
 
 namespace meta_hpp::detail
 {

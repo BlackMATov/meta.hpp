@@ -27,27 +27,8 @@ namespace meta_hpp::detail
 
 namespace meta_hpp
 {
-    inline constructor_type::constructor_type(data_ptr data)
-    : data_{data} {}
-
-    inline bool constructor_type::is_valid() const noexcept {
-        return data_ != nullptr;
-    }
-
-    inline constructor_type::operator bool() const noexcept {
-        return is_valid();
-    }
-
-    inline type_id constructor_type::get_id() const noexcept {
-        return data_->id;
-    }
-
     inline constructor_bitflags constructor_type::get_flags() const noexcept {
         return data_->flags;
-    }
-
-    inline const metadata_map& constructor_type::get_metadata() const noexcept {
-        return data_->metadata;
     }
 
     inline std::size_t constructor_type::get_arity() const noexcept {

@@ -6,13 +6,17 @@
 
 #pragma once
 
-#include "../meta_base.hpp"
-#include "../meta_binds.hpp"
-#include "../meta_registry.hpp"
+#include "base.hpp"
 
-namespace meta_hpp
+namespace meta_hpp::detail
 {
-    template < detail::function_pointer_kind Function >
-    function_bind<Function>::function_bind(metadata_map metadata)
-    : type_bind_base{resolve_type<Function>(), std::move(metadata)} {}
+    class nonesuch {
+    public:
+        nonesuch() = delete;
+        ~nonesuch() = delete;
+        nonesuch(nonesuch&&) = delete;
+        nonesuch(const nonesuch&) = delete;
+        nonesuch& operator=(nonesuch&&) = delete;
+        nonesuch& operator=(const nonesuch&) = delete;
+    };
 }

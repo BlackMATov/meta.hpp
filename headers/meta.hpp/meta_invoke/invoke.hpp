@@ -7,8 +7,12 @@
 #pragma once
 
 #include "../meta_base.hpp"
+#include "../meta_invoke.hpp"
 #include "../meta_states.hpp"
-#include "../meta_uvalue.hpp"
+
+#include "../meta_states/function.hpp"
+#include "../meta_states/member.hpp"
+#include "../meta_states/method.hpp"
 
 #include "../meta_detail/value_utilities/uarg.hpp"
 #include "../meta_detail/value_utilities/uinst.hpp"
@@ -20,14 +24,14 @@ namespace meta_hpp
         return function.invoke(std::forward<Args>(args)...);
     }
 
-    template < detail::function_kind Function, typename... Args >
-    uvalue invoke(Function&& function, Args&&... args) {
+    template < detail::function_pointer_kind Function, typename... Args >
+    uvalue invoke(Function function_ptr, Args&&... args) {
         using namespace detail;
         if constexpr ( sizeof...(Args) > 0 ) {
             const std::array<uarg, sizeof...(Args)> vargs{uarg{std::forward<Args>(args)}...};
-            return raw_function_invoke<function_policy::as_copy_t>(std::forward<Function>(function), vargs);
+            return raw_function_invoke<function_policy::as_copy_t>(function_ptr, vargs);
         } else {
-            return raw_function_invoke<function_policy::as_copy_t>(std::forward<Function>(function), {});
+            return raw_function_invoke<function_policy::as_copy_t>(function_ptr, {});
         }
     }
 }
@@ -39,11 +43,11 @@ namespace meta_hpp
         return member.get(std::forward<Instance>(instance));
     }
 
-    template < detail::member_kind Member, typename Instance >
-    uvalue invoke(Member&& member, Instance&& instance) {
+    template < detail::member_pointer_kind Member, typename Instance >
+    uvalue invoke(Member member_ptr, Instance&& instance) {
         using namespace detail;
         const uinst vinst{std::forward<Instance>(instance)};
-        return raw_member_getter<member_policy::as_copy_t>(std::forward<Member>(member), vinst);
+        return raw_member_getter<member_policy::as_copy_t>(member_ptr, vinst);
     }
 }
 
@@ -54,15 +58,15 @@ namespace meta_hpp
         return method.invoke(std::forward<Instance>(instance), std::forward<Args>(args)...);
     }
 
-    template < detail::method_kind Method, typename Instance, typename... Args >
-    uvalue invoke(Method&& method, Instance&& instance, Args&&... args) {
+    template < detail::method_pointer_kind Method, typename Instance, typename... Args >
+    uvalue invoke(Method method_ptr, Instance&& instance, Args&&... args) {
         using namespace detail;
         const uinst vinst{std::forward<Instance>(instance)};
         if constexpr ( sizeof...(Args) > 0 ) {
             const std::array<uarg, sizeof...(Args)> vargs{uarg{std::forward<Args>(args)}...};
-            return raw_method_invoke<method_policy::as_copy_t>(std::forward<Method>(method), vinst, vargs);
+            return raw_method_invoke<method_policy::as_copy_t>(method_ptr, vinst, vargs);
         } else {
-            return raw_method_invoke<method_policy::as_copy_t>(std::forward<Method>(method), vinst, {});
+            return raw_method_invoke<method_policy::as_copy_t>(method_ptr, vinst, {});
         }
     }
 }
@@ -79,7 +83,7 @@ namespace meta_hpp
         return function.is_invocable_with(std::forward<Args>(args)...);
     }
 
-    template < detail::function_kind Function, typename... Args >
+    template < detail::function_pointer_kind Function, typename... Args >
     bool is_invocable_with() {
         if constexpr ( sizeof...(Args) > 0 ) {
             using namespace detail;
@@ -90,7 +94,7 @@ namespace meta_hpp
         }
     }
 
-    template < detail::function_kind Function, typename... Args >
+    template < detail::function_pointer_kind Function, typename... Args >
     bool is_invocable_with(Args&&... args) {
         if constexpr ( sizeof...(Args) > 0 ) {
             using namespace detail;
@@ -113,6 +117,20 @@ namespace meta_hpp
     bool is_invocable_with(const member& member, Instance&& instance) {
         return member.is_gettable_with(std::forward<Instance>(instance));
     }
+
+    template < detail::member_pointer_kind Member, typename Instance >
+    bool is_invocable_with() {
+        using namespace detail;
+        const uinst_base vinst{type_list<Instance>{}};
+        return raw_member_is_gettable_with<Member>(vinst);
+    }
+
+    template < detail::member_pointer_kind Member, typename Instance >
+    bool is_invocable_with(Instance&& instance) {
+        using namespace detail;
+        const uinst_base vinst{std::forward<Instance>(instance)};
+        return raw_member_is_gettable_with<Member>(vinst);
+    }
 }
 
 namespace meta_hpp
@@ -126,28 +144,8 @@ namespace meta_hpp
     bool is_invocable_with(const method& method, Instance&& instance, Args&&... args) {
         return method.is_invocable_with(std::forward<Instance>(instance), std::forward<Args>(args)...);
     }
-}
 
-namespace meta_hpp
-{
-    template < detail::member_kind Member, typename Instance >
-    bool is_invocable_with() {
-        using namespace detail;
-        const uinst_base vinst{type_list<Instance>{}};
-        return raw_member_is_gettable_with<Member>(vinst);
-    }
-
-    template < detail::member_kind Member, typename Instance >
-    bool is_invocable_with(Instance&& instance) {
-        using namespace detail;
-        const uinst_base vinst{std::forward<Instance>(instance)};
-        return raw_member_is_gettable_with<Member>(vinst);
-    }
-}
-
-namespace meta_hpp
-{
-    template < detail::method_kind Method, typename Instance, typename... Args >
+    template < detail::method_pointer_kind Method, typename Instance, typename... Args >
     bool is_invocable_with() {
         using namespace detail;
         const uinst_base vinst{type_list<Instance>{}};
@@ -159,7 +157,7 @@ namespace meta_hpp
         }
     }
 
-    template < detail::method_kind Method, typename Instance, typename... Args >
+    template < detail::method_pointer_kind Method, typename Instance, typename... Args >
     bool is_invocable_with(Instance&& instance, Args&&... args) {
         using namespace detail;
         const uinst_base vinst{std::forward<Instance>(instance)};

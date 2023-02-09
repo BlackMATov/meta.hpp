@@ -26,27 +26,8 @@ namespace meta_hpp::detail
 
 namespace meta_hpp
 {
-    inline reference_type::reference_type(data_ptr data)
-    : data_{data} {}
-
-    inline bool reference_type::is_valid() const noexcept {
-        return data_ != nullptr;
-    }
-
-    inline reference_type::operator bool() const noexcept {
-        return is_valid();
-    }
-
-    inline type_id reference_type::get_id() const noexcept {
-        return data_->id;
-    }
-
     inline reference_bitflags reference_type::get_flags() const noexcept {
         return data_->flags;
-    }
-
-    inline const metadata_map& reference_type::get_metadata() const noexcept {
-        return data_->metadata;
     }
 
     inline any_type reference_type::get_data_type() const noexcept {

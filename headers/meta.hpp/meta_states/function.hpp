@@ -14,8 +14,8 @@
 
 namespace meta_hpp::detail
 {
-    template < function_policy_kind Policy, function_kind Function >
-    uvalue raw_function_invoke(const Function& function, std::span<const uarg> args) {
+    template < function_policy_kind Policy, function_pointer_kind Function >
+    uvalue raw_function_invoke(Function function_ptr, std::span<const uarg> args) {
         using ft = function_traits<Function>;
         using return_type = typename ft::return_type;
         using argument_types = typename ft::argument_types;
@@ -34,24 +34,26 @@ namespace meta_hpp::detail
 
         static_assert(as_copy || as_void || ref_as_ptr);
 
-        if ( args.size() != ft::arity ) {
-            META_HPP_THROW_AS(exception, "an attempt to call a function with an incorrect arity");
-        }
+        META_HPP_THROW_IF( //
+            args.size() != ft::arity,
+            "an attempt to call a function with an incorrect arity"
+        );
 
         return std::invoke(
-            [&function, args ]<std::size_t... Is>(std::index_sequence<Is...>)->uvalue {
-                if ( !(... && args[Is].can_cast_to<type_list_at_t<Is, argument_types>>()) ) {
-                    META_HPP_THROW_AS(exception, "an attempt to call a function with incorrect argument types");
-                }
+            [ function_ptr, args ]<std::size_t... Is>(std::index_sequence<Is...>)->uvalue {
+                META_HPP_THROW_IF( //
+                    !(... && args[Is].can_cast_to<type_list_at_t<Is, argument_types>>()),
+                    "an attempt to call a function with incorrect argument types"
+                );
 
                 if constexpr ( std::is_void_v<return_type> ) {
-                    function(args[Is].cast<type_list_at_t<Is, argument_types>>()...);
+                    function_ptr(args[Is].cast<type_list_at_t<Is, argument_types>>()...);
                     return uvalue{};
                 } else if constexpr ( std::is_same_v<Policy, function_policy::discard_return_t> ) {
-                    std::ignore = function(args[Is].cast<type_list_at_t<Is, argument_types>>()...);
+                    std::ignore = function_ptr(args[Is].cast<type_list_at_t<Is, argument_types>>()...);
                     return uvalue{};
                 } else {
-                    return_type&& return_value = function(args[Is].cast<type_list_at_t<Is, argument_types>>()...);
+                    return_type&& return_value = function_ptr(args[Is].cast<type_list_at_t<Is, argument_types>>()...);
 
                     if constexpr ( ref_as_ptr ) {
                         return uvalue{std::addressof(return_value)};
@@ -64,7 +66,7 @@ namespace meta_hpp::detail
         );
     }
 
-    template < function_kind Function >
+    template < function_pointer_kind Function >
     bool raw_function_is_invocable_with(std::span<const uarg_base> args) {
         using ft = function_traits<Function>;
         using argument_types = typename ft::argument_types;
@@ -84,19 +86,19 @@ namespace meta_hpp::detail
 
 namespace meta_hpp::detail
 {
-    template < function_policy_kind Policy, function_kind Function >
-    function_state::invoke_impl make_function_invoke(Function function) {
-        return [function = std::move(function)](std::span<const uarg> args) { //
-            return raw_function_invoke<Policy>(function, args);
+    template < function_policy_kind Policy, function_pointer_kind Function >
+    function_state::invoke_impl make_function_invoke(Function function_ptr) {
+        return [function_ptr](std::span<const uarg> args) { //
+            return raw_function_invoke<Policy>(function_ptr, args);
         };
     }
 
-    template < function_kind Function >
+    template < function_pointer_kind Function >
     function_state::is_invocable_with_impl make_function_is_invocable_with() {
         return &raw_function_is_invocable_with<Function>;
     }
 
-    template < function_kind Function >
+    template < function_pointer_kind Function >
     argument_list make_function_arguments() {
         using ft = function_traits<Function>;
         using ft_argument_types = typename ft::argument_types;
@@ -120,10 +122,10 @@ namespace meta_hpp::detail
     : index{std::move(nindex)}
     , metadata{std::move(nmetadata)} {}
 
-    template < function_policy_kind Policy, function_kind Function >
-    function_state_ptr function_state::make(std::string name, Function function, metadata_map metadata) {
+    template < function_policy_kind Policy, function_pointer_kind Function >
+    function_state_ptr function_state::make(std::string name, Function function_ptr, metadata_map metadata) {
         function_state state{function_index{resolve_type<Function>(), std::move(name)}, std::move(metadata)};
-        state.invoke = make_function_invoke<Policy>(std::move(function));
+        state.invoke = make_function_invoke<Policy>(function_ptr);
         state.is_invocable_with = make_function_is_invocable_with<Function>();
         state.arguments = make_function_arguments<Function>();
         return make_intrusive<function_state>(std::move(state));
@@ -132,26 +134,7 @@ namespace meta_hpp::detail
 
 namespace meta_hpp
 {
-    inline function::function(state_ptr state) noexcept
-    : state_{std::move(state)} {}
-
-    inline bool function::is_valid() const noexcept {
-        return !!state_;
-    }
-
-    inline function::operator bool() const noexcept {
-        return is_valid();
-    }
-
-    inline const function_index& function::get_index() const noexcept {
-        return state_->index;
-    }
-
-    inline const metadata_map& function::get_metadata() const noexcept {
-        return state_->metadata;
-    }
-
-    inline const function_type& function::get_type() const noexcept {
+    inline function_type function::get_type() const noexcept {
         return state_->index.get_type();
     }
 

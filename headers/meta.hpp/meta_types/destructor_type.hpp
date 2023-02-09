@@ -26,27 +26,8 @@ namespace meta_hpp::detail
 
 namespace meta_hpp
 {
-    inline destructor_type::destructor_type(data_ptr data)
-    : data_{data} {}
-
-    inline bool destructor_type::is_valid() const noexcept {
-        return data_ != nullptr;
-    }
-
-    inline destructor_type::operator bool() const noexcept {
-        return is_valid();
-    }
-
-    inline type_id destructor_type::get_id() const noexcept {
-        return data_->id;
-    }
-
     inline destructor_bitflags destructor_type::get_flags() const noexcept {
         return data_->flags;
-    }
-
-    inline const metadata_map& destructor_type::get_metadata() const noexcept {
-        return data_->metadata;
     }
 
     inline class_type destructor_type::get_owner_type() const noexcept {

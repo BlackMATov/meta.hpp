@@ -8,7 +8,6 @@
 
 #include "../meta_base.hpp"
 #include "../meta_indices.hpp"
-#include "../meta_registry.hpp"
 #include "../meta_types.hpp"
 
 namespace meta_hpp
@@ -16,8 +15,12 @@ namespace meta_hpp
     inline destructor_index::destructor_index(destructor_type type)
     : type_{type} {}
 
-    inline const destructor_type& destructor_index::get_type() const noexcept {
+    inline destructor_type destructor_index::get_type() const noexcept {
         return type_;
+    }
+
+    inline void destructor_index::swap(destructor_index& other) noexcept {
+        std::swap(type_, other.type_);
     }
 
     inline std::size_t destructor_index::get_hash() const noexcept {

@@ -76,7 +76,7 @@ namespace meta_hpp
         void reset();
         void swap(uvalue& other) noexcept;
 
-        [[nodiscard]] const any_type& get_type() const noexcept;
+        [[nodiscard]] any_type get_type() const noexcept;
 
         [[nodiscard]] void* get_data() noexcept;
         [[nodiscard]] const void* get_data() const noexcept;

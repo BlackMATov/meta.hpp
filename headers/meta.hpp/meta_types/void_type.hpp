@@ -19,25 +19,3 @@ namespace meta_hpp::detail
     void_type_data::void_type_data(type_list<Void>)
     : type_data_base{type_id{type_list<void_tag<Void>>{}}, type_kind::void_} {}
 }
-
-namespace meta_hpp
-{
-    inline void_type::void_type(data_ptr data)
-    : data_{data} {}
-
-    inline bool void_type::is_valid() const noexcept {
-        return data_ != nullptr;
-    }
-
-    inline void_type::operator bool() const noexcept {
-        return is_valid();
-    }
-
-    inline type_id void_type::get_id() const noexcept {
-        return data_->id;
-    }
-
-    inline const metadata_map& void_type::get_metadata() const noexcept {
-        return data_->metadata;
-    }
-}

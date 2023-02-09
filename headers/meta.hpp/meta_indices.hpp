@@ -15,15 +15,15 @@ namespace meta_hpp
 {
     class argument_index final {
     public:
-        [[nodiscard]] const any_type& get_type() const noexcept;
+        argument_index() = delete;
+        explicit argument_index(any_type type, std::size_t position);
+
+        [[nodiscard]] any_type get_type() const noexcept;
         [[nodiscard]] std::size_t get_position() const noexcept;
 
+        void swap(argument_index& other) noexcept;
         [[nodiscard]] std::size_t get_hash() const noexcept;
         [[nodiscard]] std::strong_ordering operator<=>(const argument_index&) const = default;
-
-    private:
-        friend detail::argument_state;
-        explicit argument_index(any_type type, std::size_t position);
 
     private:
         any_type type_;
@@ -32,14 +32,14 @@ namespace meta_hpp
 
     class constructor_index final {
     public:
-        [[nodiscard]] const constructor_type& get_type() const noexcept;
+        constructor_index() = delete;
+        explicit constructor_index(constructor_type type);
 
+        [[nodiscard]] constructor_type get_type() const noexcept;
+
+        void swap(constructor_index& other) noexcept;
         [[nodiscard]] std::size_t get_hash() const noexcept;
         [[nodiscard]] std::strong_ordering operator<=>(const constructor_index&) const = default;
-
-    private:
-        friend detail::constructor_state;
-        explicit constructor_index(constructor_type type);
 
     private:
         constructor_type type_;
@@ -47,14 +47,14 @@ namespace meta_hpp
 
     class destructor_index final {
     public:
-        [[nodiscard]] const destructor_type& get_type() const noexcept;
+        destructor_index() = delete;
+        explicit destructor_index(destructor_type type);
 
+        [[nodiscard]] destructor_type get_type() const noexcept;
+
+        void swap(destructor_index& other) noexcept;
         [[nodiscard]] std::size_t get_hash() const noexcept;
         [[nodiscard]] std::strong_ordering operator<=>(const destructor_index&) const = default;
-
-    private:
-        friend detail::destructor_state;
-        explicit destructor_index(destructor_type type);
 
     private:
         destructor_type type_;
@@ -62,15 +62,17 @@ namespace meta_hpp
 
     class evalue_index final {
     public:
-        [[nodiscard]] const enum_type& get_type() const noexcept;
-        [[nodiscard]] const std::string& get_name() const noexcept;
+        evalue_index() = delete;
+        explicit evalue_index(enum_type type, std::string name);
 
+        [[nodiscard]] enum_type get_type() const noexcept;
+
+        [[nodiscard]] std::string&& get_name() && noexcept;
+        [[nodiscard]] const std::string& get_name() const& noexcept;
+
+        void swap(evalue_index& other) noexcept;
         [[nodiscard]] std::size_t get_hash() const noexcept;
         [[nodiscard]] std::strong_ordering operator<=>(const evalue_index&) const = default;
-
-    private:
-        friend detail::evalue_state;
-        explicit evalue_index(enum_type type, std::string name);
 
     private:
         enum_type type_;
@@ -79,15 +81,17 @@ namespace meta_hpp
 
     class function_index final {
     public:
-        [[nodiscard]] const function_type& get_type() const noexcept;
-        [[nodiscard]] const std::string& get_name() const noexcept;
+        function_index() = delete;
+        explicit function_index(function_type type, std::string name);
 
+        [[nodiscard]] function_type get_type() const noexcept;
+
+        [[nodiscard]] std::string&& get_name() && noexcept;
+        [[nodiscard]] const std::string& get_name() const& noexcept;
+
+        void swap(function_index& other) noexcept;
         [[nodiscard]] std::size_t get_hash() const noexcept;
         [[nodiscard]] std::strong_ordering operator<=>(const function_index&) const = default;
-
-    private:
-        friend detail::function_state;
-        explicit function_index(function_type type, std::string name);
 
     private:
         function_type type_;
@@ -96,15 +100,17 @@ namespace meta_hpp
 
     class member_index final {
     public:
-        [[nodiscard]] const member_type& get_type() const noexcept;
-        [[nodiscard]] const std::string& get_name() const noexcept;
+        member_index() = delete;
+        explicit member_index(member_type type, std::string name);
 
+        [[nodiscard]] member_type get_type() const noexcept;
+
+        [[nodiscard]] std::string&& get_name() && noexcept;
+        [[nodiscard]] const std::string& get_name() const& noexcept;
+
+        void swap(member_index& other) noexcept;
         [[nodiscard]] std::size_t get_hash() const noexcept;
         [[nodiscard]] std::strong_ordering operator<=>(const member_index&) const = default;
-
-    private:
-        friend detail::member_state;
-        explicit member_index(member_type type, std::string name);
 
     private:
         member_type type_;
@@ -113,15 +119,17 @@ namespace meta_hpp
 
     class method_index final {
     public:
-        [[nodiscard]] std::size_t get_hash() const noexcept;
-        [[nodiscard]] const method_type& get_type() const noexcept;
-        [[nodiscard]] const std::string& get_name() const noexcept;
-
-        [[nodiscard]] std::strong_ordering operator<=>(const method_index&) const = default;
-
-    private:
-        friend detail::method_state;
+        method_index() = delete;
         explicit method_index(method_type type, std::string name);
+
+        [[nodiscard]] method_type get_type() const noexcept;
+
+        [[nodiscard]] std::string&& get_name() && noexcept;
+        [[nodiscard]] const std::string& get_name() const& noexcept;
+
+        void swap(method_index& other) noexcept;
+        [[nodiscard]] std::size_t get_hash() const noexcept;
+        [[nodiscard]] std::strong_ordering operator<=>(const method_index&) const = default;
 
     private:
         method_type type_;
@@ -130,14 +138,15 @@ namespace meta_hpp
 
     class scope_index final {
     public:
-        [[nodiscard]] const std::string& get_name() const noexcept;
+        scope_index() = delete;
+        explicit scope_index(std::string name);
 
+        [[nodiscard]] std::string&& get_name() && noexcept;
+        [[nodiscard]] const std::string& get_name() const& noexcept;
+
+        void swap(scope_index& other) noexcept;
         [[nodiscard]] std::size_t get_hash() const noexcept;
         [[nodiscard]] std::strong_ordering operator<=>(const scope_index&) const = default;
-
-    private:
-        friend detail::scope_state;
-        explicit scope_index(std::string name);
 
     private:
         std::string name_;
@@ -145,28 +154,35 @@ namespace meta_hpp
 
     class variable_index final {
     public:
-        [[nodiscard]] const pointer_type& get_type() const noexcept;
-        [[nodiscard]] const std::string& get_name() const noexcept;
+        variable_index() = delete;
+        explicit variable_index(pointer_type type, std::string name);
 
+        [[nodiscard]] pointer_type get_type() const noexcept;
+
+        [[nodiscard]] std::string&& get_name() && noexcept;
+        [[nodiscard]] const std::string& get_name() const& noexcept;
+
+        void swap(variable_index& other) noexcept;
         [[nodiscard]] std::size_t get_hash() const noexcept;
         [[nodiscard]] std::strong_ordering operator<=>(const variable_index&) const = default;
-
-    private:
-        friend detail::variable_state;
-        explicit variable_index(pointer_type type, std::string name);
 
     private:
         pointer_type type_;
         std::string name_;
     };
+
+    template < detail::index_family Index >
+    void swap(Index& l, Index& r) noexcept {
+        l.swap(r);
+    }
 }
 
 namespace std
 {
-    template < meta_hpp::detail::index_family T >
-    struct hash<T> {
-        size_t operator()(const T& t) const noexcept {
-            return t.get_hash();
+    template < meta_hpp::detail::index_family Index >
+    struct hash<Index> {
+        size_t operator()(const Index& index) const noexcept {
+            return index.get_hash();
         }
     };
 }

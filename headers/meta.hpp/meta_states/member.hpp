@@ -15,8 +15,8 @@
 
 namespace meta_hpp::detail
 {
-    template < member_policy_kind Policy, member_kind Member >
-    uvalue raw_member_getter(const Member& member, const uinst& inst) {
+    template < member_policy_kind Policy, member_pointer_kind Member >
+    uvalue raw_member_getter(Member member_ptr, const uinst& inst) {
         using mt = member_traits<Member>;
         using class_type = typename mt::class_type;
         using value_type = typename mt::value_type;
@@ -33,12 +33,13 @@ namespace meta_hpp::detail
 
         static_assert(as_copy || as_ptr || as_ref_wrap);
 
-        if ( !inst.can_cast_to<const class_type>() ) {
-            META_HPP_THROW_AS(exception, "an attempt to get a member with an incorrect instance type");
-        }
+        META_HPP_THROW_IF( //
+            !inst.can_cast_to<const class_type>(),
+            "an attempt to get a member with an incorrect instance type"
+        );
 
         if ( inst.is_inst_const() ) {
-            auto&& return_value = inst.cast<const class_type>().*member;
+            auto&& return_value = inst.cast<const class_type>().*member_ptr;
 
             if constexpr ( as_copy ) {
                 return uvalue{std::forward<decltype(return_value)>(return_value)};
@@ -52,7 +53,7 @@ namespace meta_hpp::detail
                 return uvalue{std::ref(return_value)};
             }
         } else {
-            auto&& return_value = inst.cast<class_type>().*member;
+            auto&& return_value = inst.cast<class_type>().*member_ptr;
 
             if constexpr ( as_copy ) {
                 return uvalue{std::forward<decltype(return_value)>(return_value)};
@@ -68,7 +69,7 @@ namespace meta_hpp::detail
         }
     }
 
-    template < member_kind Member >
+    template < member_pointer_kind Member >
     bool raw_member_is_gettable_with(const uinst_base& inst) {
         using mt = member_traits<Member>;
         using class_type = typename mt::class_type;
@@ -79,32 +80,35 @@ namespace meta_hpp::detail
 
 namespace meta_hpp::detail
 {
-    template < member_kind Member >
-    void raw_member_setter([[maybe_unused]] const Member& member, const uinst& inst, const uarg& arg) {
+    template < member_pointer_kind Member >
+    void raw_member_setter([[maybe_unused]] Member member_ptr, const uinst& inst, const uarg& arg) {
         using mt = member_traits<Member>;
         using class_type = typename mt::class_type;
         using value_type = typename mt::value_type;
 
         if constexpr ( std::is_const_v<value_type> ) {
-            META_HPP_THROW_AS(exception, "an attempt to set a constant member");
+            META_HPP_THROW("an attempt to set a constant member");
         } else {
-            if ( inst.is_inst_const() ) {
-                META_HPP_THROW_AS(exception, "an attempt to set a member with an const instance type");
-            }
+            META_HPP_THROW_IF( //
+                inst.is_inst_const(),
+                "an attempt to set a member with an const instance type"
+            );
 
-            if ( !inst.can_cast_to<class_type>() ) {
-                META_HPP_THROW_AS(exception, "an attempt to set a member with an incorrect instance type");
-            }
+            META_HPP_THROW_IF( //
+                !inst.can_cast_to<class_type>(),
+                "an attempt to set a member with an incorrect instance type"
+            );
 
-            if ( !arg.can_cast_to<value_type>() ) {
-                META_HPP_THROW_AS(exception, "an attempt to set a member with an incorrect argument type");
-            }
+            META_HPP_THROW_IF( //
+                !arg.can_cast_to<value_type>(),
+                "an attempt to set a member with an incorrect argument type"
+            );
 
-            inst.cast<class_type>().*member = arg.cast<value_type>();
+            inst.cast<class_type>().*member_ptr = arg.cast<value_type>();
         }
     }
 
-    template < member_kind Member >
+    template < member_pointer_kind Member >
     bool raw_member_is_settable_with(const uinst_base& inst, const uarg_base& arg) {
         using mt = member_traits<Member>;
         using class_type = typename mt::class_type;
@@ -117,26 +121,26 @@ namespace meta_hpp::detail
 
 namespace meta_hpp::detail
 {
-    template < member_policy_kind Policy, member_kind Member >
-    member_state::getter_impl make_member_getter(Member member) {
-        return [member = std::move(member)](const uinst& inst) { //
-            return raw_member_getter<Policy>(member, inst);
+    template < member_policy_kind Policy, member_pointer_kind Member >
+    member_state::getter_impl make_member_getter(Member member_ptr) {
+        return [member_ptr](const uinst& inst) { //
+            return raw_member_getter<Policy>(member_ptr, inst);
         };
     }
 
-    template < member_kind Member >
+    template < member_pointer_kind Member >
     member_state::is_gettable_with_impl make_member_is_gettable_with() {
         return &raw_member_is_gettable_with<Member>;
     }
 
-    template < member_kind Member >
-    member_state::setter_impl make_member_setter(Member member) {
-        return [member = std::move(member)](const uinst& inst, const uarg& arg) { //
-            return raw_member_setter(member, inst, arg);
+    template < member_pointer_kind Member >
+    member_state::setter_impl make_member_setter(Member member_ptr) {
+        return [member_ptr](const uinst& inst, const uarg& arg) { //
+            return raw_member_setter(member_ptr, inst, arg);
         };
     }
 
-    template < member_kind Member >
+    template < member_pointer_kind Member >
     member_state::is_settable_with_impl make_member_is_settable_with() {
         return &raw_member_is_settable_with<Member>;
     }
@@ -148,11 +152,11 @@ namespace meta_hpp::detail
     : index{std::move(nindex)}
     , metadata{std::move(nmetadata)} {}
 
-    template < member_policy_kind Policy, member_kind Member >
-    member_state_ptr member_state::make(std::string name, Member member, metadata_map metadata) {
+    template < member_policy_kind Policy, member_pointer_kind Member >
+    member_state_ptr member_state::make(std::string name, Member member_ptr, metadata_map metadata) {
         member_state state{member_index{resolve_type<Member>(), std::move(name)}, std::move(metadata)};
-        state.getter = make_member_getter<Policy>(member);
-        state.setter = make_member_setter(member);
+        state.getter = make_member_getter<Policy>(member_ptr);
+        state.setter = make_member_setter(member_ptr);
         state.is_gettable_with = make_member_is_gettable_with<Member>();
         state.is_settable_with = make_member_is_settable_with<Member>();
         return make_intrusive<member_state>(std::move(state));
@@ -161,26 +165,7 @@ namespace meta_hpp::detail
 
 namespace meta_hpp
 {
-    inline member::member(state_ptr state) noexcept
-    : state_{std::move(state)} {}
-
-    inline bool member::is_valid() const noexcept {
-        return !!state_;
-    }
-
-    inline member::operator bool() const noexcept {
-        return is_valid();
-    }
-
-    inline const member_index& member::get_index() const noexcept {
-        return state_->index;
-    }
-
-    inline const metadata_map& member::get_metadata() const noexcept {
-        return state_->metadata;
-    }
-
-    inline const member_type& member::get_type() const noexcept {
+    inline member_type member::get_type() const noexcept {
         return state_->index.get_type();
     }
 

@@ -45,6 +45,15 @@ TEST_CASE("meta/meta_types/ops") {
     const meta::method ivec2_add = ivec2_type.get_method("add");
     REQUIRE(ivec2_add);
 
+    SUBCASE("hash") {
+        const meta::member_type ivec2_x_type = ivec2_x.get_type();
+        const meta::method_type ivec2_add_type = ivec2_add.get_type();
+
+        CHECK(std::hash<meta::member_type>{}(ivec2_x_type) == std::hash<meta::member_type>{}(ivec2_x_type));
+        CHECK_FALSE(std::hash<meta::member_type>{}(ivec2_x_type) == std::hash<meta::member_type>{}({}));
+        CHECK_FALSE(std::hash<meta::member_type>{}(ivec2_x_type) == std::hash<meta::method_type>{}(ivec2_add_type));
+    }
+
     SUBCASE("operator<") {
         {
             CHECK(ivec2_x.get_type() == ivec2_y.get_type());

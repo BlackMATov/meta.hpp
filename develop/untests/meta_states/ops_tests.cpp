@@ -35,6 +35,12 @@ TEST_CASE("meta/meta_states/ops") {
     const meta::member ivec2_y = ivec2_type.get_member("y");
     REQUIRE(ivec2_y);
 
+    SUBCASE("hash") {
+        CHECK(std::hash<meta::member>{}(ivec2_x) == std::hash<meta::member>{}(ivec2_x));
+        CHECK_FALSE(std::hash<meta::member>{}(ivec2_x) == std::hash<meta::member>{}({}));
+        CHECK_FALSE(std::hash<meta::member>{}(ivec2_x) == std::hash<meta::member>{}(ivec2_y));
+    }
+
     SUBCASE("operator<") {
         {
             CHECK(meta::member{} < ivec2_x);

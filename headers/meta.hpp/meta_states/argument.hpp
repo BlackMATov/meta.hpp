@@ -24,27 +24,7 @@ namespace meta_hpp::detail
 
 namespace meta_hpp
 {
-
-    inline argument::argument(state_ptr state) noexcept
-    : state_{std::move(state)} {}
-
-    inline bool argument::is_valid() const noexcept {
-        return !!state_;
-    }
-
-    inline argument::operator bool() const noexcept {
-        return is_valid();
-    }
-
-    inline const argument_index& argument::get_index() const noexcept {
-        return state_->index;
-    }
-
-    inline const metadata_map& argument::get_metadata() const noexcept {
-        return state_->metadata;
-    }
-
-    inline const any_type& argument::get_type() const noexcept {
+    inline any_type argument::get_type() const noexcept {
         return state_->index.get_type();
     }
 

@@ -77,7 +77,7 @@ namespace meta_hpp::detail
             return ref_type_;
         }
 
-        [[nodiscard]] const any_type& get_raw_type() const noexcept {
+        [[nodiscard]] any_type get_raw_type() const noexcept {
             return raw_type_;
         }
 
@@ -234,9 +234,7 @@ namespace meta_hpp::detail
     template < typename To >
     // NOLINTNEXTLINE(*-cognitive-complexity)
     To uarg::cast() const {
-        if ( !can_cast_to<To>() ) {
-            META_HPP_THROW_AS(exception, "bad argument cast");
-        }
+        META_HPP_THROW_IF(!can_cast_to<To>(), "bad argument cast");
 
         using to_raw_type_cv = std::remove_reference_t<To>;
         using to_raw_type = std::remove_cv_t<to_raw_type_cv>;
@@ -345,6 +343,6 @@ namespace meta_hpp::detail
             }
         }
 
-        META_HPP_THROW_AS(exception, "bad argument cast");
+        META_HPP_THROW("bad argument cast");
     }
 }

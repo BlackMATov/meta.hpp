@@ -32,15 +32,17 @@ namespace meta_hpp::detail
 
         static_assert(as_object || as_raw_ptr || as_shared_ptr);
 
-        if ( args.size() != ct::arity ) {
-            META_HPP_THROW_AS(exception, "an attempt to call a constructor with an incorrect arity");
-        }
+        META_HPP_THROW_IF( //
+            args.size() != ct::arity,
+            "an attempt to call a constructor with an incorrect arity"
+        );
 
         return std::invoke(
             [args]<std::size_t... Is>(std::index_sequence<Is...>)->uvalue {
-                if ( !(... && args[Is].can_cast_to<type_list_at_t<Is, argument_types>>()) ) {
-                    META_HPP_THROW_AS(exception, "an attempt to call a constructor with incorrect argument types");
-                }
+                META_HPP_THROW_IF( //
+                    !(... && args[Is].can_cast_to<type_list_at_t<Is, argument_types>>()),
+                    "an attempt to call a constructor with incorrect argument types"
+                );
 
                 if constexpr ( as_object ) {
                     return make_uvalue<class_type>(args[Is].cast<type_list_at_t<Is, argument_types>>()...);
@@ -64,17 +66,22 @@ namespace meta_hpp::detail
         using class_type = typename ct::class_type;
         using argument_types = typename ct::argument_types;
 
-        if ( args.size() != ct::arity ) {
-            META_HPP_THROW_AS(exception, "an attempt to call a constructor with an incorrect arity");
-        }
+        META_HPP_THROW_IF( //
+            args.size() != ct::arity,
+            "an attempt to call a constructor with an incorrect arity"
+        );
 
         return std::invoke(
             [ mem, args ]<std::size_t... Is>(std::index_sequence<Is...>)->uvalue {
-                if ( !(... && args[Is].can_cast_to<type_list_at_t<Is, argument_types>>()) ) {
-                    META_HPP_THROW_AS(exception, "an attempt to call a constructor with incorrect argument types");
-                }
-                return uvalue{
-                    std::construct_at(static_cast<class_type*>(mem), args[Is].cast<type_list_at_t<Is, argument_types>>()...)};
+                META_HPP_THROW_IF( //
+                    !(... && args[Is].can_cast_to<type_list_at_t<Is, argument_types>>()),
+                    "an attempt to call a constructor with incorrect argument types"
+                );
+
+                return uvalue{std::construct_at( //
+                    static_cast<class_type*>(mem),
+                    args[Is].cast<type_list_at_t<Is, argument_types>>()...
+                )};
             },
             std::make_index_sequence<ct::arity>()
         );
@@ -152,26 +159,7 @@ namespace meta_hpp::detail
 
 namespace meta_hpp
 {
-    inline constructor::constructor(state_ptr state) noexcept
-    : state_{std::move(state)} {}
-
-    inline bool constructor::is_valid() const noexcept {
-        return !!state_;
-    }
-
-    inline constructor::operator bool() const noexcept {
-        return is_valid();
-    }
-
-    inline const constructor_index& constructor::get_index() const noexcept {
-        return state_->index;
-    }
-
-    inline const metadata_map& constructor::get_metadata() const noexcept {
-        return state_->metadata;
-    }
-
-    inline const constructor_type& constructor::get_type() const noexcept {
+    inline constructor_type constructor::get_type() const noexcept {
         return state_->index.get_type();
     }
 

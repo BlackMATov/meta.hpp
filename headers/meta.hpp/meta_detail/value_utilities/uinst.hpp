@@ -82,7 +82,7 @@ namespace meta_hpp::detail
             return ref_type_;
         }
 
-        [[nodiscard]] const any_type& get_raw_type() const noexcept {
+        [[nodiscard]] any_type get_raw_type() const noexcept {
             return raw_type_;
         }
 
@@ -183,9 +183,7 @@ namespace meta_hpp::detail
 {
     template < inst_class_ref_kind Q >
     decltype(auto) uinst::cast() const {
-        if ( !can_cast_to<Q>() ) {
-            META_HPP_THROW_AS(exception, "bad instance cast");
-        }
+        META_HPP_THROW_IF(!can_cast_to<Q>(), "bad instance cast");
 
         using inst_class_cv = std::remove_reference_t<Q>;
         using inst_class = std::remove_cv_t<inst_class_cv>;
@@ -233,6 +231,6 @@ namespace meta_hpp::detail
             }
         }
 
-        META_HPP_THROW_AS(exception, "bad instance cast");
+        META_HPP_THROW("bad instance cast");
     }
 }

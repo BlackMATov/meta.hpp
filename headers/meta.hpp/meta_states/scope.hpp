@@ -31,25 +31,6 @@ namespace meta_hpp::detail
 
 namespace meta_hpp
 {
-    inline scope::scope(state_ptr state) noexcept
-    : state_{std::move(state)} {}
-
-    inline bool scope::is_valid() const noexcept {
-        return !!state_;
-    }
-
-    inline scope::operator bool() const noexcept {
-        return is_valid();
-    }
-
-    inline const scope_index& scope::get_index() const noexcept {
-        return state_->index;
-    }
-
-    inline const metadata_map& scope::get_metadata() const noexcept {
-        return state_->metadata;
-    }
-
     inline const std::string& scope::get_name() const noexcept {
         return state_->index.get_name();
     }
