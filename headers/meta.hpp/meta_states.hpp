@@ -153,7 +153,7 @@ namespace meta_hpp
 
         state_ptr state_{};
     };
-};
+}
 
 namespace meta_hpp
 {
