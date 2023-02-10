@@ -30,7 +30,7 @@ namespace
     };
 }
 
-TEST_CASE("meta/meta_utilities/value4") {
+TEST_CASE("meta/meta_utilities/value3") {
     namespace meta = meta_hpp;
 
     meta::class_<base0>();
@@ -50,7 +50,7 @@ TEST_CASE("meta/meta_utilities/value4") {
         .base_<base2>();
 }
 
-TEST_CASE("meta/meta_utilities/value4/get_type") {
+TEST_CASE("meta/meta_utilities/value3/get_type") {
     namespace meta = meta_hpp;
 
     SUBCASE("from ref") {
@@ -88,7 +88,7 @@ TEST_CASE("meta/meta_utilities/value4/get_type") {
     }
 }
 
-TEST_CASE("meta/meta_utilities/value4/get_as") {
+TEST_CASE("meta/meta_utilities/value3/get_as") {
     namespace meta = meta_hpp;
 
     static_assert(std::is_same_v<decltype(std::declval<meta::uvalue&>().get_as<derived>()), derived&>);
@@ -207,7 +207,7 @@ TEST_CASE("meta/meta_utilities/value4/get_as") {
     }
 }
 
-TEST_CASE("meta/meta_utilities/value4/try_get_as") {
+TEST_CASE("meta/meta_utilities/value3/try_get_as") {
     namespace meta = meta_hpp;
 
     static_assert(std::is_same_v<decltype(std::declval<meta::uvalue&>().try_get_as<derived>()), derived*>);

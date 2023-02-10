@@ -20,6 +20,7 @@
 #include <map>
 #include <memory>
 #include <mutex>
+#include <optional>
 #include <set>
 #include <span>
 #include <string>
@@ -2856,6 +2857,15 @@ namespace meta_hpp
         template < typename T >
         [[nodiscard]] auto try_get_as() const noexcept //
             -> std::conditional_t<detail::pointer_kind<T>, T, const T*>;
+
+        template < typename T >
+        [[nodiscard]] std::optional<T> safe_get_as() &&;
+
+        template < typename T >
+        [[nodiscard]] std::optional<T> safe_get_as() &;
+
+        template < typename T >
+        [[nodiscard]] std::optional<T> safe_get_as() const&;
 
     private:
         struct vtable_t;
@@ -8646,5 +8656,56 @@ namespace meta_hpp
         }
 
         return nullptr;
+    }
+
+    template < typename T >
+    std::optional<T> uvalue::safe_get_as() && {
+        static_assert(std::is_same_v<T, std::decay_t<T>>);
+
+        if constexpr ( detail::pointer_kind<T> ) {
+            if ( T ptr = try_get_as<T>(); ptr || get_type().is_nullptr() ) {
+                return ptr;
+            }
+        } else {
+            if ( T* ptr = try_get_as<T>() ) {
+                return std::move(*ptr);
+            }
+        }
+
+        return std::nullopt;
+    }
+
+    template < typename T >
+    std::optional<T> uvalue::safe_get_as() & {
+        static_assert(std::is_same_v<T, std::decay_t<T>>);
+
+        if constexpr ( detail::pointer_kind<T> ) {
+            if ( T ptr = try_get_as<T>(); ptr || get_type().is_nullptr() ) {
+                return ptr;
+            }
+        } else {
+            if ( T* ptr = try_get_as<T>() ) {
+                return *ptr;
+            }
+        }
+
+        return std::nullopt;
+    }
+
+    template < typename T >
+    std::optional<T> uvalue::safe_get_as() const& {
+        static_assert(std::is_same_v<T, std::decay_t<T>>);
+
+        if constexpr ( detail::pointer_kind<T> ) {
+            if ( T ptr = try_get_as<T>(); ptr || get_type().is_nullptr() ) {
+                return ptr;
+            }
+        } else {
+            if ( const T* ptr = try_get_as<T>() ) {
+                return *ptr;
+            }
+        }
+
+        return std::nullopt;
     }
 }
