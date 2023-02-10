@@ -16,8 +16,8 @@
 #else
 #    define META_HPP_TRY if ( true )
 #    define META_HPP_CATCH(...) if ( false )
-#    define META_HPP_RETHROW() std::terminate()
-#    define META_HPP_THROW(...) std::terminate()
+#    define META_HPP_RETHROW() std::abort()
+#    define META_HPP_THROW(...) std::abort()
 #endif
 
 #define META_HPP_THROW_IF(yesno, ...) \

@@ -28,12 +28,12 @@ namespace meta_hpp
     scope_bind& scope_bind::function_(std::string name, Function function_ptr, function_opts opts, Policy) {
         auto state = detail::function_state::make<Policy>(std::move(name), function_ptr, std::move(opts.metadata));
 
-        META_HPP_THROW_IF( //
-            opts.arguments.size() > state->arguments.size(),
-            "provided arguments don't match function argument count"
+        META_HPP_ASSERT(                                     //
+            opts.arguments.size() <= state->arguments.size() //
+            && "provided arguments don't match function argument count"
         );
 
-        for ( std::size_t i = 0; i < opts.arguments.size(); ++i ) {
+        for ( std::size_t i{}, e{std::min(opts.arguments.size(), state->arguments.size())}; i < e; ++i ) {
             argument& arg = state->arguments[i];
             detail::state_access(arg)->name = std::move(opts.arguments[i].name);
             detail::state_access(arg)->metadata = std::move(opts.arguments[i].metadata);
@@ -47,12 +47,12 @@ namespace meta_hpp
     scope_bind& scope_bind::function_(std::string name, Function function_ptr, string_ilist arguments, Policy) {
         auto state = detail::function_state::make<Policy>(std::move(name), function_ptr, {});
 
-        META_HPP_THROW_IF( //
-            arguments.size() > state->arguments.size(),
-            "provided argument names don't match function argument count"
+        META_HPP_ASSERT(                                //
+            arguments.size() <= state->arguments.size() //
+            && "provided argument names don't match function argument count"
         );
 
-        for ( std::size_t i = 0; i < arguments.size(); ++i ) {
+        for ( std::size_t i{}, e{std::min(arguments.size(), state->arguments.size())}; i < e; ++i ) {
             argument& arg = state->arguments[i];
             // NOLINTNEXTLINE(*-pointer-arithmetic)
             detail::state_access(arg)->name = std::data(arguments)[i];
