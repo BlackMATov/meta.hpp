@@ -24,7 +24,7 @@ namespace meta_hpp::detail
         };
 
     public:
-        uarg_base() = delete;
+        uarg_base() = default;
         ~uarg_base() = default;
 
         uarg_base(uarg_base&&) = default;
@@ -94,7 +94,7 @@ namespace meta_hpp::detail
 {
     class uarg final : public uarg_base {
     public:
-        uarg() = delete;
+        uarg() = default;
         ~uarg() = default;
 
         uarg(uarg&&) = default;

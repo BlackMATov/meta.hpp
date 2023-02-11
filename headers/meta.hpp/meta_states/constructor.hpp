@@ -165,13 +165,9 @@ namespace meta_hpp
 
     template < typename... Args >
     uvalue constructor::create(Args&&... args) const {
-        if constexpr ( sizeof...(Args) > 0 ) {
-            using namespace detail;
-            const std::array<uarg, sizeof...(Args)> vargs{uarg{std::forward<Args>(args)}...};
-            return state_->create(vargs);
-        } else {
-            return state_->create({});
-        }
+        using namespace detail;
+        const std::array<uarg, sizeof...(Args)> vargs{uarg{std::forward<Args>(args)}...};
+        return state_->create(vargs);
     }
 
     template < typename... Args >
@@ -184,13 +180,9 @@ namespace meta_hpp
 
     template < typename... Args >
     uvalue constructor::create_at(void* mem, Args&&... args) const {
-        if constexpr ( sizeof...(Args) > 0 ) {
-            using namespace detail;
-            const std::array<uarg, sizeof...(Args)> vargs{uarg{std::forward<Args>(args)}...};
-            return state_->create_at(mem, vargs);
-        } else {
-            return state_->create_at(mem, {});
-        }
+        using namespace detail;
+        const std::array<uarg, sizeof...(Args)> vargs{uarg{std::forward<Args>(args)}...};
+        return state_->create_at(mem, vargs);
     }
 
     template < typename... Args >
@@ -203,24 +195,16 @@ namespace meta_hpp
 
     template < typename... Args >
     bool constructor::is_invocable_with() const noexcept {
-        if constexpr ( sizeof...(Args) > 0 ) {
-            using namespace detail;
-            const std::array<uarg_base, sizeof...(Args)> vargs{uarg_base{type_list<Args>{}}...};
-            return state_->is_invocable_with(vargs);
-        } else {
-            return state_->is_invocable_with({});
-        }
+        using namespace detail;
+        const std::array<uarg_base, sizeof...(Args)> vargs{uarg_base{type_list<Args>{}}...};
+        return state_->is_invocable_with(vargs);
     }
 
     template < typename... Args >
     bool constructor::is_invocable_with(Args&&... args) const noexcept {
-        if constexpr ( sizeof...(Args) > 0 ) {
-            using namespace detail;
-            const std::array<uarg_base, sizeof...(Args)> vargs{uarg_base{std::forward<Args>(args)}...};
-            return state_->is_invocable_with(vargs);
-        } else {
-            return state_->is_invocable_with({});
-        }
+        using namespace detail;
+        const std::array<uarg_base, sizeof...(Args)> vargs{uarg_base{std::forward<Args>(args)}...};
+        return state_->is_invocable_with(vargs);
     }
 
     inline argument constructor::get_argument(std::size_t position) const noexcept {

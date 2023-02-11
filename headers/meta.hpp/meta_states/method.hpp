@@ -160,12 +160,8 @@ namespace meta_hpp
     uvalue method::invoke(Instance&& instance, Args&&... args) const {
         using namespace detail;
         const uinst vinst{std::forward<Instance>(instance)};
-        if constexpr ( sizeof...(Args) > 0 ) {
-            const std::array<uarg, sizeof...(Args)> vargs{uarg{std::forward<Args>(args)}...};
-            return state_->invoke(vinst, vargs);
-        } else {
-            return state_->invoke(vinst, {});
-        }
+        const std::array<uarg, sizeof...(Args)> vargs{uarg{std::forward<Args>(args)}...};
+        return state_->invoke(vinst, vargs);
     }
 
     template < typename Instance, typename... Args >
@@ -185,24 +181,16 @@ namespace meta_hpp
     bool method::is_invocable_with() const noexcept {
         using namespace detail;
         const uinst_base vinst{type_list<Instance>{}};
-        if constexpr ( sizeof...(Args) > 0 ) {
-            const std::array<uarg_base, sizeof...(Args)> vargs{uarg_base{type_list<Args>{}}...};
-            return state_->is_invocable_with(vinst, vargs);
-        } else {
-            return state_->is_invocable_with(vinst, {});
-        }
+        const std::array<uarg_base, sizeof...(Args)> vargs{uarg_base{type_list<Args>{}}...};
+        return state_->is_invocable_with(vinst, vargs);
     }
 
     template < typename Instance, typename... Args >
     bool method::is_invocable_with(Instance&& instance, Args&&... args) const noexcept {
         using namespace detail;
         const uinst_base vinst{std::forward<Instance>(instance)};
-        if constexpr ( sizeof...(Args) > 0 ) {
-            const std::array<uarg_base, sizeof...(Args)> vargs{uarg_base{std::forward<Args>(args)}...};
-            return state_->is_invocable_with(vinst, vargs);
-        } else {
-            return state_->is_invocable_with(vinst, {});
-        }
+        const std::array<uarg_base, sizeof...(Args)> vargs{uarg_base{std::forward<Args>(args)}...};
+        return state_->is_invocable_with(vinst, vargs);
     }
 
     inline argument method::get_argument(std::size_t position) const noexcept {
