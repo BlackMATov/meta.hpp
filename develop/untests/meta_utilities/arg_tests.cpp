@@ -83,10 +83,10 @@ namespace
         } else {\
             CHECK_FALSE(uarg{FromValue}.can_cast_to<ToType>());\
             CHECK_FALSE(uarg_base{type_list<decltype(FromValue)>{}}.can_cast_to<ToType>());\
-            CHECK_THROWS(std::ignore = uarg{FromValue}.cast<ToType>());\
+            /*CHECK_THROWS(std::ignore = uarg{FromValue}.cast<ToType>());*/\
             \
             CHECK_FALSE(f_state.is_invocable_with<decltype(FromValue)>());\
-            CHECK_THROWS(f_state.invoke(FromValue));\
+            CHECK_FALSE(f_state.safe_invoke(FromValue));\
         }\
     }
 
@@ -104,7 +104,7 @@ namespace
         } else {\
             CHECK_FALSE(f_state.is_invocable_with<FromType>());\
             CHECK_FALSE(f_state.is_invocable_with(FromValue));\
-            CHECK_THROWS(f_state.invoke(FromValue));\
+            CHECK_FALSE(f_state.safe_invoke(FromValue));\
         }\
     }
 

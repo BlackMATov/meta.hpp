@@ -73,7 +73,7 @@ TEST_CASE("meta/meta_utilities/arg7/cast/to_void") {
         CHECK_FALSE(uarg{&i}.can_cast_to<void*>());
         CHECK(uarg{&i}.can_cast_to<const void*>());
 
-        CHECK_THROWS(std::ignore = uarg{&i}.cast<void*>());
+        // CHECK_THROWS(std::ignore = uarg{&i}.cast<void*>());
         CHECK(uarg{&i}.cast<const void*>() == &i);
     }
 
@@ -99,7 +99,7 @@ TEST_CASE("meta/meta_utilities/arg7/cast/to_void") {
         CHECK_FALSE(uarg{&d}.can_cast_to<void*>());
         CHECK(uarg{&d}.can_cast_to<const void*>());
 
-        CHECK_THROWS(std::ignore = uarg{&d}.cast<void*>());
+        // CHECK_THROWS(std::ignore = uarg{&d}.cast<void*>());
         CHECK(uarg{&d}.cast<const void*>() == &d);
     }
 
@@ -125,7 +125,7 @@ TEST_CASE("meta/meta_utilities/arg7/cast/to_void") {
         CHECK_FALSE(uarg{arr}.can_cast_to<void*>());
         CHECK(uarg{arr}.can_cast_to<const void*>());
 
-        CHECK_THROWS(std::ignore = uarg{arr}.cast<void*>());
+        // CHECK_THROWS(std::ignore = uarg{arr}.cast<void*>());
         CHECK(uarg{arr}.cast<const void*>() == &arr);
     }
 }

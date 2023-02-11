@@ -76,11 +76,11 @@ TEST_CASE("meta/meta_utilities/value5/safe_get_as") {
 
             REQUIRE(v2.safe_get_as<ivec2*>());
             REQUIRE(*v2.safe_get_as<ivec2*>());
-            CHECK(*v2.safe_get_as<ivec2*>() == &v);
+            CHECK(v2.safe_get_as<ivec2*>() == &v);
 
             REQUIRE(v2.safe_get_as<const ivec2*>());
             REQUIRE(*v2.safe_get_as<const ivec2*>());
-            CHECK(*v2.safe_get_as<const ivec2*>() == &v);
+            CHECK(v2.safe_get_as<const ivec2*>() == &v);
 
             CHECK_FALSE(v2.safe_get_as<ivec2>());
             CHECK_FALSE(v2.safe_get_as<int*>());
@@ -92,11 +92,11 @@ TEST_CASE("meta/meta_utilities/value5/safe_get_as") {
 
             REQUIRE(v2.safe_get_as<ivec2*>());
             REQUIRE(*v2.safe_get_as<ivec2*>());
-            CHECK(*v2.safe_get_as<ivec2*>() == &v);
+            CHECK(v2.safe_get_as<ivec2*>() == &v);
 
             REQUIRE(v2.safe_get_as<const ivec2*>());
             REQUIRE(*v2.safe_get_as<const ivec2*>());
-            CHECK(*v2.safe_get_as<const ivec2*>() == &v);
+            CHECK(v2.safe_get_as<const ivec2*>() == &v);
 
             CHECK_FALSE(v2.safe_get_as<ivec2>());
             CHECK_FALSE(v2.safe_get_as<int*>());
@@ -113,7 +113,7 @@ TEST_CASE("meta/meta_utilities/value5/safe_get_as") {
 
             REQUIRE(v2.safe_get_as<const ivec2*>());
             REQUIRE(*v2.safe_get_as<const ivec2*>());
-            CHECK(*v2.safe_get_as<const ivec2*>() == &v);
+            CHECK(v2.safe_get_as<const ivec2*>() == &v);
 
             CHECK_FALSE(v2.safe_get_as<ivec2>());
             CHECK_FALSE(v2.safe_get_as<int*>());
@@ -127,7 +127,7 @@ TEST_CASE("meta/meta_utilities/value5/safe_get_as") {
 
             REQUIRE(v2.safe_get_as<const ivec2*>());
             REQUIRE(*v2.safe_get_as<const ivec2*>());
-            CHECK(*v2.safe_get_as<const ivec2*>() == &v);
+            CHECK(v2.safe_get_as<const ivec2*>() == &v);
 
             CHECK_FALSE(v2.safe_get_as<ivec2>());
             CHECK_FALSE(v2.safe_get_as<int*>());
@@ -140,13 +140,13 @@ TEST_CASE("meta/meta_utilities/value5/safe_get_as") {
             ivec2 v{1,2};
             meta::uvalue v2{&v};
             REQUIRE(std::move(v2).safe_get_as<ivec2*>());
-            CHECK(*std::move(v2).safe_get_as<ivec2*>() == &v);
+            CHECK(std::move(v2).safe_get_as<ivec2*>() == &v);
         }
         {
             ivec2 v{1,2};
             const meta::uvalue v2{&v};
             REQUIRE(std::move(v2).safe_get_as<ivec2*>());
-            CHECK(*std::move(v2).safe_get_as<ivec2*>() == &v);
+            CHECK(std::move(v2).safe_get_as<ivec2*>() == &v);
         }
     }
 
@@ -156,14 +156,14 @@ TEST_CASE("meta/meta_utilities/value5/safe_get_as") {
             meta::uvalue v2{&v};
             CHECK_FALSE(std::move(v2).safe_get_as<ivec2*>());
             REQUIRE(std::move(v2).safe_get_as<const ivec2*>());
-            CHECK(*std::move(v2).safe_get_as<const ivec2*>() == &v);
+            CHECK(std::move(v2).safe_get_as<const ivec2*>() == &v);
         }
         {
             const ivec2 v{1,2};
             const meta::uvalue v2{&v};
             CHECK_FALSE(std::move(v2).safe_get_as<ivec2*>());
             REQUIRE(std::move(v2).safe_get_as<const ivec2*>());
-            CHECK(*std::move(v2).safe_get_as<const ivec2*>() == &v);
+            CHECK(std::move(v2).safe_get_as<const ivec2*>() == &v);
         }
     }
 }

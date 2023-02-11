@@ -36,21 +36,20 @@ namespace meta_hpp::detail
 
         static_assert(as_copy || as_void || ref_as_ptr);
 
-        META_HPP_THROW_IF( //
-            args.size() != mt::arity,
-            "an attempt to call a method with an incorrect arity"
+        META_HPP_ASSERT(             //
+            args.size() == mt::arity //
+            && "an attempt to call a method with an incorrect arity"
         );
-
-        META_HPP_THROW_IF( //
-            !inst.can_cast_to<qualified_type>(),
-            "an attempt to call a method with an incorrect instance type"
+        META_HPP_ASSERT(                       //
+            inst.can_cast_to<qualified_type>() //
+            && "an attempt to call a method with an incorrect instance type"
         );
 
         return std::invoke(
             [ method_ptr, &inst, args ]<std::size_t... Is>(std::index_sequence<Is...>)->uvalue {
-                META_HPP_THROW_IF( //
-                    !(... && args[Is].can_cast_to<type_list_at_t<Is, argument_types>>()),
-                    "an attempt to call a method with incorrect argument types"
+                META_HPP_ASSERT(                                                        //
+                    (... && args[Is].can_cast_to<type_list_at_t<Is, argument_types>>()) //
+                    && "an attempt to call a method with incorrect argument types"
                 );
 
                 if constexpr ( std::is_void_v<return_type> ) {
@@ -167,6 +166,14 @@ namespace meta_hpp
         } else {
             return state_->invoke(vinst, {});
         }
+    }
+
+    template < typename Instance, typename... Args >
+    std::optional<uvalue> method::safe_invoke(Instance&& instance, Args&&... args) const {
+        if ( is_invocable_with(std::forward<Instance>(instance), std::forward<Args>(args)...) ) {
+            return invoke(std::forward<Instance>(instance), std::forward<Args>(args)...);
+        }
+        return std::nullopt;
     }
 
     template < typename Instance, typename... Args >

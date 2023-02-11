@@ -309,13 +309,6 @@ namespace meta_hpp::detail
 #    define META_HPP_THROW(...) std::abort()
 #endif
 
-#define META_HPP_THROW_IF(yesno, ...) \
-    do { \
-        if ( yesno ) { \
-            META_HPP_THROW(__VA_ARGS__); \
-        } \
-    } while ( false )
-
 namespace meta_hpp::detail
 {
 #if !defined(META_HPP_NO_EXCEPTIONS)
@@ -2307,8 +2300,11 @@ namespace meta_hpp
         [[nodiscard]] std::string_view value_to_name(Enum value) const noexcept;
         [[nodiscard]] uvalue name_to_value(std::string_view name) const noexcept;
 
-        template < typename T >
-        [[nodiscard]] T name_to_value_as(std::string_view name) const;
+        template < detail::enum_kind Enum >
+        [[nodiscard]] Enum name_to_value_as(std::string_view name) const;
+
+        template < detail::enum_kind Enum >
+        [[nodiscard]] std::optional<Enum> safe_name_to_value_as(std::string_view name) const noexcept;
     };
 
     class function_type final : public type_base<function_type> {
@@ -3161,7 +3157,13 @@ namespace meta_hpp
         [[nodiscard]] uvalue create(Args&&... args) const;
 
         template < typename... Args >
+        [[nodiscard]] std::optional<uvalue> safe_create(Args&&... args) const;
+
+        template < typename... Args >
         uvalue create_at(void* mem, Args&&... args) const;
+
+        template < typename... Args >
+        std::optional<uvalue> safe_create_at(void* mem, Args&&... args) const;
 
         template < typename... Args >
         [[nodiscard]] bool is_invocable_with() const noexcept;
@@ -3195,11 +3197,17 @@ namespace meta_hpp
         [[nodiscard]] const uvalue& get_value() const noexcept;
         [[nodiscard]] const uvalue& get_underlying_value() const noexcept;
 
-        template < typename T >
-        [[nodiscard]] T get_value_as() const;
+        template < detail::enum_kind Enum >
+        [[nodiscard]] Enum get_value_as() const;
 
-        template < typename T >
-        [[nodiscard]] T get_underlying_value_as() const;
+        template < detail::enum_kind Enum >
+        [[nodiscard]] std::optional<Enum> safe_get_value_as() const noexcept;
+
+        template < detail::number_kind Number >
+        [[nodiscard]] Number get_underlying_value_as() const;
+
+        template < detail::number_kind Number >
+        [[nodiscard]] std::optional<Number> safe_get_underlying_value_as() const noexcept;
     };
 
     class function final : public state_base<function> {
@@ -3211,6 +3219,9 @@ namespace meta_hpp
 
         template < typename... Args >
         uvalue invoke(Args&&... args) const;
+
+        template < typename... Args >
+        std::optional<uvalue> safe_invoke(Args&&... args) const;
 
         template < typename... Args >
         uvalue operator()(Args&&... args) const;
@@ -3235,11 +3246,20 @@ namespace meta_hpp
         template < typename Instance >
         [[nodiscard]] uvalue get(Instance&& instance) const;
 
+        template < typename Instance >
+        [[nodiscard]] std::optional<uvalue> safe_get(Instance&& instance) const;
+
         template < typename T, typename Instance >
         [[nodiscard]] T get_as(Instance&& instance) const;
 
+        template < typename T, typename Instance >
+        [[nodiscard]] std::optional<T> safe_get_as(Instance&& instance) const;
+
         template < typename Instance, typename Value >
         void set(Instance&& instance, Value&& value) const;
+
+        template < typename Instance, typename Value >
+        bool safe_set(Instance&& instance, Value&& value) const;
 
         template < typename Instance >
         [[nodiscard]] uvalue operator()(Instance&& instance) const;
@@ -3269,6 +3289,9 @@ namespace meta_hpp
 
         template < typename Instance, typename... Args >
         uvalue invoke(Instance&& instance, Args&&... args) const;
+
+        template < typename Instance, typename... Args >
+        std::optional<uvalue> safe_invoke(Instance&& instance, Args&&... args) const;
 
         template < typename Instance, typename... Args >
         uvalue operator()(Instance&& instance, Args&&... args) const;
@@ -3314,11 +3337,19 @@ namespace meta_hpp
 
         [[nodiscard]] uvalue get() const;
 
+        [[nodiscard]] std::optional<uvalue> safe_get() const;
+
         template < typename T >
         [[nodiscard]] T get_as() const;
 
+        template < typename T >
+        [[nodiscard]] std::optional<T> safe_get_as() const;
+
         template < typename Value >
         void set(Value&& value) const;
+
+        template < typename Value >
+        bool safe_set(Value&& value) const;
 
         [[nodiscard]] uvalue operator()() const;
 
@@ -5407,7 +5438,7 @@ namespace meta_hpp::detail
     template < typename To >
     // NOLINTNEXTLINE(*-cognitive-complexity)
     To uarg::cast() const {
-        META_HPP_THROW_IF(!can_cast_to<To>(), "bad argument cast");
+        META_HPP_ASSERT(can_cast_to<To>() && "bad argument cast");
 
         using to_raw_type_cv = std::remove_reference_t<To>;
         using to_raw_type = std::remove_cv_t<to_raw_type_cv>;
@@ -5578,16 +5609,16 @@ namespace meta_hpp::detail
 
         static_assert(as_copy || as_void || ref_as_ptr);
 
-        META_HPP_THROW_IF( //
-            args.size() != ft::arity,
-            "an attempt to call a function with an incorrect arity"
+        META_HPP_ASSERT(             //
+            args.size() == ft::arity //
+            && "an attempt to call a function with an incorrect arity"
         );
 
         return std::invoke(
             [ function_ptr, args ]<std::size_t... Is>(std::index_sequence<Is...>)->uvalue {
-                META_HPP_THROW_IF( //
-                    !(... && args[Is].can_cast_to<type_list_at_t<Is, argument_types>>()),
-                    "an attempt to call a function with incorrect argument types"
+                META_HPP_ASSERT(                                                        //
+                    (... && args[Is].can_cast_to<type_list_at_t<Is, argument_types>>()) //
+                    && "an attempt to call a function with incorrect argument types"
                 );
 
                 if constexpr ( std::is_void_v<return_type> ) {
@@ -5695,6 +5726,14 @@ namespace meta_hpp
         } else {
             return state_->invoke({});
         }
+    }
+
+    template < typename... Args >
+    std::optional<uvalue> function::safe_invoke(Args&&... args) const {
+        if ( is_invocable_with(std::forward<Args>(args)...) ) {
+            return invoke(std::forward<Args>(args)...);
+        }
+        return std::nullopt;
     }
 
     template < typename... Args >
@@ -5904,7 +5943,7 @@ namespace meta_hpp::detail
 {
     template < inst_class_ref_kind Q >
     decltype(auto) uinst::cast() const {
-        META_HPP_THROW_IF(!can_cast_to<Q>(), "bad instance cast");
+        META_HPP_ASSERT(can_cast_to<Q>() && "bad instance cast");
 
         using inst_class_cv = std::remove_reference_t<Q>;
         using inst_class = std::remove_cv_t<inst_class_cv>;
@@ -6004,12 +6043,12 @@ namespace meta_hpp::detail
 
         static_assert(as_copy || as_ptr || as_ref_wrap);
 
-        META_HPP_THROW_IF( //
-            !inst.can_cast_to<const class_type>(),
-            "an attempt to get a member with an incorrect instance type"
-        );
-
         if ( inst.is_inst_const() ) {
+            META_HPP_ASSERT(                         //
+                inst.can_cast_to<const class_type>() //
+                && "an attempt to get a member with an incorrect instance type"
+            );
+
             auto&& return_value = inst.cast<const class_type>().*member_ptr;
 
             if constexpr ( as_copy ) {
@@ -6024,6 +6063,11 @@ namespace meta_hpp::detail
                 return uvalue{std::ref(return_value)};
             }
         } else {
+            META_HPP_ASSERT(                   //
+                inst.can_cast_to<class_type>() //
+                && "an attempt to get a member with an incorrect instance type"
+            );
+
             auto&& return_value = inst.cast<class_type>().*member_ptr;
 
             if constexpr ( as_copy ) {
@@ -6058,21 +6102,21 @@ namespace meta_hpp::detail
         using value_type = typename mt::value_type;
 
         if constexpr ( std::is_const_v<value_type> ) {
-            META_HPP_THROW("an attempt to set a constant member");
+            META_HPP_ASSERT(false && "an attempt to set a constant member");
         } else {
-            META_HPP_THROW_IF( //
-                inst.is_inst_const(),
-                "an attempt to set a member with an const instance type"
+            META_HPP_ASSERT(          //
+                !inst.is_inst_const() //
+                && "an attempt to set a member with an const instance type"
             );
 
-            META_HPP_THROW_IF( //
-                !inst.can_cast_to<class_type>(),
-                "an attempt to set a member with an incorrect instance type"
+            META_HPP_ASSERT(                   //
+                inst.can_cast_to<class_type>() //
+                && "an attempt to set a member with an incorrect instance type"
             );
 
-            META_HPP_THROW_IF( //
-                !arg.can_cast_to<value_type>(),
-                "an attempt to set a member with an incorrect argument type"
+            META_HPP_ASSERT(                  //
+                arg.can_cast_to<value_type>() //
+                && "an attempt to set a member with an incorrect argument type"
             );
 
             inst.cast<class_type>().*member_ptr = arg.cast<value_type>();
@@ -6085,8 +6129,13 @@ namespace meta_hpp::detail
         using class_type = typename mt::class_type;
         using value_type = typename mt::value_type;
 
-        return !std::is_const_v<value_type> && !inst.is_inst_const() && inst.can_cast_to<class_type>()
-            && arg.can_cast_to<value_type>();
+        if constexpr ( std::is_const_v<value_type> ) {
+            return false;
+        } else {
+            return !inst.is_inst_const()          //
+                && inst.can_cast_to<class_type>() //
+                && arg.can_cast_to<value_type>(); //
+        }
     }
 }
 
@@ -6151,9 +6200,22 @@ namespace meta_hpp
         return state_->getter(vinst);
     }
 
+    template < typename Instance >
+    std::optional<uvalue> member::safe_get(Instance&& instance) const {
+        if ( is_gettable_with(std::forward<Instance>(instance)) ) {
+            return get(std::forward<Instance>(instance));
+        }
+        return std::nullopt;
+    }
+
     template < typename T, typename Instance >
     T member::get_as(Instance&& instance) const {
         return get(std::forward<Instance>(instance)).template get_as<T>();
+    }
+
+    template < typename T, typename Instance >
+    std::optional<T> member::safe_get_as(Instance&& instance) const {
+        return safe_get(std::forward<Instance>(instance)).value_or(uvalue{}).template safe_get_as<T>();
     }
 
     template < typename Instance, typename Value >
@@ -6162,6 +6224,15 @@ namespace meta_hpp
         const uinst vinst{std::forward<Instance>(instance)};
         const uarg vvalue{std::forward<Value>(value)};
         state_->setter(vinst, vvalue);
+    }
+
+    template < typename Instance, typename Value >
+    bool member::safe_set(Instance&& instance, Value&& value) const {
+        if ( is_settable_with(std::forward<Instance>(instance), std::forward<Value>(value)) ) {
+            set(std::forward<Instance>(instance), std::forward<Value>(value));
+            return true;
+        }
+        return false;
     }
 
     template < typename Instance >
@@ -6269,21 +6340,20 @@ namespace meta_hpp::detail
 
         static_assert(as_copy || as_void || ref_as_ptr);
 
-        META_HPP_THROW_IF( //
-            args.size() != mt::arity,
-            "an attempt to call a method with an incorrect arity"
+        META_HPP_ASSERT(             //
+            args.size() == mt::arity //
+            && "an attempt to call a method with an incorrect arity"
         );
-
-        META_HPP_THROW_IF( //
-            !inst.can_cast_to<qualified_type>(),
-            "an attempt to call a method with an incorrect instance type"
+        META_HPP_ASSERT(                       //
+            inst.can_cast_to<qualified_type>() //
+            && "an attempt to call a method with an incorrect instance type"
         );
 
         return std::invoke(
             [ method_ptr, &inst, args ]<std::size_t... Is>(std::index_sequence<Is...>)->uvalue {
-                META_HPP_THROW_IF( //
-                    !(... && args[Is].can_cast_to<type_list_at_t<Is, argument_types>>()),
-                    "an attempt to call a method with incorrect argument types"
+                META_HPP_ASSERT(                                                        //
+                    (... && args[Is].can_cast_to<type_list_at_t<Is, argument_types>>()) //
+                    && "an attempt to call a method with incorrect argument types"
                 );
 
                 if constexpr ( std::is_void_v<return_type> ) {
@@ -6400,6 +6470,14 @@ namespace meta_hpp
         } else {
             return state_->invoke(vinst, {});
         }
+    }
+
+    template < typename Instance, typename... Args >
+    std::optional<uvalue> method::safe_invoke(Instance&& instance, Args&&... args) const {
+        if ( is_invocable_with(std::forward<Instance>(instance), std::forward<Args>(args)...) ) {
+            return invoke(std::forward<Instance>(instance), std::forward<Args>(args)...);
+        }
+        return std::nullopt;
     }
 
     template < typename Instance, typename... Args >
@@ -6677,16 +6755,16 @@ namespace meta_hpp::detail
 
         static_assert(as_object || as_raw_ptr || as_shared_ptr);
 
-        META_HPP_THROW_IF( //
-            args.size() != ct::arity,
-            "an attempt to call a constructor with an incorrect arity"
+        META_HPP_ASSERT(             //
+            args.size() == ct::arity //
+            && "an attempt to call a constructor with an incorrect arity"
         );
 
         return std::invoke(
             [args]<std::size_t... Is>(std::index_sequence<Is...>)->uvalue {
-                META_HPP_THROW_IF( //
-                    !(... && args[Is].can_cast_to<type_list_at_t<Is, argument_types>>()),
-                    "an attempt to call a constructor with incorrect argument types"
+                META_HPP_ASSERT(                                                        //
+                    (... && args[Is].can_cast_to<type_list_at_t<Is, argument_types>>()) //
+                    && "an attempt to call a constructor with incorrect argument types"
                 );
 
                 if constexpr ( as_object ) {
@@ -6694,11 +6772,11 @@ namespace meta_hpp::detail
                 }
 
                 if constexpr ( as_raw_ptr ) {
-                    return uvalue{std::make_unique<class_type>(args[Is].cast<type_list_at_t<Is, argument_types>>()...).release()};
+                    return std::make_unique<class_type>(args[Is].cast<type_list_at_t<Is, argument_types>>()...).release();
                 }
 
                 if constexpr ( as_shared_ptr ) {
-                    return uvalue{std::make_shared<class_type>(args[Is].cast<type_list_at_t<Is, argument_types>>()...)};
+                    return std::make_shared<class_type>(args[Is].cast<type_list_at_t<Is, argument_types>>()...);
                 }
             },
             std::make_index_sequence<ct::arity>()
@@ -6711,22 +6789,22 @@ namespace meta_hpp::detail
         using class_type = typename ct::class_type;
         using argument_types = typename ct::argument_types;
 
-        META_HPP_THROW_IF( //
-            args.size() != ct::arity,
-            "an attempt to call a constructor with an incorrect arity"
+        META_HPP_ASSERT(             //
+            args.size() == ct::arity //
+            && "an attempt to call a constructor with an incorrect arity"
         );
 
         return std::invoke(
             [ mem, args ]<std::size_t... Is>(std::index_sequence<Is...>)->uvalue {
-                META_HPP_THROW_IF( //
-                    !(... && args[Is].can_cast_to<type_list_at_t<Is, argument_types>>()),
-                    "an attempt to call a constructor with incorrect argument types"
+                META_HPP_ASSERT(                                                        //
+                    (... && args[Is].can_cast_to<type_list_at_t<Is, argument_types>>()) //
+                    && "an attempt to call a constructor with incorrect argument types"
                 );
 
-                return uvalue{std::construct_at( //
-                    static_cast<class_type*>(mem),
+                return std::construct_at(          //
+                    static_cast<class_type*>(mem), //
                     args[Is].cast<type_list_at_t<Is, argument_types>>()...
-                )};
+                );
             },
             std::make_index_sequence<ct::arity>()
         );
@@ -6820,6 +6898,14 @@ namespace meta_hpp
     }
 
     template < typename... Args >
+    std::optional<uvalue> constructor::safe_create(Args&&... args) const {
+        if ( is_invocable_with(std::forward<Args>(args)...) ) {
+            return create(std::forward<Args>(args)...);
+        }
+        return std::nullopt;
+    }
+
+    template < typename... Args >
     uvalue constructor::create_at(void* mem, Args&&... args) const {
         if constexpr ( sizeof...(Args) > 0 ) {
             using namespace detail;
@@ -6828,6 +6914,14 @@ namespace meta_hpp
         } else {
             return state_->create_at(mem, {});
         }
+    }
+
+    template < typename... Args >
+    std::optional<uvalue> constructor::safe_create_at(void* mem, Args&&... args) const {
+        if ( is_invocable_with(std::forward<Args>(args)...) ) {
+            return create_at(mem, std::forward<Args>(args)...);
+        }
+        return std::nullopt;
     }
 
     template < typename... Args >
@@ -7005,16 +7099,21 @@ namespace meta_hpp
     }
 
     inline uvalue enum_type::name_to_value(std::string_view name) const noexcept {
-        if ( const evalue& value = get_evalue(name); value ) {
+        if ( const evalue& value = get_evalue(name) ) {
             return value.get_value();
         }
 
         return uvalue{};
     }
 
-    template < typename T >
-    T enum_type::name_to_value_as(std::string_view name) const {
-        return name_to_value(name).get_as<T>();
+    template < detail::enum_kind Enum >
+    Enum enum_type::name_to_value_as(std::string_view name) const {
+        return name_to_value(name).get_as<Enum>();
+    }
+
+    template < detail::enum_kind Enum >
+    std::optional<Enum> enum_type::safe_name_to_value_as(std::string_view name) const noexcept {
+        return name_to_value(name).safe_get_as<Enum>();
     }
 }
 
@@ -7051,14 +7150,24 @@ namespace meta_hpp
         return state_->underlying_value;
     }
 
-    template < typename T >
-    T evalue::get_value_as() const {
-        return get_value().get_as<T>();
+    template < detail::enum_kind Enum >
+    Enum evalue::get_value_as() const {
+        return get_value().get_as<Enum>();
     }
 
-    template < typename T >
-    T evalue::get_underlying_value_as() const {
-        return get_underlying_value().get_as<T>();
+    template < detail::enum_kind Enum >
+    std::optional<Enum> evalue::safe_get_value_as() const noexcept {
+        return get_value().safe_get_as<Enum>();
+    }
+
+    template < detail::number_kind Number >
+    Number evalue::get_underlying_value_as() const {
+        return get_underlying_value().get_as<Number>();
+    }
+
+    template < detail::number_kind Number >
+    std::optional<Number> evalue::safe_get_underlying_value_as() const noexcept {
+        return get_underlying_value().safe_get_as<Number>();
     }
 }
 
@@ -7125,12 +7234,13 @@ namespace meta_hpp::detail
         using data_type = typename pt::data_type;
 
         if constexpr ( std::is_const_v<data_type> ) {
-            META_HPP_THROW("an attempt to set a constant variable");
+            META_HPP_ASSERT(false && "an attempt to set a constant variable");
         } else {
-            META_HPP_THROW_IF( //
-                !arg.can_cast_to<data_type>(),
-                "an attempt to set a variable with an incorrect argument type"
+            META_HPP_ASSERT(                 //
+                arg.can_cast_to<data_type>() //
+                && "an attempt to set a variable with an incorrect argument type"
             );
+
             *variable_ptr = arg.cast<data_type>();
         }
     }
@@ -7140,7 +7250,11 @@ namespace meta_hpp::detail
         using pt = pointer_traits<Pointer>;
         using data_type = typename pt::data_type;
 
-        return !std::is_const_v<data_type> && arg.can_cast_to<data_type>();
+        if constexpr ( std::is_const_v<data_type> ) {
+            return false;
+        } else {
+            return arg.can_cast_to<data_type>();
+        }
     }
 }
 
@@ -7196,9 +7310,18 @@ namespace meta_hpp
         return state_->getter();
     }
 
+    inline std::optional<uvalue> variable::safe_get() const {
+        return state_->getter();
+    }
+
     template < typename T >
     T variable::get_as() const {
-        return get().get_as<T>();
+        return get().template get_as<T>();
+    }
+
+    template < typename T >
+    std::optional<T> variable::safe_get_as() const {
+        return safe_get().value_or(uvalue{}).template safe_get_as<T>();
     }
 
     template < typename Value >
@@ -7206,6 +7329,15 @@ namespace meta_hpp
         using namespace detail;
         const uarg vvalue{std::forward<Value>(value)};
         state_->setter(vvalue);
+    }
+
+    template < typename Value >
+    bool variable::safe_set(Value&& value) const {
+        if ( is_settable_with(std::forward<Value>(value)) ) {
+            set(std::forward<Value>(value));
+            return true;
+        }
+        return false;
     }
 
     inline uvalue variable::operator()() const {
@@ -7227,7 +7359,7 @@ namespace meta_hpp
     template < typename Value >
     bool variable::is_settable_with(Value&& value) const noexcept {
         using namespace detail;
-        const uarg vvalue{std::forward<Value>(value)};
+        const uarg_base vvalue{std::forward<Value>(value)};
         return state_->is_settable_with(vvalue);
     }
 }
@@ -7396,7 +7528,7 @@ namespace meta_hpp
         }
 
         for ( const class_type& base : data_->bases ) {
-            if ( const function& function = base.get_function(name); function ) {
+            if ( const function& function = base.get_function(name) ) {
                 return function;
             }
         }
@@ -7412,7 +7544,7 @@ namespace meta_hpp
         }
 
         for ( const class_type& base : data_->bases ) {
-            if ( const member& member = base.get_member(name); member ) {
+            if ( const member& member = base.get_member(name) ) {
                 return member;
             }
         }
@@ -7428,7 +7560,7 @@ namespace meta_hpp
         }
 
         for ( const class_type& base : data_->bases ) {
-            if ( const method& method = base.get_method(name); method ) {
+            if ( const method& method = base.get_method(name) ) {
                 return method;
             }
         }
@@ -7442,7 +7574,7 @@ namespace meta_hpp
         }
 
         for ( const class_type& base : data_->bases ) {
-            if ( const any_type& type = base.get_typedef(name); type ) {
+            if ( const any_type& type = base.get_typedef(name) ) {
                 return type;
             }
         }
@@ -7458,7 +7590,7 @@ namespace meta_hpp
         }
 
         for ( const class_type& base : data_->bases ) {
-            if ( const variable& variable = base.get_variable(name); variable ) {
+            if ( const variable& variable = base.get_variable(name) ) {
                 return variable;
             }
         }
@@ -7528,7 +7660,7 @@ namespace meta_hpp
         }
 
         for ( const class_type& base : data_->bases ) {
-            if ( const function& function = base.get_function_with(name, first, last); function ) {
+            if ( const function& function = base.get_function_with(name, first, last) ) {
                 return function;
             }
         }
@@ -7567,7 +7699,7 @@ namespace meta_hpp
         }
 
         for ( const class_type& base : data_->bases ) {
-            if ( const method& method = base.get_method_with(name, first, last); method ) {
+            if ( const method& method = base.get_method_with(name, first, last) ) {
                 return method;
             }
         }

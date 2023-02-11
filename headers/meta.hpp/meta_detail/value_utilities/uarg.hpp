@@ -234,7 +234,7 @@ namespace meta_hpp::detail
     template < typename To >
     // NOLINTNEXTLINE(*-cognitive-complexity)
     To uarg::cast() const {
-        META_HPP_THROW_IF(!can_cast_to<To>(), "bad argument cast");
+        META_HPP_ASSERT(can_cast_to<To>() && "bad argument cast");
 
         using to_raw_type_cv = std::remove_reference_t<To>;
         using to_raw_type = std::remove_cv_t<to_raw_type_cv>;

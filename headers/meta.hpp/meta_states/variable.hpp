@@ -52,12 +52,13 @@ namespace meta_hpp::detail
         using data_type = typename pt::data_type;
 
         if constexpr ( std::is_const_v<data_type> ) {
-            META_HPP_THROW("an attempt to set a constant variable");
+            META_HPP_ASSERT(false && "an attempt to set a constant variable");
         } else {
-            META_HPP_THROW_IF( //
-                !arg.can_cast_to<data_type>(),
-                "an attempt to set a variable with an incorrect argument type"
+            META_HPP_ASSERT(                 //
+                arg.can_cast_to<data_type>() //
+                && "an attempt to set a variable with an incorrect argument type"
             );
+
             *variable_ptr = arg.cast<data_type>();
         }
     }
@@ -67,7 +68,11 @@ namespace meta_hpp::detail
         using pt = pointer_traits<Pointer>;
         using data_type = typename pt::data_type;
 
-        return !std::is_const_v<data_type> && arg.can_cast_to<data_type>();
+        if constexpr ( std::is_const_v<data_type> ) {
+            return false;
+        } else {
+            return arg.can_cast_to<data_type>();
+        }
     }
 }
 
@@ -123,9 +128,18 @@ namespace meta_hpp
         return state_->getter();
     }
 
+    inline std::optional<uvalue> variable::safe_get() const {
+        return state_->getter();
+    }
+
     template < typename T >
     T variable::get_as() const {
-        return get().get_as<T>();
+        return get().template get_as<T>();
+    }
+
+    template < typename T >
+    std::optional<T> variable::safe_get_as() const {
+        return safe_get().value_or(uvalue{}).template safe_get_as<T>();
     }
 
     template < typename Value >
@@ -133,6 +147,15 @@ namespace meta_hpp
         using namespace detail;
         const uarg vvalue{std::forward<Value>(value)};
         state_->setter(vvalue);
+    }
+
+    template < typename Value >
+    bool variable::safe_set(Value&& value) const {
+        if ( is_settable_with(std::forward<Value>(value)) ) {
+            set(std::forward<Value>(value));
+            return true;
+        }
+        return false;
     }
 
     inline uvalue variable::operator()() const {
@@ -154,7 +177,7 @@ namespace meta_hpp
     template < typename Value >
     bool variable::is_settable_with(Value&& value) const noexcept {
         using namespace detail;
-        const uarg vvalue{std::forward<Value>(value)};
+        const uarg_base vvalue{std::forward<Value>(value)};
         return state_->is_settable_with(vvalue);
     }
 }

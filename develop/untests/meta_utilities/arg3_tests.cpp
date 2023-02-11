@@ -82,47 +82,47 @@ TEST_CASE("meta/meta_utilities/arg3/cast") {
         CHECK_FALSE(uarg{LV()}.can_cast_to<A>());
         CHECK_FALSE(uarg{LV()}.can_cast_to<const A>());
 
-        CHECK_THROWS(std::ignore = uarg{LV()}.cast<A>());
-        CHECK_THROWS(std::ignore = uarg{LV()}.cast<const A>());
+        // CHECK_THROWS(std::ignore = uarg{LV()}.cast<A>());
+        // CHECK_THROWS(std::ignore = uarg{LV()}.cast<const A>());
     }
 
     SUBCASE("CLV") {
         CHECK_FALSE(uarg{CLV()}.can_cast_to<A>());
         CHECK_FALSE(uarg{CLV()}.can_cast_to<const A>());
 
-        CHECK_THROWS(std::ignore = uarg{CLV()}.cast<A>());
-        CHECK_THROWS(std::ignore = uarg{CLV()}.cast<const A>());
+        // CHECK_THROWS(std::ignore = uarg{CLV()}.cast<A>());
+        // CHECK_THROWS(std::ignore = uarg{CLV()}.cast<const A>());
     }
 
     SUBCASE("XV") {
         CHECK_FALSE(uarg{XV()}.can_cast_to<A>());
         CHECK_FALSE(uarg{XV()}.can_cast_to<const A>());
 
-        CHECK_THROWS(std::ignore = uarg{XV()}.cast<A>());
-        CHECK_THROWS(std::ignore = uarg{XV()}.cast<const A>());
+        // CHECK_THROWS(std::ignore = uarg{XV()}.cast<A>());
+        // CHECK_THROWS(std::ignore = uarg{XV()}.cast<const A>());
     }
 
     SUBCASE("CXV") {
         CHECK_FALSE(uarg{CXV()}.can_cast_to<A>());
         CHECK_FALSE(uarg{CXV()}.can_cast_to<const A>());
 
-        CHECK_THROWS(std::ignore = uarg{CXV()}.cast<A>());
-        CHECK_THROWS(std::ignore = uarg{CXV()}.cast<const A>());
+        // CHECK_THROWS(std::ignore = uarg{CXV()}.cast<A>());
+        // CHECK_THROWS(std::ignore = uarg{CXV()}.cast<const A>());
     }
 
     SUBCASE("PRV") {
         CHECK_FALSE(uarg{PRV()}.can_cast_to<A>());
         CHECK_FALSE(uarg{PRV()}.can_cast_to<const A>());
 
-        CHECK_THROWS(std::ignore = uarg{PRV()}.cast<A>());
-        CHECK_THROWS(std::ignore = uarg{PRV()}.cast<const A>());
+        // CHECK_THROWS(std::ignore = uarg{PRV()}.cast<A>());
+        // CHECK_THROWS(std::ignore = uarg{PRV()}.cast<const A>());
     }
 
     SUBCASE("CPRV") {
         CHECK_FALSE(uarg{CPRV()}.can_cast_to<A>());
         CHECK_FALSE(uarg{CPRV()}.can_cast_to<const A>());
 
-        CHECK_THROWS(std::ignore = uarg{CPRV()}.cast<A>());
-        CHECK_THROWS(std::ignore = uarg{CPRV()}.cast<const A>());
+        // CHECK_THROWS(std::ignore = uarg{CPRV()}.cast<A>());
+        // CHECK_THROWS(std::ignore = uarg{CPRV()}.cast<const A>());
     }
 }

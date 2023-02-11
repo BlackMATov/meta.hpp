@@ -183,7 +183,7 @@ namespace meta_hpp::detail
 {
     template < inst_class_ref_kind Q >
     decltype(auto) uinst::cast() const {
-        META_HPP_THROW_IF(!can_cast_to<Q>(), "bad instance cast");
+        META_HPP_ASSERT(can_cast_to<Q>() && "bad instance cast");
 
         using inst_class_cv = std::remove_reference_t<Q>;
         using inst_class = std::remove_cv_t<inst_class_cv>;

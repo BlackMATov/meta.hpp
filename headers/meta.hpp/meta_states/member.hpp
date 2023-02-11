@@ -33,12 +33,12 @@ namespace meta_hpp::detail
 
         static_assert(as_copy || as_ptr || as_ref_wrap);
 
-        META_HPP_THROW_IF( //
-            !inst.can_cast_to<const class_type>(),
-            "an attempt to get a member with an incorrect instance type"
-        );
-
         if ( inst.is_inst_const() ) {
+            META_HPP_ASSERT(                         //
+                inst.can_cast_to<const class_type>() //
+                && "an attempt to get a member with an incorrect instance type"
+            );
+
             auto&& return_value = inst.cast<const class_type>().*member_ptr;
 
             if constexpr ( as_copy ) {
@@ -53,6 +53,11 @@ namespace meta_hpp::detail
                 return uvalue{std::ref(return_value)};
             }
         } else {
+            META_HPP_ASSERT(                   //
+                inst.can_cast_to<class_type>() //
+                && "an attempt to get a member with an incorrect instance type"
+            );
+
             auto&& return_value = inst.cast<class_type>().*member_ptr;
 
             if constexpr ( as_copy ) {
@@ -87,21 +92,21 @@ namespace meta_hpp::detail
         using value_type = typename mt::value_type;
 
         if constexpr ( std::is_const_v<value_type> ) {
-            META_HPP_THROW("an attempt to set a constant member");
+            META_HPP_ASSERT(false && "an attempt to set a constant member");
         } else {
-            META_HPP_THROW_IF( //
-                inst.is_inst_const(),
-                "an attempt to set a member with an const instance type"
+            META_HPP_ASSERT(          //
+                !inst.is_inst_const() //
+                && "an attempt to set a member with an const instance type"
             );
 
-            META_HPP_THROW_IF( //
-                !inst.can_cast_to<class_type>(),
-                "an attempt to set a member with an incorrect instance type"
+            META_HPP_ASSERT(                   //
+                inst.can_cast_to<class_type>() //
+                && "an attempt to set a member with an incorrect instance type"
             );
 
-            META_HPP_THROW_IF( //
-                !arg.can_cast_to<value_type>(),
-                "an attempt to set a member with an incorrect argument type"
+            META_HPP_ASSERT(                  //
+                arg.can_cast_to<value_type>() //
+                && "an attempt to set a member with an incorrect argument type"
             );
 
             inst.cast<class_type>().*member_ptr = arg.cast<value_type>();
@@ -114,8 +119,13 @@ namespace meta_hpp::detail
         using class_type = typename mt::class_type;
         using value_type = typename mt::value_type;
 
-        return !std::is_const_v<value_type> && !inst.is_inst_const() && inst.can_cast_to<class_type>()
-            && arg.can_cast_to<value_type>();
+        if constexpr ( std::is_const_v<value_type> ) {
+            return false;
+        } else {
+            return !inst.is_inst_const()          //
+                && inst.can_cast_to<class_type>() //
+                && arg.can_cast_to<value_type>(); //
+        }
     }
 }
 
@@ -180,9 +190,22 @@ namespace meta_hpp
         return state_->getter(vinst);
     }
 
+    template < typename Instance >
+    std::optional<uvalue> member::safe_get(Instance&& instance) const {
+        if ( is_gettable_with(std::forward<Instance>(instance)) ) {
+            return get(std::forward<Instance>(instance));
+        }
+        return std::nullopt;
+    }
+
     template < typename T, typename Instance >
     T member::get_as(Instance&& instance) const {
         return get(std::forward<Instance>(instance)).template get_as<T>();
+    }
+
+    template < typename T, typename Instance >
+    std::optional<T> member::safe_get_as(Instance&& instance) const {
+        return safe_get(std::forward<Instance>(instance)).value_or(uvalue{}).template safe_get_as<T>();
     }
 
     template < typename Instance, typename Value >
@@ -191,6 +214,15 @@ namespace meta_hpp
         const uinst vinst{std::forward<Instance>(instance)};
         const uarg vvalue{std::forward<Value>(value)};
         state_->setter(vinst, vvalue);
+    }
+
+    template < typename Instance, typename Value >
+    bool member::safe_set(Instance&& instance, Value&& value) const {
+        if ( is_settable_with(std::forward<Instance>(instance), std::forward<Value>(value)) ) {
+            set(std::forward<Instance>(instance), std::forward<Value>(value));
+            return true;
+        }
+        return false;
     }
 
     template < typename Instance >

@@ -20,13 +20,6 @@
 #    define META_HPP_THROW(...) std::abort()
 #endif
 
-#define META_HPP_THROW_IF(yesno, ...) \
-    do { \
-        if ( yesno ) { \
-            META_HPP_THROW(__VA_ARGS__); \
-        } \
-    } while ( false )
-
 namespace meta_hpp::detail
 {
 #if !defined(META_HPP_NO_EXCEPTIONS)
