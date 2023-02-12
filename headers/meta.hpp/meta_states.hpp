@@ -177,7 +177,13 @@ namespace meta_hpp
         [[nodiscard]] uvalue create(Args&&... args) const;
 
         template < typename... Args >
+        [[nodiscard]] std::optional<uvalue> safe_create(Args&&... args) const;
+
+        template < typename... Args >
         uvalue create_at(void* mem, Args&&... args) const;
+
+        template < typename... Args >
+        std::optional<uvalue> safe_create_at(void* mem, Args&&... args) const;
 
         template < typename... Args >
         [[nodiscard]] bool is_invocable_with() const noexcept;
@@ -211,11 +217,17 @@ namespace meta_hpp
         [[nodiscard]] const uvalue& get_value() const noexcept;
         [[nodiscard]] const uvalue& get_underlying_value() const noexcept;
 
-        template < typename T >
-        [[nodiscard]] T get_value_as() const;
+        template < detail::enum_kind Enum >
+        [[nodiscard]] Enum get_value_as() const;
 
-        template < typename T >
-        [[nodiscard]] T get_underlying_value_as() const;
+        template < detail::enum_kind Enum >
+        [[nodiscard]] std::optional<Enum> safe_get_value_as() const noexcept;
+
+        template < detail::number_kind Number >
+        [[nodiscard]] Number get_underlying_value_as() const;
+
+        template < detail::number_kind Number >
+        [[nodiscard]] std::optional<Number> safe_get_underlying_value_as() const noexcept;
     };
 
     class function final : public state_base<function> {
@@ -227,6 +239,9 @@ namespace meta_hpp
 
         template < typename... Args >
         uvalue invoke(Args&&... args) const;
+
+        template < typename... Args >
+        std::optional<uvalue> safe_invoke(Args&&... args) const;
 
         template < typename... Args >
         uvalue operator()(Args&&... args) const;
@@ -251,11 +266,20 @@ namespace meta_hpp
         template < typename Instance >
         [[nodiscard]] uvalue get(Instance&& instance) const;
 
+        template < typename Instance >
+        [[nodiscard]] std::optional<uvalue> safe_get(Instance&& instance) const;
+
         template < typename T, typename Instance >
         [[nodiscard]] T get_as(Instance&& instance) const;
 
+        template < typename T, typename Instance >
+        [[nodiscard]] std::optional<T> safe_get_as(Instance&& instance) const;
+
         template < typename Instance, typename Value >
         void set(Instance&& instance, Value&& value) const;
+
+        template < typename Instance, typename Value >
+        bool safe_set(Instance&& instance, Value&& value) const;
 
         template < typename Instance >
         [[nodiscard]] uvalue operator()(Instance&& instance) const;
@@ -285,6 +309,9 @@ namespace meta_hpp
 
         template < typename Instance, typename... Args >
         uvalue invoke(Instance&& instance, Args&&... args) const;
+
+        template < typename Instance, typename... Args >
+        std::optional<uvalue> safe_invoke(Instance&& instance, Args&&... args) const;
 
         template < typename Instance, typename... Args >
         uvalue operator()(Instance&& instance, Args&&... args) const;
@@ -330,11 +357,19 @@ namespace meta_hpp
 
         [[nodiscard]] uvalue get() const;
 
+        [[nodiscard]] std::optional<uvalue> safe_get() const;
+
         template < typename T >
         [[nodiscard]] T get_as() const;
 
+        template < typename T >
+        [[nodiscard]] std::optional<T> safe_get_as() const;
+
         template < typename Value >
         void set(Value&& value) const;
+
+        template < typename Value >
+        bool safe_set(Value&& value) const;
 
         [[nodiscard]] uvalue operator()() const;
 

@@ -22,6 +22,7 @@ Diagnostics:
       - readability-identifier-length
       - readability-named-parameter
       - readability-redundant-access-specifiers
+      - readability-simplify-boolean-expr
 
 CompileFlags:
   CompilationDatabase: ../develop/.cdb

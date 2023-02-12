@@ -247,8 +247,11 @@ namespace meta_hpp
         [[nodiscard]] std::string_view value_to_name(Enum value) const noexcept;
         [[nodiscard]] uvalue name_to_value(std::string_view name) const noexcept;
 
-        template < typename T >
-        [[nodiscard]] T name_to_value_as(std::string_view name) const;
+        template < detail::enum_kind Enum >
+        [[nodiscard]] Enum name_to_value_as(std::string_view name) const;
+
+        template < detail::enum_kind Enum >
+        [[nodiscard]] std::optional<Enum> safe_name_to_value_as(std::string_view name) const noexcept;
     };
 
     class function_type final : public type_base<function_type> {

@@ -22,58 +22,51 @@ namespace meta_hpp::detail
         using qualified_type = typename mt::qualified_type;
         using argument_types = typename mt::argument_types;
 
-        constexpr bool as_copy                                  //
-            = std::is_copy_constructible_v<return_type>         //
-           && std::is_same_v<Policy, method_policy::as_copy_t>; //
+        constexpr bool as_copy                          //
+            = std::is_copy_constructible_v<return_type> //
+           && std::is_same_v<Policy, method_policy::as_copy_t>;
 
-        constexpr bool as_void                                         //
-            = std::is_void_v<return_type>                              //
-           || std::is_same_v<Policy, method_policy::discard_return_t>; //
+        constexpr bool as_void            //
+            = std::is_void_v<return_type> //
+           || std::is_same_v<Policy, method_policy::discard_return_t>;
 
-        constexpr bool ref_as_ptr                                                   //
-            = std::is_reference_v<return_type>                                      //
-           && std::is_same_v<Policy, method_policy::return_reference_as_pointer_t>; //
+        constexpr bool ref_as_ptr              //
+            = std::is_reference_v<return_type> //
+           && std::is_same_v<Policy, method_policy::return_reference_as_pointer_t>;
 
         static_assert(as_copy || as_void || ref_as_ptr);
 
-        META_HPP_THROW_IF( //
-            args.size() != mt::arity,
-            "an attempt to call a method with an incorrect arity"
+        META_HPP_ASSERT(             //
+            args.size() == mt::arity //
+            && "an attempt to call a method with an incorrect arity"
         );
 
-        META_HPP_THROW_IF( //
-            !inst.can_cast_to<qualified_type>(),
-            "an attempt to call a method with an incorrect instance type"
+        META_HPP_ASSERT(                       //
+            inst.can_cast_to<qualified_type>() //
+            && "an attempt to call a method with an incorrect instance type"
         );
 
-        return std::invoke(
-            [ method_ptr, &inst, args ]<std::size_t... Is>(std::index_sequence<Is...>)->uvalue {
-                META_HPP_THROW_IF( //
-                    !(... && args[Is].can_cast_to<type_list_at_t<Is, argument_types>>()),
-                    "an attempt to call a method with incorrect argument types"
-                );
-
-                if constexpr ( std::is_void_v<return_type> ) {
-                    (inst.cast<qualified_type>().*method_ptr)(args[Is].cast<type_list_at_t<Is, argument_types>>()...);
-                    return uvalue{};
-                } else if constexpr ( std::is_same_v<Policy, method_policy::discard_return_t> ) {
-                    std::ignore = (inst.cast<qualified_type>().*method_ptr)(args[Is].cast<type_list_at_t<Is, argument_types>>()...
-                    );
-                    return uvalue{};
-                } else {
-                    return_type&& return_value = (inst.cast<qualified_type>().*method_ptr)(
-                        args[Is].cast<type_list_at_t<Is, argument_types>>()...
-                    );
-
-                    if constexpr ( ref_as_ptr ) {
-                        return uvalue{std::addressof(return_value)};
-                    } else {
-                        return uvalue{std::forward<decltype(return_value)>(return_value)};
-                    }
-                }
-            },
-            std::make_index_sequence<mt::arity>()
+        META_HPP_ASSERT(                             //
+            can_cast_all_uargs<argument_types>(args) //
+            && "an attempt to call a method with incorrect argument types"
         );
+
+        return call_with_uargs<argument_types>(args, [method_ptr, &inst](auto&&... all_args) {
+            if constexpr ( std::is_void_v<return_type> ) {
+                (inst.cast<qualified_type>().*method_ptr)(META_HPP_FWD(all_args)...);
+                return uvalue{};
+            }
+
+            if constexpr ( std::is_same_v<Policy, method_policy::discard_return_t> ) {
+                std::ignore = (inst.cast<qualified_type>().*method_ptr)(META_HPP_FWD(all_args)...);
+                return uvalue{};
+            }
+
+            if constexpr ( !std::is_void_v<return_type> ) {
+                return_type&& result = (inst.cast<qualified_type>().*method_ptr)(META_HPP_FWD(all_args)...);
+                return ref_as_ptr ? uvalue{std::addressof(result)} : uvalue{META_HPP_FWD(result)};
+            }
+        });
     }
 
     template < method_pointer_kind Method >
@@ -82,20 +75,9 @@ namespace meta_hpp::detail
         using qualified_type = typename mt::qualified_type;
         using argument_types = typename mt::argument_types;
 
-        if ( args.size() != mt::arity ) {
-            return false;
-        }
-
-        if ( !inst.can_cast_to<qualified_type>() ) {
-            return false;
-        }
-
-        return std::invoke(
-            [args]<std::size_t... Is>(std::index_sequence<Is...>) {
-                return (... && args[Is].can_cast_to<type_list_at_t<Is, argument_types>>());
-            },
-            std::make_index_sequence<mt::arity>()
-        );
+        return args.size() == mt::arity           //
+            && inst.can_cast_to<qualified_type>() //
+            && can_cast_all_uargs<argument_types>(args);
     }
 }
 
@@ -118,16 +100,14 @@ namespace meta_hpp::detail
         using mt = method_traits<Method>;
         using mt_argument_types = typename mt::argument_types;
 
-        return std::invoke(
-            []<std::size_t... Is>(std::index_sequence<Is...>) {
-                [[maybe_unused]] const auto make_argument = []<std::size_t I>(std::index_sequence<I>) {
-                    using P = type_list_at_t<I, mt_argument_types>;
-                    return argument{argument_state::make<P>(I, metadata_map{})};
-                };
-                return argument_list{make_argument(std::index_sequence<Is>{})...};
-            },
-            std::make_index_sequence<mt::arity>()
-        );
+        return []<std::size_t... Is>(std::index_sequence<Is...>) {
+            [[maybe_unused]] const auto make_argument = []<std::size_t I>(index_constant<I>) {
+                using P = type_list_at_t<I, mt_argument_types>;
+                return argument{argument_state::make<P>(I, metadata_map{})};
+            };
+            return argument_list{make_argument(index_constant<Is>{})...};
+        }
+        (std::make_index_sequence<mt::arity>());
     }
 }
 
@@ -161,12 +141,16 @@ namespace meta_hpp
     uvalue method::invoke(Instance&& instance, Args&&... args) const {
         using namespace detail;
         const uinst vinst{std::forward<Instance>(instance)};
-        if constexpr ( sizeof...(Args) > 0 ) {
-            const std::array<uarg, sizeof...(Args)> vargs{uarg{std::forward<Args>(args)}...};
-            return state_->invoke(vinst, vargs);
-        } else {
-            return state_->invoke(vinst, {});
+        const std::array<uarg, sizeof...(Args)> vargs{uarg{std::forward<Args>(args)}...};
+        return state_->invoke(vinst, vargs);
+    }
+
+    template < typename Instance, typename... Args >
+    std::optional<uvalue> method::safe_invoke(Instance&& instance, Args&&... args) const {
+        if ( is_invocable_with(std::forward<Instance>(instance), std::forward<Args>(args)...) ) {
+            return invoke(std::forward<Instance>(instance), std::forward<Args>(args)...);
         }
+        return std::nullopt;
     }
 
     template < typename Instance, typename... Args >
@@ -178,24 +162,16 @@ namespace meta_hpp
     bool method::is_invocable_with() const noexcept {
         using namespace detail;
         const uinst_base vinst{type_list<Instance>{}};
-        if constexpr ( sizeof...(Args) > 0 ) {
-            const std::array<uarg_base, sizeof...(Args)> vargs{uarg_base{type_list<Args>{}}...};
-            return state_->is_invocable_with(vinst, vargs);
-        } else {
-            return state_->is_invocable_with(vinst, {});
-        }
+        const std::array<uarg_base, sizeof...(Args)> vargs{uarg_base{type_list<Args>{}}...};
+        return state_->is_invocable_with(vinst, vargs);
     }
 
     template < typename Instance, typename... Args >
     bool method::is_invocable_with(Instance&& instance, Args&&... args) const noexcept {
         using namespace detail;
         const uinst_base vinst{std::forward<Instance>(instance)};
-        if constexpr ( sizeof...(Args) > 0 ) {
-            const std::array<uarg_base, sizeof...(Args)> vargs{uarg_base{std::forward<Args>(args)}...};
-            return state_->is_invocable_with(vinst, vargs);
-        } else {
-            return state_->is_invocable_with(vinst, {});
-        }
+        const std::array<uarg_base, sizeof...(Args)> vargs{uarg_base{std::forward<Args>(args)}...};
+        return state_->is_invocable_with(vinst, vargs);
     }
 
     inline argument method::get_argument(std::size_t position) const noexcept {

@@ -46,14 +46,14 @@ namespace
     };
 }
 
-TEST_CASE("meta/meta_utilities/value5") {
+TEST_CASE("meta/meta_utilities/value4") {
     namespace meta = meta_hpp;
 
     meta::class_<clazz_throw_dtor>()
         .function_("make", &clazz_throw_dtor::make);
 }
 
-TEST_CASE("meta/meta_utilities/value5/throw_dtor") {
+TEST_CASE("meta/meta_utilities/value4/throw_dtor") {
     namespace meta = meta_hpp;
 
     SUBCASE("value") {
@@ -97,7 +97,7 @@ TEST_CASE("meta/meta_utilities/value5/throw_dtor") {
     }
 }
 
-TEST_CASE("meta/meta_utilities/value5/inplace") {
+TEST_CASE("meta/meta_utilities/value4/inplace") {
     namespace meta = meta_hpp;
 
     clazz_throw_dtor::destructor_counter = 0;
@@ -174,7 +174,7 @@ TEST_CASE("meta/meta_utilities/value5/inplace") {
     }
 }
 
-TEST_CASE("meta/meta_utilities/value5/emplace") {
+TEST_CASE("meta/meta_utilities/value4/emplace") {
     namespace meta = meta_hpp;
 
     clazz_throw_dtor::destructor_counter = 0;

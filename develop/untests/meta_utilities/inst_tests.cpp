@@ -43,10 +43,10 @@ namespace
         } else {\
             CHECK_FALSE(uinst{Inst}.can_cast_to<clazz Qualifiers>());\
             CHECK_FALSE(uinst_base{type_list<decltype(Inst)>{}}.can_cast_to<clazz Qualifiers>());\
-            CHECK_THROWS(std::ignore = uinst{Inst}.cast<clazz Qualifiers>());\
+            /*CHECK_THROWS(std::ignore = uinst{Inst}.cast<clazz Qualifiers>());*/\
             \
             CHECK_FALSE(m_state.is_invocable_with<decltype(Inst)>());\
-            CHECK_THROWS(m_state.invoke(Inst));\
+            CHECK_FALSE(m_state.safe_invoke(Inst));\
         }\
     }
 
@@ -64,7 +64,7 @@ namespace
         } else {\
             CHECK_FALSE(m_state.is_invocable_with<FromType>());\
             CHECK_FALSE(m_state.is_invocable_with(FromValue));\
-            CHECK_THROWS(m_state.invoke(FromValue));\
+            CHECK_FALSE(m_state.safe_invoke(FromValue));\
         }\
     }
 

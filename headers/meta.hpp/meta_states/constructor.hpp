@@ -20,44 +20,41 @@ namespace meta_hpp::detail
         using class_type = typename ct::class_type;
         using argument_types = typename ct::argument_types;
 
-        constexpr bool as_object                                       //
-            = std::is_copy_constructible_v<class_type>                 //
-           && std::is_same_v<Policy, constructor_policy::as_object_t>; //
+        constexpr bool as_object                       //
+            = std::is_copy_constructible_v<class_type> //
+           && std::is_same_v<Policy, constructor_policy::as_object_t>;
 
-        constexpr bool as_raw_ptr                                           //
-            = std::is_same_v<Policy, constructor_policy::as_raw_pointer_t>; //
+        constexpr bool as_raw_ptr //
+            = std::is_same_v<Policy, constructor_policy::as_raw_pointer_t>;
 
-        constexpr bool as_shared_ptr                                           //
-            = std::is_same_v<Policy, constructor_policy::as_shared_pointer_t>; //
+        constexpr bool as_shared_ptr //
+            = std::is_same_v<Policy, constructor_policy::as_shared_pointer_t>;
 
         static_assert(as_object || as_raw_ptr || as_shared_ptr);
 
-        META_HPP_THROW_IF( //
-            args.size() != ct::arity,
-            "an attempt to call a constructor with an incorrect arity"
+        META_HPP_ASSERT(             //
+            args.size() == ct::arity //
+            && "an attempt to call a constructor with an incorrect arity"
         );
 
-        return std::invoke(
-            [args]<std::size_t... Is>(std::index_sequence<Is...>)->uvalue {
-                META_HPP_THROW_IF( //
-                    !(... && args[Is].can_cast_to<type_list_at_t<Is, argument_types>>()),
-                    "an attempt to call a constructor with incorrect argument types"
-                );
-
-                if constexpr ( as_object ) {
-                    return make_uvalue<class_type>(args[Is].cast<type_list_at_t<Is, argument_types>>()...);
-                }
-
-                if constexpr ( as_raw_ptr ) {
-                    return uvalue{std::make_unique<class_type>(args[Is].cast<type_list_at_t<Is, argument_types>>()...).release()};
-                }
-
-                if constexpr ( as_shared_ptr ) {
-                    return uvalue{std::make_shared<class_type>(args[Is].cast<type_list_at_t<Is, argument_types>>()...)};
-                }
-            },
-            std::make_index_sequence<ct::arity>()
+        META_HPP_ASSERT(                             //
+            can_cast_all_uargs<argument_types>(args) //
+            && "an attempt to call a constructor with incorrect argument types"
         );
+
+        return call_with_uargs<argument_types>(args, [](auto&&... all_args) -> uvalue {
+            if constexpr ( as_object ) {
+                return make_uvalue<class_type>(META_HPP_FWD(all_args)...);
+            }
+
+            if constexpr ( as_raw_ptr ) {
+                return std::make_unique<class_type>(META_HPP_FWD(all_args)...).release();
+            }
+
+            if constexpr ( as_shared_ptr ) {
+                return std::make_shared<class_type>(META_HPP_FWD(all_args)...);
+            }
+        });
     }
 
     template < class_kind Class, typename... Args >
@@ -66,25 +63,19 @@ namespace meta_hpp::detail
         using class_type = typename ct::class_type;
         using argument_types = typename ct::argument_types;
 
-        META_HPP_THROW_IF( //
-            args.size() != ct::arity,
-            "an attempt to call a constructor with an incorrect arity"
+        META_HPP_ASSERT(             //
+            args.size() == ct::arity //
+            && "an attempt to call a constructor with an incorrect arity"
         );
 
-        return std::invoke(
-            [ mem, args ]<std::size_t... Is>(std::index_sequence<Is...>)->uvalue {
-                META_HPP_THROW_IF( //
-                    !(... && args[Is].can_cast_to<type_list_at_t<Is, argument_types>>()),
-                    "an attempt to call a constructor with incorrect argument types"
-                );
-
-                return uvalue{std::construct_at( //
-                    static_cast<class_type*>(mem),
-                    args[Is].cast<type_list_at_t<Is, argument_types>>()...
-                )};
-            },
-            std::make_index_sequence<ct::arity>()
+        META_HPP_ASSERT(                             //
+            can_cast_all_uargs<argument_types>(args) //
+            && "an attempt to call a constructor with incorrect argument types"
         );
+
+        return call_with_uargs<argument_types>(args, [mem](auto&&... all_args) {
+            return std::construct_at(static_cast<class_type*>(mem), META_HPP_FWD(all_args)...);
+        });
     }
 
     template < class_kind Class, typename... Args >
@@ -92,16 +83,8 @@ namespace meta_hpp::detail
         using ct = constructor_traits<Class, Args...>;
         using argument_types = typename ct::argument_types;
 
-        if ( args.size() != ct::arity ) {
-            return false;
-        }
-
-        return std::invoke(
-            [args]<std::size_t... Is>(std::index_sequence<Is...>) {
-                return (... && args[Is].can_cast_to<type_list_at_t<Is, argument_types>>());
-            },
-            std::make_index_sequence<ct::arity>()
-        );
+        return args.size() == ct::arity //
+            && can_cast_all_uargs<argument_types>(args);
     }
 }
 
@@ -127,16 +110,14 @@ namespace meta_hpp::detail
         using ct = constructor_traits<Class, Args...>;
         using ct_argument_types = typename ct::argument_types;
 
-        return std::invoke(
-            []<std::size_t... Is>(std::index_sequence<Is...>) {
-                [[maybe_unused]] const auto make_argument = []<std::size_t I>(std::index_sequence<I>) {
-                    using P = type_list_at_t<I, ct_argument_types>;
-                    return argument{argument_state::make<P>(I, metadata_map{})};
-                };
-                return argument_list{make_argument(std::index_sequence<Is>{})...};
-            },
-            std::make_index_sequence<ct::arity>()
-        );
+        return []<std::size_t... Is>(std::index_sequence<Is...>) {
+            [[maybe_unused]] const auto make_argument = []<std::size_t I>(index_constant<I>) {
+                using P = type_list_at_t<I, ct_argument_types>;
+                return argument{argument_state::make<P>(I, metadata_map{})};
+            };
+            return argument_list{make_argument(index_constant<Is>{})...};
+        }
+        (std::make_index_sequence<ct::arity>());
     }
 }
 
@@ -165,46 +146,46 @@ namespace meta_hpp
 
     template < typename... Args >
     uvalue constructor::create(Args&&... args) const {
-        if constexpr ( sizeof...(Args) > 0 ) {
-            using namespace detail;
-            const std::array<uarg, sizeof...(Args)> vargs{uarg{std::forward<Args>(args)}...};
-            return state_->create(vargs);
-        } else {
-            return state_->create({});
+        using namespace detail;
+        const std::array<uarg, sizeof...(Args)> vargs{uarg{std::forward<Args>(args)}...};
+        return state_->create(vargs);
+    }
+
+    template < typename... Args >
+    std::optional<uvalue> constructor::safe_create(Args&&... args) const {
+        if ( is_invocable_with(std::forward<Args>(args)...) ) {
+            return create(std::forward<Args>(args)...);
         }
+        return std::nullopt;
     }
 
     template < typename... Args >
     uvalue constructor::create_at(void* mem, Args&&... args) const {
-        if constexpr ( sizeof...(Args) > 0 ) {
-            using namespace detail;
-            const std::array<uarg, sizeof...(Args)> vargs{uarg{std::forward<Args>(args)}...};
-            return state_->create_at(mem, vargs);
-        } else {
-            return state_->create_at(mem, {});
+        using namespace detail;
+        const std::array<uarg, sizeof...(Args)> vargs{uarg{std::forward<Args>(args)}...};
+        return state_->create_at(mem, vargs);
+    }
+
+    template < typename... Args >
+    std::optional<uvalue> constructor::safe_create_at(void* mem, Args&&... args) const {
+        if ( is_invocable_with(std::forward<Args>(args)...) ) {
+            return create_at(mem, std::forward<Args>(args)...);
         }
+        return std::nullopt;
     }
 
     template < typename... Args >
     bool constructor::is_invocable_with() const noexcept {
-        if constexpr ( sizeof...(Args) > 0 ) {
-            using namespace detail;
-            const std::array<uarg_base, sizeof...(Args)> vargs{uarg_base{type_list<Args>{}}...};
-            return state_->is_invocable_with(vargs);
-        } else {
-            return state_->is_invocable_with({});
-        }
+        using namespace detail;
+        const std::array<uarg_base, sizeof...(Args)> vargs{uarg_base{type_list<Args>{}}...};
+        return state_->is_invocable_with(vargs);
     }
 
     template < typename... Args >
     bool constructor::is_invocable_with(Args&&... args) const noexcept {
-        if constexpr ( sizeof...(Args) > 0 ) {
-            using namespace detail;
-            const std::array<uarg_base, sizeof...(Args)> vargs{uarg_base{std::forward<Args>(args)}...};
-            return state_->is_invocable_with(vargs);
-        } else {
-            return state_->is_invocable_with({});
-        }
+        using namespace detail;
+        const std::array<uarg_base, sizeof...(Args)> vargs{uarg_base{std::forward<Args>(args)}...};
+        return state_->is_invocable_with(vargs);
     }
 
     inline argument constructor::get_argument(std::size_t position) const noexcept {

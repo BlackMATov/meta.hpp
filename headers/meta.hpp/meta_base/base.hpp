@@ -31,6 +31,7 @@
 #include <map>
 #include <memory>
 #include <mutex>
+#include <optional>
 #include <set>
 #include <span>
 #include <string>
@@ -47,6 +48,10 @@
 #if !defined(META_HPP_NO_RTTI)
 #    include <typeindex>
 #    include <typeinfo>
+#endif
+
+#if !defined(META_HPP_FWD)
+#    define META_HPP_FWD(v) std::forward<decltype(v)>(v)
 #endif
 
 #if !defined(META_HPP_ASSERT)

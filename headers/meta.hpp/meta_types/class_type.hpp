@@ -182,7 +182,7 @@ namespace meta_hpp
         }
 
         for ( const class_type& base : data_->bases ) {
-            if ( const function& function = base.get_function(name); function ) {
+            if ( const function& function = base.get_function(name) ) {
                 return function;
             }
         }
@@ -198,7 +198,7 @@ namespace meta_hpp
         }
 
         for ( const class_type& base : data_->bases ) {
-            if ( const member& member = base.get_member(name); member ) {
+            if ( const member& member = base.get_member(name) ) {
                 return member;
             }
         }
@@ -214,7 +214,7 @@ namespace meta_hpp
         }
 
         for ( const class_type& base : data_->bases ) {
-            if ( const method& method = base.get_method(name); method ) {
+            if ( const method& method = base.get_method(name) ) {
                 return method;
             }
         }
@@ -228,7 +228,7 @@ namespace meta_hpp
         }
 
         for ( const class_type& base : data_->bases ) {
-            if ( const any_type& type = base.get_typedef(name); type ) {
+            if ( const any_type& type = base.get_typedef(name) ) {
                 return type;
             }
         }
@@ -244,7 +244,7 @@ namespace meta_hpp
         }
 
         for ( const class_type& base : data_->bases ) {
-            if ( const variable& variable = base.get_variable(name); variable ) {
+            if ( const variable& variable = base.get_variable(name) ) {
                 return variable;
             }
         }
@@ -314,7 +314,7 @@ namespace meta_hpp
         }
 
         for ( const class_type& base : data_->bases ) {
-            if ( const function& function = base.get_function_with(name, first, last); function ) {
+            if ( const function& function = base.get_function_with(name, first, last) ) {
                 return function;
             }
         }
@@ -353,7 +353,7 @@ namespace meta_hpp
         }
 
         for ( const class_type& base : data_->bases ) {
-            if ( const method& method = base.get_method_with(name, first, last); method ) {
+            if ( const method& method = base.get_method_with(name, first, last) ) {
                 return method;
             }
         }

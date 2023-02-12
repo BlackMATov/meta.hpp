@@ -151,13 +151,21 @@ TEST_CASE("meta/meta_types/enum_type") {
             REQUIRE(color_type.name_to_value("blue"));
             CHECK(color_type.name_to_value("blue").get_as<color>() == color::blue);
             CHECK(color_type.name_to_value_as<color>("blue") == color::blue);
-            CHECK_THROWS(std::ignore = color_type.name_to_value_as<double>("blue"));
+            CHECK_THROWS(std::ignore = color_type.name_to_value_as<ecolor>("blue"));
         }
 
         {
             REQUIRE_FALSE(color_type.name_to_value("yellow"));
             CHECK_THROWS(std::ignore = color_type.name_to_value_as<color>("yellow"));
-            CHECK_THROWS(std::ignore = color_type.name_to_value_as<double>("yellow"));
+            CHECK_THROWS(std::ignore = color_type.name_to_value_as<ecolor>("yellow"));
+        }
+
+        {
+            REQUIRE(color_type.safe_name_to_value_as<color>("blue"));
+            CHECK(color_type.safe_name_to_value_as<color>("blue") == color::blue);
+
+            CHECK_FALSE(color_type.safe_name_to_value_as<ecolor>("blue"));
+            CHECK_FALSE(color_type.safe_name_to_value_as<color>("yellow"));
         }
     }
 
@@ -169,13 +177,21 @@ TEST_CASE("meta/meta_types/enum_type") {
             REQUIRE(ecolor_type.name_to_value("blue"));
             CHECK(ecolor_type.name_to_value("blue").get_as<ecolor>() == ecolor_blue);
             CHECK(ecolor_type.name_to_value_as<ecolor>("blue") == ecolor_blue);
-            CHECK_THROWS(std::ignore = ecolor_type.name_to_value_as<double>("blue"));
+            CHECK_THROWS(std::ignore = ecolor_type.name_to_value_as<color>("blue"));
         }
 
         {
             REQUIRE_FALSE(ecolor_type.name_to_value("yellow"));
             CHECK_THROWS(std::ignore = ecolor_type.name_to_value_as<color>("yellow"));
-            CHECK_THROWS(std::ignore = ecolor_type.name_to_value_as<double>("yellow"));
+            CHECK_THROWS(std::ignore = ecolor_type.name_to_value_as<color>("yellow"));
+        }
+
+        {
+            REQUIRE(ecolor_type.safe_name_to_value_as<ecolor>("blue"));
+            CHECK(ecolor_type.safe_name_to_value_as<ecolor>("blue") == ecolor_blue);
+
+            CHECK_FALSE(ecolor_type.safe_name_to_value_as<color>("blue"));
+            CHECK_FALSE(ecolor_type.safe_name_to_value_as<ecolor>("yellow"));
         }
     }
 }

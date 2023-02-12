@@ -44,13 +44,23 @@ namespace meta_hpp
         return state_->underlying_value;
     }
 
-    template < typename T >
-    T evalue::get_value_as() const {
-        return get_value().get_as<T>();
+    template < detail::enum_kind Enum >
+    Enum evalue::get_value_as() const {
+        return get_value().get_as<Enum>();
     }
 
-    template < typename T >
-    T evalue::get_underlying_value_as() const {
-        return get_underlying_value().get_as<T>();
+    template < detail::enum_kind Enum >
+    std::optional<Enum> evalue::safe_get_value_as() const noexcept {
+        return get_value().safe_get_as<Enum>();
+    }
+
+    template < detail::number_kind Number >
+    Number evalue::get_underlying_value_as() const {
+        return get_underlying_value().get_as<Number>();
+    }
+
+    template < detail::number_kind Number >
+    std::optional<Number> evalue::safe_get_underlying_value_as() const noexcept {
+        return get_underlying_value().safe_get_as<Number>();
     }
 }
