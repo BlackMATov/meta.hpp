@@ -346,3 +346,33 @@ namespace meta_hpp::detail
         META_HPP_THROW("bad argument cast");
     }
 }
+
+namespace meta_hpp::detail
+{
+    template < typename ArgTypeList, typename F >
+    auto call_with_uargs(std::span<const uarg> args, F&& f) {
+        META_HPP_ASSERT(args.size() == type_list_arity_v<ArgTypeList>);
+        return [ args, &f ]<std::size_t... Is>(std::index_sequence<Is...>) {
+            return f(args[Is].cast<type_list_at_t<Is, ArgTypeList>>()...);
+        }
+        (std::make_index_sequence<type_list_arity_v<ArgTypeList>>());
+    }
+
+    template < typename ArgTypeList >
+    bool can_cast_all_uargs(std::span<const uarg> args) {
+        META_HPP_ASSERT(args.size() == type_list_arity_v<ArgTypeList>);
+        return [args]<std::size_t... Is>(std::index_sequence<Is...>) {
+            return (... && args[Is].can_cast_to<type_list_at_t<Is, ArgTypeList>>());
+        }
+        (std::make_index_sequence<type_list_arity_v<ArgTypeList>>());
+    }
+
+    template < typename ArgTypeList >
+    bool can_cast_all_uargs(std::span<const uarg_base> args) {
+        META_HPP_ASSERT(args.size() == type_list_arity_v<ArgTypeList>);
+        return [args]<std::size_t... Is>(std::index_sequence<Is...>) {
+            return (... && args[Is].can_cast_to<type_list_at_t<Is, ArgTypeList>>());
+        }
+        (std::make_index_sequence<type_list_arity_v<ArgTypeList>>());
+    }
+}

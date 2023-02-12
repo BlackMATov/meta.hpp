@@ -47,6 +47,10 @@
 #    include <typeinfo>
 #endif
 
+#if !defined(META_HPP_FWD)
+#    define META_HPP_FWD(v) std::forward<decltype(v)>(v)
+#endif
+
 #if !defined(META_HPP_ASSERT)
 #    include <cassert>
 #    define META_HPP_ASSERT(...) assert(__VA_ARGS__) // NOLINT
@@ -1156,6 +1160,15 @@ namespace meta_hpp::detail
     template < typename... Types >
     struct type_list {};
 
+    template < std::size_t I >
+    using size_constant = std::integral_constant<std::size_t, I>;
+
+    template < std::size_t I >
+    using index_constant = std::integral_constant<std::size_t, I>;
+}
+
+namespace meta_hpp::detail
+{
     template < std::size_t Index, typename TypeList >
     struct type_list_at;
 
@@ -1166,6 +1179,18 @@ namespace meta_hpp::detail
 
     template < std::size_t Index, typename TypeList >
     using type_list_at_t = typename type_list_at<Index, TypeList>::type;
+}
+
+namespace meta_hpp::detail
+{
+    template < typename TypeList >
+    struct type_list_arity;
+
+    template < typename... Types >
+    struct type_list_arity<type_list<Types...>> : size_constant<sizeof...(Types)> {};
+
+    template < typename TypeList >
+    inline constexpr std::size_t type_list_arity_v = type_list_arity<TypeList>::value;
 }
 
 namespace meta_hpp::detail
@@ -5553,6 +5578,36 @@ namespace meta_hpp::detail
 
 namespace meta_hpp::detail
 {
+    template < typename ArgTypeList, typename F >
+    auto call_with_uargs(std::span<const uarg> args, F&& f) {
+        META_HPP_ASSERT(args.size() == type_list_arity_v<ArgTypeList>);
+        return [ args, &f ]<std::size_t... Is>(std::index_sequence<Is...>) {
+            return f(args[Is].cast<type_list_at_t<Is, ArgTypeList>>()...);
+        }
+        (std::make_index_sequence<type_list_arity_v<ArgTypeList>>());
+    }
+
+    template < typename ArgTypeList >
+    bool can_cast_all_uargs(std::span<const uarg> args) {
+        META_HPP_ASSERT(args.size() == type_list_arity_v<ArgTypeList>);
+        return [args]<std::size_t... Is>(std::index_sequence<Is...>) {
+            return (... && args[Is].can_cast_to<type_list_at_t<Is, ArgTypeList>>());
+        }
+        (std::make_index_sequence<type_list_arity_v<ArgTypeList>>());
+    }
+
+    template < typename ArgTypeList >
+    bool can_cast_all_uargs(std::span<const uarg_base> args) {
+        META_HPP_ASSERT(args.size() == type_list_arity_v<ArgTypeList>);
+        return [args]<std::size_t... Is>(std::index_sequence<Is...>) {
+            return (... && args[Is].can_cast_to<type_list_at_t<Is, ArgTypeList>>());
+        }
+        (std::make_index_sequence<type_list_arity_v<ArgTypeList>>());
+    }
+}
+
+namespace meta_hpp::detail
+{
     template < function_pointer_kind Function >
     struct function_tag {};
 
@@ -5595,17 +5650,17 @@ namespace meta_hpp::detail
         using return_type = typename ft::return_type;
         using argument_types = typename ft::argument_types;
 
-        constexpr bool as_copy                                    //
-            = std::is_copy_constructible_v<return_type>           //
-           && std::is_same_v<Policy, function_policy::as_copy_t>; //
+        constexpr bool as_copy                          //
+            = std::is_copy_constructible_v<return_type> //
+           && std::is_same_v<Policy, function_policy::as_copy_t>;
 
-        constexpr bool as_void                                           //
-            = std::is_void_v<return_type>                                //
-           || std::is_same_v<Policy, function_policy::discard_return_t>; //
+        constexpr bool as_void            //
+            = std::is_void_v<return_type> //
+           || std::is_same_v<Policy, function_policy::discard_return_t>;
 
-        constexpr bool ref_as_ptr                                                     //
-            = std::is_reference_v<return_type>                                        //
-           && std::is_same_v<Policy, function_policy::return_reference_as_pointer_t>; //
+        constexpr bool ref_as_ptr              //
+            = std::is_reference_v<return_type> //
+           && std::is_same_v<Policy, function_policy::return_reference_as_pointer_t>;
 
         static_assert(as_copy || as_void || ref_as_ptr);
 
@@ -5614,31 +5669,27 @@ namespace meta_hpp::detail
             && "an attempt to call a function with an incorrect arity"
         );
 
-        return std::invoke(
-            [ function_ptr, args ]<std::size_t... Is>(std::index_sequence<Is...>)->uvalue {
-                META_HPP_ASSERT(                                                        //
-                    (... && args[Is].can_cast_to<type_list_at_t<Is, argument_types>>()) //
-                    && "an attempt to call a function with incorrect argument types"
-                );
-
-                if constexpr ( std::is_void_v<return_type> ) {
-                    function_ptr(args[Is].cast<type_list_at_t<Is, argument_types>>()...);
-                    return uvalue{};
-                } else if constexpr ( std::is_same_v<Policy, function_policy::discard_return_t> ) {
-                    std::ignore = function_ptr(args[Is].cast<type_list_at_t<Is, argument_types>>()...);
-                    return uvalue{};
-                } else {
-                    return_type&& return_value = function_ptr(args[Is].cast<type_list_at_t<Is, argument_types>>()...);
-
-                    if constexpr ( ref_as_ptr ) {
-                        return uvalue{std::addressof(return_value)};
-                    } else {
-                        return uvalue{std::forward<decltype(return_value)>(return_value)};
-                    }
-                }
-            },
-            std::make_index_sequence<ft::arity>()
+        META_HPP_ASSERT(                             //
+            can_cast_all_uargs<argument_types>(args) //
+            && "an attempt to call a function with incorrect argument types"
         );
+
+        return call_with_uargs<argument_types>(args, [function_ptr](auto&&... all_args) {
+            if constexpr ( std::is_void_v<return_type> ) {
+                function_ptr(META_HPP_FWD(all_args)...);
+                return uvalue{};
+            }
+
+            if constexpr ( std::is_same_v<Policy, function_policy::discard_return_t> ) {
+                std::ignore = function_ptr(META_HPP_FWD(all_args)...);
+                return uvalue{};
+            }
+
+            if constexpr ( !std::is_void_v<return_type> ) {
+                return_type&& result = function_ptr(META_HPP_FWD(all_args)...);
+                return ref_as_ptr ? uvalue{std::addressof(result)} : uvalue{META_HPP_FWD(result)};
+            }
+        });
     }
 
     template < function_pointer_kind Function >
@@ -5646,16 +5697,8 @@ namespace meta_hpp::detail
         using ft = function_traits<Function>;
         using argument_types = typename ft::argument_types;
 
-        if ( args.size() != ft::arity ) {
-            return false;
-        }
-
-        return std::invoke(
-            [args]<std::size_t... Is>(std::index_sequence<Is...>) {
-                return (... && args[Is].can_cast_to<type_list_at_t<Is, argument_types>>());
-            },
-            std::make_index_sequence<ft::arity>()
-        );
+        return args.size() == ft::arity //
+            && can_cast_all_uargs<argument_types>(args);
     }
 }
 
@@ -5678,16 +5721,14 @@ namespace meta_hpp::detail
         using ft = function_traits<Function>;
         using ft_argument_types = typename ft::argument_types;
 
-        return std::invoke(
-            []<std::size_t... Is>(std::index_sequence<Is...>) {
-                [[maybe_unused]] const auto make_argument = []<std::size_t I>(std::index_sequence<I>) {
-                    using P = type_list_at_t<I, ft_argument_types>;
-                    return argument{argument_state::make<P>(I, metadata_map{})};
-                };
-                return argument_list{make_argument(std::index_sequence<Is>{})...};
-            },
-            std::make_index_sequence<ft::arity>()
-        );
+        return []<std::size_t... Is>(std::index_sequence<Is...>) {
+            [[maybe_unused]] const auto make_argument = []<std::size_t I>(index_constant<I>) {
+                using P = type_list_at_t<I, ft_argument_types>;
+                return argument{argument_state::make<P>(I, metadata_map{})};
+            };
+            return argument_list{make_argument(index_constant<Is>{})...};
+        }
+        (std::make_index_sequence<ft::arity>());
     }
 }
 
@@ -6040,7 +6081,7 @@ namespace meta_hpp::detail
             auto&& return_value = inst.cast<const class_type>().*member_ptr;
 
             if constexpr ( as_copy ) {
-                return uvalue{std::forward<decltype(return_value)>(return_value)};
+                return uvalue{META_HPP_FWD(return_value)};
             }
 
             if constexpr ( as_ptr ) {
@@ -6059,7 +6100,7 @@ namespace meta_hpp::detail
             auto&& return_value = inst.cast<class_type>().*member_ptr;
 
             if constexpr ( as_copy ) {
-                return uvalue{std::forward<decltype(return_value)>(return_value)};
+                return uvalue{META_HPP_FWD(return_value)};
             }
 
             if constexpr ( as_ptr ) {
@@ -6314,17 +6355,17 @@ namespace meta_hpp::detail
         using qualified_type = typename mt::qualified_type;
         using argument_types = typename mt::argument_types;
 
-        constexpr bool as_copy                                  //
-            = std::is_copy_constructible_v<return_type>         //
-           && std::is_same_v<Policy, method_policy::as_copy_t>; //
+        constexpr bool as_copy                          //
+            = std::is_copy_constructible_v<return_type> //
+           && std::is_same_v<Policy, method_policy::as_copy_t>;
 
-        constexpr bool as_void                                         //
-            = std::is_void_v<return_type>                              //
-           || std::is_same_v<Policy, method_policy::discard_return_t>; //
+        constexpr bool as_void            //
+            = std::is_void_v<return_type> //
+           || std::is_same_v<Policy, method_policy::discard_return_t>;
 
-        constexpr bool ref_as_ptr                                                   //
-            = std::is_reference_v<return_type>                                      //
-           && std::is_same_v<Policy, method_policy::return_reference_as_pointer_t>; //
+        constexpr bool ref_as_ptr              //
+            = std::is_reference_v<return_type> //
+           && std::is_same_v<Policy, method_policy::return_reference_as_pointer_t>;
 
         static_assert(as_copy || as_void || ref_as_ptr);
 
@@ -6332,39 +6373,33 @@ namespace meta_hpp::detail
             args.size() == mt::arity //
             && "an attempt to call a method with an incorrect arity"
         );
+
         META_HPP_ASSERT(                       //
             inst.can_cast_to<qualified_type>() //
             && "an attempt to call a method with an incorrect instance type"
         );
 
-        return std::invoke(
-            [ method_ptr, &inst, args ]<std::size_t... Is>(std::index_sequence<Is...>)->uvalue {
-                META_HPP_ASSERT(                                                        //
-                    (... && args[Is].can_cast_to<type_list_at_t<Is, argument_types>>()) //
-                    && "an attempt to call a method with incorrect argument types"
-                );
-
-                if constexpr ( std::is_void_v<return_type> ) {
-                    (inst.cast<qualified_type>().*method_ptr)(args[Is].cast<type_list_at_t<Is, argument_types>>()...);
-                    return uvalue{};
-                } else if constexpr ( std::is_same_v<Policy, method_policy::discard_return_t> ) {
-                    std::ignore = (inst.cast<qualified_type>().*method_ptr)(args[Is].cast<type_list_at_t<Is, argument_types>>()...
-                    );
-                    return uvalue{};
-                } else {
-                    return_type&& return_value = (inst.cast<qualified_type>().*method_ptr)(
-                        args[Is].cast<type_list_at_t<Is, argument_types>>()...
-                    );
-
-                    if constexpr ( ref_as_ptr ) {
-                        return uvalue{std::addressof(return_value)};
-                    } else {
-                        return uvalue{std::forward<decltype(return_value)>(return_value)};
-                    }
-                }
-            },
-            std::make_index_sequence<mt::arity>()
+        META_HPP_ASSERT(                             //
+            can_cast_all_uargs<argument_types>(args) //
+            && "an attempt to call a method with incorrect argument types"
         );
+
+        return call_with_uargs<argument_types>(args, [method_ptr, &inst](auto&&... all_args) {
+            if constexpr ( std::is_void_v<return_type> ) {
+                (inst.cast<qualified_type>().*method_ptr)(META_HPP_FWD(all_args)...);
+                return uvalue{};
+            }
+
+            if constexpr ( std::is_same_v<Policy, method_policy::discard_return_t> ) {
+                std::ignore = (inst.cast<qualified_type>().*method_ptr)(META_HPP_FWD(all_args)...);
+                return uvalue{};
+            }
+
+            if constexpr ( !std::is_void_v<return_type> ) {
+                return_type&& result = (inst.cast<qualified_type>().*method_ptr)(META_HPP_FWD(all_args)...);
+                return ref_as_ptr ? uvalue{std::addressof(result)} : uvalue{META_HPP_FWD(result)};
+            }
+        });
     }
 
     template < method_pointer_kind Method >
@@ -6373,20 +6408,9 @@ namespace meta_hpp::detail
         using qualified_type = typename mt::qualified_type;
         using argument_types = typename mt::argument_types;
 
-        if ( args.size() != mt::arity ) {
-            return false;
-        }
-
-        if ( !inst.can_cast_to<qualified_type>() ) {
-            return false;
-        }
-
-        return std::invoke(
-            [args]<std::size_t... Is>(std::index_sequence<Is...>) {
-                return (... && args[Is].can_cast_to<type_list_at_t<Is, argument_types>>());
-            },
-            std::make_index_sequence<mt::arity>()
-        );
+        return args.size() == mt::arity           //
+            && inst.can_cast_to<qualified_type>() //
+            && can_cast_all_uargs<argument_types>(args);
     }
 }
 
@@ -6409,16 +6433,14 @@ namespace meta_hpp::detail
         using mt = method_traits<Method>;
         using mt_argument_types = typename mt::argument_types;
 
-        return std::invoke(
-            []<std::size_t... Is>(std::index_sequence<Is...>) {
-                [[maybe_unused]] const auto make_argument = []<std::size_t I>(std::index_sequence<I>) {
-                    using P = type_list_at_t<I, mt_argument_types>;
-                    return argument{argument_state::make<P>(I, metadata_map{})};
-                };
-                return argument_list{make_argument(std::index_sequence<Is>{})...};
-            },
-            std::make_index_sequence<mt::arity>()
-        );
+        return []<std::size_t... Is>(std::index_sequence<Is...>) {
+            [[maybe_unused]] const auto make_argument = []<std::size_t I>(index_constant<I>) {
+                using P = type_list_at_t<I, mt_argument_types>;
+                return argument{argument_state::make<P>(I, metadata_map{})};
+            };
+            return argument_list{make_argument(index_constant<Is>{})...};
+        }
+        (std::make_index_sequence<mt::arity>());
     }
 }
 
@@ -6695,15 +6717,15 @@ namespace meta_hpp::detail
         using class_type = typename ct::class_type;
         using argument_types = typename ct::argument_types;
 
-        constexpr bool as_object                                       //
-            = std::is_copy_constructible_v<class_type>                 //
-           && std::is_same_v<Policy, constructor_policy::as_object_t>; //
+        constexpr bool as_object                       //
+            = std::is_copy_constructible_v<class_type> //
+           && std::is_same_v<Policy, constructor_policy::as_object_t>;
 
-        constexpr bool as_raw_ptr                                           //
-            = std::is_same_v<Policy, constructor_policy::as_raw_pointer_t>; //
+        constexpr bool as_raw_ptr //
+            = std::is_same_v<Policy, constructor_policy::as_raw_pointer_t>;
 
-        constexpr bool as_shared_ptr                                           //
-            = std::is_same_v<Policy, constructor_policy::as_shared_pointer_t>; //
+        constexpr bool as_shared_ptr //
+            = std::is_same_v<Policy, constructor_policy::as_shared_pointer_t>;
 
         static_assert(as_object || as_raw_ptr || as_shared_ptr);
 
@@ -6712,27 +6734,24 @@ namespace meta_hpp::detail
             && "an attempt to call a constructor with an incorrect arity"
         );
 
-        return std::invoke(
-            [args]<std::size_t... Is>(std::index_sequence<Is...>)->uvalue {
-                META_HPP_ASSERT(                                                        //
-                    (... && args[Is].can_cast_to<type_list_at_t<Is, argument_types>>()) //
-                    && "an attempt to call a constructor with incorrect argument types"
-                );
-
-                if constexpr ( as_object ) {
-                    return make_uvalue<class_type>(args[Is].cast<type_list_at_t<Is, argument_types>>()...);
-                }
-
-                if constexpr ( as_raw_ptr ) {
-                    return std::make_unique<class_type>(args[Is].cast<type_list_at_t<Is, argument_types>>()...).release();
-                }
-
-                if constexpr ( as_shared_ptr ) {
-                    return std::make_shared<class_type>(args[Is].cast<type_list_at_t<Is, argument_types>>()...);
-                }
-            },
-            std::make_index_sequence<ct::arity>()
+        META_HPP_ASSERT(                             //
+            can_cast_all_uargs<argument_types>(args) //
+            && "an attempt to call a constructor with incorrect argument types"
         );
+
+        return call_with_uargs<argument_types>(args, [](auto&&... all_args) -> uvalue {
+            if constexpr ( as_object ) {
+                return make_uvalue<class_type>(META_HPP_FWD(all_args)...);
+            }
+
+            if constexpr ( as_raw_ptr ) {
+                return std::make_unique<class_type>(META_HPP_FWD(all_args)...).release();
+            }
+
+            if constexpr ( as_shared_ptr ) {
+                return std::make_shared<class_type>(META_HPP_FWD(all_args)...);
+            }
+        });
     }
 
     template < class_kind Class, typename... Args >
@@ -6746,20 +6765,14 @@ namespace meta_hpp::detail
             && "an attempt to call a constructor with an incorrect arity"
         );
 
-        return std::invoke(
-            [ mem, args ]<std::size_t... Is>(std::index_sequence<Is...>)->uvalue {
-                META_HPP_ASSERT(                                                        //
-                    (... && args[Is].can_cast_to<type_list_at_t<Is, argument_types>>()) //
-                    && "an attempt to call a constructor with incorrect argument types"
-                );
-
-                return std::construct_at(          //
-                    static_cast<class_type*>(mem), //
-                    args[Is].cast<type_list_at_t<Is, argument_types>>()...
-                );
-            },
-            std::make_index_sequence<ct::arity>()
+        META_HPP_ASSERT(                             //
+            can_cast_all_uargs<argument_types>(args) //
+            && "an attempt to call a constructor with incorrect argument types"
         );
+
+        return call_with_uargs<argument_types>(args, [mem](auto&&... all_args) {
+            return std::construct_at(static_cast<class_type*>(mem), META_HPP_FWD(all_args)...);
+        });
     }
 
     template < class_kind Class, typename... Args >
@@ -6767,16 +6780,8 @@ namespace meta_hpp::detail
         using ct = constructor_traits<Class, Args...>;
         using argument_types = typename ct::argument_types;
 
-        if ( args.size() != ct::arity ) {
-            return false;
-        }
-
-        return std::invoke(
-            [args]<std::size_t... Is>(std::index_sequence<Is...>) {
-                return (... && args[Is].can_cast_to<type_list_at_t<Is, argument_types>>());
-            },
-            std::make_index_sequence<ct::arity>()
-        );
+        return args.size() == ct::arity //
+            && can_cast_all_uargs<argument_types>(args);
     }
 }
 
@@ -6802,16 +6807,14 @@ namespace meta_hpp::detail
         using ct = constructor_traits<Class, Args...>;
         using ct_argument_types = typename ct::argument_types;
 
-        return std::invoke(
-            []<std::size_t... Is>(std::index_sequence<Is...>) {
-                [[maybe_unused]] const auto make_argument = []<std::size_t I>(std::index_sequence<I>) {
-                    using P = type_list_at_t<I, ct_argument_types>;
-                    return argument{argument_state::make<P>(I, metadata_map{})};
-                };
-                return argument_list{make_argument(std::index_sequence<Is>{})...};
-            },
-            std::make_index_sequence<ct::arity>()
-        );
+        return []<std::size_t... Is>(std::index_sequence<Is...>) {
+            [[maybe_unused]] const auto make_argument = []<std::size_t I>(index_constant<I>) {
+                using P = type_list_at_t<I, ct_argument_types>;
+                return argument{argument_state::make<P>(I, metadata_map{})};
+            };
+            return argument_list{make_argument(index_constant<Is>{})...};
+        }
+        (std::make_index_sequence<ct::arity>());
     }
 }
 
@@ -7152,7 +7155,7 @@ namespace meta_hpp::detail
         auto&& return_value = *variable_ptr;
 
         if constexpr ( as_copy ) {
-            return uvalue{std::forward<decltype(return_value)>(return_value)};
+            return uvalue{META_HPP_FWD(return_value)};
         }
 
         if constexpr ( as_ptr ) {

@@ -50,6 +50,10 @@
 #    include <typeinfo>
 #endif
 
+#if !defined(META_HPP_FWD)
+#    define META_HPP_FWD(v) std::forward<decltype(v)>(v)
+#endif
+
 #if !defined(META_HPP_ASSERT)
 #    include <cassert>
 #    define META_HPP_ASSERT(...) assert(__VA_ARGS__) // NOLINT

@@ -42,7 +42,7 @@ namespace meta_hpp::detail
             auto&& return_value = inst.cast<const class_type>().*member_ptr;
 
             if constexpr ( as_copy ) {
-                return uvalue{std::forward<decltype(return_value)>(return_value)};
+                return uvalue{META_HPP_FWD(return_value)};
             }
 
             if constexpr ( as_ptr ) {
@@ -61,7 +61,7 @@ namespace meta_hpp::detail
             auto&& return_value = inst.cast<class_type>().*member_ptr;
 
             if constexpr ( as_copy ) {
-                return uvalue{std::forward<decltype(return_value)>(return_value)};
+                return uvalue{META_HPP_FWD(return_value)};
             }
 
             if constexpr ( as_ptr ) {
