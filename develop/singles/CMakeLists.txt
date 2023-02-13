@@ -13,10 +13,13 @@ set(META_HPP_SINGLES_SCRIPT "${META_HPP_ROOT_DIR}/develop/singles/scripts/build_
 file(GLOB_RECURSE META_SINGLES_DEPENDS CONFIGURE_DEPENDS "${META_HPP_ROOT_DIR}/headers/*.hpp")
 
 add_custom_command(OUTPUT "${META_HPP_SINGLES_OUTPUT}"
-    COMMAND "${Python3_EXECUTABLE}" "${META_HPP_SINGLES_SCRIPT}"
-            "${META_HPP_SINGLES_INPUT}" "${META_HPP_SINGLES_OUTPUT}"
-    DEPENDS ${META_SINGLES_DEPENDS}
-    WORKING_DIRECTORY "${META_HPP_ROOT_DIR}")
+    COMMAND
+        "${Python3_EXECUTABLE}" "${META_HPP_SINGLES_SCRIPT}"
+        "${META_HPP_SINGLES_INPUT}" "${META_HPP_SINGLES_OUTPUT}"
+    DEPENDS
+        "${META_HPP_SINGLES_SCRIPT}" ${META_SINGLES_DEPENDS}
+    WORKING_DIRECTORY
+        "${META_HPP_ROOT_DIR}")
 
 add_custom_target(${PROJECT_NAME}.generate
     DEPENDS "${META_HPP_SINGLES_OUTPUT}")
@@ -33,6 +36,9 @@ add_dependencies(${PROJECT_NAME}
 
 target_compile_features(${PROJECT_NAME} INTERFACE
     cxx_std_20)
+
+target_precompile_headers(${PROJECT_NAME} INTERFACE
+    "headers/meta.hpp/meta_all.hpp")
 
 target_include_directories(${PROJECT_NAME} INTERFACE
     $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/headers>

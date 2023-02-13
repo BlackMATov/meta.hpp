@@ -5,10 +5,6 @@ import os
 import re
 import sys
 
-#
-#
-#
-
 EMPTY_MATCHER = re.compile(r'^\s*$')
 C_COMMENT_MATCHER = re.compile(r'^/\*.*\*/', re.S)
 
@@ -19,9 +15,6 @@ USER_INCLUDE_MATCHER = re.compile(r'#\s*include\s*\"(.*)\"')
 SYSTEM_INCLUDE_MATCHER = re.compile(r'#\s*include\s*<(.*)>')
 PRAGMA_ONCE_MATCHER = re.compile(r'#\s*pragma\s+once')
 
-#
-#
-#
 
 def CollectLicenseComment(headerPath):
     with open(headerPath, "r") as headerStream:
@@ -29,7 +22,8 @@ def CollectLicenseComment(headerPath):
         commentMatch = re.match(C_COMMENT_MATCHER, headerContent)
         return commentMatch.group() if commentMatch else ""
 
-def CollectSystemIncludes(headerPath, parsedHeaders = set()):
+
+def CollectSystemIncludes(headerPath, parsedHeaders=set()):
     with open(headerPath, "r") as headerStream:
         headerContent = headerStream.read().strip()
 
@@ -50,8 +44,10 @@ def CollectSystemIncludes(headerPath, parsedHeaders = set()):
 
             includeMatch = USER_INCLUDE_MATCHER.findall(headerLine)
             if includeMatch and ifdefScopeLevel == 0:
-                internalHeaderPath = os.path.abspath(os.path.join(os.path.dirname(headerPath), includeMatch[0]))
-                headerIncludes = headerIncludes.union(CollectSystemIncludes(internalHeaderPath, parsedHeaders))
+                internalHeaderPath = os.path.abspath(os.path.join(
+                    os.path.dirname(headerPath), includeMatch[0]))
+                headerIncludes = headerIncludes.union(
+                    CollectSystemIncludes(internalHeaderPath, parsedHeaders))
 
             includeMatch = SYSTEM_INCLUDE_MATCHER.findall(headerLine)
             if includeMatch and ifdefScopeLevel == 0:
@@ -59,7 +55,8 @@ def CollectSystemIncludes(headerPath, parsedHeaders = set()):
 
         return headerIncludes
 
-def ParseHeader(headerPath, parsedHeaders = set()):
+
+def ParseHeader(headerPath, parsedHeaders=set()):
     with open(headerPath, "r") as headerStream:
         headerContent = headerStream.read().strip()
         headerContent = re.sub(C_COMMENT_MATCHER, '', headerContent)
@@ -89,8 +86,10 @@ def ParseHeader(headerPath, parsedHeaders = set()):
 
             includeMatch = USER_INCLUDE_MATCHER.findall(headerLine)
             if includeMatch and ifdefScopeLevel == 0:
-                internalHeaderPath = os.path.abspath(os.path.join(os.path.dirname(headerPath), includeMatch[0]))
-                internalHeaderContent = ParseHeader(internalHeaderPath, parsedHeaders)
+                internalHeaderPath = os.path.abspath(os.path.join(
+                    os.path.dirname(headerPath), includeMatch[0]))
+                internalHeaderContent = ParseHeader(
+                    internalHeaderPath, parsedHeaders)
 
                 outputContent += internalHeaderContent
                 shouldSkipNextEmptyLines = True
@@ -106,9 +105,6 @@ def ParseHeader(headerPath, parsedHeaders = set()):
 
         return "{}\n".format(outputContent)
 
-#
-#
-#
 
 inputHeaderPath = os.path.abspath(sys.argv[1])
 outputHeaderPath = os.path.abspath(sys.argv[2])
@@ -118,13 +114,20 @@ os.makedirs(os.path.dirname(outputHeaderPath), exist_ok=True)
 with open(outputHeaderPath, "w") as outputHeaderStream:
     licenseComment = CollectLicenseComment(inputHeaderPath)
     systemIncludes = CollectSystemIncludes(inputHeaderPath)
+    headersContent = ParseHeader(inputHeaderPath)
 
-    outputHeaderStream.write("{}\n".format(licenseComment))
+    if licenseComment:
+        outputHeaderStream.write("{}\n".format(licenseComment))
+        outputHeaderStream.write("\n")
+
+    outputHeaderStream.write("#pragma once\n")
     outputHeaderStream.write("\n")
 
-    for systemInclude in sorted(systemIncludes):
-        outputHeaderStream.write("#include <{}>\n".format(systemInclude))
-    outputHeaderStream.write("\n")
+    if systemIncludes:
+        for systemInclude in sorted(systemIncludes):
+            outputHeaderStream.write("#include <{}>\n".format(systemInclude))
+        outputHeaderStream.write("\n")
 
-    outputHeaderStream.write(ParseHeader(inputHeaderPath).strip())
-    outputHeaderStream.write("\n")
+    if headersContent:
+        outputHeaderStream.write(headersContent.strip())
+        outputHeaderStream.write("\n")

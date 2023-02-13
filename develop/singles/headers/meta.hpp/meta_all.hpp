@@ -4,6 +4,8 @@
  * Copyright (C) 2021-2023, by Matvey Cherevko (blackmatov@gmail.com)
  ******************************************************************************/
 
+#pragma once
+
 #include <algorithm>
 #include <array>
 #include <atomic>

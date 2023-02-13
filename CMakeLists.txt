@@ -22,6 +22,9 @@ add_library(meta.hpp::meta.hpp ALIAS ${PROJECT_NAME})
 target_compile_features(${PROJECT_NAME} INTERFACE
     cxx_std_20)
 
+target_precompile_headers(${PROJECT_NAME} INTERFACE
+    "headers/meta.hpp/meta_all.hpp")
+
 target_include_directories(${PROJECT_NAME} INTERFACE
     $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/headers>
     $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>)
