@@ -10,3 +10,6 @@
 [submodule "develop/vendors/vmath.hpp"]
 	path = develop/vendors/vmath.hpp
 	url = https://github.com/BlackMATov/vmath.hpp
+[submodule "develop/vendors/rttr"]
+	path = develop/vendors/rttr
+	url = https://github.com/rttrorg/rttr

@@ -55,7 +55,29 @@ target_compile_definitions(${PROJECT_NAME}.gbench
     PUBLIC BENCHMARK_STATIC_DEFINE)
 
 #
-# vmath
+# rttr
+#
+
+file(GLOB_RECURSE RTTR_SOURCES CONFIGURE_DEPENDS "rttr/src/rttr/*.cpp")
+add_library(${PROJECT_NAME}.rttr STATIC ${RTTR_SOURCES})
+add_library(${PROJECT_NAME}::rttr ALIAS ${PROJECT_NAME}.rttr)
+
+target_compile_features(${PROJECT_NAME}.rttr
+    PUBLIC cxx_std_20)
+
+target_include_directories(${PROJECT_NAME}.rttr SYSTEM
+    PUBLIC rttr/src)
+
+configure_file(
+    "rttr/src/rttr/detail/base/version.h.in"
+    "generated/vendors/rttr/rttr/detail/base/version.h"
+    @ONLY)
+
+target_include_directories(${PROJECT_NAME}.rttr SYSTEM
+    PUBLIC "${CMAKE_CURRENT_BINARY_DIR}/generated/vendors/rttr")
+
+#
+# vmath.hpp
 #
 
 add_library(${PROJECT_NAME}.vmath.hpp INTERFACE)
