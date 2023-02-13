@@ -258,7 +258,8 @@ namespace meta_hpp
 
     template < typename... Args >
     constructor class_type::get_constructor_with() const noexcept {
-        return get_constructor_with({resolve_type<Args>()...});
+        detail::type_registry& registry{detail::type_registry::instance()};
+        return get_constructor_with({registry.resolve_type<Args>()...});
     }
 
     template < typename Iter >
@@ -297,7 +298,8 @@ namespace meta_hpp
 
     template < typename... Args >
     function class_type::get_function_with(std::string_view name) const noexcept {
-        return get_function_with(name, {resolve_type<Args>()...});
+        detail::type_registry& registry{detail::type_registry::instance()};
+        return get_function_with(name, {registry.resolve_type<Args>()...});
     }
 
     template < typename Iter >
@@ -336,7 +338,8 @@ namespace meta_hpp
 
     template < typename... Args >
     method class_type::get_method_with(std::string_view name) const noexcept {
-        return get_method_with(name, {resolve_type<Args>()...});
+        detail::type_registry& registry{detail::type_registry::instance()};
+        return get_method_with(name, {registry.resolve_type<Args>()...});
     }
 
     template < typename Iter >

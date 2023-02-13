@@ -39,32 +39,32 @@ namespace meta_hpp::detail
         template < typename T, typename Tp = std::decay_t<T> >
             requires(!any_uvalue_kind<Tp>)
         // NOLINTNEXTLINE(*-forwarding-reference-overload)
-        explicit uinst_base(T&&)
-        : uinst_base{type_list<T&&>{}} {}
+        explicit uinst_base(type_registry& registry, T&&)
+        : uinst_base{registry, type_list<T&&>{}} {}
 
         template < inst_class_lvalue_ref_kind T >
-        explicit uinst_base(type_list<T>)
+        explicit uinst_base(type_registry& registry, type_list<T>)
         : ref_type_{std::is_const_v<std::remove_reference_t<T>> ? ref_types::const_lvalue : ref_types::lvalue}
-        , raw_type_{resolve_type<std::remove_cvref_t<T>>()} {}
+        , raw_type_{registry.resolve_type<std::remove_cvref_t<T>>()} {}
 
         template < inst_class_rvalue_ref_kind T >
-        explicit uinst_base(type_list<T>)
+        explicit uinst_base(type_registry& registry, type_list<T>)
         : ref_type_{std::is_const_v<std::remove_reference_t<T>> ? ref_types::const_rvalue : ref_types::rvalue}
-        , raw_type_{resolve_type<std::remove_cvref_t<T>>()} {}
+        , raw_type_{registry.resolve_type<std::remove_cvref_t<T>>()} {}
 
-        explicit uinst_base(uvalue& v)
+        explicit uinst_base(type_registry&, uvalue& v)
         : ref_type_{ref_types::lvalue}
         , raw_type_{v.get_type()} {}
 
-        explicit uinst_base(const uvalue& v)
+        explicit uinst_base(type_registry&, const uvalue& v)
         : ref_type_{ref_types::const_lvalue}
         , raw_type_{v.get_type()} {}
 
-        explicit uinst_base(uvalue&& v)
+        explicit uinst_base(type_registry&, uvalue&& v)
         : ref_type_{ref_types::rvalue}
         , raw_type_{v.get_type()} {}
 
-        explicit uinst_base(const uvalue&& v)
+        explicit uinst_base(type_registry&, const uvalue&& v)
         : ref_type_{ref_types::const_rvalue}
         , raw_type_{v.get_type()} {}
 
@@ -87,7 +87,7 @@ namespace meta_hpp::detail
         }
 
         template < inst_class_ref_kind Q >
-        [[nodiscard]] bool can_cast_to() const noexcept;
+        [[nodiscard]] bool can_cast_to(type_registry& registry) const noexcept;
 
     private:
         ref_types ref_type_{};
@@ -110,19 +110,19 @@ namespace meta_hpp::detail
 
         template < typename T, uvalue_kind Tp = std::decay_t<T> >
         // NOLINTNEXTLINE(*-forwarding-reference-overload)
-        explicit uinst(T&& v)
-        : uinst_base{std::forward<T>(v)} // NOLINTNEXTLINE(*-const-cast)
+        explicit uinst(type_registry& registry, T&& v)
+        : uinst_base{registry, std::forward<T>(v)} // NOLINTNEXTLINE(*-const-cast)
         , data_{const_cast<void*>(v.get_data())} {}
 
         template < typename T, typename Tp = std::decay_t<T> >
             requires(!any_uvalue_kind<Tp>)
         // NOLINTNEXTLINE(*-forwarding-reference-overload)
-        explicit uinst(T&& v)
-        : uinst_base{std::forward<T>(v)} // NOLINTNEXTLINE(*-const-cast)
+        explicit uinst(type_registry& registry, T&& v)
+        : uinst_base{registry, std::forward<T>(v)} // NOLINTNEXTLINE(*-const-cast)
         , data_{const_cast<std::remove_cvref_t<T>*>(std::addressof(v))} {}
 
         template < inst_class_ref_kind Q >
-        [[nodiscard]] decltype(auto) cast() const;
+        [[nodiscard]] decltype(auto) cast(type_registry& registry) const;
 
     private:
         void* data_{};
@@ -132,12 +132,12 @@ namespace meta_hpp::detail
 namespace meta_hpp::detail
 {
     template < inst_class_ref_kind Q >
-    bool uinst_base::can_cast_to() const noexcept {
+    bool uinst_base::can_cast_to(type_registry& registry) const noexcept {
         using inst_class = typename inst_traits<Q>::class_type;
         using inst_method = typename inst_traits<Q>::method_type;
 
         const any_type& from_type = get_raw_type();
-        const any_type& to_type = resolve_type<inst_class>();
+        const any_type& to_type = registry.resolve_type<inst_class>();
 
         const auto is_a = [](const any_type& base, const any_type& derived) {
             return (base == derived) //
@@ -182,20 +182,20 @@ namespace meta_hpp::detail
 namespace meta_hpp::detail
 {
     template < inst_class_ref_kind Q >
-    decltype(auto) uinst::cast() const {
-        META_HPP_ASSERT(can_cast_to<Q>() && "bad instance cast");
+    decltype(auto) uinst::cast(type_registry& registry) const {
+        META_HPP_ASSERT(can_cast_to<Q>(registry) && "bad instance cast");
 
         using inst_class_cv = std::remove_reference_t<Q>;
         using inst_class = std::remove_cv_t<inst_class_cv>;
 
         const any_type& from_type = get_raw_type();
-        const any_type& to_type = resolve_type<inst_class>();
+        const any_type& to_type = registry.resolve_type<inst_class>();
 
         if ( from_type.is_class() && to_type.is_class() ) {
             const class_type& from_class = from_type.as_class();
             const class_type& to_class = to_type.as_class();
 
-            void* to_ptr = pointer_upcast(data_, from_class, to_class);
+            void* to_ptr = pointer_upcast(registry, data_, from_class, to_class);
 
             if constexpr ( !std::is_reference_v<Q> ) {
                 return *static_cast<inst_class_cv*>(to_ptr);
@@ -219,7 +219,7 @@ namespace meta_hpp::detail
                 const class_type& to_class = to_type.as_class();
 
                 void** from_data_ptr = static_cast<void**>(data_);
-                void* to_ptr = pointer_upcast(*from_data_ptr, from_data_class, to_class);
+                void* to_ptr = pointer_upcast(registry, *from_data_ptr, from_data_class, to_class);
 
                 if constexpr ( !std::is_reference_v<Q> ) {
                     return *static_cast<inst_class_cv*>(to_ptr);

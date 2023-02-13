@@ -495,8 +495,11 @@ namespace meta_hpp
     auto uvalue::try_get_as() noexcept -> std::conditional_t<detail::pointer_kind<T>, T, T*> {
         static_assert(std::is_same_v<T, std::decay_t<T>>);
 
+        using detail::type_registry;
+        type_registry& registry{type_registry::instance()};
+
         const any_type& from_type = get_type();
-        const any_type& to_type = resolve_type<T>();
+        const any_type& to_type = registry.resolve_type<T>();
 
         const auto is_a = [](const any_type& base, const any_type& derived) {
             return (base == derived) //
@@ -530,7 +533,7 @@ namespace meta_hpp
                         const class_type& to_data_class = to_data_type.as_class();
                         const class_type& from_data_class = from_data_type.as_class();
 
-                        void* to_ptr = detail::pointer_upcast(*from_data_ptr, from_data_class, to_data_class);
+                        void* to_ptr = detail::pointer_upcast(registry, *from_data_ptr, from_data_class, to_data_class);
                         return static_cast<T>(to_ptr);
                     }
                 }
@@ -547,7 +550,7 @@ namespace meta_hpp
                 const class_type& to_class = to_type.as_class();
                 const class_type& from_class = from_type.as_class();
 
-                T* to_ptr = static_cast<T*>(detail::pointer_upcast(get_data(), from_class, to_class));
+                T* to_ptr = static_cast<T*>(detail::pointer_upcast(registry, get_data(), from_class, to_class));
                 return to_ptr;
             }
         }
@@ -560,8 +563,11 @@ namespace meta_hpp
     auto uvalue::try_get_as() const noexcept -> std::conditional_t<detail::pointer_kind<T>, T, const T*> {
         static_assert(std::is_same_v<T, std::decay_t<T>>);
 
+        using detail::type_registry;
+        type_registry& registry{type_registry::instance()};
+
         const any_type& from_type = get_type();
-        const any_type& to_type = resolve_type<T>();
+        const any_type& to_type = registry.resolve_type<T>();
 
         const auto is_a = [](const any_type& base, const any_type& derived) {
             return (base == derived) //
@@ -595,7 +601,7 @@ namespace meta_hpp
                         const class_type& to_data_class = to_data_type.as_class();
                         const class_type& from_data_class = from_data_type.as_class();
 
-                        void* to_ptr = detail::pointer_upcast(*from_data_ptr, from_data_class, to_data_class);
+                        void* to_ptr = detail::pointer_upcast(registry, *from_data_ptr, from_data_class, to_data_class);
                         return static_cast<T>(to_ptr);
                     }
                 }
@@ -612,7 +618,7 @@ namespace meta_hpp
                 const class_type& to_class = to_type.as_class();
                 const class_type& from_class = from_type.as_class();
 
-                const T* to_ptr = static_cast<const T*>(detail::pointer_upcast(get_data(), from_class, to_class));
+                const T* to_ptr = static_cast<const T*>(detail::pointer_upcast(registry, get_data(), from_class, to_class));
                 return to_ptr;
             }
         }

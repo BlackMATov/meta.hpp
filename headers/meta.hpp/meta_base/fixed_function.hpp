@@ -85,7 +85,7 @@ namespace meta_hpp::detail
     private:
         struct buffer_t final {
             // NOLINTNEXTLINE(*-avoid-c-arrays)
-            alignas(std::max_align_t) std::byte data[sizeof(void*) * 2];
+            alignas(std::max_align_t) std::byte data[sizeof(void*) * 3];
         } buffer_{};
     };
 

@@ -9,13 +9,14 @@
 #include "../meta_base.hpp"
 #include "../meta_states.hpp"
 
+#include "../meta_detail/type_registry.hpp"
 #include "../meta_detail/value_utilities/uarg.hpp"
 #include "../meta_types/constructor_type.hpp"
 
 namespace meta_hpp::detail
 {
     template < constructor_policy_kind Policy, class_kind Class, typename... Args >
-    uvalue raw_constructor_create(std::span<const uarg> args) {
+    uvalue raw_constructor_create(type_registry& registry, std::span<const uarg> args) {
         using ct = constructor_traits<Class, Args...>;
         using class_type = typename ct::class_type;
         using argument_types = typename ct::argument_types;
@@ -37,12 +38,12 @@ namespace meta_hpp::detail
             && "an attempt to call a constructor with an incorrect arity"
         );
 
-        META_HPP_ASSERT(                             //
-            can_cast_all_uargs<argument_types>(args) //
+        META_HPP_ASSERT(                                       //
+            can_cast_all_uargs<argument_types>(registry, args) //
             && "an attempt to call a constructor with incorrect argument types"
         );
 
-        return call_with_uargs<argument_types>(args, [](auto&&... all_args) -> uvalue {
+        return call_with_uargs<argument_types>(registry, args, [](auto&&... all_args) -> uvalue {
             if constexpr ( as_object ) {
                 return make_uvalue<class_type>(META_HPP_FWD(all_args)...);
             }
@@ -58,7 +59,7 @@ namespace meta_hpp::detail
     }
 
     template < class_kind Class, typename... Args >
-    uvalue raw_constructor_create_at(void* mem, std::span<const uarg> args) {
+    uvalue raw_constructor_create_at(type_registry& registry, void* mem, std::span<const uarg> args) {
         using ct = constructor_traits<Class, Args...>;
         using class_type = typename ct::class_type;
         using argument_types = typename ct::argument_types;
@@ -68,41 +69,47 @@ namespace meta_hpp::detail
             && "an attempt to call a constructor with an incorrect arity"
         );
 
-        META_HPP_ASSERT(                             //
-            can_cast_all_uargs<argument_types>(args) //
+        META_HPP_ASSERT(                                       //
+            can_cast_all_uargs<argument_types>(registry, args) //
             && "an attempt to call a constructor with incorrect argument types"
         );
 
-        return call_with_uargs<argument_types>(args, [mem](auto&&... all_args) {
+        return call_with_uargs<argument_types>(registry, args, [mem](auto&&... all_args) {
             return std::construct_at(static_cast<class_type*>(mem), META_HPP_FWD(all_args)...);
         });
     }
 
     template < class_kind Class, typename... Args >
-    bool raw_constructor_is_invocable_with(std::span<const uarg_base> args) {
+    bool raw_constructor_is_invocable_with(type_registry& registry, std::span<const uarg_base> args) {
         using ct = constructor_traits<Class, Args...>;
         using argument_types = typename ct::argument_types;
 
         return args.size() == ct::arity //
-            && can_cast_all_uargs<argument_types>(args);
+            && can_cast_all_uargs<argument_types>(registry, args);
     }
 }
 
 namespace meta_hpp::detail
 {
     template < constructor_policy_kind Policy, class_kind Class, typename... Args >
-    constructor_state::create_impl make_constructor_create() {
-        return &raw_constructor_create<Policy, Class, Args...>;
+    constructor_state::create_impl make_constructor_create(type_registry& registry) {
+        return [&registry](std::span<const uarg> args) { //
+            return raw_constructor_create<Policy, Class, Args...>(registry, args);
+        };
     }
 
     template < class_kind Class, typename... Args >
-    constructor_state::create_at_impl make_constructor_create_at() {
-        return &raw_constructor_create_at<Class, Args...>;
+    constructor_state::create_at_impl make_constructor_create_at(type_registry& registry) {
+        return [&registry](void* mem, std::span<const uarg> args) { //
+            return raw_constructor_create_at<Class, Args...>(registry, mem, args);
+        };
     }
 
     template < class_kind Class, typename... Args >
-    constructor_state::is_invocable_with_impl make_constructor_is_invocable_with() {
-        return &raw_constructor_is_invocable_with<Class, Args...>;
+    constructor_state::is_invocable_with_impl make_constructor_is_invocable_with(type_registry& registry) {
+        return [&registry](std::span<const uarg_base> args) { //
+            return raw_constructor_is_invocable_with<Class, Args...>(registry, args);
+        };
     }
 
     template < class_kind Class, typename... Args >
@@ -129,10 +136,11 @@ namespace meta_hpp::detail
 
     template < constructor_policy_kind Policy, class_kind Class, typename... Args >
     constructor_state_ptr constructor_state::make(metadata_map metadata) {
-        constructor_state state{constructor_index{resolve_constructor_type<Class, Args...>()}, std::move(metadata)};
-        state.create = make_constructor_create<Policy, Class, Args...>();
-        state.create_at = make_constructor_create_at<Class, Args...>();
-        state.is_invocable_with = make_constructor_is_invocable_with<Class, Args...>();
+        type_registry& registry{type_registry::instance()};
+        constructor_state state{constructor_index{registry.resolve_constructor_type<Class, Args...>()}, std::move(metadata)};
+        state.create = make_constructor_create<Policy, Class, Args...>(registry);
+        state.create_at = make_constructor_create_at<Class, Args...>(registry);
+        state.is_invocable_with = make_constructor_is_invocable_with<Class, Args...>(registry);
         state.arguments = make_constructor_arguments<Class, Args...>();
         return make_intrusive<constructor_state>(std::move(state));
     }
@@ -147,7 +155,8 @@ namespace meta_hpp
     template < typename... Args >
     uvalue constructor::create(Args&&... args) const {
         using namespace detail;
-        const std::array<uarg, sizeof...(Args)> vargs{uarg{std::forward<Args>(args)}...};
+        type_registry& registry{type_registry::instance()};
+        const std::array<uarg, sizeof...(Args)> vargs{uarg{registry, std::forward<Args>(args)}...};
         return state_->create(vargs);
     }
 
@@ -162,7 +171,8 @@ namespace meta_hpp
     template < typename... Args >
     uvalue constructor::create_at(void* mem, Args&&... args) const {
         using namespace detail;
-        const std::array<uarg, sizeof...(Args)> vargs{uarg{std::forward<Args>(args)}...};
+        type_registry& registry{type_registry::instance()};
+        const std::array<uarg, sizeof...(Args)> vargs{uarg{registry, std::forward<Args>(args)}...};
         return state_->create_at(mem, vargs);
     }
 
@@ -177,14 +187,16 @@ namespace meta_hpp
     template < typename... Args >
     bool constructor::is_invocable_with() const noexcept {
         using namespace detail;
-        const std::array<uarg_base, sizeof...(Args)> vargs{uarg_base{type_list<Args>{}}...};
+        type_registry& registry{type_registry::instance()};
+        const std::array<uarg_base, sizeof...(Args)> vargs{uarg_base{registry, type_list<Args>{}}...};
         return state_->is_invocable_with(vargs);
     }
 
     template < typename... Args >
     bool constructor::is_invocable_with(Args&&... args) const noexcept {
         using namespace detail;
-        const std::array<uarg_base, sizeof...(Args)> vargs{uarg_base{std::forward<Args>(args)}...};
+        type_registry& registry{type_registry::instance()};
+        const std::array<uarg_base, sizeof...(Args)> vargs{uarg_base{registry, std::forward<Args>(args)}...};
         return state_->is_invocable_with(vargs);
     }
 

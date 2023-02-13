@@ -39,32 +39,32 @@ namespace meta_hpp::detail
         template < typename T, typename Tp = std::decay_t<T> >
             requires(!any_uvalue_kind<Tp>)
         // NOLINTNEXTLINE(*-forwarding-reference-overload)
-        explicit uarg_base(T&&)
-        : uarg_base{type_list<T&&>{}} {}
+        explicit uarg_base(type_registry& registry, T&&)
+        : uarg_base{registry, type_list<T&&>{}} {}
 
         template < arg_lvalue_ref_kind T >
-        explicit uarg_base(type_list<T>)
+        explicit uarg_base(type_registry& registry, type_list<T>)
         : ref_type_{std::is_const_v<std::remove_reference_t<T>> ? ref_types::const_lvalue : ref_types::lvalue}
-        , raw_type_{resolve_type<std::remove_cvref_t<T>>()} {}
+        , raw_type_{registry.resolve_type<std::remove_cvref_t<T>>()} {}
 
         template < arg_rvalue_ref_kind T >
-        explicit uarg_base(type_list<T>)
+        explicit uarg_base(type_registry& registry, type_list<T>)
         : ref_type_{std::is_const_v<std::remove_reference_t<T>> ? ref_types::const_rvalue : ref_types::rvalue}
-        , raw_type_{resolve_type<std::remove_cvref_t<T>>()} {}
+        , raw_type_{registry.resolve_type<std::remove_cvref_t<T>>()} {}
 
-        explicit uarg_base(uvalue& v)
+        explicit uarg_base(type_registry&, uvalue& v)
         : ref_type_{ref_types::lvalue}
         , raw_type_{v.get_type()} {}
 
-        explicit uarg_base(const uvalue& v)
+        explicit uarg_base(type_registry&, const uvalue& v)
         : ref_type_{ref_types::const_lvalue}
         , raw_type_{v.get_type()} {}
 
-        explicit uarg_base(uvalue&& v)
+        explicit uarg_base(type_registry&, uvalue&& v)
         : ref_type_{ref_types::rvalue}
         , raw_type_{v.get_type()} {}
 
-        explicit uarg_base(const uvalue&& v)
+        explicit uarg_base(type_registry&, const uvalue&& v)
         : ref_type_{ref_types::const_rvalue}
         , raw_type_{v.get_type()} {}
 
@@ -83,11 +83,11 @@ namespace meta_hpp::detail
 
         template < typename To >
             requires(std::is_pointer_v<To>)
-        [[nodiscard]] bool can_cast_to() const noexcept;
+        [[nodiscard]] bool can_cast_to(type_registry& registry) const noexcept;
 
         template < typename To >
             requires(!std::is_pointer_v<To>)
-        [[nodiscard]] bool can_cast_to() const noexcept;
+        [[nodiscard]] bool can_cast_to(type_registry& registry) const noexcept;
 
     private:
         ref_types ref_type_{};
@@ -110,24 +110,24 @@ namespace meta_hpp::detail
 
         template < typename T, uvalue_kind Tp = std::decay_t<T> >
         // NOLINTNEXTLINE(*-forwarding-reference-overload)
-        explicit uarg(T&& v)
-        : uarg_base{std::forward<T>(v)} // NOLINTNEXTLINE(*-const-cast)
-        , data_{const_cast<void*>(v.get_data())} {}
+        explicit uarg(type_registry& registry, T&& v)
+        : uarg_base{registry, std::forward<T>(v)}
+        , data_{const_cast<void*>(v.get_data())} {} // NOLINT(*-const-cast)
 
         template < typename T, typename Tp = std::decay_t<T> >
             requires(!any_uvalue_kind<Tp>)
         // NOLINTNEXTLINE(*-forwarding-reference-overload)
-        explicit uarg(T&& v)
-        : uarg_base{std::forward<T>(v)} // NOLINTNEXTLINE(*-const-cast)
-        , data_{const_cast<std::remove_cvref_t<T>*>(std::addressof(v))} {}
+        explicit uarg(type_registry& registry, T&& v)
+        : uarg_base{registry, std::forward<T>(v)}
+        , data_{const_cast<std::remove_cvref_t<T>*>(std::addressof(v))} {} // NOLINT(*-const-cast)
 
         template < typename To >
             requires(std::is_pointer_v<To>)
-        [[nodiscard]] To cast() const;
+        [[nodiscard]] To cast(type_registry& registry) const;
 
         template < typename To >
             requires(!std::is_pointer_v<To>)
-        [[nodiscard]] To cast() const;
+        [[nodiscard]] To cast(type_registry& registry) const;
 
     private:
         void* data_{};
@@ -138,12 +138,12 @@ namespace meta_hpp::detail
 {
     template < typename To >
         requires(std::is_pointer_v<To>)
-    [[nodiscard]] bool uarg_base::can_cast_to() const noexcept {
+    [[nodiscard]] bool uarg_base::can_cast_to(type_registry& registry) const noexcept {
         using to_raw_type_cv = std::remove_reference_t<To>;
         using to_raw_type = std::remove_cv_t<to_raw_type_cv>;
 
         const any_type& from_type = get_raw_type();
-        const any_type& to_type = resolve_type<to_raw_type>();
+        const any_type& to_type = registry.resolve_type<to_raw_type>();
 
         const auto is_a = [](const any_type& base, const any_type& derived) {
             return (base == derived) //
@@ -193,7 +193,7 @@ namespace meta_hpp::detail
 
     template < typename To >
         requires(!std::is_pointer_v<To>)
-    [[nodiscard]] bool uarg_base::can_cast_to() const noexcept {
+    [[nodiscard]] bool uarg_base::can_cast_to(type_registry& registry) const noexcept {
         using to_raw_type_cv = std::remove_reference_t<To>;
         using to_raw_type = std::remove_cv_t<to_raw_type_cv>;
 
@@ -203,7 +203,7 @@ namespace meta_hpp::detail
         );
 
         const any_type& from_type = get_raw_type();
-        const any_type& to_type = resolve_type<to_raw_type>();
+        const any_type& to_type = registry.resolve_type<to_raw_type>();
 
         const auto is_a = [](const any_type& base, const any_type& derived) {
             return (base == derived) //
@@ -258,14 +258,14 @@ namespace meta_hpp::detail
 {
     template < typename To >
         requires(std::is_pointer_v<To>)
-    [[nodiscard]] To uarg::cast() const {
-        META_HPP_ASSERT(can_cast_to<To>() && "bad argument cast");
+    [[nodiscard]] To uarg::cast(type_registry& registry) const {
+        META_HPP_ASSERT(can_cast_to<To>(registry) && "bad argument cast");
 
         using to_raw_type_cv = std::remove_reference_t<To>;
         using to_raw_type = std::remove_cv_t<to_raw_type_cv>;
 
         const any_type& from_type = get_raw_type();
-        const any_type& to_type = resolve_type<to_raw_type>();
+        const any_type& to_type = registry.resolve_type<to_raw_type>();
 
         if ( to_type.is_pointer() && from_type.is_nullptr() ) {
             return static_cast<to_raw_type_cv>(nullptr);
@@ -286,7 +286,7 @@ namespace meta_hpp::detail
                 const class_type& to_data_class = to_data_type.as_class();
                 const class_type& from_data_class = from_data_type.as_class();
 
-                void* to_ptr = pointer_upcast(data_, from_data_class, to_data_class);
+                void* to_ptr = pointer_upcast(registry, data_, from_data_class, to_data_class);
                 return static_cast<to_raw_type_cv>(to_ptr);
             }
         }
@@ -308,7 +308,7 @@ namespace meta_hpp::detail
                 const class_type& to_data_class = to_data_type.as_class();
                 const class_type& from_data_class = from_data_type.as_class();
 
-                void* to_ptr = pointer_upcast(*from_data_ptr, from_data_class, to_data_class);
+                void* to_ptr = pointer_upcast(registry, *from_data_ptr, from_data_class, to_data_class);
                 return static_cast<to_raw_type_cv>(to_ptr);
             }
         }
@@ -318,8 +318,8 @@ namespace meta_hpp::detail
 
     template < typename To >
         requires(!std::is_pointer_v<To>)
-    [[nodiscard]] To uarg::cast() const {
-        META_HPP_ASSERT(can_cast_to<To>() && "bad argument cast");
+    [[nodiscard]] To uarg::cast(type_registry& registry) const {
+        META_HPP_ASSERT(can_cast_to<To>(registry) && "bad argument cast");
 
         using to_raw_type_cv = std::remove_reference_t<To>;
         using to_raw_type = std::remove_cv_t<to_raw_type_cv>;
@@ -330,11 +330,11 @@ namespace meta_hpp::detail
         );
 
         const any_type& from_type = get_raw_type();
-        const any_type& to_type = resolve_type<to_raw_type>();
+        const any_type& to_type = registry.resolve_type<to_raw_type>();
 
         void* to_ptr = to_type == from_type //
                          ? data_
-                         : pointer_upcast(data_, from_type.as_class(), to_type.as_class());
+                         : pointer_upcast(registry, data_, from_type.as_class(), to_type.as_class());
 
         if constexpr ( std::is_lvalue_reference_v<To> ) {
             return *static_cast<to_raw_type_cv*>(to_ptr);
@@ -376,28 +376,28 @@ namespace meta_hpp::detail
 namespace meta_hpp::detail
 {
     template < typename ArgTypeList, typename F >
-    auto call_with_uargs(std::span<const uarg> args, F&& f) {
+    auto call_with_uargs(type_registry& registry, std::span<const uarg> args, F&& f) {
         META_HPP_ASSERT(args.size() == type_list_arity_v<ArgTypeList>);
-        return [ args, &f ]<std::size_t... Is>(std::index_sequence<Is...>) {
-            return f(args[Is].cast<type_list_at_t<Is, ArgTypeList>>()...);
+        return [ args, &registry, &f ]<std::size_t... Is>(std::index_sequence<Is...>) {
+            return f(args[Is].cast<type_list_at_t<Is, ArgTypeList>>(registry)...);
         }
         (std::make_index_sequence<type_list_arity_v<ArgTypeList>>());
     }
 
     template < typename ArgTypeList >
-    bool can_cast_all_uargs(std::span<const uarg> args) {
+    bool can_cast_all_uargs(type_registry& registry, std::span<const uarg> args) {
         META_HPP_ASSERT(args.size() == type_list_arity_v<ArgTypeList>);
-        return [args]<std::size_t... Is>(std::index_sequence<Is...>) {
-            return (... && args[Is].can_cast_to<type_list_at_t<Is, ArgTypeList>>());
+        return [ args, &registry ]<std::size_t... Is>(std::index_sequence<Is...>) {
+            return (... && args[Is].can_cast_to<type_list_at_t<Is, ArgTypeList>>(registry));
         }
         (std::make_index_sequence<type_list_arity_v<ArgTypeList>>());
     }
 
     template < typename ArgTypeList >
-    bool can_cast_all_uargs(std::span<const uarg_base> args) {
+    bool can_cast_all_uargs(type_registry& registry, std::span<const uarg_base> args) {
         META_HPP_ASSERT(args.size() == type_list_arity_v<ArgTypeList>);
-        return [args]<std::size_t... Is>(std::index_sequence<Is...>) {
-            return (... && args[Is].can_cast_to<type_list_at_t<Is, ArgTypeList>>());
+        return [ args, &registry ]<std::size_t... Is>(std::index_sequence<Is...>) {
+            return (... && args[Is].can_cast_to<type_list_at_t<Is, ArgTypeList>>(registry));
         }
         (std::make_index_sequence<type_list_arity_v<ArgTypeList>>());
     }

@@ -98,7 +98,12 @@ namespace meta_hpp::detail
 
 namespace meta_hpp::detail
 {
-    [[nodiscard]] inline void* pointer_upcast(void* ptr, const class_type& from, const class_type& to) {
+    [[nodiscard]] inline void* pointer_upcast( //
+        type_registry& registry,
+        void* ptr,
+        const class_type& from,
+        const class_type& to
+    ) {
         if ( nullptr == ptr || !from || !to ) {
             return nullptr;
         }
@@ -113,25 +118,30 @@ namespace meta_hpp::detail
             }
 
             if ( base_type.is_derived_from(to) ) {
-                return pointer_upcast(base_info.upcast(ptr), base_type, to);
+                return pointer_upcast(registry, base_info.upcast(ptr), base_type, to);
             }
         }
 
         return nullptr;
     }
 
-    [[nodiscard]] inline const void* pointer_upcast(const void* ptr, const class_type& from, const class_type& to) {
+    [[nodiscard]] inline const void* pointer_upcast( //
+        type_registry& registry,
+        const void* ptr,
+        const class_type& from,
+        const class_type& to
+    ) {
         // NOLINTNEXTLINE(*-const-cast)
-        return pointer_upcast(const_cast<void*>(ptr), from, to);
+        return pointer_upcast(registry, const_cast<void*>(ptr), from, to);
     }
 
     template < class_kind To, class_kind From >
-    [[nodiscard]] To* pointer_upcast(From* ptr) {
-        return static_cast<To*>(pointer_upcast(ptr, resolve_type<From>(), resolve_type<To>()));
+    [[nodiscard]] To* pointer_upcast(type_registry& registry, From* ptr) {
+        return static_cast<To*>(pointer_upcast(registry, ptr, registry.resolve_type<From>(), registry.resolve_type<To>()));
     }
 
     template < class_kind To, class_kind From >
-    [[nodiscard]] const To* pointer_upcast(const From* ptr) {
-        return static_cast<const To*>(pointer_upcast(ptr, resolve_type<From>(), resolve_type<To>()));
+    [[nodiscard]] const To* pointer_upcast(type_registry& registry, const From* ptr) {
+        return static_cast<const To*>(pointer_upcast(registry, ptr, registry.resolve_type<From>(), registry.resolve_type<To>()));
     }
 }

@@ -29,6 +29,10 @@ namespace
 
 TEST_CASE("meta/meta_features/diamond") {
     namespace meta = meta_hpp;
+    using meta::detail::uarg;
+    using meta::detail::uinst;
+    using meta::detail::type_registry;
+    type_registry& r{type_registry::instance()};
 
     meta::class_<A>();
     meta::class_<B>().base_<A>();
@@ -120,43 +124,43 @@ TEST_CASE("meta/meta_features/diamond") {
         using meta::detail::pointer_upcast;
         {
             A a;
-            CHECK(pointer_upcast<A>(&a) == &a);
-            CHECK_FALSE(pointer_upcast<B>(&a));
-            CHECK_FALSE(pointer_upcast<C>(&a));
-            CHECK_FALSE(pointer_upcast<D>(&a));
-            CHECK_FALSE(pointer_upcast<E>(&a));
+            CHECK(pointer_upcast<A>(r, &a) == &a);
+            CHECK_FALSE(pointer_upcast<B>(r, &a));
+            CHECK_FALSE(pointer_upcast<C>(r, &a));
+            CHECK_FALSE(pointer_upcast<D>(r, &a));
+            CHECK_FALSE(pointer_upcast<E>(r, &a));
         }
         {
             const B b;
-            CHECK(pointer_upcast<A>(&b) == &b);
-            CHECK(pointer_upcast<B>(&b) == &b);
-            CHECK_FALSE(pointer_upcast<C>(&b));
-            CHECK_FALSE(pointer_upcast<D>(&b));
-            CHECK_FALSE(pointer_upcast<E>(&b));
+            CHECK(pointer_upcast<A>(r, &b) == &b);
+            CHECK(pointer_upcast<B>(r, &b) == &b);
+            CHECK_FALSE(pointer_upcast<C>(r, &b));
+            CHECK_FALSE(pointer_upcast<D>(r, &b));
+            CHECK_FALSE(pointer_upcast<E>(r, &b));
         }
         {
             C c;
-            CHECK(pointer_upcast<A>(&c) == &c);
-            CHECK_FALSE(pointer_upcast<B>(&c));
-            CHECK(pointer_upcast<C>(&c) == &c);
-            CHECK_FALSE(pointer_upcast<D>(&c));
-            CHECK_FALSE(pointer_upcast<E>(&c));
+            CHECK(pointer_upcast<A>(r, &c) == &c);
+            CHECK_FALSE(pointer_upcast<B>(r, &c));
+            CHECK(pointer_upcast<C>(r, &c) == &c);
+            CHECK_FALSE(pointer_upcast<D>(r, &c));
+            CHECK_FALSE(pointer_upcast<E>(r, &c));
         }
         {
             const D d;
-            CHECK(pointer_upcast<A>(&d) == &d);
-            CHECK(pointer_upcast<B>(&d) == &d);
-            CHECK(pointer_upcast<C>(&d) == &d);
-            CHECK(pointer_upcast<D>(&d) == &d);
-            CHECK_FALSE(pointer_upcast<E>(&d));
+            CHECK(pointer_upcast<A>(r, &d) == &d);
+            CHECK(pointer_upcast<B>(r, &d) == &d);
+            CHECK(pointer_upcast<C>(r, &d) == &d);
+            CHECK(pointer_upcast<D>(r, &d) == &d);
+            CHECK_FALSE(pointer_upcast<E>(r, &d));
         }
         {
             E e;
-            CHECK_FALSE(pointer_upcast<A>(&e));
-            CHECK_FALSE(pointer_upcast<B>(&e));
-            CHECK_FALSE(pointer_upcast<C>(&e));
-            CHECK_FALSE(pointer_upcast<D>(&e));
-            CHECK(pointer_upcast<E>(&e) == &e);
+            CHECK_FALSE(pointer_upcast<A>(r, &e));
+            CHECK_FALSE(pointer_upcast<B>(r, &e));
+            CHECK_FALSE(pointer_upcast<C>(r, &e));
+            CHECK_FALSE(pointer_upcast<D>(r, &e));
+            CHECK(pointer_upcast<E>(r, &e) == &e);
         }
     }
 
@@ -166,155 +170,155 @@ TEST_CASE("meta/meta_features/diamond") {
             meta::uvalue a_val{&a};
             CHECK(*static_cast<A**>(a_val.get_data()) == &a);
 
-            meta::detail::uarg a_arg{a_val};
+            uarg a_arg{r, a_val};
 
-            CHECK(a_arg.can_cast_to<A*>());
-            CHECK(!a_arg.can_cast_to<B*>());
-            CHECK(!a_arg.can_cast_to<C*>());
-            CHECK(!a_arg.can_cast_to<D*>());
-            CHECK(!a_arg.can_cast_to<E*>());
+            CHECK(a_arg.can_cast_to<A*>(r));
+            CHECK(!a_arg.can_cast_to<B*>(r));
+            CHECK(!a_arg.can_cast_to<C*>(r));
+            CHECK(!a_arg.can_cast_to<D*>(r));
+            CHECK(!a_arg.can_cast_to<E*>(r));
 
-            CHECK(a_arg.cast<A*>() == static_cast<A*>(&a));
+            CHECK(a_arg.cast<A*>(r) == static_cast<A*>(&a));
         }
         {
             B b;
             meta::uvalue b_val{&b};
             CHECK(*static_cast<B**>(b_val.get_data()) == &b);
 
-            meta::detail::uarg b_arg{b_val};
+            uarg b_arg{r, b_val};
 
-            CHECK(b_arg.can_cast_to<A*>());
-            CHECK(b_arg.can_cast_to<B*>());
-            CHECK(!b_arg.can_cast_to<C*>());
-            CHECK(!b_arg.can_cast_to<D*>());
-            CHECK(!b_arg.can_cast_to<E*>());
+            CHECK(b_arg.can_cast_to<A*>(r));
+            CHECK(b_arg.can_cast_to<B*>(r));
+            CHECK(!b_arg.can_cast_to<C*>(r));
+            CHECK(!b_arg.can_cast_to<D*>(r));
+            CHECK(!b_arg.can_cast_to<E*>(r));
 
-            CHECK(b_arg.cast<A*>() == static_cast<A*>(&b));
-            CHECK(b_arg.cast<B*>() == static_cast<B*>(&b));
+            CHECK(b_arg.cast<A*>(r) == static_cast<A*>(&b));
+            CHECK(b_arg.cast<B*>(r) == static_cast<B*>(&b));
         }
         {
             C c;
             meta::uvalue c_val{&c};
             CHECK(*static_cast<C**>(c_val.get_data()) == &c);
 
-            meta::detail::uarg c_arg{c_val};
+            uarg c_arg{r, c_val};
 
-            CHECK(c_arg.can_cast_to<A*>());
-            CHECK(!c_arg.can_cast_to<B*>());
-            CHECK(c_arg.can_cast_to<C*>());
-            CHECK(!c_arg.can_cast_to<D*>());
-            CHECK(!c_arg.can_cast_to<E*>());
+            CHECK(c_arg.can_cast_to<A*>(r));
+            CHECK(!c_arg.can_cast_to<B*>(r));
+            CHECK(c_arg.can_cast_to<C*>(r));
+            CHECK(!c_arg.can_cast_to<D*>(r));
+            CHECK(!c_arg.can_cast_to<E*>(r));
 
-            CHECK(c_arg.cast<A*>() == static_cast<A*>(&c));
-            CHECK(c_arg.cast<C*>() == static_cast<C*>(&c));
+            CHECK(c_arg.cast<A*>(r) == static_cast<A*>(&c));
+            CHECK(c_arg.cast<C*>(r) == static_cast<C*>(&c));
         }
         {
             D d;
             meta::uvalue d_val{&d};
             CHECK(*static_cast<D**>(d_val.get_data()) == &d);
 
-            meta::detail::uarg d_arg{d_val};
+            uarg d_arg{r, d_val};
 
-            CHECK(d_arg.can_cast_to<A*>());
-            CHECK(d_arg.can_cast_to<B*>());
-            CHECK(d_arg.can_cast_to<C*>());
-            CHECK(d_arg.can_cast_to<D*>());
-            CHECK(!d_arg.can_cast_to<E*>());
+            CHECK(d_arg.can_cast_to<A*>(r));
+            CHECK(d_arg.can_cast_to<B*>(r));
+            CHECK(d_arg.can_cast_to<C*>(r));
+            CHECK(d_arg.can_cast_to<D*>(r));
+            CHECK(!d_arg.can_cast_to<E*>(r));
 
-            CHECK(d_arg.cast<A*>() == static_cast<A*>(&d));
-            CHECK(d_arg.cast<B*>() == static_cast<B*>(&d));
-            CHECK(d_arg.cast<C*>() == static_cast<C*>(&d));
-            CHECK(d_arg.cast<D*>() == static_cast<D*>(&d));
+            CHECK(d_arg.cast<A*>(r) == static_cast<A*>(&d));
+            CHECK(d_arg.cast<B*>(r) == static_cast<B*>(&d));
+            CHECK(d_arg.cast<C*>(r) == static_cast<C*>(&d));
+            CHECK(d_arg.cast<D*>(r) == static_cast<D*>(&d));
         }
         {
             E e;
             meta::uvalue e_val{&e};
             CHECK(*static_cast<E**>(e_val.get_data()) == &e);
 
-            meta::detail::uarg e_arg{e_val};
+            uarg e_arg{r, e_val};
 
-            CHECK(!e_arg.can_cast_to<A*>());
-            CHECK(!e_arg.can_cast_to<B*>());
-            CHECK(!e_arg.can_cast_to<C*>());
-            CHECK(!e_arg.can_cast_to<D*>());
-            CHECK(e_arg.can_cast_to<E*>());
+            CHECK(!e_arg.can_cast_to<A*>(r));
+            CHECK(!e_arg.can_cast_to<B*>(r));
+            CHECK(!e_arg.can_cast_to<C*>(r));
+            CHECK(!e_arg.can_cast_to<D*>(r));
+            CHECK(e_arg.can_cast_to<E*>(r));
 
-            CHECK(e_arg.cast<E*>() == static_cast<E*>(&e));
+            CHECK(e_arg.cast<E*>(r) == static_cast<E*>(&e));
         }
     }
 
     SUBCASE("inst/cast") {
         {
             meta::uvalue a_val{A{}};
-            meta::detail::uinst a_inst{a_val};
+            uinst a_inst{r, a_val};
 
-            CHECK(a_inst.can_cast_to<A&>());
-            CHECK_FALSE(a_inst.can_cast_to<B&>());
-            CHECK_FALSE(a_inst.can_cast_to<C&>());
-            CHECK_FALSE(a_inst.can_cast_to<D&>());
-            CHECK_FALSE(a_inst.can_cast_to<E&>());
+            CHECK(a_inst.can_cast_to<A&>(r));
+            CHECK_FALSE(a_inst.can_cast_to<B&>(r));
+            CHECK_FALSE(a_inst.can_cast_to<C&>(r));
+            CHECK_FALSE(a_inst.can_cast_to<D&>(r));
+            CHECK_FALSE(a_inst.can_cast_to<E&>(r));
 
-            CHECK(&a_inst.cast<A&>() == &a_val.get_as<A>());
+            CHECK(&a_inst.cast<A&>(r) == &a_val.get_as<A>());
         }
         {
             meta::uvalue b_val{B{}};
-            meta::detail::uinst b_inst{b_val};
+            uinst b_inst{r, b_val};
 
-            CHECK(b_inst.can_cast_to<A&>());
-            CHECK(b_inst.can_cast_to<B&>());
-            CHECK_FALSE(b_inst.can_cast_to<C&>());
-            CHECK_FALSE(b_inst.can_cast_to<D&>());
-            CHECK_FALSE(b_inst.can_cast_to<E&>());
+            CHECK(b_inst.can_cast_to<A&>(r));
+            CHECK(b_inst.can_cast_to<B&>(r));
+            CHECK_FALSE(b_inst.can_cast_to<C&>(r));
+            CHECK_FALSE(b_inst.can_cast_to<D&>(r));
+            CHECK_FALSE(b_inst.can_cast_to<E&>(r));
 
-            CHECK(&b_inst.cast<A&>() == &b_val.get_as<B>());
-            CHECK(&b_inst.cast<B&>() == &b_val.get_as<B>());
+            CHECK(&b_inst.cast<A&>(r) == &b_val.get_as<B>());
+            CHECK(&b_inst.cast<B&>(r) == &b_val.get_as<B>());
 
-            CHECK(&b_inst.cast<A&>() == &b_val.get_as<B>());
+            CHECK(&b_inst.cast<A&>(r) == &b_val.get_as<B>());
         }
         {
             meta::uvalue c_val{C{}};
-            meta::detail::uinst c_inst{c_val};
+            uinst c_inst{r, c_val};
 
-            CHECK(c_inst.can_cast_to<A&>());
-            CHECK_FALSE(c_inst.can_cast_to<B&>());
-            CHECK(c_inst.can_cast_to<C&>());
-            CHECK_FALSE(c_inst.can_cast_to<D&>());
-            CHECK_FALSE(c_inst.can_cast_to<E&>());
+            CHECK(c_inst.can_cast_to<A&>(r));
+            CHECK_FALSE(c_inst.can_cast_to<B&>(r));
+            CHECK(c_inst.can_cast_to<C&>(r));
+            CHECK_FALSE(c_inst.can_cast_to<D&>(r));
+            CHECK_FALSE(c_inst.can_cast_to<E&>(r));
 
-            CHECK(&c_inst.cast<A&>() == &c_val.get_as<C>());
-            CHECK(&c_inst.cast<C&>() == &c_val.get_as<C>());
+            CHECK(&c_inst.cast<A&>(r) == &c_val.get_as<C>());
+            CHECK(&c_inst.cast<C&>(r) == &c_val.get_as<C>());
         }
         {
             meta::uvalue d_val{D{}};
-            meta::detail::uinst d_inst{d_val};
+            uinst d_inst{r, d_val};
 
-            CHECK(d_inst.can_cast_to<A&>());
-            CHECK(d_inst.can_cast_to<B&>());
-            CHECK(d_inst.can_cast_to<C&>());
-            CHECK(d_inst.can_cast_to<D&>());
-            CHECK_FALSE(d_inst.can_cast_to<E&>());
+            CHECK(d_inst.can_cast_to<A&>(r));
+            CHECK(d_inst.can_cast_to<B&>(r));
+            CHECK(d_inst.can_cast_to<C&>(r));
+            CHECK(d_inst.can_cast_to<D&>(r));
+            CHECK_FALSE(d_inst.can_cast_to<E&>(r));
 
-            CHECK(&d_inst.cast<A&>() == &d_val.get_as<D>());
-            CHECK(&d_inst.cast<B&>() == &d_val.get_as<D>());
-            CHECK(&d_inst.cast<C&>() == &d_val.get_as<D>());
-            CHECK(&d_inst.cast<D&>() == &d_val.get_as<D>());
+            CHECK(&d_inst.cast<A&>(r) == &d_val.get_as<D>());
+            CHECK(&d_inst.cast<B&>(r) == &d_val.get_as<D>());
+            CHECK(&d_inst.cast<C&>(r) == &d_val.get_as<D>());
+            CHECK(&d_inst.cast<D&>(r) == &d_val.get_as<D>());
 
-            CHECK(&d_inst.cast<A&>() == &d_val.get_as<D>());
-            CHECK(&d_inst.cast<B&>() == &d_val.get_as<D>());
-            CHECK(&d_inst.cast<C&>() == &d_val.get_as<D>());
-            CHECK(&d_inst.cast<D&>() == &d_val.get_as<D>());
+            CHECK(&d_inst.cast<A&>(r) == &d_val.get_as<D>());
+            CHECK(&d_inst.cast<B&>(r) == &d_val.get_as<D>());
+            CHECK(&d_inst.cast<C&>(r) == &d_val.get_as<D>());
+            CHECK(&d_inst.cast<D&>(r) == &d_val.get_as<D>());
         }
         {
             meta::uvalue e_val{E{}};
-            meta::detail::uinst e_inst{e_val};
+            uinst e_inst{r, e_val};
 
-            CHECK_FALSE(e_inst.can_cast_to<A&>());
-            CHECK_FALSE(e_inst.can_cast_to<B&>());
-            CHECK_FALSE(e_inst.can_cast_to<C&>());
-            CHECK_FALSE(e_inst.can_cast_to<D&>());
-            CHECK(e_inst.can_cast_to<E&>());
+            CHECK_FALSE(e_inst.can_cast_to<A&>(r));
+            CHECK_FALSE(e_inst.can_cast_to<B&>(r));
+            CHECK_FALSE(e_inst.can_cast_to<C&>(r));
+            CHECK_FALSE(e_inst.can_cast_to<D&>(r));
+            CHECK(e_inst.can_cast_to<E&>(r));
 
-            CHECK(&e_inst.cast<E&>() == &e_val.get_as<E>());
+            CHECK(&e_inst.cast<E&>(r) == &e_val.get_as<E>());
         }
     }
 

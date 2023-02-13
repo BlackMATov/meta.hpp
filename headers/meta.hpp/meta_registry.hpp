@@ -38,12 +38,16 @@ namespace meta_hpp
 
     template < typename... Ts >
     [[nodiscard]] any_type_list resolve_types() {
-        return {resolve_type<Ts>()...};
+        using namespace detail;
+        type_registry& registry = type_registry::instance();
+        return {registry.resolve_type<std::remove_cv_t<Ts>>()...};
     }
 
     template < typename... Ts >
     [[nodiscard]] any_type_list resolve_types(type_list<Ts...>) {
-        return {resolve_type<Ts>()...};
+        using namespace detail;
+        type_registry& registry = type_registry::instance();
+        return {registry.resolve_type<std::remove_cv_t<Ts>>()...};
     }
 }
 

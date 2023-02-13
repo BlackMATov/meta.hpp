@@ -27,8 +27,9 @@ namespace meta_hpp
     template < detail::function_pointer_kind Function, typename... Args >
     uvalue invoke(Function function_ptr, Args&&... args) {
         using namespace detail;
-        const std::array<uarg, sizeof...(Args)> vargs{uarg{std::forward<Args>(args)}...};
-        return raw_function_invoke<function_policy::as_copy_t>(function_ptr, vargs);
+        type_registry& registry{type_registry::instance()};
+        const std::array<uarg, sizeof...(Args)> vargs{uarg{registry, std::forward<Args>(args)}...};
+        return raw_function_invoke<function_policy::as_copy_t>(registry, function_ptr, vargs);
     }
 }
 
@@ -42,8 +43,9 @@ namespace meta_hpp
     template < detail::member_pointer_kind Member, typename Instance >
     uvalue invoke(Member member_ptr, Instance&& instance) {
         using namespace detail;
-        const uinst vinst{std::forward<Instance>(instance)};
-        return raw_member_getter<member_policy::as_copy_t>(member_ptr, vinst);
+        type_registry& registry{type_registry::instance()};
+        const uinst vinst{registry, std::forward<Instance>(instance)};
+        return raw_member_getter<member_policy::as_copy_t>(registry, member_ptr, vinst);
     }
 }
 
@@ -57,9 +59,10 @@ namespace meta_hpp
     template < detail::method_pointer_kind Method, typename Instance, typename... Args >
     uvalue invoke(Method method_ptr, Instance&& instance, Args&&... args) {
         using namespace detail;
-        const uinst vinst{std::forward<Instance>(instance)};
-        const std::array<uarg, sizeof...(Args)> vargs{uarg{std::forward<Args>(args)}...};
-        return raw_method_invoke<method_policy::as_copy_t>(method_ptr, vinst, vargs);
+        type_registry& registry{type_registry::instance()};
+        const uinst vinst{registry, std::forward<Instance>(instance)};
+        const std::array<uarg, sizeof...(Args)> vargs{uarg{registry, std::forward<Args>(args)}...};
+        return raw_method_invoke<method_policy::as_copy_t>(registry, method_ptr, vinst, vargs);
     }
 }
 
@@ -78,15 +81,17 @@ namespace meta_hpp
     template < detail::function_pointer_kind Function, typename... Args >
     bool is_invocable_with() {
         using namespace detail;
-        const std::array<uarg_base, sizeof...(Args)> vargs{uarg_base{type_list<Args>{}}...};
-        return raw_function_is_invocable_with<Function>(vargs);
+        type_registry& registry{type_registry::instance()};
+        const std::array<uarg_base, sizeof...(Args)> vargs{uarg_base{registry, type_list<Args>{}}...};
+        return raw_function_is_invocable_with<Function>(registry, vargs);
     }
 
     template < detail::function_pointer_kind Function, typename... Args >
     bool is_invocable_with(Args&&... args) {
         using namespace detail;
-        const std::array<uarg_base, sizeof...(Args)> vargs{uarg_base{std::forward<Args>(args)}...};
-        return raw_function_is_invocable_with<Function>(vargs);
+        type_registry& registry{type_registry::instance()};
+        const std::array<uarg_base, sizeof...(Args)> vargs{uarg_base{registry, std::forward<Args>(args)}...};
+        return raw_function_is_invocable_with<Function>(registry, vargs);
     }
 }
 
@@ -105,15 +110,17 @@ namespace meta_hpp
     template < detail::member_pointer_kind Member, typename Instance >
     bool is_invocable_with() {
         using namespace detail;
-        const uinst_base vinst{type_list<Instance>{}};
-        return raw_member_is_gettable_with<Member>(vinst);
+        type_registry& registry{type_registry::instance()};
+        const uinst_base vinst{registry, type_list<Instance>{}};
+        return raw_member_is_gettable_with<Member>(registry, vinst);
     }
 
     template < detail::member_pointer_kind Member, typename Instance >
     bool is_invocable_with(Instance&& instance) {
         using namespace detail;
-        const uinst_base vinst{std::forward<Instance>(instance)};
-        return raw_member_is_gettable_with<Member>(vinst);
+        type_registry& registry{type_registry::instance()};
+        const uinst_base vinst{registry, std::forward<Instance>(instance)};
+        return raw_member_is_gettable_with<Member>(registry, vinst);
     }
 }
 
@@ -132,16 +139,18 @@ namespace meta_hpp
     template < detail::method_pointer_kind Method, typename Instance, typename... Args >
     bool is_invocable_with() {
         using namespace detail;
-        const uinst_base vinst{type_list<Instance>{}};
-        const std::array<uarg_base, sizeof...(Args)> vargs{uarg_base{type_list<Args>{}}...};
-        return raw_method_is_invocable_with<Method>(vinst, vargs);
+        type_registry& registry{type_registry::instance()};
+        const uinst_base vinst{registry, type_list<Instance>{}};
+        const std::array<uarg_base, sizeof...(Args)> vargs{uarg_base{registry, type_list<Args>{}}...};
+        return raw_method_is_invocable_with<Method>(registry, vinst, vargs);
     }
 
     template < detail::method_pointer_kind Method, typename Instance, typename... Args >
     bool is_invocable_with(Instance&& instance, Args&&... args) {
         using namespace detail;
-        const uinst_base vinst{std::forward<Instance>(instance)};
-        const std::array<uarg_base, sizeof...(Args)> vargs{uarg_base{std::forward<Args>(args)}...};
-        return raw_method_is_invocable_with<Method>(vinst, vargs);
+        type_registry& registry{type_registry::instance()};
+        const uinst_base vinst{registry, std::forward<Instance>(instance)};
+        const std::array<uarg_base, sizeof...(Args)> vargs{uarg_base{registry, std::forward<Args>(args)}...};
+        return raw_method_is_invocable_with<Method>(registry, vinst, vargs);
     }
 }

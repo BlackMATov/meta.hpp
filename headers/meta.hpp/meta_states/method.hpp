@@ -9,6 +9,7 @@
 #include "../meta_base.hpp"
 #include "../meta_states.hpp"
 
+#include "../meta_detail/type_registry.hpp"
 #include "../meta_detail/value_utilities/uarg.hpp"
 #include "../meta_detail/value_utilities/uinst.hpp"
 #include "../meta_types/method_type.hpp"
@@ -16,7 +17,7 @@
 namespace meta_hpp::detail
 {
     template < method_policy_kind Policy, method_pointer_kind Method >
-    uvalue raw_method_invoke(Method method_ptr, const uinst& inst, std::span<const uarg> args) {
+    uvalue raw_method_invoke(type_registry& registry, Method method_ptr, const uinst& inst, std::span<const uarg> args) {
         using mt = method_traits<Method>;
         using return_type = typename mt::return_type;
         using qualified_type = typename mt::qualified_type;
@@ -41,19 +42,19 @@ namespace meta_hpp::detail
             && "an attempt to call a method with an incorrect arity"
         );
 
-        META_HPP_ASSERT(                       //
-            inst.can_cast_to<qualified_type>() //
+        META_HPP_ASSERT(                               //
+            inst.can_cast_to<qualified_type>(registry) //
             && "an attempt to call a method with an incorrect instance type"
         );
 
-        META_HPP_ASSERT(                             //
-            can_cast_all_uargs<argument_types>(args) //
+        META_HPP_ASSERT(                                       //
+            can_cast_all_uargs<argument_types>(registry, args) //
             && "an attempt to call a method with incorrect argument types"
         );
 
-        return call_with_uargs<argument_types>(args, [method_ptr, &inst](auto&&... all_args) {
+        return call_with_uargs<argument_types>(registry, args, [method_ptr, &inst, &registry](auto&&... all_args) {
             if constexpr ( std::is_void_v<return_type> ) {
-                (inst.cast<qualified_type>().*method_ptr)(META_HPP_FWD(all_args)...);
+                (inst.cast<qualified_type>(registry).*method_ptr)(META_HPP_FWD(all_args)...);
                 return uvalue{};
             }
 
@@ -63,36 +64,38 @@ namespace meta_hpp::detail
             }
 
             if constexpr ( !std::is_void_v<return_type> ) {
-                return_type&& result = (inst.cast<qualified_type>().*method_ptr)(META_HPP_FWD(all_args)...);
+                return_type&& result = (inst.cast<qualified_type>(registry).*method_ptr)(META_HPP_FWD(all_args)...);
                 return ref_as_ptr ? uvalue{std::addressof(result)} : uvalue{META_HPP_FWD(result)};
             }
         });
     }
 
     template < method_pointer_kind Method >
-    bool raw_method_is_invocable_with(const uinst_base& inst, std::span<const uarg_base> args) {
+    bool raw_method_is_invocable_with(type_registry& registry, const uinst_base& inst, std::span<const uarg_base> args) {
         using mt = method_traits<Method>;
         using qualified_type = typename mt::qualified_type;
         using argument_types = typename mt::argument_types;
 
-        return args.size() == mt::arity           //
-            && inst.can_cast_to<qualified_type>() //
-            && can_cast_all_uargs<argument_types>(args);
+        return args.size() == mt::arity                   //
+            && inst.can_cast_to<qualified_type>(registry) //
+            && can_cast_all_uargs<argument_types>(registry, args);
     }
 }
 
 namespace meta_hpp::detail
 {
     template < method_policy_kind Policy, method_pointer_kind Method >
-    method_state::invoke_impl make_method_invoke(Method method_ptr) {
-        return [method_ptr](const uinst& inst, std::span<const uarg> args) {
-            return raw_method_invoke<Policy>(method_ptr, inst, args);
+    method_state::invoke_impl make_method_invoke(type_registry& registry, Method method_ptr) {
+        return [&registry, method_ptr](const uinst& inst, std::span<const uarg> args) {
+            return raw_method_invoke<Policy>(registry, method_ptr, inst, args);
         };
     }
 
     template < method_pointer_kind Method >
-    method_state::is_invocable_with_impl make_method_is_invocable_with() {
-        return &raw_method_is_invocable_with<Method>;
+    method_state::is_invocable_with_impl make_method_is_invocable_with(type_registry& registry) {
+        return [&registry](const uinst_base& inst, std::span<const uarg_base> args) {
+            return raw_method_is_invocable_with<Method>(registry, inst, args);
+        };
     }
 
     template < method_pointer_kind Method >
@@ -119,9 +122,10 @@ namespace meta_hpp::detail
 
     template < method_policy_kind Policy, method_pointer_kind Method >
     method_state_ptr method_state::make(std::string name, Method method_ptr, metadata_map metadata) {
-        method_state state{method_index{resolve_type<Method>(), std::move(name)}, std::move(metadata)};
-        state.invoke = make_method_invoke<Policy>(method_ptr);
-        state.is_invocable_with = make_method_is_invocable_with<Method>();
+        type_registry& registry{type_registry::instance()};
+        method_state state{method_index{registry.resolve_type<Method>(), std::move(name)}, std::move(metadata)};
+        state.invoke = make_method_invoke<Policy>(registry, method_ptr);
+        state.is_invocable_with = make_method_is_invocable_with<Method>(registry);
         state.arguments = make_method_arguments<Method>();
         return make_intrusive<method_state>(std::move(state));
     }
@@ -140,8 +144,9 @@ namespace meta_hpp
     template < typename Instance, typename... Args >
     uvalue method::invoke(Instance&& instance, Args&&... args) const {
         using namespace detail;
-        const uinst vinst{std::forward<Instance>(instance)};
-        const std::array<uarg, sizeof...(Args)> vargs{uarg{std::forward<Args>(args)}...};
+        type_registry& registry{type_registry::instance()};
+        const uinst vinst{registry, std::forward<Instance>(instance)};
+        const std::array<uarg, sizeof...(Args)> vargs{uarg{registry, std::forward<Args>(args)}...};
         return state_->invoke(vinst, vargs);
     }
 
@@ -161,16 +166,18 @@ namespace meta_hpp
     template < typename Instance, typename... Args >
     bool method::is_invocable_with() const noexcept {
         using namespace detail;
-        const uinst_base vinst{type_list<Instance>{}};
-        const std::array<uarg_base, sizeof...(Args)> vargs{uarg_base{type_list<Args>{}}...};
+        type_registry& registry{type_registry::instance()};
+        const uinst_base vinst{registry, type_list<Instance>{}};
+        const std::array<uarg_base, sizeof...(Args)> vargs{uarg_base{registry, type_list<Args>{}}...};
         return state_->is_invocable_with(vinst, vargs);
     }
 
     template < typename Instance, typename... Args >
     bool method::is_invocable_with(Instance&& instance, Args&&... args) const noexcept {
         using namespace detail;
-        const uinst_base vinst{std::forward<Instance>(instance)};
-        const std::array<uarg_base, sizeof...(Args)> vargs{uarg_base{std::forward<Args>(args)}...};
+        type_registry& registry{type_registry::instance()};
+        const uinst_base vinst{registry, std::forward<Instance>(instance)};
+        const std::array<uarg_base, sizeof...(Args)> vargs{uarg_base{registry, std::forward<Args>(args)}...};
         return state_->is_invocable_with(vinst, vargs);
     }
 

@@ -9,6 +9,7 @@
 #include "../meta_base.hpp"
 #include "../meta_states.hpp"
 
+#include "../meta_detail/type_registry.hpp"
 #include "../meta_detail/value_utilities/uarg.hpp"
 #include "../meta_detail/value_utilities/uinst.hpp"
 #include "../meta_types/member_type.hpp"
@@ -16,7 +17,7 @@
 namespace meta_hpp::detail
 {
     template < member_policy_kind Policy, member_pointer_kind Member >
-    uvalue raw_member_getter(Member member_ptr, const uinst& inst) {
+    uvalue raw_member_getter(type_registry& registry, Member member_ptr, const uinst& inst) {
         using mt = member_traits<Member>;
         using class_type = typename mt::class_type;
         using value_type = typename mt::value_type;
@@ -34,12 +35,12 @@ namespace meta_hpp::detail
         static_assert(as_copy || as_ptr || as_ref_wrap);
 
         if ( inst.is_inst_const() ) {
-            META_HPP_ASSERT(                         //
-                inst.can_cast_to<const class_type>() //
+            META_HPP_ASSERT(                                 //
+                inst.can_cast_to<const class_type>(registry) //
                 && "an attempt to get a member with an incorrect instance type"
             );
 
-            auto&& return_value = inst.cast<const class_type>().*member_ptr;
+            auto&& return_value = inst.cast<const class_type>(registry).*member_ptr;
 
             if constexpr ( as_copy ) {
                 return uvalue{META_HPP_FWD(return_value)};
@@ -53,12 +54,12 @@ namespace meta_hpp::detail
                 return uvalue{std::ref(return_value)};
             }
         } else {
-            META_HPP_ASSERT(                   //
-                inst.can_cast_to<class_type>() //
+            META_HPP_ASSERT(                           //
+                inst.can_cast_to<class_type>(registry) //
                 && "an attempt to get a member with an incorrect instance type"
             );
 
-            auto&& return_value = inst.cast<class_type>().*member_ptr;
+            auto&& return_value = inst.cast<class_type>(registry).*member_ptr;
 
             if constexpr ( as_copy ) {
                 return uvalue{META_HPP_FWD(return_value)};
@@ -75,23 +76,27 @@ namespace meta_hpp::detail
     }
 
     template < member_pointer_kind Member >
-    bool raw_member_is_gettable_with(const uinst_base& inst) {
+    bool raw_member_is_gettable_with(type_registry& registry, const uinst_base& inst) {
         using mt = member_traits<Member>;
         using class_type = typename mt::class_type;
 
-        return inst.can_cast_to<const class_type>();
+        return inst.can_cast_to<const class_type>(registry);
     }
 }
 
 namespace meta_hpp::detail
 {
     template < member_pointer_kind Member >
-    void raw_member_setter([[maybe_unused]] Member member_ptr, const uinst& inst, const uarg& arg) {
+    void raw_member_setter(type_registry& registry, Member member_ptr, const uinst& inst, const uarg& arg) {
         using mt = member_traits<Member>;
         using class_type = typename mt::class_type;
         using value_type = typename mt::value_type;
 
         if constexpr ( std::is_const_v<value_type> ) {
+            (void)registry;
+            (void)member_ptr;
+            (void)inst;
+            (void)arg;
             META_HPP_ASSERT(false && "an attempt to set a constant member");
         } else {
             META_HPP_ASSERT(          //
@@ -99,32 +104,35 @@ namespace meta_hpp::detail
                 && "an attempt to set a member with an const instance type"
             );
 
-            META_HPP_ASSERT(                   //
-                inst.can_cast_to<class_type>() //
+            META_HPP_ASSERT(                           //
+                inst.can_cast_to<class_type>(registry) //
                 && "an attempt to set a member with an incorrect instance type"
             );
 
-            META_HPP_ASSERT(                  //
-                arg.can_cast_to<value_type>() //
+            META_HPP_ASSERT(                          //
+                arg.can_cast_to<value_type>(registry) //
                 && "an attempt to set a member with an incorrect argument type"
             );
 
-            inst.cast<class_type>().*member_ptr = arg.cast<value_type>();
+            inst.cast<class_type>(registry).*member_ptr = arg.cast<value_type>(registry);
         }
     }
 
     template < member_pointer_kind Member >
-    bool raw_member_is_settable_with(const uinst_base& inst, const uarg_base& arg) {
+    bool raw_member_is_settable_with(type_registry& registry, const uinst_base& inst, const uarg_base& arg) {
         using mt = member_traits<Member>;
         using class_type = typename mt::class_type;
         using value_type = typename mt::value_type;
 
         if constexpr ( std::is_const_v<value_type> ) {
+            (void)registry;
+            (void)inst;
+            (void)arg;
             return false;
         } else {
-            return !inst.is_inst_const()          //
-                && inst.can_cast_to<class_type>() //
-                && arg.can_cast_to<value_type>(); //
+            return !inst.is_inst_const()                  //
+                && inst.can_cast_to<class_type>(registry) //
+                && arg.can_cast_to<value_type>(registry); //
         }
     }
 }
@@ -132,27 +140,31 @@ namespace meta_hpp::detail
 namespace meta_hpp::detail
 {
     template < member_policy_kind Policy, member_pointer_kind Member >
-    member_state::getter_impl make_member_getter(Member member_ptr) {
-        return [member_ptr](const uinst& inst) { //
-            return raw_member_getter<Policy>(member_ptr, inst);
+    member_state::getter_impl make_member_getter(type_registry& registry, Member member_ptr) {
+        return [&registry, member_ptr](const uinst& inst) { //
+            return raw_member_getter<Policy>(registry, member_ptr, inst);
         };
     }
 
     template < member_pointer_kind Member >
-    member_state::is_gettable_with_impl make_member_is_gettable_with() {
-        return &raw_member_is_gettable_with<Member>;
-    }
-
-    template < member_pointer_kind Member >
-    member_state::setter_impl make_member_setter(Member member_ptr) {
-        return [member_ptr](const uinst& inst, const uarg& arg) { //
-            return raw_member_setter(member_ptr, inst, arg);
+    member_state::is_gettable_with_impl make_member_is_gettable_with(type_registry& registry) {
+        return [&registry](const uinst_base& inst) { //
+            return raw_member_is_gettable_with<Member>(registry, inst);
         };
     }
 
     template < member_pointer_kind Member >
-    member_state::is_settable_with_impl make_member_is_settable_with() {
-        return &raw_member_is_settable_with<Member>;
+    member_state::setter_impl make_member_setter(type_registry& registry, Member member_ptr) {
+        return [&registry, member_ptr](const uinst& inst, const uarg& arg) { //
+            return raw_member_setter(registry, member_ptr, inst, arg);
+        };
+    }
+
+    template < member_pointer_kind Member >
+    member_state::is_settable_with_impl make_member_is_settable_with(type_registry& registry) {
+        return [&registry](const uinst_base& inst, const uarg_base& arg) { //
+            return raw_member_is_settable_with<Member>(registry, inst, arg);
+        };
     }
 }
 
@@ -164,11 +176,12 @@ namespace meta_hpp::detail
 
     template < member_policy_kind Policy, member_pointer_kind Member >
     member_state_ptr member_state::make(std::string name, Member member_ptr, metadata_map metadata) {
-        member_state state{member_index{resolve_type<Member>(), std::move(name)}, std::move(metadata)};
-        state.getter = make_member_getter<Policy>(member_ptr);
-        state.setter = make_member_setter(member_ptr);
-        state.is_gettable_with = make_member_is_gettable_with<Member>();
-        state.is_settable_with = make_member_is_settable_with<Member>();
+        type_registry& registry{type_registry::instance()};
+        member_state state{member_index{registry.resolve_type<Member>(), std::move(name)}, std::move(metadata)};
+        state.getter = make_member_getter<Policy>(registry, member_ptr);
+        state.setter = make_member_setter(registry, member_ptr);
+        state.is_gettable_with = make_member_is_gettable_with<Member>(registry);
+        state.is_settable_with = make_member_is_settable_with<Member>(registry);
         return make_intrusive<member_state>(std::move(state));
     }
 }
@@ -186,7 +199,8 @@ namespace meta_hpp
     template < typename Instance >
     uvalue member::get(Instance&& instance) const {
         using namespace detail;
-        const uinst vinst{std::forward<Instance>(instance)};
+        type_registry& registry{type_registry::instance()};
+        const uinst vinst{registry, std::forward<Instance>(instance)};
         return state_->getter(vinst);
     }
 
@@ -211,8 +225,9 @@ namespace meta_hpp
     template < typename Instance, typename Value >
     void member::set(Instance&& instance, Value&& value) const {
         using namespace detail;
-        const uinst vinst{std::forward<Instance>(instance)};
-        const uarg vvalue{std::forward<Value>(value)};
+        type_registry& registry{type_registry::instance()};
+        const uinst vinst{registry, std::forward<Instance>(instance)};
+        const uarg vvalue{registry, std::forward<Value>(value)};
         state_->setter(vinst, vvalue);
     }
 
@@ -238,30 +253,34 @@ namespace meta_hpp
     template < typename Instance >
     [[nodiscard]] bool member::is_gettable_with() const noexcept {
         using namespace detail;
-        const uinst_base vinst{type_list<Instance>{}};
+        type_registry& registry{type_registry::instance()};
+        const uinst_base vinst{registry, type_list<Instance>{}};
         return state_->is_gettable_with(vinst);
     }
 
     template < typename Instance >
     [[nodiscard]] bool member::is_gettable_with(Instance&& instance) const noexcept {
         using namespace detail;
-        const uinst_base vinst{std::forward<Instance>(instance)};
+        type_registry& registry{type_registry::instance()};
+        const uinst_base vinst{registry, std::forward<Instance>(instance)};
         return state_->is_gettable_with(vinst);
     }
 
     template < typename Instance, typename Value >
     [[nodiscard]] bool member::is_settable_with() const noexcept {
         using namespace detail;
-        const uinst_base vinst{type_list<Instance>{}};
-        const uarg_base vvalue{type_list<Value>{}};
+        type_registry& registry{type_registry::instance()};
+        const uinst_base vinst{registry, type_list<Instance>{}};
+        const uarg_base vvalue{registry, type_list<Value>{}};
         return state_->is_settable_with(vinst, vvalue);
     }
 
     template < typename Instance, typename Value >
     [[nodiscard]] bool member::is_settable_with(Instance&& instance, Value&& value) const noexcept {
         using namespace detail;
-        const uinst_base vinst{std::forward<Instance>(instance)};
-        const uarg_base vvalue{std::forward<Value>(value)};
+        type_registry& registry{type_registry::instance()};
+        const uinst_base vinst{registry, std::forward<Instance>(instance)};
+        const uarg_base vvalue{registry, std::forward<Value>(value)};
         return state_->is_settable_with(vinst, vvalue);
     }
 }
