@@ -4,7 +4,7 @@ project(meta.hpp.vendors)
 # doctest
 #
 
-add_library(${PROJECT_NAME}.doctest STATIC doctest/doctest/parts/doctest.cpp)
+add_library(${PROJECT_NAME}.doctest STATIC EXCLUDE_FROM_ALL doctest/doctest/parts/doctest.cpp)
 add_library(${PROJECT_NAME}::doctest ALIAS ${PROJECT_NAME}.doctest)
 
 target_compile_features(${PROJECT_NAME}.doctest
@@ -25,7 +25,7 @@ target_compile_definitions(${PROJECT_NAME}.doctest
 # fmt
 #
 
-add_library(${PROJECT_NAME}.fmt INTERFACE)
+add_library(${PROJECT_NAME}.fmt INTERFACE EXCLUDE_FROM_ALL)
 add_library(${PROJECT_NAME}::fmt ALIAS ${PROJECT_NAME}.fmt)
 
 target_compile_features(${PROJECT_NAME}.fmt
@@ -42,7 +42,7 @@ target_compile_definitions(${PROJECT_NAME}.fmt
 #
 
 file(GLOB_RECURSE GBENCH_SOURCES CONFIGURE_DEPENDS "gbench/src/*.cc")
-add_library(${PROJECT_NAME}.gbench STATIC ${GBENCH_SOURCES})
+add_library(${PROJECT_NAME}.gbench STATIC EXCLUDE_FROM_ALL ${GBENCH_SOURCES})
 add_library(${PROJECT_NAME}::gbench ALIAS ${PROJECT_NAME}.gbench)
 
 target_compile_features(${PROJECT_NAME}.gbench
@@ -59,7 +59,7 @@ target_compile_definitions(${PROJECT_NAME}.gbench
 #
 
 file(GLOB_RECURSE RTTR_SOURCES CONFIGURE_DEPENDS "rttr/src/rttr/*.cpp")
-add_library(${PROJECT_NAME}.rttr STATIC ${RTTR_SOURCES})
+add_library(${PROJECT_NAME}.rttr STATIC EXCLUDE_FROM_ALL ${RTTR_SOURCES})
 add_library(${PROJECT_NAME}::rttr ALIAS ${PROJECT_NAME}.rttr)
 
 target_compile_features(${PROJECT_NAME}.rttr
@@ -80,7 +80,7 @@ target_include_directories(${PROJECT_NAME}.rttr SYSTEM
 # vmath.hpp
 #
 
-add_library(${PROJECT_NAME}.vmath.hpp INTERFACE)
+add_library(${PROJECT_NAME}.vmath.hpp INTERFACE EXCLUDE_FROM_ALL)
 add_library(${PROJECT_NAME}::vmath.hpp ALIAS ${PROJECT_NAME}.vmath.hpp)
 
 target_compile_features(${PROJECT_NAME}.vmath.hpp
