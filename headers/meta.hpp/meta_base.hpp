@@ -30,9 +30,8 @@
 
 namespace meta_hpp
 {
-#if !defined(META_HPP_NO_EXCEPTIONS)
-    using detail::exception;
-#endif
+    using detail::generic_error;
+    using detail::generic_exception;
 
     using detail::hashed_string;
     using detail::memory_buffer;

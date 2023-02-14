@@ -231,6 +231,6 @@ namespace meta_hpp::detail
             }
         }
 
-        META_HPP_THROW("bad instance cast");
+        throw_generic_exception(generic_error::bad_instance_cast);
     }
 }

@@ -453,7 +453,7 @@ namespace meta_hpp
             }
         }
 
-        META_HPP_THROW("bad value cast");
+        throw_generic_exception(generic_error::bad_uvalue_cast);
     }
 
     template < typename T >
@@ -470,7 +470,7 @@ namespace meta_hpp
             }
         }
 
-        META_HPP_THROW("bad value cast");
+        throw_generic_exception(generic_error::bad_uvalue_cast);
     }
 
     template < typename T >
@@ -487,7 +487,7 @@ namespace meta_hpp
             }
         }
 
-        META_HPP_THROW("bad value cast");
+        throw_generic_exception(generic_error::bad_uvalue_cast);
     }
 
     template < typename T >
