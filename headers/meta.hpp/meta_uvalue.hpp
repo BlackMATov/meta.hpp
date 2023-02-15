@@ -29,7 +29,7 @@ namespace meta_hpp
     class uvalue final {
     public:
         uvalue() = default;
-        ~uvalue();
+        ~uvalue() noexcept;
 
         uvalue(uvalue&& other) noexcept;
         uvalue(const uvalue& other);
@@ -73,7 +73,7 @@ namespace meta_hpp
         [[nodiscard]] bool is_valid() const noexcept;
         [[nodiscard]] explicit operator bool() const noexcept;
 
-        void reset();
+        void reset() noexcept;
         void swap(uvalue& other) noexcept;
 
         [[nodiscard]] any_type get_type() const noexcept;

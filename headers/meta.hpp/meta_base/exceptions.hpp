@@ -90,7 +90,7 @@ namespace meta_hpp::detail
         : std::logic_error(ec.message())
         , error_code_{ec} {}
 
-        [[nodiscard]] const std::error_code& code() const noexcept {
+        [[nodiscard]] const std::error_code& get_code() const noexcept {
             return error_code_;
         }
 

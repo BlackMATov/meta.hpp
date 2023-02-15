@@ -254,7 +254,7 @@ namespace meta_hpp
 
 namespace meta_hpp
 {
-    inline uvalue::~uvalue() {
+    inline uvalue::~uvalue() noexcept {
         reset();
     }
 
@@ -339,7 +339,7 @@ namespace meta_hpp
         return is_valid();
     }
 
-    inline void uvalue::reset() {
+    inline void uvalue::reset() noexcept {
         vtable_t::do_reset(*this);
     }
 

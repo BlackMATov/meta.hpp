@@ -7,10 +7,12 @@
 #pragma once
 
 #include "base.hpp"
+#include "exceptions.hpp"
 
 namespace meta_hpp::detail
 {
     template < typename Key, typename Compare, typename Allocator >
+        requires std::is_move_constructible_v<Key> && std::is_move_assignable_v<Key>
     typename std::set<Key, Compare, Allocator>::iterator insert_or_assign( //
         std::set<Key, Compare, Allocator>& set,
         typename std::set<Key, Compare, Allocator>::value_type&& value
@@ -22,11 +24,20 @@ namespace meta_hpp::detail
         }
 
         auto node = set.extract(position++);
-        node.value() = std::move(value);
+
+        META_HPP_TRY {
+            node.value() = std::move(value);
+        }
+        META_HPP_CATCH(...) {
+            set.insert(position, std::move(node));
+            META_HPP_RETHROW();
+        }
+
         return set.insert(position, std::move(node));
     }
 
     template < typename Key, typename Compare, typename Allocator >
+        requires std::is_copy_constructible_v<Key> && std::is_copy_assignable_v<Key>
     typename std::set<Key, Compare, Allocator>::iterator insert_or_assign( //
         std::set<Key, Compare, Allocator>& set,
         const typename std::set<Key, Compare, Allocator>::value_type& value
@@ -38,7 +49,15 @@ namespace meta_hpp::detail
         }
 
         auto node = set.extract(position++);
-        node.value() = value;
+
+        META_HPP_TRY {
+            node.value() = value;
+        }
+        META_HPP_CATCH(...) {
+            set.insert(position, std::move(node));
+            META_HPP_RETHROW();
+        }
+
         return set.insert(position, std::move(node));
     }
 }

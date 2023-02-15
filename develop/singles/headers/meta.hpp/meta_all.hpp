@@ -386,7 +386,7 @@ namespace meta_hpp::detail
         : std::logic_error(ec.message())
         , error_code_{ec} {}
 
-        [[nodiscard]] const std::error_code& code() const noexcept {
+        [[nodiscard]] const std::error_code& get_code() const noexcept {
             return error_code_;
         }
 
@@ -756,6 +756,7 @@ namespace std
 namespace meta_hpp::detail
 {
     template < typename Key, typename Compare, typename Allocator >
+        requires std::is_move_constructible_v<Key> && std::is_move_assignable_v<Key>
     typename std::set<Key, Compare, Allocator>::iterator insert_or_assign( //
         std::set<Key, Compare, Allocator>& set,
         typename std::set<Key, Compare, Allocator>::value_type&& value
@@ -767,11 +768,20 @@ namespace meta_hpp::detail
         }
 
         auto node = set.extract(position++);
-        node.value() = std::move(value);
+
+        META_HPP_TRY {
+            node.value() = std::move(value);
+        }
+        META_HPP_CATCH(...) {
+            set.insert(position, std::move(node));
+            META_HPP_RETHROW();
+        }
+
         return set.insert(position, std::move(node));
     }
 
     template < typename Key, typename Compare, typename Allocator >
+        requires std::is_copy_constructible_v<Key> && std::is_copy_assignable_v<Key>
     typename std::set<Key, Compare, Allocator>::iterator insert_or_assign( //
         std::set<Key, Compare, Allocator>& set,
         const typename std::set<Key, Compare, Allocator>::value_type& value
@@ -783,7 +793,15 @@ namespace meta_hpp::detail
         }
 
         auto node = set.extract(position++);
-        node.value() = value;
+
+        META_HPP_TRY {
+            node.value() = value;
+        }
+        META_HPP_CATCH(...) {
+            set.insert(position, std::move(node));
+            META_HPP_RETHROW();
+        }
+
         return set.insert(position, std::move(node));
     }
 }
@@ -2877,7 +2895,7 @@ namespace meta_hpp
     class uvalue final {
     public:
         uvalue() = default;
-        ~uvalue();
+        ~uvalue() noexcept;
 
         uvalue(uvalue&& other) noexcept;
         uvalue(const uvalue& other);
@@ -2921,7 +2939,7 @@ namespace meta_hpp
         [[nodiscard]] bool is_valid() const noexcept;
         [[nodiscard]] explicit operator bool() const noexcept;
 
-        void reset();
+        void reset() noexcept;
         void swap(uvalue& other) noexcept;
 
         [[nodiscard]] any_type get_type() const noexcept;
@@ -8553,7 +8571,7 @@ namespace meta_hpp
 
 namespace meta_hpp
 {
-    inline uvalue::~uvalue() {
+    inline uvalue::~uvalue() noexcept {
         reset();
     }
 
@@ -8638,7 +8656,7 @@ namespace meta_hpp
         return is_valid();
     }
 
-    inline void uvalue::reset() {
+    inline void uvalue::reset() noexcept {
         vtable_t::do_reset(*this);
     }
 
