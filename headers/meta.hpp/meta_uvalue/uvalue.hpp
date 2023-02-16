@@ -330,12 +330,12 @@ namespace meta_hpp
         return vtable_t::do_ctor<T>(*this, ilist, std::forward<Args>(args)...);
     }
 
-    inline bool uvalue::is_valid() const noexcept {
+    inline bool uvalue::has_value() const noexcept {
         return storage_.vtag != 0;
     }
 
     inline uvalue::operator bool() const noexcept {
-        return is_valid();
+        return has_value();
     }
 
     inline void uvalue::reset() noexcept {

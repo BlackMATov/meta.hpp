@@ -161,7 +161,7 @@ TEST_CASE("meta/meta_utilities/value") {
             CHECK(!val);
             CHECK_FALSE(val);
 
-            CHECK_FALSE(val.is_valid());
+            CHECK_FALSE(val.has_value());
             CHECK(val.get_data() == nullptr);
             CHECK(std::as_const(val).get_data() == nullptr);
             CHECK(std::as_const(val).get_cdata() == nullptr);

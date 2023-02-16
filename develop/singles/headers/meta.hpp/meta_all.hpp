@@ -2907,7 +2907,7 @@ namespace meta_hpp
                   && std::is_constructible_v<Tp, std::initializer_list<U>&, Args...> //
         Tp& emplace(std::initializer_list<U> ilist, Args&&... args);
 
-        [[nodiscard]] bool is_valid() const noexcept;
+        [[nodiscard]] bool has_value() const noexcept;
         [[nodiscard]] explicit operator bool() const noexcept;
 
         void reset() noexcept;
@@ -8764,12 +8764,12 @@ namespace meta_hpp
         return vtable_t::do_ctor<T>(*this, ilist, std::forward<Args>(args)...);
     }
 
-    inline bool uvalue::is_valid() const noexcept {
+    inline bool uvalue::has_value() const noexcept {
         return storage_.vtag != 0;
     }
 
     inline uvalue::operator bool() const noexcept {
-        return is_valid();
+        return has_value();
     }
 
     inline void uvalue::reset() noexcept {

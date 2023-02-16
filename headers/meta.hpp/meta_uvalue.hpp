@@ -54,7 +54,7 @@ namespace meta_hpp
                   && std::is_constructible_v<Tp, std::initializer_list<U>&, Args...> //
         Tp& emplace(std::initializer_list<U> ilist, Args&&... args);
 
-        [[nodiscard]] bool is_valid() const noexcept;
+        [[nodiscard]] bool has_value() const noexcept;
         [[nodiscard]] explicit operator bool() const noexcept;
 
         void reset() noexcept;
