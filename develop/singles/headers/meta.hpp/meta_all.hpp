@@ -318,9 +318,17 @@ namespace meta_hpp::detail
 {
     enum class generic_error {
         no_error,
+
+        bad_uvalue_access,
+        bad_uresult_access,
+
         bad_uvalue_cast,
         bad_argument_cast,
         bad_instance_cast,
+
+        arity_mismatch,
+        instance_type_mismatch,
+        argument_types_mismatch,
     };
 
     class generic_error_category final : public std::error_category {
@@ -341,12 +349,22 @@ namespace meta_hpp::detail
             switch ( static_cast<generic_error>(ev) ) {
             case generic_error::no_error:
                 return "no error";
+            case generic_error::bad_uvalue_access:
+                return "bad uvalue access";
+            case generic_error::bad_uresult_access:
+                return "bad uresult access";
             case generic_error::bad_uvalue_cast:
                 return "bad uvalue cast";
             case generic_error::bad_argument_cast:
                 return "bad argument cast";
             case generic_error::bad_instance_cast:
                 return "bad instance cast";
+            case generic_error::arity_mismatch:
+                return "arity mismatch";
+            case generic_error::instance_type_mismatch:
+                return "instance type mismatch";
+            case generic_error::argument_types_mismatch:
+                return "argument types mismatch";
             }
             return "unexpected error code";
         }
