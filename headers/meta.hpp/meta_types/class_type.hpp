@@ -132,7 +132,7 @@ namespace meta_hpp
     }
 
     inline bool class_type::is_base_of(const class_type& derived) const noexcept {
-        if ( !is_valid() || !derived.is_valid() ) {
+        if ( is_empty() || derived.is_empty() ) {
             return false;
         }
 
@@ -156,7 +156,7 @@ namespace meta_hpp
     }
 
     inline bool class_type::is_derived_from(const class_type& base) const noexcept {
-        if ( !is_valid() || !base.is_valid() ) {
+        if ( is_empty() || base.is_empty() ) {
             return false;
         }
 

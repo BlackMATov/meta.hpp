@@ -39,7 +39,7 @@ TEST_CASE("meta/meta_types/any_type") {
     SUBCASE("") {
         const meta::any_type type{};
         CHECK_FALSE(type);
-        CHECK_FALSE(type.is_valid());
+        CHECK(type.is_empty());
 
         CHECK_FALSE(type.is_array());
         CHECK_FALSE(type.as_array());

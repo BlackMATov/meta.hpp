@@ -51,7 +51,7 @@ TEST_CASE("meta/meta_states/function") {
     SUBCASE("") {
         const meta::function func;
         CHECK_FALSE(func);
-        CHECK_FALSE(func.is_valid());
+        CHECK(func.is_empty());
         CHECK(func == ivec2_type.get_function("non-existent-function"));
     }
 

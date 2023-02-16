@@ -50,12 +50,12 @@ namespace meta_hpp::detail
             reset();
         }
 
-        [[nodiscard]] bool is_valid() const noexcept {
-            return data_ != nullptr;
+        [[nodiscard]] bool is_empty() const noexcept {
+            return data_ == nullptr;
         }
 
         [[nodiscard]] explicit operator bool() const noexcept {
-            return is_valid();
+            return data_ != nullptr;
         }
 
         void reset() noexcept {

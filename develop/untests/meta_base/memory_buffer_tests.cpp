@@ -15,7 +15,7 @@ TEST_CASE("meta/meta_base/memory_buffer") {
         memory_buffer buf;
 
         CHECK(!buf);
-        CHECK(!buf.is_valid());
+        CHECK(buf.is_empty());
 
         CHECK(buf.get_size() == 0);
         CHECK(buf.get_align() == std::align_val_t{});
@@ -32,7 +32,7 @@ TEST_CASE("meta/meta_base/memory_buffer") {
 
         {
             CHECK(!buf1);
-            CHECK(!buf1.is_valid());
+            CHECK(buf1.is_empty());
 
             CHECK(buf1.get_size() == 0);
             CHECK(buf1.get_align() == std::align_val_t{});
@@ -43,7 +43,7 @@ TEST_CASE("meta/meta_base/memory_buffer") {
 
         {
             CHECK(buf2);
-            CHECK(buf2.is_valid());
+            CHECK(!buf2.is_empty());
 
             CHECK(buf2.get_size() == 10);
             CHECK(buf2.get_align() == std::align_val_t{32});
@@ -57,7 +57,7 @@ TEST_CASE("meta/meta_base/memory_buffer") {
         memory_buffer buf{10, std::align_val_t{32}};
 
         CHECK(buf);
-        CHECK(buf.is_valid());
+        CHECK(!buf.is_empty());
 
         CHECK(buf.get_size() == 10);
         CHECK(buf.get_align() == std::align_val_t{32});
@@ -82,7 +82,7 @@ TEST_CASE("meta/meta_base/memory_buffer") {
 
         {
             CHECK(!buf1);
-            CHECK(!buf1.is_valid());
+            CHECK(buf1.is_empty());
 
             CHECK(buf1.get_size() == 0);
             CHECK(buf1.get_align() == std::align_val_t{});
@@ -93,7 +93,7 @@ TEST_CASE("meta/meta_base/memory_buffer") {
 
         {
             CHECK(buf2);
-            CHECK(buf2.is_valid());
+            CHECK(!buf2.is_empty());
 
             CHECK(buf2.get_size() == 10);
             CHECK(buf2.get_align() == std::align_val_t{32});
@@ -112,7 +112,7 @@ TEST_CASE("meta/meta_base/memory_buffer") {
 
         {
             CHECK(!buf1);
-            CHECK(!buf1.is_valid());
+            CHECK(buf1.is_empty());
 
             CHECK(buf1.get_size() == 0);
             CHECK(buf1.get_align() == std::align_val_t{});
@@ -123,7 +123,7 @@ TEST_CASE("meta/meta_base/memory_buffer") {
 
         {
             CHECK(buf2);
-            CHECK(buf2.is_valid());
+            CHECK(!buf2.is_empty());
 
             CHECK(buf2.get_size() == 10);
             CHECK(buf2.get_align() == std::align_val_t{32});
@@ -138,7 +138,7 @@ TEST_CASE("meta/meta_base/memory_buffer") {
         buf.reset();
 
         CHECK(!buf);
-        CHECK(!buf.is_valid());
+        CHECK(buf.is_empty());
 
         CHECK(buf.get_size() == 0);
         CHECK(buf.get_align() == std::align_val_t{});

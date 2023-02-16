@@ -34,7 +34,7 @@ TEST_CASE("meta/meta_states/evalue") {
     SUBCASE("") {
         const meta::evalue evalue;
         CHECK_FALSE(evalue);
-        CHECK_FALSE(evalue.is_valid());
+        CHECK(evalue.is_empty());
         CHECK(evalue == color_type.get_evalue("non-existent-evalue"));
     }
 

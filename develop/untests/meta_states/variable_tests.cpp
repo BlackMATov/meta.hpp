@@ -68,7 +68,7 @@ TEST_CASE("meta/meta_states/variable") {
     SUBCASE("") {
         const meta::variable variable;
         CHECK_FALSE(variable);
-        CHECK_FALSE(variable.is_valid());
+        CHECK(variable.is_empty());
         CHECK(variable == clazz_1_type.get_variable("non-existent-variable"));
     }
 

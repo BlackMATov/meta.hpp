@@ -13,7 +13,7 @@ TEST_CASE("meta/meta_types/void_type") {
     SUBCASE("") {
         const meta::void_type type;
         CHECK_FALSE(type);
-        CHECK_FALSE(type.is_valid());
+        CHECK(type.is_empty());
     }
 
     SUBCASE("void") {
