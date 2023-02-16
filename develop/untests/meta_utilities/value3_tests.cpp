@@ -94,7 +94,7 @@ TEST_CASE("meta/meta_utilities/value3/get_as") {
     static_assert(std::is_same_v<decltype(std::declval<meta::uvalue&>().get_as<derived>()), derived&>);
     static_assert(std::is_same_v<decltype(std::declval<meta::uvalue&&>().get_as<derived>()), derived>);
     static_assert(std::is_same_v<decltype(std::declval<const meta::uvalue&>().get_as<derived>()), const derived&>);
-    static_assert(std::is_same_v<decltype(std::declval<const meta::uvalue&&>().get_as<derived>()), const derived&>);
+    static_assert(std::is_same_v<decltype(std::declval<const meta::uvalue&&>().get_as<derived>()), const derived&&>);
 
     static_assert(std::is_same_v<decltype(std::declval<meta::uvalue&>().get_as<derived*>()), derived*>);
     static_assert(std::is_same_v<decltype(std::declval<meta::uvalue&&>().get_as<derived*>()), derived*>);

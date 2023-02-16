@@ -151,7 +151,7 @@ TEST_CASE("meta/meta_utilities/value") {
             const ivec2&>);
         static_assert(std::is_same_v<
             decltype(std::declval<const meta::uvalue&&>().get_as<ivec2>()),
-            const ivec2&>);
+            const ivec2&&>);
     }
 
     SUBCASE("ivec2{}") {

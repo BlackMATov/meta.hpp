@@ -38,15 +38,14 @@ namespace meta_hpp
         uvalue& operator=(const uvalue& other);
 
         template < typename T, typename Tp = std::decay_t<T> >
-            requires(!detail::any_uvalue_kind<Tp>)     //
+            requires(!std::is_same_v<Tp, uvalue>)      //
                  && (!detail::is_in_place_type_v<Tp>)  //
                  && (std::is_copy_constructible_v<Tp>) //
         // NOLINTNEXTLINE(*-forwarding-reference-overload)
         uvalue(T&& val);
 
         template < typename T, typename Tp = std::decay_t<T> >
-            requires(!detail::any_uvalue_kind<Tp>)     //
-                 && (!detail::is_in_place_type_v<Tp>)  //
+            requires(!std::is_same_v<Tp, uvalue>)      //
                  && (std::is_copy_constructible_v<Tp>) //
         uvalue& operator=(T&& val);
 
@@ -101,6 +100,10 @@ namespace meta_hpp
         template < typename T >
         [[nodiscard]] auto get_as() const& //
             -> std::conditional_t<detail::pointer_kind<T>, T, const T&>;
+
+        template < typename T >
+        [[nodiscard]] auto get_as() const&& //
+            -> std::conditional_t<detail::pointer_kind<T>, T, const T&&>;
 
         template < typename T >
         [[nodiscard]] auto try_get_as() noexcept //

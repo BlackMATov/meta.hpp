@@ -283,7 +283,7 @@ namespace meta_hpp
     }
 
     template < typename T, typename Tp >
-        requires(!detail::any_uvalue_kind<Tp>)     //
+        requires(!std::is_same_v<Tp, uvalue>)      //
              && (!detail::is_in_place_type_v<Tp>)  //
              && (std::is_copy_constructible_v<Tp>) //
     // NOLINTNEXTLINE(*-forwarding-reference-overload)
@@ -292,8 +292,7 @@ namespace meta_hpp
     }
 
     template < typename T, typename Tp >
-        requires(!detail::any_uvalue_kind<Tp>)     //
-             && (!detail::is_in_place_type_v<Tp>)  //
+        requires(!std::is_same_v<Tp, uvalue>)      //
              && (std::is_copy_constructible_v<Tp>) //
     uvalue& uvalue::operator=(T&& val) {
         vtable_t::do_reset(*this);
@@ -484,6 +483,23 @@ namespace meta_hpp
         } else {
             if ( const T* ptr = try_get_as<T>() ) {
                 return *ptr;
+            }
+        }
+
+        throw_generic_exception(generic_error::bad_uvalue_cast);
+    }
+
+    template < typename T >
+    auto uvalue::get_as() const&& -> std::conditional_t<detail::pointer_kind<T>, T, const T&&> {
+        static_assert(std::is_same_v<T, std::decay_t<T>>);
+
+        if constexpr ( detail::pointer_kind<T> ) {
+            if ( T ptr = try_get_as<T>(); ptr || get_type().is_nullptr() ) {
+                return ptr;
+            }
+        } else {
+            if ( const T* ptr = try_get_as<T>() ) {
+                return std::move(*ptr);
             }
         }
 
