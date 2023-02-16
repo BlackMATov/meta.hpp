@@ -75,20 +75,25 @@ namespace meta_hpp
         uresult& operator=(uerror error) noexcept;
         uresult& operator=(uvalue value) noexcept;
 
-        template < typename T, typename Tp = std::decay_t<T> >
-            requires(!std::is_same_v<Tp, uerror>)      //
-                 && (!std::is_same_v<Tp, uvalue>)      //
-                 && (!std::is_same_v<Tp, uresult>)     //
-                 && (!detail::is_in_place_type_v<Tp>)  //
-                 && (std::is_copy_constructible_v<Tp>) //
-        // NOLINTNEXTLINE(*-forwarding-reference-overload)
+        template <                                 //
+            typename T,                            //
+            typename Tp = std::decay_t<T>,         //
+            typename = std::enable_if_t<           //
+                !std::is_same_v<Tp, uerror> &&     //
+                !std::is_same_v<Tp, uvalue> &&     //
+                !std::is_same_v<Tp, uresult> &&    //
+                !detail::is_in_place_type_v<Tp> && //
+                std::is_copy_constructible_v<Tp>>> //
         uresult(T&& val);
 
-        template < typename T, typename Tp = std::decay_t<T> >
-            requires(!std::is_same_v<Tp, uerror>)      //
-                 && (!std::is_same_v<Tp, uvalue>)      //
-                 && (!std::is_same_v<Tp, uresult>)     //
-                 && (std::is_copy_constructible_v<Tp>) //
+        template <                                 //
+            typename T,                            //
+            typename Tp = std::decay_t<T>,         //
+            typename = std::enable_if_t<           //
+                !std::is_same_v<Tp, uerror> &&     //
+                !std::is_same_v<Tp, uvalue> &&     //
+                !std::is_same_v<Tp, uresult> &&    //
+                std::is_copy_constructible_v<Tp>>> //
         uresult& operator=(T&& val);
 
         template < typename T, typename... Args, typename Tp = std::decay_t<T> >

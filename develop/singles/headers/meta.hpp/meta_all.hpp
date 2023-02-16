@@ -419,15 +419,20 @@ namespace meta_hpp::detail
             return *this;
         }
 
-        template < typename F >
-            requires(!std::is_same_v<fixed_function, std::decay_t<F>>)
-        // NOLINTNEXTLINE(*-forwarding-reference-overload)
+        template <                                    //
+            typename F,                               //
+            typename Fp = std::decay_t<F>,            //
+            typename = std::enable_if_t<              //
+                !std::is_same_v<Fp, fixed_function>>> //
         fixed_function(F&& fun) {
             vtable_t::construct(*this, std::forward<F>(fun));
         }
 
-        template < typename F >
-            requires(!std::is_same_v<fixed_function, std::decay_t<F>>)
+        template <                                    //
+            typename F,                               //
+            typename Fp = std::decay_t<F>,            //
+            typename = std::enable_if_t<              //
+                !std::is_same_v<Fp, fixed_function>>> //
         fixed_function& operator=(F&& fun) {
             fixed_function{std::forward<F>(fun)}.swap(*this);
             return *this;
@@ -2875,16 +2880,21 @@ namespace meta_hpp
         uvalue& operator=(uvalue&& other) noexcept;
         uvalue& operator=(const uvalue& other);
 
-        template < typename T, typename Tp = std::decay_t<T> >
-            requires(!std::is_same_v<Tp, uvalue>)      //
-                 && (!detail::is_in_place_type_v<Tp>)  //
-                 && (std::is_copy_constructible_v<Tp>) //
-        // NOLINTNEXTLINE(*-forwarding-reference-overload)
+        template <                                 //
+            typename T,                            //
+            typename Tp = std::decay_t<T>,         //
+            typename = std::enable_if_t<           //
+                !std::is_same_v<Tp, uvalue> &&     //
+                !detail::is_in_place_type_v<Tp> && //
+                std::is_copy_constructible_v<Tp>>> //
         uvalue(T&& val);
 
-        template < typename T, typename Tp = std::decay_t<T> >
-            requires(!std::is_same_v<Tp, uvalue>)      //
-                 && (std::is_copy_constructible_v<Tp>) //
+        template <                                 //
+            typename T,                            //
+            typename Tp = std::decay_t<T>,         //
+            typename = std::enable_if_t<           //
+                !std::is_same_v<Tp, uvalue> &&     //
+                std::is_copy_constructible_v<Tp>>> //
         uvalue& operator=(T&& val);
 
         template < typename T, typename... Args, typename Tp = std::decay_t<T> >
@@ -8224,20 +8234,25 @@ namespace meta_hpp
         uresult& operator=(uerror error) noexcept;
         uresult& operator=(uvalue value) noexcept;
 
-        template < typename T, typename Tp = std::decay_t<T> >
-            requires(!std::is_same_v<Tp, uerror>)      //
-                 && (!std::is_same_v<Tp, uvalue>)      //
-                 && (!std::is_same_v<Tp, uresult>)     //
-                 && (!detail::is_in_place_type_v<Tp>)  //
-                 && (std::is_copy_constructible_v<Tp>) //
-        // NOLINTNEXTLINE(*-forwarding-reference-overload)
+        template <                                 //
+            typename T,                            //
+            typename Tp = std::decay_t<T>,         //
+            typename = std::enable_if_t<           //
+                !std::is_same_v<Tp, uerror> &&     //
+                !std::is_same_v<Tp, uvalue> &&     //
+                !std::is_same_v<Tp, uresult> &&    //
+                !detail::is_in_place_type_v<Tp> && //
+                std::is_copy_constructible_v<Tp>>> //
         uresult(T&& val);
 
-        template < typename T, typename Tp = std::decay_t<T> >
-            requires(!std::is_same_v<Tp, uerror>)      //
-                 && (!std::is_same_v<Tp, uvalue>)      //
-                 && (!std::is_same_v<Tp, uresult>)     //
-                 && (std::is_copy_constructible_v<Tp>) //
+        template <                                 //
+            typename T,                            //
+            typename Tp = std::decay_t<T>,         //
+            typename = std::enable_if_t<           //
+                !std::is_same_v<Tp, uerror> &&     //
+                !std::is_same_v<Tp, uvalue> &&     //
+                !std::is_same_v<Tp, uresult> &&    //
+                std::is_copy_constructible_v<Tp>>> //
         uresult& operator=(T&& val);
 
         template < typename T, typename... Args, typename Tp = std::decay_t<T> >
@@ -8716,18 +8731,12 @@ namespace meta_hpp
         return *this;
     }
 
-    template < typename T, typename Tp >
-        requires(!std::is_same_v<Tp, uvalue>)      //
-             && (!detail::is_in_place_type_v<Tp>)  //
-             && (std::is_copy_constructible_v<Tp>) //
-    // NOLINTNEXTLINE(*-forwarding-reference-overload)
+    template < typename T, typename Tp, typename >
     uvalue::uvalue(T&& val) {
         vtable_t::do_ctor<T>(*this, std::forward<T>(val));
     }
 
-    template < typename T, typename Tp >
-        requires(!std::is_same_v<Tp, uvalue>)      //
-             && (std::is_copy_constructible_v<Tp>) //
+    template < typename T, typename Tp, typename >
     uvalue& uvalue::operator=(T&& val) {
         vtable_t::do_reset(*this);
         vtable_t::do_ctor<T>(*this, std::forward<T>(val));
@@ -9176,21 +9185,11 @@ namespace meta_hpp
         return *this;
     }
 
-    template < typename T, typename Tp >
-        requires(!std::is_same_v<Tp, uerror>)      //
-             && (!std::is_same_v<Tp, uvalue>)      //
-             && (!std::is_same_v<Tp, uresult>)     //
-             && (!detail::is_in_place_type_v<Tp>)  //
-             && (std::is_copy_constructible_v<Tp>) //
-    // NOLINTNEXTLINE(*-forwarding-reference-overload)
+    template < typename T, typename Tp, typename >
     uresult::uresult(T&& val)
     : value_{std::forward<T>(val)} {}
 
-    template < typename T, typename Tp >
-        requires(!std::is_same_v<Tp, uerror>)      //
-             && (!std::is_same_v<Tp, uvalue>)      //
-             && (!std::is_same_v<Tp, uresult>)     //
-             && (std::is_copy_constructible_v<Tp>) //
+    template < typename T, typename Tp, typename >
     uresult& uresult::operator=(T&& val) {
         value_ = std::forward<T>(val);
         error_ = error_code::no_error;

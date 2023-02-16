@@ -282,18 +282,12 @@ namespace meta_hpp
         return *this;
     }
 
-    template < typename T, typename Tp >
-        requires(!std::is_same_v<Tp, uvalue>)      //
-             && (!detail::is_in_place_type_v<Tp>)  //
-             && (std::is_copy_constructible_v<Tp>) //
-    // NOLINTNEXTLINE(*-forwarding-reference-overload)
+    template < typename T, typename Tp, typename >
     uvalue::uvalue(T&& val) {
         vtable_t::do_ctor<T>(*this, std::forward<T>(val));
     }
 
-    template < typename T, typename Tp >
-        requires(!std::is_same_v<Tp, uvalue>)      //
-             && (std::is_copy_constructible_v<Tp>) //
+    template < typename T, typename Tp, typename >
     uvalue& uvalue::operator=(T&& val) {
         vtable_t::do_reset(*this);
         vtable_t::do_ctor<T>(*this, std::forward<T>(val));

@@ -22,16 +22,21 @@ namespace meta_hpp
         uvalue& operator=(uvalue&& other) noexcept;
         uvalue& operator=(const uvalue& other);
 
-        template < typename T, typename Tp = std::decay_t<T> >
-            requires(!std::is_same_v<Tp, uvalue>)      //
-                 && (!detail::is_in_place_type_v<Tp>)  //
-                 && (std::is_copy_constructible_v<Tp>) //
-        // NOLINTNEXTLINE(*-forwarding-reference-overload)
+        template <                                 //
+            typename T,                            //
+            typename Tp = std::decay_t<T>,         //
+            typename = std::enable_if_t<           //
+                !std::is_same_v<Tp, uvalue> &&     //
+                !detail::is_in_place_type_v<Tp> && //
+                std::is_copy_constructible_v<Tp>>> //
         uvalue(T&& val);
 
-        template < typename T, typename Tp = std::decay_t<T> >
-            requires(!std::is_same_v<Tp, uvalue>)      //
-                 && (std::is_copy_constructible_v<Tp>) //
+        template <                                 //
+            typename T,                            //
+            typename Tp = std::decay_t<T>,         //
+            typename = std::enable_if_t<           //
+                !std::is_same_v<Tp, uvalue> &&     //
+                std::is_copy_constructible_v<Tp>>> //
         uvalue& operator=(T&& val);
 
         template < typename T, typename... Args, typename Tp = std::decay_t<T> >

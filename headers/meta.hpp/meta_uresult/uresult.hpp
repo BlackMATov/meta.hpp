@@ -59,21 +59,11 @@ namespace meta_hpp
         return *this;
     }
 
-    template < typename T, typename Tp >
-        requires(!std::is_same_v<Tp, uerror>)      //
-             && (!std::is_same_v<Tp, uvalue>)      //
-             && (!std::is_same_v<Tp, uresult>)     //
-             && (!detail::is_in_place_type_v<Tp>)  //
-             && (std::is_copy_constructible_v<Tp>) //
-    // NOLINTNEXTLINE(*-forwarding-reference-overload)
+    template < typename T, typename Tp, typename >
     uresult::uresult(T&& val)
     : value_{std::forward<T>(val)} {}
 
-    template < typename T, typename Tp >
-        requires(!std::is_same_v<Tp, uerror>)      //
-             && (!std::is_same_v<Tp, uvalue>)      //
-             && (!std::is_same_v<Tp, uresult>)     //
-             && (std::is_copy_constructible_v<Tp>) //
+    template < typename T, typename Tp, typename >
     uresult& uresult::operator=(T&& val) {
         value_ = std::forward<T>(val);
         error_ = error_code::no_error;
