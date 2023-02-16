@@ -65,5 +65,8 @@
 #include "meta_types/reference_type.hpp"
 #include "meta_types/void_type.hpp"
 
+#include "meta_uresult.hpp"
+#include "meta_uresult/uresult.hpp"
+
 #include "meta_uvalue.hpp"
 #include "meta_uvalue/uvalue.hpp"

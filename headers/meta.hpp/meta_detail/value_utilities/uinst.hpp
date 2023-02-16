@@ -33,12 +33,8 @@ namespace meta_hpp::detail
         uinst_base& operator=(uinst_base&&) = delete;
         uinst_base& operator=(const uinst_base&) = delete;
 
-        template < typename T >
-        uinst_base(type_list<T>) = delete;
-
         template < typename T, typename Tp = std::decay_t<T> >
             requires(!any_uvalue_kind<Tp>)
-        // NOLINTNEXTLINE(*-forwarding-reference-overload)
         explicit uinst_base(type_registry& registry, T&&)
         : uinst_base{registry, type_list<T&&>{}} {}
 
@@ -108,18 +104,17 @@ namespace meta_hpp::detail
         uinst& operator=(uinst&&) = delete;
         uinst& operator=(const uinst&) = delete;
 
-        template < typename T, uvalue_kind Tp = std::decay_t<T> >
-        // NOLINTNEXTLINE(*-forwarding-reference-overload)
+        template < typename T, typename Tp = std::decay_t<T> >
+            requires std::is_same_v<Tp, uvalue>
         explicit uinst(type_registry& registry, T&& v)
-        : uinst_base{registry, std::forward<T>(v)} // NOLINTNEXTLINE(*-const-cast)
-        , data_{const_cast<void*>(v.get_data())} {}
+        : uinst_base{registry, std::forward<T>(v)}
+        , data_{const_cast<void*>(v.get_data())} {} // NOLINT(*-const-cast)
 
         template < typename T, typename Tp = std::decay_t<T> >
             requires(!any_uvalue_kind<Tp>)
-        // NOLINTNEXTLINE(*-forwarding-reference-overload)
         explicit uinst(type_registry& registry, T&& v)
-        : uinst_base{registry, std::forward<T>(v)} // NOLINTNEXTLINE(*-const-cast)
-        , data_{const_cast<std::remove_cvref_t<T>*>(std::addressof(v))} {}
+        : uinst_base{registry, std::forward<T>(v)}
+        , data_{const_cast<std::remove_cvref_t<T>*>(std::addressof(v))} {} // NOLINT(*-const-cast)
 
         template < inst_class_ref_kind Q >
         [[nodiscard]] decltype(auto) cast(type_registry& registry) const;

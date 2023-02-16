@@ -48,6 +48,9 @@ namespace meta_hpp
 
 namespace meta_hpp
 {
+    class uerror;
+    class uresult;
+
     class uvalue;
 
     namespace detail

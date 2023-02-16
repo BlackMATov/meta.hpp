@@ -33,12 +33,8 @@ namespace meta_hpp::detail
         uarg_base& operator=(uarg_base&&) = delete;
         uarg_base& operator=(const uarg_base&) = delete;
 
-        template < typename T >
-        uarg_base(type_list<T>) = delete;
-
         template < typename T, typename Tp = std::decay_t<T> >
             requires(!any_uvalue_kind<Tp>)
-        // NOLINTNEXTLINE(*-forwarding-reference-overload)
         explicit uarg_base(type_registry& registry, T&&)
         : uarg_base{registry, type_list<T&&>{}} {}
 
@@ -108,26 +104,25 @@ namespace meta_hpp::detail
         uarg& operator=(uarg&&) = delete;
         uarg& operator=(const uarg&) = delete;
 
-        template < typename T, uvalue_kind Tp = std::decay_t<T> >
-        // NOLINTNEXTLINE(*-forwarding-reference-overload)
+        template < typename T, typename Tp = std::decay_t<T> >
+            requires std::is_same_v<Tp, uvalue>
         explicit uarg(type_registry& registry, T&& v)
         : uarg_base{registry, std::forward<T>(v)}
         , data_{const_cast<void*>(v.get_data())} {} // NOLINT(*-const-cast)
 
         template < typename T, typename Tp = std::decay_t<T> >
             requires(!any_uvalue_kind<Tp>)
-        // NOLINTNEXTLINE(*-forwarding-reference-overload)
         explicit uarg(type_registry& registry, T&& v)
         : uarg_base{registry, std::forward<T>(v)}
         , data_{const_cast<std::remove_cvref_t<T>*>(std::addressof(v))} {} // NOLINT(*-const-cast)
 
         template < typename To >
             requires(std::is_pointer_v<To>)
-        [[nodiscard]] To cast(type_registry& registry) const;
+        [[nodiscard]] decltype(auto) cast(type_registry& registry) const;
 
         template < typename To >
             requires(!std::is_pointer_v<To>)
-        [[nodiscard]] To cast(type_registry& registry) const;
+        [[nodiscard]] decltype(auto) cast(type_registry& registry) const;
 
     private:
         void* data_{};
@@ -258,7 +253,7 @@ namespace meta_hpp::detail
 {
     template < typename To >
         requires(std::is_pointer_v<To>)
-    [[nodiscard]] To uarg::cast(type_registry& registry) const {
+    [[nodiscard]] decltype(auto) uarg::cast(type_registry& registry) const {
         META_HPP_ASSERT(can_cast_to<To>(registry) && "bad argument cast");
 
         using to_raw_type_cv = std::remove_reference_t<To>;
@@ -318,7 +313,7 @@ namespace meta_hpp::detail
 
     template < typename To >
         requires(!std::is_pointer_v<To>)
-    [[nodiscard]] To uarg::cast(type_registry& registry) const {
+    [[nodiscard]] decltype(auto) uarg::cast(type_registry& registry) const {
         META_HPP_ASSERT(can_cast_to<To>(registry) && "bad argument cast");
 
         using to_raw_type_cv = std::remove_reference_t<To>;

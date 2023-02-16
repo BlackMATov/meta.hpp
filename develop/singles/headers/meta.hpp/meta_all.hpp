@@ -1430,6 +1430,9 @@ namespace meta_hpp
 
 namespace meta_hpp
 {
+    class uerror;
+    class uresult;
+
     class uvalue;
 
     namespace detail
@@ -2857,21 +2860,6 @@ namespace std
             return index.get_hash();
         }
     };
-}
-
-namespace meta_hpp::detail
-{
-    template < typename T >
-    concept uvalue_kind              //
-        = std::is_same_v<T, uvalue>; //
-
-    template < typename T >
-    concept any_uvalue_kind             //
-        = std::is_same_v<T, uarg_base>  //
-       || std::is_same_v<T, uarg>       //
-       || std::is_same_v<T, uinst_base> //
-       || std::is_same_v<T, uinst>      //
-       || std::is_same_v<T, uvalue>;    //
 }
 
 namespace meta_hpp
@@ -5205,35 +5193,47 @@ namespace meta_hpp
 
 namespace meta_hpp::detail
 {
+    template < typename T >
+    concept any_uvalue_kind             //
+        = std::is_same_v<T, uarg_base>  //
+       || std::is_same_v<T, uarg>       //
+       || std::is_same_v<T, uinst_base> //
+       || std::is_same_v<T, uinst>      //
+       || std::is_same_v<T, uresult>    //
+       || std::is_same_v<T, uvalue>;    //
+}
+
+namespace meta_hpp::detail
+{
     template < typename T, typename Tp = std::decay_t<T> >
-    concept arg_lvalue_ref_kind            //
-        = (!any_uvalue_kind<Tp>)           //
-       && (std::is_lvalue_reference_v<T>); //
+    concept arg_lvalue_ref_kind  //
+        = (!any_uvalue_kind<Tp>) //
+       && (std::is_lvalue_reference_v<T>);
 
     template < typename T, typename Tp = std::decay_t<T> >
-    concept arg_rvalue_ref_kind                                       //
-        = (!any_uvalue_kind<Tp>)                                      //
-       && (!std::is_reference_v<T> || std::is_rvalue_reference_v<T>); //
+    concept arg_rvalue_ref_kind  //
+        = (!any_uvalue_kind<Tp>) //
+       && (!std::is_reference_v<T> || std::is_rvalue_reference_v<T>);
 }
 
 namespace meta_hpp::detail
 {
     template < typename T >
-    concept inst_class_ref_kind                                                    //
-        = (std::is_class_v<T>)                                                     //
-       || (std::is_reference_v<T> && std::is_class_v<std::remove_reference_t<T>>); //
+    concept inst_class_ref_kind //
+        = (std::is_class_v<T>)  //
+       || (std::is_reference_v<T> && std::is_class_v<std::remove_reference_t<T>>);
 
     template < typename T, typename Tp = std::decay_t<T> >
-    concept inst_class_lvalue_ref_kind                                          //
-        = (!any_uvalue_kind<Tp>)                                                //
-       && (std::is_lvalue_reference_v<T>)                                       //
-       && (std::is_class_v<std::remove_pointer_t<std::remove_reference_t<T>>>); //
+    concept inst_class_lvalue_ref_kind    //
+        = (!any_uvalue_kind<Tp>)          //
+       && (std::is_lvalue_reference_v<T>) //
+       && (std::is_class_v<std::remove_pointer_t<std::remove_reference_t<T>>>);
 
     template < typename T, typename Tp = std::decay_t<T> >
-    concept inst_class_rvalue_ref_kind                                          //
-        = (!any_uvalue_kind<Tp>)                                                //
-       && (!std::is_reference_v<T> || std::is_rvalue_reference_v<T>)            //
-       && (std::is_class_v<std::remove_pointer_t<std::remove_reference_t<T>>>); //
+    concept inst_class_rvalue_ref_kind                               //
+        = (!any_uvalue_kind<Tp>)                                     //
+       && (!std::is_reference_v<T> || std::is_rvalue_reference_v<T>) //
+       && (std::is_class_v<std::remove_pointer_t<std::remove_reference_t<T>>>);
 }
 
 namespace meta_hpp::detail
@@ -5330,12 +5330,16 @@ namespace meta_hpp::detail
 
     template < class_kind To, class_kind From >
     [[nodiscard]] To* pointer_upcast(type_registry& registry, From* ptr) {
-        return static_cast<To*>(pointer_upcast(registry, ptr, registry.resolve_type<From>(), registry.resolve_type<To>()));
+        const class_type& to_class = registry.resolve_type<To>();
+        const class_type& from_class = registry.resolve_type<From>();
+        return static_cast<To*>(pointer_upcast(registry, ptr, from_class, to_class));
     }
 
     template < class_kind To, class_kind From >
     [[nodiscard]] const To* pointer_upcast(type_registry& registry, const From* ptr) {
-        return static_cast<const To*>(pointer_upcast(registry, ptr, registry.resolve_type<From>(), registry.resolve_type<To>()));
+        const class_type& to_class = registry.resolve_type<To>();
+        const class_type& from_class = registry.resolve_type<From>();
+        return static_cast<const To*>(pointer_upcast(registry, ptr, from_class, to_class));
     }
 }
 
@@ -5360,12 +5364,8 @@ namespace meta_hpp::detail
         uarg_base& operator=(uarg_base&&) = delete;
         uarg_base& operator=(const uarg_base&) = delete;
 
-        template < typename T >
-        uarg_base(type_list<T>) = delete;
-
         template < typename T, typename Tp = std::decay_t<T> >
             requires(!any_uvalue_kind<Tp>)
-        // NOLINTNEXTLINE(*-forwarding-reference-overload)
         explicit uarg_base(type_registry& registry, T&&)
         : uarg_base{registry, type_list<T&&>{}} {}
 
@@ -5435,26 +5435,25 @@ namespace meta_hpp::detail
         uarg& operator=(uarg&&) = delete;
         uarg& operator=(const uarg&) = delete;
 
-        template < typename T, uvalue_kind Tp = std::decay_t<T> >
-        // NOLINTNEXTLINE(*-forwarding-reference-overload)
+        template < typename T, typename Tp = std::decay_t<T> >
+            requires std::is_same_v<Tp, uvalue>
         explicit uarg(type_registry& registry, T&& v)
         : uarg_base{registry, std::forward<T>(v)}
         , data_{const_cast<void*>(v.get_data())} {} // NOLINT(*-const-cast)
 
         template < typename T, typename Tp = std::decay_t<T> >
             requires(!any_uvalue_kind<Tp>)
-        // NOLINTNEXTLINE(*-forwarding-reference-overload)
         explicit uarg(type_registry& registry, T&& v)
         : uarg_base{registry, std::forward<T>(v)}
         , data_{const_cast<std::remove_cvref_t<T>*>(std::addressof(v))} {} // NOLINT(*-const-cast)
 
         template < typename To >
             requires(std::is_pointer_v<To>)
-        [[nodiscard]] To cast(type_registry& registry) const;
+        [[nodiscard]] decltype(auto) cast(type_registry& registry) const;
 
         template < typename To >
             requires(!std::is_pointer_v<To>)
-        [[nodiscard]] To cast(type_registry& registry) const;
+        [[nodiscard]] decltype(auto) cast(type_registry& registry) const;
 
     private:
         void* data_{};
@@ -5585,7 +5584,7 @@ namespace meta_hpp::detail
 {
     template < typename To >
         requires(std::is_pointer_v<To>)
-    [[nodiscard]] To uarg::cast(type_registry& registry) const {
+    [[nodiscard]] decltype(auto) uarg::cast(type_registry& registry) const {
         META_HPP_ASSERT(can_cast_to<To>(registry) && "bad argument cast");
 
         using to_raw_type_cv = std::remove_reference_t<To>;
@@ -5645,7 +5644,7 @@ namespace meta_hpp::detail
 
     template < typename To >
         requires(!std::is_pointer_v<To>)
-    [[nodiscard]] To uarg::cast(type_registry& registry) const {
+    [[nodiscard]] decltype(auto) uarg::cast(type_registry& registry) const {
         META_HPP_ASSERT(can_cast_to<To>(registry) && "bad argument cast");
 
         using to_raw_type_cv = std::remove_reference_t<To>;
@@ -5952,12 +5951,8 @@ namespace meta_hpp::detail
         uinst_base& operator=(uinst_base&&) = delete;
         uinst_base& operator=(const uinst_base&) = delete;
 
-        template < typename T >
-        uinst_base(type_list<T>) = delete;
-
         template < typename T, typename Tp = std::decay_t<T> >
             requires(!any_uvalue_kind<Tp>)
-        // NOLINTNEXTLINE(*-forwarding-reference-overload)
         explicit uinst_base(type_registry& registry, T&&)
         : uinst_base{registry, type_list<T&&>{}} {}
 
@@ -6027,18 +6022,17 @@ namespace meta_hpp::detail
         uinst& operator=(uinst&&) = delete;
         uinst& operator=(const uinst&) = delete;
 
-        template < typename T, uvalue_kind Tp = std::decay_t<T> >
-        // NOLINTNEXTLINE(*-forwarding-reference-overload)
+        template < typename T, typename Tp = std::decay_t<T> >
+            requires std::is_same_v<Tp, uvalue>
         explicit uinst(type_registry& registry, T&& v)
-        : uinst_base{registry, std::forward<T>(v)} // NOLINTNEXTLINE(*-const-cast)
-        , data_{const_cast<void*>(v.get_data())} {}
+        : uinst_base{registry, std::forward<T>(v)}
+        , data_{const_cast<void*>(v.get_data())} {} // NOLINT(*-const-cast)
 
         template < typename T, typename Tp = std::decay_t<T> >
             requires(!any_uvalue_kind<Tp>)
-        // NOLINTNEXTLINE(*-forwarding-reference-overload)
         explicit uinst(type_registry& registry, T&& v)
-        : uinst_base{registry, std::forward<T>(v)} // NOLINTNEXTLINE(*-const-cast)
-        , data_{const_cast<std::remove_cvref_t<T>*>(std::addressof(v))} {}
+        : uinst_base{registry, std::forward<T>(v)}
+        , data_{const_cast<std::remove_cvref_t<T>*>(std::addressof(v))} {} // NOLINT(*-const-cast)
 
         template < inst_class_ref_kind Q >
         [[nodiscard]] decltype(auto) cast(type_registry& registry) const;
@@ -8164,6 +8158,142 @@ namespace meta_hpp::detail
     : type_data_base{type_id{type_list<void_tag<Void>>{}}, type_kind::void_} {}
 }
 
+namespace meta_hpp
+{
+    class uerror final {
+    public:
+        uerror() = default;
+        ~uerror() = default;
+
+        uerror(uerror&&) noexcept = default;
+        uerror(const uerror&) noexcept = default;
+
+        uerror& operator=(uerror&&) noexcept = default;
+        uerror& operator=(const uerror&) noexcept = default;
+
+        explicit uerror(error_code error) noexcept;
+        uerror& operator=(error_code error) noexcept;
+
+        [[nodiscard]] error_code get_error() const noexcept;
+
+        void reset() noexcept;
+        void swap(uerror& other) noexcept;
+
+        [[nodiscard]] std::size_t get_hash() const noexcept;
+        [[nodiscard]] std::strong_ordering operator<=>(const uerror& other) const = default;
+
+    private:
+        error_code error_{error_code::no_error};
+    };
+
+    inline void swap(uerror& l, uerror& r) noexcept {
+        l.swap(r);
+    }
+
+    inline uerror make_uerror(error_code error) {
+        return uerror{error};
+    }
+}
+
+namespace std
+{
+    template <>
+    struct hash<meta_hpp::uerror> {
+        size_t operator()(meta_hpp::uerror ue) const noexcept {
+            return ue.get_hash();
+        }
+    };
+}
+
+namespace meta_hpp
+{
+    class uresult final {
+    public:
+        uresult() = default;
+        ~uresult() = default;
+
+        uresult(uresult&&) noexcept = default;
+        uresult(const uresult&) = default;
+
+        uresult& operator=(uresult&&) noexcept = default;
+        uresult& operator=(const uresult&) = default;
+
+        explicit(false) uresult(uerror error) noexcept;
+        explicit(false) uresult(uvalue value) noexcept;
+
+        uresult& operator=(uerror error) noexcept;
+        uresult& operator=(uvalue value) noexcept;
+
+        template < typename T, typename Tp = std::decay_t<T> >
+            requires(!std::is_same_v<Tp, uerror>)      //
+                 && (!std::is_same_v<Tp, uvalue>)      //
+                 && (!std::is_same_v<Tp, uresult>)     //
+                 && (!detail::is_in_place_type_v<Tp>)  //
+                 && (std::is_copy_constructible_v<Tp>) //
+        // NOLINTNEXTLINE(*-forwarding-reference-overload)
+        uresult(T&& val);
+
+        template < typename T, typename Tp = std::decay_t<T> >
+            requires(!std::is_same_v<Tp, uerror>)      //
+                 && (!std::is_same_v<Tp, uvalue>)      //
+                 && (!std::is_same_v<Tp, uresult>)     //
+                 && (std::is_copy_constructible_v<Tp>) //
+        uresult& operator=(T&& val);
+
+        template < typename T, typename... Args, typename Tp = std::decay_t<T> >
+            requires std::is_copy_constructible_v<Tp>     //
+                  && std::is_constructible_v<Tp, Args...> //
+        explicit uresult(std::in_place_type_t<T>, Args&&... args);
+
+        template < typename T, typename U, typename... Args, typename Tp = std::decay_t<T> >
+            requires std::is_copy_constructible_v<Tp>                                //
+                  && std::is_constructible_v<Tp, std::initializer_list<U>&, Args...> //
+        explicit uresult(std::in_place_type_t<T>, std::initializer_list<U> ilist, Args&&... args);
+
+        template < typename T, typename... Args, typename Tp = std::decay_t<T> >
+            requires std::is_copy_constructible_v<Tp>     //
+                  && std::is_constructible_v<Tp, Args...> //
+        Tp& emplace(Args&&... args);
+
+        template < typename T, typename U, typename... Args, typename Tp = std::decay_t<T> >
+            requires std::is_copy_constructible_v<Tp>                                //
+                  && std::is_constructible_v<Tp, std::initializer_list<U>&, Args...> //
+        Tp& emplace(std::initializer_list<U> ilist, Args&&... args);
+
+        [[nodiscard]] bool has_error() const noexcept;
+        [[nodiscard]] bool has_value() const noexcept;
+        [[nodiscard]] explicit operator bool() const noexcept;
+
+        void reset() noexcept;
+        void swap(uresult& other) noexcept;
+
+        [[nodiscard]] uvalue& get_value() &;
+        [[nodiscard]] uvalue&& get_value() &&;
+        [[nodiscard]] const uvalue& get_value() const&;
+        [[nodiscard]] const uvalue&& get_value() const&&;
+
+        [[nodiscard]] error_code get_error() const noexcept;
+
+    private:
+        uvalue value_{};
+        error_code error_{error_code::no_error};
+    };
+
+    inline void swap(uresult& l, uresult& r) noexcept {
+        l.swap(r);
+    }
+
+    template < typename T, typename... Args >
+    uresult make_uresult(Args&&... args) {
+        return uresult(std::in_place_type<T>, std::forward<Args>(args)...);
+    }
+
+    template < typename T, typename U, typename... Args >
+    uresult make_uresult(std::initializer_list<U> ilist, Args&&... args) {
+        return uresult(std::in_place_type<T>, ilist, std::forward<Args>(args)...);
+    }
+}
+
 namespace meta_hpp::detail
 {
     template < typename T >
@@ -8995,5 +9125,149 @@ namespace meta_hpp
         }
 
         return std::nullopt;
+    }
+}
+
+namespace meta_hpp
+{
+    inline uerror::uerror(error_code error) noexcept
+    : error_{error} {}
+
+    inline uerror& uerror::operator=(error_code error) noexcept {
+        error_ = error;
+        return *this;
+    }
+
+    inline error_code uerror::get_error() const noexcept {
+        return error_;
+    }
+
+    inline void uerror::reset() noexcept {
+        error_ = error_code::no_error;
+    }
+
+    inline void uerror::swap(uerror& other) noexcept {
+        using std::swap;
+        swap(error_, other.error_);
+    }
+
+    inline std::size_t uerror::get_hash() const noexcept {
+        return std::hash<error_code>{}(error_);
+    }
+}
+
+namespace meta_hpp
+{
+    inline uresult::uresult(uerror error) noexcept
+    : error_{error.get_error()} {}
+
+    inline uresult::uresult(uvalue value) noexcept
+    : value_{std::move(value)} {}
+
+    inline uresult& uresult::operator=(uerror error) noexcept {
+        value_ = uvalue{};
+        error_ = error.get_error();
+        return *this;
+    }
+
+    inline uresult& uresult::operator=(uvalue value) noexcept {
+        value_ = std::move(value);
+        error_ = error_code::no_error;
+        return *this;
+    }
+
+    template < typename T, typename Tp >
+        requires(!std::is_same_v<Tp, uerror>)      //
+             && (!std::is_same_v<Tp, uvalue>)      //
+             && (!std::is_same_v<Tp, uresult>)     //
+             && (!detail::is_in_place_type_v<Tp>)  //
+             && (std::is_copy_constructible_v<Tp>) //
+    // NOLINTNEXTLINE(*-forwarding-reference-overload)
+    uresult::uresult(T&& val)
+    : value_{std::forward<T>(val)} {}
+
+    template < typename T, typename Tp >
+        requires(!std::is_same_v<Tp, uerror>)      //
+             && (!std::is_same_v<Tp, uvalue>)      //
+             && (!std::is_same_v<Tp, uresult>)     //
+             && (std::is_copy_constructible_v<Tp>) //
+    uresult& uresult::operator=(T&& val) {
+        value_ = std::forward<T>(val);
+        error_ = error_code::no_error;
+        return *this;
+    }
+
+    template < typename T, typename... Args, typename Tp >
+        requires std::is_copy_constructible_v<Tp>     //
+              && std::is_constructible_v<Tp, Args...> //
+    uresult::uresult(std::in_place_type_t<T>, Args&&... args)
+    : value_{std::in_place_type<T>, std::forward<Args>(args)...} {}
+
+    template < typename T, typename U, typename... Args, typename Tp >
+        requires std::is_copy_constructible_v<Tp>                                //
+              && std::is_constructible_v<Tp, std::initializer_list<U>&, Args...> //
+    uresult::uresult(std::in_place_type_t<T>, std::initializer_list<U> ilist, Args&&... args)
+    : value_{std::in_place_type<T>, ilist, std::forward<Args>(args)...} {}
+
+    template < typename T, typename... Args, typename Tp >
+        requires std::is_copy_constructible_v<Tp>     //
+              && std::is_constructible_v<Tp, Args...> //
+    Tp& uresult::emplace(Args&&... args) {
+        Tp& val{value_.emplace<Tp>(std::forward<Args>(args)...)};
+        error_ = error_code::no_error;
+        return val;
+    }
+
+    template < typename T, typename U, typename... Args, typename Tp >
+        requires std::is_copy_constructible_v<Tp>                                //
+              && std::is_constructible_v<Tp, std::initializer_list<U>&, Args...> //
+    Tp& uresult::emplace(std::initializer_list<U> ilist, Args&&... args) {
+        Tp& val{value_.emplace<Tp>(ilist, std::forward<Args>(args)...)};
+        error_ = error_code::no_error;
+        return val;
+    }
+
+    inline bool uresult::has_error() const noexcept {
+        return error_ != error_code::no_error;
+    }
+
+    inline bool uresult::has_value() const noexcept {
+        return error_ == error_code::no_error;
+    }
+
+    inline uresult::operator bool() const noexcept {
+        return has_value();
+    }
+
+    inline void uresult::reset() noexcept {
+        value_ = uvalue{};
+        error_ = error_code::no_error;
+    }
+
+    inline void uresult::swap(uresult& other) noexcept {
+        using std::swap;
+        swap(value_, other.value_);
+        swap(error_, other.error_);
+    }
+
+    inline uvalue& uresult::get_value() & {
+        return value_;
+    }
+
+    inline uvalue&& uresult::get_value() && {
+        return std::move(value_);
+    }
+
+    inline const uvalue& uresult::get_value() const& {
+        return value_;
+    }
+
+    inline const uvalue&& uresult::get_value() const&& {
+        // NOLINTNEXTLINE(*-move-const-arg)
+        return std::move(value_);
+    }
+
+    inline error_code uresult::get_error() const noexcept {
+        return error_;
     }
 }

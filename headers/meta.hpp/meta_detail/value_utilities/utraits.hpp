@@ -12,35 +12,47 @@
 
 namespace meta_hpp::detail
 {
+    template < typename T >
+    concept any_uvalue_kind             //
+        = std::is_same_v<T, uarg_base>  //
+       || std::is_same_v<T, uarg>       //
+       || std::is_same_v<T, uinst_base> //
+       || std::is_same_v<T, uinst>      //
+       || std::is_same_v<T, uresult>    //
+       || std::is_same_v<T, uvalue>;    //
+}
+
+namespace meta_hpp::detail
+{
     template < typename T, typename Tp = std::decay_t<T> >
-    concept arg_lvalue_ref_kind            //
-        = (!any_uvalue_kind<Tp>)           //
-       && (std::is_lvalue_reference_v<T>); //
+    concept arg_lvalue_ref_kind  //
+        = (!any_uvalue_kind<Tp>) //
+       && (std::is_lvalue_reference_v<T>);
 
     template < typename T, typename Tp = std::decay_t<T> >
-    concept arg_rvalue_ref_kind                                       //
-        = (!any_uvalue_kind<Tp>)                                      //
-       && (!std::is_reference_v<T> || std::is_rvalue_reference_v<T>); //
+    concept arg_rvalue_ref_kind  //
+        = (!any_uvalue_kind<Tp>) //
+       && (!std::is_reference_v<T> || std::is_rvalue_reference_v<T>);
 }
 
 namespace meta_hpp::detail
 {
     template < typename T >
-    concept inst_class_ref_kind                                                    //
-        = (std::is_class_v<T>)                                                     //
-       || (std::is_reference_v<T> && std::is_class_v<std::remove_reference_t<T>>); //
+    concept inst_class_ref_kind //
+        = (std::is_class_v<T>)  //
+       || (std::is_reference_v<T> && std::is_class_v<std::remove_reference_t<T>>);
 
     template < typename T, typename Tp = std::decay_t<T> >
-    concept inst_class_lvalue_ref_kind                                          //
-        = (!any_uvalue_kind<Tp>)                                                //
-       && (std::is_lvalue_reference_v<T>)                                       //
-       && (std::is_class_v<std::remove_pointer_t<std::remove_reference_t<T>>>); //
+    concept inst_class_lvalue_ref_kind    //
+        = (!any_uvalue_kind<Tp>)          //
+       && (std::is_lvalue_reference_v<T>) //
+       && (std::is_class_v<std::remove_pointer_t<std::remove_reference_t<T>>>);
 
     template < typename T, typename Tp = std::decay_t<T> >
-    concept inst_class_rvalue_ref_kind                                          //
-        = (!any_uvalue_kind<Tp>)                                                //
-       && (!std::is_reference_v<T> || std::is_rvalue_reference_v<T>)            //
-       && (std::is_class_v<std::remove_pointer_t<std::remove_reference_t<T>>>); //
+    concept inst_class_rvalue_ref_kind                               //
+        = (!any_uvalue_kind<Tp>)                                     //
+       && (!std::is_reference_v<T> || std::is_rvalue_reference_v<T>) //
+       && (std::is_class_v<std::remove_pointer_t<std::remove_reference_t<T>>>);
 }
 
 namespace meta_hpp::detail
@@ -137,11 +149,15 @@ namespace meta_hpp::detail
 
     template < class_kind To, class_kind From >
     [[nodiscard]] To* pointer_upcast(type_registry& registry, From* ptr) {
-        return static_cast<To*>(pointer_upcast(registry, ptr, registry.resolve_type<From>(), registry.resolve_type<To>()));
+        const class_type& to_class = registry.resolve_type<To>();
+        const class_type& from_class = registry.resolve_type<From>();
+        return static_cast<To*>(pointer_upcast(registry, ptr, from_class, to_class));
     }
 
     template < class_kind To, class_kind From >
     [[nodiscard]] const To* pointer_upcast(type_registry& registry, const From* ptr) {
-        return static_cast<const To*>(pointer_upcast(registry, ptr, registry.resolve_type<From>(), registry.resolve_type<To>()));
+        const class_type& to_class = registry.resolve_type<To>();
+        const class_type& from_class = registry.resolve_type<From>();
+        return static_cast<const To*>(pointer_upcast(registry, ptr, from_class, to_class));
     }
 }
