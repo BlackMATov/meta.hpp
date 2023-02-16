@@ -313,7 +313,7 @@ namespace meta_hpp::detail
             }
         }
 
-        throw_generic_exception(generic_error::bad_argument_cast);
+        throw_exception(error_code::bad_argument_cast);
     }
 
     template < typename To >
@@ -369,7 +369,7 @@ namespace meta_hpp::detail
             }
         }
 
-        throw_generic_exception(generic_error::bad_argument_cast);
+        throw_exception(error_code::bad_argument_cast);
     }
 }
 

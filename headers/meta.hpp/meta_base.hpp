@@ -30,8 +30,9 @@
 
 namespace meta_hpp
 {
-    using detail::generic_error;
-    using detail::generic_exception;
+    using detail::error_code;
+    using detail::exception;
+    using detail::get_error_code_message;
 
     using detail::hashed_string;
     using detail::memory_buffer;

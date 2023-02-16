@@ -452,7 +452,7 @@ namespace meta_hpp
             }
         }
 
-        throw_generic_exception(generic_error::bad_uvalue_cast);
+        throw_exception(error_code::bad_uvalue_cast);
     }
 
     template < typename T >
@@ -469,7 +469,7 @@ namespace meta_hpp
             }
         }
 
-        throw_generic_exception(generic_error::bad_uvalue_cast);
+        throw_exception(error_code::bad_uvalue_cast);
     }
 
     template < typename T >
@@ -486,7 +486,7 @@ namespace meta_hpp
             }
         }
 
-        throw_generic_exception(generic_error::bad_uvalue_cast);
+        throw_exception(error_code::bad_uvalue_cast);
     }
 
     template < typename T >
@@ -503,7 +503,7 @@ namespace meta_hpp
             }
         }
 
-        throw_generic_exception(generic_error::bad_uvalue_cast);
+        throw_exception(error_code::bad_uvalue_cast);
     }
 
     template < typename T >

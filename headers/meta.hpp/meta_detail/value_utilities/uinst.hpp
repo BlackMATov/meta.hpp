@@ -231,6 +231,6 @@ namespace meta_hpp::detail
             }
         }
 
-        throw_generic_exception(generic_error::bad_instance_cast);
+        throw_exception(error_code::bad_instance_cast);
     }
 }

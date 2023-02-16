@@ -6,14 +6,6 @@
 
 #pragma once
 
-#if !defined(META_HPP_NO_EXCEPTIONS) && !defined(__cpp_exceptions)
-#    define META_HPP_NO_EXCEPTIONS
-#endif
-
-#if !defined(META_HPP_NO_RTTI) && !defined(__cpp_rtti)
-#    define META_HPP_NO_RTTI
-#endif
-
 #include <climits>
 #include <cstddef>
 #include <cstdint>
@@ -36,14 +28,22 @@
 #include <span>
 #include <string>
 #include <string_view>
-#include <system_error>
 #include <tuple>
 #include <type_traits>
 #include <utility>
 #include <vector>
+#include <version>
+
+#if !defined(META_HPP_NO_EXCEPTIONS) && !defined(__cpp_exceptions)
+#    define META_HPP_NO_EXCEPTIONS
+#endif
+
+#if !defined(META_HPP_NO_RTTI) && !defined(__cpp_rtti)
+#    define META_HPP_NO_RTTI
+#endif
 
 #if !defined(META_HPP_NO_EXCEPTIONS)
-#    include <stdexcept>
+#    include <exception>
 #endif
 
 #if !defined(META_HPP_NO_RTTI)
