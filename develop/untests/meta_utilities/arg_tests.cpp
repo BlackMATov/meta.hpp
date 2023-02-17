@@ -80,6 +80,7 @@ namespace
             \
             CHECK(f_state.is_invocable_with<decltype(FromValue)>());\
             CHECK(f_state.invoke(FromValue).as<int>() == 1);\
+            CHECK(f_state.try_invoke(FromValue).get_value().as<int>() == 1);\
         } else {\
             CHECK_FALSE(uarg{r, FromValue}.can_cast_to<ToType>(r));\
             CHECK_FALSE(uarg_base{r, type_list<decltype(FromValue)>{}}.can_cast_to<ToType>(r));\
@@ -101,6 +102,7 @@ namespace
             CHECK(f_state.is_invocable_with<FromType>());\
             CHECK(f_state.is_invocable_with(FromValue));\
             CHECK(f_state.invoke(FromValue).as<int>() == 1);\
+            CHECK(f_state.try_invoke(FromValue).get_value().as<int>() == 1);\
         } else {\
             CHECK_FALSE(f_state.is_invocable_with<FromType>());\
             CHECK_FALSE(f_state.is_invocable_with(FromValue));\

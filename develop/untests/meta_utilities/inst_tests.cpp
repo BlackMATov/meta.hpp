@@ -40,6 +40,7 @@ namespace
             \
             CHECK(m_state.is_invocable_with<decltype(Inst)>());\
             CHECK(m_state.invoke(Inst).as<int>() == 1);\
+            CHECK(m_state.try_invoke(Inst).get_value().as<int>() == 1);\
         } else {\
             CHECK_FALSE(uinst{r, Inst}.can_cast_to<clazz Qualifiers>(r));\
             CHECK_FALSE(uinst_base{r, type_list<decltype(Inst)>{}}.can_cast_to<clazz Qualifiers>(r));\
@@ -61,6 +62,7 @@ namespace
             CHECK(m_state.is_invocable_with<FromType>());\
             CHECK(m_state.is_invocable_with(FromValue));\
             CHECK(m_state.invoke(FromValue).as<int>() == 1);\
+            CHECK(m_state.try_invoke(FromValue).get_value().as<int>() == 1);\
         } else {\
             CHECK_FALSE(m_state.is_invocable_with<FromType>());\
             CHECK_FALSE(m_state.is_invocable_with(FromValue));\

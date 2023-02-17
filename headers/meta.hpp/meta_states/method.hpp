@@ -166,8 +166,8 @@ namespace meta_hpp
         type_registry& registry{type_registry::instance()};
 
         {
-            const uinst_base vinst{registry, type_list<Instance>{}};
-            const std::array<uarg_base, sizeof...(Args)> vargs{uarg_base{registry, type_list<Args>{}}...};
+            const uinst_base vinst{registry, std::forward<Instance>(instance)};
+            const std::array<uarg_base, sizeof...(Args)> vargs{uarg_base{registry, std::forward<Args>(args)}...};
             if ( const uerror err = state_->invoke_error(vinst, vargs) ) {
                 return err;
             }
