@@ -65,7 +65,7 @@ TEST_CASE("meta/meta_manuals/member/usage") {
     CHECK(ivec2_x_typed_value == 42);
 
     // also, we can change the member value, of course
-    CHECK(ivec2_x.safe_set(v, 11));
+    ivec2_x.set(v, 11);
 
     // checks the result of our manipulations
     CHECK(v.x == 11);

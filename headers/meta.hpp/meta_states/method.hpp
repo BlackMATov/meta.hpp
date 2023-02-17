@@ -161,14 +161,6 @@ namespace meta_hpp
     }
 
     template < typename Instance, typename... Args >
-    std::optional<uvalue> method::safe_invoke(Instance&& instance, Args&&... args) const {
-        if ( is_invocable_with(std::forward<Instance>(instance), std::forward<Args>(args)...) ) {
-            return invoke(std::forward<Instance>(instance), std::forward<Args>(args)...);
-        }
-        return std::nullopt;
-    }
-
-    template < typename Instance, typename... Args >
     uresult method::try_invoke(Instance&& instance, Args&&... args) const {
         using namespace detail;
         type_registry& registry{type_registry::instance()};

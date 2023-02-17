@@ -168,11 +168,19 @@ namespace meta_hpp
     }
 
     template < typename... Args >
-    std::optional<uvalue> constructor::safe_create(Args&&... args) const {
-        if ( is_invocable_with(std::forward<Args>(args)...) ) {
-            return create(std::forward<Args>(args)...);
+    uresult constructor::try_create(Args&&... args) const {
+        using namespace detail;
+        type_registry& registry{type_registry::instance()};
+
+        {
+            const std::array<uarg_base, sizeof...(Args)> vargs{uarg_base{registry, type_list<Args>{}}...};
+            if ( const uerror err = state_->create_error(vargs) ) {
+                return err;
+            }
         }
-        return std::nullopt;
+
+        const std::array<uarg, sizeof...(Args)> vargs{uarg{registry, std::forward<Args>(args)}...};
+        return state_->create(vargs);
     }
 
     template < typename... Args >
@@ -184,11 +192,19 @@ namespace meta_hpp
     }
 
     template < typename... Args >
-    std::optional<uvalue> constructor::safe_create_at(void* mem, Args&&... args) const {
-        if ( is_invocable_with(std::forward<Args>(args)...) ) {
-            return create_at(mem, std::forward<Args>(args)...);
+    uresult constructor::try_create_at(void* mem, Args&&... args) const {
+        using namespace detail;
+        type_registry& registry{type_registry::instance()};
+
+        {
+            const std::array<uarg_base, sizeof...(Args)> vargs{uarg_base{registry, type_list<Args>{}}...};
+            if ( const uerror err = state_->create_error(vargs) ) {
+                return err;
+            }
         }
-        return std::nullopt;
+
+        const std::array<uarg, sizeof...(Args)> vargs{uarg{registry, std::forward<Args>(args)}...};
+        return state_->create_at(mem, vargs);
     }
 
     template < typename... Args >

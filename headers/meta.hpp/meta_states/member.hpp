@@ -225,21 +225,24 @@ namespace meta_hpp
     }
 
     template < typename Instance >
-    std::optional<uvalue> member::safe_get(Instance&& instance) const {
-        if ( is_gettable_with(std::forward<Instance>(instance)) ) {
-            return get(std::forward<Instance>(instance));
+    uresult member::try_get(Instance&& instance) const {
+        using namespace detail;
+        type_registry& registry{type_registry::instance()};
+
+        {
+            const uinst_base vinst{registry, std::forward<Instance>(instance)};
+            if ( const uerror err = state_->getter_error(vinst) ) {
+                return err;
+            }
         }
-        return std::nullopt;
+
+        const uinst vinst{registry, std::forward<Instance>(instance)};
+        return state_->getter(vinst);
     }
 
-    template < typename T, typename Instance >
-    T member::get_as(Instance&& instance) const {
-        return get(std::forward<Instance>(instance)).template get_as<T>();
-    }
-
-    template < typename T, typename Instance >
-    std::optional<T> member::safe_get_as(Instance&& instance) const {
-        return safe_get(std::forward<Instance>(instance)).value_or(uvalue{}).template safe_get_as<T>();
+    template < typename Instance >
+    uvalue member::operator()(Instance&& instance) const {
+        return get(std::forward<Instance>(instance));
     }
 
     template < typename Instance, typename Value >
@@ -252,17 +255,22 @@ namespace meta_hpp
     }
 
     template < typename Instance, typename Value >
-    bool member::safe_set(Instance&& instance, Value&& value) const {
-        if ( is_settable_with(std::forward<Instance>(instance), std::forward<Value>(value)) ) {
-            set(std::forward<Instance>(instance), std::forward<Value>(value));
-            return true;
-        }
-        return false;
-    }
+    uresult member::try_set(Instance&& instance, Value&& value) const {
+        using namespace detail;
+        type_registry& registry{type_registry::instance()};
 
-    template < typename Instance >
-    uvalue member::operator()(Instance&& instance) const {
-        return get(std::forward<Instance>(instance));
+        {
+            const uinst_base vinst{registry, std::forward<Instance>(instance)};
+            const uarg_base vvalue{registry, std::forward<Value>(value)};
+            if ( const uerror err = state_->setter_error(vinst, vvalue) ) {
+                return err;
+            }
+        }
+
+        const uinst vinst{registry, std::forward<Instance>(instance)};
+        const uarg vvalue{registry, std::forward<Value>(value)};
+        state_->setter(vinst, vvalue);
+        return uerror{error_code::no_error};
     }
 
     template < typename Instance, typename Value >

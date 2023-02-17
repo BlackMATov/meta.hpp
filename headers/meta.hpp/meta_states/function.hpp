@@ -148,11 +148,19 @@ namespace meta_hpp
     }
 
     template < typename... Args >
-    std::optional<uvalue> function::safe_invoke(Args&&... args) const {
-        if ( is_invocable_with(std::forward<Args>(args)...) ) {
-            return invoke(std::forward<Args>(args)...);
+    uresult function::try_invoke(Args&&... args) const {
+        using namespace detail;
+        type_registry& registry{type_registry::instance()};
+
+        {
+            const std::array<uarg_base, sizeof...(Args)> vargs{uarg_base{registry, std::forward<Args>(args)}...};
+            if ( const uerror err = state_->invoke_error(vargs) ) {
+                return err;
+            }
         }
-        return std::nullopt;
+
+        const std::array<uarg, sizeof...(Args)> vargs{uarg{registry, std::forward<Args>(args)}...};
+        return state_->invoke(vargs);
     }
 
     template < typename... Args >

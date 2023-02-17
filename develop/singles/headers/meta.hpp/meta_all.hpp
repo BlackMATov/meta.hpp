@@ -22,7 +22,6 @@
 #include <map>
 #include <memory>
 #include <mutex>
-#include <optional>
 #include <set>
 #include <span>
 #include <string>
@@ -2416,12 +2415,6 @@ namespace meta_hpp
         template < detail::enum_kind Enum >
         [[nodiscard]] std::string_view value_to_name(Enum value) const noexcept;
         [[nodiscard]] uvalue name_to_value(std::string_view name) const noexcept;
-
-        template < detail::enum_kind Enum >
-        [[nodiscard]] Enum name_to_value_as(std::string_view name) const;
-
-        template < detail::enum_kind Enum >
-        [[nodiscard]] std::optional<Enum> safe_name_to_value_as(std::string_view name) const noexcept;
     };
 
     class function_type final : public type_base<function_type> {
@@ -2964,15 +2957,6 @@ namespace meta_hpp
         [[nodiscard]] auto try_get_as() const noexcept //
             -> std::conditional_t<detail::pointer_kind<T>, T, const T*>;
 
-        template < typename T >
-        [[nodiscard]] std::optional<T> safe_get_as() &&;
-
-        template < typename T >
-        [[nodiscard]] std::optional<T> safe_get_as() &;
-
-        template < typename T >
-        [[nodiscard]] std::optional<T> safe_get_as() const&;
-
     private:
         struct vtable_t;
 
@@ -3411,13 +3395,13 @@ namespace meta_hpp
         [[nodiscard]] uvalue create(Args&&... args) const;
 
         template < typename... Args >
-        [[nodiscard]] std::optional<uvalue> safe_create(Args&&... args) const;
+        [[nodiscard]] uresult try_create(Args&&... args) const;
 
         template < typename... Args >
         uvalue create_at(void* mem, Args&&... args) const;
 
         template < typename... Args >
-        std::optional<uvalue> safe_create_at(void* mem, Args&&... args) const;
+        uresult try_create_at(void* mem, Args&&... args) const;
 
         template < typename... Args >
         [[nodiscard]] bool is_invocable_with() const noexcept;
@@ -3438,7 +3422,12 @@ namespace meta_hpp
         template < typename Arg >
         void destroy(Arg&& arg) const;
 
+        template < typename Arg >
+        uresult try_destroy(Arg&& arg) const;
+
         void destroy_at(void* mem) const;
+
+        uresult try_destroy_at(void* mem) const;
 
         template < typename Arg >
         [[nodiscard]] bool is_invocable_with() const noexcept;
@@ -3456,18 +3445,6 @@ namespace meta_hpp
 
         [[nodiscard]] const uvalue& get_value() const noexcept;
         [[nodiscard]] const uvalue& get_underlying_value() const noexcept;
-
-        template < detail::enum_kind Enum >
-        [[nodiscard]] Enum get_value_as() const;
-
-        template < detail::enum_kind Enum >
-        [[nodiscard]] std::optional<Enum> safe_get_value_as() const noexcept;
-
-        template < detail::number_kind Number >
-        [[nodiscard]] Number get_underlying_value_as() const;
-
-        template < detail::number_kind Number >
-        [[nodiscard]] std::optional<Number> safe_get_underlying_value_as() const noexcept;
     };
 
     class function final : public state_base<function> {
@@ -3481,7 +3458,7 @@ namespace meta_hpp
         uvalue invoke(Args&&... args) const;
 
         template < typename... Args >
-        std::optional<uvalue> safe_invoke(Args&&... args) const;
+        uresult try_invoke(Args&&... args) const;
 
         template < typename... Args >
         uvalue operator()(Args&&... args) const;
@@ -3507,22 +3484,19 @@ namespace meta_hpp
         [[nodiscard]] uvalue get(Instance&& instance) const;
 
         template < typename Instance >
-        [[nodiscard]] std::optional<uvalue> safe_get(Instance&& instance) const;
+        [[nodiscard]] uresult try_get(Instance&& instance) const;
 
         template < typename T, typename Instance >
         [[nodiscard]] T get_as(Instance&& instance) const;
 
-        template < typename T, typename Instance >
-        [[nodiscard]] std::optional<T> safe_get_as(Instance&& instance) const;
+        template < typename Instance >
+        [[nodiscard]] uvalue operator()(Instance&& instance) const;
 
         template < typename Instance, typename Value >
         void set(Instance&& instance, Value&& value) const;
 
         template < typename Instance, typename Value >
-        bool safe_set(Instance&& instance, Value&& value) const;
-
-        template < typename Instance >
-        [[nodiscard]] uvalue operator()(Instance&& instance) const;
+        uresult try_set(Instance&& instance, Value&& value) const;
 
         template < typename Instance, typename Value >
         void operator()(Instance&& instance, Value&& value) const;
@@ -3549,9 +3523,6 @@ namespace meta_hpp
 
         template < typename Instance, typename... Args >
         uvalue invoke(Instance&& instance, Args&&... args) const;
-
-        template < typename Instance, typename... Args >
-        std::optional<uvalue> safe_invoke(Instance&& instance, Args&&... args) const;
 
         template < typename Instance, typename... Args >
         uresult try_invoke(Instance&& instance, Args&&... args) const;
@@ -3599,22 +3570,15 @@ namespace meta_hpp
         [[nodiscard]] const std::string& get_name() const noexcept;
 
         [[nodiscard]] uvalue get() const;
+        [[nodiscard]] uresult try_get() const;
 
-        [[nodiscard]] std::optional<uvalue> safe_get() const;
-
-        template < typename T >
-        [[nodiscard]] T get_as() const;
-
-        template < typename T >
-        [[nodiscard]] std::optional<T> safe_get_as() const;
+        [[nodiscard]] uvalue operator()() const;
 
         template < typename Value >
         void set(Value&& value) const;
 
         template < typename Value >
-        bool safe_set(Value&& value) const;
-
-        [[nodiscard]] uvalue operator()() const;
+        uresult try_set(Value&& value) const;
 
         template < typename Value >
         void operator()(Value&& value) const;
@@ -6067,11 +6031,19 @@ namespace meta_hpp
     }
 
     template < typename... Args >
-    std::optional<uvalue> function::safe_invoke(Args&&... args) const {
-        if ( is_invocable_with(std::forward<Args>(args)...) ) {
-            return invoke(std::forward<Args>(args)...);
+    uresult function::try_invoke(Args&&... args) const {
+        using namespace detail;
+        type_registry& registry{type_registry::instance()};
+
+        {
+            const std::array<uarg_base, sizeof...(Args)> vargs{uarg_base{registry, std::forward<Args>(args)}...};
+            if ( const uerror err = state_->invoke_error(vargs) ) {
+                return err;
+            }
         }
-        return std::nullopt;
+
+        const std::array<uarg, sizeof...(Args)> vargs{uarg{registry, std::forward<Args>(args)}...};
+        return state_->invoke(vargs);
     }
 
     template < typename... Args >
@@ -6561,21 +6533,24 @@ namespace meta_hpp
     }
 
     template < typename Instance >
-    std::optional<uvalue> member::safe_get(Instance&& instance) const {
-        if ( is_gettable_with(std::forward<Instance>(instance)) ) {
-            return get(std::forward<Instance>(instance));
+    uresult member::try_get(Instance&& instance) const {
+        using namespace detail;
+        type_registry& registry{type_registry::instance()};
+
+        {
+            const uinst_base vinst{registry, std::forward<Instance>(instance)};
+            if ( const uerror err = state_->getter_error(vinst) ) {
+                return err;
+            }
         }
-        return std::nullopt;
+
+        const uinst vinst{registry, std::forward<Instance>(instance)};
+        return state_->getter(vinst);
     }
 
-    template < typename T, typename Instance >
-    T member::get_as(Instance&& instance) const {
-        return get(std::forward<Instance>(instance)).template get_as<T>();
-    }
-
-    template < typename T, typename Instance >
-    std::optional<T> member::safe_get_as(Instance&& instance) const {
-        return safe_get(std::forward<Instance>(instance)).value_or(uvalue{}).template safe_get_as<T>();
+    template < typename Instance >
+    uvalue member::operator()(Instance&& instance) const {
+        return get(std::forward<Instance>(instance));
     }
 
     template < typename Instance, typename Value >
@@ -6588,17 +6563,22 @@ namespace meta_hpp
     }
 
     template < typename Instance, typename Value >
-    bool member::safe_set(Instance&& instance, Value&& value) const {
-        if ( is_settable_with(std::forward<Instance>(instance), std::forward<Value>(value)) ) {
-            set(std::forward<Instance>(instance), std::forward<Value>(value));
-            return true;
-        }
-        return false;
-    }
+    uresult member::try_set(Instance&& instance, Value&& value) const {
+        using namespace detail;
+        type_registry& registry{type_registry::instance()};
 
-    template < typename Instance >
-    uvalue member::operator()(Instance&& instance) const {
-        return get(std::forward<Instance>(instance));
+        {
+            const uinst_base vinst{registry, std::forward<Instance>(instance)};
+            const uarg_base vvalue{registry, std::forward<Value>(value)};
+            if ( const uerror err = state_->setter_error(vinst, vvalue) ) {
+                return err;
+            }
+        }
+
+        const uinst vinst{registry, std::forward<Instance>(instance)};
+        const uarg vvalue{registry, std::forward<Value>(value)};
+        state_->setter(vinst, vvalue);
+        return uerror{error_code::no_error};
     }
 
     template < typename Instance, typename Value >
@@ -6826,14 +6806,6 @@ namespace meta_hpp
         const uinst vinst{registry, std::forward<Instance>(instance)};
         const std::array<uarg, sizeof...(Args)> vargs{uarg{registry, std::forward<Args>(args)}...};
         return state_->invoke(vinst, vargs);
-    }
-
-    template < typename Instance, typename... Args >
-    std::optional<uvalue> method::safe_invoke(Instance&& instance, Args&&... args) const {
-        if ( is_invocable_with(std::forward<Instance>(instance), std::forward<Args>(args)...) ) {
-            return invoke(std::forward<Instance>(instance), std::forward<Args>(args)...);
-        }
-        return std::nullopt;
     }
 
     template < typename Instance, typename... Args >
@@ -7244,11 +7216,19 @@ namespace meta_hpp
     }
 
     template < typename... Args >
-    std::optional<uvalue> constructor::safe_create(Args&&... args) const {
-        if ( is_invocable_with(std::forward<Args>(args)...) ) {
-            return create(std::forward<Args>(args)...);
+    uresult constructor::try_create(Args&&... args) const {
+        using namespace detail;
+        type_registry& registry{type_registry::instance()};
+
+        {
+            const std::array<uarg_base, sizeof...(Args)> vargs{uarg_base{registry, type_list<Args>{}}...};
+            if ( const uerror err = state_->create_error(vargs) ) {
+                return err;
+            }
         }
-        return std::nullopt;
+
+        const std::array<uarg, sizeof...(Args)> vargs{uarg{registry, std::forward<Args>(args)}...};
+        return state_->create(vargs);
     }
 
     template < typename... Args >
@@ -7260,11 +7240,19 @@ namespace meta_hpp
     }
 
     template < typename... Args >
-    std::optional<uvalue> constructor::safe_create_at(void* mem, Args&&... args) const {
-        if ( is_invocable_with(std::forward<Args>(args)...) ) {
-            return create_at(mem, std::forward<Args>(args)...);
+    uresult constructor::try_create_at(void* mem, Args&&... args) const {
+        using namespace detail;
+        type_registry& registry{type_registry::instance()};
+
+        {
+            const std::array<uarg_base, sizeof...(Args)> vargs{uarg_base{registry, type_list<Args>{}}...};
+            if ( const uerror err = state_->create_error(vargs) ) {
+                return err;
+            }
         }
-        return std::nullopt;
+
+        const std::array<uarg, sizeof...(Args)> vargs{uarg{registry, std::forward<Args>(args)}...};
+        return state_->create_at(mem, vargs);
     }
 
     template < typename... Args >
@@ -7404,8 +7392,30 @@ namespace meta_hpp
         return state_->destroy(varg);
     }
 
+    template < typename Arg >
+    uresult destructor::try_destroy(Arg&& arg) const {
+        using namespace detail;
+        type_registry& registry{type_registry::instance()};
+
+        {
+            const uarg_base varg{registry, std::forward<Arg>(arg)};
+            if ( const uerror err = state_->destroy_error(varg) ) {
+                return err;
+            }
+        }
+
+        const uarg varg{registry, std::forward<Arg>(arg)};
+        state_->destroy(varg);
+        return uerror{error_code::no_error};
+    }
+
     inline void destructor::destroy_at(void* mem) const {
         state_->destroy_at(mem);
+    }
+
+    inline uresult destructor::try_destroy_at(void* mem) const {
+        state_->destroy_at(mem);
+        return uerror{error_code::no_error};
     }
 
     template < typename Arg >
@@ -7467,7 +7477,7 @@ namespace meta_hpp
         }
 
         for ( const evalue& evalue : data_->evalues ) {
-            if ( evalue.get_value_as<Enum>() == value ) {
+            if ( evalue.get_value().get_as<Enum>() == value ) {
                 return evalue.get_name();
             }
         }
@@ -7481,16 +7491,6 @@ namespace meta_hpp
         }
 
         return uvalue{};
-    }
-
-    template < detail::enum_kind Enum >
-    Enum enum_type::name_to_value_as(std::string_view name) const {
-        return name_to_value(name).get_as<Enum>();
-    }
-
-    template < detail::enum_kind Enum >
-    std::optional<Enum> enum_type::safe_name_to_value_as(std::string_view name) const noexcept {
-        return name_to_value(name).safe_get_as<Enum>();
     }
 }
 
@@ -7526,26 +7526,6 @@ namespace meta_hpp
 
     inline const uvalue& evalue::get_underlying_value() const noexcept {
         return state_->underlying_value;
-    }
-
-    template < detail::enum_kind Enum >
-    Enum evalue::get_value_as() const {
-        return get_value().get_as<Enum>();
-    }
-
-    template < detail::enum_kind Enum >
-    std::optional<Enum> evalue::safe_get_value_as() const noexcept {
-        return get_value().safe_get_as<Enum>();
-    }
-
-    template < detail::number_kind Number >
-    Number evalue::get_underlying_value_as() const {
-        return get_underlying_value().get_as<Number>();
-    }
-
-    template < detail::number_kind Number >
-    std::optional<Number> evalue::safe_get_underlying_value_as() const noexcept {
-        return get_underlying_value().safe_get_as<Number>();
     }
 }
 
@@ -7699,18 +7679,12 @@ namespace meta_hpp
         return state_->getter();
     }
 
-    inline std::optional<uvalue> variable::safe_get() const {
+    inline uresult variable::try_get() const {
         return state_->getter();
     }
 
-    template < typename T >
-    T variable::get_as() const {
-        return get().template get_as<T>();
-    }
-
-    template < typename T >
-    std::optional<T> variable::safe_get_as() const {
-        return safe_get().value_or(uvalue{}).template safe_get_as<T>();
+    inline uvalue variable::operator()() const {
+        return get();
     }
 
     template < typename Value >
@@ -7722,16 +7696,20 @@ namespace meta_hpp
     }
 
     template < typename Value >
-    bool variable::safe_set(Value&& value) const {
-        if ( is_settable_with(std::forward<Value>(value)) ) {
-            set(std::forward<Value>(value));
-            return true;
-        }
-        return false;
-    }
+    uresult variable::try_set(Value&& value) const {
+        using namespace detail;
+        type_registry& registry{type_registry::instance()};
 
-    inline uvalue variable::operator()() const {
-        return get();
+        {
+            const uarg_base vvalue{registry, std::forward<Value>(value)};
+            if ( const uerror err = state_->setter_error(vvalue) ) {
+                return err;
+            }
+        }
+
+        const uarg vvalue{registry, std::forward<Value>(value)};
+        state_->setter(vvalue);
+        return uerror{error_code::no_error};
     }
 
     template < typename Value >
@@ -9203,57 +9181,6 @@ namespace meta_hpp
         }
 
         return nullptr;
-    }
-
-    template < typename T >
-    std::optional<T> uvalue::safe_get_as() && {
-        static_assert(std::is_same_v<T, std::decay_t<T>>);
-
-        if constexpr ( detail::pointer_kind<T> ) {
-            if ( T ptr = try_get_as<T>(); ptr || get_type().is_nullptr() ) {
-                return ptr;
-            }
-        } else {
-            if ( T* ptr = try_get_as<T>() ) {
-                return std::move(*ptr);
-            }
-        }
-
-        return std::nullopt;
-    }
-
-    template < typename T >
-    std::optional<T> uvalue::safe_get_as() & {
-        static_assert(std::is_same_v<T, std::decay_t<T>>);
-
-        if constexpr ( detail::pointer_kind<T> ) {
-            if ( T ptr = try_get_as<T>(); ptr || get_type().is_nullptr() ) {
-                return ptr;
-            }
-        } else {
-            if ( T* ptr = try_get_as<T>() ) {
-                return *ptr;
-            }
-        }
-
-        return std::nullopt;
-    }
-
-    template < typename T >
-    std::optional<T> uvalue::safe_get_as() const& {
-        static_assert(std::is_same_v<T, std::decay_t<T>>);
-
-        if constexpr ( detail::pointer_kind<T> ) {
-            if ( T ptr = try_get_as<T>(); ptr || get_type().is_nullptr() ) {
-                return ptr;
-            }
-        } else {
-            if ( const T* ptr = try_get_as<T>() ) {
-                return *ptr;
-            }
-        }
-
-        return std::nullopt;
     }
 }
 

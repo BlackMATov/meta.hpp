@@ -86,7 +86,7 @@ namespace
             /*CHECK_THROWS(std::ignore = uarg{r, FromValue}.cast<ToType>(r));*/\
             \
             CHECK_FALSE(f_state.is_invocable_with<decltype(FromValue)>());\
-            CHECK_FALSE(f_state.safe_invoke(FromValue));\
+            CHECK_FALSE(f_state.try_invoke(FromValue));\
         }\
     }
 
@@ -104,7 +104,7 @@ namespace
         } else {\
             CHECK_FALSE(f_state.is_invocable_with<FromType>());\
             CHECK_FALSE(f_state.is_invocable_with(FromValue));\
-            CHECK_FALSE(f_state.safe_invoke(FromValue));\
+            CHECK_FALSE(f_state.try_invoke(FromValue));\
         }\
     }
 

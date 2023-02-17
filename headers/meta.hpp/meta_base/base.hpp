@@ -23,7 +23,6 @@
 #include <map>
 #include <memory>
 #include <mutex>
-#include <optional>
 #include <set>
 #include <span>
 #include <string>

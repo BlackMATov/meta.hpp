@@ -103,15 +103,6 @@ namespace meta_hpp
         [[nodiscard]] auto try_get_as() const noexcept //
             -> std::conditional_t<detail::pointer_kind<T>, T, const T*>;
 
-        template < typename T >
-        [[nodiscard]] std::optional<T> safe_get_as() &&;
-
-        template < typename T >
-        [[nodiscard]] std::optional<T> safe_get_as() &;
-
-        template < typename T >
-        [[nodiscard]] std::optional<T> safe_get_as() const&;
-
     private:
         struct vtable_t;
 

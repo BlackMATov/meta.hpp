@@ -79,8 +79,8 @@ TEST_CASE("meta/meta_manuals/scopes/local") {
     const meta::variable unit3_variable = math_scope.get_variable("unit3");
 
     // checks and uses found variables with functions
-    CHECK(unit2_variable.get_as<ivec2>() == ivec2{1,1});
-    CHECK(unit3_variable.get_as<ivec3>() == ivec3{1,1,1});
+    CHECK(unit2_variable.get().get_as<ivec2>() == ivec2{1,1});
+    CHECK(unit3_variable.get().get_as<ivec3>() == ivec3{1,1,1});
     CHECK(dot2_function(unit2_variable.get(), unit2_variable.get()).get_as<int>() == 2);
     CHECK(dot3_function(unit3_variable.get(), unit3_variable.get()).get_as<int>() == 3);
 }

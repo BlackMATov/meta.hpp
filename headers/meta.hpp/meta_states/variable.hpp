@@ -140,18 +140,12 @@ namespace meta_hpp
         return state_->getter();
     }
 
-    inline std::optional<uvalue> variable::safe_get() const {
+    inline uresult variable::try_get() const {
         return state_->getter();
     }
 
-    template < typename T >
-    T variable::get_as() const {
-        return get().template get_as<T>();
-    }
-
-    template < typename T >
-    std::optional<T> variable::safe_get_as() const {
-        return safe_get().value_or(uvalue{}).template safe_get_as<T>();
+    inline uvalue variable::operator()() const {
+        return get();
     }
 
     template < typename Value >
@@ -163,16 +157,20 @@ namespace meta_hpp
     }
 
     template < typename Value >
-    bool variable::safe_set(Value&& value) const {
-        if ( is_settable_with(std::forward<Value>(value)) ) {
-            set(std::forward<Value>(value));
-            return true;
-        }
-        return false;
-    }
+    uresult variable::try_set(Value&& value) const {
+        using namespace detail;
+        type_registry& registry{type_registry::instance()};
 
-    inline uvalue variable::operator()() const {
-        return get();
+        {
+            const uarg_base vvalue{registry, std::forward<Value>(value)};
+            if ( const uerror err = state_->setter_error(vvalue) ) {
+                return err;
+            }
+        }
+
+        const uarg vvalue{registry, std::forward<Value>(value)};
+        state_->setter(vvalue);
+        return uerror{error_code::no_error};
     }
 
     template < typename Value >

@@ -166,18 +166,18 @@ TEST_CASE("meta/meta_states/ctor/as_object") {
         const meta::constructor ctor = clazz_type.get_constructor_with<int>();
         REQUIRE(ctor);
         {
-            std::optional<meta::uvalue> v{ctor.safe_create(42.0)};
-            CHECK_FALSE(v);
+            meta::uresult r{ctor.try_create(42.0)};
+            CHECK_FALSE(r);
 
             CHECK(clazz_t::constructor_counter == 0);
         }
         {
-            std::optional<meta::uvalue> v{ctor.safe_create(42)};
-            CHECK(v);
+            meta::uresult r{ctor.try_create(42)};
+            CHECK(r);
 
             CHECK(clazz_t::constructor_counter == 1);
-            CHECK(v->get_type() == meta::resolve_type<clazz_t>());
-            CHECK(v->get_as<clazz_t>().i == 42);
+            CHECK(r.get_value().get_type() == meta::resolve_type<clazz_t>());
+            CHECK(r.get_value().get_as<clazz_t>().i == 42);
         }
     }
 
@@ -202,18 +202,18 @@ TEST_CASE("meta/meta_states/ctor/as_object") {
         const meta::constructor ctor = clazz_type.get_constructor_with<int>();
         REQUIRE(ctor);
         {
-            std::optional<meta::uvalue> v{ctor.safe_create_at(clazz_mem, 42.0)};
-            CHECK_FALSE(v);
+            meta::uresult r{ctor.try_create_at(clazz_mem, 42.0)};
+            CHECK_FALSE(r);
 
             CHECK(clazz_t::constructor_counter == 0);
         }
         {
-            std::optional<meta::uvalue> v{ctor.safe_create_at(clazz_mem, 42)};
-            CHECK(v);
+            meta::uresult r{ctor.try_create_at(clazz_mem, 42)};
+            CHECK(r);
 
             CHECK(clazz_t::constructor_counter == 1);
-            CHECK(v->get_type() == meta::resolve_type<clazz_t*>());
-            CHECK(v->get_as<clazz_t*>()->i == 42);
+            CHECK(r.get_value().get_type() == meta::resolve_type<clazz_t*>());
+            CHECK(r.get_value().get_as<clazz_t*>()->i == 42);
         }
     }
 

@@ -46,7 +46,7 @@ namespace
             /*CHECK_THROWS(std::ignore = uinst{r, Inst}.cast<clazz Qualifiers>(r));*/\
             \
             CHECK_FALSE(m_state.is_invocable_with<decltype(Inst)>());\
-            CHECK_FALSE(m_state.safe_invoke(Inst));\
+            CHECK_FALSE(m_state.try_invoke(Inst));\
         }\
     }
 
@@ -64,7 +64,7 @@ namespace
         } else {\
             CHECK_FALSE(m_state.is_invocable_with<FromType>());\
             CHECK_FALSE(m_state.is_invocable_with(FromValue));\
-            CHECK_FALSE(m_state.safe_invoke(FromValue));\
+            CHECK_FALSE(m_state.try_invoke(FromValue));\
         }\
     }
 

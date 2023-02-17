@@ -40,14 +40,14 @@ TEST_CASE("meta/meta_manuals/variable/usage") {
     CHECK(pi_variable_value.get_as<double>() == doctest::Approx(3.14).epsilon(0.01));
 
     // we can change variable values, but only non-const
-    CHECK_FALSE(pi_variable.safe_set(6.0));
+    CHECK_FALSE(pi_variable.try_set(6.0));
 
     // prints all variables in the scope
     fmt::print("* {}\n", constants_scope.get_name());
     for ( const meta::variable& variable : constants_scope.get_variables() ) {
         fmt::print("  - {} : {}\n",
             variable.get_name(),
-            variable.get_as<double>());
+            variable.get().get_as<double>());
     }
 
     // Output:

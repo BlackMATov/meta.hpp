@@ -102,8 +102,30 @@ namespace meta_hpp
         return state_->destroy(varg);
     }
 
+    template < typename Arg >
+    uresult destructor::try_destroy(Arg&& arg) const {
+        using namespace detail;
+        type_registry& registry{type_registry::instance()};
+
+        {
+            const uarg_base varg{registry, std::forward<Arg>(arg)};
+            if ( const uerror err = state_->destroy_error(varg) ) {
+                return err;
+            }
+        }
+
+        const uarg varg{registry, std::forward<Arg>(arg)};
+        state_->destroy(varg);
+        return uerror{error_code::no_error};
+    }
+
     inline void destructor::destroy_at(void* mem) const {
         state_->destroy_at(mem);
+    }
+
+    inline uresult destructor::try_destroy_at(void* mem) const {
+        state_->destroy_at(mem);
+        return uerror{error_code::no_error};
     }
 
     template < typename Arg >
