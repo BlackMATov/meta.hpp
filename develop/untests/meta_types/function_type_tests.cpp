@@ -30,7 +30,7 @@ TEST_CASE("meta/meta_types/function_type") {
     SUBCASE("") {
         const meta::function_type type;
         CHECK_FALSE(type);
-        CHECK(type.is_empty());
+        CHECK_FALSE(type.is_valid());
     }
 
     SUBCASE("arg_copy") {

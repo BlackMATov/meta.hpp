@@ -57,7 +57,7 @@ TEST_CASE("meta/meta_states/scope") {
 
     const meta::scope math_scope = meta::resolve_scope("meta/meta_states/scope/math");
     REQUIRE(math_scope);
-    REQUIRE(!math_scope.is_empty());
+    REQUIRE(math_scope.is_valid());
 
     CHECK(math_scope.get_name() == "meta/meta_states/scope/math");
     CHECK(math_scope.get_variables().size() == 2);
@@ -66,7 +66,7 @@ TEST_CASE("meta/meta_states/scope") {
     SUBCASE("") {
         const meta::scope scope;
         CHECK_FALSE(scope);
-        CHECK(scope.is_empty());
+        CHECK_FALSE(scope.is_valid());
     }
 
     SUBCASE("operators") {

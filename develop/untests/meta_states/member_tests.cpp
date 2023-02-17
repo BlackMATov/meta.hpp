@@ -38,7 +38,7 @@ TEST_CASE("meta/meta_states/member") {
     SUBCASE("") {
         const meta::member member;
         CHECK_FALSE(member);
-        CHECK(member.is_empty());
+        CHECK_FALSE(member.is_valid());
         CHECK(member == clazz_1_type.get_member("non-existent-member"));
     }
 

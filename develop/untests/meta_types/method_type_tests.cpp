@@ -33,7 +33,7 @@ TEST_CASE("meta/meta_types/method_type") {
     SUBCASE("") {
         const meta::method_type type;
         CHECK_FALSE(type);
-        CHECK(type.is_empty());
+        CHECK_FALSE(type.is_valid());
     }
 
     SUBCASE("ivec2::at") {

@@ -102,7 +102,7 @@ TEST_CASE("meta/meta_states/method") {
     SUBCASE("") {
         const meta::method method;
         CHECK_FALSE(method);
-        CHECK(method.is_empty());
+        CHECK_FALSE(method.is_valid());
         CHECK(method == ct.get_method("non-existent-method"));
     }
 

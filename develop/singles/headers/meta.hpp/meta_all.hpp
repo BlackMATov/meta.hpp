@@ -441,12 +441,12 @@ namespace meta_hpp::detail
             return *this;
         }
 
-        [[nodiscard]] bool is_empty() const noexcept {
-            return vtable_ == nullptr;
+        [[nodiscard]] bool is_valid() const noexcept {
+            return vtable_ != nullptr;
         }
 
         [[nodiscard]] explicit operator bool() const noexcept {
-            return vtable_ != nullptr;
+            return is_valid();
         }
 
         R operator()(Args... args) const {
@@ -1088,12 +1088,12 @@ namespace meta_hpp::detail
             reset();
         }
 
-        [[nodiscard]] bool is_empty() const noexcept {
-            return data_ == nullptr;
+        [[nodiscard]] bool is_valid() const noexcept {
+            return data_ != nullptr;
         }
 
         [[nodiscard]] explicit operator bool() const noexcept {
-            return data_ != nullptr;
+            return is_valid();
         }
 
         void reset() noexcept {
@@ -2235,12 +2235,12 @@ namespace meta_hpp
         type_base& operator=(type_base&&) noexcept = default;
         type_base& operator=(const type_base&) = default;
 
-        [[nodiscard]] bool is_empty() const noexcept {
-            return data_ == nullptr;
+        [[nodiscard]] bool is_valid() const noexcept {
+            return data_ != nullptr;
         }
 
         [[nodiscard]] explicit operator bool() const noexcept {
-            return data_ != nullptr;
+            return is_valid();
         }
 
         [[nodiscard]] type_id get_id() const noexcept {
@@ -2497,7 +2497,7 @@ namespace std
     template < meta_hpp::detail::type_family Type >
     struct hash<Type> {
         size_t operator()(const Type& type) const noexcept {
-            return type.is_empty() ? 0 : type.get_id().get_hash();
+            return type.is_valid() ? type.get_id().get_hash() : 0;
         }
     };
 }
@@ -2506,15 +2506,15 @@ namespace meta_hpp
 {
     template < detail::type_family L, detail::type_family R >
     [[nodiscard]] bool operator==(const L& l, const R& r) noexcept {
-        return l.is_empty() == r.is_empty() && (l.is_empty() || l.get_id() == r.get_id());
+        return l.is_valid() == r.is_valid() && (!l.is_valid() || l.get_id() == r.get_id());
     }
 
     template < detail::type_family L, detail::type_family R >
     [[nodiscard]] std::strong_ordering operator<=>(const L& l, const R& r) noexcept {
-        if ( const std::strong_ordering cmp{!l.is_empty() <=> !r.is_empty()}; cmp != std::strong_ordering::equal ) {
+        if ( const std::strong_ordering cmp{l.is_valid() <=> r.is_valid()}; cmp != std::strong_ordering::equal ) {
             return cmp;
         }
-        return l.is_empty() ? std::strong_ordering::equal : l.get_id() <=> r.get_id();
+        return l.is_valid() ? l.get_id() <=> r.get_id() : std::strong_ordering::equal;
     }
 }
 
@@ -2522,12 +2522,12 @@ namespace meta_hpp
 {
     template < detail::type_family L >
     [[nodiscard]] bool operator==(const L& l, type_id r) noexcept {
-        return !l.is_empty() && l.get_id() == r;
+        return l.is_valid() && l.get_id() == r;
     }
 
     template < detail::type_family L >
     [[nodiscard]] std::strong_ordering operator<=>(const L& l, type_id r) noexcept {
-        return !l.is_empty() ? l.get_id() <=> r : std::strong_ordering::less;
+        return l.is_valid() ? l.get_id() <=> r : std::strong_ordering::less;
     }
 }
 
@@ -3366,12 +3366,12 @@ namespace meta_hpp
         state_base& operator=(state_base&&) noexcept = default;
         state_base& operator=(const state_base&) = default;
 
-        [[nodiscard]] bool is_empty() const noexcept {
-            return state_ == nullptr;
+        [[nodiscard]] bool is_valid() const noexcept {
+            return state_ != nullptr;
         }
 
         [[nodiscard]] explicit operator bool() const noexcept {
-            return state_ != nullptr;
+            return is_valid();
         }
 
         [[nodiscard]] const index_type& get_index() const noexcept {
@@ -3632,7 +3632,7 @@ namespace std
     template < meta_hpp::detail::state_family State >
     struct hash<State> {
         size_t operator()(const State& state) const noexcept {
-            return state.is_empty() ? 0 : state.get_index().get_hash();
+            return state.is_valid() ? state.get_index().get_hash() : 0;
         }
     };
 }
@@ -3641,15 +3641,15 @@ namespace meta_hpp
 {
     template < detail::state_family L, detail::state_family R >
     [[nodiscard]] bool operator==(const L& l, const R& r) noexcept {
-        return l.is_empty() == r.is_empty() && (l.is_empty() || l.get_index() == r.get_index());
+        return l.is_valid() == r.is_valid() && (!l.is_valid() || l.get_index() == r.get_index());
     }
 
     template < detail::state_family L, detail::state_family R >
     [[nodiscard]] std::strong_ordering operator<=>(const L& l, const R& r) noexcept {
-        if ( const std::strong_ordering cmp{!l.is_empty() <=> !r.is_empty()}; cmp != std::strong_ordering::equal ) {
+        if ( const std::strong_ordering cmp{l.is_valid() <=> r.is_valid()}; cmp != std::strong_ordering::equal ) {
             return cmp;
         }
-        return l.is_empty() ? std::strong_ordering::equal : l.get_index() <=> r.get_index();
+        return l.is_valid() ? l.get_index() <=> r.get_index() : std::strong_ordering::equal;
     }
 }
 
@@ -3657,12 +3657,12 @@ namespace meta_hpp
 {
     template < detail::state_family L, detail::index_family R >
     [[nodiscard]] bool operator==(const L& l, const R& r) noexcept {
-        return !l.is_empty() && l.get_index() == r;
+        return l.is_valid() && l.get_index() == r;
     }
 
     template < detail::state_family L, detail::index_family R >
     [[nodiscard]] std::strong_ordering operator<=>(const L& l, const R& r) noexcept {
-        return !l.is_empty() ? l.get_index() <=> r : std::strong_ordering::less;
+        return l.is_valid() ? l.get_index() <=> r : std::strong_ordering::less;
     }
 }
 
@@ -7873,7 +7873,7 @@ namespace meta_hpp
     }
 
     inline bool class_type::is_base_of(const class_type& derived) const noexcept {
-        if ( is_empty() || derived.is_empty() ) {
+        if ( !is_valid() || !derived.is_valid() ) {
             return false;
         }
 
@@ -7897,7 +7897,7 @@ namespace meta_hpp
     }
 
     inline bool class_type::is_derived_from(const class_type& base) const noexcept {
-        if ( is_empty() || base.is_empty() ) {
+        if ( !is_valid() || !base.is_valid() ) {
             return false;
         }
 

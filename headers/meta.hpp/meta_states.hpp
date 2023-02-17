@@ -133,12 +133,12 @@ namespace meta_hpp
         state_base& operator=(state_base&&) noexcept = default;
         state_base& operator=(const state_base&) = default;
 
-        [[nodiscard]] bool is_empty() const noexcept {
-            return state_ == nullptr;
+        [[nodiscard]] bool is_valid() const noexcept {
+            return state_ != nullptr;
         }
 
         [[nodiscard]] explicit operator bool() const noexcept {
-            return state_ != nullptr;
+            return is_valid();
         }
 
         [[nodiscard]] const index_type& get_index() const noexcept {
@@ -399,7 +399,7 @@ namespace std
     template < meta_hpp::detail::state_family State >
     struct hash<State> {
         size_t operator()(const State& state) const noexcept {
-            return state.is_empty() ? 0 : state.get_index().get_hash();
+            return state.is_valid() ? state.get_index().get_hash() : 0;
         }
     };
 }
@@ -408,15 +408,15 @@ namespace meta_hpp
 {
     template < detail::state_family L, detail::state_family R >
     [[nodiscard]] bool operator==(const L& l, const R& r) noexcept {
-        return l.is_empty() == r.is_empty() && (l.is_empty() || l.get_index() == r.get_index());
+        return l.is_valid() == r.is_valid() && (!l.is_valid() || l.get_index() == r.get_index());
     }
 
     template < detail::state_family L, detail::state_family R >
     [[nodiscard]] std::strong_ordering operator<=>(const L& l, const R& r) noexcept {
-        if ( const std::strong_ordering cmp{!l.is_empty() <=> !r.is_empty()}; cmp != std::strong_ordering::equal ) {
+        if ( const std::strong_ordering cmp{l.is_valid() <=> r.is_valid()}; cmp != std::strong_ordering::equal ) {
             return cmp;
         }
-        return l.is_empty() ? std::strong_ordering::equal : l.get_index() <=> r.get_index();
+        return l.is_valid() ? l.get_index() <=> r.get_index() : std::strong_ordering::equal;
     }
 }
 
@@ -424,12 +424,12 @@ namespace meta_hpp
 {
     template < detail::state_family L, detail::index_family R >
     [[nodiscard]] bool operator==(const L& l, const R& r) noexcept {
-        return !l.is_empty() && l.get_index() == r;
+        return l.is_valid() && l.get_index() == r;
     }
 
     template < detail::state_family L, detail::index_family R >
     [[nodiscard]] std::strong_ordering operator<=>(const L& l, const R& r) noexcept {
-        return !l.is_empty() ? l.get_index() <=> r : std::strong_ordering::less;
+        return l.is_valid() ? l.get_index() <=> r : std::strong_ordering::less;
     }
 }
 

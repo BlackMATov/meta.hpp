@@ -60,12 +60,12 @@ namespace meta_hpp::detail
             return *this;
         }
 
-        [[nodiscard]] bool is_empty() const noexcept {
-            return vtable_ == nullptr;
+        [[nodiscard]] bool is_valid() const noexcept {
+            return vtable_ != nullptr;
         }
 
         [[nodiscard]] explicit operator bool() const noexcept {
-            return vtable_ != nullptr;
+            return is_valid();
         }
 
         R operator()(Args... args) const {

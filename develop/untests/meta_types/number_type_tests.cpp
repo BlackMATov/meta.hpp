@@ -13,7 +13,7 @@ TEST_CASE("meta/meta_types/number_type") {
     SUBCASE("") {
         const meta::number_type type;
         CHECK_FALSE(type);
-        CHECK(type.is_empty());
+        CHECK_FALSE(type.is_valid());
     }
 
     SUBCASE("int") {

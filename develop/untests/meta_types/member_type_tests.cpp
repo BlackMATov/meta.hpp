@@ -21,7 +21,7 @@ TEST_CASE("meta/meta_types/member_type") {
     SUBCASE("") {
         const meta::member_type type;
         CHECK_FALSE(type);
-        CHECK(type.is_empty());
+        CHECK_FALSE(type.is_valid());
     }
 
     SUBCASE("int") {

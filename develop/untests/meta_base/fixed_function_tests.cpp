@@ -15,12 +15,12 @@ TEST_CASE("meta/meta_base/fixed_function") {
         {
             fixed_function<void()> ff;
             CHECK_FALSE(ff);
-            CHECK(ff.is_empty());
+            CHECK_FALSE(ff.is_valid());
         }
         {
             fixed_function<void()> ff = []{};
             CHECK(ff);
-            CHECK_FALSE(ff.is_empty());
+            CHECK(ff.is_valid());
         }
     }
 
@@ -46,11 +46,11 @@ TEST_CASE("meta/meta_base/fixed_function") {
 
         ff.reset();
         CHECK_FALSE(ff);
-        CHECK(ff.is_empty());
+        CHECK_FALSE(ff.is_valid());
 
         ff = []{return 1;};
         CHECK(ff);
-        CHECK_FALSE(ff.is_empty());
+        CHECK(ff.is_valid());
 
         CHECK(ff() == 1);
     }
