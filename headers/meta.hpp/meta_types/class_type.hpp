@@ -113,7 +113,10 @@ namespace meta_hpp
     template < typename Arg >
     bool class_type::destroy(Arg&& arg) const {
         if ( const destructor& dtor = get_destructor() ) {
-            return dtor.destroy(std::forward<Arg>(arg));
+            if ( dtor.is_invocable_with(std::forward<Arg>(arg)) ) {
+                dtor.destroy(std::forward<Arg>(arg));
+                return true;
+            }
         }
         return false;
     }

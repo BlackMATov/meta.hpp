@@ -25,6 +25,9 @@ namespace meta_hpp
         explicit uerror(error_code error) noexcept;
         uerror& operator=(error_code error) noexcept;
 
+        [[nodiscard]] bool has_error() const noexcept;
+        [[nodiscard]] explicit operator bool() const noexcept;
+
         [[nodiscard]] error_code get_error() const noexcept;
 
         void reset() noexcept;
@@ -120,15 +123,15 @@ namespace meta_hpp
         [[nodiscard]] bool has_value() const noexcept;
         [[nodiscard]] explicit operator bool() const noexcept;
 
-        void reset() noexcept;
-        void swap(uresult& other) noexcept;
-
         [[nodiscard]] uvalue& get_value() &;
         [[nodiscard]] uvalue&& get_value() &&;
         [[nodiscard]] const uvalue& get_value() const&;
         [[nodiscard]] const uvalue&& get_value() const&&;
 
         [[nodiscard]] error_code get_error() const noexcept;
+
+        void reset() noexcept;
+        void swap(uresult& other) noexcept;
 
     private:
         uvalue value_{};

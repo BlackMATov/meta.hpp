@@ -64,12 +64,19 @@ namespace meta_hpp::detail
     }
 
     template < function_pointer_kind Function >
-    bool raw_function_is_invocable_with(type_registry& registry, std::span<const uarg_base> args) {
+    uerror raw_function_invoke_error(type_registry& registry, std::span<const uarg_base> args) {
         using ft = function_traits<Function>;
         using argument_types = typename ft::argument_types;
 
-        return args.size() == ft::arity //
-            && can_cast_all_uargs<argument_types>(registry, args);
+        if ( args.size() != ft::arity ) {
+            return uerror{error_code::arity_mismatch};
+        }
+
+        if ( !can_cast_all_uargs<argument_types>(registry, args) ) {
+            return uerror{error_code::argument_type_mismatch};
+        }
+
+        return uerror{error_code::no_error};
     }
 }
 
@@ -83,9 +90,9 @@ namespace meta_hpp::detail
     }
 
     template < function_pointer_kind Function >
-    function_state::is_invocable_with_impl make_function_is_invocable_with(type_registry& registry) {
+    function_state::invoke_error_impl make_function_invoke_error(type_registry& registry) {
         return [&registry](std::span<const uarg_base> args) { //
-            return raw_function_is_invocable_with<Function>(registry, args);
+            return raw_function_invoke_error<Function>(registry, args);
         };
     }
 
@@ -116,7 +123,7 @@ namespace meta_hpp::detail
         type_registry& registry{type_registry::instance()};
         function_state state{function_index{registry.resolve_type<Function>(), std::move(name)}, std::move(metadata)};
         state.invoke = make_function_invoke<Policy>(registry, function_ptr);
-        state.is_invocable_with = make_function_is_invocable_with<Function>(registry);
+        state.invoke_error = make_function_invoke_error<Function>(registry);
         state.arguments = make_function_arguments<Function>();
         return make_intrusive<function_state>(std::move(state));
     }
@@ -158,7 +165,7 @@ namespace meta_hpp
         using namespace detail;
         type_registry& registry{type_registry::instance()};
         const std::array<uarg_base, sizeof...(Args)> vargs{uarg_base{registry, type_list<Args>{}}...};
-        return state_->is_invocable_with(vargs);
+        return !state_->invoke_error(vargs);
     }
 
     template < typename... Args >
@@ -166,7 +173,7 @@ namespace meta_hpp
         using namespace detail;
         type_registry& registry{type_registry::instance()};
         const std::array<uarg_base, sizeof...(Args)> vargs{uarg_base{registry, std::forward<Args>(args)}...};
-        return state_->is_invocable_with(vargs);
+        return !state_->invoke_error(vargs);
     }
 
     inline argument function::get_argument(std::size_t position) const noexcept {

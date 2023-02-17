@@ -21,6 +21,14 @@ namespace meta_hpp
         return *this;
     }
 
+    inline bool uerror::has_error() const noexcept {
+        return error_ != error_code::no_error;
+    }
+
+    inline uerror::operator bool() const noexcept {
+        return has_error();
+    }
+
     inline error_code uerror::get_error() const noexcept {
         return error_;
     }
@@ -112,17 +120,6 @@ namespace meta_hpp
         return has_value();
     }
 
-    inline void uresult::reset() noexcept {
-        value_ = uvalue{};
-        error_ = error_code::no_error;
-    }
-
-    inline void uresult::swap(uresult& other) noexcept {
-        using std::swap;
-        swap(value_, other.value_);
-        swap(error_, other.error_);
-    }
-
     inline uvalue& uresult::get_value() & {
         return value_;
     }
@@ -142,5 +139,16 @@ namespace meta_hpp
 
     inline error_code uresult::get_error() const noexcept {
         return error_;
+    }
+
+    inline void uresult::reset() noexcept {
+        value_ = uvalue{};
+        error_ = error_code::no_error;
+    }
+
+    inline void uresult::swap(uresult& other) noexcept {
+        using std::swap;
+        swap(value_, other.value_);
+        swap(error_, other.error_);
     }
 }

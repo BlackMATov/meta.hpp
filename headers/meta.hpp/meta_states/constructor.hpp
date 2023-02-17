@@ -80,12 +80,19 @@ namespace meta_hpp::detail
     }
 
     template < class_kind Class, typename... Args >
-    bool raw_constructor_is_invocable_with(type_registry& registry, std::span<const uarg_base> args) {
+    uerror raw_constructor_create_error(type_registry& registry, std::span<const uarg_base> args) {
         using ct = constructor_traits<Class, Args...>;
         using argument_types = typename ct::argument_types;
 
-        return args.size() == ct::arity //
-            && can_cast_all_uargs<argument_types>(registry, args);
+        if ( args.size() != ct::arity ) {
+            return uerror{error_code::arity_mismatch};
+        }
+
+        if ( !can_cast_all_uargs<argument_types>(registry, args) ) {
+            return uerror{error_code::argument_type_mismatch};
+        }
+
+        return uerror{error_code::no_error};
     }
 }
 
@@ -106,9 +113,9 @@ namespace meta_hpp::detail
     }
 
     template < class_kind Class, typename... Args >
-    constructor_state::is_invocable_with_impl make_constructor_is_invocable_with(type_registry& registry) {
+    constructor_state::create_error_impl make_constructor_create_error(type_registry& registry) {
         return [&registry](std::span<const uarg_base> args) { //
-            return raw_constructor_is_invocable_with<Class, Args...>(registry, args);
+            return raw_constructor_create_error<Class, Args...>(registry, args);
         };
     }
 
@@ -140,7 +147,7 @@ namespace meta_hpp::detail
         constructor_state state{constructor_index{registry.resolve_constructor_type<Class, Args...>()}, std::move(metadata)};
         state.create = make_constructor_create<Policy, Class, Args...>(registry);
         state.create_at = make_constructor_create_at<Class, Args...>(registry);
-        state.is_invocable_with = make_constructor_is_invocable_with<Class, Args...>(registry);
+        state.create_error = make_constructor_create_error<Class, Args...>(registry);
         state.arguments = make_constructor_arguments<Class, Args...>();
         return make_intrusive<constructor_state>(std::move(state));
     }
@@ -189,7 +196,7 @@ namespace meta_hpp
         using namespace detail;
         type_registry& registry{type_registry::instance()};
         const std::array<uarg_base, sizeof...(Args)> vargs{uarg_base{registry, type_list<Args>{}}...};
-        return state_->is_invocable_with(vargs);
+        return !state_->create_error(vargs);
     }
 
     template < typename... Args >
@@ -197,7 +204,7 @@ namespace meta_hpp
         using namespace detail;
         type_registry& registry{type_registry::instance()};
         const std::array<uarg_base, sizeof...(Args)> vargs{uarg_base{registry, std::forward<Args>(args)}...};
-        return state_->is_invocable_with(vargs);
+        return !state_->create_error(vargs);
     }
 
     inline argument constructor::get_argument(std::size_t position) const noexcept {

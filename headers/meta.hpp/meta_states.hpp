@@ -9,6 +9,7 @@
 #include "meta_base.hpp"
 #include "meta_indices.hpp"
 #include "meta_types.hpp"
+#include "meta_uresult.hpp"
 #include "meta_uvalue.hpp"
 
 #include "meta_detail/state_family.hpp"
@@ -81,34 +82,34 @@ namespace meta_hpp
     }
 
     template < typename Policy >
-    concept constructor_policy_kind                                        //
-        = std::is_same_v<Policy, constructor_policy::as_object_t>          //
-       || std::is_same_v<Policy, constructor_policy::as_raw_pointer_t>     //
-       || std::is_same_v<Policy, constructor_policy::as_shared_pointer_t>; //
+    concept constructor_policy_kind                                    //
+        = std::is_same_v<Policy, constructor_policy::as_object_t>      //
+       || std::is_same_v<Policy, constructor_policy::as_raw_pointer_t> //
+       || std::is_same_v<Policy, constructor_policy::as_shared_pointer_t>;
 
     template < typename Policy >
-    concept function_policy_kind                                                  //
-        = std::is_same_v<Policy, function_policy::as_copy_t>                      //
-       || std::is_same_v<Policy, function_policy::discard_return_t>               //
-       || std::is_same_v<Policy, function_policy::return_reference_as_pointer_t>; //
+    concept function_policy_kind                                    //
+        = std::is_same_v<Policy, function_policy::as_copy_t>        //
+       || std::is_same_v<Policy, function_policy::discard_return_t> //
+       || std::is_same_v<Policy, function_policy::return_reference_as_pointer_t>;
 
     template < typename Policy >
-    concept member_policy_kind                                           //
-        = std::is_same_v<Policy, member_policy::as_copy_t>               //
-       || std::is_same_v<Policy, member_policy::as_pointer_t>            //
-       || std::is_same_v<Policy, member_policy::as_reference_wrapper_t>; //
+    concept member_policy_kind                                //
+        = std::is_same_v<Policy, member_policy::as_copy_t>    //
+       || std::is_same_v<Policy, member_policy::as_pointer_t> //
+       || std::is_same_v<Policy, member_policy::as_reference_wrapper_t>;
 
     template < typename Policy >
-    concept method_policy_kind                                                  //
-        = std::is_same_v<Policy, method_policy::as_copy_t>                      //
-       || std::is_same_v<Policy, method_policy::discard_return_t>               //
-       || std::is_same_v<Policy, method_policy::return_reference_as_pointer_t>; //
+    concept method_policy_kind                                    //
+        = std::is_same_v<Policy, method_policy::as_copy_t>        //
+       || std::is_same_v<Policy, method_policy::discard_return_t> //
+       || std::is_same_v<Policy, method_policy::return_reference_as_pointer_t>;
 
     template < typename Policy >
-    concept variable_policy_kind                                           //
-        = std::is_same_v<Policy, variable_policy::as_copy_t>               //
-       || std::is_same_v<Policy, variable_policy::as_pointer_t>            //
-       || std::is_same_v<Policy, variable_policy::as_reference_wrapper_t>; //
+    concept variable_policy_kind                                //
+        = std::is_same_v<Policy, variable_policy::as_copy_t>    //
+       || std::is_same_v<Policy, variable_policy::as_pointer_t> //
+       || std::is_same_v<Policy, variable_policy::as_reference_wrapper_t>;
 }
 
 namespace meta_hpp
@@ -202,9 +203,15 @@ namespace meta_hpp
         [[nodiscard]] destructor_type get_type() const noexcept;
 
         template < typename Arg >
-        bool destroy(Arg&& arg) const;
+        void destroy(Arg&& arg) const;
 
         void destroy_at(void* mem) const;
+
+        template < typename Arg >
+        [[nodiscard]] bool is_invocable_with() const noexcept;
+
+        template < typename Arg >
+        [[nodiscard]] bool is_invocable_with(Arg&& arg) const noexcept;
     };
 
     class evalue final : public state_base<evalue> {
@@ -312,6 +319,9 @@ namespace meta_hpp
 
         template < typename Instance, typename... Args >
         std::optional<uvalue> safe_invoke(Instance&& instance, Args&&... args) const;
+
+        template < typename Instance, typename... Args >
+        uresult try_invoke(Instance&& instance, Args&&... args) const;
 
         template < typename Instance, typename... Args >
         uvalue operator()(Instance&& instance, Args&&... args) const;
@@ -439,14 +449,14 @@ namespace meta_hpp::detail
     struct constructor_state final : intrusive_ref_counter<constructor_state> {
         using create_impl = fixed_function<uvalue(std::span<const uarg>)>;
         using create_at_impl = fixed_function<uvalue(void*, std::span<const uarg>)>;
-        using is_invocable_with_impl = fixed_function<bool(std::span<const uarg_base>)>;
+        using create_error_impl = fixed_function<uerror(std::span<const uarg_base>)>;
 
         constructor_index index;
         metadata_map metadata;
 
         create_impl create{};
         create_at_impl create_at{};
-        is_invocable_with_impl is_invocable_with{};
+        create_error_impl create_error{};
         argument_list arguments{};
 
         template < constructor_policy_kind Policy, class_kind Class, typename... Args >
@@ -455,14 +465,16 @@ namespace meta_hpp::detail
     };
 
     struct destructor_state final : intrusive_ref_counter<destructor_state> {
-        using destroy_impl = fixed_function<bool(const uarg&)>;
+        using destroy_impl = fixed_function<void(const uarg&)>;
         using destroy_at_impl = fixed_function<void(void*)>;
+        using destroy_error_impl = fixed_function<uerror(const uarg_base&)>;
 
         destructor_index index;
         metadata_map metadata;
 
         destroy_impl destroy{};
         destroy_at_impl destroy_at{};
+        destroy_error_impl destroy_error{};
 
         template < class_kind Class >
         [[nodiscard]] static destructor_state_ptr make(metadata_map metadata);
@@ -483,13 +495,13 @@ namespace meta_hpp::detail
 
     struct function_state final : intrusive_ref_counter<function_state> {
         using invoke_impl = fixed_function<uvalue(std::span<const uarg>)>;
-        using is_invocable_with_impl = fixed_function<bool(std::span<const uarg_base>)>;
+        using invoke_error_impl = fixed_function<uerror(std::span<const uarg_base>)>;
 
         function_index index;
         metadata_map metadata;
 
         invoke_impl invoke{};
-        is_invocable_with_impl is_invocable_with{};
+        invoke_error_impl invoke_error{};
         argument_list arguments{};
 
         template < function_policy_kind Policy, function_pointer_kind Function >
@@ -501,16 +513,16 @@ namespace meta_hpp::detail
         using getter_impl = fixed_function<uvalue(const uinst&)>;
         using setter_impl = fixed_function<void(const uinst&, const uarg&)>;
 
-        using is_gettable_with_impl = fixed_function<bool(const uinst_base&)>;
-        using is_settable_with_impl = fixed_function<bool(const uinst_base&, const uarg_base&)>;
+        using getter_error_impl = fixed_function<uerror(const uinst_base&)>;
+        using setter_error_impl = fixed_function<uerror(const uinst_base&, const uarg_base&)>;
 
         member_index index;
         metadata_map metadata;
 
         getter_impl getter{};
         setter_impl setter{};
-        is_gettable_with_impl is_gettable_with{};
-        is_settable_with_impl is_settable_with{};
+        getter_error_impl getter_error{};
+        setter_error_impl setter_error{};
 
         template < member_policy_kind Policy, member_pointer_kind Member >
         [[nodiscard]] static member_state_ptr make(std::string name, Member member_ptr, metadata_map metadata);
@@ -519,13 +531,13 @@ namespace meta_hpp::detail
 
     struct method_state final : intrusive_ref_counter<method_state> {
         using invoke_impl = fixed_function<uvalue(const uinst&, std::span<const uarg>)>;
-        using is_invocable_with_impl = fixed_function<bool(const uinst_base&, std::span<const uarg_base>)>;
+        using invoke_error_impl = fixed_function<uerror(const uinst_base&, std::span<const uarg_base>)>;
 
         method_index index;
         metadata_map metadata;
 
         invoke_impl invoke{};
-        is_invocable_with_impl is_invocable_with{};
+        invoke_error_impl invoke_error{};
         argument_list arguments{};
 
         template < method_policy_kind Policy, method_pointer_kind Method >
@@ -548,14 +560,14 @@ namespace meta_hpp::detail
     struct variable_state final : intrusive_ref_counter<variable_state> {
         using getter_impl = fixed_function<uvalue()>;
         using setter_impl = fixed_function<void(const uarg&)>;
-        using is_settable_with_impl = fixed_function<bool(const uarg_base&)>;
+        using setter_error_impl = fixed_function<uerror(const uarg_base&)>;
 
         variable_index index;
         metadata_map metadata;
 
         getter_impl getter{};
         setter_impl setter{};
-        is_settable_with_impl is_settable_with{};
+        setter_error_impl setter_error{};
 
         template < variable_policy_kind Policy, pointer_kind Pointer >
         [[nodiscard]] static variable_state_ptr make(std::string name, Pointer variable_ptr, metadata_map metadata);

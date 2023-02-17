@@ -362,9 +362,8 @@ namespace meta_hpp::detail
                 }
                 break;
             }
+            throw_exception(error_code::bad_argument_cast);
         }
-
-        throw_exception(error_code::bad_argument_cast);
     }
 }
 

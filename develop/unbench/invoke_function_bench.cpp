@@ -128,7 +128,7 @@ namespace
     [[maybe_unused]]
     void meta_invoke_function_1(benchmark::State &state) {
         meta::function f = meta_bench_scope.get_function("static_function_1");
-        META_HPP_ASSERT(f.is_valid());
+        META_HPP_ASSERT(!f.is_empty());
 
         for ( auto _ : state ) {
             f(static_angle);
@@ -138,7 +138,7 @@ namespace
     [[maybe_unused]]
     void meta_invoke_function_2(benchmark::State &state) {
         meta::function f = meta_bench_scope.get_function("static_function_2");
-        META_HPP_ASSERT(f.is_valid());
+        META_HPP_ASSERT(!f.is_empty());
 
         for ( auto _ : state ) {
             f(static_angle, vmath::unit3_x<float>);
@@ -148,7 +148,7 @@ namespace
     [[maybe_unused]]
     void meta_invoke_function_3(benchmark::State &state) {
         meta::function f = meta_bench_scope.get_function("static_function_3");
-        META_HPP_ASSERT(f.is_valid());
+        META_HPP_ASSERT(!f.is_empty());
 
         for ( auto _ : state ) {
             f(static_angle, vmath::unit3_x<float>, 2.f);
@@ -158,7 +158,7 @@ namespace
     [[maybe_unused]]
     void meta_invoke_function_4(benchmark::State &state) {
         meta::function f = meta_bench_scope.get_function("static_function_4");
-        META_HPP_ASSERT(f.is_valid());
+        META_HPP_ASSERT(!f.is_empty());
 
         for ( auto _ : state ) {
             f(static_angle, vmath::unit3_x<float>, 2.f, vmath::midentity3<float>);

@@ -71,14 +71,24 @@ namespace meta_hpp::detail
     }
 
     template < method_pointer_kind Method >
-    bool raw_method_is_invocable_with(type_registry& registry, const uinst_base& inst, std::span<const uarg_base> args) {
+    uerror raw_method_invoke_error(type_registry& registry, const uinst_base& inst, std::span<const uarg_base> args) {
         using mt = method_traits<Method>;
         using qualified_type = typename mt::qualified_type;
         using argument_types = typename mt::argument_types;
 
-        return args.size() == mt::arity                   //
-            && inst.can_cast_to<qualified_type>(registry) //
-            && can_cast_all_uargs<argument_types>(registry, args);
+        if ( args.size() != mt::arity ) {
+            return uerror{error_code::arity_mismatch};
+        }
+
+        if ( !inst.can_cast_to<qualified_type>(registry) ) {
+            return uerror{error_code::instance_type_mismatch};
+        }
+
+        if ( !can_cast_all_uargs<argument_types>(registry, args) ) {
+            return uerror{error_code::argument_type_mismatch};
+        }
+
+        return uerror{error_code::no_error};
     }
 }
 
@@ -92,9 +102,9 @@ namespace meta_hpp::detail
     }
 
     template < method_pointer_kind Method >
-    method_state::is_invocable_with_impl make_method_is_invocable_with(type_registry& registry) {
+    method_state::invoke_error_impl make_method_invoke_error(type_registry& registry) {
         return [&registry](const uinst_base& inst, std::span<const uarg_base> args) {
-            return raw_method_is_invocable_with<Method>(registry, inst, args);
+            return raw_method_invoke_error<Method>(registry, inst, args);
         };
     }
 
@@ -125,7 +135,7 @@ namespace meta_hpp::detail
         type_registry& registry{type_registry::instance()};
         method_state state{method_index{registry.resolve_type<Method>(), std::move(name)}, std::move(metadata)};
         state.invoke = make_method_invoke<Policy>(registry, method_ptr);
-        state.is_invocable_with = make_method_is_invocable_with<Method>(registry);
+        state.invoke_error = make_method_invoke_error<Method>(registry);
         state.arguments = make_method_arguments<Method>();
         return make_intrusive<method_state>(std::move(state));
     }
@@ -159,6 +169,24 @@ namespace meta_hpp
     }
 
     template < typename Instance, typename... Args >
+    uresult method::try_invoke(Instance&& instance, Args&&... args) const {
+        using namespace detail;
+        type_registry& registry{type_registry::instance()};
+
+        {
+            const uinst_base vinst{registry, type_list<Instance>{}};
+            const std::array<uarg_base, sizeof...(Args)> vargs{uarg_base{registry, type_list<Args>{}}...};
+            if ( const uerror err = state_->invoke_error(vinst, vargs) ) {
+                return err;
+            }
+        }
+
+        const uinst vinst{registry, std::forward<Instance>(instance)};
+        const std::array<uarg, sizeof...(Args)> vargs{uarg{registry, std::forward<Args>(args)}...};
+        return state_->invoke(vinst, vargs);
+    }
+
+    template < typename Instance, typename... Args >
     uvalue method::operator()(Instance&& instance, Args&&... args) const {
         return invoke(std::forward<Instance>(instance), std::forward<Args>(args)...);
     }
@@ -169,7 +197,7 @@ namespace meta_hpp
         type_registry& registry{type_registry::instance()};
         const uinst_base vinst{registry, type_list<Instance>{}};
         const std::array<uarg_base, sizeof...(Args)> vargs{uarg_base{registry, type_list<Args>{}}...};
-        return state_->is_invocable_with(vinst, vargs);
+        return !state_->invoke_error(vinst, vargs);
     }
 
     template < typename Instance, typename... Args >
@@ -178,7 +206,7 @@ namespace meta_hpp
         type_registry& registry{type_registry::instance()};
         const uinst_base vinst{registry, std::forward<Instance>(instance)};
         const std::array<uarg_base, sizeof...(Args)> vargs{uarg_base{registry, std::forward<Args>(args)}...};
-        return state_->is_invocable_with(vinst, vargs);
+        return !state_->invoke_error(vinst, vargs);
     }
 
     inline argument method::get_argument(std::size_t position) const noexcept {

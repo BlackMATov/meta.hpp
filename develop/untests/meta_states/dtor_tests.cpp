@@ -59,6 +59,13 @@ TEST_CASE("meta/meta_states/dtor") {
 
         CHECK(dtor.get_type().get_owner_type() == meta::resolve_type<clazz_opened_dtor>());
         CHECK(dtor.get_type().get_flags() == meta::destructor_flags::is_noexcept);
+
+        CHECK(dtor.is_invocable_with<clazz_opened_dtor*>());
+        CHECK(dtor.is_invocable_with(meta::make_uvalue<clazz_opened_dtor*>(nullptr)));
+
+        CHECK_FALSE(dtor.is_invocable_with<clazz_opened_dtor>());
+        CHECK_FALSE(dtor.is_invocable_with<clazz_closed_dtor*>());
+        CHECK_FALSE(dtor.is_invocable_with<const clazz_opened_dtor*>());
     }
 
     SUBCASE("virtual_dtor") {

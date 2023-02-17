@@ -319,6 +319,7 @@ namespace meta_hpp::detail
     enum class error_code {
         no_error,
 
+        bad_const_access,
         bad_uvalue_access,
         bad_uresult_access,
 
@@ -328,13 +329,15 @@ namespace meta_hpp::detail
 
         arity_mismatch,
         instance_type_mismatch,
-        argument_types_mismatch,
+        argument_type_mismatch,
     };
 
     inline const char* get_error_code_message(error_code error) noexcept {
         switch ( error ) {
         case error_code::no_error:
             return "no error";
+        case error_code::bad_const_access:
+            return "bad const access";
         case error_code::bad_uvalue_access:
             return "bad uvalue access";
         case error_code::bad_uresult_access:
@@ -349,8 +352,8 @@ namespace meta_hpp::detail
             return "arity mismatch";
         case error_code::instance_type_mismatch:
             return "instance type mismatch";
-        case error_code::argument_types_mismatch:
-            return "argument types mismatch";
+        case error_code::argument_type_mismatch:
+            return "argument type mismatch";
         }
 
         META_HPP_ASSERT(false);
@@ -3020,6 +3023,150 @@ namespace meta_hpp
     }
 }
 
+namespace meta_hpp
+{
+    class uerror final {
+    public:
+        uerror() = default;
+        ~uerror() = default;
+
+        uerror(uerror&&) noexcept = default;
+        uerror(const uerror&) noexcept = default;
+
+        uerror& operator=(uerror&&) noexcept = default;
+        uerror& operator=(const uerror&) noexcept = default;
+
+        explicit uerror(error_code error) noexcept;
+        uerror& operator=(error_code error) noexcept;
+
+        [[nodiscard]] bool has_error() const noexcept;
+        [[nodiscard]] explicit operator bool() const noexcept;
+
+        [[nodiscard]] error_code get_error() const noexcept;
+
+        void reset() noexcept;
+        void swap(uerror& other) noexcept;
+
+        [[nodiscard]] std::size_t get_hash() const noexcept;
+        [[nodiscard]] std::strong_ordering operator<=>(const uerror& other) const = default;
+
+    private:
+        error_code error_{error_code::no_error};
+    };
+
+    inline void swap(uerror& l, uerror& r) noexcept {
+        l.swap(r);
+    }
+
+    inline uerror make_uerror(error_code error) {
+        return uerror{error};
+    }
+}
+
+namespace std
+{
+    template <>
+    struct hash<meta_hpp::uerror> {
+        size_t operator()(meta_hpp::uerror ue) const noexcept {
+            return ue.get_hash();
+        }
+    };
+}
+
+namespace meta_hpp
+{
+    class uresult final {
+    public:
+        uresult() = default;
+        ~uresult() = default;
+
+        uresult(uresult&&) noexcept = default;
+        uresult(const uresult&) = default;
+
+        uresult& operator=(uresult&&) noexcept = default;
+        uresult& operator=(const uresult&) = default;
+
+        explicit(false) uresult(uerror error) noexcept;
+        explicit(false) uresult(uvalue value) noexcept;
+
+        uresult& operator=(uerror error) noexcept;
+        uresult& operator=(uvalue value) noexcept;
+
+        template <                                 //
+            typename T,                            //
+            typename Tp = std::decay_t<T>,         //
+            typename = std::enable_if_t<           //
+                !std::is_same_v<Tp, uerror> &&     //
+                !std::is_same_v<Tp, uvalue> &&     //
+                !std::is_same_v<Tp, uresult> &&    //
+                !detail::is_in_place_type_v<Tp> && //
+                std::is_copy_constructible_v<Tp>>> //
+        uresult(T&& val);
+
+        template <                                 //
+            typename T,                            //
+            typename Tp = std::decay_t<T>,         //
+            typename = std::enable_if_t<           //
+                !std::is_same_v<Tp, uerror> &&     //
+                !std::is_same_v<Tp, uvalue> &&     //
+                !std::is_same_v<Tp, uresult> &&    //
+                std::is_copy_constructible_v<Tp>>> //
+        uresult& operator=(T&& val);
+
+        template < typename T, typename... Args, typename Tp = std::decay_t<T> >
+            requires std::is_copy_constructible_v<Tp>     //
+                  && std::is_constructible_v<Tp, Args...> //
+        explicit uresult(std::in_place_type_t<T>, Args&&... args);
+
+        template < typename T, typename U, typename... Args, typename Tp = std::decay_t<T> >
+            requires std::is_copy_constructible_v<Tp>                                //
+                  && std::is_constructible_v<Tp, std::initializer_list<U>&, Args...> //
+        explicit uresult(std::in_place_type_t<T>, std::initializer_list<U> ilist, Args&&... args);
+
+        template < typename T, typename... Args, typename Tp = std::decay_t<T> >
+            requires std::is_copy_constructible_v<Tp>     //
+                  && std::is_constructible_v<Tp, Args...> //
+        Tp& emplace(Args&&... args);
+
+        template < typename T, typename U, typename... Args, typename Tp = std::decay_t<T> >
+            requires std::is_copy_constructible_v<Tp>                                //
+                  && std::is_constructible_v<Tp, std::initializer_list<U>&, Args...> //
+        Tp& emplace(std::initializer_list<U> ilist, Args&&... args);
+
+        [[nodiscard]] bool has_error() const noexcept;
+        [[nodiscard]] bool has_value() const noexcept;
+        [[nodiscard]] explicit operator bool() const noexcept;
+
+        [[nodiscard]] uvalue& get_value() &;
+        [[nodiscard]] uvalue&& get_value() &&;
+        [[nodiscard]] const uvalue& get_value() const&;
+        [[nodiscard]] const uvalue&& get_value() const&&;
+
+        [[nodiscard]] error_code get_error() const noexcept;
+
+        void reset() noexcept;
+        void swap(uresult& other) noexcept;
+
+    private:
+        uvalue value_{};
+        error_code error_{error_code::no_error};
+    };
+
+    inline void swap(uresult& l, uresult& r) noexcept {
+        l.swap(r);
+    }
+
+    template < typename T, typename... Args >
+    uresult make_uresult(Args&&... args) {
+        return uresult(std::in_place_type<T>, std::forward<Args>(args)...);
+    }
+
+    template < typename T, typename U, typename... Args >
+    uresult make_uresult(std::initializer_list<U> ilist, Args&&... args) {
+        return uresult(std::in_place_type<T>, ilist, std::forward<Args>(args)...);
+    }
+}
+
 namespace meta_hpp::detail
 {
     template < typename T >
@@ -3168,34 +3315,34 @@ namespace meta_hpp
     }
 
     template < typename Policy >
-    concept constructor_policy_kind                                        //
-        = std::is_same_v<Policy, constructor_policy::as_object_t>          //
-       || std::is_same_v<Policy, constructor_policy::as_raw_pointer_t>     //
-       || std::is_same_v<Policy, constructor_policy::as_shared_pointer_t>; //
+    concept constructor_policy_kind                                    //
+        = std::is_same_v<Policy, constructor_policy::as_object_t>      //
+       || std::is_same_v<Policy, constructor_policy::as_raw_pointer_t> //
+       || std::is_same_v<Policy, constructor_policy::as_shared_pointer_t>;
 
     template < typename Policy >
-    concept function_policy_kind                                                  //
-        = std::is_same_v<Policy, function_policy::as_copy_t>                      //
-       || std::is_same_v<Policy, function_policy::discard_return_t>               //
-       || std::is_same_v<Policy, function_policy::return_reference_as_pointer_t>; //
+    concept function_policy_kind                                    //
+        = std::is_same_v<Policy, function_policy::as_copy_t>        //
+       || std::is_same_v<Policy, function_policy::discard_return_t> //
+       || std::is_same_v<Policy, function_policy::return_reference_as_pointer_t>;
 
     template < typename Policy >
-    concept member_policy_kind                                           //
-        = std::is_same_v<Policy, member_policy::as_copy_t>               //
-       || std::is_same_v<Policy, member_policy::as_pointer_t>            //
-       || std::is_same_v<Policy, member_policy::as_reference_wrapper_t>; //
+    concept member_policy_kind                                //
+        = std::is_same_v<Policy, member_policy::as_copy_t>    //
+       || std::is_same_v<Policy, member_policy::as_pointer_t> //
+       || std::is_same_v<Policy, member_policy::as_reference_wrapper_t>;
 
     template < typename Policy >
-    concept method_policy_kind                                                  //
-        = std::is_same_v<Policy, method_policy::as_copy_t>                      //
-       || std::is_same_v<Policy, method_policy::discard_return_t>               //
-       || std::is_same_v<Policy, method_policy::return_reference_as_pointer_t>; //
+    concept method_policy_kind                                    //
+        = std::is_same_v<Policy, method_policy::as_copy_t>        //
+       || std::is_same_v<Policy, method_policy::discard_return_t> //
+       || std::is_same_v<Policy, method_policy::return_reference_as_pointer_t>;
 
     template < typename Policy >
-    concept variable_policy_kind                                           //
-        = std::is_same_v<Policy, variable_policy::as_copy_t>               //
-       || std::is_same_v<Policy, variable_policy::as_pointer_t>            //
-       || std::is_same_v<Policy, variable_policy::as_reference_wrapper_t>; //
+    concept variable_policy_kind                                //
+        = std::is_same_v<Policy, variable_policy::as_copy_t>    //
+       || std::is_same_v<Policy, variable_policy::as_pointer_t> //
+       || std::is_same_v<Policy, variable_policy::as_reference_wrapper_t>;
 }
 
 namespace meta_hpp
@@ -3289,9 +3436,15 @@ namespace meta_hpp
         [[nodiscard]] destructor_type get_type() const noexcept;
 
         template < typename Arg >
-        bool destroy(Arg&& arg) const;
+        void destroy(Arg&& arg) const;
 
         void destroy_at(void* mem) const;
+
+        template < typename Arg >
+        [[nodiscard]] bool is_invocable_with() const noexcept;
+
+        template < typename Arg >
+        [[nodiscard]] bool is_invocable_with(Arg&& arg) const noexcept;
     };
 
     class evalue final : public state_base<evalue> {
@@ -3399,6 +3552,9 @@ namespace meta_hpp
 
         template < typename Instance, typename... Args >
         std::optional<uvalue> safe_invoke(Instance&& instance, Args&&... args) const;
+
+        template < typename Instance, typename... Args >
+        uresult try_invoke(Instance&& instance, Args&&... args) const;
 
         template < typename Instance, typename... Args >
         uvalue operator()(Instance&& instance, Args&&... args) const;
@@ -3526,14 +3682,14 @@ namespace meta_hpp::detail
     struct constructor_state final : intrusive_ref_counter<constructor_state> {
         using create_impl = fixed_function<uvalue(std::span<const uarg>)>;
         using create_at_impl = fixed_function<uvalue(void*, std::span<const uarg>)>;
-        using is_invocable_with_impl = fixed_function<bool(std::span<const uarg_base>)>;
+        using create_error_impl = fixed_function<uerror(std::span<const uarg_base>)>;
 
         constructor_index index;
         metadata_map metadata;
 
         create_impl create{};
         create_at_impl create_at{};
-        is_invocable_with_impl is_invocable_with{};
+        create_error_impl create_error{};
         argument_list arguments{};
 
         template < constructor_policy_kind Policy, class_kind Class, typename... Args >
@@ -3542,14 +3698,16 @@ namespace meta_hpp::detail
     };
 
     struct destructor_state final : intrusive_ref_counter<destructor_state> {
-        using destroy_impl = fixed_function<bool(const uarg&)>;
+        using destroy_impl = fixed_function<void(const uarg&)>;
         using destroy_at_impl = fixed_function<void(void*)>;
+        using destroy_error_impl = fixed_function<uerror(const uarg_base&)>;
 
         destructor_index index;
         metadata_map metadata;
 
         destroy_impl destroy{};
         destroy_at_impl destroy_at{};
+        destroy_error_impl destroy_error{};
 
         template < class_kind Class >
         [[nodiscard]] static destructor_state_ptr make(metadata_map metadata);
@@ -3570,13 +3728,13 @@ namespace meta_hpp::detail
 
     struct function_state final : intrusive_ref_counter<function_state> {
         using invoke_impl = fixed_function<uvalue(std::span<const uarg>)>;
-        using is_invocable_with_impl = fixed_function<bool(std::span<const uarg_base>)>;
+        using invoke_error_impl = fixed_function<uerror(std::span<const uarg_base>)>;
 
         function_index index;
         metadata_map metadata;
 
         invoke_impl invoke{};
-        is_invocable_with_impl is_invocable_with{};
+        invoke_error_impl invoke_error{};
         argument_list arguments{};
 
         template < function_policy_kind Policy, function_pointer_kind Function >
@@ -3588,16 +3746,16 @@ namespace meta_hpp::detail
         using getter_impl = fixed_function<uvalue(const uinst&)>;
         using setter_impl = fixed_function<void(const uinst&, const uarg&)>;
 
-        using is_gettable_with_impl = fixed_function<bool(const uinst_base&)>;
-        using is_settable_with_impl = fixed_function<bool(const uinst_base&, const uarg_base&)>;
+        using getter_error_impl = fixed_function<uerror(const uinst_base&)>;
+        using setter_error_impl = fixed_function<uerror(const uinst_base&, const uarg_base&)>;
 
         member_index index;
         metadata_map metadata;
 
         getter_impl getter{};
         setter_impl setter{};
-        is_gettable_with_impl is_gettable_with{};
-        is_settable_with_impl is_settable_with{};
+        getter_error_impl getter_error{};
+        setter_error_impl setter_error{};
 
         template < member_policy_kind Policy, member_pointer_kind Member >
         [[nodiscard]] static member_state_ptr make(std::string name, Member member_ptr, metadata_map metadata);
@@ -3606,13 +3764,13 @@ namespace meta_hpp::detail
 
     struct method_state final : intrusive_ref_counter<method_state> {
         using invoke_impl = fixed_function<uvalue(const uinst&, std::span<const uarg>)>;
-        using is_invocable_with_impl = fixed_function<bool(const uinst_base&, std::span<const uarg_base>)>;
+        using invoke_error_impl = fixed_function<uerror(const uinst_base&, std::span<const uarg_base>)>;
 
         method_index index;
         metadata_map metadata;
 
         invoke_impl invoke{};
-        is_invocable_with_impl is_invocable_with{};
+        invoke_error_impl invoke_error{};
         argument_list arguments{};
 
         template < method_policy_kind Policy, method_pointer_kind Method >
@@ -3635,14 +3793,14 @@ namespace meta_hpp::detail
     struct variable_state final : intrusive_ref_counter<variable_state> {
         using getter_impl = fixed_function<uvalue()>;
         using setter_impl = fixed_function<void(const uarg&)>;
-        using is_settable_with_impl = fixed_function<bool(const uarg_base&)>;
+        using setter_error_impl = fixed_function<uerror(const uarg_base&)>;
 
         variable_index index;
         metadata_map metadata;
 
         getter_impl getter{};
         setter_impl setter{};
-        is_settable_with_impl is_settable_with{};
+        setter_error_impl setter_error{};
 
         template < variable_policy_kind Policy, pointer_kind Pointer >
         [[nodiscard]] static variable_state_ptr make(std::string name, Pointer variable_ptr, metadata_map metadata);
@@ -5703,9 +5861,8 @@ namespace meta_hpp::detail
                 }
                 break;
             }
+            throw_exception(error_code::bad_argument_cast);
         }
-
-        throw_exception(error_code::bad_argument_cast);
     }
 }
 
@@ -5826,12 +5983,19 @@ namespace meta_hpp::detail
     }
 
     template < function_pointer_kind Function >
-    bool raw_function_is_invocable_with(type_registry& registry, std::span<const uarg_base> args) {
+    uerror raw_function_invoke_error(type_registry& registry, std::span<const uarg_base> args) {
         using ft = function_traits<Function>;
         using argument_types = typename ft::argument_types;
 
-        return args.size() == ft::arity //
-            && can_cast_all_uargs<argument_types>(registry, args);
+        if ( args.size() != ft::arity ) {
+            return uerror{error_code::arity_mismatch};
+        }
+
+        if ( !can_cast_all_uargs<argument_types>(registry, args) ) {
+            return uerror{error_code::argument_type_mismatch};
+        }
+
+        return uerror{error_code::no_error};
     }
 }
 
@@ -5845,9 +6009,9 @@ namespace meta_hpp::detail
     }
 
     template < function_pointer_kind Function >
-    function_state::is_invocable_with_impl make_function_is_invocable_with(type_registry& registry) {
+    function_state::invoke_error_impl make_function_invoke_error(type_registry& registry) {
         return [&registry](std::span<const uarg_base> args) { //
-            return raw_function_is_invocable_with<Function>(registry, args);
+            return raw_function_invoke_error<Function>(registry, args);
         };
     }
 
@@ -5878,7 +6042,7 @@ namespace meta_hpp::detail
         type_registry& registry{type_registry::instance()};
         function_state state{function_index{registry.resolve_type<Function>(), std::move(name)}, std::move(metadata)};
         state.invoke = make_function_invoke<Policy>(registry, function_ptr);
-        state.is_invocable_with = make_function_is_invocable_with<Function>(registry);
+        state.invoke_error = make_function_invoke_error<Function>(registry);
         state.arguments = make_function_arguments<Function>();
         return make_intrusive<function_state>(std::move(state));
     }
@@ -5920,7 +6084,7 @@ namespace meta_hpp
         using namespace detail;
         type_registry& registry{type_registry::instance()};
         const std::array<uarg_base, sizeof...(Args)> vargs{uarg_base{registry, type_list<Args>{}}...};
-        return state_->is_invocable_with(vargs);
+        return !state_->invoke_error(vargs);
     }
 
     template < typename... Args >
@@ -5928,7 +6092,7 @@ namespace meta_hpp
         using namespace detail;
         type_registry& registry{type_registry::instance()};
         const std::array<uarg_base, sizeof...(Args)> vargs{uarg_base{registry, std::forward<Args>(args)}...};
-        return state_->is_invocable_with(vargs);
+        return !state_->invoke_error(vargs);
     }
 
     inline argument function::get_argument(std::size_t position) const noexcept {
@@ -6248,11 +6412,21 @@ namespace meta_hpp::detail
     }
 
     template < member_pointer_kind Member >
-    bool raw_member_is_gettable_with(type_registry& registry, const uinst_base& inst) {
+    uerror raw_member_getter_error(type_registry& registry, const uinst_base& inst) {
         using mt = member_traits<Member>;
         using class_type = typename mt::class_type;
 
-        return inst.can_cast_to<const class_type>(registry);
+        if ( inst.is_inst_const() ) {
+            if ( !inst.can_cast_to<const class_type>(registry) ) {
+                return uerror{error_code::bad_instance_cast};
+            }
+        } else {
+            if ( !inst.can_cast_to<class_type>(registry) ) {
+                return uerror{error_code::bad_instance_cast};
+            }
+        }
+
+        return uerror{error_code::no_error};
     }
 }
 
@@ -6291,7 +6465,7 @@ namespace meta_hpp::detail
     }
 
     template < member_pointer_kind Member >
-    bool raw_member_is_settable_with(type_registry& registry, const uinst_base& inst, const uarg_base& arg) {
+    uerror raw_member_setter_error(type_registry& registry, const uinst_base& inst, const uarg_base& arg) {
         using mt = member_traits<Member>;
         using class_type = typename mt::class_type;
         using value_type = typename mt::value_type;
@@ -6300,11 +6474,21 @@ namespace meta_hpp::detail
             (void)registry;
             (void)inst;
             (void)arg;
-            return false;
+            return uerror{error_code::bad_const_access};
         } else {
-            return !inst.is_inst_const()                  //
-                && inst.can_cast_to<class_type>(registry) //
-                && arg.can_cast_to<value_type>(registry); //
+            if ( inst.is_inst_const() ) {
+                return uerror{error_code::bad_const_access};
+            }
+
+            if ( !inst.can_cast_to<class_type>(registry) ) {
+                return uerror{error_code::instance_type_mismatch};
+            }
+
+            if ( !arg.can_cast_to<value_type>(registry) ) {
+                return uerror{error_code::argument_type_mismatch};
+            }
+
+            return uerror{error_code::no_error};
         }
     }
 }
@@ -6319,9 +6503,9 @@ namespace meta_hpp::detail
     }
 
     template < member_pointer_kind Member >
-    member_state::is_gettable_with_impl make_member_is_gettable_with(type_registry& registry) {
+    member_state::getter_error_impl make_member_getter_error(type_registry& registry) {
         return [&registry](const uinst_base& inst) { //
-            return raw_member_is_gettable_with<Member>(registry, inst);
+            return raw_member_getter_error<Member>(registry, inst);
         };
     }
 
@@ -6333,9 +6517,9 @@ namespace meta_hpp::detail
     }
 
     template < member_pointer_kind Member >
-    member_state::is_settable_with_impl make_member_is_settable_with(type_registry& registry) {
+    member_state::setter_error_impl make_member_setter_error(type_registry& registry) {
         return [&registry](const uinst_base& inst, const uarg_base& arg) { //
-            return raw_member_is_settable_with<Member>(registry, inst, arg);
+            return raw_member_setter_error<Member>(registry, inst, arg);
         };
     }
 }
@@ -6352,8 +6536,8 @@ namespace meta_hpp::detail
         member_state state{member_index{registry.resolve_type<Member>(), std::move(name)}, std::move(metadata)};
         state.getter = make_member_getter<Policy>(registry, member_ptr);
         state.setter = make_member_setter(registry, member_ptr);
-        state.is_gettable_with = make_member_is_gettable_with<Member>(registry);
-        state.is_settable_with = make_member_is_settable_with<Member>(registry);
+        state.getter_error = make_member_getter_error<Member>(registry);
+        state.setter_error = make_member_setter_error<Member>(registry);
         return make_intrusive<member_state>(std::move(state));
     }
 }
@@ -6427,7 +6611,7 @@ namespace meta_hpp
         using namespace detail;
         type_registry& registry{type_registry::instance()};
         const uinst_base vinst{registry, type_list<Instance>{}};
-        return state_->is_gettable_with(vinst);
+        return !state_->getter_error(vinst);
     }
 
     template < typename Instance >
@@ -6435,7 +6619,7 @@ namespace meta_hpp
         using namespace detail;
         type_registry& registry{type_registry::instance()};
         const uinst_base vinst{registry, std::forward<Instance>(instance)};
-        return state_->is_gettable_with(vinst);
+        return !state_->getter_error(vinst);
     }
 
     template < typename Instance, typename Value >
@@ -6444,7 +6628,7 @@ namespace meta_hpp
         type_registry& registry{type_registry::instance()};
         const uinst_base vinst{registry, type_list<Instance>{}};
         const uarg_base vvalue{registry, type_list<Value>{}};
-        return state_->is_settable_with(vinst, vvalue);
+        return !state_->setter_error(vinst, vvalue);
     }
 
     template < typename Instance, typename Value >
@@ -6453,7 +6637,7 @@ namespace meta_hpp
         type_registry& registry{type_registry::instance()};
         const uinst_base vinst{registry, std::forward<Instance>(instance)};
         const uarg_base vvalue{registry, std::forward<Value>(value)};
-        return state_->is_settable_with(vinst, vvalue);
+        return !state_->setter_error(vinst, vvalue);
     }
 }
 
@@ -6555,14 +6739,24 @@ namespace meta_hpp::detail
     }
 
     template < method_pointer_kind Method >
-    bool raw_method_is_invocable_with(type_registry& registry, const uinst_base& inst, std::span<const uarg_base> args) {
+    uerror raw_method_invoke_error(type_registry& registry, const uinst_base& inst, std::span<const uarg_base> args) {
         using mt = method_traits<Method>;
         using qualified_type = typename mt::qualified_type;
         using argument_types = typename mt::argument_types;
 
-        return args.size() == mt::arity                   //
-            && inst.can_cast_to<qualified_type>(registry) //
-            && can_cast_all_uargs<argument_types>(registry, args);
+        if ( args.size() != mt::arity ) {
+            return uerror{error_code::arity_mismatch};
+        }
+
+        if ( !inst.can_cast_to<qualified_type>(registry) ) {
+            return uerror{error_code::instance_type_mismatch};
+        }
+
+        if ( !can_cast_all_uargs<argument_types>(registry, args) ) {
+            return uerror{error_code::argument_type_mismatch};
+        }
+
+        return uerror{error_code::no_error};
     }
 }
 
@@ -6576,9 +6770,9 @@ namespace meta_hpp::detail
     }
 
     template < method_pointer_kind Method >
-    method_state::is_invocable_with_impl make_method_is_invocable_with(type_registry& registry) {
+    method_state::invoke_error_impl make_method_invoke_error(type_registry& registry) {
         return [&registry](const uinst_base& inst, std::span<const uarg_base> args) {
-            return raw_method_is_invocable_with<Method>(registry, inst, args);
+            return raw_method_invoke_error<Method>(registry, inst, args);
         };
     }
 
@@ -6609,7 +6803,7 @@ namespace meta_hpp::detail
         type_registry& registry{type_registry::instance()};
         method_state state{method_index{registry.resolve_type<Method>(), std::move(name)}, std::move(metadata)};
         state.invoke = make_method_invoke<Policy>(registry, method_ptr);
-        state.is_invocable_with = make_method_is_invocable_with<Method>(registry);
+        state.invoke_error = make_method_invoke_error<Method>(registry);
         state.arguments = make_method_arguments<Method>();
         return make_intrusive<method_state>(std::move(state));
     }
@@ -6643,6 +6837,24 @@ namespace meta_hpp
     }
 
     template < typename Instance, typename... Args >
+    uresult method::try_invoke(Instance&& instance, Args&&... args) const {
+        using namespace detail;
+        type_registry& registry{type_registry::instance()};
+
+        {
+            const uinst_base vinst{registry, type_list<Instance>{}};
+            const std::array<uarg_base, sizeof...(Args)> vargs{uarg_base{registry, type_list<Args>{}}...};
+            if ( const uerror err = state_->invoke_error(vinst, vargs) ) {
+                return err;
+            }
+        }
+
+        const uinst vinst{registry, std::forward<Instance>(instance)};
+        const std::array<uarg, sizeof...(Args)> vargs{uarg{registry, std::forward<Args>(args)}...};
+        return state_->invoke(vinst, vargs);
+    }
+
+    template < typename Instance, typename... Args >
     uvalue method::operator()(Instance&& instance, Args&&... args) const {
         return invoke(std::forward<Instance>(instance), std::forward<Args>(args)...);
     }
@@ -6653,7 +6865,7 @@ namespace meta_hpp
         type_registry& registry{type_registry::instance()};
         const uinst_base vinst{registry, type_list<Instance>{}};
         const std::array<uarg_base, sizeof...(Args)> vargs{uarg_base{registry, type_list<Args>{}}...};
-        return state_->is_invocable_with(vinst, vargs);
+        return !state_->invoke_error(vinst, vargs);
     }
 
     template < typename Instance, typename... Args >
@@ -6662,7 +6874,7 @@ namespace meta_hpp
         type_registry& registry{type_registry::instance()};
         const uinst_base vinst{registry, std::forward<Instance>(instance)};
         const std::array<uarg_base, sizeof...(Args)> vargs{uarg_base{registry, std::forward<Args>(args)}...};
-        return state_->is_invocable_with(vinst, vargs);
+        return !state_->invoke_error(vinst, vargs);
     }
 
     inline argument method::get_argument(std::size_t position) const noexcept {
@@ -6740,7 +6952,7 @@ namespace meta_hpp
         using namespace detail;
         type_registry& registry{type_registry::instance()};
         const std::array<uarg_base, sizeof...(Args)> vargs{uarg_base{registry, type_list<Args>{}}...};
-        return raw_function_is_invocable_with<Function>(registry, vargs);
+        return !raw_function_invoke_error<Function>(registry, vargs);
     }
 
     template < detail::function_pointer_kind Function, typename... Args >
@@ -6748,7 +6960,7 @@ namespace meta_hpp
         using namespace detail;
         type_registry& registry{type_registry::instance()};
         const std::array<uarg_base, sizeof...(Args)> vargs{uarg_base{registry, std::forward<Args>(args)}...};
-        return raw_function_is_invocable_with<Function>(registry, vargs);
+        return !raw_function_invoke_error<Function>(registry, vargs);
     }
 }
 
@@ -6769,7 +6981,7 @@ namespace meta_hpp
         using namespace detail;
         type_registry& registry{type_registry::instance()};
         const uinst_base vinst{registry, type_list<Instance>{}};
-        return raw_member_is_gettable_with<Member>(registry, vinst);
+        return !raw_member_getter_error<Member>(registry, vinst);
     }
 
     template < detail::member_pointer_kind Member, typename Instance >
@@ -6777,7 +6989,7 @@ namespace meta_hpp
         using namespace detail;
         type_registry& registry{type_registry::instance()};
         const uinst_base vinst{registry, std::forward<Instance>(instance)};
-        return raw_member_is_gettable_with<Member>(registry, vinst);
+        return !raw_member_getter_error<Member>(registry, vinst);
     }
 }
 
@@ -6799,7 +7011,7 @@ namespace meta_hpp
         type_registry& registry{type_registry::instance()};
         const uinst_base vinst{registry, type_list<Instance>{}};
         const std::array<uarg_base, sizeof...(Args)> vargs{uarg_base{registry, type_list<Args>{}}...};
-        return raw_method_is_invocable_with<Method>(registry, vinst, vargs);
+        return !raw_method_invoke_error<Method>(registry, vinst, vargs);
     }
 
     template < detail::method_pointer_kind Method, typename Instance, typename... Args >
@@ -6808,7 +7020,7 @@ namespace meta_hpp
         type_registry& registry{type_registry::instance()};
         const uinst_base vinst{registry, std::forward<Instance>(instance)};
         const std::array<uarg_base, sizeof...(Args)> vargs{uarg_base{registry, std::forward<Args>(args)}...};
-        return raw_method_is_invocable_with<Method>(registry, vinst, vargs);
+        return !raw_method_invoke_error<Method>(registry, vinst, vargs);
     }
 }
 
@@ -6944,12 +7156,19 @@ namespace meta_hpp::detail
     }
 
     template < class_kind Class, typename... Args >
-    bool raw_constructor_is_invocable_with(type_registry& registry, std::span<const uarg_base> args) {
+    uerror raw_constructor_create_error(type_registry& registry, std::span<const uarg_base> args) {
         using ct = constructor_traits<Class, Args...>;
         using argument_types = typename ct::argument_types;
 
-        return args.size() == ct::arity //
-            && can_cast_all_uargs<argument_types>(registry, args);
+        if ( args.size() != ct::arity ) {
+            return uerror{error_code::arity_mismatch};
+        }
+
+        if ( !can_cast_all_uargs<argument_types>(registry, args) ) {
+            return uerror{error_code::argument_type_mismatch};
+        }
+
+        return uerror{error_code::no_error};
     }
 }
 
@@ -6970,9 +7189,9 @@ namespace meta_hpp::detail
     }
 
     template < class_kind Class, typename... Args >
-    constructor_state::is_invocable_with_impl make_constructor_is_invocable_with(type_registry& registry) {
+    constructor_state::create_error_impl make_constructor_create_error(type_registry& registry) {
         return [&registry](std::span<const uarg_base> args) { //
-            return raw_constructor_is_invocable_with<Class, Args...>(registry, args);
+            return raw_constructor_create_error<Class, Args...>(registry, args);
         };
     }
 
@@ -7004,7 +7223,7 @@ namespace meta_hpp::detail
         constructor_state state{constructor_index{registry.resolve_constructor_type<Class, Args...>()}, std::move(metadata)};
         state.create = make_constructor_create<Policy, Class, Args...>(registry);
         state.create_at = make_constructor_create_at<Class, Args...>(registry);
-        state.is_invocable_with = make_constructor_is_invocable_with<Class, Args...>(registry);
+        state.create_error = make_constructor_create_error<Class, Args...>(registry);
         state.arguments = make_constructor_arguments<Class, Args...>();
         return make_intrusive<constructor_state>(std::move(state));
     }
@@ -7053,7 +7272,7 @@ namespace meta_hpp
         using namespace detail;
         type_registry& registry{type_registry::instance()};
         const std::array<uarg_base, sizeof...(Args)> vargs{uarg_base{registry, type_list<Args>{}}...};
-        return state_->is_invocable_with(vargs);
+        return !state_->create_error(vargs);
     }
 
     template < typename... Args >
@@ -7061,7 +7280,7 @@ namespace meta_hpp
         using namespace detail;
         type_registry& registry{type_registry::instance()};
         const std::array<uarg_base, sizeof...(Args)> vargs{uarg_base{registry, std::forward<Args>(args)}...};
-        return state_->is_invocable_with(vargs);
+        return !state_->create_error(vargs);
     }
 
     inline argument constructor::get_argument(std::size_t position) const noexcept {
@@ -7099,16 +7318,16 @@ namespace meta_hpp
 namespace meta_hpp::detail
 {
     template < class_kind Class >
-    bool raw_destructor_destroy(type_registry& registry, const uarg& arg) {
+    void raw_destructor_destroy(type_registry& registry, const uarg& arg) {
         using dt = destructor_traits<Class>;
         using class_type = typename dt::class_type;
 
-        if ( !arg.can_cast_to<class_type*>(registry) ) {
-            return false;
-        }
+        META_HPP_ASSERT(                           //
+            arg.can_cast_to<class_type*>(registry) //
+            && "an attempt to call a destructor with an incorrect argument type"
+        );
 
         std::unique_ptr<class_type>{arg.cast<class_type*>(registry)}.reset();
-        return true;
     }
 
     template < class_kind Class >
@@ -7117,6 +7336,18 @@ namespace meta_hpp::detail
         using class_type = typename dt::class_type;
 
         std::destroy_at(static_cast<class_type*>(mem));
+    }
+
+    template < class_kind Class >
+    uerror raw_destructor_destroy_error(type_registry& registry, const uarg_base& arg) {
+        using dt = destructor_traits<Class>;
+        using class_type = typename dt::class_type;
+
+        if ( !arg.can_cast_to<class_type*>(registry) ) {
+            return uerror{error_code::argument_type_mismatch};
+        }
+
+        return uerror{error_code::no_error};
     }
 }
 
@@ -7133,6 +7364,13 @@ namespace meta_hpp::detail
     destructor_state::destroy_at_impl make_destructor_destroy_at() {
         return &raw_destructor_destroy_at<Class>;
     }
+
+    template < class_kind Class >
+    destructor_state::destroy_error_impl make_destructor_destroy_error(type_registry& registry) {
+        return [&registry](const uarg_base& arg) { //
+            return raw_destructor_destroy_error<Class>(registry, arg);
+        };
+    }
 }
 
 namespace meta_hpp::detail
@@ -7147,6 +7385,7 @@ namespace meta_hpp::detail
         destructor_state state{destructor_index{registry.resolve_destructor_type<Class>()}, std::move(metadata)};
         state.destroy = make_destructor_destroy<Class>(registry);
         state.destroy_at = make_destructor_destroy_at<Class>();
+        state.destroy_error = make_destructor_destroy_error<Class>(registry);
         return make_intrusive<destructor_state>(std::move(state));
     }
 }
@@ -7158,7 +7397,7 @@ namespace meta_hpp
     }
 
     template < typename Arg >
-    bool destructor::destroy(Arg&& arg) const {
+    void destructor::destroy(Arg&& arg) const {
         using namespace detail;
         type_registry& registry{type_registry::instance()};
         const uarg varg{registry, std::forward<Arg>(arg)};
@@ -7167,6 +7406,22 @@ namespace meta_hpp
 
     inline void destructor::destroy_at(void* mem) const {
         state_->destroy_at(mem);
+    }
+
+    template < typename Arg >
+    bool destructor::is_invocable_with() const noexcept {
+        using namespace detail;
+        type_registry& registry{type_registry::instance()};
+        const uarg_base varg{registry, type_list<Arg>{}};
+        return !state_->destroy_error(varg);
+    }
+
+    template < typename Arg >
+    bool destructor::is_invocable_with(Arg&& arg) const noexcept {
+        using namespace detail;
+        type_registry& registry{type_registry::instance()};
+        const uarg_base varg{registry, std::forward<Arg>(arg)};
+        return !state_->destroy_error(varg);
     }
 }
 
@@ -7372,16 +7627,19 @@ namespace meta_hpp::detail
     }
 
     template < pointer_kind Pointer >
-    bool raw_variable_is_settable_with(type_registry& registry, const uarg_base& arg) {
+    uerror raw_variable_setter_error(type_registry& registry, const uarg_base& arg) {
         using pt = pointer_traits<Pointer>;
         using data_type = typename pt::data_type;
 
         if constexpr ( std::is_const_v<data_type> ) {
             (void)registry;
             (void)arg;
-            return false;
+            return uerror{error_code::bad_const_access};
         } else {
-            return arg.can_cast_to<data_type>(registry);
+            if ( !arg.can_cast_to<data_type>(registry) ) {
+                return uerror{error_code::argument_type_mismatch};
+            }
+            return uerror{error_code::no_error};
         }
     }
 }
@@ -7403,9 +7661,9 @@ namespace meta_hpp::detail
     }
 
     template < pointer_kind Pointer >
-    variable_state::is_settable_with_impl make_variable_is_settable_with(type_registry& registry) {
+    variable_state::setter_error_impl make_variable_setter_error(type_registry& registry) {
         return [&registry](const uarg_base& arg) { //
-            return raw_variable_is_settable_with<Pointer>(registry, arg);
+            return raw_variable_setter_error<Pointer>(registry, arg);
         };
     }
 }
@@ -7422,7 +7680,7 @@ namespace meta_hpp::detail
         variable_state state{variable_index{registry.resolve_type<Pointer>(), std::move(name)}, std::move(metadata)};
         state.getter = make_variable_getter<Policy>(registry, variable_ptr);
         state.setter = make_variable_setter(registry, variable_ptr);
-        state.is_settable_with = make_variable_is_settable_with<Pointer>(registry);
+        state.setter_error = make_variable_setter_error<Pointer>(registry);
         return make_intrusive<variable_state>(std::move(state));
     }
 }
@@ -7486,7 +7744,7 @@ namespace meta_hpp
         using namespace detail;
         type_registry& registry{type_registry::instance()};
         const uarg_base vvalue{registry, type_list<Value>{}};
-        return state_->is_settable_with(vvalue);
+        return !state_->setter_error(vvalue);
     }
 
     template < typename Value >
@@ -7494,7 +7752,7 @@ namespace meta_hpp
         using namespace detail;
         type_registry& registry{type_registry::instance()};
         const uarg_base vvalue{registry, std::forward<Value>(value)};
-        return state_->is_settable_with(vvalue);
+        return !state_->setter_error(vvalue);
     }
 }
 
@@ -7593,7 +7851,10 @@ namespace meta_hpp
     template < typename Arg >
     bool class_type::destroy(Arg&& arg) const {
         if ( const destructor& dtor = get_destructor() ) {
-            return dtor.destroy(std::forward<Arg>(arg));
+            if ( dtor.is_invocable_with(std::forward<Arg>(arg)) ) {
+                dtor.destroy(std::forward<Arg>(arg));
+                return true;
+            }
         }
         return false;
     }
@@ -8166,147 +8427,6 @@ namespace meta_hpp::detail
     template < void_kind Void >
     void_type_data::void_type_data(type_list<Void>)
     : type_data_base{type_id{type_list<void_tag<Void>>{}}, type_kind::void_} {}
-}
-
-namespace meta_hpp
-{
-    class uerror final {
-    public:
-        uerror() = default;
-        ~uerror() = default;
-
-        uerror(uerror&&) noexcept = default;
-        uerror(const uerror&) noexcept = default;
-
-        uerror& operator=(uerror&&) noexcept = default;
-        uerror& operator=(const uerror&) noexcept = default;
-
-        explicit uerror(error_code error) noexcept;
-        uerror& operator=(error_code error) noexcept;
-
-        [[nodiscard]] error_code get_error() const noexcept;
-
-        void reset() noexcept;
-        void swap(uerror& other) noexcept;
-
-        [[nodiscard]] std::size_t get_hash() const noexcept;
-        [[nodiscard]] std::strong_ordering operator<=>(const uerror& other) const = default;
-
-    private:
-        error_code error_{error_code::no_error};
-    };
-
-    inline void swap(uerror& l, uerror& r) noexcept {
-        l.swap(r);
-    }
-
-    inline uerror make_uerror(error_code error) {
-        return uerror{error};
-    }
-}
-
-namespace std
-{
-    template <>
-    struct hash<meta_hpp::uerror> {
-        size_t operator()(meta_hpp::uerror ue) const noexcept {
-            return ue.get_hash();
-        }
-    };
-}
-
-namespace meta_hpp
-{
-    class uresult final {
-    public:
-        uresult() = default;
-        ~uresult() = default;
-
-        uresult(uresult&&) noexcept = default;
-        uresult(const uresult&) = default;
-
-        uresult& operator=(uresult&&) noexcept = default;
-        uresult& operator=(const uresult&) = default;
-
-        explicit(false) uresult(uerror error) noexcept;
-        explicit(false) uresult(uvalue value) noexcept;
-
-        uresult& operator=(uerror error) noexcept;
-        uresult& operator=(uvalue value) noexcept;
-
-        template <                                 //
-            typename T,                            //
-            typename Tp = std::decay_t<T>,         //
-            typename = std::enable_if_t<           //
-                !std::is_same_v<Tp, uerror> &&     //
-                !std::is_same_v<Tp, uvalue> &&     //
-                !std::is_same_v<Tp, uresult> &&    //
-                !detail::is_in_place_type_v<Tp> && //
-                std::is_copy_constructible_v<Tp>>> //
-        uresult(T&& val);
-
-        template <                                 //
-            typename T,                            //
-            typename Tp = std::decay_t<T>,         //
-            typename = std::enable_if_t<           //
-                !std::is_same_v<Tp, uerror> &&     //
-                !std::is_same_v<Tp, uvalue> &&     //
-                !std::is_same_v<Tp, uresult> &&    //
-                std::is_copy_constructible_v<Tp>>> //
-        uresult& operator=(T&& val);
-
-        template < typename T, typename... Args, typename Tp = std::decay_t<T> >
-            requires std::is_copy_constructible_v<Tp>     //
-                  && std::is_constructible_v<Tp, Args...> //
-        explicit uresult(std::in_place_type_t<T>, Args&&... args);
-
-        template < typename T, typename U, typename... Args, typename Tp = std::decay_t<T> >
-            requires std::is_copy_constructible_v<Tp>                                //
-                  && std::is_constructible_v<Tp, std::initializer_list<U>&, Args...> //
-        explicit uresult(std::in_place_type_t<T>, std::initializer_list<U> ilist, Args&&... args);
-
-        template < typename T, typename... Args, typename Tp = std::decay_t<T> >
-            requires std::is_copy_constructible_v<Tp>     //
-                  && std::is_constructible_v<Tp, Args...> //
-        Tp& emplace(Args&&... args);
-
-        template < typename T, typename U, typename... Args, typename Tp = std::decay_t<T> >
-            requires std::is_copy_constructible_v<Tp>                                //
-                  && std::is_constructible_v<Tp, std::initializer_list<U>&, Args...> //
-        Tp& emplace(std::initializer_list<U> ilist, Args&&... args);
-
-        [[nodiscard]] bool has_error() const noexcept;
-        [[nodiscard]] bool has_value() const noexcept;
-        [[nodiscard]] explicit operator bool() const noexcept;
-
-        void reset() noexcept;
-        void swap(uresult& other) noexcept;
-
-        [[nodiscard]] uvalue& get_value() &;
-        [[nodiscard]] uvalue&& get_value() &&;
-        [[nodiscard]] const uvalue& get_value() const&;
-        [[nodiscard]] const uvalue&& get_value() const&&;
-
-        [[nodiscard]] error_code get_error() const noexcept;
-
-    private:
-        uvalue value_{};
-        error_code error_{error_code::no_error};
-    };
-
-    inline void swap(uresult& l, uresult& r) noexcept {
-        l.swap(r);
-    }
-
-    template < typename T, typename... Args >
-    uresult make_uresult(Args&&... args) {
-        return uresult(std::in_place_type<T>, std::forward<Args>(args)...);
-    }
-
-    template < typename T, typename U, typename... Args >
-    uresult make_uresult(std::initializer_list<U> ilist, Args&&... args) {
-        return uresult(std::in_place_type<T>, ilist, std::forward<Args>(args)...);
-    }
 }
 
 namespace meta_hpp::detail
@@ -9147,6 +9267,14 @@ namespace meta_hpp
         return *this;
     }
 
+    inline bool uerror::has_error() const noexcept {
+        return error_ != error_code::no_error;
+    }
+
+    inline uerror::operator bool() const noexcept {
+        return has_error();
+    }
+
     inline error_code uerror::get_error() const noexcept {
         return error_;
     }
@@ -9238,17 +9366,6 @@ namespace meta_hpp
         return has_value();
     }
 
-    inline void uresult::reset() noexcept {
-        value_ = uvalue{};
-        error_ = error_code::no_error;
-    }
-
-    inline void uresult::swap(uresult& other) noexcept {
-        using std::swap;
-        swap(value_, other.value_);
-        swap(error_, other.error_);
-    }
-
     inline uvalue& uresult::get_value() & {
         return value_;
     }
@@ -9268,5 +9385,16 @@ namespace meta_hpp
 
     inline error_code uresult::get_error() const noexcept {
         return error_;
+    }
+
+    inline void uresult::reset() noexcept {
+        value_ = uvalue{};
+        error_ = error_code::no_error;
+    }
+
+    inline void uresult::swap(uresult& other) noexcept {
+        using std::swap;
+        swap(value_, other.value_);
+        swap(error_, other.error_);
     }
 }

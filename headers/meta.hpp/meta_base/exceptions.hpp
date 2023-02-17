@@ -23,6 +23,7 @@ namespace meta_hpp::detail
     enum class error_code {
         no_error,
 
+        bad_const_access,
         bad_uvalue_access,
         bad_uresult_access,
 
@@ -32,13 +33,15 @@ namespace meta_hpp::detail
 
         arity_mismatch,
         instance_type_mismatch,
-        argument_types_mismatch,
+        argument_type_mismatch,
     };
 
     inline const char* get_error_code_message(error_code error) noexcept {
         switch ( error ) {
         case error_code::no_error:
             return "no error";
+        case error_code::bad_const_access:
+            return "bad const access";
         case error_code::bad_uvalue_access:
             return "bad uvalue access";
         case error_code::bad_uresult_access:
@@ -53,8 +56,8 @@ namespace meta_hpp::detail
             return "arity mismatch";
         case error_code::instance_type_mismatch:
             return "instance type mismatch";
-        case error_code::argument_types_mismatch:
-            return "argument types mismatch";
+        case error_code::argument_type_mismatch:
+            return "argument type mismatch";
         }
 
         META_HPP_ASSERT(false);
