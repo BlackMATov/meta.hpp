@@ -258,7 +258,7 @@ TEST_CASE("meta/meta_features/diamond") {
             CHECK_FALSE(a_inst.can_cast_to<D&>(r));
             CHECK_FALSE(a_inst.can_cast_to<E&>(r));
 
-            CHECK(&a_inst.cast<A&>(r) == &a_val.get_as<A>());
+            CHECK(&a_inst.cast<A&>(r) == &a_val.as<A>());
         }
         {
             meta::uvalue b_val{B{}};
@@ -270,10 +270,10 @@ TEST_CASE("meta/meta_features/diamond") {
             CHECK_FALSE(b_inst.can_cast_to<D&>(r));
             CHECK_FALSE(b_inst.can_cast_to<E&>(r));
 
-            CHECK(&b_inst.cast<A&>(r) == &b_val.get_as<B>());
-            CHECK(&b_inst.cast<B&>(r) == &b_val.get_as<B>());
+            CHECK(&b_inst.cast<A&>(r) == &b_val.as<B>());
+            CHECK(&b_inst.cast<B&>(r) == &b_val.as<B>());
 
-            CHECK(&b_inst.cast<A&>(r) == &b_val.get_as<B>());
+            CHECK(&b_inst.cast<A&>(r) == &b_val.as<B>());
         }
         {
             meta::uvalue c_val{C{}};
@@ -285,8 +285,8 @@ TEST_CASE("meta/meta_features/diamond") {
             CHECK_FALSE(c_inst.can_cast_to<D&>(r));
             CHECK_FALSE(c_inst.can_cast_to<E&>(r));
 
-            CHECK(&c_inst.cast<A&>(r) == &c_val.get_as<C>());
-            CHECK(&c_inst.cast<C&>(r) == &c_val.get_as<C>());
+            CHECK(&c_inst.cast<A&>(r) == &c_val.as<C>());
+            CHECK(&c_inst.cast<C&>(r) == &c_val.as<C>());
         }
         {
             meta::uvalue d_val{D{}};
@@ -298,15 +298,15 @@ TEST_CASE("meta/meta_features/diamond") {
             CHECK(d_inst.can_cast_to<D&>(r));
             CHECK_FALSE(d_inst.can_cast_to<E&>(r));
 
-            CHECK(&d_inst.cast<A&>(r) == &d_val.get_as<D>());
-            CHECK(&d_inst.cast<B&>(r) == &d_val.get_as<D>());
-            CHECK(&d_inst.cast<C&>(r) == &d_val.get_as<D>());
-            CHECK(&d_inst.cast<D&>(r) == &d_val.get_as<D>());
+            CHECK(&d_inst.cast<A&>(r) == &d_val.as<D>());
+            CHECK(&d_inst.cast<B&>(r) == &d_val.as<D>());
+            CHECK(&d_inst.cast<C&>(r) == &d_val.as<D>());
+            CHECK(&d_inst.cast<D&>(r) == &d_val.as<D>());
 
-            CHECK(&d_inst.cast<A&>(r) == &d_val.get_as<D>());
-            CHECK(&d_inst.cast<B&>(r) == &d_val.get_as<D>());
-            CHECK(&d_inst.cast<C&>(r) == &d_val.get_as<D>());
-            CHECK(&d_inst.cast<D&>(r) == &d_val.get_as<D>());
+            CHECK(&d_inst.cast<A&>(r) == &d_val.as<D>());
+            CHECK(&d_inst.cast<B&>(r) == &d_val.as<D>());
+            CHECK(&d_inst.cast<C&>(r) == &d_val.as<D>());
+            CHECK(&d_inst.cast<D&>(r) == &d_val.as<D>());
         }
         {
             meta::uvalue e_val{E{}};
@@ -318,7 +318,7 @@ TEST_CASE("meta/meta_features/diamond") {
             CHECK_FALSE(e_inst.can_cast_to<D&>(r));
             CHECK(e_inst.can_cast_to<E&>(r));
 
-            CHECK(&e_inst.cast<E&>(r) == &e_val.get_as<E>());
+            CHECK(&e_inst.cast<E&>(r) == &e_val.as<E>());
         }
     }
 

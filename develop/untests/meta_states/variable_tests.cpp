@@ -87,8 +87,8 @@ TEST_CASE("meta/meta_states/variable") {
         CHECK(vm.get_type() == meta::resolve_type(&clazz_1::int_variable));
         CHECK(vm.get_name() == "int_variable");
 
-        CHECK(vm.get().get_as<int>() == 1);
-        CHECK(vm().get_as<int>() == 1);
+        CHECK(vm.get().as<int>() == 1);
+        CHECK(vm().as<int>() == 1);
 
         CHECK(vm.is_settable_with<int>());
         CHECK(vm.is_settable_with<int&&>());
@@ -100,8 +100,8 @@ TEST_CASE("meta/meta_states/variable") {
         CHECK_FALSE(vm.is_settable_with<const float&>());
         CHECK_FALSE(vm.is_settable_with(1.0));
 
-        vm.set(10); CHECK(vm.get().get_as<int>() == 10);
-        vm(11); CHECK(vm().get_as<int>() == 11);
+        vm.set(10); CHECK(vm.get().as<int>() == 10);
+        vm(11); CHECK(vm().as<int>() == 11);
     }
 
     SUBCASE("const int") {
@@ -111,8 +111,8 @@ TEST_CASE("meta/meta_states/variable") {
         CHECK(vm.get_type() == meta::resolve_type(&clazz_1::const_int_variable));
         CHECK(vm.get_name() == "const_int_variable");
 
-        CHECK(vm.get().get_as<int>() == 2);
-        CHECK(vm().get_as<int>() == 2);
+        CHECK(vm.get().as<int>() == 2);
+        CHECK(vm().as<int>() == 2);
 
         CHECK_FALSE(vm.is_settable_with<int>());
         CHECK_FALSE(vm.is_settable_with<int&&>());
@@ -124,7 +124,7 @@ TEST_CASE("meta/meta_states/variable") {
         CHECK_FALSE(vm.is_settable_with<const float&>());
         CHECK_FALSE(vm.is_settable_with(1.0));
 
-        CHECK_FALSE(vm.try_set(10)); CHECK(vm.get().get_as<int>() == 2);
+        CHECK_FALSE(vm.try_set(10)); CHECK(vm.get().as<int>() == 2);
     }
 
     SUBCASE("ref int") {
@@ -134,8 +134,8 @@ TEST_CASE("meta/meta_states/variable") {
         CHECK(vm.get_type() == meta::resolve_type(&clazz_1::ref_int_variable));
         CHECK(vm.get_name() == "ref_int_variable");
 
-        CHECK(vm.get().get_as<int>() == 1);
-        CHECK(vm().get_as<int>() == 1);
+        CHECK(vm.get().as<int>() == 1);
+        CHECK(vm().as<int>() == 1);
 
         CHECK(vm.is_settable_with<int>());
         CHECK(vm.is_settable_with<int&&>());
@@ -147,8 +147,8 @@ TEST_CASE("meta/meta_states/variable") {
         CHECK_FALSE(vm.is_settable_with<const float&>());
         CHECK_FALSE(vm.is_settable_with(1.0));
 
-        vm.set(20); CHECK(vm.get().get_as<int>() == 20);
-        vm(21); CHECK(vm().get_as<int>() == 21);
+        vm.set(20); CHECK(vm.get().as<int>() == 20);
+        vm(21); CHECK(vm().as<int>() == 21);
     }
 
     SUBCASE("const ref int") {
@@ -158,8 +158,8 @@ TEST_CASE("meta/meta_states/variable") {
         CHECK(vm.get_type() == meta::resolve_type(&clazz_1::const_ref_int_variable));
         CHECK(vm.get_name() == "const_ref_int_variable");
 
-        CHECK(vm.get().get_as<int>() == 2);
-        CHECK(vm().get_as<int>() == 2);
+        CHECK(vm.get().as<int>() == 2);
+        CHECK(vm().as<int>() == 2);
 
         CHECK_FALSE(vm.is_settable_with<int>());
         CHECK_FALSE(vm.is_settable_with<int&&>());
@@ -171,7 +171,7 @@ TEST_CASE("meta/meta_states/variable") {
         CHECK_FALSE(vm.is_settable_with<const float&>());
         CHECK_FALSE(vm.is_settable_with(1.0));
 
-        CHECK_FALSE(vm.try_set(10)); CHECK(vm.get().get_as<int>() == 2);
+        CHECK_FALSE(vm.try_set(10)); CHECK(vm.get().as<int>() == 2);
     }
 
     SUBCASE("unique_int_variable_as_ptr") {
@@ -179,7 +179,7 @@ TEST_CASE("meta/meta_states/variable") {
         REQUIRE(vm);
 
         CHECK(vm.get().get_type() == meta::resolve_type<unique_int*>());
-        CHECK(vm.get().get_as<unique_int*>() == std::addressof(clazz_1::unique_int_variable));
+        CHECK(vm.get().as<unique_int*>() == std::addressof(clazz_1::unique_int_variable));
 
         {
             unique_int nv{11};
@@ -200,7 +200,7 @@ TEST_CASE("meta/meta_states/variable") {
 
         using ref_t = std::reference_wrapper<unique_int>;
         CHECK(vm.get().get_type() == meta::resolve_type<ref_t>());
-        CHECK(&vm.get().get_as<ref_t>().get() == &clazz_1::unique_int_variable);
+        CHECK(&vm.get().as<ref_t>().get() == &clazz_1::unique_int_variable);
 
         {
             unique_int nv{13};
@@ -220,7 +220,7 @@ TEST_CASE("meta/meta_states/variable") {
         REQUIRE(vm);
 
         CHECK(vm.get().get_type() == meta::resolve_type<const unique_int*>());
-        CHECK(vm.get().get_as<const unique_int*>() == std::addressof(clazz_1::const_unique_int_variable));
+        CHECK(vm.get().as<const unique_int*>() == std::addressof(clazz_1::const_unique_int_variable));
 
         {
             unique_int nv{11};
@@ -236,7 +236,7 @@ TEST_CASE("meta/meta_states/variable") {
 
         using ref_t = std::reference_wrapper<const unique_int>;
         CHECK(vm.get().get_type() == meta::resolve_type<ref_t>());
-        CHECK(&vm.get().get_as<ref_t>().get() == &clazz_1::const_unique_int_variable);
+        CHECK(&vm.get().as<ref_t>().get() == &clazz_1::const_unique_int_variable);
 
         {
             unique_int nv{12};
@@ -251,9 +251,9 @@ TEST_CASE("meta/meta_states/variable") {
         REQUIRE(vm);
 
         CHECK(vm.try_set(10));
-        CHECK(vm.get().get_as<int>() == 10);
+        CHECK(vm.get().as<int>() == 10);
 
         CHECK_FALSE(vm.try_set(unique_int{}));
-        CHECK(vm.get().get_as<int>() == 10);
+        CHECK(vm.get().as<int>() == 10);
     }
 }

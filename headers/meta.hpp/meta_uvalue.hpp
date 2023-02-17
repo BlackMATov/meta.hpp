@@ -81,26 +81,26 @@ namespace meta_hpp
         [[nodiscard]] bool has_unmap_op() const noexcept;
 
         template < typename T >
-        [[nodiscard]] T get_as() &&;
+        [[nodiscard]] T as() &&;
 
         template < typename T >
-        [[nodiscard]] auto get_as() & //
+        [[nodiscard]] auto as() & //
             -> std::conditional_t<detail::pointer_kind<T>, T, T&>;
 
         template < typename T >
-        [[nodiscard]] auto get_as() const& //
+        [[nodiscard]] auto as() const& //
             -> std::conditional_t<detail::pointer_kind<T>, T, const T&>;
 
         template < typename T >
-        [[nodiscard]] auto get_as() const&& //
+        [[nodiscard]] auto as() const&& //
             -> std::conditional_t<detail::pointer_kind<T>, T, const T&&>;
 
         template < typename T >
-        [[nodiscard]] auto try_get_as() noexcept //
+        [[nodiscard]] auto try_as() noexcept //
             -> std::conditional_t<detail::pointer_kind<T>, T, T*>;
 
         template < typename T >
-        [[nodiscard]] auto try_get_as() const noexcept //
+        [[nodiscard]] auto try_as() const noexcept //
             -> std::conditional_t<detail::pointer_kind<T>, T, const T*>;
 
     private:

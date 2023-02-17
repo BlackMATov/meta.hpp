@@ -71,14 +71,14 @@ TEST_CASE("meta/meta_manuals/metadata") {
 
         fmt::print("{} ({})\n",
             type_name,
-            class_metadata.at("tooltip").get_as<std::string>());
+            class_metadata.at("tooltip").as<std::string>());
 
         for ( const meta::member& member : class_type.get_members() ) {
             const meta::metadata_map& member_metadata = member.get_metadata();
 
             fmt::print("  - {} ({})\n",
                 member.get_name(),
-                member_metadata.at("tooltip").get_as<std::string>());
+                member_metadata.at("tooltip").as<std::string>());
         }
     }
 
@@ -88,7 +88,7 @@ TEST_CASE("meta/meta_manuals/metadata") {
         fmt::print("  + {}/{} ({})\n",
             function.get_name(),
             function.get_type().get_arity(),
-            function_metadata.at("tooltip").get_as<std::string>());
+            function_metadata.at("tooltip").as<std::string>());
 
         for ( const meta::argument& argument : function.get_arguments() ) {
             fmt::print("    ({}) : {}\n",

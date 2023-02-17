@@ -148,14 +148,14 @@ TEST_CASE("meta/meta_states/method") {
             derived_clazz cl;
             meta::uvalue clv{cl};
 
-            CHECK(mi.invoke(cl).get_as<int>() == 1);
+            CHECK(mi.invoke(cl).as<int>() == 1);
             CHECK_FALSE(mi.try_invoke(std::as_const(cl)));
-            CHECK(mi.invoke(std::move(cl)).get_as<int>() == 1);
+            CHECK(mi.invoke(std::move(cl)).as<int>() == 1);
             CHECK_FALSE(mi.try_invoke(std::move(std::as_const(cl))));
 
-            CHECK(mi.invoke(clv).get_as<int>() == 1);
+            CHECK(mi.invoke(clv).as<int>() == 1);
             CHECK_FALSE(mi.try_invoke(std::as_const(clv)));
-            CHECK(mi.invoke(std::move(clv)).get_as<int>() == 1);
+            CHECK(mi.invoke(std::move(clv)).as<int>() == 1);
             CHECK_FALSE(mi.try_invoke(std::move(std::as_const(clv))));
         }
 
@@ -168,15 +168,15 @@ TEST_CASE("meta/meta_states/method") {
             meta::uvalue cl1v{cl1};
             meta::uvalue cl2v{cl2};
 
-            CHECK(mi.invoke(cl1).get_as<int>() == 1);
-            CHECK(mi.invoke(std::as_const(cl1)).get_as<int>() == 1);
-            CHECK(mi.invoke(std::move(cl1)).get_as<int>() == 1);
-            CHECK(mi.invoke(std::move(std::as_const(cl1))).get_as<int>() == 1);
+            CHECK(mi.invoke(cl1).as<int>() == 1);
+            CHECK(mi.invoke(std::as_const(cl1)).as<int>() == 1);
+            CHECK(mi.invoke(std::move(cl1)).as<int>() == 1);
+            CHECK(mi.invoke(std::move(std::as_const(cl1))).as<int>() == 1);
 
-            CHECK(mi.invoke(cl1v).get_as<int>() == 1);
-            CHECK(mi.invoke(std::as_const(cl1v)).get_as<int>() == 1);
-            CHECK(mi.invoke(std::move(cl1v)).get_as<int>() == 1);
-            CHECK(mi.invoke(std::move(std::as_const(cl1v))).get_as<int>() == 1);
+            CHECK(mi.invoke(cl1v).as<int>() == 1);
+            CHECK(mi.invoke(std::as_const(cl1v)).as<int>() == 1);
+            CHECK(mi.invoke(std::move(cl1v)).as<int>() == 1);
+            CHECK(mi.invoke(std::move(std::as_const(cl1v))).as<int>() == 1);
 
             CHECK_FALSE(mi.try_invoke(cl2));
             CHECK_FALSE(mi.try_invoke(std::as_const(cl2)));
@@ -234,14 +234,14 @@ TEST_CASE("meta/meta_states/method") {
             derived_clazz cl;
             meta::uvalue clv{cl};
 
-            CHECK(mi.invoke(cl).get_as<int>() == 2);
+            CHECK(mi.invoke(cl).as<int>() == 2);
             CHECK_FALSE(mi.try_invoke(std::as_const(cl)));
-            CHECK(mi.invoke(std::move(cl)).get_as<int>() == 2);
+            CHECK(mi.invoke(std::move(cl)).as<int>() == 2);
             CHECK_FALSE(mi.try_invoke(std::move(std::as_const(cl))));
 
-            CHECK(mi.invoke(clv).get_as<int>() == 2);
+            CHECK(mi.invoke(clv).as<int>() == 2);
             CHECK_FALSE(mi.try_invoke(std::as_const(clv)));
-            CHECK(mi.invoke(std::move(clv)).get_as<int>() == 2);
+            CHECK(mi.invoke(std::move(clv)).as<int>() == 2);
             CHECK_FALSE(mi.try_invoke(std::move(std::as_const(clv))));
         }
 
@@ -254,15 +254,15 @@ TEST_CASE("meta/meta_states/method") {
             meta::uvalue cl1v{cl1};
             meta::uvalue cl2v{cl2};
 
-            CHECK(mi.invoke(cl1).get_as<int>() == 2);
-            CHECK(mi.invoke(std::as_const(cl1)).get_as<int>() == 2);
-            CHECK(mi.invoke(std::move(cl1)).get_as<int>() == 2);
-            CHECK(mi.invoke(std::move(std::as_const(cl1))).get_as<int>() == 2);
+            CHECK(mi.invoke(cl1).as<int>() == 2);
+            CHECK(mi.invoke(std::as_const(cl1)).as<int>() == 2);
+            CHECK(mi.invoke(std::move(cl1)).as<int>() == 2);
+            CHECK(mi.invoke(std::move(std::as_const(cl1))).as<int>() == 2);
 
-            CHECK(mi.invoke(cl1v).get_as<int>() == 2);
-            CHECK(mi.invoke(std::as_const(cl1v)).get_as<int>() == 2);
-            CHECK(mi.invoke(std::move(cl1v)).get_as<int>() == 2);
-            CHECK(mi.invoke(std::move(std::as_const(cl1v))).get_as<int>() == 2);
+            CHECK(mi.invoke(cl1v).as<int>() == 2);
+            CHECK(mi.invoke(std::as_const(cl1v)).as<int>() == 2);
+            CHECK(mi.invoke(std::move(cl1v)).as<int>() == 2);
+            CHECK(mi.invoke(std::move(std::as_const(cl1v))).as<int>() == 2);
 
             CHECK_FALSE(mi.try_invoke(cl2));
             CHECK_FALSE(mi.try_invoke(std::as_const(cl2)));
@@ -320,15 +320,15 @@ TEST_CASE("meta/meta_states/method") {
             derived_clazz cl;
             meta::uvalue clv{cl};
 
-            CHECK(mi.invoke(cl).get_as<int>() == 3);
-            CHECK(mi.invoke(std::as_const(cl)).get_as<int>() == 3);
-            CHECK(mi.invoke(std::move(cl)).get_as<int>() == 3);
-            CHECK(mi.invoke(std::move(std::as_const(cl))).get_as<int>() == 3);
+            CHECK(mi.invoke(cl).as<int>() == 3);
+            CHECK(mi.invoke(std::as_const(cl)).as<int>() == 3);
+            CHECK(mi.invoke(std::move(cl)).as<int>() == 3);
+            CHECK(mi.invoke(std::move(std::as_const(cl))).as<int>() == 3);
 
-            CHECK(mi.invoke(clv).get_as<int>() == 3);
-            CHECK(mi.invoke(std::as_const(clv)).get_as<int>() == 3);
-            CHECK(mi.invoke(std::move(clv)).get_as<int>() == 3);
-            CHECK(mi.invoke(std::move(std::as_const(clv))).get_as<int>() == 3);
+            CHECK(mi.invoke(clv).as<int>() == 3);
+            CHECK(mi.invoke(std::as_const(clv)).as<int>() == 3);
+            CHECK(mi.invoke(std::move(clv)).as<int>() == 3);
+            CHECK(mi.invoke(std::move(std::as_const(clv))).as<int>() == 3);
         }
 
         {
@@ -340,25 +340,25 @@ TEST_CASE("meta/meta_states/method") {
             meta::uvalue cl1v{cl1};
             meta::uvalue cl2v{cl2};
 
-            CHECK(mi.invoke(cl1).get_as<int>() == 3);
-            CHECK(mi.invoke(std::as_const(cl1)).get_as<int>() == 3);
-            CHECK(mi.invoke(std::move(cl1)).get_as<int>() == 3);
-            CHECK(mi.invoke(std::move(std::as_const(cl1))).get_as<int>() == 3);
+            CHECK(mi.invoke(cl1).as<int>() == 3);
+            CHECK(mi.invoke(std::as_const(cl1)).as<int>() == 3);
+            CHECK(mi.invoke(std::move(cl1)).as<int>() == 3);
+            CHECK(mi.invoke(std::move(std::as_const(cl1))).as<int>() == 3);
 
-            CHECK(mi.invoke(cl1v).get_as<int>() == 3);
-            CHECK(mi.invoke(std::as_const(cl1v)).get_as<int>() == 3);
-            CHECK(mi.invoke(std::move(cl1v)).get_as<int>() == 3);
-            CHECK(mi.invoke(std::move(std::as_const(cl1v))).get_as<int>() == 3);
+            CHECK(mi.invoke(cl1v).as<int>() == 3);
+            CHECK(mi.invoke(std::as_const(cl1v)).as<int>() == 3);
+            CHECK(mi.invoke(std::move(cl1v)).as<int>() == 3);
+            CHECK(mi.invoke(std::move(std::as_const(cl1v))).as<int>() == 3);
 
-            CHECK(mi.invoke(cl2).get_as<int>() == 3);
-            CHECK(mi.invoke(std::as_const(cl2)).get_as<int>() == 3);
-            CHECK(mi.invoke(std::move(cl2)).get_as<int>() == 3);
-            CHECK(mi.invoke(std::move(std::as_const(cl2))).get_as<int>() == 3);
+            CHECK(mi.invoke(cl2).as<int>() == 3);
+            CHECK(mi.invoke(std::as_const(cl2)).as<int>() == 3);
+            CHECK(mi.invoke(std::move(cl2)).as<int>() == 3);
+            CHECK(mi.invoke(std::move(std::as_const(cl2))).as<int>() == 3);
 
-            CHECK(mi.invoke(cl2v).get_as<int>() == 3);
-            CHECK(mi.invoke(std::as_const(cl2v)).get_as<int>() == 3);
-            CHECK(mi.invoke(std::move(cl2v)).get_as<int>() == 3);
-            CHECK(mi.invoke(std::move(std::as_const(cl2v))).get_as<int>() == 3);
+            CHECK(mi.invoke(cl2v).as<int>() == 3);
+            CHECK(mi.invoke(std::as_const(cl2v)).as<int>() == 3);
+            CHECK(mi.invoke(std::move(cl2v)).as<int>() == 3);
+            CHECK(mi.invoke(std::move(std::as_const(cl2v))).as<int>() == 3);
         }
 
         static_assert(std::is_invocable_v<decltype(&clazz::const_method), clazz&>);
@@ -406,15 +406,15 @@ TEST_CASE("meta/meta_states/method") {
             derived_clazz cl;
             meta::uvalue clv{cl};
 
-            CHECK(mi.invoke(cl).get_as<int>() == 4);
-            CHECK(mi.invoke(std::as_const(cl)).get_as<int>() == 4);
-            CHECK(mi.invoke(std::move(cl)).get_as<int>() == 4);
-            CHECK(mi.invoke(std::move(std::as_const(cl))).get_as<int>() == 4);
+            CHECK(mi.invoke(cl).as<int>() == 4);
+            CHECK(mi.invoke(std::as_const(cl)).as<int>() == 4);
+            CHECK(mi.invoke(std::move(cl)).as<int>() == 4);
+            CHECK(mi.invoke(std::move(std::as_const(cl))).as<int>() == 4);
 
-            CHECK(mi.invoke(clv).get_as<int>() == 4);
-            CHECK(mi.invoke(std::as_const(clv)).get_as<int>() == 4);
-            CHECK(mi.invoke(std::move(clv)).get_as<int>() == 4);
-            CHECK(mi.invoke(std::move(std::as_const(clv))).get_as<int>() == 4);
+            CHECK(mi.invoke(clv).as<int>() == 4);
+            CHECK(mi.invoke(std::as_const(clv)).as<int>() == 4);
+            CHECK(mi.invoke(std::move(clv)).as<int>() == 4);
+            CHECK(mi.invoke(std::move(std::as_const(clv))).as<int>() == 4);
         }
 
         {
@@ -426,25 +426,25 @@ TEST_CASE("meta/meta_states/method") {
             meta::uvalue cl1v{cl1};
             meta::uvalue cl2v{cl2};
 
-            CHECK(mi.invoke(cl1).get_as<int>() == 4);
-            CHECK(mi.invoke(std::as_const(cl1)).get_as<int>() == 4);
-            CHECK(mi.invoke(std::move(cl1)).get_as<int>() == 4);
-            CHECK(mi.invoke(std::move(std::as_const(cl1))).get_as<int>() == 4);
+            CHECK(mi.invoke(cl1).as<int>() == 4);
+            CHECK(mi.invoke(std::as_const(cl1)).as<int>() == 4);
+            CHECK(mi.invoke(std::move(cl1)).as<int>() == 4);
+            CHECK(mi.invoke(std::move(std::as_const(cl1))).as<int>() == 4);
 
-            CHECK(mi.invoke(cl1v).get_as<int>() == 4);
-            CHECK(mi.invoke(std::as_const(cl1v)).get_as<int>() == 4);
-            CHECK(mi.invoke(std::move(cl1v)).get_as<int>() == 4);
-            CHECK(mi.invoke(std::move(std::as_const(cl1v))).get_as<int>() == 4);
+            CHECK(mi.invoke(cl1v).as<int>() == 4);
+            CHECK(mi.invoke(std::as_const(cl1v)).as<int>() == 4);
+            CHECK(mi.invoke(std::move(cl1v)).as<int>() == 4);
+            CHECK(mi.invoke(std::move(std::as_const(cl1v))).as<int>() == 4);
 
-            CHECK(mi.invoke(cl2).get_as<int>() == 4);
-            CHECK(mi.invoke(std::as_const(cl2)).get_as<int>() == 4);
-            CHECK(mi.invoke(std::move(cl2)).get_as<int>() == 4);
-            CHECK(mi.invoke(std::move(std::as_const(cl2))).get_as<int>() == 4);
+            CHECK(mi.invoke(cl2).as<int>() == 4);
+            CHECK(mi.invoke(std::as_const(cl2)).as<int>() == 4);
+            CHECK(mi.invoke(std::move(cl2)).as<int>() == 4);
+            CHECK(mi.invoke(std::move(std::as_const(cl2))).as<int>() == 4);
 
-            CHECK(mi.invoke(cl2v).get_as<int>() == 4);
-            CHECK(mi.invoke(std::as_const(cl2v)).get_as<int>() == 4);
-            CHECK(mi.invoke(std::move(cl2v)).get_as<int>() == 4);
-            CHECK(mi.invoke(std::move(std::as_const(cl2v))).get_as<int>() == 4);
+            CHECK(mi.invoke(cl2v).as<int>() == 4);
+            CHECK(mi.invoke(std::as_const(cl2v)).as<int>() == 4);
+            CHECK(mi.invoke(std::move(cl2v)).as<int>() == 4);
+            CHECK(mi.invoke(std::move(std::as_const(cl2v))).as<int>() == 4);
         }
 
         static_assert(std::is_invocable_v<decltype(&clazz::const_method_noexcept), clazz&>);
@@ -487,12 +487,12 @@ TEST_CASE("meta/meta_states/method") {
             derived_clazz cl;
             meta::uvalue clv{cl};
 
-            CHECK(mi.invoke(cl).get_as<int>() == 5);
+            CHECK(mi.invoke(cl).as<int>() == 5);
             CHECK_FALSE(mi.try_invoke(std::as_const(cl)));
             CHECK_FALSE(mi.try_invoke(std::move(cl)));
             CHECK_FALSE(mi.try_invoke(std::move(std::as_const(cl))));
 
-            CHECK(mi.invoke(clv).get_as<int>() == 5);
+            CHECK(mi.invoke(clv).as<int>() == 5);
             CHECK_FALSE(mi.try_invoke(std::as_const(clv)));
             CHECK_FALSE(mi.try_invoke(std::move(clv)));
             CHECK_FALSE(mi.try_invoke(std::move(std::as_const(clv))));
@@ -507,15 +507,15 @@ TEST_CASE("meta/meta_states/method") {
             meta::uvalue cl1v{cl1};
             meta::uvalue cl2v{cl2};
 
-            CHECK(mi.invoke(cl1).get_as<int>() == 5);
-            CHECK(mi.invoke(std::as_const(cl1)).get_as<int>() == 5);
-            CHECK(mi.invoke(std::move(cl1)).get_as<int>() == 5);
-            CHECK(mi.invoke(std::move(std::as_const(cl1))).get_as<int>() == 5);
+            CHECK(mi.invoke(cl1).as<int>() == 5);
+            CHECK(mi.invoke(std::as_const(cl1)).as<int>() == 5);
+            CHECK(mi.invoke(std::move(cl1)).as<int>() == 5);
+            CHECK(mi.invoke(std::move(std::as_const(cl1))).as<int>() == 5);
 
-            CHECK(mi.invoke(cl1v).get_as<int>() == 5);
-            CHECK(mi.invoke(std::as_const(cl1v)).get_as<int>() == 5);
-            CHECK(mi.invoke(std::move(cl1v)).get_as<int>() == 5);
-            CHECK(mi.invoke(std::move(std::as_const(cl1v))).get_as<int>() == 5);
+            CHECK(mi.invoke(cl1v).as<int>() == 5);
+            CHECK(mi.invoke(std::as_const(cl1v)).as<int>() == 5);
+            CHECK(mi.invoke(std::move(cl1v)).as<int>() == 5);
+            CHECK(mi.invoke(std::move(std::as_const(cl1v))).as<int>() == 5);
 
             CHECK_FALSE(mi.try_invoke(cl2));
             CHECK_FALSE(mi.try_invoke(std::as_const(cl2)));
@@ -568,12 +568,12 @@ TEST_CASE("meta/meta_states/method") {
             derived_clazz cl;
             meta::uvalue clv{cl};
 
-            CHECK(mi.invoke(cl).get_as<int>() == 6);
+            CHECK(mi.invoke(cl).as<int>() == 6);
             CHECK_FALSE(mi.try_invoke(std::as_const(cl)));
             CHECK_FALSE(mi.try_invoke(std::move(cl)));
             CHECK_FALSE(mi.try_invoke(std::move(std::as_const(cl))));
 
-            CHECK(mi.invoke(clv).get_as<int>() == 6);
+            CHECK(mi.invoke(clv).as<int>() == 6);
             CHECK_FALSE(mi.try_invoke(std::as_const(clv)));
             CHECK_FALSE(mi.try_invoke(std::move(clv)));
             CHECK_FALSE(mi.try_invoke(std::move(std::as_const(clv))));
@@ -588,15 +588,15 @@ TEST_CASE("meta/meta_states/method") {
             meta::uvalue cl1v{cl1};
             meta::uvalue cl2v{cl2};
 
-            CHECK(mi.invoke(cl1).get_as<int>() == 6);
-            CHECK(mi.invoke(std::as_const(cl1)).get_as<int>() == 6);
-            CHECK(mi.invoke(std::move(cl1)).get_as<int>() == 6);
-            CHECK(mi.invoke(std::move(std::as_const(cl1))).get_as<int>() == 6);
+            CHECK(mi.invoke(cl1).as<int>() == 6);
+            CHECK(mi.invoke(std::as_const(cl1)).as<int>() == 6);
+            CHECK(mi.invoke(std::move(cl1)).as<int>() == 6);
+            CHECK(mi.invoke(std::move(std::as_const(cl1))).as<int>() == 6);
 
-            CHECK(mi.invoke(cl1v).get_as<int>() == 6);
-            CHECK(mi.invoke(std::as_const(cl1v)).get_as<int>() == 6);
-            CHECK(mi.invoke(std::move(cl1v)).get_as<int>() == 6);
-            CHECK(mi.invoke(std::move(std::as_const(cl1v))).get_as<int>() == 6);
+            CHECK(mi.invoke(cl1v).as<int>() == 6);
+            CHECK(mi.invoke(std::as_const(cl1v)).as<int>() == 6);
+            CHECK(mi.invoke(std::move(cl1v)).as<int>() == 6);
+            CHECK(mi.invoke(std::move(std::as_const(cl1v))).as<int>() == 6);
 
             CHECK_FALSE(mi.try_invoke(cl2));
             CHECK_FALSE(mi.try_invoke(std::as_const(cl2)));
@@ -649,15 +649,15 @@ TEST_CASE("meta/meta_states/method") {
             derived_clazz cl;
             meta::uvalue clv{cl};
 
-            CHECK(mi.invoke(cl).get_as<int>() == 7);
-            CHECK(mi.invoke(std::as_const(cl)).get_as<int>() == 7);
-            CHECK(mi.invoke(std::move(cl)).get_as<int>() == 7);
-            CHECK(mi.invoke(std::move(std::as_const(cl))).get_as<int>() == 7);
+            CHECK(mi.invoke(cl).as<int>() == 7);
+            CHECK(mi.invoke(std::as_const(cl)).as<int>() == 7);
+            CHECK(mi.invoke(std::move(cl)).as<int>() == 7);
+            CHECK(mi.invoke(std::move(std::as_const(cl))).as<int>() == 7);
 
-            CHECK(mi.invoke(clv).get_as<int>() == 7);
-            CHECK(mi.invoke(std::as_const(clv)).get_as<int>() == 7);
-            CHECK(mi.invoke(std::move(clv)).get_as<int>() == 7);
-            CHECK(mi.invoke(std::move(std::as_const(clv))).get_as<int>() == 7);
+            CHECK(mi.invoke(clv).as<int>() == 7);
+            CHECK(mi.invoke(std::as_const(clv)).as<int>() == 7);
+            CHECK(mi.invoke(std::move(clv)).as<int>() == 7);
+            CHECK(mi.invoke(std::move(std::as_const(clv))).as<int>() == 7);
         }
 
         {
@@ -669,25 +669,25 @@ TEST_CASE("meta/meta_states/method") {
             meta::uvalue cl1v{cl1};
             meta::uvalue cl2v{cl2};
 
-            CHECK(mi.invoke(cl1).get_as<int>() == 7);
-            CHECK(mi.invoke(std::as_const(cl1)).get_as<int>() == 7);
-            CHECK(mi.invoke(std::move(cl1)).get_as<int>() == 7);
-            CHECK(mi.invoke(std::move(std::as_const(cl1))).get_as<int>() == 7);
+            CHECK(mi.invoke(cl1).as<int>() == 7);
+            CHECK(mi.invoke(std::as_const(cl1)).as<int>() == 7);
+            CHECK(mi.invoke(std::move(cl1)).as<int>() == 7);
+            CHECK(mi.invoke(std::move(std::as_const(cl1))).as<int>() == 7);
 
-            CHECK(mi.invoke(cl1v).get_as<int>() == 7);
-            CHECK(mi.invoke(std::as_const(cl1v)).get_as<int>() == 7);
-            CHECK(mi.invoke(std::move(cl1v)).get_as<int>() == 7);
-            CHECK(mi.invoke(std::move(std::as_const(cl1v))).get_as<int>() == 7);
+            CHECK(mi.invoke(cl1v).as<int>() == 7);
+            CHECK(mi.invoke(std::as_const(cl1v)).as<int>() == 7);
+            CHECK(mi.invoke(std::move(cl1v)).as<int>() == 7);
+            CHECK(mi.invoke(std::move(std::as_const(cl1v))).as<int>() == 7);
 
-            CHECK(mi.invoke(cl2).get_as<int>() == 7);
-            CHECK(mi.invoke(std::as_const(cl2)).get_as<int>() == 7);
-            CHECK(mi.invoke(std::move(cl2)).get_as<int>() == 7);
-            CHECK(mi.invoke(std::move(std::as_const(cl2))).get_as<int>() == 7);
+            CHECK(mi.invoke(cl2).as<int>() == 7);
+            CHECK(mi.invoke(std::as_const(cl2)).as<int>() == 7);
+            CHECK(mi.invoke(std::move(cl2)).as<int>() == 7);
+            CHECK(mi.invoke(std::move(std::as_const(cl2))).as<int>() == 7);
 
-            CHECK(mi.invoke(cl2v).get_as<int>() == 7);
-            CHECK(mi.invoke(std::as_const(cl2v)).get_as<int>() == 7);
-            CHECK(mi.invoke(std::move(cl2v)).get_as<int>() == 7);
-            CHECK(mi.invoke(std::move(std::as_const(cl2v))).get_as<int>() == 7);
+            CHECK(mi.invoke(cl2v).as<int>() == 7);
+            CHECK(mi.invoke(std::as_const(cl2v)).as<int>() == 7);
+            CHECK(mi.invoke(std::move(cl2v)).as<int>() == 7);
+            CHECK(mi.invoke(std::move(std::as_const(cl2v))).as<int>() == 7);
         }
 
         static_assert(std::is_invocable_v<decltype(&clazz::const_method_ref), clazz&>);
@@ -730,15 +730,15 @@ TEST_CASE("meta/meta_states/method") {
             derived_clazz cl;
             meta::uvalue clv{cl};
 
-            CHECK(mi.invoke(cl).get_as<int>() == 8);
-            CHECK(mi.invoke(std::as_const(cl)).get_as<int>() == 8);
-            CHECK(mi.invoke(std::move(cl)).get_as<int>() == 8);
-            CHECK(mi.invoke(std::move(std::as_const(cl))).get_as<int>() == 8);
+            CHECK(mi.invoke(cl).as<int>() == 8);
+            CHECK(mi.invoke(std::as_const(cl)).as<int>() == 8);
+            CHECK(mi.invoke(std::move(cl)).as<int>() == 8);
+            CHECK(mi.invoke(std::move(std::as_const(cl))).as<int>() == 8);
 
-            CHECK(mi.invoke(clv).get_as<int>() == 8);
-            CHECK(mi.invoke(std::as_const(clv)).get_as<int>() == 8);
-            CHECK(mi.invoke(std::move(clv)).get_as<int>() == 8);
-            CHECK(mi.invoke(std::move(std::as_const(clv))).get_as<int>() == 8);
+            CHECK(mi.invoke(clv).as<int>() == 8);
+            CHECK(mi.invoke(std::as_const(clv)).as<int>() == 8);
+            CHECK(mi.invoke(std::move(clv)).as<int>() == 8);
+            CHECK(mi.invoke(std::move(std::as_const(clv))).as<int>() == 8);
         }
 
         {
@@ -750,25 +750,25 @@ TEST_CASE("meta/meta_states/method") {
             meta::uvalue cl1v{cl1};
             meta::uvalue cl2v{cl2};
 
-            CHECK(mi.invoke(cl1).get_as<int>() == 8);
-            CHECK(mi.invoke(std::as_const(cl1)).get_as<int>() == 8);
-            CHECK(mi.invoke(std::move(cl1)).get_as<int>() == 8);
-            CHECK(mi.invoke(std::move(std::as_const(cl1))).get_as<int>() == 8);
+            CHECK(mi.invoke(cl1).as<int>() == 8);
+            CHECK(mi.invoke(std::as_const(cl1)).as<int>() == 8);
+            CHECK(mi.invoke(std::move(cl1)).as<int>() == 8);
+            CHECK(mi.invoke(std::move(std::as_const(cl1))).as<int>() == 8);
 
-            CHECK(mi.invoke(cl1v).get_as<int>() == 8);
-            CHECK(mi.invoke(std::as_const(cl1v)).get_as<int>() == 8);
-            CHECK(mi.invoke(std::move(cl1v)).get_as<int>() == 8);
-            CHECK(mi.invoke(std::move(std::as_const(cl1v))).get_as<int>() == 8);
+            CHECK(mi.invoke(cl1v).as<int>() == 8);
+            CHECK(mi.invoke(std::as_const(cl1v)).as<int>() == 8);
+            CHECK(mi.invoke(std::move(cl1v)).as<int>() == 8);
+            CHECK(mi.invoke(std::move(std::as_const(cl1v))).as<int>() == 8);
 
-            CHECK(mi.invoke(cl2).get_as<int>() == 8);
-            CHECK(mi.invoke(std::as_const(cl2)).get_as<int>() == 8);
-            CHECK(mi.invoke(std::move(cl2)).get_as<int>() == 8);
-            CHECK(mi.invoke(std::move(std::as_const(cl2))).get_as<int>() == 8);
+            CHECK(mi.invoke(cl2).as<int>() == 8);
+            CHECK(mi.invoke(std::as_const(cl2)).as<int>() == 8);
+            CHECK(mi.invoke(std::move(cl2)).as<int>() == 8);
+            CHECK(mi.invoke(std::move(std::as_const(cl2))).as<int>() == 8);
 
-            CHECK(mi.invoke(cl2v).get_as<int>() == 8);
-            CHECK(mi.invoke(std::as_const(cl2v)).get_as<int>() == 8);
-            CHECK(mi.invoke(std::move(cl2v)).get_as<int>() == 8);
-            CHECK(mi.invoke(std::move(std::as_const(cl2v))).get_as<int>() == 8);
+            CHECK(mi.invoke(cl2v).as<int>() == 8);
+            CHECK(mi.invoke(std::as_const(cl2v)).as<int>() == 8);
+            CHECK(mi.invoke(std::move(cl2v)).as<int>() == 8);
+            CHECK(mi.invoke(std::move(std::as_const(cl2v))).as<int>() == 8);
         }
 
         static_assert(std::is_invocable_v<decltype(&clazz::const_method_noexcept_ref), clazz&>);
@@ -813,12 +813,12 @@ TEST_CASE("meta/meta_states/method") {
 
             CHECK_FALSE(mi.try_invoke(cl));
             CHECK_FALSE(mi.try_invoke(std::as_const(cl)));
-            CHECK(mi.invoke(std::move(cl)).get_as<int>() == 9);
+            CHECK(mi.invoke(std::move(cl)).as<int>() == 9);
             CHECK_FALSE(mi.try_invoke(std::move(std::as_const(cl))));
 
             CHECK_FALSE(mi.try_invoke(clv));
             CHECK_FALSE(mi.try_invoke(std::as_const(clv)));
-            CHECK(mi.invoke(std::move(clv)).get_as<int>() == 9);
+            CHECK(mi.invoke(std::move(clv)).as<int>() == 9);
             CHECK_FALSE(mi.try_invoke(std::move(std::as_const(clv))));
         }
 
@@ -894,12 +894,12 @@ TEST_CASE("meta/meta_states/method") {
 
             CHECK_FALSE(mi.try_invoke(cl));
             CHECK_FALSE(mi.try_invoke(std::as_const(cl)));
-            CHECK(mi.invoke(std::move(cl)).get_as<int>() == 10);
+            CHECK(mi.invoke(std::move(cl)).as<int>() == 10);
             CHECK_FALSE(mi.try_invoke(std::move(std::as_const(cl))));
 
             CHECK_FALSE(mi.try_invoke(clv));
             CHECK_FALSE(mi.try_invoke(std::as_const(clv)));
-            CHECK(mi.invoke(std::move(clv)).get_as<int>() == 10);
+            CHECK(mi.invoke(std::move(clv)).as<int>() == 10);
             CHECK_FALSE(mi.try_invoke(std::move(std::as_const(clv))));
         }
 
@@ -975,13 +975,13 @@ TEST_CASE("meta/meta_states/method") {
 
             CHECK_FALSE(mi.try_invoke(cl));
             CHECK_FALSE(mi.try_invoke(std::as_const(cl)));
-            CHECK(mi.invoke(std::move(cl)).get_as<int>() == 11);
-            CHECK(mi.invoke(std::move(std::as_const(cl))).get_as<int>() == 11);
+            CHECK(mi.invoke(std::move(cl)).as<int>() == 11);
+            CHECK(mi.invoke(std::move(std::as_const(cl))).as<int>() == 11);
 
             CHECK_FALSE(mi.try_invoke(clv));
             CHECK_FALSE(mi.try_invoke(std::as_const(clv)));
-            CHECK(mi.invoke(std::move(clv)).get_as<int>() == 11);
-            CHECK(mi.invoke(std::move(std::as_const(clv))).get_as<int>() == 11);
+            CHECK(mi.invoke(std::move(clv)).as<int>() == 11);
+            CHECK(mi.invoke(std::move(std::as_const(clv))).as<int>() == 11);
         }
 
         {
@@ -1056,13 +1056,13 @@ TEST_CASE("meta/meta_states/method") {
 
             CHECK_FALSE(mi.try_invoke(cl));
             CHECK_FALSE(mi.try_invoke(std::as_const(cl)));
-            CHECK(mi.invoke(std::move(cl)).get_as<int>() == 12);
-            CHECK(mi.invoke(std::move(std::as_const(cl))).get_as<int>() == 12);
+            CHECK(mi.invoke(std::move(cl)).as<int>() == 12);
+            CHECK(mi.invoke(std::move(std::as_const(cl))).as<int>() == 12);
 
             CHECK_FALSE(mi.try_invoke(clv));
             CHECK_FALSE(mi.try_invoke(std::as_const(clv)));
-            CHECK(mi.invoke(std::move(clv)).get_as<int>() == 12);
-            CHECK(mi.invoke(std::move(std::as_const(clv))).get_as<int>() == 12);
+            CHECK(mi.invoke(std::move(clv)).as<int>() == 12);
+            CHECK(mi.invoke(std::move(std::as_const(clv))).as<int>() == 12);
         }
 
         {
@@ -1122,25 +1122,25 @@ TEST_CASE("meta/meta_states/method") {
         {
             clazz cl;
             CHECK(mi.is_invocable_with<clazz&>());
-            CHECK(mi.invoke(cl).get_as<int>() == -1);
+            CHECK(mi.invoke(cl).as<int>() == -1);
         }
 
         {
             clazz cl;
             CHECK(mi.is_invocable_with<clazz*>());
-            CHECK(mi.invoke(&cl).get_as<int>() == -1);
+            CHECK(mi.invoke(&cl).as<int>() == -1);
         }
 
         {
             derived_clazz dcl;
             CHECK(mi.is_invocable_with<derived_clazz&>());
-            CHECK(mi.invoke(dcl).get_as<int>() == -2);
+            CHECK(mi.invoke(dcl).as<int>() == -2);
         }
 
         {
             derived_clazz dcl;
             CHECK(mi.is_invocable_with<derived_clazz*>());
-            CHECK(mi.invoke(&dcl).get_as<int>() == -2);
+            CHECK(mi.invoke(&dcl).as<int>() == -2);
         }
     }
 }

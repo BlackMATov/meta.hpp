@@ -320,9 +320,7 @@ namespace meta_hpp::detail
 
         bad_const_access,
         bad_uvalue_access,
-        bad_uresult_access,
 
-        bad_uvalue_cast,
         bad_argument_cast,
         bad_instance_cast,
 
@@ -339,10 +337,6 @@ namespace meta_hpp::detail
             return "bad const access";
         case error_code::bad_uvalue_access:
             return "bad uvalue access";
-        case error_code::bad_uresult_access:
-            return "bad uresult access";
-        case error_code::bad_uvalue_cast:
-            return "bad uvalue cast";
         case error_code::bad_argument_cast:
             return "bad argument cast";
         case error_code::bad_instance_cast:
@@ -2935,26 +2929,26 @@ namespace meta_hpp
         [[nodiscard]] bool has_unmap_op() const noexcept;
 
         template < typename T >
-        [[nodiscard]] T get_as() &&;
+        [[nodiscard]] T as() &&;
 
         template < typename T >
-        [[nodiscard]] auto get_as() & //
+        [[nodiscard]] auto as() & //
             -> std::conditional_t<detail::pointer_kind<T>, T, T&>;
 
         template < typename T >
-        [[nodiscard]] auto get_as() const& //
+        [[nodiscard]] auto as() const& //
             -> std::conditional_t<detail::pointer_kind<T>, T, const T&>;
 
         template < typename T >
-        [[nodiscard]] auto get_as() const&& //
+        [[nodiscard]] auto as() const&& //
             -> std::conditional_t<detail::pointer_kind<T>, T, const T&&>;
 
         template < typename T >
-        [[nodiscard]] auto try_get_as() noexcept //
+        [[nodiscard]] auto try_as() noexcept //
             -> std::conditional_t<detail::pointer_kind<T>, T, T*>;
 
         template < typename T >
-        [[nodiscard]] auto try_get_as() const noexcept //
+        [[nodiscard]] auto try_as() const noexcept //
             -> std::conditional_t<detail::pointer_kind<T>, T, const T*>;
 
     private:
@@ -3485,9 +3479,6 @@ namespace meta_hpp
 
         template < typename Instance >
         [[nodiscard]] uresult try_get(Instance&& instance) const;
-
-        template < typename T, typename Instance >
-        [[nodiscard]] T get_as(Instance&& instance) const;
 
         template < typename Instance >
         [[nodiscard]] uvalue operator()(Instance&& instance) const;
@@ -7477,7 +7468,7 @@ namespace meta_hpp
         }
 
         for ( const evalue& evalue : data_->evalues ) {
-            if ( evalue.get_value().get_as<Enum>() == value ) {
+            if ( evalue.get_value().as<Enum>() == value ) {
                 return evalue.get_name();
             }
         }
@@ -8980,76 +8971,76 @@ namespace meta_hpp
     }
 
     template < typename T >
-    T uvalue::get_as() && {
+    T uvalue::as() && {
         static_assert(std::is_same_v<T, std::decay_t<T>>);
 
         if constexpr ( detail::pointer_kind<T> ) {
-            if ( T ptr = try_get_as<T>(); ptr || get_type().is_nullptr() ) {
+            if ( T ptr = try_as<T>(); ptr || get_type().is_nullptr() ) {
                 return ptr;
             }
         } else {
-            if ( T* ptr = try_get_as<T>() ) {
+            if ( T* ptr = try_as<T>() ) {
                 return std::move(*ptr);
             }
         }
 
-        throw_exception(error_code::bad_uvalue_cast);
+        throw_exception(error_code::bad_uvalue_access);
     }
 
     template < typename T >
-    auto uvalue::get_as() & -> std::conditional_t<detail::pointer_kind<T>, T, T&> {
+    auto uvalue::as() & -> std::conditional_t<detail::pointer_kind<T>, T, T&> {
         static_assert(std::is_same_v<T, std::decay_t<T>>);
 
         if constexpr ( detail::pointer_kind<T> ) {
-            if ( T ptr = try_get_as<T>(); ptr || get_type().is_nullptr() ) {
+            if ( T ptr = try_as<T>(); ptr || get_type().is_nullptr() ) {
                 return ptr;
             }
         } else {
-            if ( T* ptr = try_get_as<T>() ) {
+            if ( T* ptr = try_as<T>() ) {
                 return *ptr;
             }
         }
 
-        throw_exception(error_code::bad_uvalue_cast);
+        throw_exception(error_code::bad_uvalue_access);
     }
 
     template < typename T >
-    auto uvalue::get_as() const& -> std::conditional_t<detail::pointer_kind<T>, T, const T&> {
+    auto uvalue::as() const& -> std::conditional_t<detail::pointer_kind<T>, T, const T&> {
         static_assert(std::is_same_v<T, std::decay_t<T>>);
 
         if constexpr ( detail::pointer_kind<T> ) {
-            if ( T ptr = try_get_as<T>(); ptr || get_type().is_nullptr() ) {
+            if ( T ptr = try_as<T>(); ptr || get_type().is_nullptr() ) {
                 return ptr;
             }
         } else {
-            if ( const T* ptr = try_get_as<T>() ) {
+            if ( const T* ptr = try_as<T>() ) {
                 return *ptr;
             }
         }
 
-        throw_exception(error_code::bad_uvalue_cast);
+        throw_exception(error_code::bad_uvalue_access);
     }
 
     template < typename T >
-    auto uvalue::get_as() const&& -> std::conditional_t<detail::pointer_kind<T>, T, const T&&> {
+    auto uvalue::as() const&& -> std::conditional_t<detail::pointer_kind<T>, T, const T&&> {
         static_assert(std::is_same_v<T, std::decay_t<T>>);
 
         if constexpr ( detail::pointer_kind<T> ) {
-            if ( T ptr = try_get_as<T>(); ptr || get_type().is_nullptr() ) {
+            if ( T ptr = try_as<T>(); ptr || get_type().is_nullptr() ) {
                 return ptr;
             }
         } else {
-            if ( const T* ptr = try_get_as<T>() ) {
+            if ( const T* ptr = try_as<T>() ) {
                 return std::move(*ptr);
             }
         }
 
-        throw_exception(error_code::bad_uvalue_cast);
+        throw_exception(error_code::bad_uvalue_access);
     }
 
     template < typename T >
     // NOLINTNEXTLINE(*-cognitive-complexity)
-    auto uvalue::try_get_as() noexcept -> std::conditional_t<detail::pointer_kind<T>, T, T*> {
+    auto uvalue::try_as() noexcept -> std::conditional_t<detail::pointer_kind<T>, T, T*> {
         static_assert(std::is_same_v<T, std::decay_t<T>>);
 
         using detail::type_registry;
@@ -9117,7 +9108,7 @@ namespace meta_hpp
 
     template < typename T >
     // NOLINTNEXTLINE(*-cognitive-complexity)
-    auto uvalue::try_get_as() const noexcept -> std::conditional_t<detail::pointer_kind<T>, T, const T*> {
+    auto uvalue::try_as() const noexcept -> std::conditional_t<detail::pointer_kind<T>, T, const T*> {
         static_assert(std::is_same_v<T, std::decay_t<T>>);
 
         using detail::type_registry;

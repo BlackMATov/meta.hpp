@@ -84,19 +84,19 @@ TEST_CASE("meta/meta_states/member") {
         }
 
         {
-            CHECK(vm.get(v).get_as<int>() == 1);
-            CHECK(vm.get(&v).get_as<int>() == 1);
-            CHECK(vm.get(std::as_const(v)).get_as<int>() == 1);
-            CHECK(vm.get(&std::as_const(v)).get_as<int>() == 1);
-            CHECK(vm.get(std::move(v)).get_as<int>() == 1);
-            CHECK(vm.get(std::move(std::as_const(v))).get_as<int>() == 1);
+            CHECK(vm.get(v).as<int>() == 1);
+            CHECK(vm.get(&v).as<int>() == 1);
+            CHECK(vm.get(std::as_const(v)).as<int>() == 1);
+            CHECK(vm.get(&std::as_const(v)).as<int>() == 1);
+            CHECK(vm.get(std::move(v)).as<int>() == 1);
+            CHECK(vm.get(std::move(std::as_const(v))).as<int>() == 1);
 
-            CHECK(vm(v).get_as<int>() == 1);
-            CHECK(vm(&v).get_as<int>() == 1);
-            CHECK(vm(std::as_const(v)).get_as<int>() == 1);
-            CHECK(vm(&std::as_const(v)).get_as<int>() == 1);
-            CHECK(vm(std::move(v)).get_as<int>() == 1);
-            CHECK(vm(std::move(std::as_const(v))).get_as<int>() == 1);
+            CHECK(vm(v).as<int>() == 1);
+            CHECK(vm(&v).as<int>() == 1);
+            CHECK(vm(std::as_const(v)).as<int>() == 1);
+            CHECK(vm(&std::as_const(v)).as<int>() == 1);
+            CHECK(vm(std::move(v)).as<int>() == 1);
+            CHECK(vm(std::move(std::as_const(v))).as<int>() == 1);
 
             CHECK_FALSE(vm.try_get(v2));
             CHECK_FALSE(vm.try_get(&v2));
@@ -139,22 +139,22 @@ TEST_CASE("meta/meta_states/member") {
         }
 
         {
-            vm.set(v, 10); CHECK(vm.get(v).get_as<int>() == 10);
-            vm.set(&v, 100); CHECK(vm.get(v).get_as<int>() == 100);
-            CHECK_FALSE(vm.try_set(std::as_const(v), 11)); CHECK(vm.get(v).get_as<int>() == 100);
-            CHECK_FALSE(vm.try_set(&std::as_const(v), 11)); CHECK(vm.get(v).get_as<int>() == 100);
+            vm.set(v, 10); CHECK(vm.get(v).as<int>() == 10);
+            vm.set(&v, 100); CHECK(vm.get(v).as<int>() == 100);
+            CHECK_FALSE(vm.try_set(std::as_const(v), 11)); CHECK(vm.get(v).as<int>() == 100);
+            CHECK_FALSE(vm.try_set(&std::as_const(v), 11)); CHECK(vm.get(v).as<int>() == 100);
 
-            vm.set(std::move(v), 12); CHECK(vm.get(v).get_as<int>() == 12);
-            CHECK_FALSE(vm.try_set(std::move(std::as_const(v)), 13)); CHECK(vm.get(v).get_as<int>() == 12);
+            vm.set(std::move(v), 12); CHECK(vm.get(v).as<int>() == 12);
+            CHECK_FALSE(vm.try_set(std::move(std::as_const(v)), 13)); CHECK(vm.get(v).as<int>() == 12);
 
-            vm(v, 13); CHECK(vm(v).get_as<int>() == 13);
-            vm(&v, 130); CHECK(vm(v).get_as<int>() == 130);
+            vm(v, 13); CHECK(vm(v).as<int>() == 13);
+            vm(&v, 130); CHECK(vm(v).as<int>() == 130);
 
-            vm(std::move(v), 15); CHECK(vm(v).get_as<int>() == 15);
+            vm(std::move(v), 15); CHECK(vm(v).as<int>() == 15);
 
             CHECK_FALSE(vm.try_set(v2, 17));
             CHECK_FALSE(vm.try_set(&v2, 17));
-            CHECK(vm(v).get_as<int>() == 15);
+            CHECK(vm(v).as<int>() == 15);
         }
     }
 
@@ -192,19 +192,19 @@ TEST_CASE("meta/meta_states/member") {
         }
 
         {
-            CHECK(vm.get(v).get_as<int>() == 2);
-            CHECK(vm.get(&v).get_as<int>() == 2);
-            CHECK(vm.get(std::as_const(v)).get_as<int>() == 2);
-            CHECK(vm.get(&std::as_const(v)).get_as<int>() == 2);
-            CHECK(vm.get(std::move(v)).get_as<int>() == 2);
-            CHECK(vm.get(std::move(std::as_const(v))).get_as<int>() == 2);
+            CHECK(vm.get(v).as<int>() == 2);
+            CHECK(vm.get(&v).as<int>() == 2);
+            CHECK(vm.get(std::as_const(v)).as<int>() == 2);
+            CHECK(vm.get(&std::as_const(v)).as<int>() == 2);
+            CHECK(vm.get(std::move(v)).as<int>() == 2);
+            CHECK(vm.get(std::move(std::as_const(v))).as<int>() == 2);
 
-            CHECK(vm(v).get_as<int>() == 2);
-            CHECK(vm(&v).get_as<int>() == 2);
-            CHECK(vm(std::as_const(v)).get_as<int>() == 2);
-            CHECK(vm(&std::as_const(v)).get_as<int>() == 2);
-            CHECK(vm(std::move(v)).get_as<int>() == 2);
-            CHECK(vm(std::move(std::as_const(v))).get_as<int>() == 2);
+            CHECK(vm(v).as<int>() == 2);
+            CHECK(vm(&v).as<int>() == 2);
+            CHECK(vm(std::as_const(v)).as<int>() == 2);
+            CHECK(vm(&std::as_const(v)).as<int>() == 2);
+            CHECK(vm(std::move(v)).as<int>() == 2);
+            CHECK(vm(std::move(std::as_const(v))).as<int>() == 2);
 
             CHECK_FALSE(vm.try_get(v2));
             CHECK_FALSE(vm.try_get(&v2));
@@ -243,16 +243,16 @@ TEST_CASE("meta/meta_states/member") {
         }
 
         {
-            CHECK_FALSE(vm.try_set(v, 10)); CHECK(vm.get(v).get_as<int>() == 2);
-            CHECK_FALSE(vm.try_set(&v, 10)); CHECK(vm.get(v).get_as<int>() == 2);
-            CHECK_FALSE(vm.try_set(std::as_const(v), 11)); CHECK(vm.get(v).get_as<int>() == 2);
-            CHECK_FALSE(vm.try_set(&std::as_const(v), 11)); CHECK(vm.get(v).get_as<int>() == 2);
-            CHECK_FALSE(vm.try_set(std::move(v), 12)); CHECK(vm.get(v).get_as<int>() == 2);
-            CHECK_FALSE(vm.try_set(std::move(std::as_const(v)), 16)); CHECK(vm.get(v).get_as<int>() == 2);
+            CHECK_FALSE(vm.try_set(v, 10)); CHECK(vm.get(v).as<int>() == 2);
+            CHECK_FALSE(vm.try_set(&v, 10)); CHECK(vm.get(v).as<int>() == 2);
+            CHECK_FALSE(vm.try_set(std::as_const(v), 11)); CHECK(vm.get(v).as<int>() == 2);
+            CHECK_FALSE(vm.try_set(&std::as_const(v), 11)); CHECK(vm.get(v).as<int>() == 2);
+            CHECK_FALSE(vm.try_set(std::move(v), 12)); CHECK(vm.get(v).as<int>() == 2);
+            CHECK_FALSE(vm.try_set(std::move(std::as_const(v)), 16)); CHECK(vm.get(v).as<int>() == 2);
 
             CHECK_FALSE(vm.try_set(v2, 17));
             CHECK_FALSE(vm.try_set(&v2, 17));
-            CHECK(vm(v).get_as<int>() == 2);
+            CHECK(vm(v).as<int>() == 2);
         }
     }
 
@@ -266,13 +266,13 @@ TEST_CASE("meta/meta_states/member") {
         {
             clazz_1 v;
             CHECK(vm.get(v).get_type() == meta::resolve_type<std::unique_ptr<int>*>());
-            CHECK(vm.get(v).get_as<std::unique_ptr<int>*>() == std::addressof(v.unique_int_member));
+            CHECK(vm.get(v).as<std::unique_ptr<int>*>() == std::addressof(v.unique_int_member));
         }
 
         {
             const clazz_1 v;
             CHECK(vm.get(v).get_type() == meta::resolve_type<const std::unique_ptr<int>*>());
-            CHECK(vm.get(v).get_as<const std::unique_ptr<int>*>() == std::addressof(v.unique_int_member));
+            CHECK(vm.get(v).as<const std::unique_ptr<int>*>() == std::addressof(v.unique_int_member));
         }
     }
 
@@ -287,14 +287,14 @@ TEST_CASE("meta/meta_states/member") {
             clazz_1 v;
             using ref_t = std::reference_wrapper<std::unique_ptr<int>>;
             CHECK(vm.get(v).get_type() == meta::resolve_type<ref_t>());
-            CHECK(vm.get(v).get_as<ref_t>().get() == v.unique_int_member);
+            CHECK(vm.get(v).as<ref_t>().get() == v.unique_int_member);
         }
 
         {
             const clazz_1 v;
             using ref_t = std::reference_wrapper<const std::unique_ptr<int>>;
             CHECK(vm.get(v).get_type() == meta::resolve_type<ref_t>());
-            CHECK(vm.get(v).get_as<ref_t>().get() == v.unique_int_member);
+            CHECK(vm.get(v).as<ref_t>().get() == v.unique_int_member);
         }
     }
 
@@ -306,7 +306,7 @@ TEST_CASE("meta/meta_states/member") {
         clazz_2 v2;
 
         CHECK(vm.try_get(v));
-        CHECK(vm.try_get(v).get_value().get_as<int>() == 1);
+        CHECK(vm.try_get(v).get_value().as<int>() == 1);
         CHECK_FALSE(vm.try_get(v2));
     }
 
@@ -318,10 +318,10 @@ TEST_CASE("meta/meta_states/member") {
         clazz_2 v2;
 
         CHECK(vm.try_set(v, 10));
-        CHECK(vm.get(v).get_as<int>() == 10);
+        CHECK(vm.get(v).as<int>() == 10);
 
         CHECK_FALSE(vm.try_set(v, 20.0));
         CHECK_FALSE(vm.try_set(v2, 20));
-        CHECK(vm.get(v).get_as<int>() == 10);
+        CHECK(vm.get(v).as<int>() == 10);
     }
 }

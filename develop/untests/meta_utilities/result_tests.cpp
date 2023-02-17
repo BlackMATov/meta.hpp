@@ -150,7 +150,7 @@ TEST_CASE("meta/meta_utilities/uresult") {
             CHECK(res);
             CHECK(res.has_value());
             REQUIRE(res.get_value());
-            CHECK(res.get_value().get_as<ivec2>() == ivec2{42, 21});
+            CHECK(res.get_value().as<ivec2>() == ivec2{42, 21});
             CHECK_FALSE(res.has_error());
             CHECK(res.get_error() == meta::error_code::no_error);
         }
@@ -159,7 +159,7 @@ TEST_CASE("meta/meta_utilities/uresult") {
             CHECK(res);
             CHECK(res.has_value());
             REQUIRE(res.get_value());
-            CHECK(res.get_value().get_as<ivec2>() == ivec2{42, 21});
+            CHECK(res.get_value().as<ivec2>() == ivec2{42, 21});
             CHECK_FALSE(res.has_error());
             CHECK(res.get_error() == meta::error_code::no_error);
         }
@@ -168,7 +168,7 @@ TEST_CASE("meta/meta_utilities/uresult") {
             CHECK(res);
             CHECK(res.has_value());
             REQUIRE(res.get_value());
-            CHECK(res.get_value().get_as<ivec2>() == ivec2{42, 21});
+            CHECK(res.get_value().as<ivec2>() == ivec2{42, 21});
             CHECK_FALSE(res.has_error());
             CHECK(res.get_error() == meta::error_code::no_error);
         }
@@ -180,7 +180,7 @@ TEST_CASE("meta/meta_utilities/uresult") {
             CHECK(res);
             CHECK(res.has_value());
             REQUIRE(res.get_value());
-            CHECK(res.get_value().get_as<ivec2>() == ivec2{42, 21});
+            CHECK(res.get_value().as<ivec2>() == ivec2{42, 21});
             CHECK_FALSE(res.has_error());
             CHECK(res.get_error() == meta::error_code::no_error);
         }
@@ -189,7 +189,7 @@ TEST_CASE("meta/meta_utilities/uresult") {
             CHECK(res);
             CHECK(res.has_value());
             REQUIRE(res.get_value());
-            CHECK(res.get_value().get_as<ivec2>() == ivec2{42, 21});
+            CHECK(res.get_value().as<ivec2>() == ivec2{42, 21});
             CHECK_FALSE(res.has_error());
             CHECK(res.get_error() == meta::error_code::no_error);
         }
@@ -198,7 +198,7 @@ TEST_CASE("meta/meta_utilities/uresult") {
             CHECK(res);
             CHECK(res.has_value());
             REQUIRE(res.get_value());
-            CHECK(res.get_value().get_as<std::vector<int>>() == std::vector<int>{42, 21});
+            CHECK(res.get_value().as<std::vector<int>>() == std::vector<int>{42, 21});
             CHECK_FALSE(res.has_error());
             CHECK(res.get_error() == meta::error_code::no_error);
         }
@@ -207,7 +207,7 @@ TEST_CASE("meta/meta_utilities/uresult") {
             CHECK(res);
             CHECK(res.has_value());
             REQUIRE(res.get_value());
-            CHECK(res.get_value().get_as<std::vector<int>>() == std::vector<int>{42, 21});
+            CHECK(res.get_value().as<std::vector<int>>() == std::vector<int>{42, 21});
             CHECK_FALSE(res.has_error());
             CHECK(res.get_error() == meta::error_code::no_error);
         }
@@ -220,7 +220,7 @@ TEST_CASE("meta/meta_utilities/uresult") {
         CHECK(res);
         CHECK(res.has_value());
         REQUIRE(res.get_value());
-        CHECK(res.get_value().get_as<ivec2>() == ivec2{42, 21});
+        CHECK(res.get_value().as<ivec2>() == ivec2{42, 21});
         CHECK_FALSE(res.has_error());
         CHECK(res.get_error() == meta::error_code::no_error);
 
@@ -235,7 +235,7 @@ TEST_CASE("meta/meta_utilities/uresult") {
         CHECK(res);
         CHECK(res.has_value());
         REQUIRE(res.get_value());
-        CHECK(res.get_value().get_as<ivec2>() == ivec2{42, 21});
+        CHECK(res.get_value().as<ivec2>() == ivec2{42, 21});
         CHECK_FALSE(res.has_error());
         CHECK(res.get_error() == meta::error_code::no_error);
     }
@@ -246,24 +246,24 @@ TEST_CASE("meta/meta_utilities/uresult") {
             CHECK(res.emplace<std::vector<int>>({42, 21}) == std::vector<int>{42, 21});
             CHECK(res);
             CHECK(res.has_value());
-            CHECK(res.get_value().get_as<std::vector<int>>() == std::vector<int>{42, 21});
+            CHECK(res.get_value().as<std::vector<int>>() == std::vector<int>{42, 21});
 
             CHECK(res.emplace<ivec2>(42, 21) == ivec2{42, 21});
             CHECK(res);
             CHECK(res.has_value());
-            CHECK(res.get_value().get_as<ivec2>() == ivec2{42, 21});
+            CHECK(res.get_value().as<ivec2>() == ivec2{42, 21});
         }
         {
             meta::uresult res{meta::uerror{meta::error_code::bad_argument_cast}};
             CHECK(res.emplace<ivec2>(42, 21) == ivec2{42, 21});
             CHECK(res);
             CHECK(res.has_value());
-            CHECK(res.get_value().get_as<ivec2>() == ivec2{42, 21});
+            CHECK(res.get_value().as<ivec2>() == ivec2{42, 21});
 
             CHECK(res.emplace<std::vector<int>>({42, 21}) == std::vector<int>{42, 21});
             CHECK(res);
             CHECK(res.has_value());
-            CHECK(res.get_value().get_as<std::vector<int>>() == std::vector<int>{42, 21});
+            CHECK(res.get_value().as<std::vector<int>>() == std::vector<int>{42, 21});
         }
     }
 
@@ -272,15 +272,15 @@ TEST_CASE("meta/meta_utilities/uresult") {
             meta::uresult res1{ivec2{42}};
             meta::uresult res2{ivec2{21}};
             res1.swap(res2);
-            CHECK(res1.get_value().get_as<ivec2>() == ivec2{21});
-            CHECK(res2.get_value().get_as<ivec2>() == ivec2{42});
+            CHECK(res1.get_value().as<ivec2>() == ivec2{21});
+            CHECK(res2.get_value().as<ivec2>() == ivec2{42});
         }
         {
             meta::uresult res1{ivec2{42}};
             meta::uresult res2{meta::uerror{meta::error_code::bad_argument_cast}};
             swap(res1, res2);
             CHECK(res1.get_error() == meta::error_code::bad_argument_cast);
-            CHECK(res2.get_value().get_as<ivec2>() == ivec2{42});
+            CHECK(res2.get_value().as<ivec2>() == ivec2{42});
         }
         {
             meta::uresult res1{meta::uerror{meta::error_code::bad_argument_cast}};
@@ -298,9 +298,9 @@ TEST_CASE("meta/meta_utilities/uresult") {
         static_assert(std::is_same_v<const meta::uvalue&&, decltype(std::declval<const meta::uresult&&>().get_value())>);
 
         meta::uresult res{ivec2{42, 21}};
-        CHECK(res.get_value().get_as<ivec2>() == ivec2{42, 21});
-        CHECK(std::move(res).get_value().get_as<ivec2>() == ivec2{42, 21});
-        CHECK(std::as_const(res).get_value().get_as<ivec2>() == ivec2{42, 21});
-        CHECK(std::move(std::as_const(res)).get_value().get_as<ivec2>() == ivec2{42, 21});
+        CHECK(res.get_value().as<ivec2>() == ivec2{42, 21});
+        CHECK(std::move(res).get_value().as<ivec2>() == ivec2{42, 21});
+        CHECK(std::as_const(res).get_value().as<ivec2>() == ivec2{42, 21});
+        CHECK(std::move(std::as_const(res)).get_value().as<ivec2>() == ivec2{42, 21});
     }
 }

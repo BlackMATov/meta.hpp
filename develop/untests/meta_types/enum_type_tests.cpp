@@ -91,8 +91,8 @@ TEST_CASE("meta/meta_types/enum_type") {
             const meta::evalue green_value = color_type.get_evalue("green");
             REQUIRE(green_value);
 
-            CHECK(green_value.get_value().get_as<color>() == color::green);
-            CHECK(green_value.get_underlying_value().get_as<unsigned>() == meta::detail::to_underlying(color::green));
+            CHECK(green_value.get_value().as<color>() == color::green);
+            CHECK(green_value.get_underlying_value().as<unsigned>() == meta::detail::to_underlying(color::green));
         }
 
         {
@@ -109,8 +109,8 @@ TEST_CASE("meta/meta_types/enum_type") {
             const meta::evalue green_value = ecolor_type.get_evalue("green");
             REQUIRE(green_value);
 
-            CHECK(green_value.get_value().get_as<ecolor>() == ecolor_green);
-            CHECK(green_value.get_underlying_value().get_as<int>() == meta::detail::to_underlying(ecolor_green));
+            CHECK(green_value.get_value().as<ecolor>() == ecolor_green);
+            CHECK(green_value.get_underlying_value().as<int>() == meta::detail::to_underlying(ecolor_green));
         }
 
         {
@@ -143,7 +143,7 @@ TEST_CASE("meta/meta_types/enum_type") {
 
         {
             REQUIRE(color_type.name_to_value("blue"));
-            CHECK(color_type.name_to_value("blue").get_as<color>() == color::blue);
+            CHECK(color_type.name_to_value("blue").as<color>() == color::blue);
         }
 
         {
@@ -157,7 +157,7 @@ TEST_CASE("meta/meta_types/enum_type") {
 
         {
             REQUIRE(ecolor_type.name_to_value("blue"));
-            CHECK(ecolor_type.name_to_value("blue").get_as<ecolor>() == ecolor_blue);
+            CHECK(ecolor_type.name_to_value("blue").as<ecolor>() == ecolor_blue);
         }
 
         {

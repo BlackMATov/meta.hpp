@@ -76,7 +76,7 @@ TEST_CASE("meta/meta_manuals/method/usage") {
 
     // checks the type and value of the result
     CHECK(ivec2_add_result_value.get_type() == meta::resolve_type<ivec2>());
-    CHECK(ivec2_add_result_value.get_as<ivec2>() == ivec2{42, 21});
+    CHECK(ivec2_add_result_value.as<ivec2>() == ivec2{42, 21});
 
     // checks the result of our manipulations
     CHECK(v == ivec2{42, 21});

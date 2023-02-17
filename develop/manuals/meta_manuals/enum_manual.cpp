@@ -41,7 +41,7 @@ TEST_CASE("meta/meta_manuals/enum/type") {
     for ( const meta::evalue& evalue : align_type.get_evalues() ) {
         fmt::print("  - {}/{}\n",
             evalue.get_name(),
-            evalue.get_underlying_value().get_as<int>());
+            evalue.get_underlying_value().as<int>());
     }
 
     // Output:
@@ -63,5 +63,5 @@ TEST_CASE("meta/meta_manuals/enum/usage") {
     CHECK(align_type.value_to_name(e) == "center");
 
     // ... and back again
-    CHECK(align_type.name_to_value("center").get_as<align>() == e);
+    CHECK(align_type.name_to_value("center").as<align>() == e);
 }

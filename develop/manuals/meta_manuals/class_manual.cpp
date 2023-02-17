@@ -87,5 +87,5 @@ TEST_CASE("meta/meta_manuals/class/usage") {
     const meta::uvalue rectangle_v = rectangle_type.create(10, 20);
 
     // calls the method with the dynamic rectangle instance 'rectangle_v'
-    CHECK(rectangle_area.invoke(rectangle_v).get_as<int>() == 200);
+    CHECK(rectangle_area.invoke(rectangle_v).as<int>() == 200);
 }

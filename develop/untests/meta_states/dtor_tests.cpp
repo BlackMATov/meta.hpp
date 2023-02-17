@@ -100,6 +100,6 @@ TEST_CASE("meta/meta_states/dtor") {
         CHECK(dtor.get_type().get_owner_type() == meta::resolve_type<clazz_dtor_metadata>());
         CHECK(dtor.get_type().get_flags() == (meta::destructor_flags::is_noexcept | meta::destructor_flags::is_virtual));
 
-        CHECK(dtor.get_metadata().at("desc").get_as<std::string>() == "virtual dtor"s);
+        CHECK(dtor.get_metadata().at("desc").as<std::string>() == "virtual dtor"s);
     }
 }

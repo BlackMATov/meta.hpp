@@ -269,9 +269,6 @@ namespace meta_hpp
         template < typename Instance >
         [[nodiscard]] uresult try_get(Instance&& instance) const;
 
-        template < typename T, typename Instance >
-        [[nodiscard]] T get_as(Instance&& instance) const;
-
         template < typename Instance >
         [[nodiscard]] uvalue operator()(Instance&& instance) const;
 

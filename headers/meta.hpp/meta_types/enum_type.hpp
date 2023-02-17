@@ -57,7 +57,7 @@ namespace meta_hpp
         }
 
         for ( const evalue& evalue : data_->evalues ) {
-            if ( evalue.get_value().get_as<Enum>() == value ) {
+            if ( evalue.get_value().as<Enum>() == value ) {
                 return evalue.get_name();
             }
         }

@@ -68,7 +68,7 @@ TEST_CASE("meta/meta_manuals/function/usage") {
     CHECK(sub_result_value.get_type() == meta::resolve_type<int>());
 
     // casts the dynamic returned value to the typed value
-    const int sub_function_typed_result = sub_result_value.get_as<int>();
+    const int sub_function_typed_result = sub_result_value.as<int>();
 
     // here is our typed result
     CHECK(sub_function_typed_result == 42);
