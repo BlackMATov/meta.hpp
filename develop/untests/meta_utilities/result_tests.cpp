@@ -297,10 +297,34 @@ TEST_CASE("meta/meta_utilities/uresult") {
         static_assert(std::is_same_v<const meta::uvalue&, decltype(std::declval<const meta::uresult&>().get_value())>);
         static_assert(std::is_same_v<const meta::uvalue&&, decltype(std::declval<const meta::uresult&&>().get_value())>);
 
-        meta::uresult res{ivec2{42, 21}};
-        CHECK(res.get_value().as<ivec2>() == ivec2{42, 21});
-        CHECK(std::move(res).get_value().as<ivec2>() == ivec2{42, 21});
-        CHECK(std::as_const(res).get_value().as<ivec2>() == ivec2{42, 21});
-        CHECK(std::move(std::as_const(res)).get_value().as<ivec2>() == ivec2{42, 21});
+        static_assert(std::is_same_v<meta::uvalue&, decltype(std::declval<meta::uresult&>().operator*())>);
+        static_assert(std::is_same_v<meta::uvalue&&, decltype(std::declval<meta::uresult&&>().operator*())>);
+        static_assert(std::is_same_v<const meta::uvalue&, decltype(std::declval<const meta::uresult&>().operator*())>);
+        static_assert(std::is_same_v<const meta::uvalue&&, decltype(std::declval<const meta::uresult&&>().operator*())>);
+
+        static_assert(std::is_same_v<meta::uvalue*, decltype(std::declval<meta::uresult&>().operator->())>);
+        static_assert(std::is_same_v<const meta::uvalue*, decltype(std::declval<const meta::uresult&>().operator->())>);
+
+        {
+            meta::uresult res{ivec2{42, 21}};
+            CHECK(res.get_value().as<ivec2>() == ivec2{42, 21});
+            CHECK(std::move(res).get_value().as<ivec2>() == ivec2{42, 21});
+            CHECK(std::as_const(res).get_value().as<ivec2>() == ivec2{42, 21});
+            CHECK(std::move(std::as_const(res)).get_value().as<ivec2>() == ivec2{42, 21});
+        }
+
+        {
+            meta::uresult res{ivec2{42, 21}};
+            CHECK((*res).as<ivec2>() == ivec2{42, 21});
+            CHECK((*std::move(res)).as<ivec2>() == ivec2{42, 21});
+            CHECK((*std::as_const(res)).as<ivec2>() == ivec2{42, 21});
+            CHECK((*std::move(std::as_const(res))).as<ivec2>() == ivec2{42, 21});
+        }
+
+        {
+            meta::uresult res{ivec2{42, 21}};
+            CHECK(res->as<ivec2>() == ivec2{42, 21});
+            CHECK(std::as_const(res)->as<ivec2>() == ivec2{42, 21});
+        }
     }
 }

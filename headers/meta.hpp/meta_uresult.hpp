@@ -123,10 +123,18 @@ namespace meta_hpp
         [[nodiscard]] bool has_value() const noexcept;
         [[nodiscard]] explicit operator bool() const noexcept;
 
-        [[nodiscard]] uvalue& get_value() &;
-        [[nodiscard]] uvalue&& get_value() &&;
-        [[nodiscard]] const uvalue& get_value() const&;
-        [[nodiscard]] const uvalue&& get_value() const&&;
+        [[nodiscard]] uvalue* operator->() noexcept;
+        [[nodiscard]] const uvalue* operator->() const noexcept;
+
+        [[nodiscard]] uvalue& operator*() & noexcept;
+        [[nodiscard]] uvalue&& operator*() && noexcept;
+        [[nodiscard]] const uvalue& operator*() const& noexcept;
+        [[nodiscard]] const uvalue&& operator*() const&& noexcept;
+
+        [[nodiscard]] uvalue& get_value() & noexcept;
+        [[nodiscard]] uvalue&& get_value() && noexcept;
+        [[nodiscard]] const uvalue& get_value() const& noexcept;
+        [[nodiscard]] const uvalue&& get_value() const&& noexcept;
 
         [[nodiscard]] error_code get_error() const noexcept;
 

@@ -120,19 +120,44 @@ namespace meta_hpp
         return has_value();
     }
 
-    inline uvalue& uresult::get_value() & {
+    inline uvalue* uresult::operator->() noexcept {
+        return std::addressof(value_);
+    }
+
+    inline const uvalue* uresult::operator->() const noexcept {
+        return std::addressof(value_);
+    }
+
+    inline uvalue& uresult::operator*() & noexcept {
         return value_;
     }
 
-    inline uvalue&& uresult::get_value() && {
+    inline uvalue&& uresult::operator*() && noexcept {
         return std::move(value_);
     }
 
-    inline const uvalue& uresult::get_value() const& {
+    inline const uvalue& uresult::operator*() const& noexcept {
         return value_;
     }
 
-    inline const uvalue&& uresult::get_value() const&& {
+    inline const uvalue&& uresult::operator*() const&& noexcept {
+        // NOLINTNEXTLINE(*-move-const-arg)
+        return std::move(value_);
+    }
+
+    inline uvalue& uresult::get_value() & noexcept {
+        return value_;
+    }
+
+    inline uvalue&& uresult::get_value() && noexcept {
+        return std::move(value_);
+    }
+
+    inline const uvalue& uresult::get_value() const& noexcept {
+        return value_;
+    }
+
+    inline const uvalue&& uresult::get_value() const&& noexcept {
         // NOLINTNEXTLINE(*-move-const-arg)
         return std::move(value_);
     }
