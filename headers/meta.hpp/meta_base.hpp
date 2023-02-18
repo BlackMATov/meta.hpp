@@ -61,6 +61,19 @@ namespace meta_hpp
         class uinst_base;
         class uinst;
     }
+
+    namespace detail
+    {
+        template < typename T >
+        concept uvalue_family               //
+            = std::is_same_v<T, uarg_base>  //
+           || std::is_same_v<T, uarg>       //
+           || std::is_same_v<T, uinst_base> //
+           || std::is_same_v<T, uinst>      //
+           || std::is_same_v<T, uerror>     //
+           || std::is_same_v<T, uresult>    //
+           || std::is_same_v<T, uvalue>;    //
+    }
 }
 
 namespace meta_hpp
@@ -96,6 +109,21 @@ namespace meta_hpp
         using method_state_ptr = intrusive_ptr<method_state>;
         using scope_state_ptr = intrusive_ptr<scope_state>;
         using variable_state_ptr = intrusive_ptr<variable_state>;
+    }
+
+    namespace detail
+    {
+        template < typename T >
+        concept state_family                 //
+            = std::is_same_v<T, argument>    //
+           || std::is_same_v<T, constructor> //
+           || std::is_same_v<T, destructor>  //
+           || std::is_same_v<T, evalue>      //
+           || std::is_same_v<T, function>    //
+           || std::is_same_v<T, member>      //
+           || std::is_same_v<T, method>      //
+           || std::is_same_v<T, scope>       //
+           || std::is_same_v<T, variable>;   //
     }
 }
 
@@ -133,6 +161,26 @@ namespace meta_hpp
         struct reference_type_data;
         struct void_type_data;
     }
+
+    namespace detail
+    {
+        template < typename T >
+        concept type_family                       //
+            = std::is_same_v<T, any_type>         //
+           || std::is_same_v<T, array_type>       //
+           || std::is_same_v<T, class_type>       //
+           || std::is_same_v<T, constructor_type> //
+           || std::is_same_v<T, destructor_type>  //
+           || std::is_same_v<T, enum_type>        //
+           || std::is_same_v<T, function_type>    //
+           || std::is_same_v<T, member_type>      //
+           || std::is_same_v<T, method_type>      //
+           || std::is_same_v<T, nullptr_type>     //
+           || std::is_same_v<T, number_type>      //
+           || std::is_same_v<T, pointer_type>     //
+           || std::is_same_v<T, reference_type>   //
+           || std::is_same_v<T, void_type>;       //
+    }
 }
 
 namespace meta_hpp
@@ -146,6 +194,21 @@ namespace meta_hpp
     class method_index;
     class scope_index;
     class variable_index;
+
+    namespace detail
+    {
+        template < typename T >
+        concept index_family                       //
+            = std::is_same_v<T, argument_index>    //
+           || std::is_same_v<T, constructor_index> //
+           || std::is_same_v<T, destructor_index>  //
+           || std::is_same_v<T, evalue_index>      //
+           || std::is_same_v<T, function_index>    //
+           || std::is_same_v<T, member_index>      //
+           || std::is_same_v<T, method_index>      //
+           || std::is_same_v<T, scope_index>       //
+           || std::is_same_v<T, variable_index>;   //
+    }
 }
 
 namespace meta_hpp

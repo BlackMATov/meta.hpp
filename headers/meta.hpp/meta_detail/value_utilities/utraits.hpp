@@ -8,30 +8,17 @@
 
 #include "../../meta_base.hpp"
 #include "../../meta_registry.hpp"
-#include "../../meta_uvalue.hpp"
-
-namespace meta_hpp::detail
-{
-    template < typename T >
-    concept any_uvalue_kind             //
-        = std::is_same_v<T, uarg_base>  //
-       || std::is_same_v<T, uarg>       //
-       || std::is_same_v<T, uinst_base> //
-       || std::is_same_v<T, uinst>      //
-       || std::is_same_v<T, uresult>    //
-       || std::is_same_v<T, uvalue>;    //
-}
 
 namespace meta_hpp::detail
 {
     template < typename T, typename Tp = std::decay_t<T> >
-    concept arg_lvalue_ref_kind  //
-        = (!any_uvalue_kind<Tp>) //
+    concept arg_lvalue_ref_kind //
+        = (!uvalue_family<Tp>)  //
        && (std::is_lvalue_reference_v<T>);
 
     template < typename T, typename Tp = std::decay_t<T> >
-    concept arg_rvalue_ref_kind  //
-        = (!any_uvalue_kind<Tp>) //
+    concept arg_rvalue_ref_kind //
+        = (!uvalue_family<Tp>)  //
        && (!std::is_reference_v<T> || std::is_rvalue_reference_v<T>);
 }
 
@@ -44,13 +31,13 @@ namespace meta_hpp::detail
 
     template < typename T, typename Tp = std::decay_t<T> >
     concept inst_class_lvalue_ref_kind    //
-        = (!any_uvalue_kind<Tp>)          //
+        = (!uvalue_family<Tp>)            //
        && (std::is_lvalue_reference_v<T>) //
        && (std::is_class_v<std::remove_pointer_t<std::remove_reference_t<T>>>);
 
     template < typename T, typename Tp = std::decay_t<T> >
     concept inst_class_rvalue_ref_kind                               //
-        = (!any_uvalue_kind<Tp>)                                     //
+        = (!uvalue_family<Tp>)                                       //
        && (!std::is_reference_v<T> || std::is_rvalue_reference_v<T>) //
        && (std::is_class_v<std::remove_pointer_t<std::remove_reference_t<T>>>);
 }

@@ -8,6 +8,7 @@
 
 #include "../../meta_base.hpp"
 #include "../../meta_registry.hpp"
+#include "../../meta_uresult.hpp"
 #include "../../meta_uvalue.hpp"
 
 #include "utraits.hpp"
@@ -34,7 +35,7 @@ namespace meta_hpp::detail
         uinst_base& operator=(const uinst_base&) = delete;
 
         template < typename T, typename Tp = std::decay_t<T> >
-            requires(!any_uvalue_kind<Tp>)
+            requires(!uvalue_family<Tp>)
         explicit uinst_base(type_registry& registry, T&&)
         : uinst_base{registry, type_list<T&&>{}} {}
 
@@ -63,6 +64,11 @@ namespace meta_hpp::detail
         explicit uinst_base(type_registry&, const uvalue&& v)
         : ref_type_{ref_types::const_rvalue}
         , raw_type_{v.get_type()} {}
+
+        template < typename T, typename Tp = std::decay_t<T> >
+            requires std::is_same_v<Tp, uresult>
+        explicit uinst_base(type_registry& registry, T&& v)
+        : uinst_base{registry, *std::forward<T>(v)} {}
 
         [[nodiscard]] bool is_inst_const() const noexcept {
             if ( raw_type_.is_pointer() ) {
@@ -111,7 +117,13 @@ namespace meta_hpp::detail
         , data_{const_cast<void*>(v.get_data())} {} // NOLINT(*-const-cast)
 
         template < typename T, typename Tp = std::decay_t<T> >
-            requires(!any_uvalue_kind<Tp>)
+            requires std::is_same_v<Tp, uresult>
+        explicit uinst(type_registry& registry, T&& v)
+        : uinst_base{registry, std::forward<T>(v)}
+        , data_{const_cast<void*>(v->get_data())} {} // NOLINT(*-const-cast)
+
+        template < typename T, typename Tp = std::decay_t<T> >
+            requires(!uvalue_family<Tp>)
         explicit uinst(type_registry& registry, T&& v)
         : uinst_base{registry, std::forward<T>(v)}
         , data_{const_cast<std::remove_cvref_t<T>*>(std::addressof(v))} {} // NOLINT(*-const-cast)

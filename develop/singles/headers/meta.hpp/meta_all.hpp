@@ -1444,6 +1444,19 @@ namespace meta_hpp
         class uinst_base;
         class uinst;
     }
+
+    namespace detail
+    {
+        template < typename T >
+        concept uvalue_family               //
+            = std::is_same_v<T, uarg_base>  //
+           || std::is_same_v<T, uarg>       //
+           || std::is_same_v<T, uinst_base> //
+           || std::is_same_v<T, uinst>      //
+           || std::is_same_v<T, uerror>     //
+           || std::is_same_v<T, uresult>    //
+           || std::is_same_v<T, uvalue>;    //
+    }
 }
 
 namespace meta_hpp
@@ -1479,6 +1492,21 @@ namespace meta_hpp
         using method_state_ptr = intrusive_ptr<method_state>;
         using scope_state_ptr = intrusive_ptr<scope_state>;
         using variable_state_ptr = intrusive_ptr<variable_state>;
+    }
+
+    namespace detail
+    {
+        template < typename T >
+        concept state_family                 //
+            = std::is_same_v<T, argument>    //
+           || std::is_same_v<T, constructor> //
+           || std::is_same_v<T, destructor>  //
+           || std::is_same_v<T, evalue>      //
+           || std::is_same_v<T, function>    //
+           || std::is_same_v<T, member>      //
+           || std::is_same_v<T, method>      //
+           || std::is_same_v<T, scope>       //
+           || std::is_same_v<T, variable>;   //
     }
 }
 
@@ -1516,6 +1544,26 @@ namespace meta_hpp
         struct reference_type_data;
         struct void_type_data;
     }
+
+    namespace detail
+    {
+        template < typename T >
+        concept type_family                       //
+            = std::is_same_v<T, any_type>         //
+           || std::is_same_v<T, array_type>       //
+           || std::is_same_v<T, class_type>       //
+           || std::is_same_v<T, constructor_type> //
+           || std::is_same_v<T, destructor_type>  //
+           || std::is_same_v<T, enum_type>        //
+           || std::is_same_v<T, function_type>    //
+           || std::is_same_v<T, member_type>      //
+           || std::is_same_v<T, method_type>      //
+           || std::is_same_v<T, nullptr_type>     //
+           || std::is_same_v<T, number_type>      //
+           || std::is_same_v<T, pointer_type>     //
+           || std::is_same_v<T, reference_type>   //
+           || std::is_same_v<T, void_type>;       //
+    }
 }
 
 namespace meta_hpp
@@ -1529,6 +1577,21 @@ namespace meta_hpp
     class method_index;
     class scope_index;
     class variable_index;
+
+    namespace detail
+    {
+        template < typename T >
+        concept index_family                       //
+            = std::is_same_v<T, argument_index>    //
+           || std::is_same_v<T, constructor_index> //
+           || std::is_same_v<T, destructor_index>  //
+           || std::is_same_v<T, evalue_index>      //
+           || std::is_same_v<T, function_index>    //
+           || std::is_same_v<T, member_index>      //
+           || std::is_same_v<T, method_index>      //
+           || std::is_same_v<T, scope_index>       //
+           || std::is_same_v<T, variable_index>;   //
+    }
 }
 
 namespace meta_hpp
@@ -2061,23 +2124,6 @@ namespace meta_hpp::detail
 
 namespace meta_hpp::detail
 {
-    template < typename T >
-    concept type_family                       //
-        = std::is_same_v<T, any_type>         //
-       || std::is_same_v<T, array_type>       //
-       || std::is_same_v<T, class_type>       //
-       || std::is_same_v<T, constructor_type> //
-       || std::is_same_v<T, destructor_type>  //
-       || std::is_same_v<T, enum_type>        //
-       || std::is_same_v<T, function_type>    //
-       || std::is_same_v<T, member_type>      //
-       || std::is_same_v<T, method_type>      //
-       || std::is_same_v<T, nullptr_type>     //
-       || std::is_same_v<T, number_type>      //
-       || std::is_same_v<T, pointer_type>     //
-       || std::is_same_v<T, reference_type>   //
-       || std::is_same_v<T, void_type>;       //
-
     template <type_family Type>
     struct type_traits;
 
@@ -2666,21 +2712,6 @@ namespace meta_hpp::detail
     };
 }
 
-namespace meta_hpp::detail
-{
-    template < typename T >
-    concept index_family                       //
-        = std::is_same_v<T, argument_index>    //
-       || std::is_same_v<T, constructor_index> //
-       || std::is_same_v<T, destructor_index>  //
-       || std::is_same_v<T, evalue_index>      //
-       || std::is_same_v<T, function_index>    //
-       || std::is_same_v<T, member_index>      //
-       || std::is_same_v<T, method_index>      //
-       || std::is_same_v<T, scope_index>       //
-       || std::is_same_v<T, variable_index>;   //
-}
-
 namespace meta_hpp
 {
     class argument_index final {
@@ -2874,7 +2905,7 @@ namespace meta_hpp
             typename T,                            //
             typename Tp = std::decay_t<T>,         //
             typename = std::enable_if_t<           //
-                !std::is_same_v<Tp, uvalue> &&     //
+                !detail::uvalue_family<Tp> &&      //
                 !detail::is_in_place_type_v<Tp> && //
                 std::is_copy_constructible_v<Tp>>> //
         uvalue(T&& val);
@@ -2883,7 +2914,7 @@ namespace meta_hpp
             typename T,                            //
             typename Tp = std::decay_t<T>,         //
             typename = std::enable_if_t<           //
-                !std::is_same_v<Tp, uvalue> &&     //
+                !detail::uvalue_family<Tp> &&      //
                 std::is_copy_constructible_v<Tp>>> //
         uvalue& operator=(T&& val);
 
@@ -3095,9 +3126,7 @@ namespace meta_hpp
             typename T,                            //
             typename Tp = std::decay_t<T>,         //
             typename = std::enable_if_t<           //
-                !std::is_same_v<Tp, uerror> &&     //
-                !std::is_same_v<Tp, uvalue> &&     //
-                !std::is_same_v<Tp, uresult> &&    //
+                !detail::uvalue_family<Tp> &&      //
                 !detail::is_in_place_type_v<Tp> && //
                 std::is_copy_constructible_v<Tp>>> //
         uresult(T&& val);
@@ -3106,9 +3135,7 @@ namespace meta_hpp
             typename T,                            //
             typename Tp = std::decay_t<T>,         //
             typename = std::enable_if_t<           //
-                !std::is_same_v<Tp, uerror> &&     //
-                !std::is_same_v<Tp, uvalue> &&     //
-                !std::is_same_v<Tp, uresult> &&    //
+                !detail::uvalue_family<Tp> &&      //
                 std::is_copy_constructible_v<Tp>>> //
         uresult& operator=(T&& val);
 
@@ -3176,18 +3203,6 @@ namespace meta_hpp
 
 namespace meta_hpp::detail
 {
-    template < typename T >
-    concept state_family                 //
-        = std::is_same_v<T, argument>    //
-       || std::is_same_v<T, constructor> //
-       || std::is_same_v<T, destructor>  //
-       || std::is_same_v<T, evalue>      //
-       || std::is_same_v<T, function>    //
-       || std::is_same_v<T, member>      //
-       || std::is_same_v<T, method>      //
-       || std::is_same_v<T, scope>       //
-       || std::is_same_v<T, variable>;   //
-
     template < state_family State >
     struct state_traits;
 
@@ -5345,26 +5360,14 @@ namespace meta_hpp
 
 namespace meta_hpp::detail
 {
-    template < typename T >
-    concept any_uvalue_kind             //
-        = std::is_same_v<T, uarg_base>  //
-       || std::is_same_v<T, uarg>       //
-       || std::is_same_v<T, uinst_base> //
-       || std::is_same_v<T, uinst>      //
-       || std::is_same_v<T, uresult>    //
-       || std::is_same_v<T, uvalue>;    //
-}
-
-namespace meta_hpp::detail
-{
     template < typename T, typename Tp = std::decay_t<T> >
-    concept arg_lvalue_ref_kind  //
-        = (!any_uvalue_kind<Tp>) //
+    concept arg_lvalue_ref_kind //
+        = (!uvalue_family<Tp>)  //
        && (std::is_lvalue_reference_v<T>);
 
     template < typename T, typename Tp = std::decay_t<T> >
-    concept arg_rvalue_ref_kind  //
-        = (!any_uvalue_kind<Tp>) //
+    concept arg_rvalue_ref_kind //
+        = (!uvalue_family<Tp>)  //
        && (!std::is_reference_v<T> || std::is_rvalue_reference_v<T>);
 }
 
@@ -5377,13 +5380,13 @@ namespace meta_hpp::detail
 
     template < typename T, typename Tp = std::decay_t<T> >
     concept inst_class_lvalue_ref_kind    //
-        = (!any_uvalue_kind<Tp>)          //
+        = (!uvalue_family<Tp>)            //
        && (std::is_lvalue_reference_v<T>) //
        && (std::is_class_v<std::remove_pointer_t<std::remove_reference_t<T>>>);
 
     template < typename T, typename Tp = std::decay_t<T> >
     concept inst_class_rvalue_ref_kind                               //
-        = (!any_uvalue_kind<Tp>)                                     //
+        = (!uvalue_family<Tp>)                                       //
        && (!std::is_reference_v<T> || std::is_rvalue_reference_v<T>) //
        && (std::is_class_v<std::remove_pointer_t<std::remove_reference_t<T>>>);
 }
@@ -5552,7 +5555,7 @@ namespace meta_hpp::detail
         uarg_base& operator=(const uarg_base&) = delete;
 
         template < typename T, typename Tp = std::decay_t<T> >
-            requires(!any_uvalue_kind<Tp>)
+            requires(!uvalue_family<Tp>)
         explicit uarg_base(type_registry& registry, T&&)
         : uarg_base{registry, type_list<T&&>{}} {}
 
@@ -5581,6 +5584,11 @@ namespace meta_hpp::detail
         explicit uarg_base(type_registry&, const uvalue&& v)
         : ref_type_{ref_types::const_rvalue}
         , raw_type_{v.get_type()} {}
+
+        template < typename T, typename Tp = std::decay_t<T> >
+            requires std::is_same_v<Tp, uresult>
+        explicit uarg_base(type_registry& registry, T&& v)
+        : uarg_base{registry, *std::forward<T>(v)} {}
 
         [[nodiscard]] bool is_ref_const() const noexcept {
             return ref_type_ == ref_types::const_lvalue //
@@ -5629,7 +5637,13 @@ namespace meta_hpp::detail
         , data_{const_cast<void*>(v.get_data())} {} // NOLINT(*-const-cast)
 
         template < typename T, typename Tp = std::decay_t<T> >
-            requires(!any_uvalue_kind<Tp>)
+            requires std::is_same_v<Tp, uresult>
+        explicit uarg(type_registry& registry, T&& v)
+        : uarg_base{registry, std::forward<T>(v)}
+        , data_{const_cast<void*>(v->get_data())} {} // NOLINT(*-const-cast)
+
+        template < typename T, typename Tp = std::decay_t<T> >
+            requires(!uvalue_family<Tp>)
         explicit uarg(type_registry& registry, T&& v)
         : uarg_base{registry, std::forward<T>(v)}
         , data_{const_cast<std::remove_cvref_t<T>*>(std::addressof(v))} {} // NOLINT(*-const-cast)
@@ -6115,7 +6129,7 @@ namespace meta_hpp::detail
         uinst_base& operator=(const uinst_base&) = delete;
 
         template < typename T, typename Tp = std::decay_t<T> >
-            requires(!any_uvalue_kind<Tp>)
+            requires(!uvalue_family<Tp>)
         explicit uinst_base(type_registry& registry, T&&)
         : uinst_base{registry, type_list<T&&>{}} {}
 
@@ -6144,6 +6158,11 @@ namespace meta_hpp::detail
         explicit uinst_base(type_registry&, const uvalue&& v)
         : ref_type_{ref_types::const_rvalue}
         , raw_type_{v.get_type()} {}
+
+        template < typename T, typename Tp = std::decay_t<T> >
+            requires std::is_same_v<Tp, uresult>
+        explicit uinst_base(type_registry& registry, T&& v)
+        : uinst_base{registry, *std::forward<T>(v)} {}
 
         [[nodiscard]] bool is_inst_const() const noexcept {
             if ( raw_type_.is_pointer() ) {
@@ -6192,7 +6211,13 @@ namespace meta_hpp::detail
         , data_{const_cast<void*>(v.get_data())} {} // NOLINT(*-const-cast)
 
         template < typename T, typename Tp = std::decay_t<T> >
-            requires(!any_uvalue_kind<Tp>)
+            requires std::is_same_v<Tp, uresult>
+        explicit uinst(type_registry& registry, T&& v)
+        : uinst_base{registry, std::forward<T>(v)}
+        , data_{const_cast<void*>(v->get_data())} {} // NOLINT(*-const-cast)
+
+        template < typename T, typename Tp = std::decay_t<T> >
+            requires(!uvalue_family<Tp>)
         explicit uinst(type_registry& registry, T&& v)
         : uinst_base{registry, std::forward<T>(v)}
         , data_{const_cast<std::remove_cvref_t<T>*>(std::addressof(v))} {} // NOLINT(*-const-cast)
