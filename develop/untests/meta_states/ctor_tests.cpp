@@ -93,7 +93,7 @@ TEST_CASE("meta/meta_states/ctor/noncopyable") {
         {
             const meta::uvalue v = clazz_type.create(42);
             CHECK(v.get_type() == meta::resolve_type<clazz_t*>());
-            CHECK(v.get_as<clazz_t*>()->i == 42);
+            CHECK(v.as<clazz_t*>()->i == 42);
             CHECK(clazz_type.destroy(v));
         }
         CHECK(clazz_t::constructor_counter == 1);
@@ -112,7 +112,7 @@ TEST_CASE("meta/meta_states/ctor/noncopyable") {
             clazz_t o{42};
             const meta::uvalue v = clazz_type.create(std::move(o));
             CHECK(v.get_type() == meta::resolve_type<clazz_t*>());
-            CHECK(v.get_as<clazz_t*>()->i == 42);
+            CHECK(v.as<clazz_t*>()->i == 42);
             CHECK(clazz_type.destroy(v));
         }
         CHECK(clazz_t::constructor_counter == 1);
@@ -153,13 +153,32 @@ TEST_CASE("meta/meta_states/ctor/as_object") {
         {
             const meta::uvalue v = clazz_type.create(42);
             CHECK(v.get_type() == meta::resolve_type<clazz_t>());
-            CHECK(v.get_as<clazz_t>().i == 42);
+            CHECK(v.as<clazz_t>().i == 42);
             CHECK_FALSE(clazz_type.destroy(v));
         }
         CHECK(clazz_t::constructor_counter == 1);
         CHECK(clazz_t::destructor_counter == 1);
         CHECK(clazz_t::move_constructor_counter == 0);
         CHECK(clazz_t::copy_constructor_counter == 0);
+    }
+
+    SUBCASE("int_safe") {
+        const meta::constructor ctor = clazz_type.get_constructor_with<int>();
+        REQUIRE(ctor);
+        {
+            meta::uresult r{ctor.try_create(42.0)};
+            CHECK_FALSE(r);
+
+            CHECK(clazz_t::constructor_counter == 0);
+        }
+        {
+            meta::uresult r{ctor.try_create(42)};
+            CHECK(r);
+
+            CHECK(clazz_t::constructor_counter == 1);
+            CHECK(r.get_value().get_type() == meta::resolve_type<clazz_t>());
+            CHECK(r.get_value().as<clazz_t>().i == 42);
+        }
     }
 
     SUBCASE("int/inplace") {
@@ -169,7 +188,7 @@ TEST_CASE("meta/meta_states/ctor/as_object") {
                 .create_at(clazz_mem, 42);
 
             CHECK(v.get_type() == meta::resolve_type<clazz_t*>());
-            CHECK(v.get_as<clazz_t*>()->i == 42);
+            CHECK(v.as<clazz_t*>()->i == 42);
 
             clazz_type.get_destructor().destroy_at(clazz_mem);
         }
@@ -177,6 +196,25 @@ TEST_CASE("meta/meta_states/ctor/as_object") {
         CHECK(clazz_t::destructor_counter == 1);
         CHECK(clazz_t::move_constructor_counter == 0);
         CHECK(clazz_t::copy_constructor_counter == 0);
+    }
+
+    SUBCASE("safe_int/inplace") {
+        const meta::constructor ctor = clazz_type.get_constructor_with<int>();
+        REQUIRE(ctor);
+        {
+            meta::uresult r{ctor.try_create_at(clazz_mem, 42.0)};
+            CHECK_FALSE(r);
+
+            CHECK(clazz_t::constructor_counter == 0);
+        }
+        {
+            meta::uresult r{ctor.try_create_at(clazz_mem, 42)};
+            CHECK(r);
+
+            CHECK(clazz_t::constructor_counter == 1);
+            CHECK(r.get_value().get_type() == meta::resolve_type<clazz_t*>());
+            CHECK(r.get_value().as<clazz_t*>()->i == 42);
+        }
     }
 
     SUBCASE("clazz_t&&") {
@@ -191,7 +229,7 @@ TEST_CASE("meta/meta_states/ctor/as_object") {
             clazz_t o{42};
             const meta::uvalue v = clazz_type.create(std::move(o));
             CHECK(v.get_type() == meta::resolve_type<clazz_t>());
-            CHECK(v.get_as<clazz_t>().i == 42);
+            CHECK(v.as<clazz_t>().i == 42);
             CHECK_FALSE(clazz_type.destroy(v));
         }
         CHECK(clazz_t::constructor_counter == 1);
@@ -208,7 +246,7 @@ TEST_CASE("meta/meta_states/ctor/as_object") {
                 .create_at(clazz_mem, std::move(o));
 
             CHECK(v.get_type() == meta::resolve_type<clazz_t*>());
-            CHECK(v.get_as<clazz_t*>()->i == 42);
+            CHECK(v.as<clazz_t*>()->i == 42);
 
             clazz_type.get_destructor().destroy_at(clazz_mem);
         }
@@ -228,7 +266,7 @@ TEST_CASE("meta/meta_states/ctor/as_object") {
             clazz_t o{42};
             const meta::uvalue v = clazz_type.create(std::as_const(o));
             CHECK(v.get_type() == meta::resolve_type<clazz_t>());
-            CHECK(v.get_as<clazz_t>().i == 42);
+            CHECK(v.as<clazz_t>().i == 42);
             CHECK_FALSE(clazz_type.destroy(v));
         }
         CHECK(clazz_t::constructor_counter == 1);
@@ -245,7 +283,7 @@ TEST_CASE("meta/meta_states/ctor/as_object") {
                 .create_at(clazz_mem, std::as_const(o));
 
             CHECK(v.get_type() == meta::resolve_type<clazz_t*>());
-            CHECK(v.get_as<clazz_t*>()->i == 42);
+            CHECK(v.as<clazz_t*>()->i == 42);
 
             clazz_type.get_destructor().destroy_at(clazz_mem);
         }
@@ -283,7 +321,7 @@ TEST_CASE("meta/meta_states/ctor/as_raw_pointer") {
         {
             const meta::uvalue v = clazz_type.create(42);
             CHECK(v.get_type() == meta::resolve_type<clazz_t*>());
-            CHECK(v.get_as<clazz_t*>()->i == 42);
+            CHECK(v.as<clazz_t*>()->i == 42);
             CHECK(clazz_type.destroy(v));
         }
         CHECK(clazz_t::constructor_counter == 1);
@@ -302,7 +340,7 @@ TEST_CASE("meta/meta_states/ctor/as_raw_pointer") {
             clazz_t o{42};
             const meta::uvalue v = clazz_type.create(std::move(o));
             CHECK(v.get_type() == meta::resolve_type<clazz_t*>());
-            CHECK(v.get_as<clazz_t*>()->i == 42);
+            CHECK(v.as<clazz_t*>()->i == 42);
             CHECK(clazz_type.destroy(v));
         }
         CHECK(clazz_t::constructor_counter == 1);
@@ -321,7 +359,7 @@ TEST_CASE("meta/meta_states/ctor/as_raw_pointer") {
             clazz_t o{42};
             const meta::uvalue v = clazz_type.create(std::as_const(o));
             CHECK(v.get_type() == meta::resolve_type<clazz_t*>());
-            CHECK(v.get_as<clazz_t*>()->i == 42);
+            CHECK(v.as<clazz_t*>()->i == 42);
             CHECK(clazz_type.destroy(v));
         }
         CHECK(clazz_t::constructor_counter == 1);
@@ -358,7 +396,7 @@ TEST_CASE("meta/meta_states/ctor/as_shared_pointer") {
         {
             const meta::uvalue v = clazz_type.create(42);
             CHECK(v.get_type() == meta::resolve_type<std::shared_ptr<clazz_t>>());
-            CHECK(v.get_as<std::shared_ptr<clazz_t>>()->i == 42);
+            CHECK(v.as<std::shared_ptr<clazz_t>>()->i == 42);
             CHECK_FALSE(clazz_type.destroy(v));
         }
         CHECK(clazz_t::constructor_counter == 1);
@@ -377,7 +415,7 @@ TEST_CASE("meta/meta_states/ctor/as_shared_pointer") {
             clazz_t o{42};
             const meta::uvalue v = clazz_type.create(std::move(o));
             CHECK(v.get_type() == meta::resolve_type<std::shared_ptr<clazz_t>>());
-            CHECK(v.get_as<std::shared_ptr<clazz_t>>()->i == 42);
+            CHECK(v.as<std::shared_ptr<clazz_t>>()->i == 42);
             CHECK_FALSE(clazz_type.destroy(v));
         }
         CHECK(clazz_t::constructor_counter == 1);
@@ -396,7 +434,7 @@ TEST_CASE("meta/meta_states/ctor/as_shared_pointer") {
             clazz_t o{42};
             const meta::uvalue v = clazz_type.create(std::as_const(o));
             CHECK(v.get_type() == meta::resolve_type<std::shared_ptr<clazz_t>>());
-            CHECK(v.get_as<std::shared_ptr<clazz_t>>()->i == 42);
+            CHECK(v.as<std::shared_ptr<clazz_t>>()->i == 42);
             CHECK_FALSE(clazz_type.destroy(v));
         }
         CHECK(clazz_t::constructor_counter == 1);

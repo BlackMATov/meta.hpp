@@ -16,6 +16,7 @@ include(SetupTargets)
 
 add_subdirectory(manuals)
 add_subdirectory(singles)
+add_subdirectory(unbench)
 add_subdirectory(untests)
 add_subdirectory(vendors)
 

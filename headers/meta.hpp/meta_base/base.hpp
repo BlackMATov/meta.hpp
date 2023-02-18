@@ -6,14 +6,6 @@
 
 #pragma once
 
-#if !defined(META_HPP_NO_EXCEPTIONS) && !defined(__cpp_exceptions)
-#    define META_HPP_NO_EXCEPTIONS
-#endif
-
-#if !defined(META_HPP_NO_RTTI) && !defined(__cpp_rtti)
-#    define META_HPP_NO_RTTI
-#endif
-
 #include <climits>
 #include <cstddef>
 #include <cstdint>
@@ -39,14 +31,27 @@
 #include <type_traits>
 #include <utility>
 #include <vector>
+#include <version>
+
+#if !defined(META_HPP_NO_EXCEPTIONS) && !defined(__cpp_exceptions)
+#    define META_HPP_NO_EXCEPTIONS
+#endif
+
+#if !defined(META_HPP_NO_RTTI) && !defined(__cpp_rtti)
+#    define META_HPP_NO_RTTI
+#endif
 
 #if !defined(META_HPP_NO_EXCEPTIONS)
-#    include <stdexcept>
+#    include <exception>
 #endif
 
 #if !defined(META_HPP_NO_RTTI)
 #    include <typeindex>
 #    include <typeinfo>
+#endif
+
+#if !defined(META_HPP_FWD)
+#    define META_HPP_FWD(v) std::forward<decltype(v)>(v)
 #endif
 
 #if !defined(META_HPP_ASSERT)

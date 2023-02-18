@@ -9,93 +9,91 @@
 #include "../meta_base.hpp"
 #include "../meta_states.hpp"
 
+#include "../meta_detail/type_registry.hpp"
 #include "../meta_detail/value_utilities/uarg.hpp"
 #include "../meta_types/function_type.hpp"
 
 namespace meta_hpp::detail
 {
-    template < function_policy_kind Policy, function_pointer_kind Function >
-    uvalue raw_function_invoke(Function function_ptr, std::span<const uarg> args) {
+    template < function_policy_family Policy, function_pointer_kind Function >
+    uvalue raw_function_invoke(type_registry& registry, Function function_ptr, std::span<const uarg> args) {
         using ft = function_traits<Function>;
         using return_type = typename ft::return_type;
         using argument_types = typename ft::argument_types;
 
-        constexpr bool as_copy                                    //
-            = std::is_copy_constructible_v<return_type>           //
-           && std::is_same_v<Policy, function_policy::as_copy_t>; //
+        constexpr bool as_copy                          //
+            = std::is_copy_constructible_v<return_type> //
+           && std::is_same_v<Policy, function_policy::as_copy_t>;
 
-        constexpr bool as_void                                           //
-            = std::is_void_v<return_type>                                //
-           || std::is_same_v<Policy, function_policy::discard_return_t>; //
+        constexpr bool as_void            //
+            = std::is_void_v<return_type> //
+           || std::is_same_v<Policy, function_policy::discard_return_t>;
 
-        constexpr bool ref_as_ptr                                                     //
-            = std::is_reference_v<return_type>                                        //
-           && std::is_same_v<Policy, function_policy::return_reference_as_pointer_t>; //
+        constexpr bool ref_as_ptr              //
+            = std::is_reference_v<return_type> //
+           && std::is_same_v<Policy, function_policy::return_reference_as_pointer_t>;
 
         static_assert(as_copy || as_void || ref_as_ptr);
 
-        META_HPP_THROW_IF( //
-            args.size() != ft::arity,
-            "an attempt to call a function with an incorrect arity"
+        META_HPP_ASSERT(             //
+            args.size() == ft::arity //
+            && "an attempt to call a function with an incorrect arity"
         );
 
-        return std::invoke(
-            [ function_ptr, args ]<std::size_t... Is>(std::index_sequence<Is...>)->uvalue {
-                META_HPP_THROW_IF( //
-                    !(... && args[Is].can_cast_to<type_list_at_t<Is, argument_types>>()),
-                    "an attempt to call a function with incorrect argument types"
-                );
-
-                if constexpr ( std::is_void_v<return_type> ) {
-                    function_ptr(args[Is].cast<type_list_at_t<Is, argument_types>>()...);
-                    return uvalue{};
-                } else if constexpr ( std::is_same_v<Policy, function_policy::discard_return_t> ) {
-                    std::ignore = function_ptr(args[Is].cast<type_list_at_t<Is, argument_types>>()...);
-                    return uvalue{};
-                } else {
-                    return_type&& return_value = function_ptr(args[Is].cast<type_list_at_t<Is, argument_types>>()...);
-
-                    if constexpr ( ref_as_ptr ) {
-                        return uvalue{std::addressof(return_value)};
-                    } else {
-                        return uvalue{std::forward<decltype(return_value)>(return_value)};
-                    }
-                }
-            },
-            std::make_index_sequence<ft::arity>()
+        META_HPP_ASSERT(                                       //
+            can_cast_all_uargs<argument_types>(registry, args) //
+            && "an attempt to call a function with incorrect argument types"
         );
+
+        return call_with_uargs<argument_types>(registry, args, [function_ptr](auto&&... all_args) {
+            if constexpr ( std::is_void_v<return_type> ) {
+                function_ptr(META_HPP_FWD(all_args)...);
+                return uvalue{};
+            }
+
+            if constexpr ( std::is_same_v<Policy, function_policy::discard_return_t> ) {
+                std::ignore = function_ptr(META_HPP_FWD(all_args)...);
+                return uvalue{};
+            }
+
+            if constexpr ( !std::is_void_v<return_type> ) {
+                return_type&& result = function_ptr(META_HPP_FWD(all_args)...);
+                return ref_as_ptr ? uvalue{std::addressof(result)} : uvalue{META_HPP_FWD(result)};
+            }
+        });
     }
 
     template < function_pointer_kind Function >
-    bool raw_function_is_invocable_with(std::span<const uarg_base> args) {
+    uerror raw_function_invoke_error(type_registry& registry, std::span<const uarg_base> args) {
         using ft = function_traits<Function>;
         using argument_types = typename ft::argument_types;
 
         if ( args.size() != ft::arity ) {
-            return false;
+            return uerror{error_code::arity_mismatch};
         }
 
-        return std::invoke(
-            [args]<std::size_t... Is>(std::index_sequence<Is...>) {
-                return (... && args[Is].can_cast_to<type_list_at_t<Is, argument_types>>());
-            },
-            std::make_index_sequence<ft::arity>()
-        );
+        if ( !can_cast_all_uargs<argument_types>(registry, args) ) {
+            return uerror{error_code::argument_type_mismatch};
+        }
+
+        return uerror{error_code::no_error};
     }
 }
 
 namespace meta_hpp::detail
 {
-    template < function_policy_kind Policy, function_pointer_kind Function >
-    function_state::invoke_impl make_function_invoke(Function function_ptr) {
-        return [function_ptr](std::span<const uarg> args) { //
-            return raw_function_invoke<Policy>(function_ptr, args);
+    template < function_policy_family Policy, function_pointer_kind Function >
+    function_state::invoke_impl make_function_invoke(type_registry& registry, Function function_ptr) {
+        return [&registry, function_ptr](std::span<const uarg> args) { //
+            return raw_function_invoke<Policy>(registry, function_ptr, args);
         };
     }
 
     template < function_pointer_kind Function >
-    function_state::is_invocable_with_impl make_function_is_invocable_with() {
-        return &raw_function_is_invocable_with<Function>;
+    function_state::invoke_error_impl make_function_invoke_error(type_registry& registry) {
+        return [&registry](std::span<const uarg_base> args) { //
+            return raw_function_invoke_error<Function>(registry, args);
+        };
     }
 
     template < function_pointer_kind Function >
@@ -103,16 +101,14 @@ namespace meta_hpp::detail
         using ft = function_traits<Function>;
         using ft_argument_types = typename ft::argument_types;
 
-        return std::invoke(
-            []<std::size_t... Is>(std::index_sequence<Is...>) {
-                [[maybe_unused]] const auto make_argument = []<std::size_t I>(std::index_sequence<I>) {
-                    using P = type_list_at_t<I, ft_argument_types>;
-                    return argument{argument_state::make<P>(I, metadata_map{})};
-                };
-                return argument_list{make_argument(std::index_sequence<Is>{})...};
-            },
-            std::make_index_sequence<ft::arity>()
-        );
+        return []<std::size_t... Is>(std::index_sequence<Is...>) {
+            [[maybe_unused]] const auto make_argument = []<std::size_t I>(index_constant<I>) {
+                using P = type_list_at_t<I, ft_argument_types>;
+                return argument{argument_state::make<P>(I, metadata_map{})};
+            };
+            return argument_list{make_argument(index_constant<Is>{})...};
+        }
+        (std::make_index_sequence<ft::arity>());
     }
 }
 
@@ -122,11 +118,12 @@ namespace meta_hpp::detail
     : index{std::move(nindex)}
     , metadata{std::move(nmetadata)} {}
 
-    template < function_policy_kind Policy, function_pointer_kind Function >
+    template < function_policy_family Policy, function_pointer_kind Function >
     function_state_ptr function_state::make(std::string name, Function function_ptr, metadata_map metadata) {
-        function_state state{function_index{resolve_type<Function>(), std::move(name)}, std::move(metadata)};
-        state.invoke = make_function_invoke<Policy>(function_ptr);
-        state.is_invocable_with = make_function_is_invocable_with<Function>();
+        type_registry& registry{type_registry::instance()};
+        function_state state{function_index{registry.resolve_type<Function>(), std::move(name)}, std::move(metadata)};
+        state.invoke = make_function_invoke<Policy>(registry, function_ptr);
+        state.invoke_error = make_function_invoke_error<Function>(registry);
         state.arguments = make_function_arguments<Function>();
         return make_intrusive<function_state>(std::move(state));
     }
@@ -144,13 +141,26 @@ namespace meta_hpp
 
     template < typename... Args >
     uvalue function::invoke(Args&&... args) const {
-        if constexpr ( sizeof...(Args) > 0 ) {
-            using namespace detail;
-            const std::array<uarg, sizeof...(Args)> vargs{uarg{std::forward<Args>(args)}...};
-            return state_->invoke(vargs);
-        } else {
-            return state_->invoke({});
+        using namespace detail;
+        type_registry& registry{type_registry::instance()};
+        const std::array<uarg, sizeof...(Args)> vargs{uarg{registry, std::forward<Args>(args)}...};
+        return state_->invoke(vargs);
+    }
+
+    template < typename... Args >
+    uresult function::try_invoke(Args&&... args) const {
+        using namespace detail;
+        type_registry& registry{type_registry::instance()};
+
+        {
+            const std::array<uarg_base, sizeof...(Args)> vargs{uarg_base{registry, std::forward<Args>(args)}...};
+            if ( const uerror err = state_->invoke_error(vargs) ) {
+                return err;
+            }
         }
+
+        const std::array<uarg, sizeof...(Args)> vargs{uarg{registry, std::forward<Args>(args)}...};
+        return state_->invoke(vargs);
     }
 
     template < typename... Args >
@@ -160,24 +170,18 @@ namespace meta_hpp
 
     template < typename... Args >
     bool function::is_invocable_with() const noexcept {
-        if constexpr ( sizeof...(Args) > 0 ) {
-            using namespace detail;
-            const std::array<uarg_base, sizeof...(Args)> vargs{uarg_base{type_list<Args>{}}...};
-            return state_->is_invocable_with(vargs);
-        } else {
-            return state_->is_invocable_with({});
-        }
+        using namespace detail;
+        type_registry& registry{type_registry::instance()};
+        const std::array<uarg_base, sizeof...(Args)> vargs{uarg_base{registry, type_list<Args>{}}...};
+        return !state_->invoke_error(vargs);
     }
 
     template < typename... Args >
     bool function::is_invocable_with(Args&&... args) const noexcept {
-        if constexpr ( sizeof...(Args) > 0 ) {
-            using namespace detail;
-            const std::array<uarg_base, sizeof...(Args)> vargs{uarg_base{std::forward<Args>(args)}...};
-            return state_->is_invocable_with(vargs);
-        } else {
-            return state_->is_invocable_with({});
-        }
+        using namespace detail;
+        type_registry& registry{type_registry::instance()};
+        const std::array<uarg_base, sizeof...(Args)> vargs{uarg_base{registry, std::forward<Args>(args)}...};
+        return !state_->invoke_error(vargs);
     }
 
     inline argument function::get_argument(std::size_t position) const noexcept {

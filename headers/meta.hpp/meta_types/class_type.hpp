@@ -113,7 +113,10 @@ namespace meta_hpp
     template < typename Arg >
     bool class_type::destroy(Arg&& arg) const {
         if ( const destructor& dtor = get_destructor() ) {
-            return dtor.destroy(std::forward<Arg>(arg));
+            if ( dtor.is_invocable_with(std::forward<Arg>(arg)) ) {
+                dtor.destroy(std::forward<Arg>(arg));
+                return true;
+            }
         }
         return false;
     }
@@ -140,7 +143,6 @@ namespace meta_hpp
             return true;
         }
 
-        // NOLINTNEXTLINE(*-use-anyofallof)
         for ( const class_type& derived_base : derived.data_->bases ) {
             if ( is_base_of(derived_base) ) {
                 return true;
@@ -164,7 +166,6 @@ namespace meta_hpp
             return true;
         }
 
-        // NOLINTNEXTLINE(*-use-anyofallof)
         for ( const class_type& self_base : data_->bases ) {
             if ( self_base.is_derived_from(base) ) {
                 return true;
@@ -182,7 +183,7 @@ namespace meta_hpp
         }
 
         for ( const class_type& base : data_->bases ) {
-            if ( const function& function = base.get_function(name); function ) {
+            if ( const function& function = base.get_function(name) ) {
                 return function;
             }
         }
@@ -198,7 +199,7 @@ namespace meta_hpp
         }
 
         for ( const class_type& base : data_->bases ) {
-            if ( const member& member = base.get_member(name); member ) {
+            if ( const member& member = base.get_member(name) ) {
                 return member;
             }
         }
@@ -214,7 +215,7 @@ namespace meta_hpp
         }
 
         for ( const class_type& base : data_->bases ) {
-            if ( const method& method = base.get_method(name); method ) {
+            if ( const method& method = base.get_method(name) ) {
                 return method;
             }
         }
@@ -228,7 +229,7 @@ namespace meta_hpp
         }
 
         for ( const class_type& base : data_->bases ) {
-            if ( const any_type& type = base.get_typedef(name); type ) {
+            if ( const any_type& type = base.get_typedef(name) ) {
                 return type;
             }
         }
@@ -244,7 +245,7 @@ namespace meta_hpp
         }
 
         for ( const class_type& base : data_->bases ) {
-            if ( const variable& variable = base.get_variable(name); variable ) {
+            if ( const variable& variable = base.get_variable(name) ) {
                 return variable;
             }
         }
@@ -258,7 +259,8 @@ namespace meta_hpp
 
     template < typename... Args >
     constructor class_type::get_constructor_with() const noexcept {
-        return get_constructor_with({resolve_type<Args>()...});
+        detail::type_registry& registry{detail::type_registry::instance()};
+        return get_constructor_with({registry.resolve_type<Args>()...});
     }
 
     template < typename Iter >
@@ -297,7 +299,8 @@ namespace meta_hpp
 
     template < typename... Args >
     function class_type::get_function_with(std::string_view name) const noexcept {
-        return get_function_with(name, {resolve_type<Args>()...});
+        detail::type_registry& registry{detail::type_registry::instance()};
+        return get_function_with(name, {registry.resolve_type<Args>()...});
     }
 
     template < typename Iter >
@@ -314,7 +317,7 @@ namespace meta_hpp
         }
 
         for ( const class_type& base : data_->bases ) {
-            if ( const function& function = base.get_function_with(name, first, last); function ) {
+            if ( const function& function = base.get_function_with(name, first, last) ) {
                 return function;
             }
         }
@@ -336,7 +339,8 @@ namespace meta_hpp
 
     template < typename... Args >
     method class_type::get_method_with(std::string_view name) const noexcept {
-        return get_method_with(name, {resolve_type<Args>()...});
+        detail::type_registry& registry{detail::type_registry::instance()};
+        return get_method_with(name, {registry.resolve_type<Args>()...});
     }
 
     template < typename Iter >
@@ -353,7 +357,7 @@ namespace meta_hpp
         }
 
         for ( const class_type& base : data_->bases ) {
-            if ( const method& method = base.get_method_with(name, first, last); method ) {
+            if ( const method& method = base.get_method_with(name, first, last) ) {
                 return method;
             }
         }

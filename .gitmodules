@@ -4,3 +4,12 @@
 [submodule "develop/vendors/fmt"]
 	path = develop/vendors/fmt
 	url = https://github.com/fmtlib/fmt
+[submodule "develop/vendors/gbench"]
+	path = develop/vendors/gbench
+	url = https://github.com/google/benchmark
+[submodule "develop/vendors/vmath.hpp"]
+	path = develop/vendors/vmath.hpp
+	url = https://github.com/BlackMATov/vmath.hpp
+[submodule "develop/vendors/rttr"]
+	path = develop/vendors/rttr
+	url = https://github.com/rttrorg/rttr

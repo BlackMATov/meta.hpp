@@ -155,11 +155,11 @@ namespace meta_hpp
 
         // constructor_
 
-        template < typename... Args, constructor_policy_kind Policy = constructor_policy::as_object_t >
+        template < typename... Args, constructor_policy_family Policy = constructor_policy::as_object_t >
         class_bind& constructor_(Policy = {})
             requires detail::class_bind_constructor_kind<Class, Args...>;
 
-        template < typename... Args, constructor_policy_kind Policy = constructor_policy::as_object_t >
+        template < typename... Args, constructor_policy_family Policy = constructor_policy::as_object_t >
         class_bind& constructor_(constructor_opts opts, Policy = {})
             requires detail::class_bind_constructor_kind<Class, Args...>;
 
@@ -173,36 +173,36 @@ namespace meta_hpp
 
         // function_
 
-        template < detail::function_pointer_kind Function, function_policy_kind Policy = function_policy::as_copy_t >
+        template < detail::function_pointer_kind Function, function_policy_family Policy = function_policy::as_copy_t >
         class_bind& function_(std::string name, Function function_ptr, Policy = {});
 
-        template < detail::function_pointer_kind Function, function_policy_kind Policy = function_policy::as_copy_t >
+        template < detail::function_pointer_kind Function, function_policy_family Policy = function_policy::as_copy_t >
         class_bind& function_(std::string name, Function function_ptr, function_opts opts, Policy = {});
 
-        template < detail::function_pointer_kind Function, function_policy_kind Policy = function_policy::as_copy_t >
+        template < detail::function_pointer_kind Function, function_policy_family Policy = function_policy::as_copy_t >
         class_bind& function_(std::string name, Function function_ptr, string_ilist arguments, Policy = {});
 
         // member_
 
-        template < detail::member_pointer_kind Member, member_policy_kind Policy = member_policy::as_copy_t >
+        template < detail::member_pointer_kind Member, member_policy_family Policy = member_policy::as_copy_t >
             requires detail::class_bind_member_kind<Class, Member>
         class_bind& member_(std::string name, Member member_ptr, Policy = {});
 
-        template < detail::member_pointer_kind Member, member_policy_kind Policy = member_policy::as_copy_t >
+        template < detail::member_pointer_kind Member, member_policy_family Policy = member_policy::as_copy_t >
             requires detail::class_bind_member_kind<Class, Member>
         class_bind& member_(std::string name, Member member_ptr, member_opts opts, Policy = {});
 
         // method_
 
-        template < detail::method_pointer_kind Method, method_policy_kind Policy = method_policy::as_copy_t >
+        template < detail::method_pointer_kind Method, method_policy_family Policy = method_policy::as_copy_t >
             requires detail::class_bind_method_kind<Class, Method>
         class_bind& method_(std::string name, Method method_ptr, Policy = {});
 
-        template < detail::method_pointer_kind Method, method_policy_kind Policy = method_policy::as_copy_t >
+        template < detail::method_pointer_kind Method, method_policy_family Policy = method_policy::as_copy_t >
             requires detail::class_bind_method_kind<Class, Method>
         class_bind& method_(std::string name, Method method_ptr, method_opts opts, Policy = {});
 
-        template < detail::method_pointer_kind Method, method_policy_kind Policy = method_policy::as_copy_t >
+        template < detail::method_pointer_kind Method, method_policy_family Policy = method_policy::as_copy_t >
             requires detail::class_bind_method_kind<Class, Method>
         class_bind& method_(std::string name, Method method_ptr, string_ilist arguments, Policy = {});
 
@@ -213,10 +213,10 @@ namespace meta_hpp
 
         // variable_
 
-        template < detail::pointer_kind Pointer, variable_policy_kind Policy = variable_policy::as_copy_t >
+        template < detail::pointer_kind Pointer, variable_policy_family Policy = variable_policy::as_copy_t >
         class_bind& variable_(std::string name, Pointer variable_ptr, Policy = {});
 
-        template < detail::pointer_kind Pointer, variable_policy_kind Policy = variable_policy::as_copy_t >
+        template < detail::pointer_kind Pointer, variable_policy_family Policy = variable_policy::as_copy_t >
         class_bind& variable_(std::string name, Pointer variable_ptr, variable_opts opts, Policy = {});
     };
 }
@@ -313,13 +313,13 @@ namespace meta_hpp
 
         // function_
 
-        template < detail::function_pointer_kind Function, function_policy_kind Policy = function_policy::as_copy_t >
+        template < detail::function_pointer_kind Function, function_policy_family Policy = function_policy::as_copy_t >
         scope_bind& function_(std::string name, Function function_ptr, Policy = {});
 
-        template < detail::function_pointer_kind Function, function_policy_kind Policy = function_policy::as_copy_t >
+        template < detail::function_pointer_kind Function, function_policy_family Policy = function_policy::as_copy_t >
         scope_bind& function_(std::string name, Function function_ptr, function_opts opts, Policy = {});
 
-        template < detail::function_pointer_kind Function, function_policy_kind Policy = function_policy::as_copy_t >
+        template < detail::function_pointer_kind Function, function_policy_family Policy = function_policy::as_copy_t >
         scope_bind& function_(std::string name, Function function_ptr, string_ilist arguments, Policy = {});
 
         // typedef_
@@ -329,10 +329,10 @@ namespace meta_hpp
 
         // variable_
 
-        template < detail::pointer_kind Pointer, variable_policy_kind Policy = variable_policy::as_copy_t >
+        template < detail::pointer_kind Pointer, variable_policy_family Policy = variable_policy::as_copy_t >
         scope_bind& variable_(std::string name, Pointer variable_ptr, Policy = {});
 
-        template < detail::pointer_kind Pointer, variable_policy_kind Policy = variable_policy::as_copy_t >
+        template < detail::pointer_kind Pointer, variable_policy_family Policy = variable_policy::as_copy_t >
         scope_bind& variable_(std::string name, Pointer variable_ptr, variable_opts opts, Policy = {});
     };
 }

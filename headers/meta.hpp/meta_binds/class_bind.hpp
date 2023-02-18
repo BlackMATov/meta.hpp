@@ -58,7 +58,7 @@ namespace meta_hpp
     //
 
     template < detail::class_kind Class >
-    template < typename... Args, constructor_policy_kind Policy >
+    template < typename... Args, constructor_policy_family Policy >
     class_bind<Class>& class_bind<Class>::constructor_(Policy policy)
         requires detail::class_bind_constructor_kind<Class, Args...>
     {
@@ -66,18 +66,18 @@ namespace meta_hpp
     }
 
     template < detail::class_kind Class >
-    template < typename... Args, constructor_policy_kind Policy >
+    template < typename... Args, constructor_policy_family Policy >
     class_bind<Class>& class_bind<Class>::constructor_(constructor_opts opts, Policy)
         requires detail::class_bind_constructor_kind<Class, Args...>
     {
         auto state = detail::constructor_state::make<Policy, Class, Args...>(std::move(opts.metadata));
 
-        META_HPP_THROW_IF( //
-            opts.arguments.size() > state->arguments.size(),
-            "provided argument names don't match constructor argument count"
+        META_HPP_ASSERT(                                     //
+            opts.arguments.size() <= state->arguments.size() //
+            && "provided argument names don't match constructor argument count"
         );
 
-        for ( std::size_t i = 0; i < opts.arguments.size(); ++i ) {
+        for ( std::size_t i{}, e{std::min(opts.arguments.size(), state->arguments.size())}; i < e; ++i ) {
             argument& arg = state->arguments[i];
             detail::state_access(arg)->name = std::move(opts.arguments[i].name);
             detail::state_access(arg)->metadata = std::move(opts.arguments[i].metadata);
@@ -112,22 +112,22 @@ namespace meta_hpp
     //
 
     template < detail::class_kind Class >
-    template < detail::function_pointer_kind Function, function_policy_kind Policy >
+    template < detail::function_pointer_kind Function, function_policy_family Policy >
     class_bind<Class>& class_bind<Class>::function_(std::string name, Function function_ptr, Policy policy) {
         return function_(std::move(name), function_ptr, {}, policy);
     }
 
     template < detail::class_kind Class >
-    template < detail::function_pointer_kind Function, function_policy_kind Policy >
+    template < detail::function_pointer_kind Function, function_policy_family Policy >
     class_bind<Class>& class_bind<Class>::function_(std::string name, Function function_ptr, function_opts opts, Policy) {
         auto state = detail::function_state::make<Policy>(std::move(name), function_ptr, std::move(opts.metadata));
 
-        META_HPP_THROW_IF( //
-            opts.arguments.size() > state->arguments.size(),
-            "provided arguments don't match function argument count"
+        META_HPP_ASSERT(                                     //
+            opts.arguments.size() <= state->arguments.size() //
+            && "provided arguments don't match function argument count"
         );
 
-        for ( std::size_t i = 0; i < opts.arguments.size(); ++i ) {
+        for ( std::size_t i{}, e{std::min(opts.arguments.size(), state->arguments.size())}; i < e; ++i ) {
             argument& arg = state->arguments[i];
             detail::state_access(arg)->name = std::move(opts.arguments[i].name);
             detail::state_access(arg)->metadata = std::move(opts.arguments[i].metadata);
@@ -138,16 +138,16 @@ namespace meta_hpp
     }
 
     template < detail::class_kind Class >
-    template < detail::function_pointer_kind Function, function_policy_kind Policy >
+    template < detail::function_pointer_kind Function, function_policy_family Policy >
     class_bind<Class>& class_bind<Class>::function_(std::string name, Function function_ptr, string_ilist arguments, Policy) {
         auto state = detail::function_state::make<Policy>(std::move(name), function_ptr, {});
 
-        META_HPP_THROW_IF( //
-            arguments.size() > state->arguments.size(),
-            "provided argument names don't match function argument count"
+        META_HPP_ASSERT(
+            arguments.size() <= state->arguments.size() //
+            && "provided argument names don't match function argument count"
         );
 
-        for ( std::size_t i = 0; i < arguments.size(); ++i ) {
+        for ( std::size_t i{}, e{std::min(arguments.size(), state->arguments.size())}; i < e; ++i ) {
             argument& arg = state->arguments[i];
             // NOLINTNEXTLINE(*-pointer-arithmetic)
             detail::state_access(arg)->name = std::data(arguments)[i];
@@ -162,14 +162,14 @@ namespace meta_hpp
     //
 
     template < detail::class_kind Class >
-    template < detail::member_pointer_kind Member, member_policy_kind Policy >
+    template < detail::member_pointer_kind Member, member_policy_family Policy >
         requires detail::class_bind_member_kind<Class, Member>
     class_bind<Class>& class_bind<Class>::member_(std::string name, Member member_ptr, Policy policy) {
         return member_(std::move(name), member_ptr, {}, policy);
     }
 
     template < detail::class_kind Class >
-    template < detail::member_pointer_kind Member, member_policy_kind Policy >
+    template < detail::member_pointer_kind Member, member_policy_family Policy >
         requires detail::class_bind_member_kind<Class, Member>
     class_bind<Class>& class_bind<Class>::member_(std::string name, Member member_ptr, member_opts opts, Policy) {
         auto state = detail::member_state::make<Policy>(std::move(name), member_ptr, std::move(opts.metadata));
@@ -182,24 +182,24 @@ namespace meta_hpp
     //
 
     template < detail::class_kind Class >
-    template < detail::method_pointer_kind Method, method_policy_kind Policy >
+    template < detail::method_pointer_kind Method, method_policy_family Policy >
         requires detail::class_bind_method_kind<Class, Method>
     class_bind<Class>& class_bind<Class>::method_(std::string name, Method method_ptr, Policy policy) {
         return method_(std::move(name), method_ptr, {}, policy);
     }
 
     template < detail::class_kind Class >
-    template < detail::method_pointer_kind Method, method_policy_kind Policy >
+    template < detail::method_pointer_kind Method, method_policy_family Policy >
         requires detail::class_bind_method_kind<Class, Method>
     class_bind<Class>& class_bind<Class>::method_(std::string name, Method method_ptr, method_opts opts, Policy) {
         auto state = detail::method_state::make<Policy>(std::move(name), method_ptr, std::move(opts.metadata));
 
-        META_HPP_THROW_IF( //
-            opts.arguments.size() > state->arguments.size(),
-            "provided arguments don't match method argument count"
+        META_HPP_ASSERT(                                     //
+            opts.arguments.size() <= state->arguments.size() //
+            && "provided arguments don't match method argument count"
         );
 
-        for ( std::size_t i = 0; i < opts.arguments.size(); ++i ) {
+        for ( std::size_t i{}, e{std::min(opts.arguments.size(), state->arguments.size())}; i < e; ++i ) {
             argument& arg = state->arguments[i];
             detail::state_access(arg)->name = std::move(opts.arguments[i].name);
             detail::state_access(arg)->metadata = std::move(opts.arguments[i].metadata);
@@ -210,17 +210,17 @@ namespace meta_hpp
     }
 
     template < detail::class_kind Class >
-    template < detail::method_pointer_kind Method, method_policy_kind Policy >
+    template < detail::method_pointer_kind Method, method_policy_family Policy >
         requires detail::class_bind_method_kind<Class, Method>
     class_bind<Class>& class_bind<Class>::method_(std::string name, Method method_ptr, string_ilist arguments, Policy) {
         auto state = detail::method_state::make<Policy>(std::move(name), method_ptr, {});
 
-        META_HPP_THROW_IF( //
-            arguments.size() > state->arguments.size(),
-            "provided argument names don't match method argument count"
+        META_HPP_ASSERT(                                //
+            arguments.size() <= state->arguments.size() //
+            && "provided argument names don't match method argument count"
         );
 
-        for ( std::size_t i = 0; i < arguments.size(); ++i ) {
+        for ( std::size_t i{}, e{std::min(arguments.size(), state->arguments.size())}; i < e; ++i ) {
             argument& arg = state->arguments[i];
             // NOLINTNEXTLINE(*-pointer-arithmetic)
             detail::state_access(arg)->name = std::data(arguments)[i];
@@ -246,13 +246,13 @@ namespace meta_hpp
     //
 
     template < detail::class_kind Class >
-    template < detail::pointer_kind Pointer, variable_policy_kind Policy >
+    template < detail::pointer_kind Pointer, variable_policy_family Policy >
     class_bind<Class>& class_bind<Class>::variable_(std::string name, Pointer variable_ptr, Policy policy) {
         return variable_(std::move(name), variable_ptr, {}, policy);
     }
 
     template < detail::class_kind Class >
-    template < detail::pointer_kind Pointer, variable_policy_kind Policy >
+    template < detail::pointer_kind Pointer, variable_policy_family Policy >
     class_bind<Class>& class_bind<Class>::variable_(std::string name, Pointer variable_ptr, variable_opts opts, Policy) {
         auto state = detail::variable_state::make<Policy>(std::move(name), variable_ptr, std::move(opts.metadata));
         detail::insert_or_assign(get_data().variables, variable{std::move(state)});

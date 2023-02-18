@@ -57,7 +57,7 @@ namespace meta_hpp
         }
 
         for ( const evalue& evalue : data_->evalues ) {
-            if ( evalue.get_value_as<Enum>() == value ) {
+            if ( evalue.get_value().as<Enum>() == value ) {
                 return evalue.get_name();
             }
         }
@@ -66,15 +66,10 @@ namespace meta_hpp
     }
 
     inline uvalue enum_type::name_to_value(std::string_view name) const noexcept {
-        if ( const evalue& value = get_evalue(name); value ) {
+        if ( const evalue& value = get_evalue(name) ) {
             return value.get_value();
         }
 
         return uvalue{};
-    }
-
-    template < typename T >
-    T enum_type::name_to_value_as(std::string_view name) const {
-        return name_to_value(name).get_as<T>();
     }
 }

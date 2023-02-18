@@ -9,27 +9,12 @@
 #include "meta_base.hpp"
 #include "meta_types.hpp"
 
-namespace meta_hpp::detail
-{
-    template < typename T >
-    concept uvalue_kind              //
-        = std::is_same_v<T, uvalue>; //
-
-    template < typename T >
-    concept any_uvalue_kind             //
-        = std::is_same_v<T, uarg_base>  //
-       || std::is_same_v<T, uarg>       //
-       || std::is_same_v<T, uinst_base> //
-       || std::is_same_v<T, uinst>      //
-       || std::is_same_v<T, uvalue>;    //
-}
-
 namespace meta_hpp
 {
     class uvalue final {
     public:
         uvalue() = default;
-        ~uvalue();
+        ~uvalue() noexcept;
 
         uvalue(uvalue&& other) noexcept;
         uvalue(const uvalue& other);
@@ -37,17 +22,21 @@ namespace meta_hpp
         uvalue& operator=(uvalue&& other) noexcept;
         uvalue& operator=(const uvalue& other);
 
-        template < typename T, typename Tp = std::decay_t<T> >
-            requires(!detail::any_uvalue_kind<Tp>)     //
-                 && (!detail::is_in_place_type_v<Tp>)  //
-                 && (std::is_copy_constructible_v<Tp>) //
-        // NOLINTNEXTLINE(*-forwarding-reference-overload)
+        template <                                 //
+            typename T,                            //
+            typename Tp = std::decay_t<T>,         //
+            typename = std::enable_if_t<           //
+                !detail::is_in_place_type_v<Tp> && //
+                detail::non_uvalue_family<Tp> &&   //
+                std::is_copy_constructible_v<Tp>>> //
         uvalue(T&& val);
 
-        template < typename T, typename Tp = std::decay_t<T> >
-            requires(!detail::any_uvalue_kind<Tp>)     //
-                 && (!detail::is_in_place_type_v<Tp>)  //
-                 && (std::is_copy_constructible_v<Tp>) //
+        template <                                 //
+            typename T,                            //
+            typename Tp = std::decay_t<T>,         //
+            typename = std::enable_if_t<           //
+                detail::non_uvalue_family<Tp> &&   //
+                std::is_copy_constructible_v<Tp>>> //
         uvalue& operator=(T&& val);
 
         template < typename T, typename... Args, typename Tp = std::decay_t<T> >
@@ -70,10 +59,10 @@ namespace meta_hpp
                   && std::is_constructible_v<Tp, std::initializer_list<U>&, Args...> //
         Tp& emplace(std::initializer_list<U> ilist, Args&&... args);
 
-        [[nodiscard]] bool is_valid() const noexcept;
+        [[nodiscard]] bool has_value() const noexcept;
         [[nodiscard]] explicit operator bool() const noexcept;
 
-        void reset();
+        void reset() noexcept;
         void swap(uvalue& other) noexcept;
 
         [[nodiscard]] any_type get_type() const noexcept;
@@ -92,23 +81,31 @@ namespace meta_hpp
         [[nodiscard]] bool has_unmap_op() const noexcept;
 
         template < typename T >
-        [[nodiscard]] T get_as() &&;
+        [[nodiscard]] bool is() const noexcept;
 
-        template < typename T >
-        [[nodiscard]] auto get_as() & //
-            -> std::conditional_t<detail::pointer_kind<T>, T, T&>;
+        template < detail::pointer_kind T >
+        [[nodiscard]] T as();
+        template < detail::pointer_kind T >
+        [[nodiscard]] T as() const;
 
-        template < typename T >
-        [[nodiscard]] auto get_as() const& //
-            -> std::conditional_t<detail::pointer_kind<T>, T, const T&>;
+        template < detail::non_pointer_kind T >
+        [[nodiscard]] T as() &&;
+        template < detail::non_pointer_kind T >
+        [[nodiscard]] T& as() &;
+        template < detail::non_pointer_kind T >
+        [[nodiscard]] const T& as() const&;
+        template < detail::non_pointer_kind T >
+        [[nodiscard]] const T&& as() const&&;
 
-        template < typename T >
-        [[nodiscard]] auto try_get_as() noexcept //
-            -> std::conditional_t<detail::pointer_kind<T>, T, T*>;
+        template < detail::pointer_kind T >
+        [[nodiscard]] T try_as() noexcept;
+        template < detail::pointer_kind T >
+        [[nodiscard]] T try_as() const noexcept;
 
-        template < typename T >
-        [[nodiscard]] auto try_get_as() const noexcept //
-            -> std::conditional_t<detail::pointer_kind<T>, T, const T*>;
+        template < detail::non_pointer_kind T >
+        [[nodiscard]] T* try_as() noexcept;
+        template < detail::non_pointer_kind T >
+        [[nodiscard]] const T* try_as() const noexcept;
 
     private:
         struct vtable_t;

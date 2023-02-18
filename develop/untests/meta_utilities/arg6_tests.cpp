@@ -49,10 +49,10 @@ TEST_CASE("meta/meta_utilities/arg6") {
         CHECK(f.is_invocable_with<clazz&, int_member_t>());
 
         CHECK(f.is_invocable_with(cl, &clazz::int_member));
-        CHECK(f.invoke(cl, &clazz::int_member).get_as<int>() == 42);
+        CHECK(f.invoke(cl, &clazz::int_member).as<int>() == 42);
 
         CHECK(f.is_invocable_with(meta::uvalue{cl}, meta::uvalue{&clazz::int_member}));
-        CHECK(f.invoke(meta::uvalue{cl}, meta::uvalue{&clazz::int_member}).get_as<int>() == 42);
+        CHECK(f.invoke(meta::uvalue{cl}, meta::uvalue{&clazz::int_member}).as<int>() == 42);
     }
 
     SUBCASE("int_method") {
@@ -63,9 +63,9 @@ TEST_CASE("meta/meta_utilities/arg6") {
         CHECK(f.is_invocable_with<clazz&, int_method_t>());
 
         CHECK(f.is_invocable_with(cl, &clazz::int_method));
-        CHECK(f.invoke(cl, &clazz::int_method).get_as<int>() == 42);
+        CHECK(f.invoke(cl, &clazz::int_method).as<int>() == 42);
 
         CHECK(f.is_invocable_with(meta::uvalue{cl}, meta::uvalue{&clazz::int_method}));
-        CHECK(f.invoke(meta::uvalue{cl}, meta::uvalue{&clazz::int_method}).get_as<int>() == 42);
+        CHECK(f.invoke(meta::uvalue{cl}, meta::uvalue{&clazz::int_method}).as<int>() == 42);
     }
 }

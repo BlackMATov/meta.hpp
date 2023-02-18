@@ -9,6 +9,7 @@
 #include "../meta_base.hpp"
 #include "../meta_states.hpp"
 
+#include "../meta_detail/type_registry.hpp"
 #include "../meta_types/enum_type.hpp"
 
 namespace meta_hpp::detail
@@ -19,7 +20,8 @@ namespace meta_hpp::detail
 
     template < enum_kind Enum >
     evalue_state_ptr evalue_state::make(std::string name, Enum evalue, metadata_map metadata) {
-        evalue_state state{evalue_index{resolve_type<Enum>(), std::move(name)}, std::move(metadata)};
+        type_registry& registry{type_registry::instance()};
+        evalue_state state{evalue_index{registry.resolve_type<Enum>(), std::move(name)}, std::move(metadata)};
         state.enum_value = uvalue{evalue};
         state.underlying_value = uvalue{to_underlying(evalue)};
         return make_intrusive<evalue_state>(std::move(state));
@@ -42,15 +44,5 @@ namespace meta_hpp
 
     inline const uvalue& evalue::get_underlying_value() const noexcept {
         return state_->underlying_value;
-    }
-
-    template < typename T >
-    T evalue::get_value_as() const {
-        return get_value().get_as<T>();
-    }
-
-    template < typename T >
-    T evalue::get_underlying_value_as() const {
-        return get_underlying_value().get_as<T>();
     }
 }

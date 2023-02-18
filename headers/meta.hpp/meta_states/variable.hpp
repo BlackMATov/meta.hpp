@@ -9,13 +9,14 @@
 #include "../meta_base.hpp"
 #include "../meta_states.hpp"
 
+#include "../meta_detail/type_registry.hpp"
 #include "../meta_detail/value_utilities/uarg.hpp"
 #include "../meta_types/pointer_type.hpp"
 
 namespace meta_hpp::detail
 {
-    template < variable_policy_kind Policy, pointer_kind Pointer >
-    uvalue raw_variable_getter(Pointer variable_ptr) {
+    template < variable_policy_family Policy, pointer_kind Pointer >
+    uvalue raw_variable_getter(type_registry&, Pointer variable_ptr) {
         using pt = pointer_traits<Pointer>;
         using data_type = typename pt::data_type;
 
@@ -34,7 +35,7 @@ namespace meta_hpp::detail
         auto&& return_value = *variable_ptr;
 
         if constexpr ( as_copy ) {
-            return uvalue{std::forward<decltype(return_value)>(return_value)};
+            return uvalue{META_HPP_FWD(return_value)};
         }
 
         if constexpr ( as_ptr ) {
@@ -47,49 +48,64 @@ namespace meta_hpp::detail
     }
 
     template < pointer_kind Pointer >
-    void raw_variable_setter([[maybe_unused]] Pointer variable_ptr, const uarg& arg) {
+    void raw_variable_setter(type_registry& registry, Pointer variable_ptr, const uarg& arg) {
         using pt = pointer_traits<Pointer>;
         using data_type = typename pt::data_type;
 
         if constexpr ( std::is_const_v<data_type> ) {
-            META_HPP_THROW("an attempt to set a constant variable");
+            (void)registry;
+            (void)variable_ptr;
+            (void)arg;
+            META_HPP_ASSERT(false && "an attempt to set a constant variable");
         } else {
-            META_HPP_THROW_IF( //
-                !arg.can_cast_to<data_type>(),
-                "an attempt to set a variable with an incorrect argument type"
+            META_HPP_ASSERT(                         //
+                arg.can_cast_to<data_type>(registry) //
+                && "an attempt to set a variable with an incorrect argument type"
             );
-            *variable_ptr = arg.cast<data_type>();
+
+            *variable_ptr = arg.cast<data_type>(registry);
         }
     }
 
     template < pointer_kind Pointer >
-    bool raw_variable_is_settable_with(const uarg_base& arg) {
+    uerror raw_variable_setter_error(type_registry& registry, const uarg_base& arg) {
         using pt = pointer_traits<Pointer>;
         using data_type = typename pt::data_type;
 
-        return !std::is_const_v<data_type> && arg.can_cast_to<data_type>();
+        if constexpr ( std::is_const_v<data_type> ) {
+            (void)registry;
+            (void)arg;
+            return uerror{error_code::bad_const_access};
+        } else {
+            if ( !arg.can_cast_to<data_type>(registry) ) {
+                return uerror{error_code::argument_type_mismatch};
+            }
+            return uerror{error_code::no_error};
+        }
     }
 }
 
 namespace meta_hpp::detail
 {
-    template < variable_policy_kind Policy, pointer_kind Pointer >
-    variable_state::getter_impl make_variable_getter(Pointer variable_ptr) {
-        return [variable_ptr]() { //
-            return raw_variable_getter<Policy>(variable_ptr);
+    template < variable_policy_family Policy, pointer_kind Pointer >
+    variable_state::getter_impl make_variable_getter(type_registry& registry, Pointer variable_ptr) {
+        return [&registry, variable_ptr]() { //
+            return raw_variable_getter<Policy>(registry, variable_ptr);
         };
     }
 
     template < pointer_kind Pointer >
-    variable_state::setter_impl make_variable_setter(Pointer variable_ptr) {
-        return [variable_ptr](const uarg& arg) { //
-            return raw_variable_setter(variable_ptr, arg);
+    variable_state::setter_impl make_variable_setter(type_registry& registry, Pointer variable_ptr) {
+        return [&registry, variable_ptr](const uarg& arg) { //
+            return raw_variable_setter(registry, variable_ptr, arg);
         };
     }
 
     template < pointer_kind Pointer >
-    variable_state::is_settable_with_impl make_variable_is_settable_with() {
-        return &raw_variable_is_settable_with<Pointer>;
+    variable_state::setter_error_impl make_variable_setter_error(type_registry& registry) {
+        return [&registry](const uarg_base& arg) { //
+            return raw_variable_setter_error<Pointer>(registry, arg);
+        };
     }
 }
 
@@ -99,12 +115,13 @@ namespace meta_hpp::detail
     : index{std::move(nindex)}
     , metadata{std::move(nmetadata)} {}
 
-    template < variable_policy_kind Policy, pointer_kind Pointer >
+    template < variable_policy_family Policy, pointer_kind Pointer >
     variable_state_ptr variable_state::make(std::string name, Pointer variable_ptr, metadata_map metadata) {
-        variable_state state{variable_index{resolve_type<Pointer>(), std::move(name)}, std::move(metadata)};
-        state.getter = make_variable_getter<Policy>(variable_ptr);
-        state.setter = make_variable_setter(variable_ptr);
-        state.is_settable_with = make_variable_is_settable_with<Pointer>();
+        type_registry& registry{type_registry::instance()};
+        variable_state state{variable_index{registry.resolve_type<Pointer>(), std::move(name)}, std::move(metadata)};
+        state.getter = make_variable_getter<Policy>(registry, variable_ptr);
+        state.setter = make_variable_setter(registry, variable_ptr);
+        state.setter_error = make_variable_setter_error<Pointer>(registry);
         return make_intrusive<variable_state>(std::move(state));
     }
 }
@@ -123,20 +140,37 @@ namespace meta_hpp
         return state_->getter();
     }
 
-    template < typename T >
-    T variable::get_as() const {
-        return get().get_as<T>();
+    inline uresult variable::try_get() const {
+        return state_->getter();
+    }
+
+    inline uvalue variable::operator()() const {
+        return get();
     }
 
     template < typename Value >
     void variable::set(Value&& value) const {
         using namespace detail;
-        const uarg vvalue{std::forward<Value>(value)};
+        type_registry& registry{type_registry::instance()};
+        const uarg vvalue{registry, std::forward<Value>(value)};
         state_->setter(vvalue);
     }
 
-    inline uvalue variable::operator()() const {
-        return get();
+    template < typename Value >
+    uresult variable::try_set(Value&& value) const {
+        using namespace detail;
+        type_registry& registry{type_registry::instance()};
+
+        {
+            const uarg_base vvalue{registry, std::forward<Value>(value)};
+            if ( const uerror err = state_->setter_error(vvalue) ) {
+                return err;
+            }
+        }
+
+        const uarg vvalue{registry, std::forward<Value>(value)};
+        state_->setter(vvalue);
+        return uerror{error_code::no_error};
     }
 
     template < typename Value >
@@ -147,14 +181,16 @@ namespace meta_hpp
     template < typename Value >
     bool variable::is_settable_with() const noexcept {
         using namespace detail;
-        const uarg_base vvalue{type_list<Value>{}};
-        return state_->is_settable_with(vvalue);
+        type_registry& registry{type_registry::instance()};
+        const uarg_base vvalue{registry, type_list<Value>{}};
+        return !state_->setter_error(vvalue);
     }
 
     template < typename Value >
     bool variable::is_settable_with(Value&& value) const noexcept {
         using namespace detail;
-        const uarg vvalue{std::forward<Value>(value)};
-        return state_->is_settable_with(vvalue);
+        type_registry& registry{type_registry::instance()};
+        const uarg_base vvalue{registry, std::forward<Value>(value)};
+        return !state_->setter_error(vvalue);
     }
 }

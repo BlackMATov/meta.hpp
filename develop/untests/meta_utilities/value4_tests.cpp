@@ -46,21 +46,21 @@ namespace
     };
 }
 
-TEST_CASE("meta/meta_utilities/value5") {
+TEST_CASE("meta/meta_utilities/value4") {
     namespace meta = meta_hpp;
 
     meta::class_<clazz_throw_dtor>()
         .function_("make", &clazz_throw_dtor::make);
 }
 
-TEST_CASE("meta/meta_utilities/value5/throw_dtor") {
+TEST_CASE("meta/meta_utilities/value4/throw_dtor") {
     namespace meta = meta_hpp;
 
     SUBCASE("value") {
         meta::uvalue v{clazz_throw_dtor{42}};
 
         CHECK(v.get_type() == meta::resolve_type<clazz_throw_dtor>());
-        CHECK(v.get_as<clazz_throw_dtor>().i == 42);
+        CHECK(v.as<clazz_throw_dtor>().i == 42);
     }
 
     SUBCASE("ptr_deref") {
@@ -68,11 +68,11 @@ TEST_CASE("meta/meta_utilities/value5/throw_dtor") {
 
         meta::uvalue v_ptr{&obj};
         CHECK(v_ptr.get_type() == meta::resolve_type<clazz_throw_dtor*>());
-        CHECK(v_ptr.get_as<clazz_throw_dtor*>() == &obj);
+        CHECK(v_ptr.as<clazz_throw_dtor*>() == &obj);
 
         meta::uvalue v = *v_ptr;
         CHECK(v.get_type() == meta::resolve_type<clazz_throw_dtor>());
-        CHECK(v.get_as<clazz_throw_dtor>().i == 42);
+        CHECK(v.as<clazz_throw_dtor>().i == 42);
     }
 
     SUBCASE("array_index") {
@@ -80,11 +80,11 @@ TEST_CASE("meta/meta_utilities/value5/throw_dtor") {
 
         meta::uvalue v_ptr{objs};
         CHECK(v_ptr.get_type() == meta::resolve_type<clazz_throw_dtor*>());
-        CHECK(v_ptr.get_as<clazz_throw_dtor*>() == objs);
+        CHECK(v_ptr.as<clazz_throw_dtor*>() == objs);
 
         meta::uvalue v = v_ptr[1];
         CHECK(v.get_type() == meta::resolve_type<clazz_throw_dtor>());
-        CHECK(v.get_as<clazz_throw_dtor>().i == 21);
+        CHECK(v.as<clazz_throw_dtor>().i == 21);
     }
 
     SUBCASE("as_return_value") {
@@ -93,11 +93,11 @@ TEST_CASE("meta/meta_utilities/value5/throw_dtor") {
 
         meta::uvalue v{clazz_throw_dtor_make_function(42)};
         CHECK(v.get_type() == meta::resolve_type<clazz_throw_dtor>());
-        CHECK(v.get_as<clazz_throw_dtor>().i == 42);
+        CHECK(v.as<clazz_throw_dtor>().i == 42);
     }
 }
 
-TEST_CASE("meta/meta_utilities/value5/inplace") {
+TEST_CASE("meta/meta_utilities/value4/inplace") {
     namespace meta = meta_hpp;
 
     clazz_throw_dtor::destructor_counter = 0;
@@ -108,7 +108,7 @@ TEST_CASE("meta/meta_utilities/value5/inplace") {
     SUBCASE("def") {
         meta::uvalue v = meta::make_uvalue<clazz_throw_dtor>();
         CHECK(v.get_type() == meta::resolve_type<clazz_throw_dtor>());
-        CHECK(v.get_as<clazz_throw_dtor>().i == 0);
+        CHECK(v.as<clazz_throw_dtor>().i == 0);
 
         CHECK(clazz_throw_dtor::destructor_counter == 0);
         CHECK(clazz_throw_dtor::constructor_counter == 1);
@@ -121,10 +121,10 @@ TEST_CASE("meta/meta_utilities/value5/inplace") {
         CHECK(v.get_type() == meta::resolve_type<std::vector<clazz_throw_dtor>>());
 
         CHECK(v[0].get_type() == meta::resolve_type<clazz_throw_dtor>());
-        CHECK(v[0].get_as<clazz_throw_dtor>().i == 42);
+        CHECK(v[0].as<clazz_throw_dtor>().i == 42);
 
         CHECK(v[1].get_type() == meta::resolve_type<clazz_throw_dtor>());
-        CHECK(v[1].get_as<clazz_throw_dtor>().i == 42);
+        CHECK(v[1].as<clazz_throw_dtor>().i == 42);
     }
 
     SUBCASE("args/counters") {
@@ -143,10 +143,10 @@ TEST_CASE("meta/meta_utilities/value5/inplace") {
         CHECK(v.get_type() == meta::resolve_type<std::vector<int>>());
 
         CHECK(v[0].get_type() == meta::resolve_type<int>());
-        CHECK(v[0].get_as<int>() == 21);
+        CHECK(v[0].as<int>() == 21);
 
         CHECK(v[1].get_type() == meta::resolve_type<int>());
-        CHECK(v[1].get_as<int>() == 42);
+        CHECK(v[1].as<int>() == 42);
     }
 
     SUBCASE("ilist/2") {
@@ -154,10 +154,10 @@ TEST_CASE("meta/meta_utilities/value5/inplace") {
         CHECK(v.get_type() == meta::resolve_type<std::vector<int, std::allocator<int>>>());
 
         CHECK(v[0].get_type() == meta::resolve_type<int>());
-        CHECK(v[0].get_as<int>() == 21);
+        CHECK(v[0].as<int>() == 21);
 
         CHECK(v[1].get_type() == meta::resolve_type<int>());
-        CHECK(v[1].get_as<int>() == 42);
+        CHECK(v[1].as<int>() == 42);
     }
 
     SUBCASE("ilist/counters") {
@@ -174,7 +174,7 @@ TEST_CASE("meta/meta_utilities/value5/inplace") {
     }
 }
 
-TEST_CASE("meta/meta_utilities/value5/emplace") {
+TEST_CASE("meta/meta_utilities/value4/emplace") {
     namespace meta = meta_hpp;
 
     clazz_throw_dtor::destructor_counter = 0;
@@ -187,7 +187,7 @@ TEST_CASE("meta/meta_utilities/value5/emplace") {
             meta::uvalue v = meta::make_uvalue<clazz_throw_dtor>(21);
             CHECK(v.emplace<clazz_throw_dtor>().i == 0);
             CHECK(v.get_type() == meta::resolve_type<clazz_throw_dtor>());
-            CHECK(v.get_as<clazz_throw_dtor>().i == 0);
+            CHECK(v.as<clazz_throw_dtor>().i == 0);
         }
         CHECK(clazz_throw_dtor::destructor_counter == 2);
         CHECK(clazz_throw_dtor::constructor_counter == 2);
@@ -201,10 +201,10 @@ TEST_CASE("meta/meta_utilities/value5/emplace") {
         CHECK(v.get_type() == meta::resolve_type<std::vector<clazz_throw_dtor>>());
 
         CHECK(v[0].get_type() == meta::resolve_type<clazz_throw_dtor>());
-        CHECK(v[0].get_as<clazz_throw_dtor>().i == 42);
+        CHECK(v[0].as<clazz_throw_dtor>().i == 42);
 
         CHECK(v[1].get_type() == meta::resolve_type<clazz_throw_dtor>());
-        CHECK(v[1].get_as<clazz_throw_dtor>().i == 42);
+        CHECK(v[1].as<clazz_throw_dtor>().i == 42);
     }
 
     SUBCASE("args/counters") {
@@ -225,10 +225,10 @@ TEST_CASE("meta/meta_utilities/value5/emplace") {
         CHECK(v.get_type() == meta::resolve_type<std::vector<int>>());
 
         CHECK(v[0].get_type() == meta::resolve_type<int>());
-        CHECK(v[0].get_as<int>() == 21);
+        CHECK(v[0].as<int>() == 21);
 
         CHECK(v[1].get_type() == meta::resolve_type<int>());
-        CHECK(v[1].get_as<int>() == 42);
+        CHECK(v[1].as<int>() == 42);
     }
 
     SUBCASE("ilist/2") {
@@ -237,10 +237,10 @@ TEST_CASE("meta/meta_utilities/value5/emplace") {
         CHECK(v.get_type() == meta::resolve_type<std::vector<int, std::allocator<int>>>());
 
         CHECK(v[0].get_type() == meta::resolve_type<int>());
-        CHECK(v[0].get_as<int>() == 21);
+        CHECK(v[0].as<int>() == 21);
 
         CHECK(v[1].get_type() == meta::resolve_type<int>());
-        CHECK(v[1].get_as<int>() == 42);
+        CHECK(v[1].as<int>() == 42);
     }
 
     SUBCASE("ilist/counters") {

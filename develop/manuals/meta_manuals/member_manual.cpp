@@ -59,7 +59,7 @@ TEST_CASE("meta/meta_manuals/member/usage") {
     CHECK(ivec2_x_value.get_type() == meta::resolve_type<int>());
 
     // casts the dynamic value to the typed value
-    const int ivec2_x_typed_value = ivec2_x_value.get_as<int>();
+    const int ivec2_x_typed_value = ivec2_x_value.as<int>();
 
     // here is our member typed value
     CHECK(ivec2_x_typed_value == 42);

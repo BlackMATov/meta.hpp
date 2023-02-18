@@ -9,8 +9,6 @@
 #include "meta_base.hpp"
 #include "meta_types.hpp"
 
-#include "meta_detail/index_family.hpp"
-
 namespace meta_hpp
 {
     class argument_index final {

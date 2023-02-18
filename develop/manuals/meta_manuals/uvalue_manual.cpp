@@ -68,34 +68,34 @@ TEST_CASE("meta/meta_manuals/uvalue/usage") {
     CHECK(val.get_type() == meta::resolve_type<int>());
 
     // we can get a reference to the stored data and even change it
-    val.get_as<int>() = 21;
-    CHECK(val.get_as<int>() == 21);
+    val.as<int>() = 21;
+    CHECK(val.as<int>() == 21);
 
     // uvalue can be copied, assigned, and moved
     val = rectangle{10, 20};
     CHECK(val.get_type() == meta::resolve_type<rectangle>());
 
     // also, it supports upcasting for registered types
-    CHECK(val.get_as<shape>().get_area() == 200);
+    CHECK(val.as<shape>().get_area() == 200);
 
     // an exception will be thrown if we try to get a wrong type
-    CHECK_THROWS(std::ignore = val.get_as<int>());
+    CHECK_THROWS(std::ignore = val.as<int>());
 
-    // but we can use try_get_as for safe access
-    CHECK(val.try_get_as<shape>());
-    if ( shape* s = val.try_get_as<shape>() ) {
+    // but we can use try_as for safe access
+    CHECK(val.try_as<shape>());
+    if ( shape* s = val.try_as<shape>() ) {
         CHECK(s->get_area() == 200);
     }
 
     // also, upcasting is supported for pointers
     rectangle rect{3, 5};
     val = &rect;
-    CHECK(val.get_as<shape*>()->get_area() == 15);
+    CHECK(val.as<shape*>()->get_area() == 15);
     CHECK(val.get_type() == meta::resolve_type<rectangle*>());
 
-    // and we can use try_get_as for pointers too
-    CHECK(val.try_get_as<shape*>());
-    if ( shape* s = val.try_get_as<shape*>() ) {
+    // and we can use try_as for pointers too
+    CHECK(val.try_as<shape*>());
+    if ( shape* s = val.try_as<shape*>() ) {
         CHECK(s->get_area() == 15);
     }
 }

@@ -41,15 +41,20 @@ namespace meta_hpp::detail
             return *this;
         }
 
-        template < typename F >
-            requires(!std::is_same_v<fixed_function, std::decay_t<F>>)
-        // NOLINTNEXTLINE(*-forwarding-reference-overload)
+        template <                                    //
+            typename F,                               //
+            typename Fp = std::decay_t<F>,            //
+            typename = std::enable_if_t<              //
+                !std::is_same_v<Fp, fixed_function>>> //
         fixed_function(F&& fun) {
             vtable_t::construct(*this, std::forward<F>(fun));
         }
 
-        template < typename F >
-            requires(!std::is_same_v<fixed_function, std::decay_t<F>>)
+        template <                                    //
+            typename F,                               //
+            typename Fp = std::decay_t<F>,            //
+            typename = std::enable_if_t<              //
+                !std::is_same_v<Fp, fixed_function>>> //
         fixed_function& operator=(F&& fun) {
             fixed_function{std::forward<F>(fun)}.swap(*this);
             return *this;
@@ -64,7 +69,7 @@ namespace meta_hpp::detail
         }
 
         R operator()(Args... args) const {
-            META_HPP_THROW_IF(!vtable_, "bad function call");
+            META_HPP_ASSERT(vtable_ && "bad function call");
             return vtable_->call(*this, std::forward<Args>(args)...);
         }
 
@@ -85,7 +90,7 @@ namespace meta_hpp::detail
     private:
         struct buffer_t final {
             // NOLINTNEXTLINE(*-avoid-c-arrays)
-            alignas(std::max_align_t) std::byte data[sizeof(void*) * 2];
+            alignas(std::max_align_t) std::byte data[sizeof(void*) * 3];
         } buffer_{};
     };
 

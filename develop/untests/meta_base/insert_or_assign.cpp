@@ -46,6 +46,114 @@ namespace
             return l.key == r.key && l.data == r.data;
         }
     };
+
+    struct exception_on_move_value {
+        int key{};
+        int data{};
+
+        exception_on_move_value(int k, int d)
+        : key{k}
+        , data{d} {}
+
+        exception_on_move_value(const exception_on_move_value&) = default;
+        exception_on_move_value& operator=(const exception_on_move_value&) = default;
+
+        exception_on_move_value(exception_on_move_value&& other)
+        : key{other.key}
+        , data{other.data} {
+            if ( other.data != 42 ) {
+                other.key = 0;
+                other.data = 0;
+                return;
+            }
+        #if !defined(META_HPP_NO_EXCEPTIONS)
+            throw std::exception{};
+        #else
+            std::abort();
+        #endif
+        }
+
+        exception_on_move_value& operator=(exception_on_move_value&& other) {
+            if ( this == &other ) {
+                return *this;
+            }
+
+            if ( other.data != 42 ) {
+                key = other.key;
+                data = other.data;
+                return *this;
+            }
+
+        #if !defined(META_HPP_NO_EXCEPTIONS)
+            throw std::exception{};
+        #else
+            std::abort();
+        #endif
+        }
+
+        [[maybe_unused]]
+        friend bool operator<(const exception_on_move_value& l, const exception_on_move_value& r) noexcept {
+            return l.key < r.key;
+        }
+
+        [[maybe_unused]]
+        friend bool operator==(const exception_on_move_value& l, const exception_on_move_value& r) noexcept {
+            return l.key == r.key && l.data == r.data;
+        }
+    };
+
+    struct exception_on_copy_value {
+        int key{};
+        int data{};
+
+        exception_on_copy_value(int k, int d)
+        : key{k}
+        , data{d} {}
+
+        exception_on_copy_value(exception_on_copy_value&& other) = default;
+        exception_on_copy_value& operator=(exception_on_copy_value&& other) = default;
+
+        exception_on_copy_value(const exception_on_copy_value& other)
+        : key{other.key}
+        , data{other.data} {
+            if ( other.data != 42 ) {
+                return;
+            }
+        #if !defined(META_HPP_NO_EXCEPTIONS)
+            throw std::exception{};
+        #else
+            std::abort();
+        #endif
+        }
+
+        exception_on_copy_value& operator=(const exception_on_copy_value& other) {
+            if ( this == &other ) {
+                return *this;
+            }
+
+            if ( other.data != 42 ) {
+                key = other.key;
+                data = other.data;
+                return *this;
+            }
+
+        #if !defined(META_HPP_NO_EXCEPTIONS)
+            throw std::exception{};
+        #else
+            std::abort();
+        #endif
+        }
+
+        [[maybe_unused]]
+        friend bool operator<(const exception_on_copy_value& l, const exception_on_copy_value& r) noexcept {
+            return l.key < r.key;
+        }
+
+        [[maybe_unused]]
+        friend bool operator==(const exception_on_copy_value& l, const exception_on_copy_value& r) noexcept {
+            return l.key == r.key && l.data == r.data;
+        }
+    };
 }
 
 TEST_CASE("meta/meta_base/insert_or_assign") {
@@ -103,5 +211,36 @@ TEST_CASE("meta/meta_base/insert_or_assign") {
         copyable_value v{3, 42};
         CHECK(*insert_or_assign(s, v) == v);
         CHECK(s == std::set<copyable_value, std::less<>>{{1, 10}, {3, 42}});
+    }
+}
+
+TEST_CASE("meta/meta_base/insert_or_assign/exceptions") {
+    namespace meta = meta_hpp;
+    using meta::detail::insert_or_assign;
+
+    SUBCASE("on_move/insert") {
+        std::set<exception_on_move_value, std::less<>> s{{1, 10}, {3, 30}};
+        CHECK_THROWS(insert_or_assign(s, exception_on_move_value{2, 42}));
+        CHECK(s == std::set<exception_on_move_value, std::less<>>{{1, 10}, {3, 30}});
+    }
+
+    SUBCASE("on_move/replace") {
+        std::set<exception_on_move_value, std::less<>> s{{1, 10}, {3, 30}};
+        CHECK_THROWS(insert_or_assign(s, exception_on_move_value{3, 42}));
+        CHECK(s == std::set<exception_on_move_value, std::less<>>{{1, 10}, {3, 30}});
+    }
+
+    SUBCASE("on_copy/insert") {
+        std::set<exception_on_copy_value, std::less<>> s{{1, 10}, {3, 30}};
+        exception_on_copy_value v{2, 42};
+        CHECK_THROWS(insert_or_assign(s, v));
+        CHECK(s == std::set<exception_on_copy_value, std::less<>>{{1, 10}, {3, 30}});
+    }
+
+    SUBCASE("on_copy/replace") {
+        std::set<exception_on_copy_value, std::less<>> s{{1, 10}, {3, 30}};
+        exception_on_copy_value v{3, 42};
+        CHECK_THROWS(insert_or_assign(s, v));
+        CHECK(s == std::set<exception_on_copy_value, std::less<>>{{1, 10}, {3, 30}});
     }
 }

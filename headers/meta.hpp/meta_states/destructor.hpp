@@ -9,22 +9,23 @@
 #include "../meta_base.hpp"
 #include "../meta_states.hpp"
 
+#include "../meta_detail/type_registry.hpp"
 #include "../meta_detail/value_utilities/uarg.hpp"
 #include "../meta_types/destructor_type.hpp"
 
 namespace meta_hpp::detail
 {
     template < class_kind Class >
-    bool raw_destructor_destroy(const uarg& arg) {
+    void raw_destructor_destroy(type_registry& registry, const uarg& arg) {
         using dt = destructor_traits<Class>;
         using class_type = typename dt::class_type;
 
-        if ( !arg.can_cast_to<class_type*>() ) {
-            return false;
-        }
+        META_HPP_ASSERT(                           //
+            arg.can_cast_to<class_type*>(registry) //
+            && "an attempt to call a destructor with an incorrect argument type"
+        );
 
-        std::unique_ptr<class_type>{arg.cast<class_type*>()}.reset();
-        return true;
+        std::unique_ptr<class_type>{arg.cast<class_type*>(registry)}.reset();
     }
 
     template < class_kind Class >
@@ -34,18 +35,39 @@ namespace meta_hpp::detail
 
         std::destroy_at(static_cast<class_type*>(mem));
     }
+
+    template < class_kind Class >
+    uerror raw_destructor_destroy_error(type_registry& registry, const uarg_base& arg) {
+        using dt = destructor_traits<Class>;
+        using class_type = typename dt::class_type;
+
+        if ( !arg.can_cast_to<class_type*>(registry) ) {
+            return uerror{error_code::argument_type_mismatch};
+        }
+
+        return uerror{error_code::no_error};
+    }
 }
 
 namespace meta_hpp::detail
 {
     template < class_kind Class >
-    destructor_state::destroy_impl make_destructor_destroy() {
-        return &raw_destructor_destroy<Class>;
+    destructor_state::destroy_impl make_destructor_destroy(type_registry& registry) {
+        return [&registry](const uarg& arg) { //
+            return raw_destructor_destroy<Class>(registry, arg);
+        };
     }
 
     template < class_kind Class >
     destructor_state::destroy_at_impl make_destructor_destroy_at() {
         return &raw_destructor_destroy_at<Class>;
+    }
+
+    template < class_kind Class >
+    destructor_state::destroy_error_impl make_destructor_destroy_error(type_registry& registry) {
+        return [&registry](const uarg_base& arg) { //
+            return raw_destructor_destroy_error<Class>(registry, arg);
+        };
     }
 }
 
@@ -57,9 +79,11 @@ namespace meta_hpp::detail
 
     template < class_kind Class >
     destructor_state_ptr destructor_state::make(metadata_map metadata) {
-        destructor_state state{destructor_index{resolve_destructor_type<Class>()}, std::move(metadata)};
-        state.destroy = make_destructor_destroy<Class>();
+        type_registry& registry{type_registry::instance()};
+        destructor_state state{destructor_index{registry.resolve_destructor_type<Class>()}, std::move(metadata)};
+        state.destroy = make_destructor_destroy<Class>(registry);
         state.destroy_at = make_destructor_destroy_at<Class>();
+        state.destroy_error = make_destructor_destroy_error<Class>(registry);
         return make_intrusive<destructor_state>(std::move(state));
     }
 }
@@ -71,13 +95,52 @@ namespace meta_hpp
     }
 
     template < typename Arg >
-    bool destructor::destroy(Arg&& arg) const {
+    void destructor::destroy(Arg&& arg) const {
         using namespace detail;
-        const uarg varg{std::forward<Arg>(arg)};
+        type_registry& registry{type_registry::instance()};
+        const uarg varg{registry, std::forward<Arg>(arg)};
         return state_->destroy(varg);
+    }
+
+    template < typename Arg >
+    uresult destructor::try_destroy(Arg&& arg) const {
+        using namespace detail;
+        type_registry& registry{type_registry::instance()};
+
+        {
+            const uarg_base varg{registry, std::forward<Arg>(arg)};
+            if ( const uerror err = state_->destroy_error(varg) ) {
+                return err;
+            }
+        }
+
+        const uarg varg{registry, std::forward<Arg>(arg)};
+        state_->destroy(varg);
+        return uerror{error_code::no_error};
     }
 
     inline void destructor::destroy_at(void* mem) const {
         state_->destroy_at(mem);
+    }
+
+    inline uresult destructor::try_destroy_at(void* mem) const {
+        state_->destroy_at(mem);
+        return uerror{error_code::no_error};
+    }
+
+    template < typename Arg >
+    bool destructor::is_invocable_with() const noexcept {
+        using namespace detail;
+        type_registry& registry{type_registry::instance()};
+        const uarg_base varg{registry, type_list<Arg>{}};
+        return !state_->destroy_error(varg);
+    }
+
+    template < typename Arg >
+    bool destructor::is_invocable_with(Arg&& arg) const noexcept {
+        using namespace detail;
+        type_registry& registry{type_registry::instance()};
+        const uarg_base varg{registry, std::forward<Arg>(arg)};
+        return !state_->destroy_error(varg);
     }
 }

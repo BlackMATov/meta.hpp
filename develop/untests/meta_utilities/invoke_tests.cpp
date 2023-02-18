@@ -33,54 +33,63 @@ TEST_CASE("meta/meta_utilities/invoke") {
     REQUIRE((clazz_member && clazz_method && clazz_function));
 
     {
-        CHECK(meta::invoke(&clazz::function, 3).get_as<int>() == 3);
-        CHECK(meta::invoke(&clazz::function, meta::uvalue{3}).get_as<int>() == 3);
-        CHECK(meta::invoke(clazz_function, 3).get_as<int>() == 3);
-        CHECK(meta::invoke(clazz_function, meta::uvalue{3}).get_as<int>() == 3);
+        CHECK(meta::invoke(&clazz::function, 3).as<int>() == 3);
+        CHECK(meta::invoke(&clazz::function, meta::uvalue{3}).as<int>() == 3);
+        CHECK(meta::invoke(&clazz::function, meta::uresult{3}).as<int>() == 3);
+        CHECK(meta::invoke(clazz_function, 3).as<int>() == 3);
+        CHECK(meta::invoke(clazz_function, meta::uvalue{3}).as<int>() == 3);
+        CHECK(meta::invoke(clazz_function, meta::uresult{3}).as<int>() == 3);
 
         CHECK(meta::is_invocable_with(clazz_function, 3));
         CHECK(meta::is_invocable_with(clazz_function, meta::uvalue{3}));
+        CHECK(meta::is_invocable_with(clazz_function, meta::uresult{3}));
         CHECK(meta::is_invocable_with<int>(clazz_function));
 
-        using function_t = decltype(&clazz::function);
-        CHECK(meta::is_invocable_with<function_t>(3));
-        CHECK(meta::is_invocable_with<function_t>(meta::uvalue{3}));
-        CHECK(meta::is_invocable_with<function_t, int>());
+        CHECK(meta::is_invocable_with(&clazz::function, 3));
+        CHECK(meta::is_invocable_with(&clazz::function, meta::uvalue{3}));
+        CHECK(meta::is_invocable_with(&clazz::function, meta::uresult{3}));
+        CHECK(meta::is_invocable_with<int>(&clazz::function));
     }
 
     {
         clazz cl;
 
-        CHECK(meta::invoke(&clazz::member, cl).get_as<int>() == 1);
-        CHECK(meta::invoke(&clazz::member, meta::uvalue{cl}).get_as<int>() == 1);
-        CHECK(meta::invoke(clazz_member, cl).get_as<int>() == 1);
-        CHECK(meta::invoke(clazz_member, meta::uvalue{cl}).get_as<int>() == 1);
+        CHECK(meta::invoke(&clazz::member, cl).as<int>() == 1);
+        CHECK(meta::invoke(&clazz::member, meta::uvalue{cl}).as<int>() == 1);
+        CHECK(meta::invoke(&clazz::member, meta::uresult{cl}).as<int>() == 1);
+        CHECK(meta::invoke(clazz_member, cl).as<int>() == 1);
+        CHECK(meta::invoke(clazz_member, meta::uvalue{cl}).as<int>() == 1);
+        CHECK(meta::invoke(clazz_member, meta::uresult{cl}).as<int>() == 1);
 
         CHECK(meta::is_invocable_with(clazz_member, cl));
         CHECK(meta::is_invocable_with(clazz_member, meta::uvalue{cl}));
+        CHECK(meta::is_invocable_with(clazz_member, meta::uresult{cl}));
         CHECK(meta::is_invocable_with<const clazz&>(clazz_member));
 
-        using member_t = decltype(&clazz::member);
-        CHECK(meta::is_invocable_with<member_t>(cl));
-        CHECK(meta::is_invocable_with<member_t>(meta::uvalue{cl}));
-        CHECK(meta::is_invocable_with<member_t, const clazz&>());
+        CHECK(meta::is_invocable_with(&clazz::member, cl));
+        CHECK(meta::is_invocable_with(&clazz::member, meta::uvalue{cl}));
+        CHECK(meta::is_invocable_with(&clazz::member, meta::uresult{cl}));
+        CHECK(meta::is_invocable_with<const clazz&>(&clazz::member));
     }
 
     {
         clazz cl;
 
-        CHECK(meta::invoke(&clazz::method, cl, 2).get_as<int>() == 2);
-        CHECK(meta::invoke(&clazz::method, meta::uvalue{cl}, meta::uvalue{2}).get_as<int>() == 2);
-        CHECK(meta::invoke(clazz_method, cl, 2).get_as<int>() == 2);
-        CHECK(meta::invoke(clazz_method, meta::uvalue{cl}, meta::uvalue{2}).get_as<int>() == 2);
+        CHECK(meta::invoke(&clazz::method, cl, 2).as<int>() == 2);
+        CHECK(meta::invoke(&clazz::method, meta::uvalue{cl}, meta::uvalue{2}).as<int>() == 2);
+        CHECK(meta::invoke(&clazz::method, meta::uresult{cl}, meta::uresult{2}).as<int>() == 2);
+        CHECK(meta::invoke(clazz_method, cl, 2).as<int>() == 2);
+        CHECK(meta::invoke(clazz_method, meta::uvalue{cl}, meta::uvalue{2}).as<int>() == 2);
+        CHECK(meta::invoke(clazz_method, meta::uresult{cl}, meta::uresult{2}).as<int>() == 2);
 
         CHECK(meta::is_invocable_with(clazz_method, cl, 2));
         CHECK(meta::is_invocable_with(clazz_method, meta::uvalue{cl}, meta::uvalue{2}));
+        CHECK(meta::is_invocable_with(clazz_method, meta::uresult{cl}, meta::uresult{2}));
         CHECK(meta::is_invocable_with<const clazz&, int>(clazz_method));
 
-        using method_t = decltype(&clazz::method);
-        CHECK(meta::is_invocable_with<method_t>(cl, 2));
-        CHECK(meta::is_invocable_with<method_t>(meta::uvalue{cl}, meta::uvalue{2}));
-        CHECK(meta::is_invocable_with<method_t, const clazz&, int>());
+        CHECK(meta::is_invocable_with(&clazz::method, cl, 2));
+        CHECK(meta::is_invocable_with(&clazz::method, meta::uvalue{cl}, meta::uvalue{2}));
+        CHECK(meta::is_invocable_with(&clazz::method, meta::uresult{cl}, meta::uresult{2}));
+        CHECK(meta::is_invocable_with<const clazz&, int>(&clazz::method));
     }
 }

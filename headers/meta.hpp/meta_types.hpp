@@ -70,7 +70,7 @@ namespace meta_hpp
         }
 
         [[nodiscard]] explicit operator bool() const noexcept {
-            return data_ != nullptr;
+            return is_valid();
         }
 
         [[nodiscard]] type_id get_id() const noexcept {
@@ -246,9 +246,6 @@ namespace meta_hpp
         template < detail::enum_kind Enum >
         [[nodiscard]] std::string_view value_to_name(Enum value) const noexcept;
         [[nodiscard]] uvalue name_to_value(std::string_view name) const noexcept;
-
-        template < typename T >
-        [[nodiscard]] T name_to_value_as(std::string_view name) const;
     };
 
     class function_type final : public type_base<function_type> {

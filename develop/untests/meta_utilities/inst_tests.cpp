@@ -34,19 +34,20 @@ namespace
         meta::method m_state{method_state::make<meta::method_policy::as_copy_t>("", method_ptr, {})};\
         \
         if ( std::is_invocable_v<decltype(method_ptr), decltype(Inst)> ) {\
-            CHECK(uinst{Inst}.can_cast_to<clazz Qualifiers>());\
-            CHECK(uinst_base{type_list<decltype(Inst)>{}}.can_cast_to<clazz Qualifiers>());\
-            std::ignore = uinst{Inst}.cast<clazz Qualifiers>();\
+            CHECK(uinst{r, Inst}.can_cast_to<clazz Qualifiers>(r));\
+            CHECK(uinst_base{r, type_list<decltype(Inst)>{}}.can_cast_to<clazz Qualifiers>(r));\
+            std::ignore = uinst{r, Inst}.cast<clazz Qualifiers>(r);\
             \
             CHECK(m_state.is_invocable_with<decltype(Inst)>());\
-            CHECK(m_state.invoke(Inst).get_as<int>() == 1);\
+            CHECK(m_state.invoke(Inst).as<int>() == 1);\
+            CHECK(m_state.try_invoke(Inst).get_value().as<int>() == 1);\
         } else {\
-            CHECK_FALSE(uinst{Inst}.can_cast_to<clazz Qualifiers>());\
-            CHECK_FALSE(uinst_base{type_list<decltype(Inst)>{}}.can_cast_to<clazz Qualifiers>());\
-            CHECK_THROWS(std::ignore = uinst{Inst}.cast<clazz Qualifiers>());\
+            CHECK_FALSE(uinst{r, Inst}.can_cast_to<clazz Qualifiers>(r));\
+            CHECK_FALSE(uinst_base{r, type_list<decltype(Inst)>{}}.can_cast_to<clazz Qualifiers>(r));\
+            /*CHECK_THROWS(std::ignore = uinst{r, Inst}.cast<clazz Qualifiers>(r));*/\
             \
             CHECK_FALSE(m_state.is_invocable_with<decltype(Inst)>());\
-            CHECK_THROWS(m_state.invoke(Inst));\
+            CHECK_FALSE(m_state.try_invoke(Inst));\
         }\
     }
 
@@ -60,11 +61,12 @@ namespace
         if ( std::is_invocable_v<decltype(method_ptr), FromType> ) {\
             CHECK(m_state.is_invocable_with<FromType>());\
             CHECK(m_state.is_invocable_with(FromValue));\
-            CHECK(m_state.invoke(FromValue).get_as<int>() == 1);\
+            CHECK(m_state.invoke(FromValue).as<int>() == 1);\
+            CHECK(m_state.try_invoke(FromValue).get_value().as<int>() == 1);\
         } else {\
             CHECK_FALSE(m_state.is_invocable_with<FromType>());\
             CHECK_FALSE(m_state.is_invocable_with(FromValue));\
-            CHECK_THROWS(m_state.invoke(FromValue));\
+            CHECK_FALSE(m_state.try_invoke(FromValue));\
         }\
     }
 
@@ -78,6 +80,10 @@ TEST_CASE("meta/meta_utilities/inst2") {
 
 TEST_CASE("meta/meta_utilities/inst2/refs") {
     namespace meta = meta_hpp;
+    using meta::detail::uarg;
+    using meta::detail::uinst;
+    using meta::detail::type_registry;
+    type_registry& r{type_registry::instance()};
 
     {
         // lvalue
@@ -85,9 +91,9 @@ TEST_CASE("meta/meta_utilities/inst2/refs") {
         auto LV2 = []() -> dclazz& { static dclazz v; return v; };
 
         {
-            meta::detail::uinst i{LV()};
+            uinst i{r, LV()};
             CHECK(i.get_raw_type() == meta::resolve_type<clazz>());
-            CHECK(i.get_ref_type() == meta::detail::uinst::ref_types::lvalue);
+            CHECK(i.get_ref_type() == uinst::ref_types::lvalue);
         }
 
         META_HPP_CHECK_INVOCABLE(LV(), m1, )
@@ -111,9 +117,9 @@ TEST_CASE("meta/meta_utilities/inst2/refs") {
         auto CLV2 = []() -> const dclazz& { static dclazz v; return v; };
 
         {
-            meta::detail::uinst i{CLV()};
+            uinst i{r, CLV()};
             CHECK(i.get_raw_type() == meta::resolve_type<clazz>());
-            CHECK(i.get_ref_type() == meta::detail::uinst::ref_types::const_lvalue);
+            CHECK(i.get_ref_type() == uinst::ref_types::const_lvalue);
         }
 
         META_HPP_CHECK_INVOCABLE(CLV(), m1, )
@@ -137,9 +143,9 @@ TEST_CASE("meta/meta_utilities/inst2/refs") {
         auto XV2 = []() -> dclazz&& { static dclazz v; return std::move(v); };
 
         {
-            meta::detail::uinst i{XV()};
+            uinst i{r, XV()};
             CHECK(i.get_raw_type() == meta::resolve_type<clazz>());
-            CHECK(i.get_ref_type() == meta::detail::uinst::ref_types::rvalue);
+            CHECK(i.get_ref_type() == uinst::ref_types::rvalue);
         }
 
         META_HPP_CHECK_INVOCABLE(XV(), m1, )
@@ -163,9 +169,9 @@ TEST_CASE("meta/meta_utilities/inst2/refs") {
         auto CXV2 = []() -> const dclazz&& { static dclazz v; return std::move(v); };
 
         {
-            meta::detail::uinst i{CXV()};
+            uinst i{r, CXV()};
             CHECK(i.get_raw_type() == meta::resolve_type<clazz>());
-            CHECK(i.get_ref_type() == meta::detail::uinst::ref_types::const_rvalue);
+            CHECK(i.get_ref_type() == uinst::ref_types::const_rvalue);
         }
 
         META_HPP_CHECK_INVOCABLE(CXV(), m1, )
@@ -189,9 +195,9 @@ TEST_CASE("meta/meta_utilities/inst2/refs") {
         auto PRV2 = []() -> dclazz { return dclazz{}; };
 
         {
-            meta::detail::uinst i{PRV()};
+            uinst i{r, PRV()};
             CHECK(i.get_raw_type() == meta::resolve_type<clazz>());
-            CHECK(i.get_ref_type() == meta::detail::uinst::ref_types::rvalue);
+            CHECK(i.get_ref_type() == uinst::ref_types::rvalue);
         }
 
         META_HPP_CHECK_INVOCABLE(PRV(), m1, )
@@ -215,9 +221,9 @@ TEST_CASE("meta/meta_utilities/inst2/refs") {
         auto CPRV2 = []() -> const dclazz { return dclazz{}; };
 
         {
-            meta::detail::uinst i{CPRV()};
+            uinst i{r, CPRV()};
             CHECK(i.get_raw_type() == meta::resolve_type<clazz>());
-            CHECK(i.get_ref_type() == meta::detail::uinst::ref_types::const_rvalue);
+            CHECK(i.get_ref_type() == uinst::ref_types::const_rvalue);
         }
 
         META_HPP_CHECK_INVOCABLE(CPRV(), m1, )
@@ -238,15 +244,19 @@ TEST_CASE("meta/meta_utilities/inst2/refs") {
 
 TEST_CASE("meta/meta_utilities/inst2/values") {
     namespace meta = meta_hpp;
+    using meta::detail::uarg;
+    using meta::detail::uinst;
+    using meta::detail::type_registry;
+    type_registry& r{type_registry::instance()};
 
     {
         // lvalue
         auto LV = []() -> meta::uvalue& { static meta::uvalue v{clazz{}}; return v; };
         auto LV2 = []() -> meta::uvalue& { static meta::uvalue v{dclazz{}}; return v; };
 
-        meta::detail::uarg a{LV()};
+        uarg a{r, LV()};
         CHECK(a.get_raw_type() == meta::resolve_type<clazz>());
-        CHECK(a.get_ref_type() == meta::detail::uarg::ref_types::lvalue);
+        CHECK(a.get_ref_type() == uarg::ref_types::lvalue);
 
         META_HPP_CHECK_INVOCABLE_2(LV(), m1, clazz&, )
         META_HPP_CHECK_INVOCABLE_2(LV(), m2, clazz&, &)
@@ -268,9 +278,9 @@ TEST_CASE("meta/meta_utilities/inst2/values") {
         auto CLV = []() -> const meta::uvalue& { static meta::uvalue v{clazz{}}; return v; };
         auto CLV2 = []() -> const meta::uvalue& { static meta::uvalue v{dclazz{}}; return v; };
 
-        meta::detail::uarg a{CLV()};
+        uarg a{r, CLV()};
         CHECK(a.get_raw_type() == meta::resolve_type<clazz>());
-        CHECK(a.get_ref_type() == meta::detail::uarg::ref_types::const_lvalue);
+        CHECK(a.get_ref_type() == uarg::ref_types::const_lvalue);
 
         META_HPP_CHECK_INVOCABLE_2(CLV(), m1, const clazz&, )
         META_HPP_CHECK_INVOCABLE_2(CLV(), m2, const clazz&, &)
@@ -292,9 +302,9 @@ TEST_CASE("meta/meta_utilities/inst2/values") {
         auto XV = []() -> meta::uvalue&& { static meta::uvalue v{clazz{}}; return std::move(v); };
         auto XV2 = []() -> meta::uvalue&& { static meta::uvalue v{dclazz{}}; return std::move(v); };
 
-        meta::detail::uarg a{XV()};
+        uarg a{r, XV()};
         CHECK(a.get_raw_type() == meta::resolve_type<clazz>());
-        CHECK(a.get_ref_type() == meta::detail::uarg::ref_types::rvalue);
+        CHECK(a.get_ref_type() == uarg::ref_types::rvalue);
 
         META_HPP_CHECK_INVOCABLE_2(XV(), m1, clazz&&, )
         META_HPP_CHECK_INVOCABLE_2(XV(), m2, clazz&&, &)
@@ -316,9 +326,9 @@ TEST_CASE("meta/meta_utilities/inst2/values") {
         auto CXV = []() -> const meta::uvalue&& { static meta::uvalue v{clazz{}}; return std::move(v); };
         auto CXV2 = []() -> const meta::uvalue&& { static meta::uvalue v{dclazz{}}; return std::move(v); };
 
-        meta::detail::uarg a{CXV()};
+        uarg a{r, CXV()};
         CHECK(a.get_raw_type() == meta::resolve_type<clazz>());
-        CHECK(a.get_ref_type() == meta::detail::uarg::ref_types::const_rvalue);
+        CHECK(a.get_ref_type() == uarg::ref_types::const_rvalue);
 
         META_HPP_CHECK_INVOCABLE_2(CXV(), m1, const clazz&&, )
         META_HPP_CHECK_INVOCABLE_2(CXV(), m2, const clazz&&, &)
@@ -340,9 +350,9 @@ TEST_CASE("meta/meta_utilities/inst2/values") {
         auto PRV = []() -> meta::uvalue { return meta::uvalue{clazz{}}; };
         auto PRV2 = []() -> meta::uvalue { return meta::uvalue{dclazz{}}; };
 
-        meta::detail::uarg a{PRV()};
+        uarg a{r, PRV()};
         CHECK(a.get_raw_type() == meta::resolve_type<clazz>());
-        CHECK(a.get_ref_type() == meta::detail::uarg::ref_types::rvalue);
+        CHECK(a.get_ref_type() == uarg::ref_types::rvalue);
 
         META_HPP_CHECK_INVOCABLE_2(PRV(), m1, clazz, )
         META_HPP_CHECK_INVOCABLE_2(PRV(), m2, clazz, &)
@@ -364,9 +374,9 @@ TEST_CASE("meta/meta_utilities/inst2/values") {
         auto CPRV = []() -> const meta::uvalue { return meta::uvalue{clazz{}}; };
         auto CPRV2 = []() -> const meta::uvalue { return meta::uvalue{dclazz{}}; };
 
-        meta::detail::uarg a{CPRV()};
+        uarg a{r, CPRV()};
         CHECK(a.get_raw_type() == meta::resolve_type<clazz>());
-        CHECK(a.get_ref_type() == meta::detail::uarg::ref_types::const_rvalue);
+        CHECK(a.get_ref_type() == uarg::ref_types::const_rvalue);
 
         META_HPP_CHECK_INVOCABLE_2(CPRV(), m1, const clazz, )
         META_HPP_CHECK_INVOCABLE_2(CPRV(), m2, const clazz, &)

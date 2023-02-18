@@ -7,15 +7,14 @@
 #pragma once
 
 #include "../meta_base.hpp"
-#include "../meta_registry.hpp"
 #include "../meta_states.hpp"
 #include "../meta_types.hpp"
 
-#include "../meta_types/class_type.hpp"
-#include "../meta_types/enum_type.hpp"
-
+#include "../meta_detail/type_registry.hpp"
 #include "../meta_states/function.hpp"
 #include "../meta_states/variable.hpp"
+#include "../meta_types/class_type.hpp"
+#include "../meta_types/enum_type.hpp"
 
 namespace meta_hpp::detail
 {
@@ -74,7 +73,8 @@ namespace meta_hpp
 
     template < typename... Args >
     function scope::get_function_with(std::string_view name) const noexcept {
-        return get_function_with(name, {resolve_type<Args>()...});
+        detail::type_registry& registry{detail::type_registry::instance()};
+        return get_function_with(name, {registry.resolve_type<Args>()...});
     }
 
     template < typename Iter >
