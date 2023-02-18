@@ -110,7 +110,7 @@ namespace meta_hpp::detail
 
 namespace meta_hpp::detail
 {
-    [[nodiscard]] inline bool is_base_of(const any_type& base, const any_type& derived) noexcept {
+    [[nodiscard]] inline bool is_a(const any_type& base, const any_type& derived) noexcept {
         if ( base == derived ) {
             return true;
         }
@@ -123,7 +123,7 @@ namespace meta_hpp::detail
         }
 
         return false;
-    };
+    }
 }
 
 namespace meta_hpp::detail
@@ -167,5 +167,32 @@ namespace meta_hpp::detail
         const class_type& to_class = registry.resolve_type<To>();
         const class_type& from_class = registry.resolve_type<From>();
         return static_cast<const To*>(pointer_upcast(ptr, from_class, to_class));
+    }
+}
+
+namespace meta_hpp::detail
+{
+    [[nodiscard]] inline void* pointer_upcast(void* ptr, const any_type& from, const any_type& to) {
+        if ( nullptr == ptr || !from || !to ) {
+            return nullptr;
+        }
+
+        if ( to.is_void() || from == to ) {
+            return ptr;
+        }
+
+        const class_type& to_class = to.as_class();
+        const class_type& from_class = from.as_class();
+
+        if ( to_class && from_class && from_class.is_derived_from(to_class) ) {
+            return pointer_upcast(ptr, from_class, to_class);
+        }
+
+        return nullptr;
+    }
+
+    [[nodiscard]] inline const void* pointer_upcast(const void* ptr, const any_type& from, const any_type& to) {
+        // NOLINTNEXTLINE(*-const-cast)
+        return pointer_upcast(const_cast<void*>(ptr), from, to);
     }
 }

@@ -149,7 +149,7 @@ namespace meta_hpp::detail
                 return false;
             };
 
-            return is_invocable() && is_base_of(to_type, from_type);
+            return is_invocable() && is_a(to_type, from_type);
         }
 
         if ( from_type.is_pointer() ) {
@@ -162,7 +162,7 @@ namespace meta_hpp::detail
                                               : std::is_invocable_v<inst_method, inst_class&>;
             };
 
-            return is_invocable() && is_base_of(to_type, from_data_type);
+            return is_invocable() && is_a(to_type, from_data_type);
         }
 
         return false;

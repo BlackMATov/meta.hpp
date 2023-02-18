@@ -2932,27 +2932,44 @@ namespace meta_hpp
         [[nodiscard]] bool is() const noexcept;
 
         template < typename T >
+            requires detail::pointer_kind<T>
+        [[nodiscard]] T as();
+
+        template < typename T >
+            requires detail::pointer_kind<T>
+        [[nodiscard]] T as() const;
+
+        template < typename T >
+            requires(!detail::pointer_kind<T>)
         [[nodiscard]] T as() &&;
 
         template < typename T >
-        [[nodiscard]] auto as() & //
-            -> std::conditional_t<detail::pointer_kind<T>, T, T&>;
+            requires(!detail::pointer_kind<T>)
+        [[nodiscard]] T& as() &;
 
         template < typename T >
-        [[nodiscard]] auto as() const& //
-            -> std::conditional_t<detail::pointer_kind<T>, T, const T&>;
+            requires(!detail::pointer_kind<T>)
+        [[nodiscard]] const T& as() const&;
 
         template < typename T >
-        [[nodiscard]] auto as() const&& //
-            -> std::conditional_t<detail::pointer_kind<T>, T, const T&&>;
+            requires(!detail::pointer_kind<T>)
+        [[nodiscard]] const T&& as() const&&;
 
         template < typename T >
-        [[nodiscard]] auto try_as() noexcept //
-            -> std::conditional_t<detail::pointer_kind<T>, T, T*>;
+            requires detail::pointer_kind<T>
+        [[nodiscard]] T try_as() noexcept;
 
         template < typename T >
-        [[nodiscard]] auto try_as() const noexcept //
-            -> std::conditional_t<detail::pointer_kind<T>, T, const T*>;
+            requires detail::pointer_kind<T>
+        [[nodiscard]] T try_as() const noexcept;
+
+        template < typename T >
+            requires(!detail::pointer_kind<T>)
+        [[nodiscard]] T* try_as() noexcept;
+
+        template < typename T >
+            requires(!detail::pointer_kind<T>)
+        [[nodiscard]] const T* try_as() const noexcept;
 
     private:
         struct vtable_t;
@@ -5426,7 +5443,7 @@ namespace meta_hpp::detail
 
 namespace meta_hpp::detail
 {
-    [[nodiscard]] inline bool is_base_of(const any_type& base, const any_type& derived) noexcept {
+    [[nodiscard]] inline bool is_a(const any_type& base, const any_type& derived) noexcept {
         if ( base == derived ) {
             return true;
         }
@@ -5439,7 +5456,7 @@ namespace meta_hpp::detail
         }
 
         return false;
-    };
+    }
 }
 
 namespace meta_hpp::detail
@@ -5483,6 +5500,33 @@ namespace meta_hpp::detail
         const class_type& to_class = registry.resolve_type<To>();
         const class_type& from_class = registry.resolve_type<From>();
         return static_cast<const To*>(pointer_upcast(ptr, from_class, to_class));
+    }
+}
+
+namespace meta_hpp::detail
+{
+    [[nodiscard]] inline void* pointer_upcast(void* ptr, const any_type& from, const any_type& to) {
+        if ( nullptr == ptr || !from || !to ) {
+            return nullptr;
+        }
+
+        if ( to.is_void() || from == to ) {
+            return ptr;
+        }
+
+        const class_type& to_class = to.as_class();
+        const class_type& from_class = from.as_class();
+
+        if ( to_class && from_class && from_class.is_derived_from(to_class) ) {
+            return pointer_upcast(ptr, from_class, to_class);
+        }
+
+        return nullptr;
+    }
+
+    [[nodiscard]] inline const void* pointer_upcast(const void* ptr, const any_type& from, const any_type& to) {
+        // NOLINTNEXTLINE(*-const-cast)
+        return pointer_upcast(const_cast<void*>(ptr), from, to);
     }
 }
 
@@ -5552,11 +5596,11 @@ namespace meta_hpp::detail
         }
 
         template < typename To >
-            requires(std::is_pointer_v<To>)
+            requires pointer_kind<To>
         [[nodiscard]] bool can_cast_to(type_registry& registry) const noexcept;
 
         template < typename To >
-            requires(!std::is_pointer_v<To>)
+            requires(!pointer_kind<To>)
         [[nodiscard]] bool can_cast_to(type_registry& registry) const noexcept;
 
     private:
@@ -5591,11 +5635,11 @@ namespace meta_hpp::detail
         , data_{const_cast<std::remove_cvref_t<T>*>(std::addressof(v))} {} // NOLINT(*-const-cast)
 
         template < typename To >
-            requires(std::is_pointer_v<To>)
+            requires pointer_kind<To>
         [[nodiscard]] decltype(auto) cast(type_registry& registry) const;
 
         template < typename To >
-            requires(!std::is_pointer_v<To>)
+            requires(!pointer_kind<To>)
         [[nodiscard]] decltype(auto) cast(type_registry& registry) const;
 
     private:
@@ -5606,47 +5650,44 @@ namespace meta_hpp::detail
 namespace meta_hpp::detail
 {
     template < typename To >
-        requires(std::is_pointer_v<To>)
+        requires pointer_kind<To>
     [[nodiscard]] bool uarg_base::can_cast_to(type_registry& registry) const noexcept {
-        using to_raw_type_cv = std::remove_reference_t<To>;
-        using to_raw_type = std::remove_cv_t<to_raw_type_cv>;
+        using to_raw_type = std::remove_cv_t<To>;
 
         const any_type& from_type = get_raw_type();
-        const any_type& to_type = registry.resolve_type<to_raw_type>();
+        const pointer_type& to_type_ptr = registry.resolve_type<to_raw_type>();
 
-        if ( from_type.is_nullptr() && to_type.is_pointer() ) {
+        if ( from_type.is_nullptr() ) {
             return true;
         }
 
-        if ( to_type.is_pointer() && from_type.is_array() ) {
-            const pointer_type& to_type_ptr = to_type.as_pointer();
-            const bool to_type_ptr_readonly = to_type_ptr.get_flags().has(pointer_flags::is_readonly);
-
+        if ( from_type.is_array() ) {
             const array_type& from_type_array = from_type.as_array();
+
+            const bool to_type_ptr_readonly = to_type_ptr.get_flags().has(pointer_flags::is_readonly);
             const bool from_type_array_readonly = is_ref_const();
 
             const any_type& to_data_type = to_type_ptr.get_data_type();
             const any_type& from_data_type = from_type_array.get_data_type();
 
             if ( to_type_ptr_readonly >= from_type_array_readonly ) {
-                if ( to_data_type.is_void() || is_base_of(to_data_type, from_data_type) ) {
+                if ( to_data_type.is_void() || is_a(to_data_type, from_data_type) ) {
                     return true;
                 }
             }
         }
 
-        if ( to_type.is_pointer() && from_type.is_pointer() ) {
-            const pointer_type& to_type_ptr = to_type.as_pointer();
-            const bool to_type_ptr_readonly = to_type_ptr.get_flags().has(pointer_flags::is_readonly);
-
+        if ( from_type.is_pointer() ) {
             const pointer_type& from_type_ptr = from_type.as_pointer();
+
+            const bool to_type_ptr_readonly = to_type_ptr.get_flags().has(pointer_flags::is_readonly);
             const bool from_type_ptr_readonly = from_type_ptr.get_flags().has(pointer_flags::is_readonly);
 
             const any_type& to_data_type = to_type_ptr.get_data_type();
             const any_type& from_data_type = from_type_ptr.get_data_type();
 
             if ( to_type_ptr_readonly >= from_type_ptr_readonly ) {
-                if ( to_data_type.is_void() || is_base_of(to_data_type, from_data_type) ) {
+                if ( to_data_type.is_void() || is_a(to_data_type, from_data_type) ) {
                     return true;
                 }
             }
@@ -5656,13 +5697,13 @@ namespace meta_hpp::detail
     }
 
     template < typename To >
-        requires(!std::is_pointer_v<To>)
+        requires(!pointer_kind<To>)
     [[nodiscard]] bool uarg_base::can_cast_to(type_registry& registry) const noexcept {
         using to_raw_type_cv = std::remove_reference_t<To>;
         using to_raw_type = std::remove_cv_t<to_raw_type_cv>;
 
         static_assert( //
-            !(std::is_reference_v<To> && std::is_pointer_v<to_raw_type>),
+            !(std::is_reference_v<To> && pointer_kind<to_raw_type>),
             "references to pointers are not supported yet"
         );
 
@@ -5698,13 +5739,13 @@ namespace meta_hpp::detail
         };
 
         if constexpr ( std::is_reference_v<To> ) {
-            if ( is_base_of(to_type, from_type) && is_convertible_to_ref(type_list<To>{}) ) {
+            if ( is_a(to_type, from_type) && is_convertible_to_ref(type_list<To>{}) ) {
                 return true;
             }
         }
 
-        if constexpr ( !std::is_pointer_v<To> && !std::is_reference_v<To> ) {
-            if ( is_base_of(to_type, from_type) && is_constructible_from_type(type_list<to_raw_type>{}) ) {
+        if constexpr ( !pointer_kind<To> && !std::is_reference_v<To> ) {
+            if ( is_a(to_type, from_type) && is_constructible_from_type(type_list<to_raw_type>{}) ) {
                 return true;
             }
         }
@@ -5716,67 +5757,44 @@ namespace meta_hpp::detail
 namespace meta_hpp::detail
 {
     template < typename To >
-        requires(std::is_pointer_v<To>)
+        requires pointer_kind<To>
     [[nodiscard]] decltype(auto) uarg::cast(type_registry& registry) const {
         META_HPP_ASSERT(can_cast_to<To>(registry) && "bad argument cast");
 
-        using to_raw_type_cv = std::remove_reference_t<To>;
-        using to_raw_type = std::remove_cv_t<to_raw_type_cv>;
+        using to_raw_type = std::remove_cv_t<To>;
 
         const any_type& from_type = get_raw_type();
-        const any_type& to_type = registry.resolve_type<to_raw_type>();
+        const pointer_type& to_type_ptr = registry.resolve_type<to_raw_type>();
 
-        if ( to_type.is_pointer() && from_type.is_nullptr() ) {
-            return static_cast<to_raw_type_cv>(nullptr);
+        if ( from_type.is_nullptr() ) {
+            return static_cast<To>(nullptr);
         }
 
-        if ( to_type.is_pointer() && from_type.is_array() ) {
-            const pointer_type& to_type_ptr = to_type.as_pointer();
+        if ( from_type.is_array() ) {
             const array_type& from_type_array = from_type.as_array();
 
-            const any_type& to_data_type = to_type_ptr.get_data_type();
-            const any_type& from_data_type = from_type_array.get_data_type();
-
-            if ( to_data_type.is_void() || to_data_type == from_data_type ) {
-                return static_cast<to_raw_type_cv>(data_);
-            }
-
-            if ( to_data_type.is_class() && from_data_type.is_class() ) {
-                const class_type& to_data_class = to_data_type.as_class();
-                const class_type& from_data_class = from_data_type.as_class();
-
-                void* to_ptr = pointer_upcast(data_, from_data_class, to_data_class);
-                return static_cast<to_raw_type_cv>(to_ptr);
-            }
+            return static_cast<To>(pointer_upcast( //
+                data_,
+                from_type_array.get_data_type(),
+                to_type_ptr.get_data_type()
+            ));
         }
 
-        if ( to_type.is_pointer() && from_type.is_pointer() ) {
-            const pointer_type& to_type_ptr = to_type.as_pointer();
+        if ( from_type.is_pointer() ) {
             const pointer_type& from_type_ptr = from_type.as_pointer();
 
-            const any_type& to_data_type = to_type_ptr.get_data_type();
-            const any_type& from_data_type = from_type_ptr.get_data_type();
-
-            void** from_data_ptr = static_cast<void**>(data_);
-
-            if ( to_data_type.is_void() || to_data_type == from_data_type ) {
-                return static_cast<to_raw_type_cv>(*from_data_ptr);
-            }
-
-            if ( to_data_type.is_class() && from_data_type.is_class() ) {
-                const class_type& to_data_class = to_data_type.as_class();
-                const class_type& from_data_class = from_data_type.as_class();
-
-                void* to_ptr = pointer_upcast(*from_data_ptr, from_data_class, to_data_class);
-                return static_cast<to_raw_type_cv>(to_ptr);
-            }
+            return static_cast<To>(pointer_upcast( //
+                *static_cast<void**>(data_),
+                from_type_ptr.get_data_type(),
+                to_type_ptr.get_data_type()
+            ));
         }
 
         throw_exception(error_code::bad_argument_cast);
     }
 
     template < typename To >
-        requires(!std::is_pointer_v<To>)
+        requires(!pointer_kind<To>)
     [[nodiscard]] decltype(auto) uarg::cast(type_registry& registry) const {
         META_HPP_ASSERT(can_cast_to<To>(registry) && "bad argument cast");
 
@@ -5784,16 +5802,14 @@ namespace meta_hpp::detail
         using to_raw_type = std::remove_cv_t<to_raw_type_cv>;
 
         static_assert( //
-            !(std::is_reference_v<To> && std::is_pointer_v<to_raw_type>),
+            !(std::is_reference_v<To> && pointer_kind<to_raw_type>),
             "references to pointers are not supported yet"
         );
 
         const any_type& from_type = get_raw_type();
         const any_type& to_type = registry.resolve_type<to_raw_type>();
 
-        void* to_ptr = to_type == from_type //
-                         ? data_
-                         : pointer_upcast(data_, from_type.as_class(), to_type.as_class());
+        void* to_ptr = pointer_upcast(data_, from_type, to_type);
 
         if constexpr ( std::is_lvalue_reference_v<To> ) {
             return *static_cast<to_raw_type_cv*>(to_ptr);
@@ -6214,7 +6230,7 @@ namespace meta_hpp::detail
                 return false;
             };
 
-            return is_invocable() && is_base_of(to_type, from_type);
+            return is_invocable() && is_a(to_type, from_type);
         }
 
         if ( from_type.is_pointer() ) {
@@ -6227,7 +6243,7 @@ namespace meta_hpp::detail
                                               : std::is_invocable_v<inst_method, inst_class&>;
             };
 
-            return is_invocable() && is_base_of(to_type, from_data_type);
+            return is_invocable() && is_a(to_type, from_data_type);
         }
 
         return false;
@@ -8976,198 +8992,136 @@ namespace meta_hpp
     template < typename T >
     bool uvalue::is() const noexcept {
         static_assert(std::is_same_v<T, std::decay_t<T>>);
-        return detail::is_base_of(resolve_type<T>(), get_type());
+        return detail::is_a(resolve_type<T>(), get_type());
     }
 
     template < typename T >
+        requires detail::pointer_kind<T>
+    T uvalue::as() {
+        static_assert(std::is_same_v<T, std::decay_t<T>>);
+
+        if ( T ptr = try_as<T>(); ptr || get_type().is_nullptr() ) {
+            return ptr;
+        }
+
+        throw_exception(error_code::bad_uvalue_access);
+    }
+
+    template < typename T >
+        requires detail::pointer_kind<T>
+    T uvalue::as() const {
+        static_assert(std::is_same_v<T, std::decay_t<T>>);
+
+        if ( T ptr = try_as<T>(); ptr || get_type().is_nullptr() ) {
+            return ptr;
+        }
+
+        throw_exception(error_code::bad_uvalue_access);
+    }
+
+    template < typename T >
+        requires(!detail::pointer_kind<T>)
     T uvalue::as() && {
         static_assert(std::is_same_v<T, std::decay_t<T>>);
 
-        if constexpr ( detail::pointer_kind<T> ) {
-            if ( T ptr = try_as<T>(); ptr || get_type().is_nullptr() ) {
-                return ptr;
-            }
-        } else {
-            if ( T* ptr = try_as<T>() ) {
-                return std::move(*ptr);
-            }
+        if ( T* ptr = try_as<T>() ) {
+            return std::move(*ptr);
         }
 
         throw_exception(error_code::bad_uvalue_access);
     }
 
     template < typename T >
-    auto uvalue::as() & -> std::conditional_t<detail::pointer_kind<T>, T, T&> {
+        requires(!detail::pointer_kind<T>)
+    T& uvalue::as() & {
         static_assert(std::is_same_v<T, std::decay_t<T>>);
 
-        if constexpr ( detail::pointer_kind<T> ) {
-            if ( T ptr = try_as<T>(); ptr || get_type().is_nullptr() ) {
-                return ptr;
-            }
-        } else {
-            if ( T* ptr = try_as<T>() ) {
-                return *ptr;
-            }
+        if ( T* ptr = try_as<T>() ) {
+            return *ptr;
         }
 
         throw_exception(error_code::bad_uvalue_access);
     }
 
     template < typename T >
-    auto uvalue::as() const& -> std::conditional_t<detail::pointer_kind<T>, T, const T&> {
+        requires(!detail::pointer_kind<T>)
+    const T& uvalue::as() const& {
         static_assert(std::is_same_v<T, std::decay_t<T>>);
 
-        if constexpr ( detail::pointer_kind<T> ) {
-            if ( T ptr = try_as<T>(); ptr || get_type().is_nullptr() ) {
-                return ptr;
-            }
-        } else {
-            if ( const T* ptr = try_as<T>() ) {
-                return *ptr;
-            }
+        if ( const T* ptr = try_as<T>() ) {
+            return *ptr;
         }
 
         throw_exception(error_code::bad_uvalue_access);
     }
 
     template < typename T >
-    auto uvalue::as() const&& -> std::conditional_t<detail::pointer_kind<T>, T, const T&&> {
+        requires(!detail::pointer_kind<T>)
+    const T&& uvalue::as() const&& {
         static_assert(std::is_same_v<T, std::decay_t<T>>);
 
-        if constexpr ( detail::pointer_kind<T> ) {
-            if ( T ptr = try_as<T>(); ptr || get_type().is_nullptr() ) {
-                return ptr;
-            }
-        } else {
-            if ( const T* ptr = try_as<T>() ) {
-                return std::move(*ptr);
-            }
+        if ( const T* ptr = try_as<T>() ) {
+            return std::move(*ptr);
         }
 
         throw_exception(error_code::bad_uvalue_access);
     }
 
     template < typename T >
-    // NOLINTNEXTLINE(*-cognitive-complexity)
-    auto uvalue::try_as() noexcept -> std::conditional_t<detail::pointer_kind<T>, T, T*> {
+        requires detail::pointer_kind<T>
+    T uvalue::try_as() noexcept {
         static_assert(std::is_same_v<T, std::decay_t<T>>);
 
-        using detail::type_registry;
+        using namespace detail;
         type_registry& registry{type_registry::instance()};
 
-        const any_type& from_type = get_type();
-        const any_type& to_type = registry.resolve_type<T>();
-
-        if constexpr ( detail::pointer_kind<T> ) {
-            if ( to_type.is_pointer() && from_type.is_nullptr() ) {
-                return static_cast<T>(nullptr);
-            }
-
-            if ( to_type.is_pointer() && from_type.is_pointer() ) {
-                const pointer_type& to_type_ptr = to_type.as_pointer();
-                const bool to_type_ptr_readonly = to_type_ptr.get_flags().has(pointer_flags::is_readonly);
-
-                const pointer_type& from_type_ptr = from_type.as_pointer();
-                const bool from_type_ptr_readonly = from_type_ptr.get_flags().has(pointer_flags::is_readonly);
-
-                const any_type& to_data_type = to_type_ptr.get_data_type();
-                const any_type& from_data_type = from_type_ptr.get_data_type();
-
-                if ( to_type_ptr_readonly >= from_type_ptr_readonly ) {
-                    void** from_data_ptr = static_cast<void**>(get_data());
-
-                    if ( to_data_type.is_void() || to_data_type == from_data_type ) {
-                        void* to_ptr = *from_data_ptr;
-                        return static_cast<T>(to_ptr);
-                    }
-
-                    if ( detail::is_base_of(to_data_type, from_data_type) ) {
-                        const class_type& to_data_class = to_data_type.as_class();
-                        const class_type& from_data_class = from_data_type.as_class();
-
-                        void* to_ptr = detail::pointer_upcast(*from_data_ptr, from_data_class, to_data_class);
-                        return static_cast<T>(to_ptr);
-                    }
-                }
-            }
-        }
-
-        if constexpr ( !detail::pointer_kind<T> ) {
-            if ( from_type == to_type ) {
-                T* to_ptr = static_cast<T*>(get_data());
-                return to_ptr;
-            }
-
-            if ( detail::is_base_of(to_type, from_type) ) {
-                const class_type& to_class = to_type.as_class();
-                const class_type& from_class = from_type.as_class();
-
-                T* to_ptr = static_cast<T*>(detail::pointer_upcast(get_data(), from_class, to_class));
-                return to_ptr;
-            }
+        if ( const uarg varg{registry, *this}; varg.can_cast_to<T>(registry) ) {
+            return varg.cast<T>(registry);
         }
 
         return nullptr;
     }
 
     template < typename T >
-    // NOLINTNEXTLINE(*-cognitive-complexity)
-    auto uvalue::try_as() const noexcept -> std::conditional_t<detail::pointer_kind<T>, T, const T*> {
+        requires detail::pointer_kind<T>
+    T uvalue::try_as() const noexcept {
         static_assert(std::is_same_v<T, std::decay_t<T>>);
 
-        using detail::type_registry;
+        using namespace detail;
         type_registry& registry{type_registry::instance()};
 
-        const any_type& from_type = get_type();
-        const any_type& to_type = registry.resolve_type<T>();
-
-        if constexpr ( detail::pointer_kind<T> ) {
-            if ( to_type.is_pointer() && from_type.is_nullptr() ) {
-                return static_cast<T>(nullptr);
-            }
-
-            if ( to_type.is_pointer() && from_type.is_pointer() ) {
-                const pointer_type& to_type_ptr = to_type.as_pointer();
-                const bool to_type_ptr_readonly = to_type_ptr.get_flags().has(pointer_flags::is_readonly);
-
-                const pointer_type& from_type_ptr = from_type.as_pointer();
-                const bool from_type_ptr_readonly = from_type_ptr.get_flags().has(pointer_flags::is_readonly);
-
-                const any_type& to_data_type = to_type_ptr.get_data_type();
-                const any_type& from_data_type = from_type_ptr.get_data_type();
-
-                if ( to_type_ptr_readonly >= from_type_ptr_readonly ) {
-                    void* const* from_data_ptr = static_cast<void* const*>(get_data());
-
-                    if ( to_data_type.is_void() || to_data_type == from_data_type ) {
-                        void* to_ptr = *from_data_ptr;
-                        return static_cast<T>(to_ptr);
-                    }
-
-                    if ( detail::is_base_of(to_data_type, from_data_type) ) {
-                        const class_type& to_data_class = to_data_type.as_class();
-                        const class_type& from_data_class = from_data_type.as_class();
-
-                        void* to_ptr = detail::pointer_upcast(*from_data_ptr, from_data_class, to_data_class);
-                        return static_cast<T>(to_ptr);
-                    }
-                }
-            }
+        if ( const uarg varg{registry, *this}; varg.can_cast_to<T>(registry) ) {
+            return varg.cast<T>(registry);
         }
 
-        if constexpr ( !detail::pointer_kind<T> ) {
-            if ( from_type == to_type ) {
-                const T* to_ptr = static_cast<const T*>(get_data());
-                return to_ptr;
-            }
+        return nullptr;
+    }
 
-            if ( detail::is_base_of(to_type, from_type) ) {
-                const class_type& to_class = to_type.as_class();
-                const class_type& from_class = from_type.as_class();
+    template < typename T >
+        requires(!detail::pointer_kind<T>)
+    T* uvalue::try_as() noexcept {
+        static_assert(std::is_same_v<T, std::decay_t<T>>);
 
-                const T* to_ptr = static_cast<const T*>(detail::pointer_upcast(get_data(), from_class, to_class));
-                return to_ptr;
-            }
+        using namespace detail;
+        type_registry& registry{type_registry::instance()};
+
+        if ( const uarg varg{registry, *this}; varg.can_cast_to<T&>(registry) ) {
+            return std::addressof(varg.cast<T&>(registry));
+        }
+
+        return nullptr;
+    }
+
+    template < typename T >
+        requires(!detail::pointer_kind<T>)
+    const T* uvalue::try_as() const noexcept {
+        static_assert(std::is_same_v<T, std::decay_t<T>>);
+
+        using namespace detail;
+        type_registry& registry{type_registry::instance()};
+
+        if ( const uarg varg{registry, *this}; varg.can_cast_to<const T&>(registry) ) {
+            return std::addressof(varg.cast<const T&>(registry));
         }
 
         return nullptr;

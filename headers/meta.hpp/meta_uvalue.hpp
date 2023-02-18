@@ -84,27 +84,44 @@ namespace meta_hpp
         [[nodiscard]] bool is() const noexcept;
 
         template < typename T >
+            requires detail::pointer_kind<T>
+        [[nodiscard]] T as();
+
+        template < typename T >
+            requires detail::pointer_kind<T>
+        [[nodiscard]] T as() const;
+
+        template < typename T >
+            requires(!detail::pointer_kind<T>)
         [[nodiscard]] T as() &&;
 
         template < typename T >
-        [[nodiscard]] auto as() & //
-            -> std::conditional_t<detail::pointer_kind<T>, T, T&>;
+            requires(!detail::pointer_kind<T>)
+        [[nodiscard]] T& as() &;
 
         template < typename T >
-        [[nodiscard]] auto as() const& //
-            -> std::conditional_t<detail::pointer_kind<T>, T, const T&>;
+            requires(!detail::pointer_kind<T>)
+        [[nodiscard]] const T& as() const&;
 
         template < typename T >
-        [[nodiscard]] auto as() const&& //
-            -> std::conditional_t<detail::pointer_kind<T>, T, const T&&>;
+            requires(!detail::pointer_kind<T>)
+        [[nodiscard]] const T&& as() const&&;
 
         template < typename T >
-        [[nodiscard]] auto try_as() noexcept //
-            -> std::conditional_t<detail::pointer_kind<T>, T, T*>;
+            requires detail::pointer_kind<T>
+        [[nodiscard]] T try_as() noexcept;
 
         template < typename T >
-        [[nodiscard]] auto try_as() const noexcept //
-            -> std::conditional_t<detail::pointer_kind<T>, T, const T*>;
+            requires detail::pointer_kind<T>
+        [[nodiscard]] T try_as() const noexcept;
+
+        template < typename T >
+            requires(!detail::pointer_kind<T>)
+        [[nodiscard]] T* try_as() noexcept;
+
+        template < typename T >
+            requires(!detail::pointer_kind<T>)
+        [[nodiscard]] const T* try_as() const noexcept;
 
     private:
         struct vtable_t;
