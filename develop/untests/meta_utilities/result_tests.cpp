@@ -28,24 +28,29 @@ TEST_CASE("meta/meta_utilities/uerror") {
     SUBCASE("ctors") {
         {
             meta::uerror err{};
+            CHECK(*err == meta::error_code::no_error);
             CHECK(err.get_error() == meta::error_code::no_error);
         }
         {
             meta::uerror err{meta::error_code::bad_argument_cast};
+            CHECK(*err == meta::error_code::bad_argument_cast);
             CHECK(err.get_error() == meta::error_code::bad_argument_cast);
         }
         {
             meta::uerror err{meta::error_code::bad_instance_cast};
+            CHECK(*err == meta::error_code::bad_instance_cast);
             CHECK(err.get_error() == meta::error_code::bad_instance_cast);
         }
         {
             meta::uerror err1{meta::error_code::bad_argument_cast};
             meta::uerror err2{err1};
+            CHECK(*err2 == meta::error_code::bad_argument_cast);
             CHECK(err2.get_error() == meta::error_code::bad_argument_cast);
         }
         {
             meta::uerror err1{meta::error_code::bad_argument_cast};
             meta::uerror err2{std::move(err1)};
+            CHECK(*err2 == meta::error_code::bad_argument_cast);
             CHECK(err2.get_error() == meta::error_code::bad_argument_cast);
         }
     }

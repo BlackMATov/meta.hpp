@@ -28,6 +28,7 @@ namespace meta_hpp
         [[nodiscard]] bool has_error() const noexcept;
         [[nodiscard]] explicit operator bool() const noexcept;
 
+        [[nodiscard]] error_code operator*() const noexcept;
         [[nodiscard]] error_code get_error() const noexcept;
 
         void reset() noexcept;

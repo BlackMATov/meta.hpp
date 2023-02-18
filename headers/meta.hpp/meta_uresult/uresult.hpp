@@ -29,6 +29,10 @@ namespace meta_hpp
         return has_error();
     }
 
+    inline error_code uerror::operator*() const noexcept {
+        return error_;
+    }
+
     inline error_code uerror::get_error() const noexcept {
         return error_;
     }
