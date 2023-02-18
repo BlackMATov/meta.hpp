@@ -433,6 +433,12 @@ namespace meta_hpp
     }
 
     template < typename T >
+    bool uvalue::is() const noexcept {
+        static_assert(std::is_same_v<T, std::decay_t<T>>);
+        return detail::is_base_of(resolve_type<T>(), get_type());
+    }
+
+    template < typename T >
     T uvalue::as() && {
         static_assert(std::is_same_v<T, std::decay_t<T>>);
 
@@ -511,11 +517,6 @@ namespace meta_hpp
         const any_type& from_type = get_type();
         const any_type& to_type = registry.resolve_type<T>();
 
-        const auto is_a = [](const any_type& base, const any_type& derived) {
-            return (base == derived) //
-                || (base.is_class() && derived.is_class() && base.as_class().is_base_of(derived.as_class()));
-        };
-
         if constexpr ( detail::pointer_kind<T> ) {
             if ( to_type.is_pointer() && from_type.is_nullptr() ) {
                 return static_cast<T>(nullptr);
@@ -539,11 +540,11 @@ namespace meta_hpp
                         return static_cast<T>(to_ptr);
                     }
 
-                    if ( is_a(to_data_type, from_data_type) ) {
+                    if ( detail::is_base_of(to_data_type, from_data_type) ) {
                         const class_type& to_data_class = to_data_type.as_class();
                         const class_type& from_data_class = from_data_type.as_class();
 
-                        void* to_ptr = detail::pointer_upcast(registry, *from_data_ptr, from_data_class, to_data_class);
+                        void* to_ptr = detail::pointer_upcast(*from_data_ptr, from_data_class, to_data_class);
                         return static_cast<T>(to_ptr);
                     }
                 }
@@ -556,11 +557,11 @@ namespace meta_hpp
                 return to_ptr;
             }
 
-            if ( is_a(to_type, from_type) ) {
+            if ( detail::is_base_of(to_type, from_type) ) {
                 const class_type& to_class = to_type.as_class();
                 const class_type& from_class = from_type.as_class();
 
-                T* to_ptr = static_cast<T*>(detail::pointer_upcast(registry, get_data(), from_class, to_class));
+                T* to_ptr = static_cast<T*>(detail::pointer_upcast(get_data(), from_class, to_class));
                 return to_ptr;
             }
         }
@@ -578,11 +579,6 @@ namespace meta_hpp
 
         const any_type& from_type = get_type();
         const any_type& to_type = registry.resolve_type<T>();
-
-        const auto is_a = [](const any_type& base, const any_type& derived) {
-            return (base == derived) //
-                || (base.is_class() && derived.is_class() && base.as_class().is_base_of(derived.as_class()));
-        };
 
         if constexpr ( detail::pointer_kind<T> ) {
             if ( to_type.is_pointer() && from_type.is_nullptr() ) {
@@ -607,11 +603,11 @@ namespace meta_hpp
                         return static_cast<T>(to_ptr);
                     }
 
-                    if ( is_a(to_data_type, from_data_type) ) {
+                    if ( detail::is_base_of(to_data_type, from_data_type) ) {
                         const class_type& to_data_class = to_data_type.as_class();
                         const class_type& from_data_class = from_data_type.as_class();
 
-                        void* to_ptr = detail::pointer_upcast(registry, *from_data_ptr, from_data_class, to_data_class);
+                        void* to_ptr = detail::pointer_upcast(*from_data_ptr, from_data_class, to_data_class);
                         return static_cast<T>(to_ptr);
                     }
                 }
@@ -624,11 +620,11 @@ namespace meta_hpp
                 return to_ptr;
             }
 
-            if ( is_a(to_type, from_type) ) {
+            if ( detail::is_base_of(to_type, from_type) ) {
                 const class_type& to_class = to_type.as_class();
                 const class_type& from_class = from_type.as_class();
 
-                const T* to_ptr = static_cast<const T*>(detail::pointer_upcast(registry, get_data(), from_class, to_class));
+                const T* to_ptr = static_cast<const T*>(detail::pointer_upcast(get_data(), from_class, to_class));
                 return to_ptr;
             }
         }

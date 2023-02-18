@@ -23,6 +23,7 @@ Diagnostics:
       - readability-named-parameter
       - readability-redundant-access-specifiers
       - readability-simplify-boolean-expr
+      - readability-use-anyofallof
 
 CompileFlags:
   CompilationDatabase: ../develop/.cdb

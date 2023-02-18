@@ -110,12 +110,25 @@ namespace meta_hpp::detail
 
 namespace meta_hpp::detail
 {
-    [[nodiscard]] inline void* pointer_upcast( //
-        type_registry& registry,
-        void* ptr,
-        const class_type& from,
-        const class_type& to
-    ) {
+    [[nodiscard]] inline bool is_base_of(const any_type& base, const any_type& derived) noexcept {
+        if ( base == derived ) {
+            return true;
+        }
+
+        const class_type& base_class = base.as_class();
+        const class_type& derived_class = derived.as_class();
+
+        if ( base_class && derived_class && base_class.is_base_of(derived_class) ) {
+            return true;
+        }
+
+        return false;
+    };
+}
+
+namespace meta_hpp::detail
+{
+    [[nodiscard]] inline void* pointer_upcast(void* ptr, const class_type& from, const class_type& to) {
         if ( nullptr == ptr || !from || !to ) {
             return nullptr;
         }
@@ -130,34 +143,29 @@ namespace meta_hpp::detail
             }
 
             if ( base_type.is_derived_from(to) ) {
-                return pointer_upcast(registry, base_info.upcast(ptr), base_type, to);
+                return pointer_upcast(base_info.upcast(ptr), base_type, to);
             }
         }
 
         return nullptr;
     }
 
-    [[nodiscard]] inline const void* pointer_upcast( //
-        type_registry& registry,
-        const void* ptr,
-        const class_type& from,
-        const class_type& to
-    ) {
+    [[nodiscard]] inline const void* pointer_upcast(const void* ptr, const class_type& from, const class_type& to) {
         // NOLINTNEXTLINE(*-const-cast)
-        return pointer_upcast(registry, const_cast<void*>(ptr), from, to);
+        return pointer_upcast(const_cast<void*>(ptr), from, to);
     }
 
     template < class_kind To, class_kind From >
     [[nodiscard]] To* pointer_upcast(type_registry& registry, From* ptr) {
         const class_type& to_class = registry.resolve_type<To>();
         const class_type& from_class = registry.resolve_type<From>();
-        return static_cast<To*>(pointer_upcast(registry, ptr, from_class, to_class));
+        return static_cast<To*>(pointer_upcast(ptr, from_class, to_class));
     }
 
     template < class_kind To, class_kind From >
     [[nodiscard]] const To* pointer_upcast(type_registry& registry, const From* ptr) {
         const class_type& to_class = registry.resolve_type<To>();
         const class_type& from_class = registry.resolve_type<From>();
-        return static_cast<const To*>(pointer_upcast(registry, ptr, from_class, to_class));
+        return static_cast<const To*>(pointer_upcast(ptr, from_class, to_class));
     }
 }

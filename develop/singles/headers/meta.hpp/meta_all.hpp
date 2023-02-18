@@ -2929,6 +2929,9 @@ namespace meta_hpp
         [[nodiscard]] bool has_unmap_op() const noexcept;
 
         template < typename T >
+        [[nodiscard]] bool is() const noexcept;
+
+        template < typename T >
         [[nodiscard]] T as() &&;
 
         template < typename T >
@@ -3020,6 +3023,7 @@ namespace meta_hpp
         [[nodiscard]] bool has_error() const noexcept;
         [[nodiscard]] explicit operator bool() const noexcept;
 
+        [[nodiscard]] error_code operator*() const noexcept;
         [[nodiscard]] error_code get_error() const noexcept;
 
         void reset() noexcept;
@@ -5422,12 +5426,25 @@ namespace meta_hpp::detail
 
 namespace meta_hpp::detail
 {
-    [[nodiscard]] inline void* pointer_upcast( //
-        type_registry& registry,
-        void* ptr,
-        const class_type& from,
-        const class_type& to
-    ) {
+    [[nodiscard]] inline bool is_base_of(const any_type& base, const any_type& derived) noexcept {
+        if ( base == derived ) {
+            return true;
+        }
+
+        const class_type& base_class = base.as_class();
+        const class_type& derived_class = derived.as_class();
+
+        if ( base_class && derived_class && base_class.is_base_of(derived_class) ) {
+            return true;
+        }
+
+        return false;
+    };
+}
+
+namespace meta_hpp::detail
+{
+    [[nodiscard]] inline void* pointer_upcast(void* ptr, const class_type& from, const class_type& to) {
         if ( nullptr == ptr || !from || !to ) {
             return nullptr;
         }
@@ -5442,35 +5459,30 @@ namespace meta_hpp::detail
             }
 
             if ( base_type.is_derived_from(to) ) {
-                return pointer_upcast(registry, base_info.upcast(ptr), base_type, to);
+                return pointer_upcast(base_info.upcast(ptr), base_type, to);
             }
         }
 
         return nullptr;
     }
 
-    [[nodiscard]] inline const void* pointer_upcast( //
-        type_registry& registry,
-        const void* ptr,
-        const class_type& from,
-        const class_type& to
-    ) {
+    [[nodiscard]] inline const void* pointer_upcast(const void* ptr, const class_type& from, const class_type& to) {
         // NOLINTNEXTLINE(*-const-cast)
-        return pointer_upcast(registry, const_cast<void*>(ptr), from, to);
+        return pointer_upcast(const_cast<void*>(ptr), from, to);
     }
 
     template < class_kind To, class_kind From >
     [[nodiscard]] To* pointer_upcast(type_registry& registry, From* ptr) {
         const class_type& to_class = registry.resolve_type<To>();
         const class_type& from_class = registry.resolve_type<From>();
-        return static_cast<To*>(pointer_upcast(registry, ptr, from_class, to_class));
+        return static_cast<To*>(pointer_upcast(ptr, from_class, to_class));
     }
 
     template < class_kind To, class_kind From >
     [[nodiscard]] const To* pointer_upcast(type_registry& registry, const From* ptr) {
         const class_type& to_class = registry.resolve_type<To>();
         const class_type& from_class = registry.resolve_type<From>();
-        return static_cast<const To*>(pointer_upcast(registry, ptr, from_class, to_class));
+        return static_cast<const To*>(pointer_upcast(ptr, from_class, to_class));
     }
 }
 
@@ -5602,11 +5614,6 @@ namespace meta_hpp::detail
         const any_type& from_type = get_raw_type();
         const any_type& to_type = registry.resolve_type<to_raw_type>();
 
-        const auto is_a = [](const any_type& base, const any_type& derived) {
-            return (base == derived) //
-                || (base.is_class() && derived.is_class() && base.as_class().is_base_of(derived.as_class()));
-        };
-
         if ( from_type.is_nullptr() && to_type.is_pointer() ) {
             return true;
         }
@@ -5622,7 +5629,7 @@ namespace meta_hpp::detail
             const any_type& from_data_type = from_type_array.get_data_type();
 
             if ( to_type_ptr_readonly >= from_type_array_readonly ) {
-                if ( to_data_type.is_void() || is_a(to_data_type, from_data_type) ) {
+                if ( to_data_type.is_void() || is_base_of(to_data_type, from_data_type) ) {
                     return true;
                 }
             }
@@ -5639,7 +5646,7 @@ namespace meta_hpp::detail
             const any_type& from_data_type = from_type_ptr.get_data_type();
 
             if ( to_type_ptr_readonly >= from_type_ptr_readonly ) {
-                if ( to_data_type.is_void() || is_a(to_data_type, from_data_type) ) {
+                if ( to_data_type.is_void() || is_base_of(to_data_type, from_data_type) ) {
                     return true;
                 }
             }
@@ -5661,11 +5668,6 @@ namespace meta_hpp::detail
 
         const any_type& from_type = get_raw_type();
         const any_type& to_type = registry.resolve_type<to_raw_type>();
-
-        const auto is_a = [](const any_type& base, const any_type& derived) {
-            return (base == derived) //
-                || (base.is_class() && derived.is_class() && base.as_class().is_base_of(derived.as_class()));
-        };
 
         const auto is_convertible_to_ref = [this]<typename ToRef>(type_list<ToRef>) {
             switch ( get_ref_type() ) {
@@ -5696,13 +5698,13 @@ namespace meta_hpp::detail
         };
 
         if constexpr ( std::is_reference_v<To> ) {
-            if ( is_a(to_type, from_type) && is_convertible_to_ref(type_list<To>{}) ) {
+            if ( is_base_of(to_type, from_type) && is_convertible_to_ref(type_list<To>{}) ) {
                 return true;
             }
         }
 
         if constexpr ( !std::is_pointer_v<To> && !std::is_reference_v<To> ) {
-            if ( is_a(to_type, from_type) && is_constructible_from_type(type_list<to_raw_type>{}) ) {
+            if ( is_base_of(to_type, from_type) && is_constructible_from_type(type_list<to_raw_type>{}) ) {
                 return true;
             }
         }
@@ -5743,7 +5745,7 @@ namespace meta_hpp::detail
                 const class_type& to_data_class = to_data_type.as_class();
                 const class_type& from_data_class = from_data_type.as_class();
 
-                void* to_ptr = pointer_upcast(registry, data_, from_data_class, to_data_class);
+                void* to_ptr = pointer_upcast(data_, from_data_class, to_data_class);
                 return static_cast<to_raw_type_cv>(to_ptr);
             }
         }
@@ -5765,7 +5767,7 @@ namespace meta_hpp::detail
                 const class_type& to_data_class = to_data_type.as_class();
                 const class_type& from_data_class = from_data_type.as_class();
 
-                void* to_ptr = pointer_upcast(registry, *from_data_ptr, from_data_class, to_data_class);
+                void* to_ptr = pointer_upcast(*from_data_ptr, from_data_class, to_data_class);
                 return static_cast<to_raw_type_cv>(to_ptr);
             }
         }
@@ -5791,7 +5793,7 @@ namespace meta_hpp::detail
 
         void* to_ptr = to_type == from_type //
                          ? data_
-                         : pointer_upcast(registry, data_, from_type.as_class(), to_type.as_class());
+                         : pointer_upcast(data_, from_type.as_class(), to_type.as_class());
 
         if constexpr ( std::is_lvalue_reference_v<To> ) {
             return *static_cast<to_raw_type_cv*>(to_ptr);
@@ -6197,11 +6199,6 @@ namespace meta_hpp::detail
         const any_type& from_type = get_raw_type();
         const any_type& to_type = registry.resolve_type<inst_class>();
 
-        const auto is_a = [](const any_type& base, const any_type& derived) {
-            return (base == derived) //
-                || (base.is_class() && derived.is_class() && base.as_class().is_base_of(derived.as_class()));
-        };
-
         if ( from_type.is_class() ) {
             const auto is_invocable = [this]() {
                 switch ( get_ref_type() ) {
@@ -6217,7 +6214,7 @@ namespace meta_hpp::detail
                 return false;
             };
 
-            return is_invocable() && is_a(to_type, from_type);
+            return is_invocable() && is_base_of(to_type, from_type);
         }
 
         if ( from_type.is_pointer() ) {
@@ -6230,7 +6227,7 @@ namespace meta_hpp::detail
                                               : std::is_invocable_v<inst_method, inst_class&>;
             };
 
-            return is_invocable() && is_a(to_type, from_data_type);
+            return is_invocable() && is_base_of(to_type, from_data_type);
         }
 
         return false;
@@ -6253,7 +6250,7 @@ namespace meta_hpp::detail
             const class_type& from_class = from_type.as_class();
             const class_type& to_class = to_type.as_class();
 
-            void* to_ptr = pointer_upcast(registry, data_, from_class, to_class);
+            void* to_ptr = pointer_upcast(data_, from_class, to_class);
 
             if constexpr ( !std::is_reference_v<Q> ) {
                 return *static_cast<inst_class_cv*>(to_ptr);
@@ -6277,7 +6274,7 @@ namespace meta_hpp::detail
                 const class_type& to_class = to_type.as_class();
 
                 void** from_data_ptr = static_cast<void**>(data_);
-                void* to_ptr = pointer_upcast(registry, *from_data_ptr, from_data_class, to_class);
+                void* to_ptr = pointer_upcast(*from_data_ptr, from_data_class, to_class);
 
                 if constexpr ( !std::is_reference_v<Q> ) {
                     return *static_cast<inst_class_cv*>(to_ptr);
@@ -7858,7 +7855,6 @@ namespace meta_hpp
             return true;
         }
 
-        // NOLINTNEXTLINE(*-use-anyofallof)
         for ( const class_type& derived_base : derived.data_->bases ) {
             if ( is_base_of(derived_base) ) {
                 return true;
@@ -7882,7 +7878,6 @@ namespace meta_hpp
             return true;
         }
 
-        // NOLINTNEXTLINE(*-use-anyofallof)
         for ( const class_type& self_base : data_->bases ) {
             if ( self_base.is_derived_from(base) ) {
                 return true;
@@ -8979,6 +8974,12 @@ namespace meta_hpp
     }
 
     template < typename T >
+    bool uvalue::is() const noexcept {
+        static_assert(std::is_same_v<T, std::decay_t<T>>);
+        return detail::is_base_of(resolve_type<T>(), get_type());
+    }
+
+    template < typename T >
     T uvalue::as() && {
         static_assert(std::is_same_v<T, std::decay_t<T>>);
 
@@ -9057,11 +9058,6 @@ namespace meta_hpp
         const any_type& from_type = get_type();
         const any_type& to_type = registry.resolve_type<T>();
 
-        const auto is_a = [](const any_type& base, const any_type& derived) {
-            return (base == derived) //
-                || (base.is_class() && derived.is_class() && base.as_class().is_base_of(derived.as_class()));
-        };
-
         if constexpr ( detail::pointer_kind<T> ) {
             if ( to_type.is_pointer() && from_type.is_nullptr() ) {
                 return static_cast<T>(nullptr);
@@ -9085,11 +9081,11 @@ namespace meta_hpp
                         return static_cast<T>(to_ptr);
                     }
 
-                    if ( is_a(to_data_type, from_data_type) ) {
+                    if ( detail::is_base_of(to_data_type, from_data_type) ) {
                         const class_type& to_data_class = to_data_type.as_class();
                         const class_type& from_data_class = from_data_type.as_class();
 
-                        void* to_ptr = detail::pointer_upcast(registry, *from_data_ptr, from_data_class, to_data_class);
+                        void* to_ptr = detail::pointer_upcast(*from_data_ptr, from_data_class, to_data_class);
                         return static_cast<T>(to_ptr);
                     }
                 }
@@ -9102,11 +9098,11 @@ namespace meta_hpp
                 return to_ptr;
             }
 
-            if ( is_a(to_type, from_type) ) {
+            if ( detail::is_base_of(to_type, from_type) ) {
                 const class_type& to_class = to_type.as_class();
                 const class_type& from_class = from_type.as_class();
 
-                T* to_ptr = static_cast<T*>(detail::pointer_upcast(registry, get_data(), from_class, to_class));
+                T* to_ptr = static_cast<T*>(detail::pointer_upcast(get_data(), from_class, to_class));
                 return to_ptr;
             }
         }
@@ -9124,11 +9120,6 @@ namespace meta_hpp
 
         const any_type& from_type = get_type();
         const any_type& to_type = registry.resolve_type<T>();
-
-        const auto is_a = [](const any_type& base, const any_type& derived) {
-            return (base == derived) //
-                || (base.is_class() && derived.is_class() && base.as_class().is_base_of(derived.as_class()));
-        };
 
         if constexpr ( detail::pointer_kind<T> ) {
             if ( to_type.is_pointer() && from_type.is_nullptr() ) {
@@ -9153,11 +9144,11 @@ namespace meta_hpp
                         return static_cast<T>(to_ptr);
                     }
 
-                    if ( is_a(to_data_type, from_data_type) ) {
+                    if ( detail::is_base_of(to_data_type, from_data_type) ) {
                         const class_type& to_data_class = to_data_type.as_class();
                         const class_type& from_data_class = from_data_type.as_class();
 
-                        void* to_ptr = detail::pointer_upcast(registry, *from_data_ptr, from_data_class, to_data_class);
+                        void* to_ptr = detail::pointer_upcast(*from_data_ptr, from_data_class, to_data_class);
                         return static_cast<T>(to_ptr);
                     }
                 }
@@ -9170,11 +9161,11 @@ namespace meta_hpp
                 return to_ptr;
             }
 
-            if ( is_a(to_type, from_type) ) {
+            if ( detail::is_base_of(to_type, from_type) ) {
                 const class_type& to_class = to_type.as_class();
                 const class_type& from_class = from_type.as_class();
 
-                const T* to_ptr = static_cast<const T*>(detail::pointer_upcast(registry, get_data(), from_class, to_class));
+                const T* to_ptr = static_cast<const T*>(detail::pointer_upcast(get_data(), from_class, to_class));
                 return to_ptr;
             }
         }
@@ -9199,6 +9190,10 @@ namespace meta_hpp
 
     inline uerror::operator bool() const noexcept {
         return has_error();
+    }
+
+    inline error_code uerror::operator*() const noexcept {
+        return error_;
     }
 
     inline error_code uerror::get_error() const noexcept {

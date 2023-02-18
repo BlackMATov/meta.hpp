@@ -88,6 +88,35 @@ TEST_CASE("meta/meta_utilities/value3/get_type") {
     }
 }
 
+TEST_CASE("meta/meta_utilities/value3/is") {
+    namespace meta = meta_hpp;
+
+    {
+        CHECK(meta::uvalue{derived{}}.is<derived>());
+        CHECK_FALSE(meta::uvalue{derived{}}.is<derived2>());
+    }
+
+    {
+        CHECK(meta::uvalue{derived{}}.is<base1>());
+        CHECK(meta::uvalue{derived{}}.is<base2>());
+    }
+
+    {
+        derived d{};
+        meta::uvalue v{&d};
+        CHECK(v.is<derived*>());
+        CHECK_FALSE(v.is<const derived*>());
+        CHECK_FALSE(v.is<void*>());
+        CHECK_FALSE(v.is<const void*>());
+    }
+
+    {
+        meta::uvalue v{nullptr};
+        CHECK(v.is<std::nullptr_t>());
+        CHECK_FALSE(v.is<void*>());
+    }
+}
+
 TEST_CASE("meta/meta_utilities/value3/as") {
     namespace meta = meta_hpp;
 

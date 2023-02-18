@@ -134,11 +134,6 @@ namespace meta_hpp::detail
         const any_type& from_type = get_raw_type();
         const any_type& to_type = registry.resolve_type<inst_class>();
 
-        const auto is_a = [](const any_type& base, const any_type& derived) {
-            return (base == derived) //
-                || (base.is_class() && derived.is_class() && base.as_class().is_base_of(derived.as_class()));
-        };
-
         if ( from_type.is_class() ) {
             const auto is_invocable = [this]() {
                 switch ( get_ref_type() ) {
@@ -154,7 +149,7 @@ namespace meta_hpp::detail
                 return false;
             };
 
-            return is_invocable() && is_a(to_type, from_type);
+            return is_invocable() && is_base_of(to_type, from_type);
         }
 
         if ( from_type.is_pointer() ) {
@@ -167,7 +162,7 @@ namespace meta_hpp::detail
                                               : std::is_invocable_v<inst_method, inst_class&>;
             };
 
-            return is_invocable() && is_a(to_type, from_data_type);
+            return is_invocable() && is_base_of(to_type, from_data_type);
         }
 
         return false;
@@ -190,7 +185,7 @@ namespace meta_hpp::detail
             const class_type& from_class = from_type.as_class();
             const class_type& to_class = to_type.as_class();
 
-            void* to_ptr = pointer_upcast(registry, data_, from_class, to_class);
+            void* to_ptr = pointer_upcast(data_, from_class, to_class);
 
             if constexpr ( !std::is_reference_v<Q> ) {
                 return *static_cast<inst_class_cv*>(to_ptr);
@@ -214,7 +209,7 @@ namespace meta_hpp::detail
                 const class_type& to_class = to_type.as_class();
 
                 void** from_data_ptr = static_cast<void**>(data_);
-                void* to_ptr = pointer_upcast(registry, *from_data_ptr, from_data_class, to_class);
+                void* to_ptr = pointer_upcast(*from_data_ptr, from_data_class, to_class);
 
                 if constexpr ( !std::is_reference_v<Q> ) {
                     return *static_cast<inst_class_cv*>(to_ptr);

@@ -140,11 +140,6 @@ namespace meta_hpp::detail
         const any_type& from_type = get_raw_type();
         const any_type& to_type = registry.resolve_type<to_raw_type>();
 
-        const auto is_a = [](const any_type& base, const any_type& derived) {
-            return (base == derived) //
-                || (base.is_class() && derived.is_class() && base.as_class().is_base_of(derived.as_class()));
-        };
-
         if ( from_type.is_nullptr() && to_type.is_pointer() ) {
             return true;
         }
@@ -160,7 +155,7 @@ namespace meta_hpp::detail
             const any_type& from_data_type = from_type_array.get_data_type();
 
             if ( to_type_ptr_readonly >= from_type_array_readonly ) {
-                if ( to_data_type.is_void() || is_a(to_data_type, from_data_type) ) {
+                if ( to_data_type.is_void() || is_base_of(to_data_type, from_data_type) ) {
                     return true;
                 }
             }
@@ -177,7 +172,7 @@ namespace meta_hpp::detail
             const any_type& from_data_type = from_type_ptr.get_data_type();
 
             if ( to_type_ptr_readonly >= from_type_ptr_readonly ) {
-                if ( to_data_type.is_void() || is_a(to_data_type, from_data_type) ) {
+                if ( to_data_type.is_void() || is_base_of(to_data_type, from_data_type) ) {
                     return true;
                 }
             }
@@ -199,11 +194,6 @@ namespace meta_hpp::detail
 
         const any_type& from_type = get_raw_type();
         const any_type& to_type = registry.resolve_type<to_raw_type>();
-
-        const auto is_a = [](const any_type& base, const any_type& derived) {
-            return (base == derived) //
-                || (base.is_class() && derived.is_class() && base.as_class().is_base_of(derived.as_class()));
-        };
 
         const auto is_convertible_to_ref = [this]<typename ToRef>(type_list<ToRef>) {
             switch ( get_ref_type() ) {
@@ -234,13 +224,13 @@ namespace meta_hpp::detail
         };
 
         if constexpr ( std::is_reference_v<To> ) {
-            if ( is_a(to_type, from_type) && is_convertible_to_ref(type_list<To>{}) ) {
+            if ( is_base_of(to_type, from_type) && is_convertible_to_ref(type_list<To>{}) ) {
                 return true;
             }
         }
 
         if constexpr ( !std::is_pointer_v<To> && !std::is_reference_v<To> ) {
-            if ( is_a(to_type, from_type) && is_constructible_from_type(type_list<to_raw_type>{}) ) {
+            if ( is_base_of(to_type, from_type) && is_constructible_from_type(type_list<to_raw_type>{}) ) {
                 return true;
             }
         }
@@ -281,7 +271,7 @@ namespace meta_hpp::detail
                 const class_type& to_data_class = to_data_type.as_class();
                 const class_type& from_data_class = from_data_type.as_class();
 
-                void* to_ptr = pointer_upcast(registry, data_, from_data_class, to_data_class);
+                void* to_ptr = pointer_upcast(data_, from_data_class, to_data_class);
                 return static_cast<to_raw_type_cv>(to_ptr);
             }
         }
@@ -303,7 +293,7 @@ namespace meta_hpp::detail
                 const class_type& to_data_class = to_data_type.as_class();
                 const class_type& from_data_class = from_data_type.as_class();
 
-                void* to_ptr = pointer_upcast(registry, *from_data_ptr, from_data_class, to_data_class);
+                void* to_ptr = pointer_upcast(*from_data_ptr, from_data_class, to_data_class);
                 return static_cast<to_raw_type_cv>(to_ptr);
             }
         }
@@ -329,7 +319,7 @@ namespace meta_hpp::detail
 
         void* to_ptr = to_type == from_type //
                          ? data_
-                         : pointer_upcast(registry, data_, from_type.as_class(), to_type.as_class());
+                         : pointer_upcast(data_, from_type.as_class(), to_type.as_class());
 
         if constexpr ( std::is_lvalue_reference_v<To> ) {
             return *static_cast<to_raw_type_cv*>(to_ptr);

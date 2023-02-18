@@ -143,7 +143,6 @@ namespace meta_hpp
             return true;
         }
 
-        // NOLINTNEXTLINE(*-use-anyofallof)
         for ( const class_type& derived_base : derived.data_->bases ) {
             if ( is_base_of(derived_base) ) {
                 return true;
@@ -167,7 +166,6 @@ namespace meta_hpp
             return true;
         }
 
-        // NOLINTNEXTLINE(*-use-anyofallof)
         for ( const class_type& self_base : data_->bases ) {
             if ( self_base.is_derived_from(base) ) {
                 return true;

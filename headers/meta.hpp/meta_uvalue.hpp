@@ -81,6 +81,9 @@ namespace meta_hpp
         [[nodiscard]] bool has_unmap_op() const noexcept;
 
         template < typename T >
+        [[nodiscard]] bool is() const noexcept;
+
+        template < typename T >
         [[nodiscard]] T as() &&;
 
         template < typename T >
