@@ -46,6 +46,12 @@ namespace meta_hpp::detail
 
 namespace meta_hpp::detail
 {
+    template < typename T >
+    concept non_pointer_kind = (!pointer_kind<T>);
+}
+
+namespace meta_hpp::detail
+{
     enum class type_kind : std::uint32_t {
         array_,
         class_,

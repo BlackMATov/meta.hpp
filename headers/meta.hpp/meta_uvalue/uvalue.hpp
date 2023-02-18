@@ -439,8 +439,7 @@ namespace meta_hpp
         return detail::is_a(resolve_type<T>(), get_type());
     }
 
-    template < typename T >
-        requires detail::pointer_kind<T>
+    template < detail::pointer_kind T >
     T uvalue::as() {
         static_assert(std::is_same_v<T, std::decay_t<T>>);
 
@@ -451,8 +450,7 @@ namespace meta_hpp
         throw_exception(error_code::bad_uvalue_access);
     }
 
-    template < typename T >
-        requires detail::pointer_kind<T>
+    template < detail::pointer_kind T >
     T uvalue::as() const {
         static_assert(std::is_same_v<T, std::decay_t<T>>);
 
@@ -463,8 +461,7 @@ namespace meta_hpp
         throw_exception(error_code::bad_uvalue_access);
     }
 
-    template < typename T >
-        requires(!detail::pointer_kind<T>)
+    template < detail::non_pointer_kind T >
     T uvalue::as() && {
         static_assert(std::is_same_v<T, std::decay_t<T>>);
 
@@ -475,8 +472,7 @@ namespace meta_hpp
         throw_exception(error_code::bad_uvalue_access);
     }
 
-    template < typename T >
-        requires(!detail::pointer_kind<T>)
+    template < detail::non_pointer_kind T >
     T& uvalue::as() & {
         static_assert(std::is_same_v<T, std::decay_t<T>>);
 
@@ -487,8 +483,7 @@ namespace meta_hpp
         throw_exception(error_code::bad_uvalue_access);
     }
 
-    template < typename T >
-        requires(!detail::pointer_kind<T>)
+    template < detail::non_pointer_kind T >
     const T& uvalue::as() const& {
         static_assert(std::is_same_v<T, std::decay_t<T>>);
 
@@ -499,8 +494,7 @@ namespace meta_hpp
         throw_exception(error_code::bad_uvalue_access);
     }
 
-    template < typename T >
-        requires(!detail::pointer_kind<T>)
+    template < detail::non_pointer_kind T >
     const T&& uvalue::as() const&& {
         static_assert(std::is_same_v<T, std::decay_t<T>>);
 
@@ -511,8 +505,7 @@ namespace meta_hpp
         throw_exception(error_code::bad_uvalue_access);
     }
 
-    template < typename T >
-        requires detail::pointer_kind<T>
+    template < detail::pointer_kind T >
     T uvalue::try_as() noexcept {
         static_assert(std::is_same_v<T, std::decay_t<T>>);
 
@@ -526,8 +519,7 @@ namespace meta_hpp
         return nullptr;
     }
 
-    template < typename T >
-        requires detail::pointer_kind<T>
+    template < detail::pointer_kind T >
     T uvalue::try_as() const noexcept {
         static_assert(std::is_same_v<T, std::decay_t<T>>);
 
@@ -541,8 +533,7 @@ namespace meta_hpp
         return nullptr;
     }
 
-    template < typename T >
-        requires(!detail::pointer_kind<T>)
+    template < detail::non_pointer_kind T >
     T* uvalue::try_as() noexcept {
         static_assert(std::is_same_v<T, std::decay_t<T>>);
 
@@ -556,8 +547,7 @@ namespace meta_hpp
         return nullptr;
     }
 
-    template < typename T >
-        requires(!detail::pointer_kind<T>)
+    template < detail::non_pointer_kind T >
     const T* uvalue::try_as() const noexcept {
         static_assert(std::is_same_v<T, std::decay_t<T>>);
 

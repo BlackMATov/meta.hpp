@@ -26,8 +26,8 @@ namespace meta_hpp
             typename T,                            //
             typename Tp = std::decay_t<T>,         //
             typename = std::enable_if_t<           //
-                !detail::uvalue_family<Tp> &&      //
                 !detail::is_in_place_type_v<Tp> && //
+                detail::non_uvalue_family<Tp> &&   //
                 std::is_copy_constructible_v<Tp>>> //
         uvalue(T&& val);
 
@@ -35,7 +35,7 @@ namespace meta_hpp
             typename T,                            //
             typename Tp = std::decay_t<T>,         //
             typename = std::enable_if_t<           //
-                !detail::uvalue_family<Tp> &&      //
+                detail::non_uvalue_family<Tp> &&   //
                 std::is_copy_constructible_v<Tp>>> //
         uvalue& operator=(T&& val);
 
@@ -83,44 +83,28 @@ namespace meta_hpp
         template < typename T >
         [[nodiscard]] bool is() const noexcept;
 
-        template < typename T >
-            requires detail::pointer_kind<T>
+        template < detail::pointer_kind T >
         [[nodiscard]] T as();
-
-        template < typename T >
-            requires detail::pointer_kind<T>
+        template < detail::pointer_kind T >
         [[nodiscard]] T as() const;
 
-        template < typename T >
-            requires(!detail::pointer_kind<T>)
+        template < detail::non_pointer_kind T >
         [[nodiscard]] T as() &&;
-
-        template < typename T >
-            requires(!detail::pointer_kind<T>)
+        template < detail::non_pointer_kind T >
         [[nodiscard]] T& as() &;
-
-        template < typename T >
-            requires(!detail::pointer_kind<T>)
+        template < detail::non_pointer_kind T >
         [[nodiscard]] const T& as() const&;
-
-        template < typename T >
-            requires(!detail::pointer_kind<T>)
+        template < detail::non_pointer_kind T >
         [[nodiscard]] const T&& as() const&&;
 
-        template < typename T >
-            requires detail::pointer_kind<T>
+        template < detail::pointer_kind T >
         [[nodiscard]] T try_as() noexcept;
-
-        template < typename T >
-            requires detail::pointer_kind<T>
+        template < detail::pointer_kind T >
         [[nodiscard]] T try_as() const noexcept;
 
-        template < typename T >
-            requires(!detail::pointer_kind<T>)
+        template < detail::non_pointer_kind T >
         [[nodiscard]] T* try_as() noexcept;
-
-        template < typename T >
-            requires(!detail::pointer_kind<T>)
+        template < detail::non_pointer_kind T >
         [[nodiscard]] const T* try_as() const noexcept;
 
     private:

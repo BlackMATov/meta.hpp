@@ -19,12 +19,12 @@ namespace meta_hpp
     // function_
     //
 
-    template < detail::function_pointer_kind Function, function_policy_kind Policy >
+    template < detail::function_pointer_kind Function, function_policy_family Policy >
     scope_bind& scope_bind::function_(std::string name, Function function_ptr, Policy policy) {
         return function_(std::move(name), function_ptr, {}, policy);
     }
 
-    template < detail::function_pointer_kind Function, function_policy_kind Policy >
+    template < detail::function_pointer_kind Function, function_policy_family Policy >
     scope_bind& scope_bind::function_(std::string name, Function function_ptr, function_opts opts, Policy) {
         auto state = detail::function_state::make<Policy>(std::move(name), function_ptr, std::move(opts.metadata));
 
@@ -43,7 +43,7 @@ namespace meta_hpp
         return *this;
     }
 
-    template < detail::function_pointer_kind Function, function_policy_kind Policy >
+    template < detail::function_pointer_kind Function, function_policy_family Policy >
     scope_bind& scope_bind::function_(std::string name, Function function_ptr, string_ilist arguments, Policy) {
         auto state = detail::function_state::make<Policy>(std::move(name), function_ptr, {});
 
@@ -76,12 +76,12 @@ namespace meta_hpp
     // variable_
     //
 
-    template < detail::pointer_kind Pointer, variable_policy_kind Policy >
+    template < detail::pointer_kind Pointer, variable_policy_family Policy >
     scope_bind& scope_bind::variable_(std::string name, Pointer variable_ptr, Policy policy) {
         return variable_(std::move(name), variable_ptr, {}, policy);
     }
 
-    template < detail::pointer_kind Pointer, variable_policy_kind Policy >
+    template < detail::pointer_kind Pointer, variable_policy_family Policy >
     scope_bind& scope_bind::variable_(std::string name, Pointer variable_ptr, variable_opts opts, Policy) {
         auto state = detail::variable_state::make<Policy>(std::move(name), variable_ptr, std::move(opts.metadata));
         detail::insert_or_assign(get_state().variables, variable{std::move(state)});

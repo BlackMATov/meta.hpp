@@ -82,31 +82,31 @@ namespace meta_hpp
     }
 
     template < typename Policy >
-    concept constructor_policy_kind                                    //
+    concept constructor_policy_family                                  //
         = std::is_same_v<Policy, constructor_policy::as_object_t>      //
        || std::is_same_v<Policy, constructor_policy::as_raw_pointer_t> //
        || std::is_same_v<Policy, constructor_policy::as_shared_pointer_t>;
 
     template < typename Policy >
-    concept function_policy_kind                                    //
+    concept function_policy_family                                  //
         = std::is_same_v<Policy, function_policy::as_copy_t>        //
        || std::is_same_v<Policy, function_policy::discard_return_t> //
        || std::is_same_v<Policy, function_policy::return_reference_as_pointer_t>;
 
     template < typename Policy >
-    concept member_policy_kind                                //
+    concept member_policy_family                              //
         = std::is_same_v<Policy, member_policy::as_copy_t>    //
        || std::is_same_v<Policy, member_policy::as_pointer_t> //
        || std::is_same_v<Policy, member_policy::as_reference_wrapper_t>;
 
     template < typename Policy >
-    concept method_policy_kind                                    //
+    concept method_policy_family                                  //
         = std::is_same_v<Policy, method_policy::as_copy_t>        //
        || std::is_same_v<Policy, method_policy::discard_return_t> //
        || std::is_same_v<Policy, method_policy::return_reference_as_pointer_t>;
 
     template < typename Policy >
-    concept variable_policy_kind                                //
+    concept variable_policy_family                              //
         = std::is_same_v<Policy, variable_policy::as_copy_t>    //
        || std::is_same_v<Policy, variable_policy::as_pointer_t> //
        || std::is_same_v<Policy, variable_policy::as_reference_wrapper_t>;
@@ -436,7 +436,7 @@ namespace meta_hpp::detail
         create_error_impl create_error{};
         argument_list arguments{};
 
-        template < constructor_policy_kind Policy, class_kind Class, typename... Args >
+        template < constructor_policy_family Policy, class_kind Class, typename... Args >
         [[nodiscard]] static constructor_state_ptr make(metadata_map metadata);
         explicit constructor_state(constructor_index index, metadata_map metadata);
     };
@@ -481,7 +481,7 @@ namespace meta_hpp::detail
         invoke_error_impl invoke_error{};
         argument_list arguments{};
 
-        template < function_policy_kind Policy, function_pointer_kind Function >
+        template < function_policy_family Policy, function_pointer_kind Function >
         [[nodiscard]] static function_state_ptr make(std::string name, Function function_ptr, metadata_map metadata);
         explicit function_state(function_index index, metadata_map metadata);
     };
@@ -501,7 +501,7 @@ namespace meta_hpp::detail
         getter_error_impl getter_error{};
         setter_error_impl setter_error{};
 
-        template < member_policy_kind Policy, member_pointer_kind Member >
+        template < member_policy_family Policy, member_pointer_kind Member >
         [[nodiscard]] static member_state_ptr make(std::string name, Member member_ptr, metadata_map metadata);
         explicit member_state(member_index index, metadata_map metadata);
     };
@@ -517,7 +517,7 @@ namespace meta_hpp::detail
         invoke_error_impl invoke_error{};
         argument_list arguments{};
 
-        template < method_policy_kind Policy, method_pointer_kind Method >
+        template < method_policy_family Policy, method_pointer_kind Method >
         [[nodiscard]] static method_state_ptr make(std::string name, Method method_ptr, metadata_map metadata);
         explicit method_state(method_index index, metadata_map metadata);
     };
@@ -546,7 +546,7 @@ namespace meta_hpp::detail
         setter_impl setter{};
         setter_error_impl setter_error{};
 
-        template < variable_policy_kind Policy, pointer_kind Pointer >
+        template < variable_policy_family Policy, pointer_kind Pointer >
         [[nodiscard]] static variable_state_ptr make(std::string name, Pointer variable_ptr, metadata_map metadata);
         explicit variable_state(variable_index index, metadata_map metadata);
     };

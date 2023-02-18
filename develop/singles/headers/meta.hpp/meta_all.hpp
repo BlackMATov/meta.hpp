@@ -1377,6 +1377,12 @@ namespace meta_hpp::detail
 
 namespace meta_hpp::detail
 {
+    template < typename T >
+    concept non_pointer_kind = (!pointer_kind<T>);
+}
+
+namespace meta_hpp::detail
+{
     enum class type_kind : std::uint32_t {
         array_,
         class_,
@@ -1456,6 +1462,9 @@ namespace meta_hpp
            || std::is_same_v<T, uerror>     //
            || std::is_same_v<T, uresult>    //
            || std::is_same_v<T, uvalue>;    //
+
+        template < typename T >
+        concept non_uvalue_family = (!uvalue_family<T>);
     }
 }
 
@@ -2905,8 +2914,8 @@ namespace meta_hpp
             typename T,                            //
             typename Tp = std::decay_t<T>,         //
             typename = std::enable_if_t<           //
-                !detail::uvalue_family<Tp> &&      //
                 !detail::is_in_place_type_v<Tp> && //
+                detail::non_uvalue_family<Tp> &&   //
                 std::is_copy_constructible_v<Tp>>> //
         uvalue(T&& val);
 
@@ -2914,7 +2923,7 @@ namespace meta_hpp
             typename T,                            //
             typename Tp = std::decay_t<T>,         //
             typename = std::enable_if_t<           //
-                !detail::uvalue_family<Tp> &&      //
+                detail::non_uvalue_family<Tp> &&   //
                 std::is_copy_constructible_v<Tp>>> //
         uvalue& operator=(T&& val);
 
@@ -2962,44 +2971,28 @@ namespace meta_hpp
         template < typename T >
         [[nodiscard]] bool is() const noexcept;
 
-        template < typename T >
-            requires detail::pointer_kind<T>
+        template < detail::pointer_kind T >
         [[nodiscard]] T as();
-
-        template < typename T >
-            requires detail::pointer_kind<T>
+        template < detail::pointer_kind T >
         [[nodiscard]] T as() const;
 
-        template < typename T >
-            requires(!detail::pointer_kind<T>)
+        template < detail::non_pointer_kind T >
         [[nodiscard]] T as() &&;
-
-        template < typename T >
-            requires(!detail::pointer_kind<T>)
+        template < detail::non_pointer_kind T >
         [[nodiscard]] T& as() &;
-
-        template < typename T >
-            requires(!detail::pointer_kind<T>)
+        template < detail::non_pointer_kind T >
         [[nodiscard]] const T& as() const&;
-
-        template < typename T >
-            requires(!detail::pointer_kind<T>)
+        template < detail::non_pointer_kind T >
         [[nodiscard]] const T&& as() const&&;
 
-        template < typename T >
-            requires detail::pointer_kind<T>
+        template < detail::pointer_kind T >
         [[nodiscard]] T try_as() noexcept;
-
-        template < typename T >
-            requires detail::pointer_kind<T>
+        template < detail::pointer_kind T >
         [[nodiscard]] T try_as() const noexcept;
 
-        template < typename T >
-            requires(!detail::pointer_kind<T>)
+        template < detail::non_pointer_kind T >
         [[nodiscard]] T* try_as() noexcept;
-
-        template < typename T >
-            requires(!detail::pointer_kind<T>)
+        template < detail::non_pointer_kind T >
         [[nodiscard]] const T* try_as() const noexcept;
 
     private:
@@ -3126,8 +3119,8 @@ namespace meta_hpp
             typename T,                            //
             typename Tp = std::decay_t<T>,         //
             typename = std::enable_if_t<           //
-                !detail::uvalue_family<Tp> &&      //
                 !detail::is_in_place_type_v<Tp> && //
+                detail::non_uvalue_family<Tp> &&   //
                 std::is_copy_constructible_v<Tp>>> //
         uresult(T&& val);
 
@@ -3135,7 +3128,7 @@ namespace meta_hpp
             typename T,                            //
             typename Tp = std::decay_t<T>,         //
             typename = std::enable_if_t<           //
-                !detail::uvalue_family<Tp> &&      //
+                detail::non_uvalue_family<Tp> &&   //
                 std::is_copy_constructible_v<Tp>>> //
         uresult& operator=(T&& val);
 
@@ -3337,31 +3330,31 @@ namespace meta_hpp
     }
 
     template < typename Policy >
-    concept constructor_policy_kind                                    //
+    concept constructor_policy_family                                  //
         = std::is_same_v<Policy, constructor_policy::as_object_t>      //
        || std::is_same_v<Policy, constructor_policy::as_raw_pointer_t> //
        || std::is_same_v<Policy, constructor_policy::as_shared_pointer_t>;
 
     template < typename Policy >
-    concept function_policy_kind                                    //
+    concept function_policy_family                                  //
         = std::is_same_v<Policy, function_policy::as_copy_t>        //
        || std::is_same_v<Policy, function_policy::discard_return_t> //
        || std::is_same_v<Policy, function_policy::return_reference_as_pointer_t>;
 
     template < typename Policy >
-    concept member_policy_kind                                //
+    concept member_policy_family                              //
         = std::is_same_v<Policy, member_policy::as_copy_t>    //
        || std::is_same_v<Policy, member_policy::as_pointer_t> //
        || std::is_same_v<Policy, member_policy::as_reference_wrapper_t>;
 
     template < typename Policy >
-    concept method_policy_kind                                    //
+    concept method_policy_family                                  //
         = std::is_same_v<Policy, method_policy::as_copy_t>        //
        || std::is_same_v<Policy, method_policy::discard_return_t> //
        || std::is_same_v<Policy, method_policy::return_reference_as_pointer_t>;
 
     template < typename Policy >
-    concept variable_policy_kind                                //
+    concept variable_policy_family                              //
         = std::is_same_v<Policy, variable_policy::as_copy_t>    //
        || std::is_same_v<Policy, variable_policy::as_pointer_t> //
        || std::is_same_v<Policy, variable_policy::as_reference_wrapper_t>;
@@ -3691,7 +3684,7 @@ namespace meta_hpp::detail
         create_error_impl create_error{};
         argument_list arguments{};
 
-        template < constructor_policy_kind Policy, class_kind Class, typename... Args >
+        template < constructor_policy_family Policy, class_kind Class, typename... Args >
         [[nodiscard]] static constructor_state_ptr make(metadata_map metadata);
         explicit constructor_state(constructor_index index, metadata_map metadata);
     };
@@ -3736,7 +3729,7 @@ namespace meta_hpp::detail
         invoke_error_impl invoke_error{};
         argument_list arguments{};
 
-        template < function_policy_kind Policy, function_pointer_kind Function >
+        template < function_policy_family Policy, function_pointer_kind Function >
         [[nodiscard]] static function_state_ptr make(std::string name, Function function_ptr, metadata_map metadata);
         explicit function_state(function_index index, metadata_map metadata);
     };
@@ -3756,7 +3749,7 @@ namespace meta_hpp::detail
         getter_error_impl getter_error{};
         setter_error_impl setter_error{};
 
-        template < member_policy_kind Policy, member_pointer_kind Member >
+        template < member_policy_family Policy, member_pointer_kind Member >
         [[nodiscard]] static member_state_ptr make(std::string name, Member member_ptr, metadata_map metadata);
         explicit member_state(member_index index, metadata_map metadata);
     };
@@ -3772,7 +3765,7 @@ namespace meta_hpp::detail
         invoke_error_impl invoke_error{};
         argument_list arguments{};
 
-        template < method_policy_kind Policy, method_pointer_kind Method >
+        template < method_policy_family Policy, method_pointer_kind Method >
         [[nodiscard]] static method_state_ptr make(std::string name, Method method_ptr, metadata_map metadata);
         explicit method_state(method_index index, metadata_map metadata);
     };
@@ -3801,7 +3794,7 @@ namespace meta_hpp::detail
         setter_impl setter{};
         setter_error_impl setter_error{};
 
-        template < variable_policy_kind Policy, pointer_kind Pointer >
+        template < variable_policy_family Policy, pointer_kind Pointer >
         [[nodiscard]] static variable_state_ptr make(std::string name, Pointer variable_ptr, metadata_map metadata);
         explicit variable_state(variable_index index, metadata_map metadata);
     };
@@ -4396,11 +4389,11 @@ namespace meta_hpp
 
         // constructor_
 
-        template < typename... Args, constructor_policy_kind Policy = constructor_policy::as_object_t >
+        template < typename... Args, constructor_policy_family Policy = constructor_policy::as_object_t >
         class_bind& constructor_(Policy = {})
             requires detail::class_bind_constructor_kind<Class, Args...>;
 
-        template < typename... Args, constructor_policy_kind Policy = constructor_policy::as_object_t >
+        template < typename... Args, constructor_policy_family Policy = constructor_policy::as_object_t >
         class_bind& constructor_(constructor_opts opts, Policy = {})
             requires detail::class_bind_constructor_kind<Class, Args...>;
 
@@ -4414,36 +4407,36 @@ namespace meta_hpp
 
         // function_
 
-        template < detail::function_pointer_kind Function, function_policy_kind Policy = function_policy::as_copy_t >
+        template < detail::function_pointer_kind Function, function_policy_family Policy = function_policy::as_copy_t >
         class_bind& function_(std::string name, Function function_ptr, Policy = {});
 
-        template < detail::function_pointer_kind Function, function_policy_kind Policy = function_policy::as_copy_t >
+        template < detail::function_pointer_kind Function, function_policy_family Policy = function_policy::as_copy_t >
         class_bind& function_(std::string name, Function function_ptr, function_opts opts, Policy = {});
 
-        template < detail::function_pointer_kind Function, function_policy_kind Policy = function_policy::as_copy_t >
+        template < detail::function_pointer_kind Function, function_policy_family Policy = function_policy::as_copy_t >
         class_bind& function_(std::string name, Function function_ptr, string_ilist arguments, Policy = {});
 
         // member_
 
-        template < detail::member_pointer_kind Member, member_policy_kind Policy = member_policy::as_copy_t >
+        template < detail::member_pointer_kind Member, member_policy_family Policy = member_policy::as_copy_t >
             requires detail::class_bind_member_kind<Class, Member>
         class_bind& member_(std::string name, Member member_ptr, Policy = {});
 
-        template < detail::member_pointer_kind Member, member_policy_kind Policy = member_policy::as_copy_t >
+        template < detail::member_pointer_kind Member, member_policy_family Policy = member_policy::as_copy_t >
             requires detail::class_bind_member_kind<Class, Member>
         class_bind& member_(std::string name, Member member_ptr, member_opts opts, Policy = {});
 
         // method_
 
-        template < detail::method_pointer_kind Method, method_policy_kind Policy = method_policy::as_copy_t >
+        template < detail::method_pointer_kind Method, method_policy_family Policy = method_policy::as_copy_t >
             requires detail::class_bind_method_kind<Class, Method>
         class_bind& method_(std::string name, Method method_ptr, Policy = {});
 
-        template < detail::method_pointer_kind Method, method_policy_kind Policy = method_policy::as_copy_t >
+        template < detail::method_pointer_kind Method, method_policy_family Policy = method_policy::as_copy_t >
             requires detail::class_bind_method_kind<Class, Method>
         class_bind& method_(std::string name, Method method_ptr, method_opts opts, Policy = {});
 
-        template < detail::method_pointer_kind Method, method_policy_kind Policy = method_policy::as_copy_t >
+        template < detail::method_pointer_kind Method, method_policy_family Policy = method_policy::as_copy_t >
             requires detail::class_bind_method_kind<Class, Method>
         class_bind& method_(std::string name, Method method_ptr, string_ilist arguments, Policy = {});
 
@@ -4454,10 +4447,10 @@ namespace meta_hpp
 
         // variable_
 
-        template < detail::pointer_kind Pointer, variable_policy_kind Policy = variable_policy::as_copy_t >
+        template < detail::pointer_kind Pointer, variable_policy_family Policy = variable_policy::as_copy_t >
         class_bind& variable_(std::string name, Pointer variable_ptr, Policy = {});
 
-        template < detail::pointer_kind Pointer, variable_policy_kind Policy = variable_policy::as_copy_t >
+        template < detail::pointer_kind Pointer, variable_policy_family Policy = variable_policy::as_copy_t >
         class_bind& variable_(std::string name, Pointer variable_ptr, variable_opts opts, Policy = {});
     };
 }
@@ -4554,13 +4547,13 @@ namespace meta_hpp
 
         // function_
 
-        template < detail::function_pointer_kind Function, function_policy_kind Policy = function_policy::as_copy_t >
+        template < detail::function_pointer_kind Function, function_policy_family Policy = function_policy::as_copy_t >
         scope_bind& function_(std::string name, Function function_ptr, Policy = {});
 
-        template < detail::function_pointer_kind Function, function_policy_kind Policy = function_policy::as_copy_t >
+        template < detail::function_pointer_kind Function, function_policy_family Policy = function_policy::as_copy_t >
         scope_bind& function_(std::string name, Function function_ptr, function_opts opts, Policy = {});
 
-        template < detail::function_pointer_kind Function, function_policy_kind Policy = function_policy::as_copy_t >
+        template < detail::function_pointer_kind Function, function_policy_family Policy = function_policy::as_copy_t >
         scope_bind& function_(std::string name, Function function_ptr, string_ilist arguments, Policy = {});
 
         // typedef_
@@ -4570,10 +4563,10 @@ namespace meta_hpp
 
         // variable_
 
-        template < detail::pointer_kind Pointer, variable_policy_kind Policy = variable_policy::as_copy_t >
+        template < detail::pointer_kind Pointer, variable_policy_family Policy = variable_policy::as_copy_t >
         scope_bind& variable_(std::string name, Pointer variable_ptr, Policy = {});
 
-        template < detail::pointer_kind Pointer, variable_policy_kind Policy = variable_policy::as_copy_t >
+        template < detail::pointer_kind Pointer, variable_policy_family Policy = variable_policy::as_copy_t >
         scope_bind& variable_(std::string name, Pointer variable_ptr, variable_opts opts, Policy = {});
     };
 }
@@ -4708,7 +4701,7 @@ namespace meta_hpp
     //
 
     template < detail::class_kind Class >
-    template < typename... Args, constructor_policy_kind Policy >
+    template < typename... Args, constructor_policy_family Policy >
     class_bind<Class>& class_bind<Class>::constructor_(Policy policy)
         requires detail::class_bind_constructor_kind<Class, Args...>
     {
@@ -4716,7 +4709,7 @@ namespace meta_hpp
     }
 
     template < detail::class_kind Class >
-    template < typename... Args, constructor_policy_kind Policy >
+    template < typename... Args, constructor_policy_family Policy >
     class_bind<Class>& class_bind<Class>::constructor_(constructor_opts opts, Policy)
         requires detail::class_bind_constructor_kind<Class, Args...>
     {
@@ -4762,13 +4755,13 @@ namespace meta_hpp
     //
 
     template < detail::class_kind Class >
-    template < detail::function_pointer_kind Function, function_policy_kind Policy >
+    template < detail::function_pointer_kind Function, function_policy_family Policy >
     class_bind<Class>& class_bind<Class>::function_(std::string name, Function function_ptr, Policy policy) {
         return function_(std::move(name), function_ptr, {}, policy);
     }
 
     template < detail::class_kind Class >
-    template < detail::function_pointer_kind Function, function_policy_kind Policy >
+    template < detail::function_pointer_kind Function, function_policy_family Policy >
     class_bind<Class>& class_bind<Class>::function_(std::string name, Function function_ptr, function_opts opts, Policy) {
         auto state = detail::function_state::make<Policy>(std::move(name), function_ptr, std::move(opts.metadata));
 
@@ -4788,7 +4781,7 @@ namespace meta_hpp
     }
 
     template < detail::class_kind Class >
-    template < detail::function_pointer_kind Function, function_policy_kind Policy >
+    template < detail::function_pointer_kind Function, function_policy_family Policy >
     class_bind<Class>& class_bind<Class>::function_(std::string name, Function function_ptr, string_ilist arguments, Policy) {
         auto state = detail::function_state::make<Policy>(std::move(name), function_ptr, {});
 
@@ -4812,14 +4805,14 @@ namespace meta_hpp
     //
 
     template < detail::class_kind Class >
-    template < detail::member_pointer_kind Member, member_policy_kind Policy >
+    template < detail::member_pointer_kind Member, member_policy_family Policy >
         requires detail::class_bind_member_kind<Class, Member>
     class_bind<Class>& class_bind<Class>::member_(std::string name, Member member_ptr, Policy policy) {
         return member_(std::move(name), member_ptr, {}, policy);
     }
 
     template < detail::class_kind Class >
-    template < detail::member_pointer_kind Member, member_policy_kind Policy >
+    template < detail::member_pointer_kind Member, member_policy_family Policy >
         requires detail::class_bind_member_kind<Class, Member>
     class_bind<Class>& class_bind<Class>::member_(std::string name, Member member_ptr, member_opts opts, Policy) {
         auto state = detail::member_state::make<Policy>(std::move(name), member_ptr, std::move(opts.metadata));
@@ -4832,14 +4825,14 @@ namespace meta_hpp
     //
 
     template < detail::class_kind Class >
-    template < detail::method_pointer_kind Method, method_policy_kind Policy >
+    template < detail::method_pointer_kind Method, method_policy_family Policy >
         requires detail::class_bind_method_kind<Class, Method>
     class_bind<Class>& class_bind<Class>::method_(std::string name, Method method_ptr, Policy policy) {
         return method_(std::move(name), method_ptr, {}, policy);
     }
 
     template < detail::class_kind Class >
-    template < detail::method_pointer_kind Method, method_policy_kind Policy >
+    template < detail::method_pointer_kind Method, method_policy_family Policy >
         requires detail::class_bind_method_kind<Class, Method>
     class_bind<Class>& class_bind<Class>::method_(std::string name, Method method_ptr, method_opts opts, Policy) {
         auto state = detail::method_state::make<Policy>(std::move(name), method_ptr, std::move(opts.metadata));
@@ -4860,7 +4853,7 @@ namespace meta_hpp
     }
 
     template < detail::class_kind Class >
-    template < detail::method_pointer_kind Method, method_policy_kind Policy >
+    template < detail::method_pointer_kind Method, method_policy_family Policy >
         requires detail::class_bind_method_kind<Class, Method>
     class_bind<Class>& class_bind<Class>::method_(std::string name, Method method_ptr, string_ilist arguments, Policy) {
         auto state = detail::method_state::make<Policy>(std::move(name), method_ptr, {});
@@ -4896,13 +4889,13 @@ namespace meta_hpp
     //
 
     template < detail::class_kind Class >
-    template < detail::pointer_kind Pointer, variable_policy_kind Policy >
+    template < detail::pointer_kind Pointer, variable_policy_family Policy >
     class_bind<Class>& class_bind<Class>::variable_(std::string name, Pointer variable_ptr, Policy policy) {
         return variable_(std::move(name), variable_ptr, {}, policy);
     }
 
     template < detail::class_kind Class >
-    template < detail::pointer_kind Pointer, variable_policy_kind Policy >
+    template < detail::pointer_kind Pointer, variable_policy_family Policy >
     class_bind<Class>& class_bind<Class>::variable_(std::string name, Pointer variable_ptr, variable_opts opts, Policy) {
         auto state = detail::variable_state::make<Policy>(std::move(name), variable_ptr, std::move(opts.metadata));
         detail::insert_or_assign(get_data().variables, variable{std::move(state)});
@@ -4987,12 +4980,12 @@ namespace meta_hpp
     // function_
     //
 
-    template < detail::function_pointer_kind Function, function_policy_kind Policy >
+    template < detail::function_pointer_kind Function, function_policy_family Policy >
     scope_bind& scope_bind::function_(std::string name, Function function_ptr, Policy policy) {
         return function_(std::move(name), function_ptr, {}, policy);
     }
 
-    template < detail::function_pointer_kind Function, function_policy_kind Policy >
+    template < detail::function_pointer_kind Function, function_policy_family Policy >
     scope_bind& scope_bind::function_(std::string name, Function function_ptr, function_opts opts, Policy) {
         auto state = detail::function_state::make<Policy>(std::move(name), function_ptr, std::move(opts.metadata));
 
@@ -5011,7 +5004,7 @@ namespace meta_hpp
         return *this;
     }
 
-    template < detail::function_pointer_kind Function, function_policy_kind Policy >
+    template < detail::function_pointer_kind Function, function_policy_family Policy >
     scope_bind& scope_bind::function_(std::string name, Function function_ptr, string_ilist arguments, Policy) {
         auto state = detail::function_state::make<Policy>(std::move(name), function_ptr, {});
 
@@ -5044,12 +5037,12 @@ namespace meta_hpp
     // variable_
     //
 
-    template < detail::pointer_kind Pointer, variable_policy_kind Policy >
+    template < detail::pointer_kind Pointer, variable_policy_family Policy >
     scope_bind& scope_bind::variable_(std::string name, Pointer variable_ptr, Policy policy) {
         return variable_(std::move(name), variable_ptr, {}, policy);
     }
 
-    template < detail::pointer_kind Pointer, variable_policy_kind Policy >
+    template < detail::pointer_kind Pointer, variable_policy_family Policy >
     scope_bind& scope_bind::variable_(std::string name, Pointer variable_ptr, variable_opts opts, Policy) {
         auto state = detail::variable_state::make<Policy>(std::move(name), variable_ptr, std::move(opts.metadata));
         detail::insert_or_assign(get_state().variables, variable{std::move(state)});
@@ -5361,13 +5354,13 @@ namespace meta_hpp
 namespace meta_hpp::detail
 {
     template < typename T, typename Tp = std::decay_t<T> >
-    concept arg_lvalue_ref_kind //
-        = (!uvalue_family<Tp>)  //
+    concept arg_lvalue_ref_kind   //
+        = (non_uvalue_family<Tp>) //
        && (std::is_lvalue_reference_v<T>);
 
     template < typename T, typename Tp = std::decay_t<T> >
-    concept arg_rvalue_ref_kind //
-        = (!uvalue_family<Tp>)  //
+    concept arg_rvalue_ref_kind   //
+        = (non_uvalue_family<Tp>) //
        && (!std::is_reference_v<T> || std::is_rvalue_reference_v<T>);
 }
 
@@ -5380,13 +5373,13 @@ namespace meta_hpp::detail
 
     template < typename T, typename Tp = std::decay_t<T> >
     concept inst_class_lvalue_ref_kind    //
-        = (!uvalue_family<Tp>)            //
+        = (non_uvalue_family<Tp>)         //
        && (std::is_lvalue_reference_v<T>) //
        && (std::is_class_v<std::remove_pointer_t<std::remove_reference_t<T>>>);
 
     template < typename T, typename Tp = std::decay_t<T> >
     concept inst_class_rvalue_ref_kind                               //
-        = (!uvalue_family<Tp>)                                       //
+        = (non_uvalue_family<Tp>)                                    //
        && (!std::is_reference_v<T> || std::is_rvalue_reference_v<T>) //
        && (std::is_class_v<std::remove_pointer_t<std::remove_reference_t<T>>>);
 }
@@ -5554,8 +5547,7 @@ namespace meta_hpp::detail
         uarg_base& operator=(uarg_base&&) = delete;
         uarg_base& operator=(const uarg_base&) = delete;
 
-        template < typename T, typename Tp = std::decay_t<T> >
-            requires(!uvalue_family<Tp>)
+        template < typename T, non_uvalue_family Tp = std::decay_t<T> >
         explicit uarg_base(type_registry& registry, T&&)
         : uarg_base{registry, type_list<T&&>{}} {}
 
@@ -5603,12 +5595,10 @@ namespace meta_hpp::detail
             return raw_type_;
         }
 
-        template < typename To >
-            requires pointer_kind<To>
+        template < pointer_kind To >
         [[nodiscard]] bool can_cast_to(type_registry& registry) const noexcept;
 
-        template < typename To >
-            requires(!pointer_kind<To>)
+        template < non_pointer_kind To >
         [[nodiscard]] bool can_cast_to(type_registry& registry) const noexcept;
 
     private:
@@ -5642,18 +5632,15 @@ namespace meta_hpp::detail
         : uarg_base{registry, std::forward<T>(v)}
         , data_{const_cast<void*>(v->get_data())} {} // NOLINT(*-const-cast)
 
-        template < typename T, typename Tp = std::decay_t<T> >
-            requires(!uvalue_family<Tp>)
+        template < typename T, non_uvalue_family Tp = std::decay_t<T> >
         explicit uarg(type_registry& registry, T&& v)
         : uarg_base{registry, std::forward<T>(v)}
         , data_{const_cast<std::remove_cvref_t<T>*>(std::addressof(v))} {} // NOLINT(*-const-cast)
 
-        template < typename To >
-            requires pointer_kind<To>
+        template < pointer_kind To >
         [[nodiscard]] decltype(auto) cast(type_registry& registry) const;
 
-        template < typename To >
-            requires(!pointer_kind<To>)
+        template < non_pointer_kind To >
         [[nodiscard]] decltype(auto) cast(type_registry& registry) const;
 
     private:
@@ -5663,8 +5650,7 @@ namespace meta_hpp::detail
 
 namespace meta_hpp::detail
 {
-    template < typename To >
-        requires pointer_kind<To>
+    template < pointer_kind To >
     [[nodiscard]] bool uarg_base::can_cast_to(type_registry& registry) const noexcept {
         using to_raw_type = std::remove_cv_t<To>;
 
@@ -5710,8 +5696,7 @@ namespace meta_hpp::detail
         return false;
     }
 
-    template < typename To >
-        requires(!pointer_kind<To>)
+    template < non_pointer_kind To >
     [[nodiscard]] bool uarg_base::can_cast_to(type_registry& registry) const noexcept {
         using to_raw_type_cv = std::remove_reference_t<To>;
         using to_raw_type = std::remove_cv_t<to_raw_type_cv>;
@@ -5758,7 +5743,7 @@ namespace meta_hpp::detail
             }
         }
 
-        if constexpr ( !pointer_kind<To> && !std::is_reference_v<To> ) {
+        if constexpr ( non_pointer_kind<To> && !std::is_reference_v<To> ) {
             if ( is_a(to_type, from_type) && is_constructible_from_type(type_list<to_raw_type>{}) ) {
                 return true;
             }
@@ -5770,8 +5755,7 @@ namespace meta_hpp::detail
 
 namespace meta_hpp::detail
 {
-    template < typename To >
-        requires pointer_kind<To>
+    template < pointer_kind To >
     [[nodiscard]] decltype(auto) uarg::cast(type_registry& registry) const {
         META_HPP_ASSERT(can_cast_to<To>(registry) && "bad argument cast");
 
@@ -5807,8 +5791,7 @@ namespace meta_hpp::detail
         throw_exception(error_code::bad_argument_cast);
     }
 
-    template < typename To >
-        requires(!pointer_kind<To>)
+    template < non_pointer_kind To >
     [[nodiscard]] decltype(auto) uarg::cast(type_registry& registry) const {
         META_HPP_ASSERT(can_cast_to<To>(registry) && "bad argument cast");
 
@@ -5929,7 +5912,7 @@ namespace meta_hpp
 
 namespace meta_hpp::detail
 {
-    template < function_policy_kind Policy, function_pointer_kind Function >
+    template < function_policy_family Policy, function_pointer_kind Function >
     uvalue raw_function_invoke(type_registry& registry, Function function_ptr, std::span<const uarg> args) {
         using ft = function_traits<Function>;
         using return_type = typename ft::return_type;
@@ -5996,7 +5979,7 @@ namespace meta_hpp::detail
 
 namespace meta_hpp::detail
 {
-    template < function_policy_kind Policy, function_pointer_kind Function >
+    template < function_policy_family Policy, function_pointer_kind Function >
     function_state::invoke_impl make_function_invoke(type_registry& registry, Function function_ptr) {
         return [&registry, function_ptr](std::span<const uarg> args) { //
             return raw_function_invoke<Policy>(registry, function_ptr, args);
@@ -6032,7 +6015,7 @@ namespace meta_hpp::detail
     : index{std::move(nindex)}
     , metadata{std::move(nmetadata)} {}
 
-    template < function_policy_kind Policy, function_pointer_kind Function >
+    template < function_policy_family Policy, function_pointer_kind Function >
     function_state_ptr function_state::make(std::string name, Function function_ptr, metadata_map metadata) {
         type_registry& registry{type_registry::instance()};
         function_state state{function_index{registry.resolve_type<Function>(), std::move(name)}, std::move(metadata)};
@@ -6128,8 +6111,7 @@ namespace meta_hpp::detail
         uinst_base& operator=(uinst_base&&) = delete;
         uinst_base& operator=(const uinst_base&) = delete;
 
-        template < typename T, typename Tp = std::decay_t<T> >
-            requires(!uvalue_family<Tp>)
+        template < typename T, non_uvalue_family Tp = std::decay_t<T> >
         explicit uinst_base(type_registry& registry, T&&)
         : uinst_base{registry, type_list<T&&>{}} {}
 
@@ -6216,8 +6198,7 @@ namespace meta_hpp::detail
         : uinst_base{registry, std::forward<T>(v)}
         , data_{const_cast<void*>(v->get_data())} {} // NOLINT(*-const-cast)
 
-        template < typename T, typename Tp = std::decay_t<T> >
-            requires(!uvalue_family<Tp>)
+        template < typename T, non_uvalue_family Tp = std::decay_t<T> >
         explicit uinst(type_registry& registry, T&& v)
         : uinst_base{registry, std::forward<T>(v)}
         , data_{const_cast<std::remove_cvref_t<T>*>(std::addressof(v))} {} // NOLINT(*-const-cast)
@@ -6361,7 +6342,7 @@ namespace meta_hpp
 
 namespace meta_hpp::detail
 {
-    template < member_policy_kind Policy, member_pointer_kind Member >
+    template < member_policy_family Policy, member_pointer_kind Member >
     uvalue raw_member_getter(type_registry& registry, Member member_ptr, const uinst& inst) {
         using mt = member_traits<Member>;
         using class_type = typename mt::class_type;
@@ -6504,7 +6485,7 @@ namespace meta_hpp::detail
 
 namespace meta_hpp::detail
 {
-    template < member_policy_kind Policy, member_pointer_kind Member >
+    template < member_policy_family Policy, member_pointer_kind Member >
     member_state::getter_impl make_member_getter(type_registry& registry, Member member_ptr) {
         return [&registry, member_ptr](const uinst& inst) { //
             return raw_member_getter<Policy>(registry, member_ptr, inst);
@@ -6539,7 +6520,7 @@ namespace meta_hpp::detail
     : index{std::move(nindex)}
     , metadata{std::move(nmetadata)} {}
 
-    template < member_policy_kind Policy, member_pointer_kind Member >
+    template < member_policy_family Policy, member_pointer_kind Member >
     member_state_ptr member_state::make(std::string name, Member member_ptr, metadata_map metadata) {
         type_registry& registry{type_registry::instance()};
         member_state state{member_index{registry.resolve_type<Member>(), std::move(name)}, std::move(metadata)};
@@ -6701,7 +6682,7 @@ namespace meta_hpp
 
 namespace meta_hpp::detail
 {
-    template < method_policy_kind Policy, method_pointer_kind Method >
+    template < method_policy_family Policy, method_pointer_kind Method >
     uvalue raw_method_invoke(type_registry& registry, Method method_ptr, const uinst& inst, std::span<const uarg> args) {
         using mt = method_traits<Method>;
         using return_type = typename mt::return_type;
@@ -6779,7 +6760,7 @@ namespace meta_hpp::detail
 
 namespace meta_hpp::detail
 {
-    template < method_policy_kind Policy, method_pointer_kind Method >
+    template < method_policy_family Policy, method_pointer_kind Method >
     method_state::invoke_impl make_method_invoke(type_registry& registry, Method method_ptr) {
         return [&registry, method_ptr](const uinst& inst, std::span<const uarg> args) {
             return raw_method_invoke<Policy>(registry, method_ptr, inst, args);
@@ -6815,7 +6796,7 @@ namespace meta_hpp::detail
     : index{std::move(nindex)}
     , metadata{std::move(nmetadata)} {}
 
-    template < method_policy_kind Policy, method_pointer_kind Method >
+    template < method_policy_family Policy, method_pointer_kind Method >
     method_state_ptr method_state::make(std::string name, Method method_ptr, metadata_map metadata) {
         type_registry& registry{type_registry::instance()};
         method_state state{method_index{registry.resolve_type<Method>(), std::move(name)}, std::move(metadata)};
@@ -7100,7 +7081,7 @@ namespace meta_hpp
 
 namespace meta_hpp::detail
 {
-    template < constructor_policy_kind Policy, class_kind Class, typename... Args >
+    template < constructor_policy_family Policy, class_kind Class, typename... Args >
     uvalue raw_constructor_create(type_registry& registry, std::span<const uarg> args) {
         using ct = constructor_traits<Class, Args...>;
         using class_type = typename ct::class_type;
@@ -7183,7 +7164,7 @@ namespace meta_hpp::detail
 
 namespace meta_hpp::detail
 {
-    template < constructor_policy_kind Policy, class_kind Class, typename... Args >
+    template < constructor_policy_family Policy, class_kind Class, typename... Args >
     constructor_state::create_impl make_constructor_create(type_registry& registry) {
         return [&registry](std::span<const uarg> args) { //
             return raw_constructor_create<Policy, Class, Args...>(registry, args);
@@ -7226,7 +7207,7 @@ namespace meta_hpp::detail
     : index{nindex}
     , metadata{std::move(nmetadata)} {}
 
-    template < constructor_policy_kind Policy, class_kind Class, typename... Args >
+    template < constructor_policy_family Policy, class_kind Class, typename... Args >
     constructor_state_ptr constructor_state::make(metadata_map metadata) {
         type_registry& registry{type_registry::instance()};
         constructor_state state{constructor_index{registry.resolve_constructor_type<Class, Args...>()}, std::move(metadata)};
@@ -7591,7 +7572,7 @@ namespace meta_hpp
 
 namespace meta_hpp::detail
 {
-    template < variable_policy_kind Policy, pointer_kind Pointer >
+    template < variable_policy_family Policy, pointer_kind Pointer >
     uvalue raw_variable_getter(type_registry&, Pointer variable_ptr) {
         using pt = pointer_traits<Pointer>;
         using data_type = typename pt::data_type;
@@ -7663,7 +7644,7 @@ namespace meta_hpp::detail
 
 namespace meta_hpp::detail
 {
-    template < variable_policy_kind Policy, pointer_kind Pointer >
+    template < variable_policy_family Policy, pointer_kind Pointer >
     variable_state::getter_impl make_variable_getter(type_registry& registry, Pointer variable_ptr) {
         return [&registry, variable_ptr]() { //
             return raw_variable_getter<Policy>(registry, variable_ptr);
@@ -7691,7 +7672,7 @@ namespace meta_hpp::detail
     : index{std::move(nindex)}
     , metadata{std::move(nmetadata)} {}
 
-    template < variable_policy_kind Policy, pointer_kind Pointer >
+    template < variable_policy_family Policy, pointer_kind Pointer >
     variable_state_ptr variable_state::make(std::string name, Pointer variable_ptr, metadata_map metadata) {
         type_registry& registry{type_registry::instance()};
         variable_state state{variable_index{registry.resolve_type<Pointer>(), std::move(name)}, std::move(metadata)};
@@ -9020,8 +9001,7 @@ namespace meta_hpp
         return detail::is_a(resolve_type<T>(), get_type());
     }
 
-    template < typename T >
-        requires detail::pointer_kind<T>
+    template < detail::pointer_kind T >
     T uvalue::as() {
         static_assert(std::is_same_v<T, std::decay_t<T>>);
 
@@ -9032,8 +9012,7 @@ namespace meta_hpp
         throw_exception(error_code::bad_uvalue_access);
     }
 
-    template < typename T >
-        requires detail::pointer_kind<T>
+    template < detail::pointer_kind T >
     T uvalue::as() const {
         static_assert(std::is_same_v<T, std::decay_t<T>>);
 
@@ -9044,8 +9023,7 @@ namespace meta_hpp
         throw_exception(error_code::bad_uvalue_access);
     }
 
-    template < typename T >
-        requires(!detail::pointer_kind<T>)
+    template < detail::non_pointer_kind T >
     T uvalue::as() && {
         static_assert(std::is_same_v<T, std::decay_t<T>>);
 
@@ -9056,8 +9034,7 @@ namespace meta_hpp
         throw_exception(error_code::bad_uvalue_access);
     }
 
-    template < typename T >
-        requires(!detail::pointer_kind<T>)
+    template < detail::non_pointer_kind T >
     T& uvalue::as() & {
         static_assert(std::is_same_v<T, std::decay_t<T>>);
 
@@ -9068,8 +9045,7 @@ namespace meta_hpp
         throw_exception(error_code::bad_uvalue_access);
     }
 
-    template < typename T >
-        requires(!detail::pointer_kind<T>)
+    template < detail::non_pointer_kind T >
     const T& uvalue::as() const& {
         static_assert(std::is_same_v<T, std::decay_t<T>>);
 
@@ -9080,8 +9056,7 @@ namespace meta_hpp
         throw_exception(error_code::bad_uvalue_access);
     }
 
-    template < typename T >
-        requires(!detail::pointer_kind<T>)
+    template < detail::non_pointer_kind T >
     const T&& uvalue::as() const&& {
         static_assert(std::is_same_v<T, std::decay_t<T>>);
 
@@ -9092,8 +9067,7 @@ namespace meta_hpp
         throw_exception(error_code::bad_uvalue_access);
     }
 
-    template < typename T >
-        requires detail::pointer_kind<T>
+    template < detail::pointer_kind T >
     T uvalue::try_as() noexcept {
         static_assert(std::is_same_v<T, std::decay_t<T>>);
 
@@ -9107,8 +9081,7 @@ namespace meta_hpp
         return nullptr;
     }
 
-    template < typename T >
-        requires detail::pointer_kind<T>
+    template < detail::pointer_kind T >
     T uvalue::try_as() const noexcept {
         static_assert(std::is_same_v<T, std::decay_t<T>>);
 
@@ -9122,8 +9095,7 @@ namespace meta_hpp
         return nullptr;
     }
 
-    template < typename T >
-        requires(!detail::pointer_kind<T>)
+    template < detail::non_pointer_kind T >
     T* uvalue::try_as() noexcept {
         static_assert(std::is_same_v<T, std::decay_t<T>>);
 
@@ -9137,8 +9109,7 @@ namespace meta_hpp
         return nullptr;
     }
 
-    template < typename T >
-        requires(!detail::pointer_kind<T>)
+    template < detail::non_pointer_kind T >
     const T* uvalue::try_as() const noexcept {
         static_assert(std::is_same_v<T, std::decay_t<T>>);
 

@@ -34,8 +34,7 @@ namespace meta_hpp::detail
         uinst_base& operator=(uinst_base&&) = delete;
         uinst_base& operator=(const uinst_base&) = delete;
 
-        template < typename T, typename Tp = std::decay_t<T> >
-            requires(!uvalue_family<Tp>)
+        template < typename T, non_uvalue_family Tp = std::decay_t<T> >
         explicit uinst_base(type_registry& registry, T&&)
         : uinst_base{registry, type_list<T&&>{}} {}
 
@@ -122,8 +121,7 @@ namespace meta_hpp::detail
         : uinst_base{registry, std::forward<T>(v)}
         , data_{const_cast<void*>(v->get_data())} {} // NOLINT(*-const-cast)
 
-        template < typename T, typename Tp = std::decay_t<T> >
-            requires(!uvalue_family<Tp>)
+        template < typename T, non_uvalue_family Tp = std::decay_t<T> >
         explicit uinst(type_registry& registry, T&& v)
         : uinst_base{registry, std::forward<T>(v)}
         , data_{const_cast<std::remove_cvref_t<T>*>(std::addressof(v))} {} // NOLINT(*-const-cast)
