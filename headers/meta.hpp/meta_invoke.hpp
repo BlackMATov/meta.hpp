@@ -45,11 +45,11 @@ namespace meta_hpp
     template < typename... Args >
     bool is_invocable_with(const function& function, Args&&... args);
 
-    template < detail::function_pointer_kind Function, typename... Args >
-    bool is_invocable_with();
+    template < typename... Args, detail::function_pointer_kind Function >
+    bool is_invocable_with(Function);
 
-    template < detail::function_pointer_kind Function, typename... Args >
-    bool is_invocable_with(Args&&... args);
+    template < typename... Args, detail::function_pointer_kind Function >
+    bool is_invocable_with(Function, Args&&... args);
 }
 
 namespace meta_hpp
@@ -60,11 +60,11 @@ namespace meta_hpp
     template < typename Instance >
     bool is_invocable_with(const member& member, Instance&& instance);
 
-    template < detail::member_pointer_kind Member, typename Instance >
-    bool is_invocable_with();
+    template < typename Instance, detail::member_pointer_kind Member >
+    bool is_invocable_with(Member);
 
-    template < detail::member_pointer_kind Member, typename Instance >
-    bool is_invocable_with(Instance&& instance);
+    template < typename Instance, detail::member_pointer_kind Member >
+    bool is_invocable_with(Member, Instance&& instance);
 }
 
 namespace meta_hpp
@@ -75,9 +75,9 @@ namespace meta_hpp
     template < typename Instance, typename... Args >
     bool is_invocable_with(const method& method, Instance&& instance, Args&&... args);
 
-    template < detail::method_pointer_kind Method, typename Instance, typename... Args >
-    bool is_invocable_with();
+    template < typename Instance, typename... Args, detail::method_pointer_kind Method >
+    bool is_invocable_with(Method);
 
-    template < detail::method_pointer_kind Method, typename Instance, typename... Args >
-    bool is_invocable_with(Instance&& instance, Args&&... args);
+    template < typename Instance, typename... Args, detail::method_pointer_kind Method >
+    bool is_invocable_with(Method, Instance&& instance, Args&&... args);
 }

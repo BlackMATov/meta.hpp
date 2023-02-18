@@ -5306,11 +5306,11 @@ namespace meta_hpp
     template < typename... Args >
     bool is_invocable_with(const function& function, Args&&... args);
 
-    template < detail::function_pointer_kind Function, typename... Args >
-    bool is_invocable_with();
+    template < typename... Args, detail::function_pointer_kind Function >
+    bool is_invocable_with(Function);
 
-    template < detail::function_pointer_kind Function, typename... Args >
-    bool is_invocable_with(Args&&... args);
+    template < typename... Args, detail::function_pointer_kind Function >
+    bool is_invocable_with(Function, Args&&... args);
 }
 
 namespace meta_hpp
@@ -5321,11 +5321,11 @@ namespace meta_hpp
     template < typename Instance >
     bool is_invocable_with(const member& member, Instance&& instance);
 
-    template < detail::member_pointer_kind Member, typename Instance >
-    bool is_invocable_with();
+    template < typename Instance, detail::member_pointer_kind Member >
+    bool is_invocable_with(Member);
 
-    template < detail::member_pointer_kind Member, typename Instance >
-    bool is_invocable_with(Instance&& instance);
+    template < typename Instance, detail::member_pointer_kind Member >
+    bool is_invocable_with(Member, Instance&& instance);
 }
 
 namespace meta_hpp
@@ -5336,11 +5336,11 @@ namespace meta_hpp
     template < typename Instance, typename... Args >
     bool is_invocable_with(const method& method, Instance&& instance, Args&&... args);
 
-    template < detail::method_pointer_kind Method, typename Instance, typename... Args >
-    bool is_invocable_with();
+    template < typename Instance, typename... Args, detail::method_pointer_kind Method >
+    bool is_invocable_with(Method);
 
-    template < detail::method_pointer_kind Method, typename Instance, typename... Args >
-    bool is_invocable_with(Instance&& instance, Args&&... args);
+    template < typename Instance, typename... Args, detail::method_pointer_kind Method >
+    bool is_invocable_with(Method, Instance&& instance, Args&&... args);
 }
 
 namespace meta_hpp::detail
@@ -6931,16 +6931,16 @@ namespace meta_hpp
         return function.is_invocable_with(std::forward<Args>(args)...);
     }
 
-    template < detail::function_pointer_kind Function, typename... Args >
-    bool is_invocable_with() {
+    template < typename... Args, detail::function_pointer_kind Function >
+    bool is_invocable_with(Function) {
         using namespace detail;
         type_registry& registry{type_registry::instance()};
         const std::array<uarg_base, sizeof...(Args)> vargs{uarg_base{registry, type_list<Args>{}}...};
         return !raw_function_invoke_error<Function>(registry, vargs);
     }
 
-    template < detail::function_pointer_kind Function, typename... Args >
-    bool is_invocable_with(Args&&... args) {
+    template < typename... Args, detail::function_pointer_kind Function >
+    bool is_invocable_with(Function, Args&&... args) {
         using namespace detail;
         type_registry& registry{type_registry::instance()};
         const std::array<uarg_base, sizeof...(Args)> vargs{uarg_base{registry, std::forward<Args>(args)}...};
@@ -6960,16 +6960,16 @@ namespace meta_hpp
         return member.is_gettable_with(std::forward<Instance>(instance));
     }
 
-    template < detail::member_pointer_kind Member, typename Instance >
-    bool is_invocable_with() {
+    template < typename Instance, detail::member_pointer_kind Member >
+    bool is_invocable_with(Member) {
         using namespace detail;
         type_registry& registry{type_registry::instance()};
         const uinst_base vinst{registry, type_list<Instance>{}};
         return !raw_member_getter_error<Member>(registry, vinst);
     }
 
-    template < detail::member_pointer_kind Member, typename Instance >
-    bool is_invocable_with(Instance&& instance) {
+    template < typename Instance, detail::member_pointer_kind Member >
+    bool is_invocable_with(Member, Instance&& instance) {
         using namespace detail;
         type_registry& registry{type_registry::instance()};
         const uinst_base vinst{registry, std::forward<Instance>(instance)};
@@ -6989,8 +6989,8 @@ namespace meta_hpp
         return method.is_invocable_with(std::forward<Instance>(instance), std::forward<Args>(args)...);
     }
 
-    template < detail::method_pointer_kind Method, typename Instance, typename... Args >
-    bool is_invocable_with() {
+    template < typename Instance, typename... Args, detail::method_pointer_kind Method >
+    bool is_invocable_with(Method) {
         using namespace detail;
         type_registry& registry{type_registry::instance()};
         const uinst_base vinst{registry, type_list<Instance>{}};
@@ -6998,8 +6998,8 @@ namespace meta_hpp
         return !raw_method_invoke_error<Method>(registry, vinst, vargs);
     }
 
-    template < detail::method_pointer_kind Method, typename Instance, typename... Args >
-    bool is_invocable_with(Instance&& instance, Args&&... args) {
+    template < typename Instance, typename... Args, detail::method_pointer_kind Method >
+    bool is_invocable_with(Method, Instance&& instance, Args&&... args) {
         using namespace detail;
         type_registry& registry{type_registry::instance()};
         const uinst_base vinst{registry, std::forward<Instance>(instance)};

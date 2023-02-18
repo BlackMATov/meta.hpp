@@ -42,10 +42,9 @@ TEST_CASE("meta/meta_utilities/invoke") {
         CHECK(meta::is_invocable_with(clazz_function, meta::uvalue{3}));
         CHECK(meta::is_invocable_with<int>(clazz_function));
 
-        using function_t = decltype(&clazz::function);
-        CHECK(meta::is_invocable_with<function_t>(3));
-        CHECK(meta::is_invocable_with<function_t>(meta::uvalue{3}));
-        CHECK(meta::is_invocable_with<function_t, int>());
+        CHECK(meta::is_invocable_with(&clazz::function, 3));
+        CHECK(meta::is_invocable_with(&clazz::function, meta::uvalue{3}));
+        CHECK(meta::is_invocable_with<int>(&clazz::function));
     }
 
     {
@@ -60,10 +59,9 @@ TEST_CASE("meta/meta_utilities/invoke") {
         CHECK(meta::is_invocable_with(clazz_member, meta::uvalue{cl}));
         CHECK(meta::is_invocable_with<const clazz&>(clazz_member));
 
-        using member_t = decltype(&clazz::member);
-        CHECK(meta::is_invocable_with<member_t>(cl));
-        CHECK(meta::is_invocable_with<member_t>(meta::uvalue{cl}));
-        CHECK(meta::is_invocable_with<member_t, const clazz&>());
+        CHECK(meta::is_invocable_with(&clazz::member, cl));
+        CHECK(meta::is_invocable_with(&clazz::member, meta::uvalue{cl}));
+        CHECK(meta::is_invocable_with<const clazz&>(&clazz::member));
     }
 
     {
@@ -78,9 +76,8 @@ TEST_CASE("meta/meta_utilities/invoke") {
         CHECK(meta::is_invocable_with(clazz_method, meta::uvalue{cl}, meta::uvalue{2}));
         CHECK(meta::is_invocable_with<const clazz&, int>(clazz_method));
 
-        using method_t = decltype(&clazz::method);
-        CHECK(meta::is_invocable_with<method_t>(cl, 2));
-        CHECK(meta::is_invocable_with<method_t>(meta::uvalue{cl}, meta::uvalue{2}));
-        CHECK(meta::is_invocable_with<method_t, const clazz&, int>());
+        CHECK(meta::is_invocable_with(&clazz::method, cl, 2));
+        CHECK(meta::is_invocable_with(&clazz::method, meta::uvalue{cl}, meta::uvalue{2}));
+        CHECK(meta::is_invocable_with<const clazz&, int>(&clazz::method));
     }
 }
