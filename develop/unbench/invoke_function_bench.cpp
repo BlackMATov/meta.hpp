@@ -45,28 +45,29 @@ namespace
         static_angle = static_angle + 0.00001f;
     }
 
+    [[maybe_unused]]
     void static_function_reset(const benchmark::State&) {
         static_acc = 0.f;
         static_angle = 0.f;
     }
 
     meta::scope meta_bench_scope = meta::local_scope_("")
-        .function_("static_function_0", &static_function_0)
-        .function_("static_function_1", &static_function_1)
-        .function_("static_function_2", &static_function_2)
-        .function_("static_function_3", &static_function_3)
-        .function_("static_function_4", &static_function_4);
+        .function_("invoke_function_0", &static_function_0)
+        .function_("invoke_function_1", &static_function_1)
+        .function_("invoke_function_2", &static_function_2)
+        .function_("invoke_function_3", &static_function_3)
+        .function_("invoke_function_4", &static_function_4);
 }
 
 RTTR_REGISTRATION
 {
     using namespace rttr;
 
-    registration::method("static_function_0", &static_function_0);
-    registration::method("static_function_1", &static_function_1);
-    registration::method("static_function_2", &static_function_2);
-    registration::method("static_function_3", &static_function_3);
-    registration::method("static_function_4", &static_function_4);
+    registration::method("invoke_function_0", &static_function_0);
+    registration::method("invoke_function_1", &static_function_1);
+    registration::method("invoke_function_2", &static_function_2);
+    registration::method("invoke_function_3", &static_function_3);
+    registration::method("invoke_function_4", &static_function_4);
 }
 
 //
@@ -119,7 +120,7 @@ namespace
 {
     [[maybe_unused]]
     void meta_invoke_function_0(benchmark::State &state) {
-        meta::function f = meta_bench_scope.get_function("static_function_0");
+        meta::function f = meta_bench_scope.get_function("invoke_function_0");
         for ( auto _ : state ) {
             f();
         }
@@ -127,7 +128,7 @@ namespace
 
     [[maybe_unused]]
     void meta_invoke_function_1(benchmark::State &state) {
-        meta::function f = meta_bench_scope.get_function("static_function_1");
+        meta::function f = meta_bench_scope.get_function("invoke_function_1");
         META_HPP_ASSERT(f.is_valid());
 
         for ( auto _ : state ) {
@@ -137,7 +138,7 @@ namespace
 
     [[maybe_unused]]
     void meta_invoke_function_2(benchmark::State &state) {
-        meta::function f = meta_bench_scope.get_function("static_function_2");
+        meta::function f = meta_bench_scope.get_function("invoke_function_2");
         META_HPP_ASSERT(f.is_valid());
 
         for ( auto _ : state ) {
@@ -147,7 +148,7 @@ namespace
 
     [[maybe_unused]]
     void meta_invoke_function_3(benchmark::State &state) {
-        meta::function f = meta_bench_scope.get_function("static_function_3");
+        meta::function f = meta_bench_scope.get_function("invoke_function_3");
         META_HPP_ASSERT(f.is_valid());
 
         for ( auto _ : state ) {
@@ -157,7 +158,7 @@ namespace
 
     [[maybe_unused]]
     void meta_invoke_function_4(benchmark::State &state) {
-        meta::function f = meta_bench_scope.get_function("static_function_4");
+        meta::function f = meta_bench_scope.get_function("invoke_function_4");
         META_HPP_ASSERT(f.is_valid());
 
         for ( auto _ : state ) {
@@ -174,7 +175,7 @@ namespace
 {
     [[maybe_unused]]
     void rttr_invoke_function_0(benchmark::State &state) {
-        rttr::method m = rttr::type::get_global_method("static_function_0");
+        rttr::method m = rttr::type::get_global_method("invoke_function_0");
         META_HPP_ASSERT(m.is_valid());
 
         for ( auto _ : state ) {
@@ -184,7 +185,7 @@ namespace
 
     [[maybe_unused]]
     void rttr_invoke_function_1(benchmark::State &state) {
-        rttr::method m = rttr::type::get_global_method("static_function_1");
+        rttr::method m = rttr::type::get_global_method("invoke_function_1");
         META_HPP_ASSERT(m.is_valid());
 
         for ( auto _ : state ) {
@@ -194,7 +195,7 @@ namespace
 
     [[maybe_unused]]
     void rttr_invoke_function_2(benchmark::State &state) {
-        rttr::method m = rttr::type::get_global_method("static_function_2");
+        rttr::method m = rttr::type::get_global_method("invoke_function_2");
         META_HPP_ASSERT(m.is_valid());
 
         for ( auto _ : state ) {
@@ -204,7 +205,7 @@ namespace
 
     [[maybe_unused]]
     void rttr_invoke_function_3(benchmark::State &state) {
-        rttr::method m = rttr::type::get_global_method("static_function_3");
+        rttr::method m = rttr::type::get_global_method("invoke_function_3");
         META_HPP_ASSERT(m.is_valid());
 
         for ( auto _ : state ) {
@@ -214,7 +215,7 @@ namespace
 
     [[maybe_unused]]
     void rttr_invoke_function_4(benchmark::State &state) {
-        rttr::method m = rttr::type::get_global_method("static_function_4");
+        rttr::method m = rttr::type::get_global_method("invoke_function_4");
         META_HPP_ASSERT(m.is_valid());
 
         for ( auto _ : state ) {
