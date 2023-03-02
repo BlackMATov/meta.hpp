@@ -157,7 +157,8 @@ namespace meta_hpp
         [[nodiscard]] any_type get_argument_type(std::size_t position) const noexcept;
         [[nodiscard]] const any_type_list& get_argument_types() const noexcept;
 
-        [[nodiscard]] const class_set& get_bases() const noexcept;
+        [[nodiscard]] const class_set& get_base_classes() const noexcept;
+        [[nodiscard]] const class_set& get_derived_classes() const noexcept;
         [[nodiscard]] const constructor_set& get_constructors() const noexcept;
         [[nodiscard]] const destructor_set& get_destructors() const noexcept;
         [[nodiscard]] const function_set& get_functions() const noexcept;
@@ -391,7 +392,8 @@ namespace meta_hpp::detail
         const std::size_t align;
         const any_type_list argument_types;
 
-        class_set bases;
+        class_set base_classes;
+        class_set derived_classes;
         constructor_set constructors;
         destructor_set destructors;
         function_set functions;
@@ -400,13 +402,14 @@ namespace meta_hpp::detail
         typedef_map typedefs;
         variable_set variables;
 
-        struct base_info final {
-            using upcast_fptr = void* (*)(void*);
-            const upcast_fptr upcast;
-        };
+        using upcast_func_t = void* (*)(void*);
+        using upcast_func_list_t = std::vector<upcast_func_t>;
 
-        using base_info_map = std::map<class_type, base_info, std::less<>>;
-        base_info_map bases_info;
+        using base_upcasts_t = std::map<class_type, upcast_func_t, std::less<>>;
+        using deep_upcasts_t = std::multimap<class_type, upcast_func_list_t, std::less<>>;
+
+        base_upcasts_t base_upcasts;
+        deep_upcasts_t deep_upcasts;
 
         template < class_kind Class >
         explicit class_type_data(type_list<Class>);

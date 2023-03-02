@@ -124,36 +124,33 @@ namespace meta_hpp::detail
             return ptr;
         }
 
-        for ( auto&& [base_type, base_info] : type_access(from)->bases_info ) {
-            if ( base_type == to ) {
-                return base_info.upcast(ptr);
-            }
+        void* base_ptr = nullptr;
 
-            if ( base_type.is_derived_from(to) ) {
-                return pointer_upcast(base_info.upcast(ptr), base_type, to);
+        class_type_data& from_data = *type_access(from);
+        class_type_data::deep_upcasts_t& deep_upcasts = from_data.deep_upcasts;
+
+        for ( auto iter{deep_upcasts.lower_bound(to)}; iter != deep_upcasts.end() && iter->first == to; ++iter ) {
+            void* new_base_ptr = [ptr, iter]() mutable {
+                for ( class_type_data::upcast_func_t upcast : iter->second ) {
+                    ptr = upcast(ptr);
+                }
+                return ptr;
+            }();
+
+            if ( base_ptr == nullptr ) {
+                base_ptr = new_base_ptr;
+            } else if ( base_ptr != new_base_ptr ) {
+                // ambiguous conversions
+                return nullptr;
             }
         }
 
-        return nullptr;
+        return base_ptr;
     }
 
     [[nodiscard]] inline const void* pointer_upcast(const void* ptr, const class_type& from, const class_type& to) {
         // NOLINTNEXTLINE(*-const-cast)
         return pointer_upcast(const_cast<void*>(ptr), from, to);
-    }
-
-    template < class_kind To, class_kind From >
-    [[nodiscard]] To* pointer_upcast(type_registry& registry, From* ptr) {
-        const class_type& to_class = registry.resolve_type<To>();
-        const class_type& from_class = registry.resolve_type<From>();
-        return static_cast<To*>(pointer_upcast(ptr, from_class, to_class));
-    }
-
-    template < class_kind To, class_kind From >
-    [[nodiscard]] const To* pointer_upcast(type_registry& registry, const From* ptr) {
-        const class_type& to_class = registry.resolve_type<To>();
-        const class_type& from_class = registry.resolve_type<From>();
-        return static_cast<const To*>(pointer_upcast(ptr, from_class, to_class));
     }
 }
 
@@ -171,8 +168,10 @@ namespace meta_hpp::detail
         const class_type& to_class = to.as_class();
         const class_type& from_class = from.as_class();
 
-        if ( to_class && from_class && from_class.is_derived_from(to_class) ) {
-            return pointer_upcast(ptr, from_class, to_class);
+        if ( to_class && from_class ) {
+            if ( void* base_ptr = pointer_upcast(ptr, from_class, to_class) ) {
+                return base_ptr;
+            }
         }
 
         return nullptr;
@@ -181,5 +180,26 @@ namespace meta_hpp::detail
     [[nodiscard]] inline const void* pointer_upcast(const void* ptr, const any_type& from, const any_type& to) {
         // NOLINTNEXTLINE(*-const-cast)
         return pointer_upcast(const_cast<void*>(ptr), from, to);
+    }
+}
+
+namespace meta_hpp::detail
+{
+    template < typename To, typename From >
+    [[nodiscard]] To* pointer_upcast(type_registry& registry, From* ptr) {
+        return static_cast<To*>(pointer_upcast( //
+            ptr,
+            registry.resolve_type<From>(),
+            registry.resolve_type<To>()
+        ));
+    }
+
+    template < typename To, typename From >
+    [[nodiscard]] const To* pointer_upcast(type_registry& registry, const From* ptr) {
+        return static_cast<const To*>(pointer_upcast( //
+            ptr,
+            registry.resolve_type<From>(),
+            registry.resolve_type<To>()
+        ));
     }
 }
