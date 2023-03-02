@@ -52,7 +52,7 @@ namespace meta_hpp::detail
             && "an attempt to call a method with incorrect argument types"
         );
 
-        return call_with_uargs<argument_types>(registry, args, [method_ptr, &inst, &registry](auto&&... all_args) {
+        return unchecked_call_with_uargs<argument_types>(registry, args, [method_ptr, &inst, &registry](auto&&... all_args) {
             if constexpr ( std::is_void_v<return_type> ) {
                 (inst.cast<qualified_type>(registry).*method_ptr)(META_HPP_FWD(all_args)...);
                 return uvalue{};

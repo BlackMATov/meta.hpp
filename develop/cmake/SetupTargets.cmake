@@ -30,3 +30,6 @@ target_link_libraries(${PROJECT_NAME}.setup_targets INTERFACE
         meta.hpp::disable_exceptions>
     $<$<BOOL:${BUILD_WITH_NO_RTTI}>:
         meta.hpp::disable_rtti>)
+
+target_compile_definitions(${PROJECT_NAME}.setup_targets INTERFACE
+    $<$<BOOL:${BUILD_WITH_SANITIZERS}>:META_HPP_SANITIZERS>)

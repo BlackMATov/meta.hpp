@@ -126,15 +126,15 @@ namespace meta_hpp::detail
 
             static vtable_t table{
                 .call{[](const fixed_function& self, Args... args) -> R {
-                    META_HPP_ASSERT(self);
+                    META_HPP_DEV_ASSERT(self);
 
                     const Fp& src = *buffer_cast<Fp>(self.buffer_);
                     return std::invoke(src, std::forward<Args>(args)...);
                 }},
 
                 .move{[](fixed_function& from, fixed_function& to) noexcept {
-                    META_HPP_ASSERT(!to);
-                    META_HPP_ASSERT(from);
+                    META_HPP_DEV_ASSERT(!to);
+                    META_HPP_DEV_ASSERT(from);
 
                     Fp& src = *buffer_cast<Fp>(from.buffer_);
                     std::construct_at(buffer_cast<Fp>(to.buffer_), std::move(src));
@@ -145,7 +145,7 @@ namespace meta_hpp::detail
                 }},
 
                 .destroy{[](fixed_function& self) {
-                    META_HPP_ASSERT(self);
+                    META_HPP_DEV_ASSERT(self);
 
                     Fp& src = *buffer_cast<Fp>(self.buffer_);
                     std::destroy_at(&src);
@@ -158,7 +158,7 @@ namespace meta_hpp::detail
 
         template < typename F, typename Fp = std::decay_t<F> >
         static void construct(fixed_function& dst, F&& fun) {
-            META_HPP_ASSERT(!dst);
+            META_HPP_DEV_ASSERT(!dst);
 
             static_assert(sizeof(Fp) <= sizeof(buffer_t));
             static_assert(alignof(buffer_t) % alignof(Fp) == 0);

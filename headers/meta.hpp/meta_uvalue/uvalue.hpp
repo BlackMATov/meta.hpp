@@ -73,7 +73,7 @@ namespace meta_hpp
 
         template < typename T, typename... Args, typename Tp = std::decay_t<T> >
         static Tp& do_ctor(uvalue& dst, Args&&... args) {
-            META_HPP_ASSERT(!dst);
+            META_HPP_DEV_ASSERT(!dst);
 
             if constexpr ( in_internal_v<Tp> ) {
                 std::construct_at(storage_cast<Tp>(dst.storage_), std::forward<Args>(args)...);
@@ -91,7 +91,7 @@ namespace meta_hpp
         }
 
         static void do_move(uvalue&& self, uvalue& to) noexcept {
-            META_HPP_ASSERT(!to);
+            META_HPP_DEV_ASSERT(!to);
 
             auto&& [tag, vtable] = unpack_vtag(self);
 
@@ -110,7 +110,7 @@ namespace meta_hpp
         }
 
         static void do_copy(const uvalue& self, uvalue& to) noexcept {
-            META_HPP_ASSERT(!to);
+            META_HPP_DEV_ASSERT(!to);
 
             auto&& [tag, vtable] = unpack_vtag(self);
 
@@ -172,8 +172,8 @@ namespace meta_hpp
                 .type = resolve_type<Tp>(),
 
                 .move{[](uvalue&& self, uvalue& to) noexcept {
-                    META_HPP_ASSERT(!to);
-                    META_HPP_ASSERT(self);
+                    META_HPP_DEV_ASSERT(!to);
+                    META_HPP_DEV_ASSERT(self);
 
                     Tp* src = storage_cast<Tp>(self.storage_);
 
@@ -188,8 +188,8 @@ namespace meta_hpp
                 }},
 
                 .copy{[](const uvalue& self, uvalue& to) {
-                    META_HPP_ASSERT(!to);
-                    META_HPP_ASSERT(self);
+                    META_HPP_DEV_ASSERT(!to);
+                    META_HPP_DEV_ASSERT(self);
 
                     const Tp* src = storage_cast<Tp>(self.storage_);
 
@@ -203,7 +203,7 @@ namespace meta_hpp
                 }},
 
                 .reset{[](uvalue& self) noexcept {
-                    META_HPP_ASSERT(self);
+                    META_HPP_DEV_ASSERT(self);
 
                     Tp* src = storage_cast<Tp>(self.storage_);
 

@@ -52,6 +52,12 @@
 #    define META_HPP_ASSERT(...) assert(__VA_ARGS__) // NOLINT
 #endif
 
+#if defined(META_HPP_SANITIZERS)
+#    define META_HPP_DEV_ASSERT(...) META_HPP_ASSERT(__VA_ARGS__)
+#else
+#    define META_HPP_DEV_ASSERT(...) (void)0
+#endif
+
 #if !defined(META_HPP_PP_CAT)
 #    define META_HPP_PP_CAT(x, y) META_HPP_PP_CAT_I(x, y)
 #    define META_HPP_PP_CAT_I(x, y) x##y
@@ -634,15 +640,15 @@ namespace meta_hpp::detail
 
             static vtable_t table{
                 .call{[](const fixed_function& self, Args... args) -> R {
-                    META_HPP_ASSERT(self);
+                    META_HPP_DEV_ASSERT(self);
 
                     const Fp& src = *buffer_cast<Fp>(self.buffer_);
                     return std::invoke(src, std::forward<Args>(args)...);
                 }},
 
                 .move{[](fixed_function& from, fixed_function& to) noexcept {
-                    META_HPP_ASSERT(!to);
-                    META_HPP_ASSERT(from);
+                    META_HPP_DEV_ASSERT(!to);
+                    META_HPP_DEV_ASSERT(from);
 
                     Fp& src = *buffer_cast<Fp>(from.buffer_);
                     std::construct_at(buffer_cast<Fp>(to.buffer_), std::move(src));
@@ -653,7 +659,7 @@ namespace meta_hpp::detail
                 }},
 
                 .destroy{[](fixed_function& self) {
-                    META_HPP_ASSERT(self);
+                    META_HPP_DEV_ASSERT(self);
 
                     Fp& src = *buffer_cast<Fp>(self.buffer_);
                     std::destroy_at(&src);
@@ -666,7 +672,7 @@ namespace meta_hpp::detail
 
         template < typename F, typename Fp = std::decay_t<F> >
         static void construct(fixed_function& dst, F&& fun) {
-            META_HPP_ASSERT(!dst);
+            META_HPP_DEV_ASSERT(!dst);
 
             static_assert(sizeof(Fp) <= sizeof(buffer_t));
             static_assert(alignof(buffer_t) % alignof(Fp) == 0);
@@ -6000,7 +6006,7 @@ namespace meta_hpp::detail
 {
     template < pointer_kind To >
     [[nodiscard]] decltype(auto) uarg::cast(type_registry& registry) const {
-        META_HPP_ASSERT(can_cast_to<To>(registry) && "bad argument cast");
+        META_HPP_DEV_ASSERT(can_cast_to<To>(registry) && "bad argument cast");
 
         using to_raw_type = std::remove_cv_t<To>;
 
@@ -6036,7 +6042,7 @@ namespace meta_hpp::detail
 
     template < non_pointer_kind To >
     [[nodiscard]] decltype(auto) uarg::cast(type_registry& registry) const {
-        META_HPP_ASSERT(can_cast_to<To>(registry) && "bad argument cast");
+        META_HPP_DEV_ASSERT(can_cast_to<To>(registry) && "bad argument cast");
 
         using to_raw_type_cv = std::remove_reference_t<To>;
         using to_raw_type = std::remove_cv_t<to_raw_type_cv>;
@@ -6089,18 +6095,11 @@ namespace meta_hpp::detail
 
 namespace meta_hpp::detail
 {
-    template < typename ArgTypeList, typename F >
-    auto call_with_uargs(type_registry& registry, std::span<const uarg> args, F&& f) {
-        META_HPP_ASSERT(args.size() == type_list_arity_v<ArgTypeList>);
-        return [ args, &registry, &f ]<std::size_t... Is>(std::index_sequence<Is...>) {
-            return f(args[Is].cast<type_list_at_t<Is, ArgTypeList>>(registry)...);
-        }
-        (std::make_index_sequence<type_list_arity_v<ArgTypeList>>());
-    }
-
     template < typename ArgTypeList >
     bool can_cast_all_uargs(type_registry& registry, std::span<const uarg> args) {
-        META_HPP_ASSERT(args.size() == type_list_arity_v<ArgTypeList>);
+        if ( args.size() != type_list_arity_v<ArgTypeList> ) {
+            return false;
+        }
         return [ args, &registry ]<std::size_t... Is>(std::index_sequence<Is...>) {
             return (... && args[Is].can_cast_to<type_list_at_t<Is, ArgTypeList>>(registry));
         }
@@ -6109,9 +6108,20 @@ namespace meta_hpp::detail
 
     template < typename ArgTypeList >
     bool can_cast_all_uargs(type_registry& registry, std::span<const uarg_base> args) {
-        META_HPP_ASSERT(args.size() == type_list_arity_v<ArgTypeList>);
+        if ( args.size() != type_list_arity_v<ArgTypeList> ) {
+            return false;
+        }
         return [ args, &registry ]<std::size_t... Is>(std::index_sequence<Is...>) {
             return (... && args[Is].can_cast_to<type_list_at_t<Is, ArgTypeList>>(registry));
+        }
+        (std::make_index_sequence<type_list_arity_v<ArgTypeList>>());
+    }
+
+    template < typename ArgTypeList, typename F >
+    auto unchecked_call_with_uargs(type_registry& registry, std::span<const uarg> args, F&& f) {
+        META_HPP_DEV_ASSERT(args.size() == type_list_arity_v<ArgTypeList>);
+        return [ args, &registry, &f ]<std::size_t... Is>(std::index_sequence<Is...>) {
+            return f(args[Is].cast<type_list_at_t<Is, ArgTypeList>>(registry)...);
         }
         (std::make_index_sequence<type_list_arity_v<ArgTypeList>>());
     }
@@ -6185,7 +6195,7 @@ namespace meta_hpp::detail
             && "an attempt to call a function with incorrect argument types"
         );
 
-        return call_with_uargs<argument_types>(registry, args, [function_ptr](auto&&... all_args) {
+        return unchecked_call_with_uargs<argument_types>(registry, args, [function_ptr](auto&&... all_args) {
             if constexpr ( std::is_void_v<return_type> ) {
                 function_ptr(META_HPP_FWD(all_args)...);
                 return uvalue{};
@@ -6503,7 +6513,7 @@ namespace meta_hpp::detail
 {
     template < inst_class_ref_kind Q >
     decltype(auto) uinst::cast(type_registry& registry) const {
-        META_HPP_ASSERT(can_cast_to<Q>(registry) && "bad instance cast");
+        META_HPP_DEV_ASSERT(can_cast_to<Q>(registry) && "bad instance cast");
 
         using inst_class_cv = std::remove_reference_t<Q>;
         using inst_class = std::remove_cv_t<inst_class_cv>;
@@ -6961,7 +6971,7 @@ namespace meta_hpp::detail
             && "an attempt to call a method with incorrect argument types"
         );
 
-        return call_with_uargs<argument_types>(registry, args, [method_ptr, &inst, &registry](auto&&... all_args) {
+        return unchecked_call_with_uargs<argument_types>(registry, args, [method_ptr, &inst, &registry](auto&&... all_args) {
             if constexpr ( std::is_void_v<return_type> ) {
                 (inst.cast<qualified_type>(registry).*method_ptr)(META_HPP_FWD(all_args)...);
                 return uvalue{};
@@ -7352,7 +7362,7 @@ namespace meta_hpp::detail
             && "an attempt to call a constructor with incorrect argument types"
         );
 
-        return call_with_uargs<argument_types>(registry, args, [](auto&&... all_args) -> uvalue {
+        return unchecked_call_with_uargs<argument_types>(registry, args, [](auto&&... all_args) -> uvalue {
             if constexpr ( as_object ) {
                 return make_uvalue<class_type>(META_HPP_FWD(all_args)...);
             }
@@ -7383,7 +7393,7 @@ namespace meta_hpp::detail
             && "an attempt to call a constructor with incorrect argument types"
         );
 
-        return call_with_uargs<argument_types>(registry, args, [mem](auto&&... all_args) {
+        return unchecked_call_with_uargs<argument_types>(registry, args, [mem](auto&&... all_args) {
             return std::construct_at(static_cast<class_type*>(mem), META_HPP_FWD(all_args)...);
         });
     }
@@ -8870,7 +8880,7 @@ namespace meta_hpp
 
         template < typename T, typename... Args, typename Tp = std::decay_t<T> >
         static Tp& do_ctor(uvalue& dst, Args&&... args) {
-            META_HPP_ASSERT(!dst);
+            META_HPP_DEV_ASSERT(!dst);
 
             if constexpr ( in_internal_v<Tp> ) {
                 std::construct_at(storage_cast<Tp>(dst.storage_), std::forward<Args>(args)...);
@@ -8888,7 +8898,7 @@ namespace meta_hpp
         }
 
         static void do_move(uvalue&& self, uvalue& to) noexcept {
-            META_HPP_ASSERT(!to);
+            META_HPP_DEV_ASSERT(!to);
 
             auto&& [tag, vtable] = unpack_vtag(self);
 
@@ -8907,7 +8917,7 @@ namespace meta_hpp
         }
 
         static void do_copy(const uvalue& self, uvalue& to) noexcept {
-            META_HPP_ASSERT(!to);
+            META_HPP_DEV_ASSERT(!to);
 
             auto&& [tag, vtable] = unpack_vtag(self);
 
@@ -8969,8 +8979,8 @@ namespace meta_hpp
                 .type = resolve_type<Tp>(),
 
                 .move{[](uvalue&& self, uvalue& to) noexcept {
-                    META_HPP_ASSERT(!to);
-                    META_HPP_ASSERT(self);
+                    META_HPP_DEV_ASSERT(!to);
+                    META_HPP_DEV_ASSERT(self);
 
                     Tp* src = storage_cast<Tp>(self.storage_);
 
@@ -8985,8 +8995,8 @@ namespace meta_hpp
                 }},
 
                 .copy{[](const uvalue& self, uvalue& to) {
-                    META_HPP_ASSERT(!to);
-                    META_HPP_ASSERT(self);
+                    META_HPP_DEV_ASSERT(!to);
+                    META_HPP_DEV_ASSERT(self);
 
                     const Tp* src = storage_cast<Tp>(self.storage_);
 
@@ -9000,7 +9010,7 @@ namespace meta_hpp
                 }},
 
                 .reset{[](uvalue& self) noexcept {
-                    META_HPP_ASSERT(self);
+                    META_HPP_DEV_ASSERT(self);
 
                     Tp* src = storage_cast<Tp>(self.storage_);
 

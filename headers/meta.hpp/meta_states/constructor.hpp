@@ -43,7 +43,7 @@ namespace meta_hpp::detail
             && "an attempt to call a constructor with incorrect argument types"
         );
 
-        return call_with_uargs<argument_types>(registry, args, [](auto&&... all_args) -> uvalue {
+        return unchecked_call_with_uargs<argument_types>(registry, args, [](auto&&... all_args) -> uvalue {
             if constexpr ( as_object ) {
                 return make_uvalue<class_type>(META_HPP_FWD(all_args)...);
             }
@@ -74,7 +74,7 @@ namespace meta_hpp::detail
             && "an attempt to call a constructor with incorrect argument types"
         );
 
-        return call_with_uargs<argument_types>(registry, args, [mem](auto&&... all_args) {
+        return unchecked_call_with_uargs<argument_types>(registry, args, [mem](auto&&... all_args) {
             return std::construct_at(static_cast<class_type*>(mem), META_HPP_FWD(all_args)...);
         });
     }
