@@ -6,6 +6,7 @@
 
 #pragma once
 
+#include <cassert>
 #include <climits>
 #include <cstddef>
 #include <cstdint>
@@ -18,6 +19,7 @@
 #include <compare>
 #include <concepts>
 #include <deque>
+#include <exception>
 #include <functional>
 #include <initializer_list>
 #include <map>
@@ -29,6 +31,8 @@
 #include <string_view>
 #include <tuple>
 #include <type_traits>
+#include <typeindex>
+#include <typeinfo>
 #include <utility>
 #include <vector>
 #include <version>
@@ -41,20 +45,15 @@
 #    define META_HPP_NO_RTTI
 #endif
 
-#if !defined(META_HPP_NO_EXCEPTIONS)
-#    include <exception>
-#endif
-
-#if !defined(META_HPP_NO_RTTI)
-#    include <typeindex>
-#    include <typeinfo>
-#endif
-
 #if !defined(META_HPP_FWD)
 #    define META_HPP_FWD(v) std::forward<decltype(v)>(v)
 #endif
 
 #if !defined(META_HPP_ASSERT)
-#    include <cassert>
 #    define META_HPP_ASSERT(...) assert(__VA_ARGS__) // NOLINT
+#endif
+
+#if !defined(META_HPP_PP_CAT)
+#    define META_HPP_PP_CAT(x, y) META_HPP_PP_CAT_I(x, y)
+#    define META_HPP_PP_CAT_I(x, y) x##y
 #endif

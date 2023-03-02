@@ -10,6 +10,7 @@
 #include "meta_base/bitflags.hpp"
 #include "meta_base/cv_traits.hpp"
 #include "meta_base/cvref_traits.hpp"
+#include "meta_base/defer.hpp"
 #include "meta_base/exceptions.hpp"
 #include "meta_base/fixed_function.hpp"
 #include "meta_base/fnv1a_hash.hpp"

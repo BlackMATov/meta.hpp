@@ -58,8 +58,12 @@ namespace meta_hpp
         return data_->argument_types;
     }
 
-    inline const class_set& class_type::get_bases() const noexcept {
-        return data_->bases;
+    inline const class_set& class_type::get_base_classes() const noexcept {
+        return data_->base_classes;
+    }
+
+    inline const class_set& class_type::get_derived_classes() const noexcept {
+        return data_->derived_classes;
     }
 
     inline const constructor_set& class_type::get_constructors() const noexcept {
@@ -139,14 +143,8 @@ namespace meta_hpp
             return false;
         }
 
-        if ( derived.data_->bases.contains(*this) ) {
+        if ( derived.data_->deep_upcasts.contains(*this) ) {
             return true;
-        }
-
-        for ( const class_type& derived_base : derived.data_->bases ) {
-            if ( is_base_of(derived_base) ) {
-                return true;
-            }
         }
 
         return false;
@@ -162,14 +160,8 @@ namespace meta_hpp
             return false;
         }
 
-        if ( data_->bases.contains(base) ) {
+        if ( data_->deep_upcasts.contains(base) ) {
             return true;
-        }
-
-        for ( const class_type& self_base : data_->bases ) {
-            if ( self_base.is_derived_from(base) ) {
-                return true;
-            }
         }
 
         return false;
@@ -182,7 +174,7 @@ namespace meta_hpp
             }
         }
 
-        for ( const class_type& base : data_->bases ) {
+        for ( const class_type& base : data_->base_classes ) {
             if ( const function& function = base.get_function(name) ) {
                 return function;
             }
@@ -198,7 +190,7 @@ namespace meta_hpp
             }
         }
 
-        for ( const class_type& base : data_->bases ) {
+        for ( const class_type& base : data_->base_classes ) {
             if ( const member& member = base.get_member(name) ) {
                 return member;
             }
@@ -214,7 +206,7 @@ namespace meta_hpp
             }
         }
 
-        for ( const class_type& base : data_->bases ) {
+        for ( const class_type& base : data_->base_classes ) {
             if ( const method& method = base.get_method(name) ) {
                 return method;
             }
@@ -228,7 +220,7 @@ namespace meta_hpp
             return iter->second;
         }
 
-        for ( const class_type& base : data_->bases ) {
+        for ( const class_type& base : data_->base_classes ) {
             if ( const any_type& type = base.get_typedef(name) ) {
                 return type;
             }
@@ -244,7 +236,7 @@ namespace meta_hpp
             }
         }
 
-        for ( const class_type& base : data_->bases ) {
+        for ( const class_type& base : data_->base_classes ) {
             if ( const variable& variable = base.get_variable(name) ) {
                 return variable;
             }
@@ -316,7 +308,7 @@ namespace meta_hpp
             }
         }
 
-        for ( const class_type& base : data_->bases ) {
+        for ( const class_type& base : data_->base_classes ) {
             if ( const function& function = base.get_function_with(name, first, last) ) {
                 return function;
             }
@@ -356,7 +348,7 @@ namespace meta_hpp
             }
         }
 
-        for ( const class_type& base : data_->bases ) {
+        for ( const class_type& base : data_->base_classes ) {
             if ( const method& method = base.get_method_with(name, first, last) ) {
                 return method;
             }

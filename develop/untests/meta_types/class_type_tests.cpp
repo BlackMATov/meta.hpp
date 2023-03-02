@@ -202,11 +202,18 @@ TEST_CASE("meta/meta_types/class_type") {
         CHECK(final_derived_clazz_type.get_constructors().size() == 1);
     }
 
-    SUBCASE("get_bases") {
-        CHECK(base_clazz_1_type.get_bases() == meta::class_set{});
-        CHECK(base_clazz_2_type.get_bases() == meta::class_set{});
-        CHECK(derived_clazz_type.get_bases() == meta::class_set{base_clazz_1_type, base_clazz_2_type});
-        CHECK(final_derived_clazz_type.get_bases() == meta::class_set{derived_clazz_type});
+    SUBCASE("get_base_classes") {
+        CHECK(base_clazz_1_type.get_base_classes() == meta::class_set{});
+        CHECK(base_clazz_2_type.get_base_classes() == meta::class_set{});
+        CHECK(derived_clazz_type.get_base_classes() == meta::class_set{base_clazz_1_type, base_clazz_2_type});
+        CHECK(final_derived_clazz_type.get_base_classes() == meta::class_set{derived_clazz_type});
+    }
+
+    SUBCASE("get_derived_classes") {
+        CHECK(base_clazz_1_type.get_derived_classes() == meta::class_set{derived_clazz_type});
+        CHECK(base_clazz_2_type.get_derived_classes() == meta::class_set{derived_clazz_type});
+        CHECK(derived_clazz_type.get_derived_classes() == meta::class_set{final_derived_clazz_type});
+        CHECK(final_derived_clazz_type.get_derived_classes() == meta::class_set{});
     }
 
     SUBCASE("get_functions") {

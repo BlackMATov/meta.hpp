@@ -10,6 +10,73 @@
 #include "../meta_binds.hpp"
 #include "../meta_registry.hpp"
 
+namespace meta_hpp::detail::class_bind_impl
+{
+    using base_upcasts_t = class_type_data::base_upcasts_t;
+    using deep_upcasts_t = class_type_data::deep_upcasts_t;
+
+    using upcast_func_t = class_type_data::upcast_func_t;
+    using upcast_func_list_t = class_type_data::upcast_func_list_t;
+
+    using new_bases_db_t = std::map<class_type, upcast_func_t>;
+    using deep_upcasts_db_t = std::map<class_type, deep_upcasts_t, std::less<>>;
+    using derived_classes_db_t = std::map<class_type, class_set, std::less<>>;
+
+    template < class_kind Class, class_kind Base >
+        requires detail::class_bind_base_kind<Class, Base>
+    void update_new_bases_db( //
+        new_bases_db_t& new_bases_db
+    ) {
+        new_bases_db.emplace(resolve_type<Base>(), [](void* from) {
+            return static_cast<void*>(static_cast<Base*>(static_cast<Class*>(from)));
+        });
+    }
+
+    inline void update_deep_upcasts_db( //
+        const class_type& derived_class,
+        const class_type& new_base_class,
+        const upcast_func_list_t& derived_to_new_base,
+        deep_upcasts_db_t& deep_upcasts_db
+    ) {
+        const class_type_data& derived_class_data = *type_access(derived_class);
+        const class_type_data& new_base_class_data = *type_access(new_base_class);
+
+        const auto [deep_upcasts_db_iter, _] = deep_upcasts_db.try_emplace(derived_class, derived_class_data.deep_upcasts);
+        deep_upcasts_t& derived_deep_upcasts = deep_upcasts_db_iter->second;
+        derived_deep_upcasts.emplace(new_base_class, derived_to_new_base);
+
+        for ( auto&& [new_deep_class, new_base_to_deep] : new_base_class_data.deep_upcasts ) {
+            upcast_func_list_t derived_to_new_deep;
+            derived_to_new_deep.reserve(derived_to_new_base.size() + new_base_to_deep.size());
+            derived_to_new_deep.insert(derived_to_new_deep.end(), derived_to_new_base.begin(), derived_to_new_base.end());
+            derived_to_new_deep.insert(derived_to_new_deep.end(), new_base_to_deep.begin(), new_base_to_deep.end());
+            derived_deep_upcasts.emplace(new_deep_class, std::move(derived_to_new_deep));
+        }
+
+        for ( const class_type& subderived_class : derived_class_data.derived_classes ) {
+            const class_type_data& subderived_data = *type_access(subderived_class);
+
+            upcast_func_list_t subderived_to_new_base;
+            subderived_to_new_base.reserve(derived_to_new_base.size() + 1);
+            subderived_to_new_base.insert(subderived_to_new_base.end(), subderived_data.base_upcasts.at(derived_class));
+            subderived_to_new_base.insert(subderived_to_new_base.end(), derived_to_new_base.begin(), derived_to_new_base.end());
+
+            update_deep_upcasts_db(subderived_class, new_base_class, subderived_to_new_base, deep_upcasts_db);
+        }
+    }
+
+    inline void updata_derived_classes_db( //
+        const class_type& self_class,
+        const class_type& new_base_class,
+        derived_classes_db_t& derived_classes_db
+    ) {
+        const class_type_data& base_class_data = *type_access(new_base_class);
+        class_set new_derived_classes{base_class_data.derived_classes};
+        new_derived_classes.emplace(self_class);
+        derived_classes_db.emplace(new_base_class, std::move(new_derived_classes));
+    }
+}
+
 namespace meta_hpp
 {
     template < detail::class_kind Class >
@@ -28,28 +95,47 @@ namespace meta_hpp
     template < detail::class_kind... Bases >
         requires(... && detail::class_bind_base_kind<Class, Bases>)
     class_bind<Class>& class_bind<Class>::base_() {
-        const auto register_base{[this]<detail::class_kind Base>(std::in_place_type_t<Base>) {
-            const class_type& base_type = resolve_type<Base>();
+        using namespace detail;
+        using namespace detail::class_bind_impl;
 
-            auto&& [position, emplaced] = get_data().bases.emplace(base_type);
-            if ( !emplaced ) {
-                return;
+        if ( (... && get_data().base_classes.contains(resolve_type<Bases>())) ) {
+            return *this;
+        }
+
+        new_bases_db_t new_bases_db;
+        (update_new_bases_db<Class, Bases>(new_bases_db), ...);
+
+        deep_upcasts_db_t deep_upcasts_db;
+        derived_classes_db_t derived_classes_db;
+
+        class_set new_base_classes{get_data().base_classes};
+        base_upcasts_t new_base_upcasts{get_data().base_upcasts};
+
+        for ( auto&& [new_base_class, self_to_new_base] : new_bases_db ) {
+            if ( new_base_classes.contains(new_base_class) ) {
+                continue;
             }
 
-            META_HPP_TRY {
-                get_data().bases_info.emplace( //
-                    base_type,
-                    detail::class_type_data::base_info{
-                        .upcast{[](void* derived) -> void* { return static_cast<Base*>(static_cast<Class*>(derived)); }}}
-                );
-            }
-            META_HPP_CATCH(...) {
-                get_data().bases.erase(position);
-                META_HPP_RETHROW();
-            }
-        }};
+            update_deep_upcasts_db(*this, new_base_class, {self_to_new_base}, deep_upcasts_db);
+            updata_derived_classes_db(*this, new_base_class, derived_classes_db);
 
-        (register_base(std::in_place_type<Bases>), ...);
+            new_base_classes.emplace(new_base_class);
+            new_base_upcasts.emplace(new_base_class, self_to_new_base);
+        }
+
+        get_data().base_classes.swap(new_base_classes);
+        get_data().base_upcasts.swap(new_base_upcasts);
+
+        for ( auto&& [derived_class, new_deep_upcasts] : deep_upcasts_db ) {
+            class_type_data& derived_data = *type_access(derived_class);
+            derived_data.deep_upcasts.swap(new_deep_upcasts);
+        }
+
+        for ( auto&& [base_class, new_derived_classes] : derived_classes_db ) {
+            class_type_data& base_data = *type_access(base_class);
+            base_data.derived_classes.swap(new_derived_classes);
+        }
+
         return *this;
     }
 
