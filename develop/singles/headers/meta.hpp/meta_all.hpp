@@ -2761,7 +2761,19 @@ namespace meta_hpp::detail
         variable_set variables;
 
         using upcast_func_t = void* (*)(void*);
-        using upcast_func_list_t = std::vector<upcast_func_t>;
+
+        struct upcast_func_list_t final {
+            std::vector<upcast_func_t> upcasts;
+
+            upcast_func_list_t() = default;
+            upcast_func_list_t(upcast_func_t _upcast);
+            upcast_func_list_t(std::vector<upcast_func_t> _upcasts);
+
+            void* apply(void* ptr) const noexcept;
+            const void* apply(const void* ptr) const noexcept;
+
+            friend upcast_func_list_t operator+(const upcast_func_list_t& l, const upcast_func_list_t& r);
+        };
 
         using base_upcasts_t = std::map<class_type, upcast_func_t, std::less<>>;
         using deep_upcasts_t = std::multimap<class_type, upcast_func_list_t, std::less<>>;
@@ -4821,7 +4833,7 @@ namespace meta_hpp::detail::class_bind_impl
     inline void update_deep_upcasts_db( //
         const class_type& derived_class,
         const class_type& new_base_class,
-        const upcast_func_list_t& derived_to_new_base,
+        upcast_func_list_t&& derived_to_new_base,
         deep_upcasts_db_t& deep_upcasts_db
     ) {
         const class_type_data& derived_class_data = *type_access(derived_class);
@@ -4829,26 +4841,20 @@ namespace meta_hpp::detail::class_bind_impl
 
         const auto [deep_upcasts_db_iter, _] = deep_upcasts_db.try_emplace(derived_class, derived_class_data.deep_upcasts);
         deep_upcasts_t& derived_deep_upcasts = deep_upcasts_db_iter->second;
-        derived_deep_upcasts.emplace(new_base_class, derived_to_new_base);
 
         for ( auto&& [new_deep_class, new_base_to_deep] : new_base_class_data.deep_upcasts ) {
-            upcast_func_list_t derived_to_new_deep;
-            derived_to_new_deep.reserve(derived_to_new_base.size() + new_base_to_deep.size());
-            derived_to_new_deep.insert(derived_to_new_deep.end(), derived_to_new_base.begin(), derived_to_new_base.end());
-            derived_to_new_deep.insert(derived_to_new_deep.end(), new_base_to_deep.begin(), new_base_to_deep.end());
+            upcast_func_list_t derived_to_new_deep = derived_to_new_base + new_base_to_deep;
             derived_deep_upcasts.emplace(new_deep_class, std::move(derived_to_new_deep));
         }
 
         for ( const class_type& subderived_class : derived_class_data.derived_classes ) {
             const class_type_data& subderived_data = *type_access(subderived_class);
-
-            upcast_func_list_t subderived_to_new_base;
-            subderived_to_new_base.reserve(derived_to_new_base.size() + 1);
-            subderived_to_new_base.insert(subderived_to_new_base.end(), subderived_data.base_upcasts.at(derived_class));
-            subderived_to_new_base.insert(subderived_to_new_base.end(), derived_to_new_base.begin(), derived_to_new_base.end());
-
-            update_deep_upcasts_db(subderived_class, new_base_class, subderived_to_new_base, deep_upcasts_db);
+            upcast_func_t subderived_to_derived = subderived_data.base_upcasts.at(derived_class);
+            upcast_func_list_t subderived_to_new_base = subderived_to_derived + derived_to_new_base;
+            update_deep_upcasts_db(subderived_class, new_base_class, std::move(subderived_to_new_base), deep_upcasts_db);
         }
+
+        derived_deep_upcasts.emplace(new_base_class, std::move(derived_to_new_base));
     }
 
     inline void updata_derived_classes_db( //
@@ -4902,7 +4908,7 @@ namespace meta_hpp
                 continue;
             }
 
-            update_deep_upcasts_db(*this, new_base_class, {self_to_new_base}, deep_upcasts_db);
+            update_deep_upcasts_db(*this, new_base_class, self_to_new_base, deep_upcasts_db);
             updata_derived_classes_db(*this, new_base_class, derived_classes_db);
 
             new_base_classes.emplace(new_base_class);
@@ -5701,14 +5707,7 @@ namespace meta_hpp::detail
         class_type_data::deep_upcasts_t& deep_upcasts = from_data.deep_upcasts;
 
         for ( auto iter{deep_upcasts.lower_bound(to)}; iter != deep_upcasts.end() && iter->first == to; ++iter ) {
-            void* new_base_ptr = [ptr, iter]() mutable {
-                for ( class_type_data::upcast_func_t upcast : iter->second ) {
-                    ptr = upcast(ptr);
-                }
-                return ptr;
-            }();
-
-            if ( base_ptr == nullptr ) {
+            if ( void* new_base_ptr{iter->second.apply(ptr)}; base_ptr == nullptr ) {
                 base_ptr = new_base_ptr;
             } else if ( base_ptr != new_base_ptr ) {
                 // ambiguous conversions
@@ -8017,6 +8016,35 @@ namespace meta_hpp::detail
     , size{class_traits<Class>::size}
     , align{class_traits<Class>::align}
     , argument_types{resolve_types(typename class_traits<Class>::argument_types{})} {}
+
+    inline class_type_data::upcast_func_list_t::upcast_func_list_t(upcast_func_t _upcast)
+    : upcasts{_upcast} {}
+
+    inline class_type_data::upcast_func_list_t::upcast_func_list_t(std::vector<upcast_func_t> _upcasts)
+    : upcasts{std::move(_upcasts)} {}
+
+    inline void* class_type_data::upcast_func_list_t::apply(void* ptr) const noexcept {
+        for ( upcast_func_t upcast : upcasts ) {
+            ptr = upcast(ptr);
+        }
+        return ptr;
+    }
+
+    inline const void* class_type_data::upcast_func_list_t::apply(const void* ptr) const noexcept {
+        // NOLINTNEXTLINE(*-const-cast)
+        return apply(const_cast<void*>(ptr));
+    }
+
+    inline class_type_data::upcast_func_list_t operator+( //
+        const class_type_data::upcast_func_list_t& l,
+        const class_type_data::upcast_func_list_t& r
+    ) {
+        std::vector<class_type_data::upcast_func_t> new_upcasts;
+        new_upcasts.reserve(l.upcasts.size() + r.upcasts.size());
+        new_upcasts.insert(new_upcasts.end(), l.upcasts.begin(), l.upcasts.end());
+        new_upcasts.insert(new_upcasts.end(), r.upcasts.begin(), r.upcasts.end());
+        return class_type_data::upcast_func_list_t{std::move(new_upcasts)};
+    }
 }
 
 namespace meta_hpp

@@ -130,14 +130,7 @@ namespace meta_hpp::detail
         class_type_data::deep_upcasts_t& deep_upcasts = from_data.deep_upcasts;
 
         for ( auto iter{deep_upcasts.lower_bound(to)}; iter != deep_upcasts.end() && iter->first == to; ++iter ) {
-            void* new_base_ptr = [ptr, iter]() mutable {
-                for ( class_type_data::upcast_func_t upcast : iter->second ) {
-                    ptr = upcast(ptr);
-                }
-                return ptr;
-            }();
-
-            if ( base_ptr == nullptr ) {
+            if ( void* new_base_ptr{iter->second.apply(ptr)}; base_ptr == nullptr ) {
                 base_ptr = new_base_ptr;
             } else if ( base_ptr != new_base_ptr ) {
                 // ambiguous conversions

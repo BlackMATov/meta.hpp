@@ -403,7 +403,19 @@ namespace meta_hpp::detail
         variable_set variables;
 
         using upcast_func_t = void* (*)(void*);
-        using upcast_func_list_t = std::vector<upcast_func_t>;
+
+        struct upcast_func_list_t final {
+            std::vector<upcast_func_t> upcasts;
+
+            upcast_func_list_t() = default;
+            upcast_func_list_t(upcast_func_t _upcast);
+            upcast_func_list_t(std::vector<upcast_func_t> _upcasts);
+
+            void* apply(void* ptr) const noexcept;
+            const void* apply(const void* ptr) const noexcept;
+
+            friend upcast_func_list_t operator+(const upcast_func_list_t& l, const upcast_func_list_t& r);
+        };
 
         using base_upcasts_t = std::map<class_type, upcast_func_t, std::less<>>;
         using deep_upcasts_t = std::multimap<class_type, upcast_func_list_t, std::less<>>;

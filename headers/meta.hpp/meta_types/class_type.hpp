@@ -30,6 +30,35 @@ namespace meta_hpp::detail
     , size{class_traits<Class>::size}
     , align{class_traits<Class>::align}
     , argument_types{resolve_types(typename class_traits<Class>::argument_types{})} {}
+
+    inline class_type_data::upcast_func_list_t::upcast_func_list_t(upcast_func_t _upcast)
+    : upcasts{_upcast} {}
+
+    inline class_type_data::upcast_func_list_t::upcast_func_list_t(std::vector<upcast_func_t> _upcasts)
+    : upcasts{std::move(_upcasts)} {}
+
+    inline void* class_type_data::upcast_func_list_t::apply(void* ptr) const noexcept {
+        for ( upcast_func_t upcast : upcasts ) {
+            ptr = upcast(ptr);
+        }
+        return ptr;
+    }
+
+    inline const void* class_type_data::upcast_func_list_t::apply(const void* ptr) const noexcept {
+        // NOLINTNEXTLINE(*-const-cast)
+        return apply(const_cast<void*>(ptr));
+    }
+
+    inline class_type_data::upcast_func_list_t operator+( //
+        const class_type_data::upcast_func_list_t& l,
+        const class_type_data::upcast_func_list_t& r
+    ) {
+        std::vector<class_type_data::upcast_func_t> new_upcasts;
+        new_upcasts.reserve(l.upcasts.size() + r.upcasts.size());
+        new_upcasts.insert(new_upcasts.end(), l.upcasts.begin(), l.upcasts.end());
+        new_upcasts.insert(new_upcasts.end(), r.upcasts.begin(), r.upcasts.end());
+        return class_type_data::upcast_func_list_t{std::move(new_upcasts)};
+    }
 }
 
 namespace meta_hpp
