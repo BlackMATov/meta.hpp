@@ -7175,10 +7175,31 @@ namespace meta_hpp
         return function.invoke(std::forward<Args>(args)...);
     }
 
+    template < typename... Args >
+    uresult try_invoke(const function& function, Args&&... args) {
+        return function.try_invoke(std::forward<Args>(args)...);
+    }
+
     template < detail::function_pointer_kind Function, typename... Args >
     uvalue invoke(Function function_ptr, Args&&... args) {
         using namespace detail;
         type_registry& registry{type_registry::instance()};
+        const std::array<uarg, sizeof...(Args)> vargs{uarg{registry, std::forward<Args>(args)}...};
+        return raw_function_invoke<function_policy::as_copy_t>(registry, function_ptr, vargs);
+    }
+
+    template < detail::function_pointer_kind Function, typename... Args >
+    uresult try_invoke(Function function_ptr, Args&&... args) {
+        using namespace detail;
+        type_registry& registry{type_registry::instance()};
+
+        {
+            const std::array<uarg_base, sizeof...(Args)> vargs{uarg_base{registry, std::forward<Args>(args)}...};
+            if ( const uerror err = raw_function_invoke_error<Function>(registry, vargs) ) {
+                return err;
+            }
+        }
+
         const std::array<uarg, sizeof...(Args)> vargs{uarg{registry, std::forward<Args>(args)}...};
         return raw_function_invoke<function_policy::as_copy_t>(registry, function_ptr, vargs);
     }
@@ -7191,10 +7212,31 @@ namespace meta_hpp
         return member.get(std::forward<Instance>(instance));
     }
 
+    template < typename Instance >
+    uresult try_invoke(const member& member, Instance&& instance) {
+        return member.try_get(std::forward<Instance>(instance));
+    }
+
     template < detail::member_pointer_kind Member, typename Instance >
     uvalue invoke(Member member_ptr, Instance&& instance) {
         using namespace detail;
         type_registry& registry{type_registry::instance()};
+        const uinst vinst{registry, std::forward<Instance>(instance)};
+        return raw_member_getter<member_policy::as_copy_t>(registry, member_ptr, vinst);
+    }
+
+    template < detail::member_pointer_kind Member, typename Instance >
+    uresult try_invoke(Member member_ptr, Instance&& instance) {
+        using namespace detail;
+        type_registry& registry{type_registry::instance()};
+
+        {
+            const uinst_base vinst{registry, std::forward<Instance>(instance)};
+            if ( const uerror err = raw_member_getter_error<Member>(registry, vinst) ) {
+                return err;
+            }
+        }
+
         const uinst vinst{registry, std::forward<Instance>(instance)};
         return raw_member_getter<member_policy::as_copy_t>(registry, member_ptr, vinst);
     }
@@ -7207,10 +7249,33 @@ namespace meta_hpp
         return method.invoke(std::forward<Instance>(instance), std::forward<Args>(args)...);
     }
 
+    template < typename Instance, typename... Args >
+    uresult try_invoke(const method& method, Instance&& instance, Args&&... args) {
+        return method.try_invoke(std::forward<Instance>(instance), std::forward<Args>(args)...);
+    }
+
     template < detail::method_pointer_kind Method, typename Instance, typename... Args >
     uvalue invoke(Method method_ptr, Instance&& instance, Args&&... args) {
         using namespace detail;
         type_registry& registry{type_registry::instance()};
+        const uinst vinst{registry, std::forward<Instance>(instance)};
+        const std::array<uarg, sizeof...(Args)> vargs{uarg{registry, std::forward<Args>(args)}...};
+        return raw_method_invoke<method_policy::as_copy_t>(registry, method_ptr, vinst, vargs);
+    }
+
+    template < detail::method_pointer_kind Method, typename Instance, typename... Args >
+    uresult try_invoke(Method method_ptr, Instance&& instance, Args&&... args) {
+        using namespace detail;
+        type_registry& registry{type_registry::instance()};
+
+        {
+            const uinst_base vinst{registry, std::forward<Instance>(instance)};
+            const std::array<uarg_base, sizeof...(Args)> vargs{uarg_base{registry, std::forward<Args>(args)}...};
+            if ( const uerror err = raw_method_invoke_error<Method>(registry, vinst, vargs) ) {
+                return err;
+            }
+        }
+
         const uinst vinst{registry, std::forward<Instance>(instance)};
         const std::array<uarg, sizeof...(Args)> vargs{uarg{registry, std::forward<Args>(args)}...};
         return raw_method_invoke<method_policy::as_copy_t>(registry, method_ptr, vinst, vargs);

@@ -31,8 +31,8 @@ TEST_CASE("meta/meta_issues/random/1") {
     CHECK(meta::is_invocable_with(+[](const B&){ return true; }, D{}));
     CHECK_FALSE(meta::is_invocable_with(+[](const A&){ return true; }, D{}));
 
-    CHECK(meta::invoke(+[](const D&){ return true; }, D{}));
-    CHECK(meta::invoke(+[](const C&){ return true; }, D{}));
-    CHECK(meta::invoke(+[](const B&){ return true; }, D{}));
-    CHECK_THROWS(meta::invoke(+[](const A&){ return true; }, D{}));
+    CHECK(meta::try_invoke(+[](const D&){ return true; }, D{}));
+    CHECK(meta::try_invoke(+[](const C&){ return true; }, D{}));
+    CHECK(meta::try_invoke(+[](const B&){ return true; }, D{}));
+    CHECK_FALSE(meta::try_invoke(+[](const A&){ return true; }, D{}));
 }
