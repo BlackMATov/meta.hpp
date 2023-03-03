@@ -180,9 +180,17 @@ namespace meta_hpp
         [[nodiscard]] bool is_base_of() const noexcept;
         [[nodiscard]] bool is_base_of(const class_type& derived) const noexcept;
 
+        template < detail::class_kind Derived >
+        [[nodiscard]] bool is_direct_base_of() const noexcept;
+        [[nodiscard]] bool is_direct_base_of(const class_type& derived) const noexcept;
+
         template < detail::class_kind Base >
         [[nodiscard]] bool is_derived_from() const noexcept;
         [[nodiscard]] bool is_derived_from(const class_type& base) const noexcept;
+
+        template < detail::class_kind Base >
+        [[nodiscard]] bool is_direct_derived_from() const noexcept;
+        [[nodiscard]] bool is_direct_derived_from(const class_type& base) const noexcept;
 
         [[nodiscard]] function get_function(std::string_view name) const noexcept;
         [[nodiscard]] member get_member(std::string_view name) const noexcept;

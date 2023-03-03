@@ -2570,9 +2570,17 @@ namespace meta_hpp
         [[nodiscard]] bool is_base_of() const noexcept;
         [[nodiscard]] bool is_base_of(const class_type& derived) const noexcept;
 
+        template < detail::class_kind Derived >
+        [[nodiscard]] bool is_direct_base_of() const noexcept;
+        [[nodiscard]] bool is_direct_base_of(const class_type& derived) const noexcept;
+
         template < detail::class_kind Base >
         [[nodiscard]] bool is_derived_from() const noexcept;
         [[nodiscard]] bool is_derived_from(const class_type& base) const noexcept;
+
+        template < detail::class_kind Base >
+        [[nodiscard]] bool is_direct_derived_from() const noexcept;
+        [[nodiscard]] bool is_direct_derived_from(const class_type& base) const noexcept;
 
         [[nodiscard]] function get_function(std::string_view name) const noexcept;
         [[nodiscard]] member get_member(std::string_view name) const noexcept;
@@ -8186,15 +8194,16 @@ namespace meta_hpp
     }
 
     inline bool class_type::is_base_of(const class_type& derived) const noexcept {
-        if ( !is_valid() || !derived.is_valid() ) {
-            return false;
-        }
+        return is_valid() && derived.is_valid() && derived.data_->deep_upcasts.contains(*this);
+    }
 
-        if ( derived.data_->deep_upcasts.contains(*this) ) {
-            return true;
-        }
+    template < detail::class_kind Derived >
+    bool class_type::is_direct_base_of() const noexcept {
+        return is_direct_base_of(resolve_type<Derived>());
+    }
 
-        return false;
+    inline bool class_type::is_direct_base_of(const class_type& derived) const noexcept {
+        return is_valid() && derived.is_valid() && derived.data_->base_upcasts.contains(*this);
     }
 
     template < detail::class_kind Base >
@@ -8203,15 +8212,16 @@ namespace meta_hpp
     }
 
     inline bool class_type::is_derived_from(const class_type& base) const noexcept {
-        if ( !is_valid() || !base.is_valid() ) {
-            return false;
-        }
+        return is_valid() && base.is_valid() && data_->deep_upcasts.contains(base);
+    }
 
-        if ( data_->deep_upcasts.contains(base) ) {
-            return true;
-        }
+    template < detail::class_kind Base >
+    bool class_type::is_direct_derived_from() const noexcept {
+        return is_direct_derived_from(resolve_type<Base>());
+    }
 
-        return false;
+    inline bool class_type::is_direct_derived_from(const class_type& base) const noexcept {
+        return is_valid() && base.is_valid() && data_->base_upcasts.contains(base);
     }
 
     inline function class_type::get_function(std::string_view name) const noexcept {

@@ -248,40 +248,62 @@ TEST_CASE("meta/meta_types/class_type") {
         {
             CHECK_FALSE(base_clazz_1_type.is_base_of<base_clazz_1>());
             CHECK_FALSE(base_clazz_1_type.is_base_of(base_clazz_1_type));
+            CHECK_FALSE(base_clazz_1_type.is_direct_base_of<base_clazz_1>());
+            CHECK_FALSE(base_clazz_1_type.is_direct_base_of(base_clazz_1_type));
 
             CHECK_FALSE(base_clazz_1_type.is_base_of<base_clazz_2>());
             CHECK_FALSE(base_clazz_1_type.is_base_of(base_clazz_2_type));
+            CHECK_FALSE(base_clazz_1_type.is_direct_base_of<base_clazz_2>());
+            CHECK_FALSE(base_clazz_1_type.is_direct_base_of(base_clazz_2_type));
 
             CHECK(base_clazz_1_type.is_base_of<derived_clazz>());
             CHECK(base_clazz_1_type.is_base_of(derived_clazz_type));
+            CHECK(base_clazz_1_type.is_direct_base_of<derived_clazz>());
+            CHECK(base_clazz_1_type.is_direct_base_of(derived_clazz_type));
 
             CHECK(base_clazz_1_type.is_base_of<final_derived_clazz>());
             CHECK(base_clazz_1_type.is_base_of(final_derived_clazz_type));
+            CHECK_FALSE(base_clazz_1_type.is_direct_base_of<final_derived_clazz>());
+            CHECK_FALSE(base_clazz_1_type.is_direct_base_of(final_derived_clazz_type));
         }
 
         {
             CHECK_FALSE(base_clazz_2_type.is_base_of<base_clazz_1>());
             CHECK_FALSE(base_clazz_2_type.is_base_of(base_clazz_1_type));
+            CHECK_FALSE(base_clazz_2_type.is_direct_base_of<base_clazz_1>());
+            CHECK_FALSE(base_clazz_2_type.is_direct_base_of(base_clazz_1_type));
 
             CHECK_FALSE(base_clazz_2_type.is_base_of<base_clazz_2>());
             CHECK_FALSE(base_clazz_2_type.is_base_of(base_clazz_2_type));
+            CHECK_FALSE(base_clazz_2_type.is_direct_base_of<base_clazz_2>());
+            CHECK_FALSE(base_clazz_2_type.is_direct_base_of(base_clazz_2_type));
 
             CHECK(base_clazz_2_type.is_base_of<derived_clazz>());
             CHECK(base_clazz_2_type.is_base_of(derived_clazz_type));
+            CHECK(base_clazz_2_type.is_direct_base_of<derived_clazz>());
+            CHECK(base_clazz_2_type.is_direct_base_of(derived_clazz_type));
 
             CHECK(base_clazz_2_type.is_base_of<final_derived_clazz>());
             CHECK(base_clazz_2_type.is_base_of(final_derived_clazz_type));
+            CHECK_FALSE(base_clazz_2_type.is_direct_base_of<final_derived_clazz>());
+            CHECK_FALSE(base_clazz_2_type.is_direct_base_of(final_derived_clazz_type));
         }
 
         {
             CHECK_FALSE(derived_clazz_type.is_base_of<base_clazz_1>());
             CHECK_FALSE(derived_clazz_type.is_base_of(base_clazz_1_type));
+            CHECK_FALSE(derived_clazz_type.is_direct_base_of<base_clazz_1>());
+            CHECK_FALSE(derived_clazz_type.is_direct_base_of(base_clazz_1_type));
 
             CHECK_FALSE(derived_clazz_type.is_base_of<base_clazz_2>());
             CHECK_FALSE(derived_clazz_type.is_base_of(base_clazz_2_type));
+            CHECK_FALSE(derived_clazz_type.is_direct_base_of<base_clazz_2>());
+            CHECK_FALSE(derived_clazz_type.is_direct_base_of(base_clazz_2_type));
 
             CHECK_FALSE(derived_clazz_type.is_base_of<derived_clazz>());
             CHECK_FALSE(derived_clazz_type.is_base_of(derived_clazz_type));
+            CHECK_FALSE(derived_clazz_type.is_direct_base_of<derived_clazz>());
+            CHECK_FALSE(derived_clazz_type.is_direct_base_of(derived_clazz_type));
         }
     }
 
@@ -289,45 +311,69 @@ TEST_CASE("meta/meta_types/class_type") {
         {
             CHECK_FALSE(base_clazz_1_type.is_derived_from<base_clazz_1>());
             CHECK_FALSE(base_clazz_1_type.is_derived_from(base_clazz_1_type));
+            CHECK_FALSE(base_clazz_1_type.is_direct_derived_from<base_clazz_1>());
+            CHECK_FALSE(base_clazz_1_type.is_direct_derived_from(base_clazz_1_type));
 
             CHECK_FALSE(base_clazz_1_type.is_derived_from<base_clazz_2>());
             CHECK_FALSE(base_clazz_1_type.is_derived_from(base_clazz_2_type));
+            CHECK_FALSE(base_clazz_1_type.is_direct_derived_from<base_clazz_2>());
+            CHECK_FALSE(base_clazz_1_type.is_direct_derived_from(base_clazz_2_type));
 
             CHECK_FALSE(base_clazz_1_type.is_derived_from<derived_clazz>());
             CHECK_FALSE(base_clazz_1_type.is_derived_from(derived_clazz_type));
+            CHECK_FALSE(base_clazz_1_type.is_direct_derived_from<derived_clazz>());
+            CHECK_FALSE(base_clazz_1_type.is_direct_derived_from(derived_clazz_type));
         }
 
         {
             CHECK_FALSE(base_clazz_2_type.is_derived_from<base_clazz_1>());
             CHECK_FALSE(base_clazz_2_type.is_derived_from(base_clazz_1_type));
+            CHECK_FALSE(base_clazz_2_type.is_direct_derived_from<base_clazz_1>());
+            CHECK_FALSE(base_clazz_2_type.is_direct_derived_from(base_clazz_1_type));
 
             CHECK_FALSE(base_clazz_2_type.is_derived_from<base_clazz_2>());
             CHECK_FALSE(base_clazz_2_type.is_derived_from(base_clazz_2_type));
+            CHECK_FALSE(base_clazz_2_type.is_direct_derived_from<base_clazz_2>());
+            CHECK_FALSE(base_clazz_2_type.is_direct_derived_from(base_clazz_2_type));
 
             CHECK_FALSE(base_clazz_2_type.is_derived_from<derived_clazz>());
             CHECK_FALSE(base_clazz_2_type.is_derived_from(derived_clazz_type));
+            CHECK_FALSE(base_clazz_2_type.is_direct_derived_from<derived_clazz>());
+            CHECK_FALSE(base_clazz_2_type.is_direct_derived_from(derived_clazz_type));
         }
 
         {
             CHECK(derived_clazz_type.is_derived_from<base_clazz_1>());
             CHECK(derived_clazz_type.is_derived_from(base_clazz_1_type));
+            CHECK(derived_clazz_type.is_direct_derived_from<base_clazz_1>());
+            CHECK(derived_clazz_type.is_direct_derived_from(base_clazz_1_type));
 
             CHECK(derived_clazz_type.is_derived_from<base_clazz_2>());
             CHECK(derived_clazz_type.is_derived_from(base_clazz_2_type));
+            CHECK(derived_clazz_type.is_direct_derived_from<base_clazz_2>());
+            CHECK(derived_clazz_type.is_direct_derived_from(base_clazz_2_type));
 
             CHECK_FALSE(derived_clazz_type.is_derived_from<derived_clazz>());
             CHECK_FALSE(derived_clazz_type.is_derived_from(derived_clazz_type));
+            CHECK_FALSE(derived_clazz_type.is_direct_derived_from<derived_clazz>());
+            CHECK_FALSE(derived_clazz_type.is_direct_derived_from(derived_clazz_type));
         }
 
         {
             CHECK(final_derived_clazz_type.is_derived_from<base_clazz_1>());
             CHECK(final_derived_clazz_type.is_derived_from(base_clazz_1_type));
+            CHECK_FALSE(final_derived_clazz_type.is_direct_derived_from<base_clazz_1>());
+            CHECK_FALSE(final_derived_clazz_type.is_direct_derived_from(base_clazz_1_type));
 
             CHECK(final_derived_clazz_type.is_derived_from<base_clazz_2>());
             CHECK(final_derived_clazz_type.is_derived_from(base_clazz_2_type));
+            CHECK_FALSE(final_derived_clazz_type.is_direct_derived_from<base_clazz_2>());
+            CHECK_FALSE(final_derived_clazz_type.is_direct_derived_from(base_clazz_2_type));
 
             CHECK(final_derived_clazz_type.is_derived_from<derived_clazz>());
             CHECK(final_derived_clazz_type.is_derived_from(derived_clazz_type));
+            CHECK(final_derived_clazz_type.is_direct_derived_from<derived_clazz>());
+            CHECK(final_derived_clazz_type.is_direct_derived_from(derived_clazz_type));
         }
     }
 
