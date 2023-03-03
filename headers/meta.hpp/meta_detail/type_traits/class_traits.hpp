@@ -27,7 +27,7 @@ namespace meta_hpp::detail
     namespace impl
     {
         template < class_kind Class >
-        struct class_traits_base {
+        struct class_traits_impl {
             static constexpr std::size_t arity{0};
 
             using argument_types = type_list<>;
@@ -38,7 +38,7 @@ namespace meta_hpp::detail
         };
 
         template < template < typename... > typename Class, typename... Args >
-        struct class_traits_base<Class<Args...>> {
+        struct class_traits_impl<Class<Args...>> {
             static constexpr std::size_t arity{sizeof...(Args)};
 
             using argument_types = type_list<Args...>;
@@ -50,7 +50,7 @@ namespace meta_hpp::detail
     }
 
     template < class_kind Class >
-    struct class_traits : impl::class_traits_base<Class> {
+    struct class_traits : impl::class_traits_impl<Class> {
         static constexpr std::size_t size{sizeof(Class)};
         static constexpr std::size_t align{alignof(Class)};
 
@@ -73,7 +73,7 @@ namespace meta_hpp::detail
                 flags.set(class_flags::is_polymorphic);
             }
 
-            return flags | impl::class_traits_base<Class>::make_flags();
+            return flags | impl::class_traits_impl<Class>::make_flags();
         }
     };
 }
