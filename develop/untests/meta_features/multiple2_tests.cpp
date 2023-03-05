@@ -135,70 +135,70 @@ TEST_CASE("meta/meta_features/multiple2") {
         CHECK(!E1_type.is_base_of(E1_type));
     }
 
-    SUBCASE("pointer_upcast") {
+    SUBCASE("unchecked_pointer_upcast") {
         using meta::detail::type_registry;
-        using meta::detail::pointer_upcast;
+        using meta::detail::unchecked_pointer_upcast;
 
         type_registry& r{type_registry::instance()};
 
         {
             A a;
-            CHECK(pointer_upcast<A>(r, &a) == &a); CHECK(pointer_upcast<A>(r, &a)->a == "a");
-            CHECK_FALSE(pointer_upcast<B0>(r, &a));
-            CHECK_FALSE(pointer_upcast<B1>(r, &a));
-            CHECK_FALSE(pointer_upcast<C>(r, &a));
+            CHECK(unchecked_pointer_upcast<A>(r, &a) == &a); CHECK(unchecked_pointer_upcast<A>(r, &a)->a == "a");
+            CHECK_FALSE(unchecked_pointer_upcast<B0>(r, &a));
+            CHECK_FALSE(unchecked_pointer_upcast<B1>(r, &a));
+            CHECK_FALSE(unchecked_pointer_upcast<C>(r, &a));
         }
 
         {
             B0 b0;
-            CHECK(pointer_upcast<A>(r, &b0) == &b0); CHECK(pointer_upcast<A>(r, &b0)->a == "a");
-            CHECK(pointer_upcast<B0>(r, &b0) == &b0); CHECK(pointer_upcast<B0>(r, &b0)->b0 == "b0");
-            CHECK_FALSE(pointer_upcast<B1>(r, &b0));
-            CHECK_FALSE(pointer_upcast<C>(r, &b0));
+            CHECK(unchecked_pointer_upcast<A>(r, &b0) == &b0); CHECK(unchecked_pointer_upcast<A>(r, &b0)->a == "a");
+            CHECK(unchecked_pointer_upcast<B0>(r, &b0) == &b0); CHECK(unchecked_pointer_upcast<B0>(r, &b0)->b0 == "b0");
+            CHECK_FALSE(unchecked_pointer_upcast<B1>(r, &b0));
+            CHECK_FALSE(unchecked_pointer_upcast<C>(r, &b0));
         }
 
         {
             B1 b1;
-            CHECK(pointer_upcast<A>(r, &b1) == &b1); CHECK(pointer_upcast<A>(r, &b1)->a == "a");
-            CHECK_FALSE(pointer_upcast<B0>(r, &b1));
-            CHECK(pointer_upcast<B1>(r, &b1) == &b1); CHECK(pointer_upcast<B1>(r, &b1)->b1 == "b1");
-            CHECK_FALSE(pointer_upcast<C>(r, &b1));
+            CHECK(unchecked_pointer_upcast<A>(r, &b1) == &b1); CHECK(unchecked_pointer_upcast<A>(r, &b1)->a == "a");
+            CHECK_FALSE(unchecked_pointer_upcast<B0>(r, &b1));
+            CHECK(unchecked_pointer_upcast<B1>(r, &b1) == &b1); CHECK(unchecked_pointer_upcast<B1>(r, &b1)->b1 == "b1");
+            CHECK_FALSE(unchecked_pointer_upcast<C>(r, &b1));
         }
 
         {
             C c;
-            CHECK(pointer_upcast<A>(r, &c) == &c); CHECK(pointer_upcast<A>(r, &c)->a == "a");
-            CHECK(pointer_upcast<B0>(r, &c) == &c); CHECK(pointer_upcast<B0>(r, &c)->b0 == "b0");
-            CHECK(pointer_upcast<B1>(r, &c) == &c); CHECK(pointer_upcast<B1>(r, &c)->b1 == "b1");
-            CHECK(pointer_upcast<C>(r, &c) == &c); CHECK(pointer_upcast<C>(r, &c)->c == "c");
-            CHECK_FALSE(pointer_upcast<D0>(r, &c));
-            CHECK_FALSE(pointer_upcast<D1>(r, &c));
-            CHECK_FALSE(pointer_upcast<E0>(r, &c));
-            CHECK_FALSE(pointer_upcast<E1>(r, &c));
+            CHECK(unchecked_pointer_upcast<A>(r, &c) == &c); CHECK(unchecked_pointer_upcast<A>(r, &c)->a == "a");
+            CHECK(unchecked_pointer_upcast<B0>(r, &c) == &c); CHECK(unchecked_pointer_upcast<B0>(r, &c)->b0 == "b0");
+            CHECK(unchecked_pointer_upcast<B1>(r, &c) == &c); CHECK(unchecked_pointer_upcast<B1>(r, &c)->b1 == "b1");
+            CHECK(unchecked_pointer_upcast<C>(r, &c) == &c); CHECK(unchecked_pointer_upcast<C>(r, &c)->c == "c");
+            CHECK_FALSE(unchecked_pointer_upcast<D0>(r, &c));
+            CHECK_FALSE(unchecked_pointer_upcast<D1>(r, &c));
+            CHECK_FALSE(unchecked_pointer_upcast<E0>(r, &c));
+            CHECK_FALSE(unchecked_pointer_upcast<E1>(r, &c));
         }
 
         {
             E0 e0;
-            CHECK(pointer_upcast<A>(r, &e0) == &e0); CHECK(pointer_upcast<A>(r, &e0)->a == "a");
-            CHECK(pointer_upcast<B0>(r, &e0) == &e0); CHECK(pointer_upcast<B0>(r, &e0)->b0 == "b0");
-            CHECK(pointer_upcast<B1>(r, &e0) == &e0); CHECK(pointer_upcast<B1>(r, &e0)->b1 == "b1");
-            CHECK(pointer_upcast<C>(r, &e0) == &e0); CHECK(pointer_upcast<C>(r, &e0)->c == "c");
-            CHECK(pointer_upcast<D0>(r, &e0) == &e0); CHECK(pointer_upcast<D0>(r, &e0)->d0 == "d0");
-            CHECK_FALSE(pointer_upcast<D1>(r, &e0));
-            CHECK(pointer_upcast<E0>(r, &e0) == &e0); CHECK(pointer_upcast<E0>(r, &e0)->e0 == "e0");
-            CHECK_FALSE(pointer_upcast<E1>(r, &e0));
+            CHECK(unchecked_pointer_upcast<A>(r, &e0) == &e0); CHECK(unchecked_pointer_upcast<A>(r, &e0)->a == "a");
+            CHECK(unchecked_pointer_upcast<B0>(r, &e0) == &e0); CHECK(unchecked_pointer_upcast<B0>(r, &e0)->b0 == "b0");
+            CHECK(unchecked_pointer_upcast<B1>(r, &e0) == &e0); CHECK(unchecked_pointer_upcast<B1>(r, &e0)->b1 == "b1");
+            CHECK(unchecked_pointer_upcast<C>(r, &e0) == &e0); CHECK(unchecked_pointer_upcast<C>(r, &e0)->c == "c");
+            CHECK(unchecked_pointer_upcast<D0>(r, &e0) == &e0); CHECK(unchecked_pointer_upcast<D0>(r, &e0)->d0 == "d0");
+            CHECK_FALSE(unchecked_pointer_upcast<D1>(r, &e0));
+            CHECK(unchecked_pointer_upcast<E0>(r, &e0) == &e0); CHECK(unchecked_pointer_upcast<E0>(r, &e0)->e0 == "e0");
+            CHECK_FALSE(unchecked_pointer_upcast<E1>(r, &e0));
         }
 
         {
             E1 e1;
-            CHECK(pointer_upcast<A>(r, &e1) == &e1); CHECK(pointer_upcast<A>(r, &e1)->a == "a");
-            CHECK(pointer_upcast<B0>(r, &e1) == &e1); CHECK(pointer_upcast<B0>(r, &e1)->b0 == "b0");
-            CHECK(pointer_upcast<B1>(r, &e1) == &e1); CHECK(pointer_upcast<B1>(r, &e1)->b1 == "b1");
-            CHECK(pointer_upcast<C>(r, &e1) == &e1); CHECK(pointer_upcast<C>(r, &e1)->c == "c");
-            CHECK_FALSE(pointer_upcast<D0>(r, &e1));
-            CHECK(pointer_upcast<D1>(r, &e1) == &e1); CHECK(pointer_upcast<D1>(r, &e1)->d1 == "d1");
-            CHECK_FALSE(pointer_upcast<E0>(r, &e1));
-            CHECK(pointer_upcast<E1>(r, &e1) == &e1); CHECK(pointer_upcast<E1>(r, &e1)->e1 == "e1");
+            CHECK(unchecked_pointer_upcast<A>(r, &e1) == &e1); CHECK(unchecked_pointer_upcast<A>(r, &e1)->a == "a");
+            CHECK(unchecked_pointer_upcast<B0>(r, &e1) == &e1); CHECK(unchecked_pointer_upcast<B0>(r, &e1)->b0 == "b0");
+            CHECK(unchecked_pointer_upcast<B1>(r, &e1) == &e1); CHECK(unchecked_pointer_upcast<B1>(r, &e1)->b1 == "b1");
+            CHECK(unchecked_pointer_upcast<C>(r, &e1) == &e1); CHECK(unchecked_pointer_upcast<C>(r, &e1)->c == "c");
+            CHECK_FALSE(unchecked_pointer_upcast<D0>(r, &e1));
+            CHECK(unchecked_pointer_upcast<D1>(r, &e1) == &e1); CHECK(unchecked_pointer_upcast<D1>(r, &e1)->d1 == "d1");
+            CHECK_FALSE(unchecked_pointer_upcast<E0>(r, &e1));
+            CHECK(unchecked_pointer_upcast<E1>(r, &e1) == &e1); CHECK(unchecked_pointer_upcast<E1>(r, &e1)->e1 == "e1");
         }
     }
 }

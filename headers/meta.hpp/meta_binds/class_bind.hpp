@@ -23,13 +23,14 @@ namespace meta_hpp::detail::class_bind_impl
     using derived_classes_db_t = std::map<class_type, class_set, std::less<>>;
 
     template < class_kind Class, class_kind Base >
-        requires detail::class_bind_base_kind<Class, Base>
+        requires std::is_base_of_v<Base, Class>
     void update_new_bases_db( //
         new_bases_db_t& new_bases_db
     ) {
-        new_bases_db.emplace(resolve_type<Base>(), [](void* from) {
-            return static_cast<void*>(static_cast<Base*>(static_cast<Class*>(from)));
-        });
+        new_bases_db.try_emplace( //
+            resolve_type<Base>(),
+            std::in_place_type<Class>,
+            std::in_place_type<Base>);
     }
 
     inline void update_deep_upcasts_db( //

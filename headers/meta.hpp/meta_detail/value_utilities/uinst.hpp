@@ -192,10 +192,12 @@ namespace meta_hpp::detail
         const any_type& to_type = registry.resolve_type<inst_class>();
 
         if ( from_type.is_class() && to_type.is_class() ) {
-            const class_type& from_class = from_type.as_class();
-            const class_type& to_class = to_type.as_class();
-
-            void* to_ptr = pointer_upcast(data_, from_class, to_class);
+            void* to_ptr = unchecked_pointer_upcast( //
+                data_,
+                from_type.as_class(),
+                to_type.as_class()
+            );
+            META_HPP_ASSERT(to_ptr);
 
             if constexpr ( !std::is_reference_v<Q> ) {
                 return *static_cast<inst_class_cv*>(to_ptr);
@@ -215,11 +217,12 @@ namespace meta_hpp::detail
             const any_type& from_data_type = from_type_ptr.get_data_type();
 
             if ( from_data_type.is_class() && to_type.is_class() ) {
-                const class_type& from_data_class = from_data_type.as_class();
-                const class_type& to_class = to_type.as_class();
-
-                void** from_data_ptr = static_cast<void**>(data_);
-                void* to_ptr = pointer_upcast(*from_data_ptr, from_data_class, to_class);
+                void* to_ptr = unchecked_pointer_upcast( //
+                    *static_cast<void**>(data_),
+                    from_data_type.as_class(),
+                    to_type.as_class()
+                );
+                META_HPP_ASSERT(to_ptr);
 
                 if constexpr ( !std::is_reference_v<Q> ) {
                     return *static_cast<inst_class_cv*>(to_ptr);

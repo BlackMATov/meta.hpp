@@ -105,8 +105,19 @@ namespace meta_hpp::detail
         const class_type& base_class = base.as_class();
         const class_type& derived_class = derived.as_class();
 
-        if ( base_class && derived_class && base_class.is_base_of(derived_class) ) {
-            return true;
+        if ( base_class && derived_class ) {
+            const class_type_data& derived_data = *type_access(derived_class);
+            const class_type_data::deep_upcasts_t& deep_upcasts = derived_data.deep_upcasts;
+
+            if ( const auto iter{deep_upcasts.lower_bound(base)}; iter != deep_upcasts.end() && iter->first == base ) {
+                if ( const auto next_iter{std::next(iter)}; next_iter == deep_upcasts.end() || next_iter->first != base ) {
+                    return true;
+                }
+
+                if ( base_class.is_virtual_base_of(derived_class) ) {
+                    return true;
+                }
+            }
         }
 
         return false;
@@ -115,7 +126,7 @@ namespace meta_hpp::detail
 
 namespace meta_hpp::detail
 {
-    [[nodiscard]] inline void* pointer_upcast(void* ptr, const class_type& from, const class_type& to) {
+    [[nodiscard]] inline void* unchecked_pointer_upcast(void* ptr, const class_type& from, const class_type& to) {
         if ( nullptr == ptr || !from || !to ) {
             return nullptr;
         }
@@ -124,32 +135,24 @@ namespace meta_hpp::detail
             return ptr;
         }
 
-        void* base_ptr = nullptr;
+        const class_type_data& from_data = *type_access(from);
 
-        class_type_data& from_data = *type_access(from);
-        class_type_data::deep_upcasts_t& deep_upcasts = from_data.deep_upcasts;
-
-        for ( auto iter{deep_upcasts.lower_bound(to)}; iter != deep_upcasts.end() && iter->first == to; ++iter ) {
-            if ( void* new_base_ptr{iter->second.apply(ptr)}; base_ptr == nullptr ) {
-                base_ptr = new_base_ptr;
-            } else if ( base_ptr != new_base_ptr ) {
-                // ambiguous conversions
-                return nullptr;
-            }
+        if ( auto iter{from_data.deep_upcasts.find(to)}; iter != from_data.deep_upcasts.end() ) {
+            return iter->second.apply(ptr);
         }
 
-        return base_ptr;
+        return nullptr;
     }
 
-    [[nodiscard]] inline const void* pointer_upcast(const void* ptr, const class_type& from, const class_type& to) {
+    [[nodiscard]] inline const void* unchecked_pointer_upcast(const void* ptr, const class_type& from, const class_type& to) {
         // NOLINTNEXTLINE(*-const-cast)
-        return pointer_upcast(const_cast<void*>(ptr), from, to);
+        return unchecked_pointer_upcast(const_cast<void*>(ptr), from, to);
     }
 }
 
 namespace meta_hpp::detail
 {
-    [[nodiscard]] inline void* pointer_upcast(void* ptr, const any_type& from, const any_type& to) {
+    [[nodiscard]] inline void* unchecked_pointer_upcast(void* ptr, const any_type& from, const any_type& to) {
         if ( nullptr == ptr || !from || !to ) {
             return nullptr;
         }
@@ -162,7 +165,7 @@ namespace meta_hpp::detail
         const class_type& from_class = from.as_class();
 
         if ( to_class && from_class ) {
-            if ( void* base_ptr = pointer_upcast(ptr, from_class, to_class) ) {
+            if ( void* base_ptr = unchecked_pointer_upcast(ptr, from_class, to_class) ) {
                 return base_ptr;
             }
         }
@@ -170,17 +173,17 @@ namespace meta_hpp::detail
         return nullptr;
     }
 
-    [[nodiscard]] inline const void* pointer_upcast(const void* ptr, const any_type& from, const any_type& to) {
+    [[nodiscard]] inline const void* unchecked_pointer_upcast(const void* ptr, const any_type& from, const any_type& to) {
         // NOLINTNEXTLINE(*-const-cast)
-        return pointer_upcast(const_cast<void*>(ptr), from, to);
+        return unchecked_pointer_upcast(const_cast<void*>(ptr), from, to);
     }
 }
 
 namespace meta_hpp::detail
 {
     template < typename To, typename From >
-    [[nodiscard]] To* pointer_upcast(type_registry& registry, From* ptr) {
-        return static_cast<To*>(pointer_upcast( //
+    [[nodiscard]] To* unchecked_pointer_upcast(type_registry& registry, From* ptr) {
+        return static_cast<To*>(unchecked_pointer_upcast( //
             ptr,
             registry.resolve_type<From>(),
             registry.resolve_type<To>()
@@ -188,8 +191,8 @@ namespace meta_hpp::detail
     }
 
     template < typename To, typename From >
-    [[nodiscard]] const To* pointer_upcast(type_registry& registry, const From* ptr) {
-        return static_cast<const To*>(pointer_upcast( //
+    [[nodiscard]] const To* unchecked_pointer_upcast(type_registry& registry, const From* ptr) {
+        return static_cast<const To*>(unchecked_pointer_upcast( //
             ptr,
             registry.resolve_type<From>(),
             registry.resolve_type<To>()
