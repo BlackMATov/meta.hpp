@@ -419,9 +419,11 @@ namespace meta_hpp::detail
         variable_set variables;
 
         struct upcast_func_t final {
-            void* (*upcast)(void*){};
-            bool is_virtual_upcast{};
-            class_type target_class{};
+            using upcast_t = void* (*)(void*);
+
+            upcast_t upcast{};
+            class_type target{};
+            bool is_virtual{};
 
             template < typename Derived, typename Base >
                 requires std::is_base_of_v<Base, Derived>
@@ -432,11 +434,14 @@ namespace meta_hpp::detail
         };
 
         struct upcast_func_list_t final {
-            class_set vbases;
-            std::vector<upcast_func_t> upcasts;
+            using upcasts_t = std::vector<upcast_func_t>;
+
+            upcasts_t upcasts{};
+            class_set vbases{};
+            bool is_ambiguous{};
 
             upcast_func_list_t(const upcast_func_t& _upcast);
-            upcast_func_list_t(class_set _vbases, std::vector<upcast_func_t> _upcasts);
+            upcast_func_list_t(upcasts_t _upcasts, class_set _vbases);
 
             [[nodiscard]] void* apply(void* ptr) const noexcept;
             [[nodiscard]] const void* apply(const void* ptr) const noexcept;
@@ -445,7 +450,7 @@ namespace meta_hpp::detail
         };
 
         using base_upcasts_t = std::map<class_type, upcast_func_t, std::less<>>;
-        using deep_upcasts_t = std::multimap<class_type, upcast_func_list_t, std::less<>>;
+        using deep_upcasts_t = std::map<class_type, upcast_func_list_t, std::less<>>;
 
         base_upcasts_t base_upcasts;
         deep_upcasts_t deep_upcasts;

@@ -5,7 +5,8 @@ target_compile_options(${PROJECT_NAME}.setup_targets INTERFACE
     $<$<CXX_COMPILER_ID:MSVC>:
         /WX /W4 /bigobj>
     $<$<CXX_COMPILER_ID:GNU>:
-        -Werror -Wall -Wextra -Wpedantic>
+        -Werror -Wall -Wextra -Wpedantic
+        -Wno-inaccessible-base>
     $<$<OR:$<CXX_COMPILER_ID:Clang>,$<CXX_COMPILER_ID:AppleClang>>:
         -Werror -Weverything -Wconversion
         -Wno-c++98-compat

@@ -258,7 +258,7 @@ namespace meta_hpp::detail
         if ( from_type.is_array() ) {
             const array_type& from_type_array = from_type.as_array();
 
-            void* to_ptr = unchecked_pointer_upcast( //
+            void* to_ptr = pointer_upcast( //
                 data_,
                 from_type_array.get_data_type(),
                 to_type_ptr.get_data_type()
@@ -271,7 +271,7 @@ namespace meta_hpp::detail
         if ( from_type.is_pointer() ) {
             const pointer_type& from_type_ptr = from_type.as_pointer();
 
-            void* to_ptr = unchecked_pointer_upcast( //
+            void* to_ptr = pointer_upcast( //
                 *static_cast<void**>(data_),
                 from_type_ptr.get_data_type(),
                 to_type_ptr.get_data_type()
@@ -299,7 +299,7 @@ namespace meta_hpp::detail
         const any_type& from_type = get_raw_type();
         const any_type& to_type = registry.resolve_type<to_raw_type>();
 
-        void* to_ptr = unchecked_pointer_upcast(data_, from_type, to_type);
+        void* to_ptr = pointer_upcast(data_, from_type, to_type);
         META_HPP_ASSERT(to_ptr);
 
         if constexpr ( std::is_lvalue_reference_v<To> ) {

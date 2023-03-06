@@ -38,8 +38,8 @@ namespace meta_hpp::detail
         requires std::is_base_of_v<Base, Derived>
     inline class_type_data::upcast_func_t::upcast_func_t(std::in_place_type_t<Derived>, std::in_place_type_t<Base>)
     : upcast{[](void* from) -> void* { return static_cast<Base*>(static_cast<Derived*>(from)); }}
-    , is_virtual_upcast{is_virtual_base_of_v<Base, Derived>}
-    , target_class{resolve_type<Base>()} {}
+    , target{resolve_type<Base>()}
+    , is_virtual{is_virtual_base_of_v<Base, Derived>} {}
 
     inline void* class_type_data::upcast_func_t::apply(void* ptr) const noexcept {
         return upcast(ptr);
@@ -56,15 +56,15 @@ namespace meta_hpp::detail
     inline class_type_data::upcast_func_list_t::upcast_func_list_t(const upcast_func_t& _upcast)
     : upcasts{_upcast} {
         for ( const upcast_func_t& upcast : upcasts ) {
-            if ( upcast.is_virtual_upcast ) {
-                vbases.emplace(upcast.target_class);
+            if ( upcast.is_virtual ) {
+                vbases.emplace(upcast.target);
             }
         }
     }
 
-    inline class_type_data::upcast_func_list_t::upcast_func_list_t(class_set _vbases, std::vector<upcast_func_t> _upcasts)
-    : vbases{std::move(_vbases)}
-    , upcasts{std::move(_upcasts)} {}
+    inline class_type_data::upcast_func_list_t::upcast_func_list_t(upcasts_t _upcasts, class_set _vbases)
+    : upcasts{std::move(_upcasts)}
+    , vbases{std::move(_vbases)} {}
 
     inline void* class_type_data::upcast_func_list_t::apply(void* ptr) const noexcept {
         for ( const upcast_func_t& upcast : upcasts ) {
@@ -82,16 +82,16 @@ namespace meta_hpp::detail
         const class_type_data::upcast_func_list_t& l,
         const class_type_data::upcast_func_list_t& r
     ) {
-        class_set new_vbases;
-        new_vbases.insert(l.vbases.begin(), l.vbases.end());
-        new_vbases.insert(r.vbases.begin(), r.vbases.end());
-
-        std::vector<class_type_data::upcast_func_t> new_upcasts;
+        class_type_data::upcast_func_list_t::upcasts_t new_upcasts;
         new_upcasts.reserve(l.upcasts.size() + r.upcasts.size());
         new_upcasts.insert(new_upcasts.end(), l.upcasts.begin(), l.upcasts.end());
         new_upcasts.insert(new_upcasts.end(), r.upcasts.begin(), r.upcasts.end());
 
-        return class_type_data::upcast_func_list_t{std::move(new_vbases), std::move(new_upcasts)};
+        class_set new_vbases;
+        new_vbases.insert(l.vbases.begin(), l.vbases.end());
+        new_vbases.insert(r.vbases.begin(), r.vbases.end());
+
+        return class_type_data::upcast_func_list_t{std::move(new_upcasts), std::move(new_vbases)};
     }
 }
 
@@ -224,19 +224,14 @@ namespace meta_hpp
             return false;
         }
 
-        const detail::class_type_data& derived_data = *derived.data_;
-        const auto upcasts_range = derived_data.deep_upcasts.equal_range(*this);
+        using deep_upcasts_t = detail::class_type_data::deep_upcasts_t;
+        const deep_upcasts_t& deep_upcasts = derived.data_->deep_upcasts;
 
-        if ( upcasts_range.first == upcasts_range.second ) {
-            return false;
+        if ( auto iter{deep_upcasts.find(*this)}; iter != deep_upcasts.end() ) {
+            return !iter->second.is_ambiguous && !iter->second.vbases.empty();
         }
 
-        const class_set& first_vbases = upcasts_range.first->second.vbases;
-        return std::any_of(first_vbases.begin(), first_vbases.end(), [&upcasts_range](const class_type& vbase) {
-            return std::all_of(std::next(upcasts_range.first), upcasts_range.second, [&vbase](auto&& upcasts_p) {
-                return upcasts_p.second.vbases.contains(vbase);
-            });
-        });
+        return false;
     }
 
     template < detail::class_kind Base >

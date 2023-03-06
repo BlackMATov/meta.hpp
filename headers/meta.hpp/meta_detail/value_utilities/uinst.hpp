@@ -192,7 +192,7 @@ namespace meta_hpp::detail
         const any_type& to_type = registry.resolve_type<inst_class>();
 
         if ( from_type.is_class() && to_type.is_class() ) {
-            void* to_ptr = unchecked_pointer_upcast( //
+            void* to_ptr = pointer_upcast( //
                 data_,
                 from_type.as_class(),
                 to_type.as_class()
@@ -217,7 +217,7 @@ namespace meta_hpp::detail
             const any_type& from_data_type = from_type_ptr.get_data_type();
 
             if ( from_data_type.is_class() && to_type.is_class() ) {
-                void* to_ptr = unchecked_pointer_upcast( //
+                void* to_ptr = pointer_upcast( //
                     *static_cast<void**>(data_),
                     from_data_type.as_class(),
                     to_type.as_class()

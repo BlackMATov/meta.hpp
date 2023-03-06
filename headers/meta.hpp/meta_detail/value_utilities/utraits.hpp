@@ -109,14 +109,8 @@ namespace meta_hpp::detail
             const class_type_data& derived_data = *type_access(derived_class);
             const class_type_data::deep_upcasts_t& deep_upcasts = derived_data.deep_upcasts;
 
-            if ( const auto iter{deep_upcasts.lower_bound(base)}; iter != deep_upcasts.end() && iter->first == base ) {
-                if ( const auto next_iter{std::next(iter)}; next_iter == deep_upcasts.end() || next_iter->first != base ) {
-                    return true;
-                }
-
-                if ( base_class.is_virtual_base_of(derived_class) ) {
-                    return true;
-                }
+            if ( auto iter{deep_upcasts.find(base)}; iter != deep_upcasts.end() && !iter->second.is_ambiguous ) {
+                return true;
             }
         }
 
@@ -126,7 +120,7 @@ namespace meta_hpp::detail
 
 namespace meta_hpp::detail
 {
-    [[nodiscard]] inline void* unchecked_pointer_upcast(void* ptr, const class_type& from, const class_type& to) {
+    [[nodiscard]] inline void* pointer_upcast(void* ptr, const class_type& from, const class_type& to) {
         if ( nullptr == ptr || !from || !to ) {
             return nullptr;
         }
@@ -136,23 +130,24 @@ namespace meta_hpp::detail
         }
 
         const class_type_data& from_data = *type_access(from);
+        const class_type_data::deep_upcasts_t& deep_upcasts = from_data.deep_upcasts;
 
-        if ( auto iter{from_data.deep_upcasts.find(to)}; iter != from_data.deep_upcasts.end() ) {
+        if ( auto iter{deep_upcasts.find(to)}; iter != deep_upcasts.end() && !iter->second.is_ambiguous ) {
             return iter->second.apply(ptr);
         }
 
         return nullptr;
     }
 
-    [[nodiscard]] inline const void* unchecked_pointer_upcast(const void* ptr, const class_type& from, const class_type& to) {
+    [[nodiscard]] inline const void* pointer_upcast(const void* ptr, const class_type& from, const class_type& to) {
         // NOLINTNEXTLINE(*-const-cast)
-        return unchecked_pointer_upcast(const_cast<void*>(ptr), from, to);
+        return pointer_upcast(const_cast<void*>(ptr), from, to);
     }
 }
 
 namespace meta_hpp::detail
 {
-    [[nodiscard]] inline void* unchecked_pointer_upcast(void* ptr, const any_type& from, const any_type& to) {
+    [[nodiscard]] inline void* pointer_upcast(void* ptr, const any_type& from, const any_type& to) {
         if ( nullptr == ptr || !from || !to ) {
             return nullptr;
         }
@@ -165,7 +160,7 @@ namespace meta_hpp::detail
         const class_type& from_class = from.as_class();
 
         if ( to_class && from_class ) {
-            if ( void* base_ptr = unchecked_pointer_upcast(ptr, from_class, to_class) ) {
+            if ( void* base_ptr = pointer_upcast(ptr, from_class, to_class) ) {
                 return base_ptr;
             }
         }
@@ -173,17 +168,17 @@ namespace meta_hpp::detail
         return nullptr;
     }
 
-    [[nodiscard]] inline const void* unchecked_pointer_upcast(const void* ptr, const any_type& from, const any_type& to) {
+    [[nodiscard]] inline const void* pointer_upcast(const void* ptr, const any_type& from, const any_type& to) {
         // NOLINTNEXTLINE(*-const-cast)
-        return unchecked_pointer_upcast(const_cast<void*>(ptr), from, to);
+        return pointer_upcast(const_cast<void*>(ptr), from, to);
     }
 }
 
 namespace meta_hpp::detail
 {
     template < typename To, typename From >
-    [[nodiscard]] To* unchecked_pointer_upcast(type_registry& registry, From* ptr) {
-        return static_cast<To*>(unchecked_pointer_upcast( //
+    [[nodiscard]] To* pointer_upcast(type_registry& registry, From* ptr) {
+        return static_cast<To*>(pointer_upcast( //
             ptr,
             registry.resolve_type<From>(),
             registry.resolve_type<To>()
@@ -191,8 +186,8 @@ namespace meta_hpp::detail
     }
 
     template < typename To, typename From >
-    [[nodiscard]] const To* unchecked_pointer_upcast(type_registry& registry, const From* ptr) {
-        return static_cast<const To*>(unchecked_pointer_upcast( //
+    [[nodiscard]] const To* pointer_upcast(type_registry& registry, const From* ptr) {
+        return static_cast<const To*>(pointer_upcast( //
             ptr,
             registry.resolve_type<From>(),
             registry.resolve_type<To>()
