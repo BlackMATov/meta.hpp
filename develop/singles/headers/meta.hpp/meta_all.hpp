@@ -52,6 +52,12 @@
 #    define META_HPP_ASSERT(...) assert(__VA_ARGS__) // NOLINT
 #endif
 
+#if defined(META_HPP_SANITIZERS)
+#    define META_HPP_DEV_ASSERT(...) META_HPP_ASSERT(__VA_ARGS__)
+#else
+#    define META_HPP_DEV_ASSERT(...) (void)0
+#endif
+
 #if !defined(META_HPP_PP_CAT)
 #    define META_HPP_PP_CAT(x, y) META_HPP_PP_CAT_I(x, y)
 #    define META_HPP_PP_CAT_I(x, y) x##y
@@ -302,42 +308,42 @@ namespace meta_hpp::detail
     using copy_cvref_t = typename copy_cvref<From, To>::type;
 }
 
-namespace meta_hpp::detail::impl
-{
-    template < typename F, typename... Args >
-    class defer_impl {
-    public:
-        defer_impl() = delete;
-        defer_impl(defer_impl&&) = delete;
-        defer_impl(const defer_impl&) = delete;
-        defer_impl& operator=(defer_impl&&) = delete;
-        defer_impl& operator=(const defer_impl&) = delete;
-
-        template < typename UF >
-        explicit defer_impl(UF&& f, std::tuple<Args...>&& args)
-        : f_{std::forward<UF>(f)}
-        , args_{std::move(args)} {}
-
-        void dismiss() noexcept {
-            dismissed_ = true;
-        }
-
-    protected:
-        ~defer_impl() noexcept {
-            if ( !dismissed_ ) {
-                std::apply(std::move(f_), std::move(args_));
-            }
-        }
-
-    private:
-        F f_;
-        std::tuple<Args...> args_;
-        bool dismissed_{};
-    };
-}
-
 namespace meta_hpp::detail
 {
+    namespace impl
+    {
+        template < typename F, typename... Args >
+        class defer_impl {
+        public:
+            defer_impl() = delete;
+            defer_impl(defer_impl&&) = delete;
+            defer_impl(const defer_impl&) = delete;
+            defer_impl& operator=(defer_impl&&) = delete;
+            defer_impl& operator=(const defer_impl&) = delete;
+
+            template < typename UF >
+            explicit defer_impl(UF&& f, std::tuple<Args...>&& args)
+            : f_{std::forward<UF>(f)}
+            , args_{std::move(args)} {}
+
+            void dismiss() noexcept {
+                dismissed_ = true;
+            }
+
+        protected:
+            ~defer_impl() noexcept {
+                if ( !dismissed_ ) {
+                    std::apply(std::move(f_), std::move(args_));
+                }
+            }
+
+        private:
+            F f_;
+            std::tuple<Args...> args_;
+            bool dismissed_{};
+        };
+    }
+
     template < typename F, typename... Args >
     class defer final : public impl::defer_impl<F, Args...> {
     public:
@@ -634,15 +640,15 @@ namespace meta_hpp::detail
 
             static vtable_t table{
                 .call{[](const fixed_function& self, Args... args) -> R {
-                    META_HPP_ASSERT(self);
+                    META_HPP_DEV_ASSERT(self);
 
                     const Fp& src = *buffer_cast<Fp>(self.buffer_);
                     return std::invoke(src, std::forward<Args>(args)...);
                 }},
 
                 .move{[](fixed_function& from, fixed_function& to) noexcept {
-                    META_HPP_ASSERT(!to);
-                    META_HPP_ASSERT(from);
+                    META_HPP_DEV_ASSERT(!to);
+                    META_HPP_DEV_ASSERT(from);
 
                     Fp& src = *buffer_cast<Fp>(from.buffer_);
                     std::construct_at(buffer_cast<Fp>(to.buffer_), std::move(src));
@@ -653,7 +659,7 @@ namespace meta_hpp::detail
                 }},
 
                 .destroy{[](fixed_function& self) {
-                    META_HPP_ASSERT(self);
+                    META_HPP_DEV_ASSERT(self);
 
                     Fp& src = *buffer_cast<Fp>(self.buffer_);
                     std::destroy_at(&src);
@@ -666,7 +672,7 @@ namespace meta_hpp::detail
 
         template < typename F, typename Fp = std::decay_t<F> >
         static void construct(fixed_function& dst, F&& fun) {
-            META_HPP_ASSERT(!dst);
+            META_HPP_DEV_ASSERT(!dst);
 
             static_assert(sizeof(Fp) <= sizeof(buffer_t));
             static_assert(alignof(buffer_t) % alignof(Fp) == 0);
@@ -1164,6 +1170,32 @@ namespace std
 
 namespace meta_hpp::detail
 {
+    template < typename SortedContainerL, typename SortedContainerR, typename Compare >
+    bool is_disjoint(const SortedContainerL& l, const SortedContainerR& r, Compare compare) {
+        using std::begin;
+        using std::end;
+
+        for ( auto iter_l{begin(l)}, iter_r{begin(r)}; iter_l != end(l) && iter_r != end(r); ) {
+            if ( compare(*iter_l, *iter_r) ) {
+                ++iter_l;
+            } else if ( compare(*iter_r, *iter_l) ) {
+                ++iter_r;
+            } else {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    template < typename SortedContainerL, typename SortedContainerR >
+    bool is_disjoint(const SortedContainerL& l, const SortedContainerR& r) {
+        return is_disjoint(l, r, std::less<>{});
+    }
+}
+
+namespace meta_hpp::detail
+{
     template < typename T >
     struct is_in_place_type : std::false_type {};
 
@@ -1172,6 +1204,38 @@ namespace meta_hpp::detail
 
     template < typename T >
     inline constexpr bool is_in_place_type_v = is_in_place_type<T>::value;
+}
+
+namespace meta_hpp::detail
+{
+    namespace impl
+    {
+        template < typename From, typename To >
+        constexpr bool is_virtual_base_of_impl(...) noexcept {
+            return false;
+        }
+
+        template <
+            typename From,
+            typename To,
+            decltype(static_cast<const volatile To*>(std::declval<const volatile From*>())) = nullptr >
+        constexpr bool is_virtual_base_of_impl(int) noexcept {
+            return true;
+        }
+    }
+
+    // clang-format off
+
+    template < typename Base, typename Derived >
+    struct is_virtual_base_of : std::integral_constant<bool,
+          std::is_base_of_v<Base, Derived> &&
+          impl::is_virtual_base_of_impl<Derived, Base>(0) &&
+          !impl::is_virtual_base_of_impl<Base, Derived>(0)> {};
+
+    // clang-format on
+
+    template < typename Base, typename Derived >
+    inline constexpr bool is_virtual_base_of_v = is_virtual_base_of<Base, Derived>::value;
 }
 
 namespace meta_hpp::detail
@@ -1813,7 +1877,7 @@ namespace meta_hpp::detail
     namespace impl
     {
         template < class_kind Class >
-        struct class_traits_base {
+        struct class_traits_impl {
             static constexpr std::size_t arity{0};
 
             using argument_types = type_list<>;
@@ -1824,7 +1888,7 @@ namespace meta_hpp::detail
         };
 
         template < template < typename... > typename Class, typename... Args >
-        struct class_traits_base<Class<Args...>> {
+        struct class_traits_impl<Class<Args...>> {
             static constexpr std::size_t arity{sizeof...(Args)};
 
             using argument_types = type_list<Args...>;
@@ -1836,7 +1900,7 @@ namespace meta_hpp::detail
     }
 
     template < class_kind Class >
-    struct class_traits : impl::class_traits_base<Class> {
+    struct class_traits : impl::class_traits_impl<Class> {
         static constexpr std::size_t size{sizeof(Class)};
         static constexpr std::size_t align{alignof(Class)};
 
@@ -1859,7 +1923,7 @@ namespace meta_hpp::detail
                 flags.set(class_flags::is_polymorphic);
             }
 
-            return flags | impl::class_traits_base<Class>::make_flags();
+            return flags | impl::class_traits_impl<Class>::make_flags();
         }
     };
 }
@@ -2532,9 +2596,25 @@ namespace meta_hpp
         [[nodiscard]] bool is_base_of() const noexcept;
         [[nodiscard]] bool is_base_of(const class_type& derived) const noexcept;
 
+        template < detail::class_kind Derived >
+        [[nodiscard]] bool is_direct_base_of() const noexcept;
+        [[nodiscard]] bool is_direct_base_of(const class_type& derived) const noexcept;
+
+        template < detail::class_kind Derived >
+        [[nodiscard]] bool is_virtual_base_of() const noexcept;
+        [[nodiscard]] bool is_virtual_base_of(const class_type& derived) const noexcept;
+
         template < detail::class_kind Base >
         [[nodiscard]] bool is_derived_from() const noexcept;
         [[nodiscard]] bool is_derived_from(const class_type& base) const noexcept;
+
+        template < detail::class_kind Base >
+        [[nodiscard]] bool is_direct_derived_from() const noexcept;
+        [[nodiscard]] bool is_direct_derived_from(const class_type& base) const noexcept;
+
+        template < detail::class_kind Base >
+        [[nodiscard]] bool is_virtual_derived_from() const noexcept;
+        [[nodiscard]] bool is_virtual_derived_from(const class_type& base) const noexcept;
 
         [[nodiscard]] function get_function(std::string_view name) const noexcept;
         [[nodiscard]] member get_member(std::string_view name) const noexcept;
@@ -2754,11 +2834,39 @@ namespace meta_hpp::detail
         typedef_map typedefs;
         variable_set variables;
 
-        using upcast_func_t = void* (*)(void*);
-        using upcast_func_list_t = std::vector<upcast_func_t>;
+        struct upcast_func_t final {
+            using upcast_t = void* (*)(void*);
+
+            upcast_t upcast{};
+            class_type target{};
+            bool is_virtual{};
+
+            template < typename Derived, typename Base >
+                requires std::is_base_of_v<Base, Derived>
+            upcast_func_t(std::in_place_type_t<Derived>, std::in_place_type_t<Base>);
+
+            [[nodiscard]] void* apply(void* ptr) const noexcept;
+            [[nodiscard]] const void* apply(const void* ptr) const noexcept;
+        };
+
+        struct upcast_func_list_t final {
+            using upcasts_t = std::vector<upcast_func_t>;
+
+            upcasts_t upcasts{};
+            class_set vbases{};
+            bool is_ambiguous{};
+
+            upcast_func_list_t(const upcast_func_t& _upcast);
+            upcast_func_list_t(upcasts_t _upcasts, class_set _vbases);
+
+            [[nodiscard]] void* apply(void* ptr) const noexcept;
+            [[nodiscard]] const void* apply(const void* ptr) const noexcept;
+
+            friend upcast_func_list_t operator+(const upcast_func_list_t& l, const upcast_func_list_t& r);
+        };
 
         using base_upcasts_t = std::map<class_type, upcast_func_t, std::less<>>;
-        using deep_upcasts_t = std::multimap<class_type, upcast_func_list_t, std::less<>>;
+        using deep_upcasts_t = std::map<class_type, upcast_func_list_t, std::less<>>;
 
         base_upcasts_t base_upcasts;
         deep_upcasts_t deep_upcasts;
@@ -4803,19 +4911,20 @@ namespace meta_hpp::detail::class_bind_impl
     using derived_classes_db_t = std::map<class_type, class_set, std::less<>>;
 
     template < class_kind Class, class_kind Base >
-        requires detail::class_bind_base_kind<Class, Base>
+        requires std::is_base_of_v<Base, Class>
     void update_new_bases_db( //
         new_bases_db_t& new_bases_db
     ) {
-        new_bases_db.emplace(resolve_type<Base>(), [](void* from) {
-            return static_cast<void*>(static_cast<Base*>(static_cast<Class*>(from)));
-        });
+        new_bases_db.try_emplace( //
+            resolve_type<Base>(),
+            std::in_place_type<Class>,
+            std::in_place_type<Base>);
     }
 
     inline void update_deep_upcasts_db( //
         const class_type& derived_class,
         const class_type& new_base_class,
-        const upcast_func_list_t& derived_to_new_base,
+        upcast_func_list_t&& derived_to_new_base,
         deep_upcasts_db_t& deep_upcasts_db
     ) {
         const class_type_data& derived_class_data = *type_access(derived_class);
@@ -4823,26 +4932,27 @@ namespace meta_hpp::detail::class_bind_impl
 
         const auto [deep_upcasts_db_iter, _] = deep_upcasts_db.try_emplace(derived_class, derived_class_data.deep_upcasts);
         deep_upcasts_t& derived_deep_upcasts = deep_upcasts_db_iter->second;
-        derived_deep_upcasts.emplace(new_base_class, derived_to_new_base);
+
+        const auto add_derived_deep_upcast = [&derived_deep_upcasts](const class_type& deep_class, upcast_func_list_t&& upcasts) {
+            auto&& [position, emplaced] = derived_deep_upcasts.try_emplace(deep_class, std::move(upcasts));
+            if ( !emplaced ) {
+                position->second.is_ambiguous = is_disjoint(position->second.vbases, upcasts.vbases);
+            }
+        };
 
         for ( auto&& [new_deep_class, new_base_to_deep] : new_base_class_data.deep_upcasts ) {
-            upcast_func_list_t derived_to_new_deep;
-            derived_to_new_deep.reserve(derived_to_new_base.size() + new_base_to_deep.size());
-            derived_to_new_deep.insert(derived_to_new_deep.end(), derived_to_new_base.begin(), derived_to_new_base.end());
-            derived_to_new_deep.insert(derived_to_new_deep.end(), new_base_to_deep.begin(), new_base_to_deep.end());
-            derived_deep_upcasts.emplace(new_deep_class, std::move(derived_to_new_deep));
+            upcast_func_list_t derived_to_new_deep = derived_to_new_base + new_base_to_deep;
+            add_derived_deep_upcast(new_deep_class, std::move(derived_to_new_deep));
         }
 
         for ( const class_type& subderived_class : derived_class_data.derived_classes ) {
             const class_type_data& subderived_data = *type_access(subderived_class);
-
-            upcast_func_list_t subderived_to_new_base;
-            subderived_to_new_base.reserve(derived_to_new_base.size() + 1);
-            subderived_to_new_base.insert(subderived_to_new_base.end(), subderived_data.base_upcasts.at(derived_class));
-            subderived_to_new_base.insert(subderived_to_new_base.end(), derived_to_new_base.begin(), derived_to_new_base.end());
-
-            update_deep_upcasts_db(subderived_class, new_base_class, subderived_to_new_base, deep_upcasts_db);
+            upcast_func_t subderived_to_derived = subderived_data.base_upcasts.at(derived_class);
+            upcast_func_list_t subderived_to_new_base = subderived_to_derived + derived_to_new_base;
+            update_deep_upcasts_db(subderived_class, new_base_class, std::move(subderived_to_new_base), deep_upcasts_db);
         }
+
+        add_derived_deep_upcast(new_base_class, std::move(derived_to_new_base));
     }
 
     inline void updata_derived_classes_db( //
@@ -4896,7 +5006,7 @@ namespace meta_hpp
                 continue;
             }
 
-            update_deep_upcasts_db(*this, new_base_class, {self_to_new_base}, deep_upcasts_db);
+            update_deep_upcasts_db(*this, new_base_class, self_to_new_base, deep_upcasts_db);
             updata_derived_classes_db(*this, new_base_class, derived_classes_db);
 
             new_base_classes.emplace(new_base_class);
@@ -5670,8 +5780,13 @@ namespace meta_hpp::detail
         const class_type& base_class = base.as_class();
         const class_type& derived_class = derived.as_class();
 
-        if ( base_class && derived_class && base_class.is_base_of(derived_class) ) {
-            return true;
+        if ( base_class && derived_class ) {
+            const class_type_data& derived_data = *type_access(derived_class);
+            const class_type_data::deep_upcasts_t& deep_upcasts = derived_data.deep_upcasts;
+
+            if ( auto iter{deep_upcasts.find(base)}; iter != deep_upcasts.end() && !iter->second.is_ambiguous ) {
+                return true;
+            }
         }
 
         return false;
@@ -5689,28 +5804,14 @@ namespace meta_hpp::detail
             return ptr;
         }
 
-        void* base_ptr = nullptr;
+        const class_type_data& from_data = *type_access(from);
+        const class_type_data::deep_upcasts_t& deep_upcasts = from_data.deep_upcasts;
 
-        class_type_data& from_data = *type_access(from);
-        class_type_data::deep_upcasts_t& deep_upcasts = from_data.deep_upcasts;
-
-        for ( auto iter{deep_upcasts.lower_bound(to)}; iter != deep_upcasts.end() && iter->first == to; ++iter ) {
-            void* new_base_ptr = [ptr, iter]() mutable {
-                for ( class_type_data::upcast_func_t upcast : iter->second ) {
-                    ptr = upcast(ptr);
-                }
-                return ptr;
-            }();
-
-            if ( base_ptr == nullptr ) {
-                base_ptr = new_base_ptr;
-            } else if ( base_ptr != new_base_ptr ) {
-                // ambiguous conversions
-                return nullptr;
-            }
+        if ( auto iter{deep_upcasts.find(to)}; iter != deep_upcasts.end() && !iter->second.is_ambiguous ) {
+            return iter->second.apply(ptr);
         }
 
-        return base_ptr;
+        return nullptr;
     }
 
     [[nodiscard]] inline const void* pointer_upcast(const void* ptr, const class_type& from, const class_type& to) {
@@ -6000,7 +6101,7 @@ namespace meta_hpp::detail
 {
     template < pointer_kind To >
     [[nodiscard]] decltype(auto) uarg::cast(type_registry& registry) const {
-        META_HPP_ASSERT(can_cast_to<To>(registry) && "bad argument cast");
+        META_HPP_DEV_ASSERT(can_cast_to<To>(registry) && "bad argument cast");
 
         using to_raw_type = std::remove_cv_t<To>;
 
@@ -6014,21 +6115,27 @@ namespace meta_hpp::detail
         if ( from_type.is_array() ) {
             const array_type& from_type_array = from_type.as_array();
 
-            return static_cast<To>(pointer_upcast( //
+            void* to_ptr = pointer_upcast( //
                 data_,
                 from_type_array.get_data_type(),
                 to_type_ptr.get_data_type()
-            ));
+            );
+            META_HPP_ASSERT(to_ptr);
+
+            return static_cast<To>(to_ptr);
         }
 
         if ( from_type.is_pointer() ) {
             const pointer_type& from_type_ptr = from_type.as_pointer();
 
-            return static_cast<To>(pointer_upcast( //
+            void* to_ptr = pointer_upcast( //
                 *static_cast<void**>(data_),
                 from_type_ptr.get_data_type(),
                 to_type_ptr.get_data_type()
-            ));
+            );
+            META_HPP_ASSERT(to_ptr);
+
+            return static_cast<To>(to_ptr);
         }
 
         throw_exception(error_code::bad_argument_cast);
@@ -6036,7 +6143,7 @@ namespace meta_hpp::detail
 
     template < non_pointer_kind To >
     [[nodiscard]] decltype(auto) uarg::cast(type_registry& registry) const {
-        META_HPP_ASSERT(can_cast_to<To>(registry) && "bad argument cast");
+        META_HPP_DEV_ASSERT(can_cast_to<To>(registry) && "bad argument cast");
 
         using to_raw_type_cv = std::remove_reference_t<To>;
         using to_raw_type = std::remove_cv_t<to_raw_type_cv>;
@@ -6050,6 +6157,7 @@ namespace meta_hpp::detail
         const any_type& to_type = registry.resolve_type<to_raw_type>();
 
         void* to_ptr = pointer_upcast(data_, from_type, to_type);
+        META_HPP_ASSERT(to_ptr);
 
         if constexpr ( std::is_lvalue_reference_v<To> ) {
             return *static_cast<to_raw_type_cv*>(to_ptr);
@@ -6089,18 +6197,11 @@ namespace meta_hpp::detail
 
 namespace meta_hpp::detail
 {
-    template < typename ArgTypeList, typename F >
-    auto call_with_uargs(type_registry& registry, std::span<const uarg> args, F&& f) {
-        META_HPP_ASSERT(args.size() == type_list_arity_v<ArgTypeList>);
-        return [ args, &registry, &f ]<std::size_t... Is>(std::index_sequence<Is...>) {
-            return f(args[Is].cast<type_list_at_t<Is, ArgTypeList>>(registry)...);
-        }
-        (std::make_index_sequence<type_list_arity_v<ArgTypeList>>());
-    }
-
     template < typename ArgTypeList >
     bool can_cast_all_uargs(type_registry& registry, std::span<const uarg> args) {
-        META_HPP_ASSERT(args.size() == type_list_arity_v<ArgTypeList>);
+        if ( args.size() != type_list_arity_v<ArgTypeList> ) {
+            return false;
+        }
         return [ args, &registry ]<std::size_t... Is>(std::index_sequence<Is...>) {
             return (... && args[Is].can_cast_to<type_list_at_t<Is, ArgTypeList>>(registry));
         }
@@ -6109,9 +6210,20 @@ namespace meta_hpp::detail
 
     template < typename ArgTypeList >
     bool can_cast_all_uargs(type_registry& registry, std::span<const uarg_base> args) {
-        META_HPP_ASSERT(args.size() == type_list_arity_v<ArgTypeList>);
+        if ( args.size() != type_list_arity_v<ArgTypeList> ) {
+            return false;
+        }
         return [ args, &registry ]<std::size_t... Is>(std::index_sequence<Is...>) {
             return (... && args[Is].can_cast_to<type_list_at_t<Is, ArgTypeList>>(registry));
+        }
+        (std::make_index_sequence<type_list_arity_v<ArgTypeList>>());
+    }
+
+    template < typename ArgTypeList, typename F >
+    auto unchecked_call_with_uargs(type_registry& registry, std::span<const uarg> args, F&& f) {
+        META_HPP_DEV_ASSERT(args.size() == type_list_arity_v<ArgTypeList>);
+        return [ args, &registry, &f ]<std::size_t... Is>(std::index_sequence<Is...>) {
+            return f(args[Is].cast<type_list_at_t<Is, ArgTypeList>>(registry)...);
         }
         (std::make_index_sequence<type_list_arity_v<ArgTypeList>>());
     }
@@ -6185,7 +6297,7 @@ namespace meta_hpp::detail
             && "an attempt to call a function with incorrect argument types"
         );
 
-        return call_with_uargs<argument_types>(registry, args, [function_ptr](auto&&... all_args) {
+        return unchecked_call_with_uargs<argument_types>(registry, args, [function_ptr](auto&&... all_args) {
             if constexpr ( std::is_void_v<return_type> ) {
                 function_ptr(META_HPP_FWD(all_args)...);
                 return uvalue{};
@@ -6503,7 +6615,7 @@ namespace meta_hpp::detail
 {
     template < inst_class_ref_kind Q >
     decltype(auto) uinst::cast(type_registry& registry) const {
-        META_HPP_ASSERT(can_cast_to<Q>(registry) && "bad instance cast");
+        META_HPP_DEV_ASSERT(can_cast_to<Q>(registry) && "bad instance cast");
 
         using inst_class_cv = std::remove_reference_t<Q>;
         using inst_class = std::remove_cv_t<inst_class_cv>;
@@ -6512,10 +6624,12 @@ namespace meta_hpp::detail
         const any_type& to_type = registry.resolve_type<inst_class>();
 
         if ( from_type.is_class() && to_type.is_class() ) {
-            const class_type& from_class = from_type.as_class();
-            const class_type& to_class = to_type.as_class();
-
-            void* to_ptr = pointer_upcast(data_, from_class, to_class);
+            void* to_ptr = pointer_upcast( //
+                data_,
+                from_type.as_class(),
+                to_type.as_class()
+            );
+            META_HPP_ASSERT(to_ptr);
 
             if constexpr ( !std::is_reference_v<Q> ) {
                 return *static_cast<inst_class_cv*>(to_ptr);
@@ -6535,11 +6649,12 @@ namespace meta_hpp::detail
             const any_type& from_data_type = from_type_ptr.get_data_type();
 
             if ( from_data_type.is_class() && to_type.is_class() ) {
-                const class_type& from_data_class = from_data_type.as_class();
-                const class_type& to_class = to_type.as_class();
-
-                void** from_data_ptr = static_cast<void**>(data_);
-                void* to_ptr = pointer_upcast(*from_data_ptr, from_data_class, to_class);
+                void* to_ptr = pointer_upcast( //
+                    *static_cast<void**>(data_),
+                    from_data_type.as_class(),
+                    to_type.as_class()
+                );
+                META_HPP_ASSERT(to_ptr);
 
                 if constexpr ( !std::is_reference_v<Q> ) {
                     return *static_cast<inst_class_cv*>(to_ptr);
@@ -6961,7 +7076,7 @@ namespace meta_hpp::detail
             && "an attempt to call a method with incorrect argument types"
         );
 
-        return call_with_uargs<argument_types>(registry, args, [method_ptr, &inst, &registry](auto&&... all_args) {
+        return unchecked_call_with_uargs<argument_types>(registry, args, [method_ptr, &inst, &registry](auto&&... all_args) {
             if constexpr ( std::is_void_v<return_type> ) {
                 (inst.cast<qualified_type>(registry).*method_ptr)(META_HPP_FWD(all_args)...);
                 return uvalue{};
@@ -7126,10 +7241,31 @@ namespace meta_hpp
         return function.invoke(std::forward<Args>(args)...);
     }
 
+    template < typename... Args >
+    uresult try_invoke(const function& function, Args&&... args) {
+        return function.try_invoke(std::forward<Args>(args)...);
+    }
+
     template < detail::function_pointer_kind Function, typename... Args >
     uvalue invoke(Function function_ptr, Args&&... args) {
         using namespace detail;
         type_registry& registry{type_registry::instance()};
+        const std::array<uarg, sizeof...(Args)> vargs{uarg{registry, std::forward<Args>(args)}...};
+        return raw_function_invoke<function_policy::as_copy_t>(registry, function_ptr, vargs);
+    }
+
+    template < detail::function_pointer_kind Function, typename... Args >
+    uresult try_invoke(Function function_ptr, Args&&... args) {
+        using namespace detail;
+        type_registry& registry{type_registry::instance()};
+
+        {
+            const std::array<uarg_base, sizeof...(Args)> vargs{uarg_base{registry, std::forward<Args>(args)}...};
+            if ( const uerror err = raw_function_invoke_error<Function>(registry, vargs) ) {
+                return err;
+            }
+        }
+
         const std::array<uarg, sizeof...(Args)> vargs{uarg{registry, std::forward<Args>(args)}...};
         return raw_function_invoke<function_policy::as_copy_t>(registry, function_ptr, vargs);
     }
@@ -7142,10 +7278,31 @@ namespace meta_hpp
         return member.get(std::forward<Instance>(instance));
     }
 
+    template < typename Instance >
+    uresult try_invoke(const member& member, Instance&& instance) {
+        return member.try_get(std::forward<Instance>(instance));
+    }
+
     template < detail::member_pointer_kind Member, typename Instance >
     uvalue invoke(Member member_ptr, Instance&& instance) {
         using namespace detail;
         type_registry& registry{type_registry::instance()};
+        const uinst vinst{registry, std::forward<Instance>(instance)};
+        return raw_member_getter<member_policy::as_copy_t>(registry, member_ptr, vinst);
+    }
+
+    template < detail::member_pointer_kind Member, typename Instance >
+    uresult try_invoke(Member member_ptr, Instance&& instance) {
+        using namespace detail;
+        type_registry& registry{type_registry::instance()};
+
+        {
+            const uinst_base vinst{registry, std::forward<Instance>(instance)};
+            if ( const uerror err = raw_member_getter_error<Member>(registry, vinst) ) {
+                return err;
+            }
+        }
+
         const uinst vinst{registry, std::forward<Instance>(instance)};
         return raw_member_getter<member_policy::as_copy_t>(registry, member_ptr, vinst);
     }
@@ -7158,10 +7315,33 @@ namespace meta_hpp
         return method.invoke(std::forward<Instance>(instance), std::forward<Args>(args)...);
     }
 
+    template < typename Instance, typename... Args >
+    uresult try_invoke(const method& method, Instance&& instance, Args&&... args) {
+        return method.try_invoke(std::forward<Instance>(instance), std::forward<Args>(args)...);
+    }
+
     template < detail::method_pointer_kind Method, typename Instance, typename... Args >
     uvalue invoke(Method method_ptr, Instance&& instance, Args&&... args) {
         using namespace detail;
         type_registry& registry{type_registry::instance()};
+        const uinst vinst{registry, std::forward<Instance>(instance)};
+        const std::array<uarg, sizeof...(Args)> vargs{uarg{registry, std::forward<Args>(args)}...};
+        return raw_method_invoke<method_policy::as_copy_t>(registry, method_ptr, vinst, vargs);
+    }
+
+    template < detail::method_pointer_kind Method, typename Instance, typename... Args >
+    uresult try_invoke(Method method_ptr, Instance&& instance, Args&&... args) {
+        using namespace detail;
+        type_registry& registry{type_registry::instance()};
+
+        {
+            const uinst_base vinst{registry, std::forward<Instance>(instance)};
+            const std::array<uarg_base, sizeof...(Args)> vargs{uarg_base{registry, std::forward<Args>(args)}...};
+            if ( const uerror err = raw_method_invoke_error<Method>(registry, vinst, vargs) ) {
+                return err;
+            }
+        }
+
         const uinst vinst{registry, std::forward<Instance>(instance)};
         const std::array<uarg, sizeof...(Args)> vargs{uarg{registry, std::forward<Args>(args)}...};
         return raw_method_invoke<method_policy::as_copy_t>(registry, method_ptr, vinst, vargs);
@@ -7352,7 +7532,7 @@ namespace meta_hpp::detail
             && "an attempt to call a constructor with incorrect argument types"
         );
 
-        return call_with_uargs<argument_types>(registry, args, [](auto&&... all_args) -> uvalue {
+        return unchecked_call_with_uargs<argument_types>(registry, args, [](auto&&... all_args) -> uvalue {
             if constexpr ( as_object ) {
                 return make_uvalue<class_type>(META_HPP_FWD(all_args)...);
             }
@@ -7383,7 +7563,7 @@ namespace meta_hpp::detail
             && "an attempt to call a constructor with incorrect argument types"
         );
 
-        return call_with_uargs<argument_types>(registry, args, [mem](auto&&... all_args) {
+        return unchecked_call_with_uargs<argument_types>(registry, args, [mem](auto&&... all_args) {
             return std::construct_at(static_cast<class_type*>(mem), META_HPP_FWD(all_args)...);
         });
     }
@@ -8009,6 +8189,69 @@ namespace meta_hpp::detail
     , argument_types{resolve_types(typename class_traits<Class>::argument_types{})} {}
 }
 
+namespace meta_hpp::detail
+{
+    template < typename Derived, typename Base >
+        requires std::is_base_of_v<Base, Derived>
+    inline class_type_data::upcast_func_t::upcast_func_t(std::in_place_type_t<Derived>, std::in_place_type_t<Base>)
+    : upcast{[](void* from) -> void* { return static_cast<Base*>(static_cast<Derived*>(from)); }}
+    , target{resolve_type<Base>()}
+    , is_virtual{is_virtual_base_of_v<Base, Derived>} {}
+
+    inline void* class_type_data::upcast_func_t::apply(void* ptr) const noexcept {
+        return upcast(ptr);
+    }
+
+    inline const void* class_type_data::upcast_func_t::apply(const void* ptr) const noexcept {
+        // NOLINTNEXTLINE(*-const-cast)
+        return apply(const_cast<void*>(ptr));
+    }
+}
+
+namespace meta_hpp::detail
+{
+    inline class_type_data::upcast_func_list_t::upcast_func_list_t(const upcast_func_t& _upcast)
+    : upcasts{_upcast} {
+        for ( const upcast_func_t& upcast : upcasts ) {
+            if ( upcast.is_virtual ) {
+                vbases.emplace(upcast.target);
+            }
+        }
+    }
+
+    inline class_type_data::upcast_func_list_t::upcast_func_list_t(upcasts_t _upcasts, class_set _vbases)
+    : upcasts{std::move(_upcasts)}
+    , vbases{std::move(_vbases)} {}
+
+    inline void* class_type_data::upcast_func_list_t::apply(void* ptr) const noexcept {
+        for ( const upcast_func_t& upcast : upcasts ) {
+            ptr = upcast.apply(ptr);
+        }
+        return ptr;
+    }
+
+    inline const void* class_type_data::upcast_func_list_t::apply(const void* ptr) const noexcept {
+        // NOLINTNEXTLINE(*-const-cast)
+        return apply(const_cast<void*>(ptr));
+    }
+
+    inline class_type_data::upcast_func_list_t operator+( //
+        const class_type_data::upcast_func_list_t& l,
+        const class_type_data::upcast_func_list_t& r
+    ) {
+        class_type_data::upcast_func_list_t::upcasts_t new_upcasts;
+        new_upcasts.reserve(l.upcasts.size() + r.upcasts.size());
+        new_upcasts.insert(new_upcasts.end(), l.upcasts.begin(), l.upcasts.end());
+        new_upcasts.insert(new_upcasts.end(), r.upcasts.begin(), r.upcasts.end());
+
+        class_set new_vbases;
+        new_vbases.insert(l.vbases.begin(), l.vbases.end());
+        new_vbases.insert(r.vbases.begin(), r.vbases.end());
+
+        return class_type_data::upcast_func_list_t{std::move(new_upcasts), std::move(new_vbases)};
+    }
+}
+
 namespace meta_hpp
 {
     inline class_bitflags class_type::get_flags() const noexcept {
@@ -8116,12 +8359,33 @@ namespace meta_hpp
     }
 
     inline bool class_type::is_base_of(const class_type& derived) const noexcept {
+        return is_valid() && derived.is_valid() && derived.data_->deep_upcasts.contains(*this);
+    }
+
+    template < detail::class_kind Derived >
+    bool class_type::is_direct_base_of() const noexcept {
+        return is_direct_base_of(resolve_type<Derived>());
+    }
+
+    inline bool class_type::is_direct_base_of(const class_type& derived) const noexcept {
+        return is_valid() && derived.is_valid() && derived.data_->base_upcasts.contains(*this);
+    }
+
+    template < detail::class_kind Derived >
+    bool class_type::is_virtual_base_of() const noexcept {
+        return is_virtual_base_of(resolve_type<Derived>());
+    }
+
+    inline bool class_type::is_virtual_base_of(const class_type& derived) const noexcept {
         if ( !is_valid() || !derived.is_valid() ) {
             return false;
         }
 
-        if ( derived.data_->deep_upcasts.contains(*this) ) {
-            return true;
+        using deep_upcasts_t = detail::class_type_data::deep_upcasts_t;
+        const deep_upcasts_t& deep_upcasts = derived.data_->deep_upcasts;
+
+        if ( auto iter{deep_upcasts.find(*this)}; iter != deep_upcasts.end() ) {
+            return !iter->second.is_ambiguous && !iter->second.vbases.empty();
         }
 
         return false;
@@ -8133,15 +8397,25 @@ namespace meta_hpp
     }
 
     inline bool class_type::is_derived_from(const class_type& base) const noexcept {
-        if ( !is_valid() || !base.is_valid() ) {
-            return false;
-        }
+        return base.is_base_of(*this);
+    }
 
-        if ( data_->deep_upcasts.contains(base) ) {
-            return true;
-        }
+    template < detail::class_kind Base >
+    bool class_type::is_direct_derived_from() const noexcept {
+        return is_direct_derived_from(resolve_type<Base>());
+    }
 
-        return false;
+    inline bool class_type::is_direct_derived_from(const class_type& base) const noexcept {
+        return base.is_direct_base_of(*this);
+    }
+
+    template < detail::class_kind Base >
+    bool class_type::is_virtual_derived_from() const noexcept {
+        return is_virtual_derived_from(resolve_type<Base>());
+    }
+
+    inline bool class_type::is_virtual_derived_from(const class_type& base) const noexcept {
+        return base.is_virtual_base_of(*this);
     }
 
     inline function class_type::get_function(std::string_view name) const noexcept {
@@ -8870,7 +9144,7 @@ namespace meta_hpp
 
         template < typename T, typename... Args, typename Tp = std::decay_t<T> >
         static Tp& do_ctor(uvalue& dst, Args&&... args) {
-            META_HPP_ASSERT(!dst);
+            META_HPP_DEV_ASSERT(!dst);
 
             if constexpr ( in_internal_v<Tp> ) {
                 std::construct_at(storage_cast<Tp>(dst.storage_), std::forward<Args>(args)...);
@@ -8888,7 +9162,7 @@ namespace meta_hpp
         }
 
         static void do_move(uvalue&& self, uvalue& to) noexcept {
-            META_HPP_ASSERT(!to);
+            META_HPP_DEV_ASSERT(!to);
 
             auto&& [tag, vtable] = unpack_vtag(self);
 
@@ -8907,7 +9181,7 @@ namespace meta_hpp
         }
 
         static void do_copy(const uvalue& self, uvalue& to) noexcept {
-            META_HPP_ASSERT(!to);
+            META_HPP_DEV_ASSERT(!to);
 
             auto&& [tag, vtable] = unpack_vtag(self);
 
@@ -8969,8 +9243,8 @@ namespace meta_hpp
                 .type = resolve_type<Tp>(),
 
                 .move{[](uvalue&& self, uvalue& to) noexcept {
-                    META_HPP_ASSERT(!to);
-                    META_HPP_ASSERT(self);
+                    META_HPP_DEV_ASSERT(!to);
+                    META_HPP_DEV_ASSERT(self);
 
                     Tp* src = storage_cast<Tp>(self.storage_);
 
@@ -8985,8 +9259,8 @@ namespace meta_hpp
                 }},
 
                 .copy{[](const uvalue& self, uvalue& to) {
-                    META_HPP_ASSERT(!to);
-                    META_HPP_ASSERT(self);
+                    META_HPP_DEV_ASSERT(!to);
+                    META_HPP_DEV_ASSERT(self);
 
                     const Tp* src = storage_cast<Tp>(self.storage_);
 
@@ -9000,7 +9274,7 @@ namespace meta_hpp
                 }},
 
                 .reset{[](uvalue& self) noexcept {
-                    META_HPP_ASSERT(self);
+                    META_HPP_DEV_ASSERT(self);
 
                     Tp* src = storage_cast<Tp>(self.storage_);
 

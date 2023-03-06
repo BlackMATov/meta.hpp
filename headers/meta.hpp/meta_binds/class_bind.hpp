@@ -23,19 +23,20 @@ namespace meta_hpp::detail::class_bind_impl
     using derived_classes_db_t = std::map<class_type, class_set, std::less<>>;
 
     template < class_kind Class, class_kind Base >
-        requires detail::class_bind_base_kind<Class, Base>
+        requires std::is_base_of_v<Base, Class>
     void update_new_bases_db( //
         new_bases_db_t& new_bases_db
     ) {
-        new_bases_db.emplace(resolve_type<Base>(), [](void* from) {
-            return static_cast<void*>(static_cast<Base*>(static_cast<Class*>(from)));
-        });
+        new_bases_db.try_emplace( //
+            resolve_type<Base>(),
+            std::in_place_type<Class>,
+            std::in_place_type<Base>);
     }
 
     inline void update_deep_upcasts_db( //
         const class_type& derived_class,
         const class_type& new_base_class,
-        const upcast_func_list_t& derived_to_new_base,
+        upcast_func_list_t&& derived_to_new_base,
         deep_upcasts_db_t& deep_upcasts_db
     ) {
         const class_type_data& derived_class_data = *type_access(derived_class);
@@ -43,26 +44,27 @@ namespace meta_hpp::detail::class_bind_impl
 
         const auto [deep_upcasts_db_iter, _] = deep_upcasts_db.try_emplace(derived_class, derived_class_data.deep_upcasts);
         deep_upcasts_t& derived_deep_upcasts = deep_upcasts_db_iter->second;
-        derived_deep_upcasts.emplace(new_base_class, derived_to_new_base);
+
+        const auto add_derived_deep_upcast = [&derived_deep_upcasts](const class_type& deep_class, upcast_func_list_t&& upcasts) {
+            auto&& [position, emplaced] = derived_deep_upcasts.try_emplace(deep_class, std::move(upcasts));
+            if ( !emplaced ) {
+                position->second.is_ambiguous = is_disjoint(position->second.vbases, upcasts.vbases);
+            }
+        };
 
         for ( auto&& [new_deep_class, new_base_to_deep] : new_base_class_data.deep_upcasts ) {
-            upcast_func_list_t derived_to_new_deep;
-            derived_to_new_deep.reserve(derived_to_new_base.size() + new_base_to_deep.size());
-            derived_to_new_deep.insert(derived_to_new_deep.end(), derived_to_new_base.begin(), derived_to_new_base.end());
-            derived_to_new_deep.insert(derived_to_new_deep.end(), new_base_to_deep.begin(), new_base_to_deep.end());
-            derived_deep_upcasts.emplace(new_deep_class, std::move(derived_to_new_deep));
+            upcast_func_list_t derived_to_new_deep = derived_to_new_base + new_base_to_deep;
+            add_derived_deep_upcast(new_deep_class, std::move(derived_to_new_deep));
         }
 
         for ( const class_type& subderived_class : derived_class_data.derived_classes ) {
             const class_type_data& subderived_data = *type_access(subderived_class);
-
-            upcast_func_list_t subderived_to_new_base;
-            subderived_to_new_base.reserve(derived_to_new_base.size() + 1);
-            subderived_to_new_base.insert(subderived_to_new_base.end(), subderived_data.base_upcasts.at(derived_class));
-            subderived_to_new_base.insert(subderived_to_new_base.end(), derived_to_new_base.begin(), derived_to_new_base.end());
-
-            update_deep_upcasts_db(subderived_class, new_base_class, subderived_to_new_base, deep_upcasts_db);
+            upcast_func_t subderived_to_derived = subderived_data.base_upcasts.at(derived_class);
+            upcast_func_list_t subderived_to_new_base = subderived_to_derived + derived_to_new_base;
+            update_deep_upcasts_db(subderived_class, new_base_class, std::move(subderived_to_new_base), deep_upcasts_db);
         }
+
+        add_derived_deep_upcast(new_base_class, std::move(derived_to_new_base));
     }
 
     inline void updata_derived_classes_db( //
@@ -116,7 +118,7 @@ namespace meta_hpp
                 continue;
             }
 
-            update_deep_upcasts_db(*this, new_base_class, {self_to_new_base}, deep_upcasts_db);
+            update_deep_upcasts_db(*this, new_base_class, self_to_new_base, deep_upcasts_db);
             updata_derived_classes_db(*this, new_base_class, derived_classes_db);
 
             new_base_classes.emplace(new_base_class);

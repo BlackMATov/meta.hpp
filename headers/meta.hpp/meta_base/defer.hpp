@@ -8,42 +8,42 @@
 
 #include "base.hpp"
 
-namespace meta_hpp::detail::impl
-{
-    template < typename F, typename... Args >
-    class defer_impl {
-    public:
-        defer_impl() = delete;
-        defer_impl(defer_impl&&) = delete;
-        defer_impl(const defer_impl&) = delete;
-        defer_impl& operator=(defer_impl&&) = delete;
-        defer_impl& operator=(const defer_impl&) = delete;
-
-        template < typename UF >
-        explicit defer_impl(UF&& f, std::tuple<Args...>&& args)
-        : f_{std::forward<UF>(f)}
-        , args_{std::move(args)} {}
-
-        void dismiss() noexcept {
-            dismissed_ = true;
-        }
-
-    protected:
-        ~defer_impl() noexcept {
-            if ( !dismissed_ ) {
-                std::apply(std::move(f_), std::move(args_));
-            }
-        }
-
-    private:
-        F f_;
-        std::tuple<Args...> args_;
-        bool dismissed_{};
-    };
-}
-
 namespace meta_hpp::detail
 {
+    namespace impl
+    {
+        template < typename F, typename... Args >
+        class defer_impl {
+        public:
+            defer_impl() = delete;
+            defer_impl(defer_impl&&) = delete;
+            defer_impl(const defer_impl&) = delete;
+            defer_impl& operator=(defer_impl&&) = delete;
+            defer_impl& operator=(const defer_impl&) = delete;
+
+            template < typename UF >
+            explicit defer_impl(UF&& f, std::tuple<Args...>&& args)
+            : f_{std::forward<UF>(f)}
+            , args_{std::move(args)} {}
+
+            void dismiss() noexcept {
+                dismissed_ = true;
+            }
+
+        protected:
+            ~defer_impl() noexcept {
+                if ( !dismissed_ ) {
+                    std::apply(std::move(f_), std::move(args_));
+                }
+            }
+
+        private:
+            F f_;
+            std::tuple<Args...> args_;
+            bool dismissed_{};
+        };
+    }
+
     template < typename F, typename... Args >
     class defer final : public impl::defer_impl<F, Args...> {
     public:

@@ -45,7 +45,7 @@ namespace meta_hpp::detail
             && "an attempt to call a function with incorrect argument types"
         );
 
-        return call_with_uargs<argument_types>(registry, args, [function_ptr](auto&&... all_args) {
+        return unchecked_call_with_uargs<argument_types>(registry, args, [function_ptr](auto&&... all_args) {
             if constexpr ( std::is_void_v<return_type> ) {
                 function_ptr(META_HPP_FWD(all_args)...);
                 return uvalue{};

@@ -5,7 +5,8 @@ target_compile_options(${PROJECT_NAME}.setup_targets INTERFACE
     $<$<CXX_COMPILER_ID:MSVC>:
         /WX /W4 /bigobj>
     $<$<CXX_COMPILER_ID:GNU>:
-        -Werror -Wall -Wextra -Wpedantic>
+        -Werror -Wall -Wextra -Wpedantic
+        -Wno-inaccessible-base>
     $<$<OR:$<CXX_COMPILER_ID:Clang>,$<CXX_COMPILER_ID:AppleClang>>:
         -Werror -Weverything -Wconversion
         -Wno-c++98-compat
@@ -30,3 +31,6 @@ target_link_libraries(${PROJECT_NAME}.setup_targets INTERFACE
         meta.hpp::disable_exceptions>
     $<$<BOOL:${BUILD_WITH_NO_RTTI}>:
         meta.hpp::disable_rtti>)
+
+target_compile_definitions(${PROJECT_NAME}.setup_targets INTERFACE
+    $<$<BOOL:${BUILD_WITH_SANITIZERS}>:META_HPP_SANITIZERS>)

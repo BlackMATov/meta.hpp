@@ -32,6 +32,69 @@ namespace meta_hpp::detail
     , argument_types{resolve_types(typename class_traits<Class>::argument_types{})} {}
 }
 
+namespace meta_hpp::detail
+{
+    template < typename Derived, typename Base >
+        requires std::is_base_of_v<Base, Derived>
+    inline class_type_data::upcast_func_t::upcast_func_t(std::in_place_type_t<Derived>, std::in_place_type_t<Base>)
+    : upcast{[](void* from) -> void* { return static_cast<Base*>(static_cast<Derived*>(from)); }}
+    , target{resolve_type<Base>()}
+    , is_virtual{is_virtual_base_of_v<Base, Derived>} {}
+
+    inline void* class_type_data::upcast_func_t::apply(void* ptr) const noexcept {
+        return upcast(ptr);
+    }
+
+    inline const void* class_type_data::upcast_func_t::apply(const void* ptr) const noexcept {
+        // NOLINTNEXTLINE(*-const-cast)
+        return apply(const_cast<void*>(ptr));
+    }
+}
+
+namespace meta_hpp::detail
+{
+    inline class_type_data::upcast_func_list_t::upcast_func_list_t(const upcast_func_t& _upcast)
+    : upcasts{_upcast} {
+        for ( const upcast_func_t& upcast : upcasts ) {
+            if ( upcast.is_virtual ) {
+                vbases.emplace(upcast.target);
+            }
+        }
+    }
+
+    inline class_type_data::upcast_func_list_t::upcast_func_list_t(upcasts_t _upcasts, class_set _vbases)
+    : upcasts{std::move(_upcasts)}
+    , vbases{std::move(_vbases)} {}
+
+    inline void* class_type_data::upcast_func_list_t::apply(void* ptr) const noexcept {
+        for ( const upcast_func_t& upcast : upcasts ) {
+            ptr = upcast.apply(ptr);
+        }
+        return ptr;
+    }
+
+    inline const void* class_type_data::upcast_func_list_t::apply(const void* ptr) const noexcept {
+        // NOLINTNEXTLINE(*-const-cast)
+        return apply(const_cast<void*>(ptr));
+    }
+
+    inline class_type_data::upcast_func_list_t operator+( //
+        const class_type_data::upcast_func_list_t& l,
+        const class_type_data::upcast_func_list_t& r
+    ) {
+        class_type_data::upcast_func_list_t::upcasts_t new_upcasts;
+        new_upcasts.reserve(l.upcasts.size() + r.upcasts.size());
+        new_upcasts.insert(new_upcasts.end(), l.upcasts.begin(), l.upcasts.end());
+        new_upcasts.insert(new_upcasts.end(), r.upcasts.begin(), r.upcasts.end());
+
+        class_set new_vbases;
+        new_vbases.insert(l.vbases.begin(), l.vbases.end());
+        new_vbases.insert(r.vbases.begin(), r.vbases.end());
+
+        return class_type_data::upcast_func_list_t{std::move(new_upcasts), std::move(new_vbases)};
+    }
+}
+
 namespace meta_hpp
 {
     inline class_bitflags class_type::get_flags() const noexcept {
@@ -139,12 +202,33 @@ namespace meta_hpp
     }
 
     inline bool class_type::is_base_of(const class_type& derived) const noexcept {
+        return is_valid() && derived.is_valid() && derived.data_->deep_upcasts.contains(*this);
+    }
+
+    template < detail::class_kind Derived >
+    bool class_type::is_direct_base_of() const noexcept {
+        return is_direct_base_of(resolve_type<Derived>());
+    }
+
+    inline bool class_type::is_direct_base_of(const class_type& derived) const noexcept {
+        return is_valid() && derived.is_valid() && derived.data_->base_upcasts.contains(*this);
+    }
+
+    template < detail::class_kind Derived >
+    bool class_type::is_virtual_base_of() const noexcept {
+        return is_virtual_base_of(resolve_type<Derived>());
+    }
+
+    inline bool class_type::is_virtual_base_of(const class_type& derived) const noexcept {
         if ( !is_valid() || !derived.is_valid() ) {
             return false;
         }
 
-        if ( derived.data_->deep_upcasts.contains(*this) ) {
-            return true;
+        using deep_upcasts_t = detail::class_type_data::deep_upcasts_t;
+        const deep_upcasts_t& deep_upcasts = derived.data_->deep_upcasts;
+
+        if ( auto iter{deep_upcasts.find(*this)}; iter != deep_upcasts.end() ) {
+            return !iter->second.is_ambiguous && !iter->second.vbases.empty();
         }
 
         return false;
@@ -156,15 +240,25 @@ namespace meta_hpp
     }
 
     inline bool class_type::is_derived_from(const class_type& base) const noexcept {
-        if ( !is_valid() || !base.is_valid() ) {
-            return false;
-        }
+        return base.is_base_of(*this);
+    }
 
-        if ( data_->deep_upcasts.contains(base) ) {
-            return true;
-        }
+    template < detail::class_kind Base >
+    bool class_type::is_direct_derived_from() const noexcept {
+        return is_direct_derived_from(resolve_type<Base>());
+    }
 
-        return false;
+    inline bool class_type::is_direct_derived_from(const class_type& base) const noexcept {
+        return base.is_direct_base_of(*this);
+    }
+
+    template < detail::class_kind Base >
+    bool class_type::is_virtual_derived_from() const noexcept {
+        return is_virtual_derived_from(resolve_type<Base>());
+    }
+
+    inline bool class_type::is_virtual_derived_from(const class_type& base) const noexcept {
+        return base.is_virtual_base_of(*this);
     }
 
     inline function class_type::get_function(std::string_view name) const noexcept {

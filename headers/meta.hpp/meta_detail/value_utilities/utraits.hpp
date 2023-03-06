@@ -105,8 +105,13 @@ namespace meta_hpp::detail
         const class_type& base_class = base.as_class();
         const class_type& derived_class = derived.as_class();
 
-        if ( base_class && derived_class && base_class.is_base_of(derived_class) ) {
-            return true;
+        if ( base_class && derived_class ) {
+            const class_type_data& derived_data = *type_access(derived_class);
+            const class_type_data::deep_upcasts_t& deep_upcasts = derived_data.deep_upcasts;
+
+            if ( auto iter{deep_upcasts.find(base)}; iter != deep_upcasts.end() && !iter->second.is_ambiguous ) {
+                return true;
+            }
         }
 
         return false;
@@ -124,28 +129,14 @@ namespace meta_hpp::detail
             return ptr;
         }
 
-        void* base_ptr = nullptr;
+        const class_type_data& from_data = *type_access(from);
+        const class_type_data::deep_upcasts_t& deep_upcasts = from_data.deep_upcasts;
 
-        class_type_data& from_data = *type_access(from);
-        class_type_data::deep_upcasts_t& deep_upcasts = from_data.deep_upcasts;
-
-        for ( auto iter{deep_upcasts.lower_bound(to)}; iter != deep_upcasts.end() && iter->first == to; ++iter ) {
-            void* new_base_ptr = [ptr, iter]() mutable {
-                for ( class_type_data::upcast_func_t upcast : iter->second ) {
-                    ptr = upcast(ptr);
-                }
-                return ptr;
-            }();
-
-            if ( base_ptr == nullptr ) {
-                base_ptr = new_base_ptr;
-            } else if ( base_ptr != new_base_ptr ) {
-                // ambiguous conversions
-                return nullptr;
-            }
+        if ( auto iter{deep_upcasts.find(to)}; iter != deep_upcasts.end() && !iter->second.is_ambiguous ) {
+            return iter->second.apply(ptr);
         }
 
-        return base_ptr;
+        return nullptr;
     }
 
     [[nodiscard]] inline const void* pointer_upcast(const void* ptr, const class_type& from, const class_type& to) {

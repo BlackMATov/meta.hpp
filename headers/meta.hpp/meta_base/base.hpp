@@ -53,6 +53,12 @@
 #    define META_HPP_ASSERT(...) assert(__VA_ARGS__) // NOLINT
 #endif
 
+#if defined(META_HPP_SANITIZERS)
+#    define META_HPP_DEV_ASSERT(...) META_HPP_ASSERT(__VA_ARGS__)
+#else
+#    define META_HPP_DEV_ASSERT(...) (void)0
+#endif
+
 #if !defined(META_HPP_PP_CAT)
 #    define META_HPP_PP_CAT(x, y) META_HPP_PP_CAT_I(x, y)
 #    define META_HPP_PP_CAT_I(x, y) x##y
