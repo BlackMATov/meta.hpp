@@ -2616,11 +2616,11 @@ namespace meta_hpp
         [[nodiscard]] bool is_virtual_derived_from() const noexcept;
         [[nodiscard]] bool is_virtual_derived_from(const class_type& base) const noexcept;
 
-        [[nodiscard]] function get_function(std::string_view name) const noexcept;
-        [[nodiscard]] member get_member(std::string_view name) const noexcept;
-        [[nodiscard]] method get_method(std::string_view name) const noexcept;
-        [[nodiscard]] any_type get_typedef(std::string_view name) const noexcept;
-        [[nodiscard]] variable get_variable(std::string_view name) const noexcept;
+        [[nodiscard]] function get_function(std::string_view name, bool recursively = true) const noexcept;
+        [[nodiscard]] member get_member(std::string_view name, bool recursively = true) const noexcept;
+        [[nodiscard]] method get_method(std::string_view name, bool recursively = true) const noexcept;
+        [[nodiscard]] any_type get_typedef(std::string_view name, bool recursively = true) const noexcept;
+        [[nodiscard]] variable get_variable(std::string_view name, bool recursively = true) const noexcept;
 
         template < typename... Args >
         [[nodiscard]] constructor get_constructor_with() const noexcept;
@@ -2632,18 +2632,56 @@ namespace meta_hpp
         [[nodiscard]] destructor get_destructor() const noexcept;
 
         template < typename... Args >
-        [[nodiscard]] function get_function_with(std::string_view name) const noexcept;
+        [[nodiscard]] function get_function_with( //
+            std::string_view name,
+            bool recursively = true
+        ) const noexcept;
+
         template < typename Iter >
-        [[nodiscard]] function get_function_with(std::string_view name, Iter first, Iter last) const noexcept;
-        [[nodiscard]] function get_function_with(std::string_view name, std::span<const any_type> args) const noexcept;
-        [[nodiscard]] function get_function_with(std::string_view name, std::initializer_list<any_type> args) const noexcept;
+        [[nodiscard]] function get_function_with( //
+            std::string_view name,
+            Iter first,
+            Iter last,
+            bool recursively = true
+        ) const noexcept;
+
+        [[nodiscard]] function get_function_with( //
+            std::string_view name,
+            std::span<const any_type> args,
+            bool recursively = true
+        ) const noexcept;
+
+        [[nodiscard]] function get_function_with( //
+            std::string_view name,
+            std::initializer_list<any_type> args,
+            bool recursively = true
+        ) const noexcept;
 
         template < typename... Args >
-        [[nodiscard]] method get_method_with(std::string_view name) const noexcept;
+        [[nodiscard]] method get_method_with( //
+            std::string_view name,
+            bool recursively = true
+        ) const noexcept;
+
         template < typename Iter >
-        [[nodiscard]] method get_method_with(std::string_view name, Iter first, Iter last) const noexcept;
-        [[nodiscard]] method get_method_with(std::string_view name, std::span<const any_type> args) const noexcept;
-        [[nodiscard]] method get_method_with(std::string_view name, std::initializer_list<any_type> args) const noexcept;
+        [[nodiscard]] method get_method_with( //
+            std::string_view name,
+            Iter first,
+            Iter last,
+            bool recursively = true
+        ) const noexcept;
+
+        [[nodiscard]] method get_method_with( //
+            std::string_view name,
+            std::span<const any_type> args,
+            bool recursively = true
+        ) const noexcept;
+
+        [[nodiscard]] method get_method_with( //
+            std::string_view name,
+            std::initializer_list<any_type> args,
+            bool recursively = true
+        ) const noexcept;
     };
 
     class constructor_type final : public type_base<constructor_type> {
@@ -3828,11 +3866,26 @@ namespace meta_hpp
         [[nodiscard]] variable get_variable(std::string_view name) const noexcept;
 
         template < typename... Args >
-        [[nodiscard]] function get_function_with(std::string_view name) const noexcept;
+        [[nodiscard]] function get_function_with( //
+            std::string_view name
+        ) const noexcept;
+
         template < typename Iter >
-        [[nodiscard]] function get_function_with(std::string_view name, Iter first, Iter last) const noexcept;
-        [[nodiscard]] function get_function_with(std::string_view name, std::span<const any_type> args) const noexcept;
-        [[nodiscard]] function get_function_with(std::string_view name, std::initializer_list<any_type> args) const noexcept;
+        [[nodiscard]] function get_function_with( //
+            std::string_view name,
+            Iter first,
+            Iter last
+        ) const noexcept;
+
+        [[nodiscard]] function get_function_with( //
+            std::string_view name,
+            std::span<const any_type> args
+        ) const noexcept;
+
+        [[nodiscard]] function get_function_with( //
+            std::string_view name,
+            std::initializer_list<any_type> args
+        ) const noexcept;
     };
 
     class variable final : public state_base<variable> {
@@ -8418,78 +8471,88 @@ namespace meta_hpp
         return base.is_virtual_base_of(*this);
     }
 
-    inline function class_type::get_function(std::string_view name) const noexcept {
+    inline function class_type::get_function(std::string_view name, bool recursively) const noexcept {
         for ( const function& function : data_->functions ) {
             if ( function.get_name() == name ) {
                 return function;
             }
         }
 
-        for ( const class_type& base : data_->base_classes ) {
-            if ( const function& function = base.get_function(name) ) {
-                return function;
+        if ( recursively ) {
+            for ( const class_type& base : data_->base_classes ) {
+                if ( const function& function = base.get_function(name, recursively) ) {
+                    return function;
+                }
             }
         }
 
         return function{};
     }
 
-    inline member class_type::get_member(std::string_view name) const noexcept {
+    inline member class_type::get_member(std::string_view name, bool recursively) const noexcept {
         for ( const member& member : data_->members ) {
             if ( member.get_name() == name ) {
                 return member;
             }
         }
 
-        for ( const class_type& base : data_->base_classes ) {
-            if ( const member& member = base.get_member(name) ) {
-                return member;
+        if ( recursively ) {
+            for ( const class_type& base : data_->base_classes ) {
+                if ( const member& member = base.get_member(name, recursively) ) {
+                    return member;
+                }
             }
         }
 
         return member{};
     }
 
-    inline method class_type::get_method(std::string_view name) const noexcept {
+    inline method class_type::get_method(std::string_view name, bool recursively) const noexcept {
         for ( const method& method : data_->methods ) {
             if ( method.get_name() == name ) {
                 return method;
             }
         }
 
-        for ( const class_type& base : data_->base_classes ) {
-            if ( const method& method = base.get_method(name) ) {
-                return method;
+        if ( recursively ) {
+            for ( const class_type& base : data_->base_classes ) {
+                if ( const method& method = base.get_method(name, recursively) ) {
+                    return method;
+                }
             }
         }
 
         return method{};
     }
 
-    inline any_type class_type::get_typedef(std::string_view name) const noexcept {
+    inline any_type class_type::get_typedef(std::string_view name, bool recursively) const noexcept {
         if ( auto iter{data_->typedefs.find(name)}; iter != data_->typedefs.end() ) {
             return iter->second;
         }
 
-        for ( const class_type& base : data_->base_classes ) {
-            if ( const any_type& type = base.get_typedef(name) ) {
-                return type;
+        if ( recursively ) {
+            for ( const class_type& base : data_->base_classes ) {
+                if ( const any_type& type = base.get_typedef(name, recursively) ) {
+                    return type;
+                }
             }
         }
 
         return any_type{};
     }
 
-    inline variable class_type::get_variable(std::string_view name) const noexcept {
+    inline variable class_type::get_variable(std::string_view name, bool recursively) const noexcept {
         for ( const variable& variable : data_->variables ) {
             if ( variable.get_name() == name ) {
                 return variable;
             }
         }
 
-        for ( const class_type& base : data_->base_classes ) {
-            if ( const variable& variable = base.get_variable(name) ) {
-                return variable;
+        if ( recursively ) {
+            for ( const class_type& base : data_->base_classes ) {
+                if ( const variable& variable = base.get_variable(name, recursively) ) {
+                    return variable;
+                }
             }
         }
 
@@ -8541,13 +8604,21 @@ namespace meta_hpp
     //
 
     template < typename... Args >
-    function class_type::get_function_with(std::string_view name) const noexcept {
+    function class_type::get_function_with( //
+        std::string_view name,
+        bool recursively
+    ) const noexcept {
         detail::type_registry& registry{detail::type_registry::instance()};
-        return get_function_with(name, {registry.resolve_type<Args>()...});
+        return get_function_with(name, {registry.resolve_type<Args>()...}, recursively);
     }
 
     template < typename Iter >
-    function class_type::get_function_with(std::string_view name, Iter first, Iter last) const noexcept {
+    function class_type::get_function_with( //
+        std::string_view name,
+        Iter first,
+        Iter last,
+        bool recursively
+    ) const noexcept {
         for ( const function& function : data_->functions ) {
             if ( function.get_name() != name ) {
                 continue;
@@ -8559,21 +8630,31 @@ namespace meta_hpp
             }
         }
 
-        for ( const class_type& base : data_->base_classes ) {
-            if ( const function& function = base.get_function_with(name, first, last) ) {
-                return function;
+        if ( recursively ) {
+            for ( const class_type& base : data_->base_classes ) {
+                if ( const function& function = base.get_function_with(name, first, last, recursively) ) {
+                    return function;
+                }
             }
         }
 
         return function{};
     }
 
-    inline function class_type::get_function_with(std::string_view name, std::span<const any_type> args) const noexcept {
-        return get_function_with(name, args.begin(), args.end());
+    inline function class_type::get_function_with( //
+        std::string_view name,
+        std::span<const any_type> args,
+        bool recursively
+    ) const noexcept {
+        return get_function_with(name, args.begin(), args.end(), recursively);
     }
 
-    inline function class_type::get_function_with(std::string_view name, std::initializer_list<any_type> args) const noexcept {
-        return get_function_with(name, args.begin(), args.end());
+    inline function class_type::get_function_with( //
+        std::string_view name,
+        std::initializer_list<any_type> args,
+        bool recursively
+    ) const noexcept {
+        return get_function_with(name, args.begin(), args.end(), recursively);
     }
 
     //
@@ -8581,13 +8662,21 @@ namespace meta_hpp
     //
 
     template < typename... Args >
-    method class_type::get_method_with(std::string_view name) const noexcept {
+    method class_type::get_method_with( //
+        std::string_view name,
+        bool recursively
+    ) const noexcept {
         detail::type_registry& registry{detail::type_registry::instance()};
-        return get_method_with(name, {registry.resolve_type<Args>()...});
+        return get_method_with(name, {registry.resolve_type<Args>()...}, recursively);
     }
 
     template < typename Iter >
-    method class_type::get_method_with(std::string_view name, Iter first, Iter last) const noexcept {
+    method class_type::get_method_with( //
+        std::string_view name,
+        Iter first,
+        Iter last,
+        bool recursively
+    ) const noexcept {
         for ( const method& method : data_->methods ) {
             if ( method.get_name() != name ) {
                 continue;
@@ -8599,21 +8688,31 @@ namespace meta_hpp
             }
         }
 
-        for ( const class_type& base : data_->base_classes ) {
-            if ( const method& method = base.get_method_with(name, first, last) ) {
-                return method;
+        if ( recursively ) {
+            for ( const class_type& base : data_->base_classes ) {
+                if ( const method& method = base.get_method_with(name, first, last, recursively) ) {
+                    return method;
+                }
             }
         }
 
         return method{};
     }
 
-    inline method class_type::get_method_with(std::string_view name, std::span<const any_type> args) const noexcept {
-        return get_method_with(name, args.begin(), args.end());
+    inline method class_type::get_method_with( //
+        std::string_view name,
+        std::span<const any_type> args,
+        bool recursively
+    ) const noexcept {
+        return get_method_with(name, args.begin(), args.end(), recursively);
     }
 
-    inline method class_type::get_method_with(std::string_view name, std::initializer_list<any_type> args) const noexcept {
-        return get_method_with(name, args.begin(), args.end());
+    inline method class_type::get_method_with( //
+        std::string_view name,
+        std::initializer_list<any_type> args,
+        bool recursively
+    ) const noexcept {
+        return get_method_with(name, args.begin(), args.end(), recursively);
     }
 }
 
@@ -8673,13 +8772,19 @@ namespace meta_hpp
     }
 
     template < typename... Args >
-    function scope::get_function_with(std::string_view name) const noexcept {
+    function scope::get_function_with( //
+        std::string_view name
+    ) const noexcept {
         detail::type_registry& registry{detail::type_registry::instance()};
         return get_function_with(name, {registry.resolve_type<Args>()...});
     }
 
     template < typename Iter >
-    function scope::get_function_with(std::string_view name, Iter first, Iter last) const noexcept {
+    function scope::get_function_with( //
+        std::string_view name,
+        Iter first,
+        Iter last
+    ) const noexcept {
         for ( const function& function : state_->functions ) {
             if ( function.get_name() != name ) {
                 continue;
@@ -8693,11 +8798,17 @@ namespace meta_hpp
         return function{};
     }
 
-    inline function scope::get_function_with(std::string_view name, std::span<const any_type> args) const noexcept {
+    inline function scope::get_function_with( //
+        std::string_view name,
+        std::span<const any_type> args
+    ) const noexcept {
         return get_function_with(name, args.begin(), args.end());
     }
 
-    inline function scope::get_function_with(std::string_view name, std::initializer_list<any_type> args) const noexcept {
+    inline function scope::get_function_with( //
+        std::string_view name,
+        std::initializer_list<any_type> args
+    ) const noexcept {
         return get_function_with(name, args.begin(), args.end());
     }
 }

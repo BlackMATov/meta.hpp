@@ -200,11 +200,11 @@ namespace meta_hpp
         [[nodiscard]] bool is_virtual_derived_from() const noexcept;
         [[nodiscard]] bool is_virtual_derived_from(const class_type& base) const noexcept;
 
-        [[nodiscard]] function get_function(std::string_view name) const noexcept;
-        [[nodiscard]] member get_member(std::string_view name) const noexcept;
-        [[nodiscard]] method get_method(std::string_view name) const noexcept;
-        [[nodiscard]] any_type get_typedef(std::string_view name) const noexcept;
-        [[nodiscard]] variable get_variable(std::string_view name) const noexcept;
+        [[nodiscard]] function get_function(std::string_view name, bool recursively = true) const noexcept;
+        [[nodiscard]] member get_member(std::string_view name, bool recursively = true) const noexcept;
+        [[nodiscard]] method get_method(std::string_view name, bool recursively = true) const noexcept;
+        [[nodiscard]] any_type get_typedef(std::string_view name, bool recursively = true) const noexcept;
+        [[nodiscard]] variable get_variable(std::string_view name, bool recursively = true) const noexcept;
 
         template < typename... Args >
         [[nodiscard]] constructor get_constructor_with() const noexcept;
@@ -216,18 +216,56 @@ namespace meta_hpp
         [[nodiscard]] destructor get_destructor() const noexcept;
 
         template < typename... Args >
-        [[nodiscard]] function get_function_with(std::string_view name) const noexcept;
+        [[nodiscard]] function get_function_with( //
+            std::string_view name,
+            bool recursively = true
+        ) const noexcept;
+
         template < typename Iter >
-        [[nodiscard]] function get_function_with(std::string_view name, Iter first, Iter last) const noexcept;
-        [[nodiscard]] function get_function_with(std::string_view name, std::span<const any_type> args) const noexcept;
-        [[nodiscard]] function get_function_with(std::string_view name, std::initializer_list<any_type> args) const noexcept;
+        [[nodiscard]] function get_function_with( //
+            std::string_view name,
+            Iter first,
+            Iter last,
+            bool recursively = true
+        ) const noexcept;
+
+        [[nodiscard]] function get_function_with( //
+            std::string_view name,
+            std::span<const any_type> args,
+            bool recursively = true
+        ) const noexcept;
+
+        [[nodiscard]] function get_function_with( //
+            std::string_view name,
+            std::initializer_list<any_type> args,
+            bool recursively = true
+        ) const noexcept;
 
         template < typename... Args >
-        [[nodiscard]] method get_method_with(std::string_view name) const noexcept;
+        [[nodiscard]] method get_method_with( //
+            std::string_view name,
+            bool recursively = true
+        ) const noexcept;
+
         template < typename Iter >
-        [[nodiscard]] method get_method_with(std::string_view name, Iter first, Iter last) const noexcept;
-        [[nodiscard]] method get_method_with(std::string_view name, std::span<const any_type> args) const noexcept;
-        [[nodiscard]] method get_method_with(std::string_view name, std::initializer_list<any_type> args) const noexcept;
+        [[nodiscard]] method get_method_with( //
+            std::string_view name,
+            Iter first,
+            Iter last,
+            bool recursively = true
+        ) const noexcept;
+
+        [[nodiscard]] method get_method_with( //
+            std::string_view name,
+            std::span<const any_type> args,
+            bool recursively = true
+        ) const noexcept;
+
+        [[nodiscard]] method get_method_with( //
+            std::string_view name,
+            std::initializer_list<any_type> args,
+            bool recursively = true
+        ) const noexcept;
     };
 
     class constructor_type final : public type_base<constructor_type> {

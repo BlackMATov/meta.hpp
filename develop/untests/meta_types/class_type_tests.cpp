@@ -386,8 +386,10 @@ TEST_CASE("meta/meta_types/class_type") {
         CHECK(base_clazz_2_type.get_function("base_function_2"));
         CHECK_FALSE(base_clazz_2_type.get_function("derived_function"));
 
-        CHECK(derived_clazz_type.get_function("base_function_1"));
-        CHECK(derived_clazz_type.get_function("base_function_2"));
+        CHECK(derived_clazz_type.get_function("base_function_1", true));
+        CHECK(derived_clazz_type.get_function("base_function_2", true));
+        CHECK_FALSE(derived_clazz_type.get_function("base_function_1", false));
+        CHECK_FALSE(derived_clazz_type.get_function("base_function_2", false));
         CHECK(derived_clazz_type.get_function("derived_function"));
     }
 
@@ -400,8 +402,10 @@ TEST_CASE("meta/meta_types/class_type") {
         CHECK(base_clazz_2_type.get_member("base_member_2"));
         CHECK_FALSE(base_clazz_2_type.get_member("derived_member"));
 
-        CHECK(derived_clazz_type.get_member("base_member_1"));
-        CHECK(derived_clazz_type.get_member("base_member_2"));
+        CHECK(derived_clazz_type.get_member("base_member_1", true));
+        CHECK(derived_clazz_type.get_member("base_member_2", true));
+        CHECK_FALSE(derived_clazz_type.get_member("base_member_1", false));
+        CHECK_FALSE(derived_clazz_type.get_member("base_member_2", false));
         CHECK(derived_clazz_type.get_member("derived_member"));
     }
 
@@ -414,8 +418,10 @@ TEST_CASE("meta/meta_types/class_type") {
         CHECK(base_clazz_2_type.get_method("base_method_2"));
         CHECK_FALSE(base_clazz_2_type.get_method("derived_method"));
 
-        CHECK(derived_clazz_type.get_method("base_method_1"));
-        CHECK(derived_clazz_type.get_method("base_method_2"));
+        CHECK(derived_clazz_type.get_method("base_method_1", true));
+        CHECK(derived_clazz_type.get_method("base_method_2", true));
+        CHECK_FALSE(derived_clazz_type.get_method("base_method_1", false));
+        CHECK_FALSE(derived_clazz_type.get_method("base_method_2", false));
         CHECK(derived_clazz_type.get_method("derived_method"));
     }
 
@@ -428,8 +434,10 @@ TEST_CASE("meta/meta_types/class_type") {
         CHECK(base_clazz_2_type.get_variable("base_variable_2"));
         CHECK_FALSE(base_clazz_2_type.get_variable("derived_variable"));
 
-        CHECK(derived_clazz_type.get_variable("base_variable_1"));
-        CHECK(derived_clazz_type.get_variable("base_variable_2"));
+        CHECK(derived_clazz_type.get_variable("base_variable_1", true));
+        CHECK(derived_clazz_type.get_variable("base_variable_2", true));
+        CHECK_FALSE(derived_clazz_type.get_variable("base_variable_1", false));
+        CHECK_FALSE(derived_clazz_type.get_variable("base_variable_2", false));
         CHECK(derived_clazz_type.get_variable("derived_variable"));
     }
 
