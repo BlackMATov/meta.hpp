@@ -65,6 +65,9 @@
 #include "meta_types/reference_type.hpp"
 #include "meta_types/void_type.hpp"
 
+#include "meta_ucast.hpp"
+#include "meta_ucast/ucast.hpp"
+
 #include "meta_uresult.hpp"
 #include "meta_uresult/uresult.hpp"
 

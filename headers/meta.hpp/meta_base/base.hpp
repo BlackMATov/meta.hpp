@@ -63,3 +63,57 @@
 #    define META_HPP_PP_CAT(x, y) META_HPP_PP_CAT_I(x, y)
 #    define META_HPP_PP_CAT_I(x, y) x##y
 #endif
+
+#if defined(_MSC_VER)
+#    define META_HPP_MSVC
+#elif defined(__clang__)
+#    define META_HPP_CLANG
+#elif defined(__GNUC__)
+#    define META_HPP_GCC
+#endif
+
+#if defined(META_HPP_MSVC)
+#    define META_HPP_MSVC_IGNORE_WARNING(w) __pragma(warning(disable : w))
+#    define META_HPP_MSVC_IGNORE_WARNINGS_PUSH() __pragma(warning(push))
+#    define META_HPP_MSVC_IGNORE_WARNINGS_POP() __pragma(warning(pop))
+#else
+#    define META_HPP_MSVC_IGNORE_WARNING(w)
+#    define META_HPP_MSVC_IGNORE_WARNINGS_PUSH()
+#    define META_HPP_MSVC_IGNORE_WARNINGS_POP()
+#endif
+
+#if defined(META_HPP_CLANG)
+#    define META_HPP_CLANG_PRAGMA_TO_STR(x) _Pragma(#x)
+#    define META_HPP_CLANG_IGNORE_WARNING(w) META_HPP_CLANG_PRAGMA_TO_STR(clang diagnostic ignored w)
+#    define META_HPP_CLANG_IGNORE_WARNINGS_PUSH() _Pragma("clang diagnostic push")
+#    define META_HPP_CLANG_IGNORE_WARNINGS_POP() _Pragma("clang diagnostic pop")
+#else
+#    define META_HPP_CLANG_PRAGMA_TO_STR(x)
+#    define META_HPP_CLANG_IGNORE_WARNING(w)
+#    define META_HPP_CLANG_IGNORE_WARNINGS_PUSH()
+#    define META_HPP_CLANG_IGNORE_WARNINGS_POP()
+#endif
+
+#if defined(META_HPP_GCC)
+#    define META_HPP_GCC_PRAGMA_TO_STR(x) _Pragma(#x)
+#    define META_HPP_GCC_IGNORE_WARNING(w) META_HPP_GCC_PRAGMA_TO_STR(GCC diagnostic ignored w)
+#    define META_HPP_GCC_IGNORE_WARNINGS_PUSH() _Pragma("GCC diagnostic push")
+#    define META_HPP_GCC_IGNORE_WARNINGS_POP() _Pragma("GCC diagnostic pop")
+#else
+#    define META_HPP_GCC_PRAGMA_TO_STR(x)
+#    define META_HPP_GCC_IGNORE_WARNING(w)
+#    define META_HPP_GCC_IGNORE_WARNINGS_PUSH()
+#    define META_HPP_GCC_IGNORE_WARNINGS_POP()
+#endif
+
+#define META_HPP_IGNORE_OVERRIDE_WARNINGS_PUSH() \
+    META_HPP_MSVC_IGNORE_WARNINGS_PUSH() \
+    META_HPP_CLANG_IGNORE_WARNINGS_PUSH() \
+    META_HPP_GCC_IGNORE_WARNINGS_PUSH() \
+    META_HPP_CLANG_IGNORE_WARNING("-Winconsistent-missing-override") \
+    META_HPP_CLANG_IGNORE_WARNING("-Wsuggest-override")
+
+#define META_HPP_IGNORE_OVERRIDE_WARNINGS_POP() \
+    META_HPP_GCC_IGNORE_WARNINGS_POP() \
+    META_HPP_CLANG_IGNORE_WARNINGS_POP() \
+    META_HPP_MSVC_IGNORE_WARNINGS_POP()

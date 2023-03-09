@@ -63,6 +63,60 @@
 #    define META_HPP_PP_CAT_I(x, y) x##y
 #endif
 
+#if defined(_MSC_VER)
+#    define META_HPP_MSVC
+#elif defined(__clang__)
+#    define META_HPP_CLANG
+#elif defined(__GNUC__)
+#    define META_HPP_GCC
+#endif
+
+#if defined(META_HPP_MSVC)
+#    define META_HPP_MSVC_IGNORE_WARNING(w) __pragma(warning(disable : w))
+#    define META_HPP_MSVC_IGNORE_WARNINGS_PUSH() __pragma(warning(push))
+#    define META_HPP_MSVC_IGNORE_WARNINGS_POP() __pragma(warning(pop))
+#else
+#    define META_HPP_MSVC_IGNORE_WARNING(w)
+#    define META_HPP_MSVC_IGNORE_WARNINGS_PUSH()
+#    define META_HPP_MSVC_IGNORE_WARNINGS_POP()
+#endif
+
+#if defined(META_HPP_CLANG)
+#    define META_HPP_CLANG_PRAGMA_TO_STR(x) _Pragma(#x)
+#    define META_HPP_CLANG_IGNORE_WARNING(w) META_HPP_CLANG_PRAGMA_TO_STR(clang diagnostic ignored w)
+#    define META_HPP_CLANG_IGNORE_WARNINGS_PUSH() _Pragma("clang diagnostic push")
+#    define META_HPP_CLANG_IGNORE_WARNINGS_POP() _Pragma("clang diagnostic pop")
+#else
+#    define META_HPP_CLANG_PRAGMA_TO_STR(x)
+#    define META_HPP_CLANG_IGNORE_WARNING(w)
+#    define META_HPP_CLANG_IGNORE_WARNINGS_PUSH()
+#    define META_HPP_CLANG_IGNORE_WARNINGS_POP()
+#endif
+
+#if defined(META_HPP_GCC)
+#    define META_HPP_GCC_PRAGMA_TO_STR(x) _Pragma(#x)
+#    define META_HPP_GCC_IGNORE_WARNING(w) META_HPP_GCC_PRAGMA_TO_STR(GCC diagnostic ignored w)
+#    define META_HPP_GCC_IGNORE_WARNINGS_PUSH() _Pragma("GCC diagnostic push")
+#    define META_HPP_GCC_IGNORE_WARNINGS_POP() _Pragma("GCC diagnostic pop")
+#else
+#    define META_HPP_GCC_PRAGMA_TO_STR(x)
+#    define META_HPP_GCC_IGNORE_WARNING(w)
+#    define META_HPP_GCC_IGNORE_WARNINGS_PUSH()
+#    define META_HPP_GCC_IGNORE_WARNINGS_POP()
+#endif
+
+#define META_HPP_IGNORE_OVERRIDE_WARNINGS_PUSH() \
+    META_HPP_MSVC_IGNORE_WARNINGS_PUSH() \
+    META_HPP_CLANG_IGNORE_WARNINGS_PUSH() \
+    META_HPP_GCC_IGNORE_WARNINGS_PUSH() \
+    META_HPP_CLANG_IGNORE_WARNING("-Winconsistent-missing-override") \
+    META_HPP_CLANG_IGNORE_WARNING("-Wsuggest-override")
+
+#define META_HPP_IGNORE_OVERRIDE_WARNINGS_POP() \
+    META_HPP_GCC_IGNORE_WARNINGS_POP() \
+    META_HPP_CLANG_IGNORE_WARNINGS_POP() \
+    META_HPP_MSVC_IGNORE_WARNINGS_POP()\
+
 namespace meta_hpp::detail
 {
     template < typename Enum >
@@ -458,6 +512,8 @@ namespace meta_hpp::detail
     enum class error_code {
         no_error,
 
+        bad_cast,
+
         bad_const_access,
         bad_uvalue_access,
 
@@ -473,6 +529,8 @@ namespace meta_hpp::detail
         switch ( error ) {
         case error_code::no_error:
             return "no error";
+        case error_code::bad_cast:
+            return "bad cast";
         case error_code::bad_const_access:
             return "bad const access";
         case error_code::bad_uvalue_access:
@@ -4285,67 +4343,67 @@ namespace meta_hpp::detail
     public:
         template < array_kind Array >
         [[nodiscard]] array_type resolve_array_type() {
-            return array_type{resolve_array_type_data<Array>()};
+            return array_type{resolve_array_type_data<std::remove_cv_t<Array>>()};
         }
 
         template < class_kind Class >
         [[nodiscard]] class_type resolve_class_type() {
-            return class_type{resolve_class_type_data<Class>()};
+            return class_type{resolve_class_type_data<std::remove_cv_t<Class>>()};
         }
 
         template < class_kind Class, typename... Args >
         [[nodiscard]] constructor_type resolve_constructor_type() {
-            return constructor_type{resolve_constructor_type_data<Class, Args...>()};
+            return constructor_type{resolve_constructor_type_data<std::remove_cv_t<Class>, Args...>()};
         }
 
         template < class_kind Class >
         [[nodiscard]] destructor_type resolve_destructor_type() {
-            return destructor_type{resolve_destructor_type_data<Class>()};
+            return destructor_type{resolve_destructor_type_data<std::remove_cv_t<Class>>()};
         }
 
         template < enum_kind Enum >
         [[nodiscard]] enum_type resolve_enum_type() {
-            return enum_type{resolve_enum_type_data<Enum>()};
+            return enum_type{resolve_enum_type_data<std::remove_cv_t<Enum>>()};
         }
 
         template < function_pointer_kind Function >
         [[nodiscard]] function_type resolve_function_type() {
-            return function_type{resolve_function_type_data<Function>()};
+            return function_type{resolve_function_type_data<std::remove_cv_t<Function>>()};
         }
 
         template < member_pointer_kind Member >
         [[nodiscard]] member_type resolve_member_type() {
-            return member_type{resolve_member_type_data<Member>()};
+            return member_type{resolve_member_type_data<std::remove_cv_t<Member>>()};
         }
 
         template < method_pointer_kind Method >
         [[nodiscard]] method_type resolve_method_type() {
-            return method_type{resolve_method_type_data<Method>()};
+            return method_type{resolve_method_type_data<std::remove_cv_t<Method>>()};
         }
 
         template < nullptr_kind Nullptr >
         [[nodiscard]] nullptr_type resolve_nullptr_type() {
-            return nullptr_type{resolve_nullptr_type_data<Nullptr>()};
+            return nullptr_type{resolve_nullptr_type_data<std::remove_cv_t<Nullptr>>()};
         }
 
         template < number_kind Number >
         [[nodiscard]] number_type resolve_number_type() {
-            return number_type{resolve_number_type_data<Number>()};
+            return number_type{resolve_number_type_data<std::remove_cv_t<Number>>()};
         }
 
         template < pointer_kind Pointer >
         [[nodiscard]] pointer_type resolve_pointer_type() {
-            return pointer_type{resolve_pointer_type_data<Pointer>()};
+            return pointer_type{resolve_pointer_type_data<std::remove_cv_t<Pointer>>()};
         }
 
         template < reference_kind Reference >
         [[nodiscard]] reference_type resolve_reference_type() {
-            return reference_type{resolve_reference_type_data<Reference>()};
+            return reference_type{resolve_reference_type_data<std::remove_cv_t<Reference>>()};
         }
 
         template < void_kind Void >
         [[nodiscard]] void_type resolve_void_type() {
-            return void_type{resolve_void_type_data<Void>()};
+            return void_type{resolve_void_type_data<std::remove_cv_t<Void>>()};
         }
 
     private:
@@ -9042,6 +9100,122 @@ namespace meta_hpp::detail
     void_type_data::void_type_data(type_list<Void>)
     : type_data_base{type_id{type_list<void_tag<Void>>{}}, type_kind::void_} {}
 }
+
+namespace meta_hpp::detail
+{
+    template <
+        typename To,
+        typename From,
+        typename ToDT = std::remove_pointer_t<To>,
+        typename FromDT = std::remove_pointer_t<From> >
+    concept pointer_ucast_kind                                                       //
+        = (std::is_pointer_v<From> && std::is_class_v<FromDT>)                       //
+       && (std::is_pointer_v<To> && (std::is_class_v<ToDT> || std::is_void_v<ToDT>)) //
+       && (!std::is_const_v<FromDT> || std::is_const_v<ToDT>)                        //
+       && (!std::is_volatile_v<FromDT> || std::is_volatile_v<ToDT>);                 //
+
+    template <
+        typename To,
+        typename From,
+        typename ToDT = std::remove_reference_t<To>,
+        typename FromDT = std::remove_reference_t<From> >
+    concept reference_ucast_kind                                     //
+        = (std::is_reference_v<From> && std::is_class_v<FromDT>)     //
+       && (std::is_reference_v<To> && std::is_class_v<ToDT>)         //
+       && (!std::is_const_v<FromDT> || std::is_const_v<ToDT>)        //
+       && (!std::is_volatile_v<FromDT> || std::is_volatile_v<ToDT>); //
+}
+
+namespace meta_hpp
+{
+    template < typename To, typename From >
+        requires detail::pointer_ucast_kind<To, From>
+    To ucast(From from);
+
+    template < typename To, typename From >
+        requires detail::reference_ucast_kind<To, From>
+    To ucast(From&& from);
+}
+
+namespace meta_hpp::detail
+{
+    struct polymorphic_meta_info {
+        const void* ptr{};
+        class_type type{};
+    };
+
+    template < typename T >
+    concept check_polymorphic_cast_support //
+        = requires(type_registry& r, const T& v) {
+              { v.get_most_derived_polymorphic_meta_info(r) } -> std::convertible_to<polymorphic_meta_info>;
+          };
+}
+
+namespace meta_hpp
+{
+    template < typename To, typename From >
+        requires detail::pointer_ucast_kind<To, From>
+    To ucast(From from) {
+        using from_data_type = std::remove_pointer_t<From>;
+        using to_data_type = std::remove_pointer_t<To>;
+
+        static_assert(
+            detail::check_polymorphic_cast_support<from_data_type>,
+            "The type doesn't support ucasts. Use the META_HPP_ENABLE_POLYMORPHIC_CAST macro to fix it."
+        );
+
+        if ( from == nullptr ) {
+            return nullptr;
+        }
+
+        if constexpr ( std::is_same_v<std::remove_cv_t<from_data_type>, std::remove_cv_t<to_data_type>> ) {
+            return from;
+        }
+
+        detail::type_registry& registry{detail::type_registry::instance()};
+        const detail::polymorphic_meta_info& meta_info{from->get_most_derived_polymorphic_meta_info(registry)};
+
+        // NOLINTNEXTLINE(*-const-cast)
+        void* most_derived_object_ptr = const_cast<void*>(meta_info.ptr);
+
+        if constexpr ( std::is_void_v<std::remove_cv_t<to_data_type>> ) {
+            return most_derived_object_ptr;
+        } else {
+            const class_type& to_class_type = registry.resolve_class_type<to_data_type>();
+            return static_cast<To>(detail::pointer_upcast(most_derived_object_ptr, meta_info.type, to_class_type));
+        }
+    }
+
+    template < typename To, typename From >
+        requires detail::reference_ucast_kind<To, From>
+    To ucast(From&& from) {
+        using from_data_type = std::remove_reference_t<From>;
+        using to_data_type = std::remove_reference_t<To>;
+
+        static_assert(
+            detail::check_polymorphic_cast_support<from_data_type>,
+            "The type doesn't support ucasts. Use the META_HPP_ENABLE_POLYMORPHIC_CAST macro to fix it."
+        );
+
+        if ( to_data_type* ptr = ucast<to_data_type*>(std::addressof(from)) ) {
+            return *ptr;
+        }
+
+        throw_exception(error_code::bad_cast);
+    }
+}
+
+#define META_HPP_ENABLE_POLYMORPHIC_CAST() \
+public: \
+    META_HPP_IGNORE_OVERRIDE_WARNINGS_PUSH() \
+    virtual ::meta_hpp::detail::polymorphic_meta_info get_most_derived_polymorphic_meta_info( \
+        ::meta_hpp::detail::type_registry& registry \
+    ) const { \
+        using self_type = std::remove_cvref_t<decltype(*this)>; \
+        return ::meta_hpp::detail::polymorphic_meta_info{.ptr = this, .type = registry.resolve_class_type<self_type>()}; \
+    } \
+    META_HPP_IGNORE_OVERRIDE_WARNINGS_POP() \
+private:
 
 namespace meta_hpp::detail
 {
