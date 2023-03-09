@@ -126,67 +126,67 @@ namespace meta_hpp::detail
     public:
         template < array_kind Array >
         [[nodiscard]] array_type resolve_array_type() {
-            return array_type{resolve_array_type_data<Array>()};
+            return array_type{resolve_array_type_data<std::remove_cv_t<Array>>()};
         }
 
         template < class_kind Class >
         [[nodiscard]] class_type resolve_class_type() {
-            return class_type{resolve_class_type_data<Class>()};
+            return class_type{resolve_class_type_data<std::remove_cv_t<Class>>()};
         }
 
         template < class_kind Class, typename... Args >
         [[nodiscard]] constructor_type resolve_constructor_type() {
-            return constructor_type{resolve_constructor_type_data<Class, Args...>()};
+            return constructor_type{resolve_constructor_type_data<std::remove_cv_t<Class>, Args...>()};
         }
 
         template < class_kind Class >
         [[nodiscard]] destructor_type resolve_destructor_type() {
-            return destructor_type{resolve_destructor_type_data<Class>()};
+            return destructor_type{resolve_destructor_type_data<std::remove_cv_t<Class>>()};
         }
 
         template < enum_kind Enum >
         [[nodiscard]] enum_type resolve_enum_type() {
-            return enum_type{resolve_enum_type_data<Enum>()};
+            return enum_type{resolve_enum_type_data<std::remove_cv_t<Enum>>()};
         }
 
         template < function_pointer_kind Function >
         [[nodiscard]] function_type resolve_function_type() {
-            return function_type{resolve_function_type_data<Function>()};
+            return function_type{resolve_function_type_data<std::remove_cv_t<Function>>()};
         }
 
         template < member_pointer_kind Member >
         [[nodiscard]] member_type resolve_member_type() {
-            return member_type{resolve_member_type_data<Member>()};
+            return member_type{resolve_member_type_data<std::remove_cv_t<Member>>()};
         }
 
         template < method_pointer_kind Method >
         [[nodiscard]] method_type resolve_method_type() {
-            return method_type{resolve_method_type_data<Method>()};
+            return method_type{resolve_method_type_data<std::remove_cv_t<Method>>()};
         }
 
         template < nullptr_kind Nullptr >
         [[nodiscard]] nullptr_type resolve_nullptr_type() {
-            return nullptr_type{resolve_nullptr_type_data<Nullptr>()};
+            return nullptr_type{resolve_nullptr_type_data<std::remove_cv_t<Nullptr>>()};
         }
 
         template < number_kind Number >
         [[nodiscard]] number_type resolve_number_type() {
-            return number_type{resolve_number_type_data<Number>()};
+            return number_type{resolve_number_type_data<std::remove_cv_t<Number>>()};
         }
 
         template < pointer_kind Pointer >
         [[nodiscard]] pointer_type resolve_pointer_type() {
-            return pointer_type{resolve_pointer_type_data<Pointer>()};
+            return pointer_type{resolve_pointer_type_data<std::remove_cv_t<Pointer>>()};
         }
 
         template < reference_kind Reference >
         [[nodiscard]] reference_type resolve_reference_type() {
-            return reference_type{resolve_reference_type_data<Reference>()};
+            return reference_type{resolve_reference_type_data<std::remove_cv_t<Reference>>()};
         }
 
         template < void_kind Void >
         [[nodiscard]] void_type resolve_void_type() {
-            return void_type{resolve_void_type_data<Void>()};
+            return void_type{resolve_void_type_data<std::remove_cv_t<Void>>()};
         }
 
     private:
