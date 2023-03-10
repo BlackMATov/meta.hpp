@@ -88,7 +88,7 @@ namespace
     namespace meta = meta_hpp;
 
     template < meta::detail::class_kind From, meta::detail::class_kind To, typename Value >
-    void check_casts_impl(Value& value) {
+    [[maybe_unused]] void check_casts_impl(Value& value) {
         using from_void_cv = meta::detail::add_cv_t<From, void>;
         from_void_cv* from_void_ptr = dynamic_cast<from_void_cv*>(std::addressof(value));
         REQUIRE(from_void_ptr == meta::ucast<from_void_cv*>(std::addressof(value)));
@@ -113,7 +113,7 @@ namespace
     }
 
     template < meta::detail::class_kind From, meta::detail::class_kind To, typename Value >
-    void check_casts(Value& value) {
+    [[maybe_unused]] void check_casts(Value& value) {
         check_casts_impl<From, To>(value);
         check_casts_impl<const From, const To>(std::as_const(value));
     }
@@ -137,6 +137,88 @@ TEST_CASE("meta/meta_utilities/ucast/_") {
 TEST_CASE("meta/meta_utilities/ucast") {
     namespace meta = meta_hpp;
 
+#if defined(META_HPP_NO_RTTI)
+    SUBCASE("1") {
+        {
+            C1 c;
+
+            CHECK(meta::ucast<A1*>(static_cast<A1*>(&c))->a == 'a');
+            CHECK(meta::ucast<B1*>(static_cast<A1*>(&c))->b == 'b');
+            CHECK(meta::ucast<C1*>(static_cast<A1*>(&c))->c == 'c');
+
+            CHECK(meta::ucast<A1*>(static_cast<B1*>(&c))->a == 'a');
+            CHECK(meta::ucast<B1*>(static_cast<B1*>(&c))->b == 'b');
+            CHECK(meta::ucast<C1*>(static_cast<B1*>(&c))->c == 'c');
+
+            CHECK(meta::ucast<A1*>(static_cast<C1*>(&c))->a == 'a');
+            CHECK(meta::ucast<B1*>(static_cast<C1*>(&c))->b == 'b');
+            CHECK(meta::ucast<C1*>(static_cast<C1*>(&c))->c == 'c');
+        }
+        {
+            B1 b;
+
+            CHECK(meta::ucast<A1*>(static_cast<A1*>(&b))->a == 'a');
+            CHECK(meta::ucast<B1*>(static_cast<A1*>(&b))->b == 'b');
+            CHECK_FALSE(meta::ucast<C1*>(static_cast<A1*>(&b)));
+
+            CHECK(meta::ucast<A1*>(static_cast<B1*>(&b))->a == 'a');
+            CHECK(meta::ucast<B1*>(static_cast<B1*>(&b))->b == 'b');
+            CHECK_FALSE(meta::ucast<C1*>(static_cast<B1*>(&b)));
+        }
+        {
+            A1 a;
+
+            CHECK(meta::ucast<A1*>(static_cast<A1*>(&a))->a == 'a');
+            CHECK_FALSE(meta::ucast<B1*>(static_cast<A1*>(&a)));
+            CHECK_FALSE(meta::ucast<C1*>(static_cast<A1*>(&a)));
+        }
+    }
+
+    SUBCASE("2") {
+        {
+            F2 f;
+
+            CHECK(meta::ucast<A2*>(static_cast<A2*>(&f))->a == 'a');
+            CHECK(meta::ucast<B2*>(static_cast<A2*>(&f))->b == 'b');
+            CHECK(meta::ucast<C2*>(static_cast<A2*>(&f))->c == 'c');
+            CHECK(meta::ucast<D2*>(static_cast<A2*>(&f))->d == 'd');
+            CHECK(meta::ucast<E2*>(static_cast<A2*>(&f))->e == 'e');
+
+            CHECK(meta::ucast<A2*>(static_cast<C2*>(&f))->a == 'a');
+            CHECK(meta::ucast<B2*>(static_cast<C2*>(&f))->b == 'b');
+            CHECK(meta::ucast<C2*>(static_cast<C2*>(&f))->c == 'c');
+            CHECK(meta::ucast<D2*>(static_cast<C2*>(&f))->d == 'd');
+            CHECK(meta::ucast<E2*>(static_cast<C2*>(&f))->e == 'e');
+
+            CHECK(meta::ucast<A2*>(static_cast<D2*>(&f))->a == 'a');
+            CHECK(meta::ucast<B2*>(static_cast<D2*>(&f))->b == 'b');
+            CHECK(meta::ucast<C2*>(static_cast<D2*>(&f))->c == 'c');
+            CHECK(meta::ucast<D2*>(static_cast<D2*>(&f))->d == 'd');
+            CHECK(meta::ucast<E2*>(static_cast<D2*>(&f))->e == 'e');
+
+            CHECK(meta::ucast<A2*>(static_cast<E2*>(&f))->a == 'a');
+            CHECK(meta::ucast<B2*>(static_cast<E2*>(&f))->b == 'b');
+            CHECK(meta::ucast<C2*>(static_cast<E2*>(&f))->c == 'c');
+            CHECK(meta::ucast<D2*>(static_cast<E2*>(&f))->d == 'd');
+            CHECK(meta::ucast<E2*>(static_cast<E2*>(&f))->e == 'e');
+        }
+        {
+            B2 b;
+
+            CHECK(meta::ucast<A2*>(static_cast<A2*>(&b))->a == 'a');
+            CHECK(meta::ucast<B2*>(static_cast<A2*>(&b))->b == 'b');
+            CHECK_FALSE(meta::ucast<C2*>(static_cast<A2*>(&b)));
+            CHECK_FALSE(meta::ucast<D2*>(static_cast<A2*>(&b)));
+            CHECK_FALSE(meta::ucast<E2*>(static_cast<A2*>(&b)));
+
+            CHECK(meta::ucast<A2*>(static_cast<B2*>(&b))->a == 'a');
+            CHECK(meta::ucast<B2*>(static_cast<B2*>(&b))->b == 'b');
+            CHECK_FALSE(meta::ucast<C2*>(static_cast<B2*>(&b)));
+            CHECK_FALSE(meta::ucast<D2*>(static_cast<B2*>(&b)));
+            CHECK_FALSE(meta::ucast<E2*>(static_cast<B2*>(&b)));
+        }
+    }
+#else
     SUBCASE("1") {
         {
             C1 c;
@@ -367,4 +449,5 @@ TEST_CASE("meta/meta_utilities/ucast") {
             check_casts<F2, F2>(d);
         }
     }
+#endif
 }
