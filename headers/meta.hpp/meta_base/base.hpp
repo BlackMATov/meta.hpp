@@ -31,8 +31,6 @@
 #include <string_view>
 #include <tuple>
 #include <type_traits>
-#include <typeindex>
-#include <typeinfo>
 #include <utility>
 #include <vector>
 #include <version>

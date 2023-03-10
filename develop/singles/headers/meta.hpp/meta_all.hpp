@@ -30,8 +30,6 @@
 #include <string_view>
 #include <tuple>
 #include <type_traits>
-#include <typeindex>
-#include <typeinfo>
 #include <utility>
 #include <vector>
 #include <version>
@@ -4154,76 +4152,6 @@ namespace meta_hpp::detail
 
 namespace meta_hpp::detail
 {
-    class state_registry final {
-    public:
-        class locker final {
-        public:
-            explicit locker()
-            : lock_{instance().mutex_} {}
-
-            ~locker() = default;
-
-            locker(locker&&) = default;
-            locker& operator=(locker&&) = default;
-
-            locker(const locker&) = delete;
-            locker& operator=(const locker&) = delete;
-
-        private:
-            std::unique_lock<std::recursive_mutex> lock_;
-        };
-
-        [[nodiscard]] static state_registry& instance() {
-            static state_registry instance;
-            return instance;
-        }
-
-    public:
-        template < typename F >
-        void for_each_scope(F&& f) const {
-            const locker lock;
-
-            for ( auto&& [name, scope] : scopes_ ) {
-                std::invoke(f, scope);
-            }
-        }
-
-        [[nodiscard]] scope get_scope_by_name(std::string_view name) const noexcept {
-            const locker lock;
-
-            if ( auto iter{scopes_.find(name)}; iter != scopes_.end() ) {
-                return iter->second;
-            }
-
-            return scope{};
-        }
-
-        [[nodiscard]] scope resolve_scope(std::string_view name) {
-            const locker lock;
-
-            if ( auto iter{scopes_.find(name)}; iter != scopes_.end() ) {
-                return iter->second;
-            }
-
-            auto&& [iter, _] = scopes_.emplace( //
-                std::string{name},
-                scope_state::make(std::string{name}, metadata_map{})
-            );
-
-            return iter->second;
-        }
-
-    private:
-        state_registry() = default;
-
-    private:
-        std::recursive_mutex mutex_;
-        std::map<std::string, scope, std::less<>> scopes_;
-    };
-}
-
-namespace meta_hpp::detail
-{
     class type_registry final {
     public:
         class locker final {
@@ -4267,18 +4195,6 @@ namespace meta_hpp::detail
 
             return any_type{};
         }
-
-#if !defined(META_HPP_NO_RTTI)
-        [[nodiscard]] any_type get_type_by_rtti(const std::type_index& index) const noexcept {
-            const locker lock;
-
-            if ( auto iter{rtti_types_.find(index)}; iter != rtti_types_.end() ) {
-                return iter->second;
-            }
-
-            return any_type{};
-        }
-#endif
 
     public:
         template < array_kind Array >
@@ -4487,29 +4403,106 @@ namespace meta_hpp::detail
         template < typename Type, typename TypeData >
         void ensure_type(TypeData& type_data) {
             const locker lock;
-
-            auto&& [position, emplaced] = types_.emplace(any_type{&type_data});
-            if ( !emplaced ) {
-                return;
-            }
-
-#if !defined(META_HPP_NO_RTTI)
-            META_HPP_TRY {
-                rtti_types_.emplace(typeid(Type), any_type{&type_data});
-            }
-            META_HPP_CATCH(...) {
-                types_.erase(position);
-                META_HPP_RETHROW();
-            }
-#endif
+            types_.emplace(any_type{&type_data});
         }
 
     private:
         std::recursive_mutex mutex_;
         std::set<any_type, std::less<>> types_;
-#if !defined(META_HPP_NO_RTTI)
-        std::map<std::type_index, any_type, std::less<>> rtti_types_;
-#endif
+    };
+}
+
+namespace meta_hpp::detail
+{
+    struct poly_info final {
+        const void* ptr{};
+        class_type type{};
+    };
+
+    template < typename T >
+    concept check_poly_info_enabled //
+        = requires(type_registry& r, const T& v) {
+              { v.get_most_derived_poly_info(r) } -> std::convertible_to<poly_info>;
+          };
+}
+
+#define META_HPP_ENABLE_POLY_INFO() \
+public: \
+    META_HPP_IGNORE_OVERRIDE_WARNINGS_PUSH() \
+    virtual ::meta_hpp::detail::poly_info get_most_derived_poly_info(::meta_hpp::detail::type_registry& registry) const { \
+        using self_type = std::remove_cvref_t<decltype(*this)>; \
+        return ::meta_hpp::detail::poly_info{.ptr = this, .type = registry.resolve_class_type<self_type>()}; \
+    } \
+    META_HPP_IGNORE_OVERRIDE_WARNINGS_POP() \
+private:
+
+namespace meta_hpp::detail
+{
+    class state_registry final {
+    public:
+        class locker final {
+        public:
+            explicit locker()
+            : lock_{instance().mutex_} {}
+
+            ~locker() = default;
+
+            locker(locker&&) = default;
+            locker& operator=(locker&&) = default;
+
+            locker(const locker&) = delete;
+            locker& operator=(const locker&) = delete;
+
+        private:
+            std::unique_lock<std::recursive_mutex> lock_;
+        };
+
+        [[nodiscard]] static state_registry& instance() {
+            static state_registry instance;
+            return instance;
+        }
+
+    public:
+        template < typename F >
+        void for_each_scope(F&& f) const {
+            const locker lock;
+
+            for ( auto&& [name, scope] : scopes_ ) {
+                std::invoke(f, scope);
+            }
+        }
+
+        [[nodiscard]] scope get_scope_by_name(std::string_view name) const noexcept {
+            const locker lock;
+
+            if ( auto iter{scopes_.find(name)}; iter != scopes_.end() ) {
+                return iter->second;
+            }
+
+            return scope{};
+        }
+
+        [[nodiscard]] scope resolve_scope(std::string_view name) {
+            const locker lock;
+
+            if ( auto iter{scopes_.find(name)}; iter != scopes_.end() ) {
+                return iter->second;
+            }
+
+            auto&& [iter, _] = scopes_.emplace( //
+                std::string{name},
+                scope_state::make(std::string{name}, metadata_map{})
+            );
+
+            return iter->second;
+        }
+
+    private:
+        state_registry() = default;
+
+    private:
+        std::recursive_mutex mutex_;
+        std::map<std::string, scope, std::less<>> scopes_;
     };
 }
 
@@ -4567,16 +4560,19 @@ namespace meta_hpp
         return registry.resolve_destructor_type<Class>();
     }
 
-    template < typename T >
-    [[nodiscard]] any_type resolve_polymorphic_type(T&& v) noexcept {
-#if !defined(META_HPP_NO_RTTI)
+    template < typename From >
+        requires std::is_class_v<std::remove_reference_t<From>>
+    [[nodiscard]] class_type resolve_poly_type(From&& from) noexcept {
+        using from_data_type = std::remove_reference_t<From>;
+
+        static_assert(
+            detail::check_poly_info_enabled<from_data_type>,
+            "The type doesn't support ucasts. Use the META_HPP_ENABLE_POLY_INFO macro to fix it."
+        );
+
         using namespace detail;
         type_registry& registry = type_registry::instance();
-        return registry.get_type_by_rtti(typeid(v));
-#else
-        (void)v;
-        return any_type{};
-#endif
+        return from.get_most_derived_poly_info(registry).type;
     }
 }
 
@@ -9133,20 +9129,6 @@ namespace meta_hpp
     To ucast(From&& from);
 }
 
-namespace meta_hpp::detail
-{
-    struct polymorphic_meta_info {
-        const void* ptr{};
-        class_type type{};
-    };
-
-    template < typename T >
-    concept check_polymorphic_cast_support //
-        = requires(type_registry& r, const T& v) {
-              { v.get_most_derived_polymorphic_meta_info(r) } -> std::convertible_to<polymorphic_meta_info>;
-          };
-}
-
 namespace meta_hpp
 {
     template < typename To, typename From >
@@ -9156,8 +9138,8 @@ namespace meta_hpp
         using to_data_type = std::remove_pointer_t<To>;
 
         static_assert(
-            detail::check_polymorphic_cast_support<from_data_type>,
-            "The type doesn't support ucasts. Use the META_HPP_ENABLE_POLYMORPHIC_CAST macro to fix it."
+            detail::check_poly_info_enabled<from_data_type>,
+            "The type doesn't support ucasts. Use the META_HPP_ENABLE_POLY_INFO macro to fix it."
         );
 
         if ( from == nullptr ) {
@@ -9168,12 +9150,12 @@ namespace meta_hpp
             return from;
         } else {
             detail::type_registry& registry{detail::type_registry::instance()};
-            const detail::polymorphic_meta_info& meta_info{from->get_most_derived_polymorphic_meta_info(registry)};
+            const detail::poly_info& meta_info{from->get_most_derived_poly_info(registry)};
 
             // NOLINTNEXTLINE(*-const-cast)
             void* most_derived_object_ptr = const_cast<void*>(meta_info.ptr);
 
-            if constexpr ( std::is_void_v<std::remove_cv_t<to_data_type>> ) {
+            if constexpr ( std::is_void_v<to_data_type> ) {
                 return most_derived_object_ptr;
             } else {
                 const class_type& to_class_type = registry.resolve_class_type<to_data_type>();
@@ -9189,8 +9171,8 @@ namespace meta_hpp
         using to_data_type = std::remove_reference_t<To>;
 
         static_assert(
-            detail::check_polymorphic_cast_support<from_data_type>,
-            "The type doesn't support ucasts. Use the META_HPP_ENABLE_POLYMORPHIC_CAST macro to fix it."
+            detail::check_poly_info_enabled<from_data_type>,
+            "The type doesn't support ucasts. Use the META_HPP_ENABLE_POLY_INFO macro to fix it."
         );
 
         if ( to_data_type* ptr = ucast<to_data_type*>(std::addressof(from)) ) {
@@ -9200,18 +9182,6 @@ namespace meta_hpp
         throw_exception(error_code::bad_cast);
     }
 }
-
-#define META_HPP_ENABLE_POLYMORPHIC_CAST() \
-public: \
-    META_HPP_IGNORE_OVERRIDE_WARNINGS_PUSH() \
-    virtual ::meta_hpp::detail::polymorphic_meta_info get_most_derived_polymorphic_meta_info( \
-        ::meta_hpp::detail::type_registry& registry \
-    ) const { \
-        using self_type = std::remove_cvref_t<decltype(*this)>; \
-        return ::meta_hpp::detail::polymorphic_meta_info{.ptr = this, .type = registry.resolve_class_type<self_type>()}; \
-    } \
-    META_HPP_IGNORE_OVERRIDE_WARNINGS_POP() \
-private:
 
 namespace meta_hpp::detail
 {

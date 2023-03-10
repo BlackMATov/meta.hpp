@@ -14,21 +14,21 @@ namespace
         A1(const A1&) = default;
         virtual ~A1() = default;
         char a{'a'};
-        META_HPP_ENABLE_POLYMORPHIC_CAST()
+        META_HPP_ENABLE_POLY_INFO()
     };
 
     struct B1 : A1 {
         B1() = default;
         B1(const B1&) = default;
         char b{'b'};
-        META_HPP_ENABLE_POLYMORPHIC_CAST()
+        META_HPP_ENABLE_POLY_INFO()
     };
 
     struct C1 : B1 {
         C1() = default;
         C1(const C1&) = default;
         char c{'c'};
-        META_HPP_ENABLE_POLYMORPHIC_CAST()
+        META_HPP_ENABLE_POLY_INFO()
     };
 
     // A1 <- B1 <- C1
@@ -38,21 +38,21 @@ namespace
         A2(const A2&) = default;
         virtual ~A2() = default;
         char a{'a'};
-        META_HPP_ENABLE_POLYMORPHIC_CAST()
+        META_HPP_ENABLE_POLY_INFO()
     };
 
     struct B2 : virtual A2 {
         B2() = default;
         B2(const B2&) = default;
         char b{'b'};
-        META_HPP_ENABLE_POLYMORPHIC_CAST()
+        META_HPP_ENABLE_POLY_INFO()
     };
 
     struct C2 : virtual A2 {
         C2() = default;
         C2(const C2&) = default;
         char c{'c'};
-        META_HPP_ENABLE_POLYMORPHIC_CAST()
+        META_HPP_ENABLE_POLY_INFO()
     };
 
 
@@ -61,21 +61,21 @@ namespace
         D2(const D2&) = default;
         virtual ~D2() = default;
         char d{'d'};
-        META_HPP_ENABLE_POLYMORPHIC_CAST()
+        META_HPP_ENABLE_POLY_INFO()
     };
 
     struct E2 : D2 {
         E2() = default;
         E2(const E2&) = default;
         char e{'e'};
-        META_HPP_ENABLE_POLYMORPHIC_CAST()
+        META_HPP_ENABLE_POLY_INFO()
     };
 
     struct F2 : B2, C2, E2 {
         F2() = default;
         F2(const F2&) = default;
         char f{'f'};
-        META_HPP_ENABLE_POLYMORPHIC_CAST()
+        META_HPP_ENABLE_POLY_INFO()
     };
 
 

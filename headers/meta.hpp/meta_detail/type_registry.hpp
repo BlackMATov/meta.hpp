@@ -55,18 +55,6 @@ namespace meta_hpp::detail
             return any_type{};
         }
 
-#if !defined(META_HPP_NO_RTTI)
-        [[nodiscard]] any_type get_type_by_rtti(const std::type_index& index) const noexcept {
-            const locker lock;
-
-            if ( auto iter{rtti_types_.find(index)}; iter != rtti_types_.end() ) {
-                return iter->second;
-            }
-
-            return any_type{};
-        }
-#endif
-
     public:
         template < array_kind Array >
         [[nodiscard]] array_type resolve_type() {
@@ -274,28 +262,11 @@ namespace meta_hpp::detail
         template < typename Type, typename TypeData >
         void ensure_type(TypeData& type_data) {
             const locker lock;
-
-            auto&& [position, emplaced] = types_.emplace(any_type{&type_data});
-            if ( !emplaced ) {
-                return;
-            }
-
-#if !defined(META_HPP_NO_RTTI)
-            META_HPP_TRY {
-                rtti_types_.emplace(typeid(Type), any_type{&type_data});
-            }
-            META_HPP_CATCH(...) {
-                types_.erase(position);
-                META_HPP_RETHROW();
-            }
-#endif
+            types_.emplace(any_type{&type_data});
         }
 
     private:
         std::recursive_mutex mutex_;
         std::set<any_type, std::less<>> types_;
-#if !defined(META_HPP_NO_RTTI)
-        std::map<std::type_index, any_type, std::less<>> rtti_types_;
-#endif
     };
 }

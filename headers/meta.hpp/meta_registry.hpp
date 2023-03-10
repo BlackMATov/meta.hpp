@@ -10,6 +10,7 @@
 #include "meta_states.hpp"
 #include "meta_types.hpp"
 
+#include "meta_detail/poly_info.hpp"
 #include "meta_detail/state_registry.hpp"
 #include "meta_detail/type_registry.hpp"
 
@@ -67,16 +68,19 @@ namespace meta_hpp
         return registry.resolve_destructor_type<Class>();
     }
 
-    template < typename T >
-    [[nodiscard]] any_type resolve_polymorphic_type(T&& v) noexcept {
-#if !defined(META_HPP_NO_RTTI)
+    template < typename From >
+        requires std::is_class_v<std::remove_reference_t<From>>
+    [[nodiscard]] class_type resolve_poly_type(From&& from) noexcept {
+        using from_data_type = std::remove_reference_t<From>;
+
+        static_assert(
+            detail::check_poly_info_enabled<from_data_type>,
+            "The type doesn't support ucasts. Use the META_HPP_ENABLE_POLY_INFO macro to fix it."
+        );
+
         using namespace detail;
         type_registry& registry = type_registry::instance();
-        return registry.get_type_by_rtti(typeid(v));
-#else
-        (void)v;
-        return any_type{};
-#endif
+        return from.get_most_derived_poly_info(registry).type;
     }
 }
 
