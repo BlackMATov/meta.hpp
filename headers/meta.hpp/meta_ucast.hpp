@@ -26,11 +26,11 @@ namespace meta_hpp::detail
         typename From,
         typename ToDT = std::remove_reference_t<To>,
         typename FromDT = std::remove_reference_t<From> >
-    concept reference_ucast_kind                                     //
-        = (std::is_reference_v<From> && std::is_class_v<FromDT>)     //
-       && (std::is_reference_v<To> && std::is_class_v<ToDT>)         //
-       && (!std::is_const_v<FromDT> || std::is_const_v<ToDT>)        //
-       && (!std::is_volatile_v<FromDT> || std::is_volatile_v<ToDT>); //
+    concept lvalue_reference_ucast_kind                                 //
+        = (std::is_lvalue_reference_v<From> && std::is_class_v<FromDT>) //
+       && (std::is_lvalue_reference_v<To> && std::is_class_v<ToDT>)     //
+       && (!std::is_const_v<FromDT> || std::is_const_v<ToDT>)           //
+       && (!std::is_volatile_v<FromDT> || std::is_volatile_v<ToDT>);    //
 }
 
 namespace meta_hpp
@@ -40,6 +40,6 @@ namespace meta_hpp
     To ucast(From from);
 
     template < typename To, typename From >
-        requires detail::reference_ucast_kind<To, From>
+        requires detail::lvalue_reference_ucast_kind<To, From>
     To ucast(From&& from);
 }

@@ -45,24 +45,24 @@ namespace meta_hpp
 
         if constexpr ( std::is_same_v<std::remove_cv_t<from_data_type>, std::remove_cv_t<to_data_type>> ) {
             return from;
-        }
-
-        detail::type_registry& registry{detail::type_registry::instance()};
-        const detail::polymorphic_meta_info& meta_info{from->get_most_derived_polymorphic_meta_info(registry)};
-
-        // NOLINTNEXTLINE(*-const-cast)
-        void* most_derived_object_ptr = const_cast<void*>(meta_info.ptr);
-
-        if constexpr ( std::is_void_v<std::remove_cv_t<to_data_type>> ) {
-            return most_derived_object_ptr;
         } else {
-            const class_type& to_class_type = registry.resolve_class_type<to_data_type>();
-            return static_cast<To>(detail::pointer_upcast(most_derived_object_ptr, meta_info.type, to_class_type));
+            detail::type_registry& registry{detail::type_registry::instance()};
+            const detail::polymorphic_meta_info& meta_info{from->get_most_derived_polymorphic_meta_info(registry)};
+
+            // NOLINTNEXTLINE(*-const-cast)
+            void* most_derived_object_ptr = const_cast<void*>(meta_info.ptr);
+
+            if constexpr ( std::is_void_v<std::remove_cv_t<to_data_type>> ) {
+                return most_derived_object_ptr;
+            } else {
+                const class_type& to_class_type = registry.resolve_class_type<to_data_type>();
+                return static_cast<To>(detail::pointer_upcast(most_derived_object_ptr, meta_info.type, to_class_type));
+            }
         }
     }
 
     template < typename To, typename From >
-        requires detail::reference_ucast_kind<To, From>
+        requires detail::lvalue_reference_ucast_kind<To, From>
     To ucast(From&& from) {
         using from_data_type = std::remove_reference_t<From>;
         using to_data_type = std::remove_reference_t<To>;

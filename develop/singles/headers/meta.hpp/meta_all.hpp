@@ -63,22 +63,12 @@
 #    define META_HPP_PP_CAT_I(x, y) x##y
 #endif
 
-#if defined(_MSC_VER)
-#    define META_HPP_MSVC
-#elif defined(__clang__)
+#if defined(__clang__)
 #    define META_HPP_CLANG
 #elif defined(__GNUC__)
 #    define META_HPP_GCC
-#endif
-
-#if defined(META_HPP_MSVC)
-#    define META_HPP_MSVC_IGNORE_WARNING(w) __pragma(warning(disable : w))
-#    define META_HPP_MSVC_IGNORE_WARNINGS_PUSH() __pragma(warning(push))
-#    define META_HPP_MSVC_IGNORE_WARNINGS_POP() __pragma(warning(pop))
-#else
-#    define META_HPP_MSVC_IGNORE_WARNING(w)
-#    define META_HPP_MSVC_IGNORE_WARNINGS_PUSH()
-#    define META_HPP_MSVC_IGNORE_WARNINGS_POP()
+#elif defined(_MSC_VER)
+#    define META_HPP_MSVC
 #endif
 
 #if defined(META_HPP_CLANG)
@@ -105,17 +95,23 @@
 #    define META_HPP_GCC_IGNORE_WARNINGS_POP()
 #endif
 
+#if defined(META_HPP_MSVC)
+#    define META_HPP_MSVC_IGNORE_WARNING(w) __pragma(warning(disable : w))
+#    define META_HPP_MSVC_IGNORE_WARNINGS_PUSH() __pragma(warning(push))
+#    define META_HPP_MSVC_IGNORE_WARNINGS_POP() __pragma(warning(pop))
+#else
+#    define META_HPP_MSVC_IGNORE_WARNING(w)
+#    define META_HPP_MSVC_IGNORE_WARNINGS_PUSH()
+#    define META_HPP_MSVC_IGNORE_WARNINGS_POP()
+#endif
+
 #define META_HPP_IGNORE_OVERRIDE_WARNINGS_PUSH() \
-    META_HPP_MSVC_IGNORE_WARNINGS_PUSH() \
     META_HPP_CLANG_IGNORE_WARNINGS_PUSH() \
-    META_HPP_GCC_IGNORE_WARNINGS_PUSH() \
+    META_HPP_CLANG_IGNORE_WARNING("-Wunknown-warning-option") \
     META_HPP_CLANG_IGNORE_WARNING("-Winconsistent-missing-override") \
     META_HPP_CLANG_IGNORE_WARNING("-Wsuggest-override")
 
-#define META_HPP_IGNORE_OVERRIDE_WARNINGS_POP() \
-    META_HPP_GCC_IGNORE_WARNINGS_POP() \
-    META_HPP_CLANG_IGNORE_WARNINGS_POP() \
-    META_HPP_MSVC_IGNORE_WARNINGS_POP()\
+#define META_HPP_IGNORE_OVERRIDE_WARNINGS_POP() META_HPP_CLANG_IGNORE_WARNINGS_POP()
 
 namespace meta_hpp::detail
 {
@@ -9119,11 +9115,11 @@ namespace meta_hpp::detail
         typename From,
         typename ToDT = std::remove_reference_t<To>,
         typename FromDT = std::remove_reference_t<From> >
-    concept reference_ucast_kind                                     //
-        = (std::is_reference_v<From> && std::is_class_v<FromDT>)     //
-       && (std::is_reference_v<To> && std::is_class_v<ToDT>)         //
-       && (!std::is_const_v<FromDT> || std::is_const_v<ToDT>)        //
-       && (!std::is_volatile_v<FromDT> || std::is_volatile_v<ToDT>); //
+    concept lvalue_reference_ucast_kind                                 //
+        = (std::is_lvalue_reference_v<From> && std::is_class_v<FromDT>) //
+       && (std::is_lvalue_reference_v<To> && std::is_class_v<ToDT>)     //
+       && (!std::is_const_v<FromDT> || std::is_const_v<ToDT>)           //
+       && (!std::is_volatile_v<FromDT> || std::is_volatile_v<ToDT>);    //
 }
 
 namespace meta_hpp
@@ -9133,7 +9129,7 @@ namespace meta_hpp
     To ucast(From from);
 
     template < typename To, typename From >
-        requires detail::reference_ucast_kind<To, From>
+        requires detail::lvalue_reference_ucast_kind<To, From>
     To ucast(From&& from);
 }
 
@@ -9170,24 +9166,24 @@ namespace meta_hpp
 
         if constexpr ( std::is_same_v<std::remove_cv_t<from_data_type>, std::remove_cv_t<to_data_type>> ) {
             return from;
-        }
-
-        detail::type_registry& registry{detail::type_registry::instance()};
-        const detail::polymorphic_meta_info& meta_info{from->get_most_derived_polymorphic_meta_info(registry)};
-
-        // NOLINTNEXTLINE(*-const-cast)
-        void* most_derived_object_ptr = const_cast<void*>(meta_info.ptr);
-
-        if constexpr ( std::is_void_v<std::remove_cv_t<to_data_type>> ) {
-            return most_derived_object_ptr;
         } else {
-            const class_type& to_class_type = registry.resolve_class_type<to_data_type>();
-            return static_cast<To>(detail::pointer_upcast(most_derived_object_ptr, meta_info.type, to_class_type));
+            detail::type_registry& registry{detail::type_registry::instance()};
+            const detail::polymorphic_meta_info& meta_info{from->get_most_derived_polymorphic_meta_info(registry)};
+
+            // NOLINTNEXTLINE(*-const-cast)
+            void* most_derived_object_ptr = const_cast<void*>(meta_info.ptr);
+
+            if constexpr ( std::is_void_v<std::remove_cv_t<to_data_type>> ) {
+                return most_derived_object_ptr;
+            } else {
+                const class_type& to_class_type = registry.resolve_class_type<to_data_type>();
+                return static_cast<To>(detail::pointer_upcast(most_derived_object_ptr, meta_info.type, to_class_type));
+            }
         }
     }
 
     template < typename To, typename From >
-        requires detail::reference_ucast_kind<To, From>
+        requires detail::lvalue_reference_ucast_kind<To, From>
     To ucast(From&& from) {
         using from_data_type = std::remove_reference_t<From>;
         using to_data_type = std::remove_reference_t<To>;
