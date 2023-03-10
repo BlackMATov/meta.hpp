@@ -27,25 +27,25 @@ namespace
         base1& operator=(const base1&) = default;
 
         RTTR_ENABLE()
-        META_HPP_ENABLE_POLYMORPHIC_CAST()
+        META_HPP_ENABLE_POLY_INFO()
     };
 
     struct base2 : base1 {
         unsigned b2{2};
         RTTR_ENABLE(base1)
-        META_HPP_ENABLE_POLYMORPHIC_CAST()
+        META_HPP_ENABLE_POLY_INFO()
     };
 
     struct base3 : base2 {
         unsigned b3{3};
         RTTR_ENABLE(base2)
-        META_HPP_ENABLE_POLYMORPHIC_CAST()
+        META_HPP_ENABLE_POLY_INFO()
     };
 
     struct base4 : base3 {
         unsigned b4{4};
         RTTR_ENABLE(base3)
-        META_HPP_ENABLE_POLYMORPHIC_CAST()
+        META_HPP_ENABLE_POLY_INFO()
     };
 
     base4* dynamic_cast_1(base1* b1) {

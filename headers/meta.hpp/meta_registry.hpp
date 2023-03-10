@@ -70,7 +70,7 @@ namespace meta_hpp
 
     template < typename From >
         requires std::is_class_v<std::remove_reference_t<From>>
-    [[nodiscard]] class_type resolve_poly_type(From&& from) noexcept {
+    [[nodiscard]] class_type resolve_poly_type(From&& from) {
         using from_data_type = std::remove_reference_t<From>;
 
         static_assert(
