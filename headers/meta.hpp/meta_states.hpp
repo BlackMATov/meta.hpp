@@ -326,9 +326,9 @@ namespace meta_hpp
 
         [[nodiscard]] const std::string& get_name() const noexcept;
 
-        [[nodiscard]] const function_set& get_functions() const noexcept;
+        [[nodiscard]] const function_list& get_functions() const noexcept;
         [[nodiscard]] const typedef_map& get_typedefs() const noexcept;
-        [[nodiscard]] const variable_set& get_variables() const noexcept;
+        [[nodiscard]] const variable_list& get_variables() const noexcept;
 
         [[nodiscard]] function get_function(std::string_view name) const noexcept;
         [[nodiscard]] any_type get_typedef(std::string_view name) const noexcept;
@@ -398,13 +398,13 @@ namespace std
 
 namespace meta_hpp
 {
-    template < detail::state_family L, detail::state_family R >
-    [[nodiscard]] bool operator==(const L& l, const R& r) noexcept {
+    template < detail::state_family State >
+    [[nodiscard]] bool operator==(const State& l, const State& r) noexcept {
         return l.is_valid() == r.is_valid() && (!l.is_valid() || l.get_index() == r.get_index());
     }
 
-    template < detail::state_family L, detail::state_family R >
-    [[nodiscard]] std::strong_ordering operator<=>(const L& l, const R& r) noexcept {
+    template < detail::state_family State >
+    [[nodiscard]] std::strong_ordering operator<=>(const State& l, const State& r) noexcept {
         if ( const std::strong_ordering cmp{l.is_valid() <=> r.is_valid()}; cmp != std::strong_ordering::equal ) {
             return cmp;
         }
@@ -414,13 +414,13 @@ namespace meta_hpp
 
 namespace meta_hpp
 {
-    template < detail::state_family L, detail::index_family R >
-    [[nodiscard]] bool operator==(const L& l, const R& r) noexcept {
+    template < detail::state_family State >
+    [[nodiscard]] bool operator==(const State& l, const typename State::index_type& r) noexcept {
         return l.is_valid() && l.get_index() == r;
     }
 
-    template < detail::state_family L, detail::index_family R >
-    [[nodiscard]] std::strong_ordering operator<=>(const L& l, const R& r) noexcept {
+    template < detail::state_family State >
+    [[nodiscard]] std::strong_ordering operator<=>(const State& l, const typename State::index_type& r) noexcept {
         return l.is_valid() ? l.get_index() <=> r : std::strong_ordering::less;
     }
 }
@@ -541,9 +541,9 @@ namespace meta_hpp::detail
         scope_index index;
         metadata_map metadata;
 
-        function_set functions{};
+        function_list functions{};
         typedef_map typedefs{};
-        variable_set variables{};
+        variable_list variables{};
 
         [[nodiscard]] static scope_state_ptr make(std::string name, metadata_map metadata);
         explicit scope_state(scope_index index, metadata_map metadata);

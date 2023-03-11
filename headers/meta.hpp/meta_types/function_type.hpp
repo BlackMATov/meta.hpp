@@ -15,11 +15,8 @@
 namespace meta_hpp::detail
 {
     template < function_pointer_kind Function >
-    struct function_tag {};
-
-    template < function_pointer_kind Function >
     function_type_data::function_type_data(type_list<Function>)
-    : type_data_base{type_id{type_list<function_tag<Function>>{}}, type_kind::function_}
+    : type_data_base{type_kind::function_}
     , flags{function_traits<Function>::make_flags()}
     , return_type{resolve_type<typename function_traits<Function>::return_type>()}
     , argument_types{resolve_types(typename function_traits<Function>::argument_types{})} {}

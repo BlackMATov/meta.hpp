@@ -66,8 +66,7 @@ TEST_CASE("meta/meta_types/ops") {
             CHECK(ivec2_x.get_type() != meta_hpp::member_type{});
             CHECK(meta_hpp::member_type{} != ivec2_x.get_type());
 
-            CHECK(ivec2_x.get_type() < ivec2_add.get_type());
-            CHECK_FALSE(ivec2_add.get_type() < ivec2_x.get_type());
+            CHECK((ivec2_x.get_type() < ivec2_add.get_type() || ivec2_add.get_type() < ivec2_x.get_type()));
 
             CHECK_FALSE(ivec2_x.get_type() < meta_hpp::member_type{});
             CHECK(meta_hpp::member_type{} < ivec2_x.get_type());

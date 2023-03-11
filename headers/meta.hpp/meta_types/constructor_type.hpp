@@ -15,11 +15,8 @@
 namespace meta_hpp::detail
 {
     template < class_kind Class, typename... Args >
-    struct constructor_tag {};
-
-    template < class_kind Class, typename... Args >
     constructor_type_data::constructor_type_data(type_list<Class>, type_list<Args...>)
-    : type_data_base{type_id{type_list<constructor_tag<Class, Args...>>{}}, type_kind::constructor_}
+    : type_data_base{type_kind::constructor_}
     , flags{constructor_traits<Class, Args...>::make_flags()}
     , owner_type{resolve_type<typename constructor_traits<Class, Args...>::class_type>()}
     , argument_types{resolve_types(typename constructor_traits<Class, Args...>::argument_types{})} {}

@@ -15,11 +15,8 @@
 namespace meta_hpp::detail
 {
     template < pointer_kind Pointer >
-    struct pointer_tag {};
-
-    template < pointer_kind Pointer >
     pointer_type_data::pointer_type_data(type_list<Pointer>)
-    : type_data_base{type_id{type_list<pointer_tag<Pointer>>{}}, type_kind::pointer_}
+    : type_data_base{type_kind::pointer_}
     , flags{pointer_traits<Pointer>::make_flags()}
     , data_type{resolve_type<typename pointer_traits<Pointer>::data_type>()} {}
 }

@@ -958,54 +958,30 @@ namespace std
 
 namespace meta_hpp::detail
 {
-    template < typename Key, typename Compare, typename Allocator >
-        requires std::is_move_constructible_v<Key> && std::is_move_assignable_v<Key>
-    typename std::set<Key, Compare, Allocator>::iterator insert_or_assign( //
-        std::set<Key, Compare, Allocator>& set,
-        typename std::set<Key, Compare, Allocator>::value_type&& value
+    template < typename Value, typename Allocator >
+        requires std::is_move_constructible_v<Value> && std::is_move_assignable_v<Value>
+    typename std::vector<Value, Allocator>::iterator insert_or_assign( //
+        std::vector<Value, Allocator>& vector,
+        typename std::vector<Value, Allocator>::value_type&& value
     ) {
-        auto&& [position, inserted] = set.insert(std::move(value));
-
-        if ( inserted ) {
+        if ( auto&& position{std::find(vector.begin(), vector.end(), value)}; position != vector.end() ) {
+            *position = std::move(value);
             return position;
         }
-
-        auto node = set.extract(position++);
-
-        META_HPP_TRY {
-            node.value() = std::move(value);
-        }
-        META_HPP_CATCH(...) {
-            set.insert(position, std::move(node));
-            META_HPP_RETHROW();
-        }
-
-        return set.insert(position, std::move(node));
+        return vector.insert(vector.end(), std::move(value));
     }
 
-    template < typename Key, typename Compare, typename Allocator >
-        requires std::is_copy_constructible_v<Key> && std::is_copy_assignable_v<Key>
-    typename std::set<Key, Compare, Allocator>::iterator insert_or_assign( //
-        std::set<Key, Compare, Allocator>& set,
-        const typename std::set<Key, Compare, Allocator>::value_type& value
+    template < typename Value, typename Allocator >
+        requires std::is_copy_constructible_v<Value> && std::is_copy_assignable_v<Value>
+    typename std::vector<Value, Allocator>::iterator insert_or_assign( //
+        std::vector<Value, Allocator>& vector,
+        const typename std::vector<Value, Allocator>::value_type& value
     ) {
-        auto&& [position, inserted] = set.insert(value);
-
-        if ( inserted ) {
+        if ( auto&& position{std::find(vector.begin(), vector.end(), value)}; position != vector.end() ) {
+            *position = value;
             return position;
         }
-
-        auto node = set.extract(position++);
-
-        META_HPP_TRY {
-            node.value() = value;
-        }
-        META_HPP_CATCH(...) {
-            set.insert(position, std::move(node));
-            META_HPP_RETHROW();
-        }
-
-        return set.insert(position, std::move(node));
+        return vector.insert(vector.end(), value);
     }
 }
 
@@ -1190,7 +1166,7 @@ namespace meta_hpp::detail
         }
 
         [[nodiscard]] std::size_t get_hash() const noexcept {
-            return std::hash<T*>{}(ptr_);
+            return hash_combiner{}(ptr_);
         }
 
         [[nodiscard]] bool operator==(const intrusive_ptr& other) const noexcept {
@@ -1516,108 +1492,6 @@ namespace meta_hpp::detail
 
 namespace meta_hpp::detail
 {
-    template < typename... Types >
-    struct type_list {};
-
-    template < std::size_t I >
-    using size_constant = std::integral_constant<std::size_t, I>;
-
-    template < std::size_t I >
-    using index_constant = std::integral_constant<std::size_t, I>;
-}
-
-namespace meta_hpp::detail
-{
-    template < std::size_t Index, typename TypeList >
-    struct type_list_at;
-
-    template < std::size_t Index, typename... Types >
-    struct type_list_at<Index, type_list<Types...>> {
-        using type = std::tuple_element_t<Index, std::tuple<Types...>>;
-    };
-
-    template < std::size_t Index, typename TypeList >
-    using type_list_at_t = typename type_list_at<Index, TypeList>::type;
-}
-
-namespace meta_hpp::detail
-{
-    template < typename TypeList >
-    struct type_list_arity;
-
-    template < typename... Types >
-    struct type_list_arity<type_list<Types...>> : size_constant<sizeof...(Types)> {};
-
-    template < typename TypeList >
-    inline constexpr std::size_t type_list_arity_v = type_list_arity<TypeList>::value;
-}
-
-namespace meta_hpp::detail
-{
-    class type_id final {
-    public:
-        template < typename T >
-        explicit type_id(type_list<T>) noexcept
-        : id_{type_to_id<T>()} {}
-
-        type_id(type_id&&) = default;
-        type_id(const type_id&) = default;
-
-        type_id& operator=(type_id&&) = default;
-        type_id& operator=(const type_id&) = default;
-
-        ~type_id() = default;
-
-        void swap(type_id& other) noexcept {
-            std::swap(id_, other.id_);
-        }
-
-        [[nodiscard]] std::size_t get_hash() const noexcept {
-            return std::hash<underlying_type>{}(id_);
-        }
-
-        [[nodiscard]] bool operator==(type_id other) const noexcept {
-            return id_ == other.id_;
-        }
-
-        [[nodiscard]] std::strong_ordering operator<=>(type_id other) const noexcept {
-            return id_ <=> other.id_;
-        }
-
-    private:
-        using underlying_type = std::uint32_t;
-        underlying_type id_{};
-
-    private:
-        [[nodiscard]] static underlying_type next() noexcept {
-            static std::atomic<underlying_type> id{};
-            return ++id;
-        }
-
-        template < typename T >
-        [[nodiscard]] static underlying_type type_to_id() noexcept {
-            static const underlying_type id{next()};
-            return id;
-        }
-    };
-
-    inline void swap(type_id& l, type_id& r) noexcept {
-        l.swap(r);
-    }
-}
-
-namespace std
-{
-    template <>
-    struct hash<meta_hpp::detail::type_id> {
-        size_t operator()(const meta_hpp::detail::type_id& id) const noexcept {
-            return id.get_hash();
-        }
-    };
-}
-
-namespace meta_hpp::detail
-{
     template < typename T >
     concept array_kind = std::is_array_v<T>;
 
@@ -1694,6 +1568,44 @@ namespace meta_hpp::detail
     }
 }
 
+namespace meta_hpp::detail
+{
+    template < typename... Types >
+    struct type_list {};
+
+    template < std::size_t I >
+    using size_constant = std::integral_constant<std::size_t, I>;
+
+    template < std::size_t I >
+    using index_constant = std::integral_constant<std::size_t, I>;
+}
+
+namespace meta_hpp::detail
+{
+    template < std::size_t Index, typename TypeList >
+    struct type_list_at;
+
+    template < std::size_t Index, typename... Types >
+    struct type_list_at<Index, type_list<Types...>> {
+        using type = std::tuple_element_t<Index, std::tuple<Types...>>;
+    };
+
+    template < std::size_t Index, typename TypeList >
+    using type_list_at_t = typename type_list_at<Index, TypeList>::type;
+}
+
+namespace meta_hpp::detail
+{
+    template < typename TypeList >
+    struct type_list_arity;
+
+    template < typename... Types >
+    struct type_list_arity<type_list<Types...>> : size_constant<sizeof...(Types)> {};
+
+    template < typename TypeList >
+    inline constexpr std::size_t type_list_arity_v = type_list_arity<TypeList>::value;
+}
+
 namespace meta_hpp
 {
     using detail::error_code;
@@ -1707,7 +1619,6 @@ namespace meta_hpp
     using detail::select_non_const;
     using detail::select_overload;
 
-    using detail::type_id;
     using detail::type_kind;
     using detail::type_list;
 }
@@ -1882,24 +1793,23 @@ namespace meta_hpp
 
 namespace meta_hpp
 {
-    using any_type_list = std::vector<any_type>;
-    using argument_list = std::vector<argument>;
     using string_ilist = std::initializer_list<std::string_view>;
 
     using metadata_map = std::map<std::string, uvalue, std::less<>>;
     using typedef_map = std::map<std::string, any_type, std::less<>>;
 
-    using class_set = std::set<class_type, std::less<>>;
-    using enum_set = std::set<enum_type, std::less<>>;
+    using class_list = std::vector<class_type>;
+    using enum_list = std::vector<enum_type>;
 
-    using constructor_set = std::set<constructor, std::less<>>;
-    using destructor_set = std::set<destructor, std::less<>>;
-    using evalue_set = std::set<evalue, std::less<>>;
-    using function_set = std::set<function, std::less<>>;
-    using member_set = std::set<member, std::less<>>;
-    using method_set = std::set<method, std::less<>>;
-    using scope_set = std::set<scope, std::less<>>;
-    using variable_set = std::set<variable, std::less<>>;
+    using any_type_list = std::vector<any_type>;
+    using argument_list = std::vector<argument>;
+    using constructor_list = std::vector<constructor>;
+    using destructor_list = std::vector<destructor>;
+    using evalue_list = std::vector<evalue>;
+    using function_list = std::vector<function>;
+    using member_list = std::vector<member>;
+    using method_list = std::vector<method>;
+    using variable_list = std::vector<variable>;
 }
 
 namespace meta_hpp::detail
@@ -2543,12 +2453,38 @@ namespace meta_hpp
 
 namespace meta_hpp
 {
+    class type_id final {
+    public:
+        type_id() = default;
+
+        explicit type_id(std::uintptr_t id)
+        : id_{id} {}
+
+        void swap(type_id& other) noexcept {
+            std::swap(id_, other.id_);
+        }
+
+        [[nodiscard]] std::size_t get_hash() const noexcept {
+            return detail::hash_combiner{}(id_);
+        }
+
+        [[nodiscard]] std::strong_ordering operator<=>(const type_id& other) const = default;
+
+    private:
+        std::uintptr_t id_{};
+    };
+}
+
+namespace meta_hpp
+{
     template < detail::type_family Type >
     class type_base {
         using data_ptr = typename detail::type_traits<Type>::data_ptr;
         friend data_ptr detail::type_access<Type>(const Type&);
 
     public:
+        using id_type = type_id;
+
         type_base() = default;
 
         explicit type_base(data_ptr data)
@@ -2568,8 +2504,9 @@ namespace meta_hpp
             return is_valid();
         }
 
-        [[nodiscard]] type_id get_id() const noexcept {
-            return data_->id;
+        [[nodiscard]] id_type get_id() const noexcept {
+            // NOLINTNEXTLINE(*-reinterpret-cast)
+            return id_type{reinterpret_cast<std::uintptr_t>(data_)};
         }
 
         [[nodiscard]] type_kind get_kind() const noexcept {
@@ -2652,15 +2589,15 @@ namespace meta_hpp
         [[nodiscard]] any_type get_argument_type(std::size_t position) const noexcept;
         [[nodiscard]] const any_type_list& get_argument_types() const noexcept;
 
-        [[nodiscard]] const class_set& get_base_classes() const noexcept;
-        [[nodiscard]] const class_set& get_derived_classes() const noexcept;
-        [[nodiscard]] const constructor_set& get_constructors() const noexcept;
-        [[nodiscard]] const destructor_set& get_destructors() const noexcept;
-        [[nodiscard]] const function_set& get_functions() const noexcept;
-        [[nodiscard]] const member_set& get_members() const noexcept;
-        [[nodiscard]] const method_set& get_methods() const noexcept;
+        [[nodiscard]] const class_list& get_base_classes() const noexcept;
+        [[nodiscard]] const class_list& get_derived_classes() const noexcept;
+        [[nodiscard]] const constructor_list& get_constructors() const noexcept;
+        [[nodiscard]] const destructor_list& get_destructors() const noexcept;
+        [[nodiscard]] const function_list& get_functions() const noexcept;
+        [[nodiscard]] const member_list& get_members() const noexcept;
+        [[nodiscard]] const method_list& get_methods() const noexcept;
         [[nodiscard]] const typedef_map& get_typedefs() const noexcept;
-        [[nodiscard]] const variable_set& get_variables() const noexcept;
+        [[nodiscard]] const variable_list& get_variables() const noexcept;
 
         template < typename... Args >
         [[nodiscard]] uvalue create(Args&&... args) const;
@@ -2789,7 +2726,7 @@ namespace meta_hpp
 
         [[nodiscard]] number_type get_underlying_type() const noexcept;
 
-        [[nodiscard]] const evalue_set& get_evalues() const noexcept;
+        [[nodiscard]] const evalue_list& get_evalues() const noexcept;
 
         [[nodiscard]] evalue get_evalue(std::string_view name) const noexcept;
 
@@ -2878,13 +2815,13 @@ namespace std
 
 namespace meta_hpp
 {
-    template < detail::type_family L, detail::type_family R >
-    [[nodiscard]] bool operator==(const L& l, const R& r) noexcept {
+    template < detail::type_family TypeL, detail::type_family TypeR >
+    [[nodiscard]] bool operator==(const TypeL& l, const TypeR& r) noexcept {
         return l.is_valid() == r.is_valid() && (!l.is_valid() || l.get_id() == r.get_id());
     }
 
-    template < detail::type_family L, detail::type_family R >
-    [[nodiscard]] std::strong_ordering operator<=>(const L& l, const R& r) noexcept {
+    template < detail::type_family TypeL, detail::type_family TypeR >
+    [[nodiscard]] std::strong_ordering operator<=>(const TypeL& l, const TypeR& r) noexcept {
         if ( const std::strong_ordering cmp{l.is_valid() <=> r.is_valid()}; cmp != std::strong_ordering::equal ) {
             return cmp;
         }
@@ -2894,13 +2831,13 @@ namespace meta_hpp
 
 namespace meta_hpp
 {
-    template < detail::type_family L >
-    [[nodiscard]] bool operator==(const L& l, type_id r) noexcept {
+    template < detail::type_family Type >
+    [[nodiscard]] bool operator==(const Type& l, const typename Type::id_type& r) noexcept {
         return l.is_valid() && l.get_id() == r;
     }
 
-    template < detail::type_family L >
-    [[nodiscard]] std::strong_ordering operator<=>(const L& l, type_id r) noexcept {
+    template < detail::type_family Type >
+    [[nodiscard]] std::strong_ordering operator<=>(const Type& l, const typename Type::id_type& r) noexcept {
         return l.is_valid() ? l.get_id() <=> r : std::strong_ordering::less;
     }
 }
@@ -2908,14 +2845,12 @@ namespace meta_hpp
 namespace meta_hpp::detail
 {
     struct type_data_base {
-        const type_id id;
         const type_kind kind;
 
         metadata_map metadata{};
 
-        explicit type_data_base(type_id nid, type_kind nkind)
-        : id{nid}
-        , kind{nkind} {}
+        explicit type_data_base(type_kind nkind)
+        : kind{nkind} {}
 
         type_data_base(type_data_base&&) = delete;
         type_data_base(const type_data_base&) = delete;
@@ -2941,15 +2876,15 @@ namespace meta_hpp::detail
         const std::size_t align;
         const any_type_list argument_types;
 
-        class_set base_classes;
-        class_set derived_classes;
-        constructor_set constructors;
-        destructor_set destructors;
-        function_set functions;
-        member_set members;
-        method_set methods;
+        class_list base_classes;
+        class_list derived_classes;
+        constructor_list constructors;
+        destructor_list destructors;
+        function_list functions;
+        member_list members;
+        method_list methods;
         typedef_map typedefs;
-        variable_set variables;
+        variable_list variables;
 
         struct upcast_func_t final {
             using upcast_t = void* (*)(void*);
@@ -2968,13 +2903,14 @@ namespace meta_hpp::detail
 
         struct upcast_func_list_t final {
             using upcasts_t = std::vector<upcast_func_t>;
+            using vbases_t = std::set<class_type, std::less<>>;
 
             upcasts_t upcasts{};
-            class_set vbases{};
+            vbases_t vbases{};
             bool is_ambiguous{};
 
             upcast_func_list_t(const upcast_func_t& _upcast);
-            upcast_func_list_t(upcasts_t _upcasts, class_set _vbases);
+            upcast_func_list_t(upcasts_t _upcasts, vbases_t _vbases);
 
             [[nodiscard]] void* apply(void* ptr) const noexcept;
             [[nodiscard]] const void* apply(const void* ptr) const noexcept;
@@ -3013,7 +2949,7 @@ namespace meta_hpp::detail
         const enum_bitflags flags;
         const number_type underlying_type;
 
-        evalue_set evalues;
+        evalue_list evalues;
 
         template < enum_kind Enum >
         explicit enum_type_data(type_list<Enum>);
@@ -3936,9 +3872,9 @@ namespace meta_hpp
 
         [[nodiscard]] const std::string& get_name() const noexcept;
 
-        [[nodiscard]] const function_set& get_functions() const noexcept;
+        [[nodiscard]] const function_list& get_functions() const noexcept;
         [[nodiscard]] const typedef_map& get_typedefs() const noexcept;
-        [[nodiscard]] const variable_set& get_variables() const noexcept;
+        [[nodiscard]] const variable_list& get_variables() const noexcept;
 
         [[nodiscard]] function get_function(std::string_view name) const noexcept;
         [[nodiscard]] any_type get_typedef(std::string_view name) const noexcept;
@@ -4008,13 +3944,13 @@ namespace std
 
 namespace meta_hpp
 {
-    template < detail::state_family L, detail::state_family R >
-    [[nodiscard]] bool operator==(const L& l, const R& r) noexcept {
+    template < detail::state_family State >
+    [[nodiscard]] bool operator==(const State& l, const State& r) noexcept {
         return l.is_valid() == r.is_valid() && (!l.is_valid() || l.get_index() == r.get_index());
     }
 
-    template < detail::state_family L, detail::state_family R >
-    [[nodiscard]] std::strong_ordering operator<=>(const L& l, const R& r) noexcept {
+    template < detail::state_family State >
+    [[nodiscard]] std::strong_ordering operator<=>(const State& l, const State& r) noexcept {
         if ( const std::strong_ordering cmp{l.is_valid() <=> r.is_valid()}; cmp != std::strong_ordering::equal ) {
             return cmp;
         }
@@ -4024,13 +3960,13 @@ namespace meta_hpp
 
 namespace meta_hpp
 {
-    template < detail::state_family L, detail::index_family R >
-    [[nodiscard]] bool operator==(const L& l, const R& r) noexcept {
+    template < detail::state_family State >
+    [[nodiscard]] bool operator==(const State& l, const typename State::index_type& r) noexcept {
         return l.is_valid() && l.get_index() == r;
     }
 
-    template < detail::state_family L, detail::index_family R >
-    [[nodiscard]] std::strong_ordering operator<=>(const L& l, const R& r) noexcept {
+    template < detail::state_family State >
+    [[nodiscard]] std::strong_ordering operator<=>(const State& l, const typename State::index_type& r) noexcept {
         return l.is_valid() ? l.get_index() <=> r : std::strong_ordering::less;
     }
 }
@@ -4151,9 +4087,9 @@ namespace meta_hpp::detail
         scope_index index;
         metadata_map metadata;
 
-        function_set functions{};
+        function_list functions{};
         typedef_map typedefs{};
-        variable_set variables{};
+        variable_list variables{};
 
         [[nodiscard]] static scope_state_ptr make(std::string name, metadata_map metadata);
         explicit scope_state(scope_index index, metadata_map metadata);
@@ -4211,16 +4147,6 @@ namespace meta_hpp::detail
             for ( const any_type& type : types_ ) {
                 std::invoke(f, type);
             }
-        }
-
-        [[nodiscard]] any_type get_type_by_id(type_id id) const noexcept {
-            const locker lock;
-
-            if ( auto iter{types_.find(id)}; iter != types_.end() ) {
-                return *iter;
-            }
-
-            return any_type{};
         }
 
     public:
@@ -4956,19 +4882,27 @@ namespace meta_hpp::detail::class_bind_impl
     using upcast_func_t = class_type_data::upcast_func_t;
     using upcast_func_list_t = class_type_data::upcast_func_list_t;
 
-    using new_bases_db_t = std::map<class_type, upcast_func_t>;
+    using new_bases_db_t = std::vector<std::pair<class_type, upcast_func_t>>;
     using deep_upcasts_db_t = std::map<class_type, deep_upcasts_t, std::less<>>;
-    using derived_classes_db_t = std::map<class_type, class_set, std::less<>>;
+    using derived_classes_db_t = std::map<class_type, class_list, std::less<>>;
 
     template < class_kind Class, class_kind Base >
         requires std::is_base_of_v<Base, Class>
     void update_new_bases_db( //
         new_bases_db_t& new_bases_db
     ) {
-        new_bases_db.try_emplace( //
-            resolve_type<Base>(),
-            std::in_place_type<Class>,
-            std::in_place_type<Base>);
+        const class_type& new_base = resolve_type<Base>();
+
+        for ( auto&& [db_base, _] : new_bases_db ) {
+            if ( db_base == new_base ) {
+                return;
+            }
+        }
+
+        new_bases_db.emplace_back( //
+            new_base,
+            upcast_func_t{std::in_place_type<Class>, std::in_place_type<Base>}
+        );
     }
 
     inline void update_deep_upcasts_db( //
@@ -5011,8 +4945,8 @@ namespace meta_hpp::detail::class_bind_impl
         derived_classes_db_t& derived_classes_db
     ) {
         const class_type_data& base_class_data = *type_access(new_base_class);
-        class_set new_derived_classes{base_class_data.derived_classes};
-        new_derived_classes.emplace(self_class);
+        class_list new_derived_classes{base_class_data.derived_classes};
+        insert_or_assign(new_derived_classes, self_class);
         derived_classes_db.emplace(new_base_class, std::move(new_derived_classes));
     }
 }
@@ -5038,28 +4972,24 @@ namespace meta_hpp
         using namespace detail;
         using namespace detail::class_bind_impl;
 
-        if ( (... && get_data().base_classes.contains(resolve_type<Bases>())) ) {
-            return *this;
-        }
-
         new_bases_db_t new_bases_db;
         (update_new_bases_db<Class, Bases>(new_bases_db), ...);
 
         deep_upcasts_db_t deep_upcasts_db;
         derived_classes_db_t derived_classes_db;
 
-        class_set new_base_classes{get_data().base_classes};
+        class_list new_base_classes{get_data().base_classes};
         base_upcasts_t new_base_upcasts{get_data().base_upcasts};
 
         for ( auto&& [new_base_class, self_to_new_base] : new_bases_db ) {
-            if ( new_base_classes.contains(new_base_class) ) {
+            if ( std::find(new_base_classes.begin(), new_base_classes.end(), new_base_class) != new_base_classes.end() ) {
                 continue;
             }
 
             update_deep_upcasts_db(*this, new_base_class, self_to_new_base, deep_upcasts_db);
             updata_derived_classes_db(*this, new_base_class, derived_classes_db);
 
-            new_base_classes.emplace(new_base_class);
+            new_base_classes.emplace_back(new_base_class);
             new_base_upcasts.emplace(new_base_class, self_to_new_base);
         }
 
@@ -6282,11 +6212,8 @@ namespace meta_hpp::detail
 namespace meta_hpp::detail
 {
     template < function_pointer_kind Function >
-    struct function_tag {};
-
-    template < function_pointer_kind Function >
     function_type_data::function_type_data(type_list<Function>)
-    : type_data_base{type_id{type_list<function_tag<Function>>{}}, type_kind::function_}
+    : type_data_base{type_kind::function_}
     , flags{function_traits<Function>::make_flags()}
     , return_type{resolve_type<typename function_traits<Function>::return_type>()}
     , argument_types{resolve_types(typename function_traits<Function>::argument_types{})} {}
@@ -6723,11 +6650,8 @@ namespace meta_hpp::detail
 namespace meta_hpp::detail
 {
     template < member_pointer_kind Member >
-    struct member_tag {};
-
-    template < member_pointer_kind Member >
     member_type_data::member_type_data(type_list<Member>)
-    : type_data_base{type_id{type_list<member_tag<Member>>{}}, type_kind::member_}
+    : type_data_base{type_kind::member_}
     , flags{member_traits<Member>::make_flags()}
     , owner_type{resolve_type<typename member_traits<Member>::class_type>()}
     , value_type{resolve_type<typename member_traits<Member>::value_type>()} {}
@@ -7050,11 +6974,8 @@ namespace meta_hpp
 namespace meta_hpp::detail
 {
     template < method_pointer_kind Method >
-    struct method_tag {};
-
-    template < method_pointer_kind Method >
     method_type_data::method_type_data(type_list<Method>)
-    : type_data_base{type_id{type_list<method_tag<Method>>{}}, type_kind::method_}
+    : type_data_base{type_kind::method_}
     , flags{method_traits<Method>::make_flags()}
     , owner_type{resolve_type<typename method_traits<Method>::class_type>()}
     , return_type{resolve_type<typename method_traits<Method>::return_type>()}
@@ -7519,11 +7440,8 @@ namespace meta_hpp
 namespace meta_hpp::detail
 {
     template < class_kind Class, typename... Args >
-    struct constructor_tag {};
-
-    template < class_kind Class, typename... Args >
     constructor_type_data::constructor_type_data(type_list<Class>, type_list<Args...>)
-    : type_data_base{type_id{type_list<constructor_tag<Class, Args...>>{}}, type_kind::constructor_}
+    : type_data_base{type_kind::constructor_}
     , flags{constructor_traits<Class, Args...>::make_flags()}
     , owner_type{resolve_type<typename constructor_traits<Class, Args...>::class_type>()}
     , argument_types{resolve_types(typename constructor_traits<Class, Args...>::argument_types{})} {}
@@ -7774,11 +7692,8 @@ namespace meta_hpp
 namespace meta_hpp::detail
 {
     template < class_kind Class >
-    struct destructor_tag {};
-
-    template < class_kind Class >
     destructor_type_data::destructor_type_data(type_list<Class>)
-    : type_data_base{type_id{type_list<destructor_tag<Class>>{}}, type_kind::destructor_}
+    : type_data_base{type_kind::destructor_}
     , flags{destructor_traits<Class>::make_flags()}
     , owner_type{resolve_type<typename destructor_traits<Class>::class_type>()} {}
 }
@@ -7929,11 +7844,8 @@ namespace meta_hpp
 namespace meta_hpp::detail
 {
     template < enum_kind Enum >
-    struct enum_tag {};
-
-    template < enum_kind Enum >
     enum_type_data::enum_type_data(type_list<Enum>)
-    : type_data_base{type_id{type_list<enum_tag<Enum>>{}}, type_kind::enum_}
+    : type_data_base{type_kind::enum_}
     , flags{enum_traits<Enum>::make_flags()}
     , underlying_type{resolve_type<typename enum_traits<Enum>::underlying_type>()} {}
 }
@@ -7948,7 +7860,7 @@ namespace meta_hpp
         return data_->underlying_type;
     }
 
-    inline const evalue_set& enum_type::get_evalues() const noexcept {
+    inline const evalue_list& enum_type::get_evalues() const noexcept {
         return data_->evalues;
     }
 
@@ -8023,11 +7935,8 @@ namespace meta_hpp
 namespace meta_hpp::detail
 {
     template < pointer_kind Pointer >
-    struct pointer_tag {};
-
-    template < pointer_kind Pointer >
     pointer_type_data::pointer_type_data(type_list<Pointer>)
-    : type_data_base{type_id{type_list<pointer_tag<Pointer>>{}}, type_kind::pointer_}
+    : type_data_base{type_kind::pointer_}
     , flags{pointer_traits<Pointer>::make_flags()}
     , data_type{resolve_type<typename pointer_traits<Pointer>::data_type>()} {}
 }
@@ -8228,11 +8137,8 @@ namespace meta_hpp
 namespace meta_hpp::detail
 {
     template < class_kind Class >
-    struct class_tag {};
-
-    template < class_kind Class >
     class_type_data::class_type_data(type_list<Class>)
-    : type_data_base{type_id{type_list<class_tag<Class>>{}}, type_kind::class_}
+    : type_data_base{type_kind::class_}
     , flags{class_traits<Class>::make_flags()}
     , size{class_traits<Class>::size}
     , align{class_traits<Class>::align}
@@ -8269,7 +8175,7 @@ namespace meta_hpp::detail
         }
     }
 
-    inline class_type_data::upcast_func_list_t::upcast_func_list_t(upcasts_t _upcasts, class_set _vbases)
+    inline class_type_data::upcast_func_list_t::upcast_func_list_t(upcasts_t _upcasts, vbases_t _vbases)
     : upcasts{std::move(_upcasts)}
     , vbases{std::move(_vbases)} {}
 
@@ -8294,7 +8200,7 @@ namespace meta_hpp::detail
         new_upcasts.insert(new_upcasts.end(), l.upcasts.begin(), l.upcasts.end());
         new_upcasts.insert(new_upcasts.end(), r.upcasts.begin(), r.upcasts.end());
 
-        class_set new_vbases;
+        class_type_data::upcast_func_list_t::vbases_t new_vbases;
         new_vbases.insert(l.vbases.begin(), l.vbases.end());
         new_vbases.insert(r.vbases.begin(), r.vbases.end());
 
@@ -8328,31 +8234,31 @@ namespace meta_hpp
         return data_->argument_types;
     }
 
-    inline const class_set& class_type::get_base_classes() const noexcept {
+    inline const class_list& class_type::get_base_classes() const noexcept {
         return data_->base_classes;
     }
 
-    inline const class_set& class_type::get_derived_classes() const noexcept {
+    inline const class_list& class_type::get_derived_classes() const noexcept {
         return data_->derived_classes;
     }
 
-    inline const constructor_set& class_type::get_constructors() const noexcept {
+    inline const constructor_list& class_type::get_constructors() const noexcept {
         return data_->constructors;
     }
 
-    inline const destructor_set& class_type::get_destructors() const noexcept {
+    inline const destructor_list& class_type::get_destructors() const noexcept {
         return data_->destructors;
     }
 
-    inline const function_set& class_type::get_functions() const noexcept {
+    inline const function_list& class_type::get_functions() const noexcept {
         return data_->functions;
     }
 
-    inline const member_set& class_type::get_members() const noexcept {
+    inline const member_list& class_type::get_members() const noexcept {
         return data_->members;
     }
 
-    inline const method_set& class_type::get_methods() const noexcept {
+    inline const method_list& class_type::get_methods() const noexcept {
         return data_->methods;
     }
 
@@ -8360,7 +8266,7 @@ namespace meta_hpp
         return data_->typedefs;
     }
 
-    inline const variable_set& class_type::get_variables() const noexcept {
+    inline const variable_list& class_type::get_variables() const noexcept {
         return data_->variables;
     }
 
@@ -8476,8 +8382,8 @@ namespace meta_hpp
         }
 
         if ( recursively ) {
-            for ( const class_type& base : data_->base_classes ) {
-                if ( const function& function = base.get_function(name, recursively) ) {
+            for ( auto iter{data_->base_classes.rbegin()}, end{data_->base_classes.rend()}; iter != end; ++iter ) {
+                if ( const function& function = iter->get_function(name, recursively) ) {
                     return function;
                 }
             }
@@ -8494,8 +8400,8 @@ namespace meta_hpp
         }
 
         if ( recursively ) {
-            for ( const class_type& base : data_->base_classes ) {
-                if ( const member& member = base.get_member(name, recursively) ) {
+            for ( auto iter{data_->base_classes.rbegin()}, end{data_->base_classes.rend()}; iter != end; ++iter ) {
+                if ( const member& member = iter->get_member(name, recursively) ) {
                     return member;
                 }
             }
@@ -8512,8 +8418,8 @@ namespace meta_hpp
         }
 
         if ( recursively ) {
-            for ( const class_type& base : data_->base_classes ) {
-                if ( const method& method = base.get_method(name, recursively) ) {
+            for ( auto iter{data_->base_classes.rbegin()}, end{data_->base_classes.rend()}; iter != end; ++iter ) {
+                if ( const method& method = iter->get_method(name, recursively) ) {
                     return method;
                 }
             }
@@ -8528,8 +8434,8 @@ namespace meta_hpp
         }
 
         if ( recursively ) {
-            for ( const class_type& base : data_->base_classes ) {
-                if ( const any_type& type = base.get_typedef(name, recursively) ) {
+            for ( auto iter{data_->base_classes.rbegin()}, end{data_->base_classes.rend()}; iter != end; ++iter ) {
+                if ( const any_type& type = iter->get_typedef(name, recursively) ) {
                     return type;
                 }
             }
@@ -8546,8 +8452,8 @@ namespace meta_hpp
         }
 
         if ( recursively ) {
-            for ( const class_type& base : data_->base_classes ) {
-                if ( const variable& variable = base.get_variable(name, recursively) ) {
+            for ( auto iter{data_->base_classes.rbegin()}, end{data_->base_classes.rend()}; iter != end; ++iter ) {
+                if ( const variable& variable = iter->get_variable(name, recursively) ) {
                     return variable;
                 }
             }
@@ -8628,8 +8534,8 @@ namespace meta_hpp
         }
 
         if ( recursively ) {
-            for ( const class_type& base : data_->base_classes ) {
-                if ( const function& function = base.get_function_with(name, first, last, recursively) ) {
+            for ( auto iter{data_->base_classes.rbegin()}, end{data_->base_classes.rend()}; iter != end; ++iter ) {
+                if ( const function& function = iter->get_function_with(name, first, last, recursively) ) {
                     return function;
                 }
             }
@@ -8686,8 +8592,8 @@ namespace meta_hpp
         }
 
         if ( recursively ) {
-            for ( const class_type& base : data_->base_classes ) {
-                if ( const method& method = base.get_method_with(name, first, last, recursively) ) {
+            for ( auto iter{data_->base_classes.rbegin()}, end{data_->base_classes.rend()}; iter != end; ++iter ) {
+                if ( const method& method = iter->get_method_with(name, first, last, recursively) ) {
                     return method;
                 }
             }
@@ -8731,7 +8637,7 @@ namespace meta_hpp
         return state_->index.get_name();
     }
 
-    inline const function_set& scope::get_functions() const noexcept {
+    inline const function_list& scope::get_functions() const noexcept {
         return state_->functions;
     }
 
@@ -8739,7 +8645,7 @@ namespace meta_hpp
         return state_->typedefs;
     }
 
-    inline const variable_set& scope::get_variables() const noexcept {
+    inline const variable_list& scope::get_variables() const noexcept {
         return state_->variables;
     }
 
@@ -8944,11 +8850,8 @@ namespace meta_hpp
 namespace meta_hpp::detail
 {
     template < array_kind Array >
-    struct array_tag {};
-
-    template < array_kind Array >
     array_type_data::array_type_data(type_list<Array>)
-    : type_data_base{type_id{type_list<array_tag<Array>>{}}, type_kind::array_}
+    : type_data_base{type_kind::array_}
     , flags{array_traits<Array>::make_flags()}
     , extent{array_traits<Array>::extent}
     , data_type{resolve_type<typename array_traits<Array>::data_type>()} {}
@@ -8972,21 +8875,15 @@ namespace meta_hpp
 namespace meta_hpp::detail
 {
     template < nullptr_kind Nullptr >
-    struct nullptr_tag {};
-
-    template < nullptr_kind Nullptr >
     nullptr_type_data::nullptr_type_data(type_list<Nullptr>)
-    : type_data_base{type_id{type_list<nullptr_tag<Nullptr>>{}}, type_kind::nullptr_} {}
+    : type_data_base{type_kind::nullptr_} {}
 }
 
 namespace meta_hpp::detail
 {
     template < number_kind Number >
-    struct number_tag {};
-
-    template < number_kind Number >
     number_type_data::number_type_data(type_list<Number>)
-    : type_data_base{type_id{type_list<number_tag<Number>>{}}, type_kind::number_}
+    : type_data_base{type_kind::number_}
     , flags{number_traits<Number>::make_flags()}
     , size{number_traits<Number>::size}
     , align{number_traits<Number>::align} {}
@@ -9010,11 +8907,8 @@ namespace meta_hpp
 namespace meta_hpp::detail
 {
     template < reference_kind Reference >
-    struct reference_tag {};
-
-    template < reference_kind Reference >
     reference_type_data::reference_type_data(type_list<Reference>)
-    : type_data_base{type_id{type_list<reference_tag<Reference>>{}}, type_kind::reference_}
+    : type_data_base{type_kind::reference_}
     , flags{reference_traits<Reference>::make_flags()}
     , data_type{resolve_type<typename reference_traits<Reference>::data_type>()} {}
 }
@@ -9033,11 +8927,8 @@ namespace meta_hpp
 namespace meta_hpp::detail
 {
     template < void_kind Void >
-    struct void_tag {};
-
-    template < void_kind Void >
     void_type_data::void_type_data(type_list<Void>)
-    : type_data_base{type_id{type_list<void_tag<Void>>{}}, type_kind::void_} {}
+    : type_data_base{type_kind::void_} {}
 }
 
 namespace meta_hpp::detail
@@ -9867,7 +9758,7 @@ namespace meta_hpp
     }
 
     inline std::size_t uerror::get_hash() const noexcept {
-        return std::hash<error_code>{}(error_);
+        return detail::hash_combiner{}(error_);
     }
 }
 

@@ -7,6 +7,7 @@
 #pragma once
 
 #include "base.hpp"
+#include "hash_combiner.hpp"
 
 namespace meta_hpp::detail
 {
@@ -147,7 +148,7 @@ namespace meta_hpp::detail
         }
 
         [[nodiscard]] std::size_t get_hash() const noexcept {
-            return std::hash<T*>{}(ptr_);
+            return hash_combiner{}(ptr_);
         }
 
         [[nodiscard]] bool operator==(const intrusive_ptr& other) const noexcept {
