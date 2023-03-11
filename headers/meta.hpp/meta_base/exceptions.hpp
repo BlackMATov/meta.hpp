@@ -23,6 +23,8 @@ namespace meta_hpp::detail
     enum class error_code {
         no_error,
 
+        bad_cast,
+
         bad_const_access,
         bad_uvalue_access,
 
@@ -38,6 +40,8 @@ namespace meta_hpp::detail
         switch ( error ) {
         case error_code::no_error:
             return "no error";
+        case error_code::bad_cast:
+            return "bad cast";
         case error_code::bad_const_access:
             return "bad const access";
         case error_code::bad_uvalue_access:

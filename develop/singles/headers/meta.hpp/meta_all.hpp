@@ -30,11 +30,13 @@
 #include <string_view>
 #include <tuple>
 #include <type_traits>
-#include <typeindex>
-#include <typeinfo>
 #include <utility>
 #include <vector>
 #include <version>
+
+//
+//
+//
 
 #if !defined(META_HPP_NO_EXCEPTIONS) && !defined(__cpp_exceptions)
 #    define META_HPP_NO_EXCEPTIONS
@@ -43,6 +45,10 @@
 #if !defined(META_HPP_NO_RTTI) && !defined(__cpp_rtti)
 #    define META_HPP_NO_RTTI
 #endif
+
+//
+//
+//
 
 #if !defined(META_HPP_FWD)
 #    define META_HPP_FWD(v) std::forward<decltype(v)>(v)
@@ -62,6 +68,75 @@
 #    define META_HPP_PP_CAT(x, y) META_HPP_PP_CAT_I(x, y)
 #    define META_HPP_PP_CAT_I(x, y) x##y
 #endif
+
+//
+//
+//
+
+#define META_HPP_CLANG_COMPILER_ID 1
+#define META_HPP_GCC_COMPILER_ID 2
+#define META_HPP_MSVC_COMPILER_ID 3
+#define META_HPP_UNKNOWN_COMPILER_ID 4
+
+#if defined(__clang__)
+#    define META_HPP_COMPILER_ID META_HPP_CLANG_COMPILER_ID
+#elif defined(__GNUC__)
+#    define META_HPP_COMPILER_ID META_HPP_GCC_COMPILER_ID
+#elif defined(_MSC_VER)
+#    define META_HPP_COMPILER_ID META_HPP_MSVC_COMPILER_ID
+#else
+#    define META_HPP_COMPILER_ID META_HPP_UNKNOWN_COMPILER_ID
+#endif
+
+//
+//
+//
+
+#if META_HPP_COMPILER_ID == META_HPP_CLANG_COMPILER_ID
+#    define META_HPP_CLANG_PRAGMA_TO_STR(x) _Pragma(#x)
+#    define META_HPP_CLANG_IGNORE_WARNING(w) META_HPP_CLANG_PRAGMA_TO_STR(clang diagnostic ignored w)
+#    define META_HPP_CLANG_IGNORE_WARNINGS_PUSH() _Pragma("clang diagnostic push")
+#    define META_HPP_CLANG_IGNORE_WARNINGS_POP() _Pragma("clang diagnostic pop")
+#else
+#    define META_HPP_CLANG_PRAGMA_TO_STR(x)
+#    define META_HPP_CLANG_IGNORE_WARNING(w)
+#    define META_HPP_CLANG_IGNORE_WARNINGS_PUSH()
+#    define META_HPP_CLANG_IGNORE_WARNINGS_POP()
+#endif
+
+#if META_HPP_COMPILER_ID == META_HPP_GCC_COMPILER_ID
+#    define META_HPP_GCC_PRAGMA_TO_STR(x) _Pragma(#x)
+#    define META_HPP_GCC_IGNORE_WARNING(w) META_HPP_GCC_PRAGMA_TO_STR(GCC diagnostic ignored w)
+#    define META_HPP_GCC_IGNORE_WARNINGS_PUSH() _Pragma("GCC diagnostic push")
+#    define META_HPP_GCC_IGNORE_WARNINGS_POP() _Pragma("GCC diagnostic pop")
+#else
+#    define META_HPP_GCC_PRAGMA_TO_STR(x)
+#    define META_HPP_GCC_IGNORE_WARNING(w)
+#    define META_HPP_GCC_IGNORE_WARNINGS_PUSH()
+#    define META_HPP_GCC_IGNORE_WARNINGS_POP()
+#endif
+
+#if META_HPP_COMPILER_ID == META_HPP_MSVC_COMPILER_ID
+#    define META_HPP_MSVC_IGNORE_WARNING(w) __pragma(warning(disable : w))
+#    define META_HPP_MSVC_IGNORE_WARNINGS_PUSH() __pragma(warning(push))
+#    define META_HPP_MSVC_IGNORE_WARNINGS_POP() __pragma(warning(pop))
+#else
+#    define META_HPP_MSVC_IGNORE_WARNING(w)
+#    define META_HPP_MSVC_IGNORE_WARNINGS_PUSH()
+#    define META_HPP_MSVC_IGNORE_WARNINGS_POP()
+#endif
+
+//
+//
+//
+
+#define META_HPP_IGNORE_OVERRIDE_WARNINGS_PUSH() \
+    META_HPP_CLANG_IGNORE_WARNINGS_PUSH() \
+    META_HPP_CLANG_IGNORE_WARNING("-Wunknown-warning-option") \
+    META_HPP_CLANG_IGNORE_WARNING("-Winconsistent-missing-override") \
+    META_HPP_CLANG_IGNORE_WARNING("-Wsuggest-override")
+
+#define META_HPP_IGNORE_OVERRIDE_WARNINGS_POP() META_HPP_CLANG_IGNORE_WARNINGS_POP()
 
 namespace meta_hpp::detail
 {
@@ -458,6 +533,8 @@ namespace meta_hpp::detail
     enum class error_code {
         no_error,
 
+        bad_cast,
+
         bad_const_access,
         bad_uvalue_access,
 
@@ -473,6 +550,8 @@ namespace meta_hpp::detail
         switch ( error ) {
         case error_code::no_error:
             return "no error";
+        case error_code::bad_cast:
+            return "bad cast";
         case error_code::bad_const_access:
             return "bad const access";
         case error_code::bad_uvalue_access:
@@ -2616,11 +2695,11 @@ namespace meta_hpp
         [[nodiscard]] bool is_virtual_derived_from() const noexcept;
         [[nodiscard]] bool is_virtual_derived_from(const class_type& base) const noexcept;
 
-        [[nodiscard]] function get_function(std::string_view name) const noexcept;
-        [[nodiscard]] member get_member(std::string_view name) const noexcept;
-        [[nodiscard]] method get_method(std::string_view name) const noexcept;
-        [[nodiscard]] any_type get_typedef(std::string_view name) const noexcept;
-        [[nodiscard]] variable get_variable(std::string_view name) const noexcept;
+        [[nodiscard]] function get_function(std::string_view name, bool recursively = true) const noexcept;
+        [[nodiscard]] member get_member(std::string_view name, bool recursively = true) const noexcept;
+        [[nodiscard]] method get_method(std::string_view name, bool recursively = true) const noexcept;
+        [[nodiscard]] any_type get_typedef(std::string_view name, bool recursively = true) const noexcept;
+        [[nodiscard]] variable get_variable(std::string_view name, bool recursively = true) const noexcept;
 
         template < typename... Args >
         [[nodiscard]] constructor get_constructor_with() const noexcept;
@@ -2632,18 +2711,56 @@ namespace meta_hpp
         [[nodiscard]] destructor get_destructor() const noexcept;
 
         template < typename... Args >
-        [[nodiscard]] function get_function_with(std::string_view name) const noexcept;
+        [[nodiscard]] function get_function_with( //
+            std::string_view name,
+            bool recursively = true
+        ) const noexcept;
+
         template < typename Iter >
-        [[nodiscard]] function get_function_with(std::string_view name, Iter first, Iter last) const noexcept;
-        [[nodiscard]] function get_function_with(std::string_view name, std::span<const any_type> args) const noexcept;
-        [[nodiscard]] function get_function_with(std::string_view name, std::initializer_list<any_type> args) const noexcept;
+        [[nodiscard]] function get_function_with( //
+            std::string_view name,
+            Iter first,
+            Iter last,
+            bool recursively = true
+        ) const noexcept;
+
+        [[nodiscard]] function get_function_with( //
+            std::string_view name,
+            std::span<const any_type> args,
+            bool recursively = true
+        ) const noexcept;
+
+        [[nodiscard]] function get_function_with( //
+            std::string_view name,
+            std::initializer_list<any_type> args,
+            bool recursively = true
+        ) const noexcept;
 
         template < typename... Args >
-        [[nodiscard]] method get_method_with(std::string_view name) const noexcept;
+        [[nodiscard]] method get_method_with( //
+            std::string_view name,
+            bool recursively = true
+        ) const noexcept;
+
         template < typename Iter >
-        [[nodiscard]] method get_method_with(std::string_view name, Iter first, Iter last) const noexcept;
-        [[nodiscard]] method get_method_with(std::string_view name, std::span<const any_type> args) const noexcept;
-        [[nodiscard]] method get_method_with(std::string_view name, std::initializer_list<any_type> args) const noexcept;
+        [[nodiscard]] method get_method_with( //
+            std::string_view name,
+            Iter first,
+            Iter last,
+            bool recursively = true
+        ) const noexcept;
+
+        [[nodiscard]] method get_method_with( //
+            std::string_view name,
+            std::span<const any_type> args,
+            bool recursively = true
+        ) const noexcept;
+
+        [[nodiscard]] method get_method_with( //
+            std::string_view name,
+            std::initializer_list<any_type> args,
+            bool recursively = true
+        ) const noexcept;
     };
 
     class constructor_type final : public type_base<constructor_type> {
@@ -3828,11 +3945,26 @@ namespace meta_hpp
         [[nodiscard]] variable get_variable(std::string_view name) const noexcept;
 
         template < typename... Args >
-        [[nodiscard]] function get_function_with(std::string_view name) const noexcept;
+        [[nodiscard]] function get_function_with( //
+            std::string_view name
+        ) const noexcept;
+
         template < typename Iter >
-        [[nodiscard]] function get_function_with(std::string_view name, Iter first, Iter last) const noexcept;
-        [[nodiscard]] function get_function_with(std::string_view name, std::span<const any_type> args) const noexcept;
-        [[nodiscard]] function get_function_with(std::string_view name, std::initializer_list<any_type> args) const noexcept;
+        [[nodiscard]] function get_function_with( //
+            std::string_view name,
+            Iter first,
+            Iter last
+        ) const noexcept;
+
+        [[nodiscard]] function get_function_with( //
+            std::string_view name,
+            std::span<const any_type> args
+        ) const noexcept;
+
+        [[nodiscard]] function get_function_with( //
+            std::string_view name,
+            std::initializer_list<any_type> args
+        ) const noexcept;
     };
 
     class variable final : public state_base<variable> {
@@ -4047,6 +4179,205 @@ namespace meta_hpp::detail
 
 namespace meta_hpp::detail
 {
+    class type_registry final {
+    public:
+        class locker final {
+        public:
+            explicit locker()
+            : lock_{instance().mutex_} {}
+
+            ~locker() = default;
+
+            locker(locker&&) = default;
+            locker& operator=(locker&&) = default;
+
+            locker(const locker&) = delete;
+            locker& operator=(const locker&) = delete;
+
+        private:
+            std::unique_lock<std::recursive_mutex> lock_;
+        };
+
+        [[nodiscard]] static type_registry& instance() {
+            static type_registry instance;
+            return instance;
+        }
+
+    public:
+        template < typename F >
+        void for_each_type(F&& f) const {
+            const locker lock;
+
+            for ( const any_type& type : types_ ) {
+                std::invoke(f, type);
+            }
+        }
+
+        [[nodiscard]] any_type get_type_by_id(type_id id) const noexcept {
+            const locker lock;
+
+            if ( auto iter{types_.find(id)}; iter != types_.end() ) {
+                return *iter;
+            }
+
+            return any_type{};
+        }
+
+    public:
+        template < typename T >
+        [[nodiscard]] auto resolve_type() {
+            // clang-format off
+            if constexpr ( array_kind<T> ) { return resolve_array_type<T>(); }
+            if constexpr ( class_kind<T> ) { return resolve_class_type<T>(); }
+            if constexpr ( enum_kind<T> ) { return resolve_enum_type<T>(); }
+            if constexpr ( function_pointer_kind<T> ) { return resolve_function_type<T>(); }
+            if constexpr ( member_pointer_kind<T> ) { return resolve_member_type<T>(); }
+            if constexpr ( method_pointer_kind<T> ) { return resolve_method_type<T>(); }
+            if constexpr ( nullptr_kind<T> ) { return resolve_nullptr_type<T>(); }
+            if constexpr ( number_kind<T> ) { return resolve_number_type<T>(); }
+            if constexpr ( pointer_kind<T> ) { return resolve_pointer_type<T>(); }
+            if constexpr ( reference_kind<T> ) { return resolve_reference_type<T>(); }
+            if constexpr ( void_kind<T> ) { return resolve_void_type<T>(); }
+            // clang-format on
+        }
+
+    public:
+        template < array_kind Array >
+        [[nodiscard]] array_type resolve_array_type() {
+            using array_t = std::remove_cv_t<Array>;
+            static array_type type{ensure_type<array_type_data>(type_list<array_t>{})};
+            return type;
+        }
+
+        template < class_kind Class >
+        [[nodiscard]] class_type resolve_class_type() {
+            using class_t = std::remove_cv_t<Class>;
+            static class_type type{ensure_type<class_type_data>(type_list<class_t>{})};
+            return type;
+        }
+
+        template < class_kind Class, typename... Args >
+        [[nodiscard]] constructor_type resolve_constructor_type() {
+            using class_t = std::remove_cv_t<Class>;
+            static constructor_type type{ensure_type<constructor_type_data>(type_list<class_t>{}, type_list<Args...>{})};
+            return type;
+        }
+
+        template < class_kind Class >
+        [[nodiscard]] destructor_type resolve_destructor_type() {
+            using class_t = std::remove_cv_t<Class>;
+            static destructor_type type{ensure_type<destructor_type_data>(type_list<class_t>{})};
+            return type;
+        }
+
+        template < enum_kind Enum >
+        [[nodiscard]] enum_type resolve_enum_type() {
+            using enum_t = std::remove_cv_t<Enum>;
+            static enum_type type{ensure_type<enum_type_data>(type_list<enum_t>{})};
+            return type;
+        }
+
+        template < function_pointer_kind Function >
+        [[nodiscard]] function_type resolve_function_type() {
+            using function_t = std::remove_cv_t<Function>;
+            static function_type type{ensure_type<function_type_data>(type_list<function_t>{})};
+            return type;
+        }
+
+        template < member_pointer_kind Member >
+        [[nodiscard]] member_type resolve_member_type() {
+            using member_t = std::remove_cv_t<Member>;
+            static member_type type{ensure_type<member_type_data>(type_list<member_t>{})};
+            return type;
+        }
+
+        template < method_pointer_kind Method >
+        [[nodiscard]] method_type resolve_method_type() {
+            using method_t = std::remove_cv_t<Method>;
+            static method_type type{ensure_type<method_type_data>(type_list<method_t>{})};
+            return type;
+        }
+
+        template < nullptr_kind Nullptr >
+        [[nodiscard]] nullptr_type resolve_nullptr_type() {
+            using nullptr_t = std::remove_cv_t<Nullptr>;
+            static nullptr_type type{ensure_type<nullptr_type_data>(type_list<nullptr_t>{})};
+            return type;
+        }
+
+        template < number_kind Number >
+        [[nodiscard]] number_type resolve_number_type() {
+            using number_t = std::remove_cv_t<Number>;
+            static number_type type{ensure_type<number_type_data>(type_list<number_t>{})};
+            return type;
+        }
+
+        template < pointer_kind Pointer >
+        [[nodiscard]] pointer_type resolve_pointer_type() {
+            using pointer_t = std::remove_cv_t<Pointer>;
+            static pointer_type type{ensure_type<pointer_type_data>(type_list<pointer_t>{})};
+            return type;
+        }
+
+        template < reference_kind Reference >
+        [[nodiscard]] reference_type resolve_reference_type() {
+            using reference_t = std::remove_cv_t<Reference>;
+            static reference_type type{ensure_type<reference_type_data>(type_list<reference_t>{})};
+            return type;
+        }
+
+        template < void_kind Void >
+        [[nodiscard]] void_type resolve_void_type() {
+            using void_t = std::remove_cv_t<Void>;
+            static void_type type{ensure_type<void_type_data>(type_list<void_t>{})};
+            return type;
+        }
+
+    private:
+        type_registry() = default;
+
+        template < typename TypeData, typename... Args >
+        TypeData* ensure_type(Args&&... args) {
+            static auto data{std::make_unique<TypeData>(std::forward<Args>(args)...)};
+
+            const locker lock;
+            types_.emplace(any_type{data.get()});
+
+            return data.get();
+        }
+
+    private:
+        std::recursive_mutex mutex_;
+        std::set<any_type, std::less<>> types_;
+    };
+}
+
+namespace meta_hpp::detail
+{
+    struct poly_info final {
+        const void* ptr{};
+        class_type type{};
+    };
+
+    template < typename T >
+    concept check_poly_info_enabled //
+        = requires(type_registry& r, const T& v) {
+              { v.get_most_derived_poly_info(r) } -> std::convertible_to<poly_info>;
+          };
+}
+
+#define META_HPP_ENABLE_POLY_INFO() \
+public: \
+    META_HPP_IGNORE_OVERRIDE_WARNINGS_PUSH() \
+    virtual ::meta_hpp::detail::poly_info get_most_derived_poly_info(::meta_hpp::detail::type_registry& registry) const { \
+        using self_type = std::remove_cvref_t<decltype(*this)>; \
+        return ::meta_hpp::detail::poly_info{.ptr = this, .type = registry.resolve_class_type<self_type>()}; \
+    } \
+    META_HPP_IGNORE_OVERRIDE_WARNINGS_POP() \
+private:
+
+namespace meta_hpp::detail
+{
     class state_registry final {
     public:
         class locker final {
@@ -4115,297 +4446,6 @@ namespace meta_hpp::detail
     };
 }
 
-namespace meta_hpp::detail
-{
-    class type_registry final {
-    public:
-        class locker final {
-        public:
-            explicit locker()
-            : lock_{instance().mutex_} {}
-
-            ~locker() = default;
-
-            locker(locker&&) = default;
-            locker& operator=(locker&&) = default;
-
-            locker(const locker&) = delete;
-            locker& operator=(const locker&) = delete;
-
-        private:
-            std::unique_lock<std::recursive_mutex> lock_;
-        };
-
-        [[nodiscard]] static type_registry& instance() {
-            static type_registry instance;
-            return instance;
-        }
-
-    public:
-        template < typename F >
-        void for_each_type(F&& f) const {
-            const locker lock;
-
-            for ( const any_type& type : types_ ) {
-                std::invoke(f, type);
-            }
-        }
-
-        [[nodiscard]] any_type get_type_by_id(type_id id) const noexcept {
-            const locker lock;
-
-            if ( auto iter{types_.find(id)}; iter != types_.end() ) {
-                return *iter;
-            }
-
-            return any_type{};
-        }
-
-#if !defined(META_HPP_NO_RTTI)
-        [[nodiscard]] any_type get_type_by_rtti(const std::type_index& index) const noexcept {
-            const locker lock;
-
-            if ( auto iter{rtti_types_.find(index)}; iter != rtti_types_.end() ) {
-                return iter->second;
-            }
-
-            return any_type{};
-        }
-#endif
-
-    public:
-        template < array_kind Array >
-        [[nodiscard]] array_type resolve_type() {
-            return resolve_array_type<Array>();
-        }
-
-        template < class_kind Class >
-        [[nodiscard]] class_type resolve_type() {
-            return resolve_class_type<Class>();
-        }
-
-        template < enum_kind Enum >
-        [[nodiscard]] enum_type resolve_type() {
-            return resolve_enum_type<Enum>();
-        }
-
-        template < function_pointer_kind Function >
-        [[nodiscard]] function_type resolve_type() {
-            return resolve_function_type<Function>();
-        }
-
-        template < member_pointer_kind Member >
-        [[nodiscard]] member_type resolve_type() {
-            return resolve_member_type<Member>();
-        }
-
-        template < method_pointer_kind Method >
-        [[nodiscard]] method_type resolve_type() {
-            return resolve_method_type<Method>();
-        }
-
-        template < nullptr_kind Nullptr >
-        [[nodiscard]] nullptr_type resolve_type() {
-            return resolve_nullptr_type<Nullptr>();
-        }
-
-        template < number_kind Number >
-        [[nodiscard]] number_type resolve_type() {
-            return resolve_number_type<Number>();
-        }
-
-        template < pointer_kind Pointer >
-        [[nodiscard]] pointer_type resolve_type() {
-            return resolve_pointer_type<Pointer>();
-        }
-
-        template < reference_kind Reference >
-        [[nodiscard]] reference_type resolve_type() {
-            return resolve_reference_type<Reference>();
-        }
-
-        template < void_kind Void >
-        [[nodiscard]] void_type resolve_type() {
-            return resolve_void_type<Void>();
-        }
-
-    public:
-        template < array_kind Array >
-        [[nodiscard]] array_type resolve_array_type() {
-            return array_type{resolve_array_type_data<Array>()};
-        }
-
-        template < class_kind Class >
-        [[nodiscard]] class_type resolve_class_type() {
-            return class_type{resolve_class_type_data<Class>()};
-        }
-
-        template < class_kind Class, typename... Args >
-        [[nodiscard]] constructor_type resolve_constructor_type() {
-            return constructor_type{resolve_constructor_type_data<Class, Args...>()};
-        }
-
-        template < class_kind Class >
-        [[nodiscard]] destructor_type resolve_destructor_type() {
-            return destructor_type{resolve_destructor_type_data<Class>()};
-        }
-
-        template < enum_kind Enum >
-        [[nodiscard]] enum_type resolve_enum_type() {
-            return enum_type{resolve_enum_type_data<Enum>()};
-        }
-
-        template < function_pointer_kind Function >
-        [[nodiscard]] function_type resolve_function_type() {
-            return function_type{resolve_function_type_data<Function>()};
-        }
-
-        template < member_pointer_kind Member >
-        [[nodiscard]] member_type resolve_member_type() {
-            return member_type{resolve_member_type_data<Member>()};
-        }
-
-        template < method_pointer_kind Method >
-        [[nodiscard]] method_type resolve_method_type() {
-            return method_type{resolve_method_type_data<Method>()};
-        }
-
-        template < nullptr_kind Nullptr >
-        [[nodiscard]] nullptr_type resolve_nullptr_type() {
-            return nullptr_type{resolve_nullptr_type_data<Nullptr>()};
-        }
-
-        template < number_kind Number >
-        [[nodiscard]] number_type resolve_number_type() {
-            return number_type{resolve_number_type_data<Number>()};
-        }
-
-        template < pointer_kind Pointer >
-        [[nodiscard]] pointer_type resolve_pointer_type() {
-            return pointer_type{resolve_pointer_type_data<Pointer>()};
-        }
-
-        template < reference_kind Reference >
-        [[nodiscard]] reference_type resolve_reference_type() {
-            return reference_type{resolve_reference_type_data<Reference>()};
-        }
-
-        template < void_kind Void >
-        [[nodiscard]] void_type resolve_void_type() {
-            return void_type{resolve_void_type_data<Void>()};
-        }
-
-    private:
-        template < array_kind Array >
-        [[nodiscard]] array_type_data* resolve_array_type_data() {
-            static array_type_data data = (ensure_type<Array>(data), array_type_data{type_list<Array>{}});
-            return &data;
-        }
-
-        template < class_kind Class >
-        [[nodiscard]] class_type_data* resolve_class_type_data() {
-            static class_type_data data = (ensure_type<Class>(data), class_type_data{type_list<Class>{}});
-            return &data;
-        }
-
-        template < class_kind Class, typename... Args >
-        [[nodiscard]] constructor_type_data* resolve_constructor_type_data() {
-            static constructor_type_data data{type_list<Class>{}, type_list<Args...>{}};
-            return &data;
-        }
-
-        template < class_kind Class >
-        [[nodiscard]] destructor_type_data* resolve_destructor_type_data() {
-            static destructor_type_data data{type_list<Class>{}};
-            return &data;
-        }
-
-        template < enum_kind Enum >
-        [[nodiscard]] enum_type_data* resolve_enum_type_data() {
-            static enum_type_data data = (ensure_type<Enum>(data), enum_type_data{type_list<Enum>{}});
-            return &data;
-        }
-
-        template < function_pointer_kind Function >
-        [[nodiscard]] function_type_data* resolve_function_type_data() {
-            static function_type_data data = (ensure_type<Function>(data), function_type_data{type_list<Function>{}});
-            return &data;
-        }
-
-        template < member_pointer_kind Member >
-        [[nodiscard]] member_type_data* resolve_member_type_data() {
-            static member_type_data data = (ensure_type<Member>(data), member_type_data{type_list<Member>{}});
-            return &data;
-        }
-
-        template < method_pointer_kind Method >
-        [[nodiscard]] method_type_data* resolve_method_type_data() {
-            static method_type_data data = (ensure_type<Method>(data), method_type_data{type_list<Method>{}});
-            return &data;
-        }
-
-        template < nullptr_kind Nullptr >
-        [[nodiscard]] nullptr_type_data* resolve_nullptr_type_data() {
-            static nullptr_type_data data = (ensure_type<Nullptr>(data), nullptr_type_data{type_list<Nullptr>{}});
-            return &data;
-        }
-
-        template < number_kind Number >
-        [[nodiscard]] number_type_data* resolve_number_type_data() {
-            static number_type_data data = (ensure_type<Number>(data), number_type_data{type_list<Number>{}});
-            return &data;
-        }
-
-        template < pointer_kind Pointer >
-        [[nodiscard]] pointer_type_data* resolve_pointer_type_data() {
-            static pointer_type_data data = (ensure_type<Pointer>(data), pointer_type_data{type_list<Pointer>{}});
-            return &data;
-        }
-
-        template < reference_kind Reference >
-        [[nodiscard]] reference_type_data* resolve_reference_type_data() {
-            static reference_type_data data = (ensure_type<Reference>(data), reference_type_data{type_list<Reference>{}});
-            return &data;
-        }
-
-        template < void_kind Void >
-        [[nodiscard]] void_type_data* resolve_void_type_data() {
-            static void_type_data data = (ensure_type<Void>(data), void_type_data{type_list<Void>{}});
-            return &data;
-        }
-
-    private:
-        type_registry() = default;
-
-        template < typename Type, typename TypeData >
-        void ensure_type(TypeData& type_data) {
-            const locker lock;
-
-            auto&& [position, emplaced] = types_.emplace(any_type{&type_data});
-            if ( !emplaced ) {
-                return;
-            }
-
-#if !defined(META_HPP_NO_RTTI)
-            META_HPP_TRY {
-                rtti_types_.emplace(typeid(Type), any_type{&type_data});
-            }
-            META_HPP_CATCH(...) {
-                types_.erase(position);
-                META_HPP_RETHROW();
-            }
-#endif
-        }
-
-    private:
-        std::recursive_mutex mutex_;
-        std::set<any_type, std::less<>> types_;
-#if !defined(META_HPP_NO_RTTI)
-        std::map<std::type_index, any_type, std::less<>> rtti_types_;
-#endif
-    };
-}
-
 namespace meta_hpp
 {
     template < typename F >
@@ -4446,6 +4486,28 @@ namespace meta_hpp
 
 namespace meta_hpp
 {
+    template < typename T >
+    [[nodiscard]] auto resolve_poly_type(T&& from) {
+        using namespace detail;
+
+        using raw_type = std::remove_cvref_t<T>;
+        type_registry& registry = type_registry::instance();
+
+        if constexpr ( std::is_class_v<raw_type> ) {
+            static_assert(
+                detail::check_poly_info_enabled<raw_type>,
+                "The class doesn't support polymorphic type resolving. Use the META_HPP_ENABLE_POLY_INFO macro to fix it."
+            );
+            return from.get_most_derived_poly_info(registry).type;
+        } else {
+            (void)from;
+            return registry.resolve_type<raw_type>();
+        }
+    }
+}
+
+namespace meta_hpp
+{
     template < detail::class_kind Class, typename... Args >
     [[nodiscard]] constructor_type resolve_constructor_type() {
         using namespace detail;
@@ -4458,18 +4520,6 @@ namespace meta_hpp
         using namespace detail;
         type_registry& registry = type_registry::instance();
         return registry.resolve_destructor_type<Class>();
-    }
-
-    template < typename T >
-    [[nodiscard]] any_type resolve_polymorphic_type(T&& v) noexcept {
-#if !defined(META_HPP_NO_RTTI)
-        using namespace detail;
-        type_registry& registry = type_registry::instance();
-        return registry.get_type_by_rtti(typeid(v));
-#else
-        (void)v;
-        return any_type{};
-#endif
     }
 }
 
@@ -8418,78 +8468,88 @@ namespace meta_hpp
         return base.is_virtual_base_of(*this);
     }
 
-    inline function class_type::get_function(std::string_view name) const noexcept {
+    inline function class_type::get_function(std::string_view name, bool recursively) const noexcept {
         for ( const function& function : data_->functions ) {
             if ( function.get_name() == name ) {
                 return function;
             }
         }
 
-        for ( const class_type& base : data_->base_classes ) {
-            if ( const function& function = base.get_function(name) ) {
-                return function;
+        if ( recursively ) {
+            for ( const class_type& base : data_->base_classes ) {
+                if ( const function& function = base.get_function(name, recursively) ) {
+                    return function;
+                }
             }
         }
 
         return function{};
     }
 
-    inline member class_type::get_member(std::string_view name) const noexcept {
+    inline member class_type::get_member(std::string_view name, bool recursively) const noexcept {
         for ( const member& member : data_->members ) {
             if ( member.get_name() == name ) {
                 return member;
             }
         }
 
-        for ( const class_type& base : data_->base_classes ) {
-            if ( const member& member = base.get_member(name) ) {
-                return member;
+        if ( recursively ) {
+            for ( const class_type& base : data_->base_classes ) {
+                if ( const member& member = base.get_member(name, recursively) ) {
+                    return member;
+                }
             }
         }
 
         return member{};
     }
 
-    inline method class_type::get_method(std::string_view name) const noexcept {
+    inline method class_type::get_method(std::string_view name, bool recursively) const noexcept {
         for ( const method& method : data_->methods ) {
             if ( method.get_name() == name ) {
                 return method;
             }
         }
 
-        for ( const class_type& base : data_->base_classes ) {
-            if ( const method& method = base.get_method(name) ) {
-                return method;
+        if ( recursively ) {
+            for ( const class_type& base : data_->base_classes ) {
+                if ( const method& method = base.get_method(name, recursively) ) {
+                    return method;
+                }
             }
         }
 
         return method{};
     }
 
-    inline any_type class_type::get_typedef(std::string_view name) const noexcept {
+    inline any_type class_type::get_typedef(std::string_view name, bool recursively) const noexcept {
         if ( auto iter{data_->typedefs.find(name)}; iter != data_->typedefs.end() ) {
             return iter->second;
         }
 
-        for ( const class_type& base : data_->base_classes ) {
-            if ( const any_type& type = base.get_typedef(name) ) {
-                return type;
+        if ( recursively ) {
+            for ( const class_type& base : data_->base_classes ) {
+                if ( const any_type& type = base.get_typedef(name, recursively) ) {
+                    return type;
+                }
             }
         }
 
         return any_type{};
     }
 
-    inline variable class_type::get_variable(std::string_view name) const noexcept {
+    inline variable class_type::get_variable(std::string_view name, bool recursively) const noexcept {
         for ( const variable& variable : data_->variables ) {
             if ( variable.get_name() == name ) {
                 return variable;
             }
         }
 
-        for ( const class_type& base : data_->base_classes ) {
-            if ( const variable& variable = base.get_variable(name) ) {
-                return variable;
+        if ( recursively ) {
+            for ( const class_type& base : data_->base_classes ) {
+                if ( const variable& variable = base.get_variable(name, recursively) ) {
+                    return variable;
+                }
             }
         }
 
@@ -8541,13 +8601,21 @@ namespace meta_hpp
     //
 
     template < typename... Args >
-    function class_type::get_function_with(std::string_view name) const noexcept {
+    function class_type::get_function_with( //
+        std::string_view name,
+        bool recursively
+    ) const noexcept {
         detail::type_registry& registry{detail::type_registry::instance()};
-        return get_function_with(name, {registry.resolve_type<Args>()...});
+        return get_function_with(name, {registry.resolve_type<Args>()...}, recursively);
     }
 
     template < typename Iter >
-    function class_type::get_function_with(std::string_view name, Iter first, Iter last) const noexcept {
+    function class_type::get_function_with( //
+        std::string_view name,
+        Iter first,
+        Iter last,
+        bool recursively
+    ) const noexcept {
         for ( const function& function : data_->functions ) {
             if ( function.get_name() != name ) {
                 continue;
@@ -8559,21 +8627,31 @@ namespace meta_hpp
             }
         }
 
-        for ( const class_type& base : data_->base_classes ) {
-            if ( const function& function = base.get_function_with(name, first, last) ) {
-                return function;
+        if ( recursively ) {
+            for ( const class_type& base : data_->base_classes ) {
+                if ( const function& function = base.get_function_with(name, first, last, recursively) ) {
+                    return function;
+                }
             }
         }
 
         return function{};
     }
 
-    inline function class_type::get_function_with(std::string_view name, std::span<const any_type> args) const noexcept {
-        return get_function_with(name, args.begin(), args.end());
+    inline function class_type::get_function_with( //
+        std::string_view name,
+        std::span<const any_type> args,
+        bool recursively
+    ) const noexcept {
+        return get_function_with(name, args.begin(), args.end(), recursively);
     }
 
-    inline function class_type::get_function_with(std::string_view name, std::initializer_list<any_type> args) const noexcept {
-        return get_function_with(name, args.begin(), args.end());
+    inline function class_type::get_function_with( //
+        std::string_view name,
+        std::initializer_list<any_type> args,
+        bool recursively
+    ) const noexcept {
+        return get_function_with(name, args.begin(), args.end(), recursively);
     }
 
     //
@@ -8581,13 +8659,21 @@ namespace meta_hpp
     //
 
     template < typename... Args >
-    method class_type::get_method_with(std::string_view name) const noexcept {
+    method class_type::get_method_with( //
+        std::string_view name,
+        bool recursively
+    ) const noexcept {
         detail::type_registry& registry{detail::type_registry::instance()};
-        return get_method_with(name, {registry.resolve_type<Args>()...});
+        return get_method_with(name, {registry.resolve_type<Args>()...}, recursively);
     }
 
     template < typename Iter >
-    method class_type::get_method_with(std::string_view name, Iter first, Iter last) const noexcept {
+    method class_type::get_method_with( //
+        std::string_view name,
+        Iter first,
+        Iter last,
+        bool recursively
+    ) const noexcept {
         for ( const method& method : data_->methods ) {
             if ( method.get_name() != name ) {
                 continue;
@@ -8599,21 +8685,31 @@ namespace meta_hpp
             }
         }
 
-        for ( const class_type& base : data_->base_classes ) {
-            if ( const method& method = base.get_method_with(name, first, last) ) {
-                return method;
+        if ( recursively ) {
+            for ( const class_type& base : data_->base_classes ) {
+                if ( const method& method = base.get_method_with(name, first, last, recursively) ) {
+                    return method;
+                }
             }
         }
 
         return method{};
     }
 
-    inline method class_type::get_method_with(std::string_view name, std::span<const any_type> args) const noexcept {
-        return get_method_with(name, args.begin(), args.end());
+    inline method class_type::get_method_with( //
+        std::string_view name,
+        std::span<const any_type> args,
+        bool recursively
+    ) const noexcept {
+        return get_method_with(name, args.begin(), args.end(), recursively);
     }
 
-    inline method class_type::get_method_with(std::string_view name, std::initializer_list<any_type> args) const noexcept {
-        return get_method_with(name, args.begin(), args.end());
+    inline method class_type::get_method_with( //
+        std::string_view name,
+        std::initializer_list<any_type> args,
+        bool recursively
+    ) const noexcept {
+        return get_method_with(name, args.begin(), args.end(), recursively);
     }
 }
 
@@ -8673,13 +8769,19 @@ namespace meta_hpp
     }
 
     template < typename... Args >
-    function scope::get_function_with(std::string_view name) const noexcept {
+    function scope::get_function_with( //
+        std::string_view name
+    ) const noexcept {
         detail::type_registry& registry{detail::type_registry::instance()};
         return get_function_with(name, {registry.resolve_type<Args>()...});
     }
 
     template < typename Iter >
-    function scope::get_function_with(std::string_view name, Iter first, Iter last) const noexcept {
+    function scope::get_function_with( //
+        std::string_view name,
+        Iter first,
+        Iter last
+    ) const noexcept {
         for ( const function& function : state_->functions ) {
             if ( function.get_name() != name ) {
                 continue;
@@ -8693,11 +8795,17 @@ namespace meta_hpp
         return function{};
     }
 
-    inline function scope::get_function_with(std::string_view name, std::span<const any_type> args) const noexcept {
+    inline function scope::get_function_with( //
+        std::string_view name,
+        std::span<const any_type> args
+    ) const noexcept {
         return get_function_with(name, args.begin(), args.end());
     }
 
-    inline function scope::get_function_with(std::string_view name, std::initializer_list<any_type> args) const noexcept {
+    inline function scope::get_function_with( //
+        std::string_view name,
+        std::initializer_list<any_type> args
+    ) const noexcept {
         return get_function_with(name, args.begin(), args.end());
     }
 }
@@ -8930,6 +9038,96 @@ namespace meta_hpp::detail
     template < void_kind Void >
     void_type_data::void_type_data(type_list<Void>)
     : type_data_base{type_id{type_list<void_tag<Void>>{}}, type_kind::void_} {}
+}
+
+namespace meta_hpp::detail
+{
+    template <
+        typename To,
+        typename From,
+        typename ToDT = std::remove_pointer_t<To>,
+        typename FromDT = std::remove_pointer_t<From> >
+    concept pointer_ucast_kind                                                       //
+        = (std::is_pointer_v<From> && std::is_class_v<FromDT>)                       //
+       && (std::is_pointer_v<To> && (std::is_class_v<ToDT> || std::is_void_v<ToDT>)) //
+       && (!std::is_const_v<FromDT> || std::is_const_v<ToDT>)                        //
+       && (!std::is_volatile_v<FromDT> || std::is_volatile_v<ToDT>);                 //
+
+    template <
+        typename To,
+        typename From,
+        typename ToDT = std::remove_reference_t<To>,
+        typename FromDT = std::remove_reference_t<From> >
+    concept lvalue_reference_ucast_kind                                 //
+        = (std::is_lvalue_reference_v<From> && std::is_class_v<FromDT>) //
+       && (std::is_lvalue_reference_v<To> && std::is_class_v<ToDT>)     //
+       && (!std::is_const_v<FromDT> || std::is_const_v<ToDT>)           //
+       && (!std::is_volatile_v<FromDT> || std::is_volatile_v<ToDT>);    //
+}
+
+namespace meta_hpp
+{
+    template < typename To, typename From >
+        requires detail::pointer_ucast_kind<To, From>
+    To ucast(From from);
+
+    template < typename To, typename From >
+        requires detail::lvalue_reference_ucast_kind<To, From>
+    To ucast(From&& from);
+}
+
+namespace meta_hpp
+{
+    template < typename To, typename From >
+        requires detail::pointer_ucast_kind<To, From>
+    To ucast(From from) {
+        using from_data_type = std::remove_pointer_t<From>;
+        using to_data_type = std::remove_pointer_t<To>;
+
+        static_assert(
+            detail::check_poly_info_enabled<from_data_type>,
+            "The type doesn't support ucasts. Use the META_HPP_ENABLE_POLY_INFO macro to fix it."
+        );
+
+        if ( from == nullptr ) {
+            return nullptr;
+        }
+
+        if constexpr ( std::is_same_v<std::remove_cv_t<from_data_type>, std::remove_cv_t<to_data_type>> ) {
+            return from;
+        } else {
+            detail::type_registry& registry{detail::type_registry::instance()};
+            const detail::poly_info& meta_info{from->get_most_derived_poly_info(registry)};
+
+            // NOLINTNEXTLINE(*-const-cast)
+            void* most_derived_object_ptr = const_cast<void*>(meta_info.ptr);
+
+            if constexpr ( std::is_void_v<to_data_type> ) {
+                return most_derived_object_ptr;
+            } else {
+                const class_type& to_class_type = registry.resolve_class_type<to_data_type>();
+                return static_cast<To>(detail::pointer_upcast(most_derived_object_ptr, meta_info.type, to_class_type));
+            }
+        }
+    }
+
+    template < typename To, typename From >
+        requires detail::lvalue_reference_ucast_kind<To, From>
+    To ucast(From&& from) {
+        using from_data_type = std::remove_reference_t<From>;
+        using to_data_type = std::remove_reference_t<To>;
+
+        static_assert(
+            detail::check_poly_info_enabled<from_data_type>,
+            "The type doesn't support ucasts. Use the META_HPP_ENABLE_POLY_INFO macro to fix it."
+        );
+
+        if ( to_data_type* ptr = ucast<to_data_type*>(std::addressof(from)) ) {
+            return *ptr;
+        }
+
+        throw_exception(error_code::bad_cast);
+    }
 }
 
 namespace meta_hpp::detail

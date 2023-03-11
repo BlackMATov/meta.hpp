@@ -55,247 +55,131 @@ namespace meta_hpp::detail
             return any_type{};
         }
 
-#if !defined(META_HPP_NO_RTTI)
-        [[nodiscard]] any_type get_type_by_rtti(const std::type_index& index) const noexcept {
-            const locker lock;
-
-            if ( auto iter{rtti_types_.find(index)}; iter != rtti_types_.end() ) {
-                return iter->second;
-            }
-
-            return any_type{};
-        }
-#endif
-
     public:
-        template < array_kind Array >
-        [[nodiscard]] array_type resolve_type() {
-            return resolve_array_type<Array>();
-        }
-
-        template < class_kind Class >
-        [[nodiscard]] class_type resolve_type() {
-            return resolve_class_type<Class>();
-        }
-
-        template < enum_kind Enum >
-        [[nodiscard]] enum_type resolve_type() {
-            return resolve_enum_type<Enum>();
-        }
-
-        template < function_pointer_kind Function >
-        [[nodiscard]] function_type resolve_type() {
-            return resolve_function_type<Function>();
-        }
-
-        template < member_pointer_kind Member >
-        [[nodiscard]] member_type resolve_type() {
-            return resolve_member_type<Member>();
-        }
-
-        template < method_pointer_kind Method >
-        [[nodiscard]] method_type resolve_type() {
-            return resolve_method_type<Method>();
-        }
-
-        template < nullptr_kind Nullptr >
-        [[nodiscard]] nullptr_type resolve_type() {
-            return resolve_nullptr_type<Nullptr>();
-        }
-
-        template < number_kind Number >
-        [[nodiscard]] number_type resolve_type() {
-            return resolve_number_type<Number>();
-        }
-
-        template < pointer_kind Pointer >
-        [[nodiscard]] pointer_type resolve_type() {
-            return resolve_pointer_type<Pointer>();
-        }
-
-        template < reference_kind Reference >
-        [[nodiscard]] reference_type resolve_type() {
-            return resolve_reference_type<Reference>();
-        }
-
-        template < void_kind Void >
-        [[nodiscard]] void_type resolve_type() {
-            return resolve_void_type<Void>();
+        template < typename T >
+        [[nodiscard]] auto resolve_type() {
+            // clang-format off
+            if constexpr ( array_kind<T> ) { return resolve_array_type<T>(); }
+            if constexpr ( class_kind<T> ) { return resolve_class_type<T>(); }
+            if constexpr ( enum_kind<T> ) { return resolve_enum_type<T>(); }
+            if constexpr ( function_pointer_kind<T> ) { return resolve_function_type<T>(); }
+            if constexpr ( member_pointer_kind<T> ) { return resolve_member_type<T>(); }
+            if constexpr ( method_pointer_kind<T> ) { return resolve_method_type<T>(); }
+            if constexpr ( nullptr_kind<T> ) { return resolve_nullptr_type<T>(); }
+            if constexpr ( number_kind<T> ) { return resolve_number_type<T>(); }
+            if constexpr ( pointer_kind<T> ) { return resolve_pointer_type<T>(); }
+            if constexpr ( reference_kind<T> ) { return resolve_reference_type<T>(); }
+            if constexpr ( void_kind<T> ) { return resolve_void_type<T>(); }
+            // clang-format on
         }
 
     public:
         template < array_kind Array >
         [[nodiscard]] array_type resolve_array_type() {
-            return array_type{resolve_array_type_data<Array>()};
+            using array_t = std::remove_cv_t<Array>;
+            static array_type type{ensure_type<array_type_data>(type_list<array_t>{})};
+            return type;
         }
 
         template < class_kind Class >
         [[nodiscard]] class_type resolve_class_type() {
-            return class_type{resolve_class_type_data<Class>()};
+            using class_t = std::remove_cv_t<Class>;
+            static class_type type{ensure_type<class_type_data>(type_list<class_t>{})};
+            return type;
         }
 
         template < class_kind Class, typename... Args >
         [[nodiscard]] constructor_type resolve_constructor_type() {
-            return constructor_type{resolve_constructor_type_data<Class, Args...>()};
+            using class_t = std::remove_cv_t<Class>;
+            static constructor_type type{ensure_type<constructor_type_data>(type_list<class_t>{}, type_list<Args...>{})};
+            return type;
         }
 
         template < class_kind Class >
         [[nodiscard]] destructor_type resolve_destructor_type() {
-            return destructor_type{resolve_destructor_type_data<Class>()};
+            using class_t = std::remove_cv_t<Class>;
+            static destructor_type type{ensure_type<destructor_type_data>(type_list<class_t>{})};
+            return type;
         }
 
         template < enum_kind Enum >
         [[nodiscard]] enum_type resolve_enum_type() {
-            return enum_type{resolve_enum_type_data<Enum>()};
+            using enum_t = std::remove_cv_t<Enum>;
+            static enum_type type{ensure_type<enum_type_data>(type_list<enum_t>{})};
+            return type;
         }
 
         template < function_pointer_kind Function >
         [[nodiscard]] function_type resolve_function_type() {
-            return function_type{resolve_function_type_data<Function>()};
+            using function_t = std::remove_cv_t<Function>;
+            static function_type type{ensure_type<function_type_data>(type_list<function_t>{})};
+            return type;
         }
 
         template < member_pointer_kind Member >
         [[nodiscard]] member_type resolve_member_type() {
-            return member_type{resolve_member_type_data<Member>()};
+            using member_t = std::remove_cv_t<Member>;
+            static member_type type{ensure_type<member_type_data>(type_list<member_t>{})};
+            return type;
         }
 
         template < method_pointer_kind Method >
         [[nodiscard]] method_type resolve_method_type() {
-            return method_type{resolve_method_type_data<Method>()};
+            using method_t = std::remove_cv_t<Method>;
+            static method_type type{ensure_type<method_type_data>(type_list<method_t>{})};
+            return type;
         }
 
         template < nullptr_kind Nullptr >
         [[nodiscard]] nullptr_type resolve_nullptr_type() {
-            return nullptr_type{resolve_nullptr_type_data<Nullptr>()};
+            using nullptr_t = std::remove_cv_t<Nullptr>;
+            static nullptr_type type{ensure_type<nullptr_type_data>(type_list<nullptr_t>{})};
+            return type;
         }
 
         template < number_kind Number >
         [[nodiscard]] number_type resolve_number_type() {
-            return number_type{resolve_number_type_data<Number>()};
+            using number_t = std::remove_cv_t<Number>;
+            static number_type type{ensure_type<number_type_data>(type_list<number_t>{})};
+            return type;
         }
 
         template < pointer_kind Pointer >
         [[nodiscard]] pointer_type resolve_pointer_type() {
-            return pointer_type{resolve_pointer_type_data<Pointer>()};
+            using pointer_t = std::remove_cv_t<Pointer>;
+            static pointer_type type{ensure_type<pointer_type_data>(type_list<pointer_t>{})};
+            return type;
         }
 
         template < reference_kind Reference >
         [[nodiscard]] reference_type resolve_reference_type() {
-            return reference_type{resolve_reference_type_data<Reference>()};
+            using reference_t = std::remove_cv_t<Reference>;
+            static reference_type type{ensure_type<reference_type_data>(type_list<reference_t>{})};
+            return type;
         }
 
         template < void_kind Void >
         [[nodiscard]] void_type resolve_void_type() {
-            return void_type{resolve_void_type_data<Void>()};
-        }
-
-    private:
-        template < array_kind Array >
-        [[nodiscard]] array_type_data* resolve_array_type_data() {
-            static array_type_data data = (ensure_type<Array>(data), array_type_data{type_list<Array>{}});
-            return &data;
-        }
-
-        template < class_kind Class >
-        [[nodiscard]] class_type_data* resolve_class_type_data() {
-            static class_type_data data = (ensure_type<Class>(data), class_type_data{type_list<Class>{}});
-            return &data;
-        }
-
-        template < class_kind Class, typename... Args >
-        [[nodiscard]] constructor_type_data* resolve_constructor_type_data() {
-            static constructor_type_data data{type_list<Class>{}, type_list<Args...>{}};
-            return &data;
-        }
-
-        template < class_kind Class >
-        [[nodiscard]] destructor_type_data* resolve_destructor_type_data() {
-            static destructor_type_data data{type_list<Class>{}};
-            return &data;
-        }
-
-        template < enum_kind Enum >
-        [[nodiscard]] enum_type_data* resolve_enum_type_data() {
-            static enum_type_data data = (ensure_type<Enum>(data), enum_type_data{type_list<Enum>{}});
-            return &data;
-        }
-
-        template < function_pointer_kind Function >
-        [[nodiscard]] function_type_data* resolve_function_type_data() {
-            static function_type_data data = (ensure_type<Function>(data), function_type_data{type_list<Function>{}});
-            return &data;
-        }
-
-        template < member_pointer_kind Member >
-        [[nodiscard]] member_type_data* resolve_member_type_data() {
-            static member_type_data data = (ensure_type<Member>(data), member_type_data{type_list<Member>{}});
-            return &data;
-        }
-
-        template < method_pointer_kind Method >
-        [[nodiscard]] method_type_data* resolve_method_type_data() {
-            static method_type_data data = (ensure_type<Method>(data), method_type_data{type_list<Method>{}});
-            return &data;
-        }
-
-        template < nullptr_kind Nullptr >
-        [[nodiscard]] nullptr_type_data* resolve_nullptr_type_data() {
-            static nullptr_type_data data = (ensure_type<Nullptr>(data), nullptr_type_data{type_list<Nullptr>{}});
-            return &data;
-        }
-
-        template < number_kind Number >
-        [[nodiscard]] number_type_data* resolve_number_type_data() {
-            static number_type_data data = (ensure_type<Number>(data), number_type_data{type_list<Number>{}});
-            return &data;
-        }
-
-        template < pointer_kind Pointer >
-        [[nodiscard]] pointer_type_data* resolve_pointer_type_data() {
-            static pointer_type_data data = (ensure_type<Pointer>(data), pointer_type_data{type_list<Pointer>{}});
-            return &data;
-        }
-
-        template < reference_kind Reference >
-        [[nodiscard]] reference_type_data* resolve_reference_type_data() {
-            static reference_type_data data = (ensure_type<Reference>(data), reference_type_data{type_list<Reference>{}});
-            return &data;
-        }
-
-        template < void_kind Void >
-        [[nodiscard]] void_type_data* resolve_void_type_data() {
-            static void_type_data data = (ensure_type<Void>(data), void_type_data{type_list<Void>{}});
-            return &data;
+            using void_t = std::remove_cv_t<Void>;
+            static void_type type{ensure_type<void_type_data>(type_list<void_t>{})};
+            return type;
         }
 
     private:
         type_registry() = default;
 
-        template < typename Type, typename TypeData >
-        void ensure_type(TypeData& type_data) {
+        template < typename TypeData, typename... Args >
+        TypeData* ensure_type(Args&&... args) {
+            static auto data{std::make_unique<TypeData>(std::forward<Args>(args)...)};
+
             const locker lock;
+            types_.emplace(any_type{data.get()});
 
-            auto&& [position, emplaced] = types_.emplace(any_type{&type_data});
-            if ( !emplaced ) {
-                return;
-            }
-
-#if !defined(META_HPP_NO_RTTI)
-            META_HPP_TRY {
-                rtti_types_.emplace(typeid(Type), any_type{&type_data});
-            }
-            META_HPP_CATCH(...) {
-                types_.erase(position);
-                META_HPP_RETHROW();
-            }
-#endif
+            return data.get();
         }
 
     private:
         std::recursive_mutex mutex_;
         std::set<any_type, std::less<>> types_;
-#if !defined(META_HPP_NO_RTTI)
-        std::map<std::type_index, any_type, std::less<>> rtti_types_;
-#endif
     };
 }

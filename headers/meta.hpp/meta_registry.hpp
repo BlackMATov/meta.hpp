@@ -10,6 +10,7 @@
 #include "meta_states.hpp"
 #include "meta_types.hpp"
 
+#include "meta_detail/poly_info.hpp"
 #include "meta_detail/state_registry.hpp"
 #include "meta_detail/type_registry.hpp"
 
@@ -53,6 +54,28 @@ namespace meta_hpp
 
 namespace meta_hpp
 {
+    template < typename T >
+    [[nodiscard]] auto resolve_poly_type(T&& from) {
+        using namespace detail;
+
+        using raw_type = std::remove_cvref_t<T>;
+        type_registry& registry = type_registry::instance();
+
+        if constexpr ( std::is_class_v<raw_type> ) {
+            static_assert(
+                detail::check_poly_info_enabled<raw_type>,
+                "The class doesn't support polymorphic type resolving. Use the META_HPP_ENABLE_POLY_INFO macro to fix it."
+            );
+            return from.get_most_derived_poly_info(registry).type;
+        } else {
+            (void)from;
+            return registry.resolve_type<raw_type>();
+        }
+    }
+}
+
+namespace meta_hpp
+{
     template < detail::class_kind Class, typename... Args >
     [[nodiscard]] constructor_type resolve_constructor_type() {
         using namespace detail;
@@ -65,18 +88,6 @@ namespace meta_hpp
         using namespace detail;
         type_registry& registry = type_registry::instance();
         return registry.resolve_destructor_type<Class>();
-    }
-
-    template < typename T >
-    [[nodiscard]] any_type resolve_polymorphic_type(T&& v) noexcept {
-#if !defined(META_HPP_NO_RTTI)
-        using namespace detail;
-        type_registry& registry = type_registry::instance();
-        return registry.get_type_by_rtti(typeid(v));
-#else
-        (void)v;
-        return any_type{};
-#endif
     }
 }
 

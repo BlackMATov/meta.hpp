@@ -72,13 +72,19 @@ namespace meta_hpp
     }
 
     template < typename... Args >
-    function scope::get_function_with(std::string_view name) const noexcept {
+    function scope::get_function_with( //
+        std::string_view name
+    ) const noexcept {
         detail::type_registry& registry{detail::type_registry::instance()};
         return get_function_with(name, {registry.resolve_type<Args>()...});
     }
 
     template < typename Iter >
-    function scope::get_function_with(std::string_view name, Iter first, Iter last) const noexcept {
+    function scope::get_function_with( //
+        std::string_view name,
+        Iter first,
+        Iter last
+    ) const noexcept {
         for ( const function& function : state_->functions ) {
             if ( function.get_name() != name ) {
                 continue;
@@ -92,11 +98,17 @@ namespace meta_hpp
         return function{};
     }
 
-    inline function scope::get_function_with(std::string_view name, std::span<const any_type> args) const noexcept {
+    inline function scope::get_function_with( //
+        std::string_view name,
+        std::span<const any_type> args
+    ) const noexcept {
         return get_function_with(name, args.begin(), args.end());
     }
 
-    inline function scope::get_function_with(std::string_view name, std::initializer_list<any_type> args) const noexcept {
+    inline function scope::get_function_with( //
+        std::string_view name,
+        std::initializer_list<any_type> args
+    ) const noexcept {
         return get_function_with(name, args.begin(), args.end());
     }
 }
