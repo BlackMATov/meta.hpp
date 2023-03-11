@@ -1190,7 +1190,7 @@ namespace meta_hpp::detail
         }
 
         [[nodiscard]] std::size_t get_hash() const noexcept {
-            return std::hash<T*>{}(ptr_);
+            return hash_combiner{}(ptr_);
         }
 
         [[nodiscard]] bool operator==(const intrusive_ptr& other) const noexcept {
@@ -1516,108 +1516,6 @@ namespace meta_hpp::detail
 
 namespace meta_hpp::detail
 {
-    template < typename... Types >
-    struct type_list {};
-
-    template < std::size_t I >
-    using size_constant = std::integral_constant<std::size_t, I>;
-
-    template < std::size_t I >
-    using index_constant = std::integral_constant<std::size_t, I>;
-}
-
-namespace meta_hpp::detail
-{
-    template < std::size_t Index, typename TypeList >
-    struct type_list_at;
-
-    template < std::size_t Index, typename... Types >
-    struct type_list_at<Index, type_list<Types...>> {
-        using type = std::tuple_element_t<Index, std::tuple<Types...>>;
-    };
-
-    template < std::size_t Index, typename TypeList >
-    using type_list_at_t = typename type_list_at<Index, TypeList>::type;
-}
-
-namespace meta_hpp::detail
-{
-    template < typename TypeList >
-    struct type_list_arity;
-
-    template < typename... Types >
-    struct type_list_arity<type_list<Types...>> : size_constant<sizeof...(Types)> {};
-
-    template < typename TypeList >
-    inline constexpr std::size_t type_list_arity_v = type_list_arity<TypeList>::value;
-}
-
-namespace meta_hpp::detail
-{
-    class type_id final {
-    public:
-        template < typename T >
-        explicit type_id(type_list<T>) noexcept
-        : id_{type_to_id<T>()} {}
-
-        type_id(type_id&&) = default;
-        type_id(const type_id&) = default;
-
-        type_id& operator=(type_id&&) = default;
-        type_id& operator=(const type_id&) = default;
-
-        ~type_id() = default;
-
-        void swap(type_id& other) noexcept {
-            std::swap(id_, other.id_);
-        }
-
-        [[nodiscard]] std::size_t get_hash() const noexcept {
-            return std::hash<underlying_type>{}(id_);
-        }
-
-        [[nodiscard]] bool operator==(type_id other) const noexcept {
-            return id_ == other.id_;
-        }
-
-        [[nodiscard]] std::strong_ordering operator<=>(type_id other) const noexcept {
-            return id_ <=> other.id_;
-        }
-
-    private:
-        using underlying_type = std::uint32_t;
-        underlying_type id_{};
-
-    private:
-        [[nodiscard]] static underlying_type next() noexcept {
-            static std::atomic<underlying_type> id{};
-            return ++id;
-        }
-
-        template < typename T >
-        [[nodiscard]] static underlying_type type_to_id() noexcept {
-            static const underlying_type id{next()};
-            return id;
-        }
-    };
-
-    inline void swap(type_id& l, type_id& r) noexcept {
-        l.swap(r);
-    }
-}
-
-namespace std
-{
-    template <>
-    struct hash<meta_hpp::detail::type_id> {
-        size_t operator()(const meta_hpp::detail::type_id& id) const noexcept {
-            return id.get_hash();
-        }
-    };
-}
-
-namespace meta_hpp::detail
-{
     template < typename T >
     concept array_kind = std::is_array_v<T>;
 
@@ -1694,6 +1592,44 @@ namespace meta_hpp::detail
     }
 }
 
+namespace meta_hpp::detail
+{
+    template < typename... Types >
+    struct type_list {};
+
+    template < std::size_t I >
+    using size_constant = std::integral_constant<std::size_t, I>;
+
+    template < std::size_t I >
+    using index_constant = std::integral_constant<std::size_t, I>;
+}
+
+namespace meta_hpp::detail
+{
+    template < std::size_t Index, typename TypeList >
+    struct type_list_at;
+
+    template < std::size_t Index, typename... Types >
+    struct type_list_at<Index, type_list<Types...>> {
+        using type = std::tuple_element_t<Index, std::tuple<Types...>>;
+    };
+
+    template < std::size_t Index, typename TypeList >
+    using type_list_at_t = typename type_list_at<Index, TypeList>::type;
+}
+
+namespace meta_hpp::detail
+{
+    template < typename TypeList >
+    struct type_list_arity;
+
+    template < typename... Types >
+    struct type_list_arity<type_list<Types...>> : size_constant<sizeof...(Types)> {};
+
+    template < typename TypeList >
+    inline constexpr std::size_t type_list_arity_v = type_list_arity<TypeList>::value;
+}
+
 namespace meta_hpp
 {
     using detail::error_code;
@@ -1707,7 +1643,6 @@ namespace meta_hpp
     using detail::select_non_const;
     using detail::select_overload;
 
-    using detail::type_id;
     using detail::type_kind;
     using detail::type_list;
 }
@@ -2543,12 +2478,38 @@ namespace meta_hpp
 
 namespace meta_hpp
 {
+    class type_id final {
+    public:
+        type_id() = default;
+
+        explicit type_id(std::uintptr_t id)
+        : id_{id} {}
+
+        void swap(type_id& other) noexcept {
+            std::swap(id_, other.id_);
+        }
+
+        [[nodiscard]] std::size_t get_hash() const noexcept {
+            return detail::hash_combiner{}(id_);
+        }
+
+        [[nodiscard]] std::strong_ordering operator<=>(const type_id& other) const = default;
+
+    private:
+        std::uintptr_t id_{};
+    };
+}
+
+namespace meta_hpp
+{
     template < detail::type_family Type >
     class type_base {
         using data_ptr = typename detail::type_traits<Type>::data_ptr;
         friend data_ptr detail::type_access<Type>(const Type&);
 
     public:
+        using id_type = type_id;
+
         type_base() = default;
 
         explicit type_base(data_ptr data)
@@ -2568,8 +2529,9 @@ namespace meta_hpp
             return is_valid();
         }
 
-        [[nodiscard]] type_id get_id() const noexcept {
-            return data_->id;
+        [[nodiscard]] id_type get_id() const noexcept {
+            // NOLINTNEXTLINE(*-reinterpret-cast)
+            return id_type{reinterpret_cast<std::uintptr_t>(data_)};
         }
 
         [[nodiscard]] type_kind get_kind() const noexcept {
@@ -2895,12 +2857,12 @@ namespace meta_hpp
 namespace meta_hpp
 {
     template < detail::type_family L >
-    [[nodiscard]] bool operator==(const L& l, type_id r) noexcept {
+    [[nodiscard]] bool operator==(const L& l, const typename L::id_type& r) noexcept {
         return l.is_valid() && l.get_id() == r;
     }
 
     template < detail::type_family L >
-    [[nodiscard]] std::strong_ordering operator<=>(const L& l, type_id r) noexcept {
+    [[nodiscard]] std::strong_ordering operator<=>(const L& l, const typename L::id_type& r) noexcept {
         return l.is_valid() ? l.get_id() <=> r : std::strong_ordering::less;
     }
 }
@@ -2908,14 +2870,12 @@ namespace meta_hpp
 namespace meta_hpp::detail
 {
     struct type_data_base {
-        const type_id id;
         const type_kind kind;
 
         metadata_map metadata{};
 
-        explicit type_data_base(type_id nid, type_kind nkind)
-        : id{nid}
-        , kind{nkind} {}
+        explicit type_data_base(type_kind nkind)
+        : kind{nkind} {}
 
         type_data_base(type_data_base&&) = delete;
         type_data_base(const type_data_base&) = delete;
@@ -4024,13 +3984,13 @@ namespace meta_hpp
 
 namespace meta_hpp
 {
-    template < detail::state_family L, detail::index_family R >
-    [[nodiscard]] bool operator==(const L& l, const R& r) noexcept {
+    template < detail::state_family L >
+    [[nodiscard]] bool operator==(const L& l, const typename L::index_type& r) noexcept {
         return l.is_valid() && l.get_index() == r;
     }
 
-    template < detail::state_family L, detail::index_family R >
-    [[nodiscard]] std::strong_ordering operator<=>(const L& l, const R& r) noexcept {
+    template < detail::state_family L >
+    [[nodiscard]] std::strong_ordering operator<=>(const L& l, const typename L::index_type& r) noexcept {
         return l.is_valid() ? l.get_index() <=> r : std::strong_ordering::less;
     }
 }
@@ -4211,16 +4171,6 @@ namespace meta_hpp::detail
             for ( const any_type& type : types_ ) {
                 std::invoke(f, type);
             }
-        }
-
-        [[nodiscard]] any_type get_type_by_id(type_id id) const noexcept {
-            const locker lock;
-
-            if ( auto iter{types_.find(id)}; iter != types_.end() ) {
-                return *iter;
-            }
-
-            return any_type{};
         }
 
     public:
@@ -6282,11 +6232,8 @@ namespace meta_hpp::detail
 namespace meta_hpp::detail
 {
     template < function_pointer_kind Function >
-    struct function_tag {};
-
-    template < function_pointer_kind Function >
     function_type_data::function_type_data(type_list<Function>)
-    : type_data_base{type_id{type_list<function_tag<Function>>{}}, type_kind::function_}
+    : type_data_base{type_kind::function_}
     , flags{function_traits<Function>::make_flags()}
     , return_type{resolve_type<typename function_traits<Function>::return_type>()}
     , argument_types{resolve_types(typename function_traits<Function>::argument_types{})} {}
@@ -6723,11 +6670,8 @@ namespace meta_hpp::detail
 namespace meta_hpp::detail
 {
     template < member_pointer_kind Member >
-    struct member_tag {};
-
-    template < member_pointer_kind Member >
     member_type_data::member_type_data(type_list<Member>)
-    : type_data_base{type_id{type_list<member_tag<Member>>{}}, type_kind::member_}
+    : type_data_base{type_kind::member_}
     , flags{member_traits<Member>::make_flags()}
     , owner_type{resolve_type<typename member_traits<Member>::class_type>()}
     , value_type{resolve_type<typename member_traits<Member>::value_type>()} {}
@@ -7050,11 +6994,8 @@ namespace meta_hpp
 namespace meta_hpp::detail
 {
     template < method_pointer_kind Method >
-    struct method_tag {};
-
-    template < method_pointer_kind Method >
     method_type_data::method_type_data(type_list<Method>)
-    : type_data_base{type_id{type_list<method_tag<Method>>{}}, type_kind::method_}
+    : type_data_base{type_kind::method_}
     , flags{method_traits<Method>::make_flags()}
     , owner_type{resolve_type<typename method_traits<Method>::class_type>()}
     , return_type{resolve_type<typename method_traits<Method>::return_type>()}
@@ -7519,11 +7460,8 @@ namespace meta_hpp
 namespace meta_hpp::detail
 {
     template < class_kind Class, typename... Args >
-    struct constructor_tag {};
-
-    template < class_kind Class, typename... Args >
     constructor_type_data::constructor_type_data(type_list<Class>, type_list<Args...>)
-    : type_data_base{type_id{type_list<constructor_tag<Class, Args...>>{}}, type_kind::constructor_}
+    : type_data_base{type_kind::constructor_}
     , flags{constructor_traits<Class, Args...>::make_flags()}
     , owner_type{resolve_type<typename constructor_traits<Class, Args...>::class_type>()}
     , argument_types{resolve_types(typename constructor_traits<Class, Args...>::argument_types{})} {}
@@ -7774,11 +7712,8 @@ namespace meta_hpp
 namespace meta_hpp::detail
 {
     template < class_kind Class >
-    struct destructor_tag {};
-
-    template < class_kind Class >
     destructor_type_data::destructor_type_data(type_list<Class>)
-    : type_data_base{type_id{type_list<destructor_tag<Class>>{}}, type_kind::destructor_}
+    : type_data_base{type_kind::destructor_}
     , flags{destructor_traits<Class>::make_flags()}
     , owner_type{resolve_type<typename destructor_traits<Class>::class_type>()} {}
 }
@@ -7929,11 +7864,8 @@ namespace meta_hpp
 namespace meta_hpp::detail
 {
     template < enum_kind Enum >
-    struct enum_tag {};
-
-    template < enum_kind Enum >
     enum_type_data::enum_type_data(type_list<Enum>)
-    : type_data_base{type_id{type_list<enum_tag<Enum>>{}}, type_kind::enum_}
+    : type_data_base{type_kind::enum_}
     , flags{enum_traits<Enum>::make_flags()}
     , underlying_type{resolve_type<typename enum_traits<Enum>::underlying_type>()} {}
 }
@@ -8023,11 +7955,8 @@ namespace meta_hpp
 namespace meta_hpp::detail
 {
     template < pointer_kind Pointer >
-    struct pointer_tag {};
-
-    template < pointer_kind Pointer >
     pointer_type_data::pointer_type_data(type_list<Pointer>)
-    : type_data_base{type_id{type_list<pointer_tag<Pointer>>{}}, type_kind::pointer_}
+    : type_data_base{type_kind::pointer_}
     , flags{pointer_traits<Pointer>::make_flags()}
     , data_type{resolve_type<typename pointer_traits<Pointer>::data_type>()} {}
 }
@@ -8228,11 +8157,8 @@ namespace meta_hpp
 namespace meta_hpp::detail
 {
     template < class_kind Class >
-    struct class_tag {};
-
-    template < class_kind Class >
     class_type_data::class_type_data(type_list<Class>)
-    : type_data_base{type_id{type_list<class_tag<Class>>{}}, type_kind::class_}
+    : type_data_base{type_kind::class_}
     , flags{class_traits<Class>::make_flags()}
     , size{class_traits<Class>::size}
     , align{class_traits<Class>::align}
@@ -8944,11 +8870,8 @@ namespace meta_hpp
 namespace meta_hpp::detail
 {
     template < array_kind Array >
-    struct array_tag {};
-
-    template < array_kind Array >
     array_type_data::array_type_data(type_list<Array>)
-    : type_data_base{type_id{type_list<array_tag<Array>>{}}, type_kind::array_}
+    : type_data_base{type_kind::array_}
     , flags{array_traits<Array>::make_flags()}
     , extent{array_traits<Array>::extent}
     , data_type{resolve_type<typename array_traits<Array>::data_type>()} {}
@@ -8972,21 +8895,15 @@ namespace meta_hpp
 namespace meta_hpp::detail
 {
     template < nullptr_kind Nullptr >
-    struct nullptr_tag {};
-
-    template < nullptr_kind Nullptr >
     nullptr_type_data::nullptr_type_data(type_list<Nullptr>)
-    : type_data_base{type_id{type_list<nullptr_tag<Nullptr>>{}}, type_kind::nullptr_} {}
+    : type_data_base{type_kind::nullptr_} {}
 }
 
 namespace meta_hpp::detail
 {
     template < number_kind Number >
-    struct number_tag {};
-
-    template < number_kind Number >
     number_type_data::number_type_data(type_list<Number>)
-    : type_data_base{type_id{type_list<number_tag<Number>>{}}, type_kind::number_}
+    : type_data_base{type_kind::number_}
     , flags{number_traits<Number>::make_flags()}
     , size{number_traits<Number>::size}
     , align{number_traits<Number>::align} {}
@@ -9010,11 +8927,8 @@ namespace meta_hpp
 namespace meta_hpp::detail
 {
     template < reference_kind Reference >
-    struct reference_tag {};
-
-    template < reference_kind Reference >
     reference_type_data::reference_type_data(type_list<Reference>)
-    : type_data_base{type_id{type_list<reference_tag<Reference>>{}}, type_kind::reference_}
+    : type_data_base{type_kind::reference_}
     , flags{reference_traits<Reference>::make_flags()}
     , data_type{resolve_type<typename reference_traits<Reference>::data_type>()} {}
 }
@@ -9033,11 +8947,8 @@ namespace meta_hpp
 namespace meta_hpp::detail
 {
     template < void_kind Void >
-    struct void_tag {};
-
-    template < void_kind Void >
     void_type_data::void_type_data(type_list<Void>)
-    : type_data_base{type_id{type_list<void_tag<Void>>{}}, type_kind::void_} {}
+    : type_data_base{type_kind::void_} {}
 }
 
 namespace meta_hpp::detail
@@ -9867,7 +9778,7 @@ namespace meta_hpp
     }
 
     inline std::size_t uerror::get_hash() const noexcept {
-        return std::hash<error_code>{}(error_);
+        return detail::hash_combiner{}(error_);
     }
 }
 

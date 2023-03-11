@@ -21,11 +21,8 @@
 namespace meta_hpp::detail
 {
     template < class_kind Class >
-    struct class_tag {};
-
-    template < class_kind Class >
     class_type_data::class_type_data(type_list<Class>)
-    : type_data_base{type_id{type_list<class_tag<Class>>{}}, type_kind::class_}
+    : type_data_base{type_kind::class_}
     , flags{class_traits<Class>::make_flags()}
     , size{class_traits<Class>::size}
     , align{class_traits<Class>::align}

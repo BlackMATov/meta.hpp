@@ -13,9 +13,6 @@
 namespace meta_hpp::detail
 {
     template < nullptr_kind Nullptr >
-    struct nullptr_tag {};
-
-    template < nullptr_kind Nullptr >
     nullptr_type_data::nullptr_type_data(type_list<Nullptr>)
-    : type_data_base{type_id{type_list<nullptr_tag<Nullptr>>{}}, type_kind::nullptr_} {}
+    : type_data_base{type_kind::nullptr_} {}
 }

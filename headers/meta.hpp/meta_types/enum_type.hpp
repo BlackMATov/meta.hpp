@@ -18,11 +18,8 @@
 namespace meta_hpp::detail
 {
     template < enum_kind Enum >
-    struct enum_tag {};
-
-    template < enum_kind Enum >
     enum_type_data::enum_type_data(type_list<Enum>)
-    : type_data_base{type_id{type_list<enum_tag<Enum>>{}}, type_kind::enum_}
+    : type_data_base{type_kind::enum_}
     , flags{enum_traits<Enum>::make_flags()}
     , underlying_type{resolve_type<typename enum_traits<Enum>::underlying_type>()} {}
 }

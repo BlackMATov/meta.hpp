@@ -48,12 +48,38 @@ namespace meta_hpp
 
 namespace meta_hpp
 {
+    class type_id final {
+    public:
+        type_id() = default;
+
+        explicit type_id(std::uintptr_t id)
+        : id_{id} {}
+
+        void swap(type_id& other) noexcept {
+            std::swap(id_, other.id_);
+        }
+
+        [[nodiscard]] std::size_t get_hash() const noexcept {
+            return detail::hash_combiner{}(id_);
+        }
+
+        [[nodiscard]] std::strong_ordering operator<=>(const type_id& other) const = default;
+
+    private:
+        std::uintptr_t id_{};
+    };
+}
+
+namespace meta_hpp
+{
     template < detail::type_family Type >
     class type_base {
         using data_ptr = typename detail::type_traits<Type>::data_ptr;
         friend data_ptr detail::type_access<Type>(const Type&);
 
     public:
+        using id_type = type_id;
+
         type_base() = default;
 
         explicit type_base(data_ptr data)
@@ -73,8 +99,9 @@ namespace meta_hpp
             return is_valid();
         }
 
-        [[nodiscard]] type_id get_id() const noexcept {
-            return data_->id;
+        [[nodiscard]] id_type get_id() const noexcept {
+            // NOLINTNEXTLINE(*-reinterpret-cast)
+            return id_type{reinterpret_cast<std::uintptr_t>(data_)};
         }
 
         [[nodiscard]] type_kind get_kind() const noexcept {
@@ -400,12 +427,12 @@ namespace meta_hpp
 namespace meta_hpp
 {
     template < detail::type_family L >
-    [[nodiscard]] bool operator==(const L& l, type_id r) noexcept {
+    [[nodiscard]] bool operator==(const L& l, const typename L::id_type& r) noexcept {
         return l.is_valid() && l.get_id() == r;
     }
 
     template < detail::type_family L >
-    [[nodiscard]] std::strong_ordering operator<=>(const L& l, type_id r) noexcept {
+    [[nodiscard]] std::strong_ordering operator<=>(const L& l, const typename L::id_type& r) noexcept {
         return l.is_valid() ? l.get_id() <=> r : std::strong_ordering::less;
     }
 }
@@ -413,14 +440,12 @@ namespace meta_hpp
 namespace meta_hpp::detail
 {
     struct type_data_base {
-        const type_id id;
         const type_kind kind;
 
         metadata_map metadata{};
 
-        explicit type_data_base(type_id nid, type_kind nkind)
-        : id{nid}
-        , kind{nkind} {}
+        explicit type_data_base(type_kind nkind)
+        : kind{nkind} {}
 
         type_data_base(type_data_base&&) = delete;
         type_data_base(const type_data_base&) = delete;

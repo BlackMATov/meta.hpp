@@ -15,11 +15,8 @@
 namespace meta_hpp::detail
 {
     template < method_pointer_kind Method >
-    struct method_tag {};
-
-    template < method_pointer_kind Method >
     method_type_data::method_type_data(type_list<Method>)
-    : type_data_base{type_id{type_list<method_tag<Method>>{}}, type_kind::method_}
+    : type_data_base{type_kind::method_}
     , flags{method_traits<Method>::make_flags()}
     , owner_type{resolve_type<typename method_traits<Method>::class_type>()}
     , return_type{resolve_type<typename method_traits<Method>::return_type>()}

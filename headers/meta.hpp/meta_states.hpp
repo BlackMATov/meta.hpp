@@ -414,13 +414,13 @@ namespace meta_hpp
 
 namespace meta_hpp
 {
-    template < detail::state_family L, detail::index_family R >
-    [[nodiscard]] bool operator==(const L& l, const R& r) noexcept {
+    template < detail::state_family L >
+    [[nodiscard]] bool operator==(const L& l, const typename L::index_type& r) noexcept {
         return l.is_valid() && l.get_index() == r;
     }
 
-    template < detail::state_family L, detail::index_family R >
-    [[nodiscard]] std::strong_ordering operator<=>(const L& l, const R& r) noexcept {
+    template < detail::state_family L >
+    [[nodiscard]] std::strong_ordering operator<=>(const L& l, const typename L::index_type& r) noexcept {
         return l.is_valid() ? l.get_index() <=> r : std::strong_ordering::less;
     }
 }

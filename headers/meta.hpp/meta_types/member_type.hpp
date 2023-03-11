@@ -15,11 +15,8 @@
 namespace meta_hpp::detail
 {
     template < member_pointer_kind Member >
-    struct member_tag {};
-
-    template < member_pointer_kind Member >
     member_type_data::member_type_data(type_list<Member>)
-    : type_data_base{type_id{type_list<member_tag<Member>>{}}, type_kind::member_}
+    : type_data_base{type_kind::member_}
     , flags{member_traits<Member>::make_flags()}
     , owner_type{resolve_type<typename member_traits<Member>::class_type>()}
     , value_type{resolve_type<typename member_traits<Member>::value_type>()} {}

@@ -13,9 +13,6 @@
 namespace meta_hpp::detail
 {
     template < void_kind Void >
-    struct void_tag {};
-
-    template < void_kind Void >
     void_type_data::void_type_data(type_list<Void>)
-    : type_data_base{type_id{type_list<void_tag<Void>>{}}, type_kind::void_} {}
+    : type_data_base{type_kind::void_} {}
 }

@@ -45,16 +45,6 @@ namespace meta_hpp::detail
             }
         }
 
-        [[nodiscard]] any_type get_type_by_id(type_id id) const noexcept {
-            const locker lock;
-
-            if ( auto iter{types_.find(id)}; iter != types_.end() ) {
-                return *iter;
-            }
-
-            return any_type{};
-        }
-
     public:
         template < typename T >
         [[nodiscard]] auto resolve_type() {
