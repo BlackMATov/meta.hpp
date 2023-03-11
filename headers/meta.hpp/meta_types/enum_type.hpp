@@ -34,7 +34,7 @@ namespace meta_hpp
         return data_->underlying_type;
     }
 
-    inline const evalue_set& enum_type::get_evalues() const noexcept {
+    inline const evalue_list& enum_type::get_evalues() const noexcept {
         return data_->evalues;
     }
 

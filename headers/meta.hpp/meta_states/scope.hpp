@@ -34,7 +34,7 @@ namespace meta_hpp
         return state_->index.get_name();
     }
 
-    inline const function_set& scope::get_functions() const noexcept {
+    inline const function_list& scope::get_functions() const noexcept {
         return state_->functions;
     }
 
@@ -42,7 +42,7 @@ namespace meta_hpp
         return state_->typedefs;
     }
 
-    inline const variable_set& scope::get_variables() const noexcept {
+    inline const variable_list& scope::get_variables() const noexcept {
         return state_->variables;
     }
 

@@ -184,15 +184,15 @@ namespace meta_hpp
         [[nodiscard]] any_type get_argument_type(std::size_t position) const noexcept;
         [[nodiscard]] const any_type_list& get_argument_types() const noexcept;
 
-        [[nodiscard]] const class_set& get_base_classes() const noexcept;
-        [[nodiscard]] const class_set& get_derived_classes() const noexcept;
-        [[nodiscard]] const constructor_set& get_constructors() const noexcept;
-        [[nodiscard]] const destructor_set& get_destructors() const noexcept;
-        [[nodiscard]] const function_set& get_functions() const noexcept;
-        [[nodiscard]] const member_set& get_members() const noexcept;
-        [[nodiscard]] const method_set& get_methods() const noexcept;
+        [[nodiscard]] const class_list& get_base_classes() const noexcept;
+        [[nodiscard]] const class_list& get_derived_classes() const noexcept;
+        [[nodiscard]] const constructor_list& get_constructors() const noexcept;
+        [[nodiscard]] const destructor_list& get_destructors() const noexcept;
+        [[nodiscard]] const function_list& get_functions() const noexcept;
+        [[nodiscard]] const member_list& get_members() const noexcept;
+        [[nodiscard]] const method_list& get_methods() const noexcept;
         [[nodiscard]] const typedef_map& get_typedefs() const noexcept;
-        [[nodiscard]] const variable_set& get_variables() const noexcept;
+        [[nodiscard]] const variable_list& get_variables() const noexcept;
 
         template < typename... Args >
         [[nodiscard]] uvalue create(Args&&... args) const;
@@ -321,7 +321,7 @@ namespace meta_hpp
 
         [[nodiscard]] number_type get_underlying_type() const noexcept;
 
-        [[nodiscard]] const evalue_set& get_evalues() const noexcept;
+        [[nodiscard]] const evalue_list& get_evalues() const noexcept;
 
         [[nodiscard]] evalue get_evalue(std::string_view name) const noexcept;
 
@@ -471,15 +471,15 @@ namespace meta_hpp::detail
         const std::size_t align;
         const any_type_list argument_types;
 
-        class_set base_classes;
-        class_set derived_classes;
-        constructor_set constructors;
-        destructor_set destructors;
-        function_set functions;
-        member_set members;
-        method_set methods;
+        class_list base_classes;
+        class_list derived_classes;
+        constructor_list constructors;
+        destructor_list destructors;
+        function_list functions;
+        member_list members;
+        method_list methods;
         typedef_map typedefs;
-        variable_set variables;
+        variable_list variables;
 
         struct upcast_func_t final {
             using upcast_t = void* (*)(void*);
@@ -498,13 +498,14 @@ namespace meta_hpp::detail
 
         struct upcast_func_list_t final {
             using upcasts_t = std::vector<upcast_func_t>;
+            using vbases_t = std::set<class_type, std::less<>>;
 
             upcasts_t upcasts{};
-            class_set vbases{};
+            vbases_t vbases{};
             bool is_ambiguous{};
 
             upcast_func_list_t(const upcast_func_t& _upcast);
-            upcast_func_list_t(upcasts_t _upcasts, class_set _vbases);
+            upcast_func_list_t(upcasts_t _upcasts, vbases_t _vbases);
 
             [[nodiscard]] void* apply(void* ptr) const noexcept;
             [[nodiscard]] const void* apply(const void* ptr) const noexcept;
@@ -543,7 +544,7 @@ namespace meta_hpp::detail
         const enum_bitflags flags;
         const number_type underlying_type;
 
-        evalue_set evalues;
+        evalue_list evalues;
 
         template < enum_kind Enum >
         explicit enum_type_data(type_list<Enum>);

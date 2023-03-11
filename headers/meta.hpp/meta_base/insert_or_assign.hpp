@@ -11,54 +11,30 @@
 
 namespace meta_hpp::detail
 {
-    template < typename Key, typename Compare, typename Allocator >
-        requires std::is_move_constructible_v<Key> && std::is_move_assignable_v<Key>
-    typename std::set<Key, Compare, Allocator>::iterator insert_or_assign( //
-        std::set<Key, Compare, Allocator>& set,
-        typename std::set<Key, Compare, Allocator>::value_type&& value
+    template < typename Value, typename Allocator >
+        requires std::is_move_constructible_v<Value> && std::is_move_assignable_v<Value>
+    typename std::vector<Value, Allocator>::iterator insert_or_assign( //
+        std::vector<Value, Allocator>& vector,
+        typename std::vector<Value, Allocator>::value_type&& value
     ) {
-        auto&& [position, inserted] = set.insert(std::move(value));
-
-        if ( inserted ) {
+        if ( auto&& position{std::find(vector.begin(), vector.end(), value)}; position != vector.end() ) {
+            *position = std::move(value);
             return position;
         }
-
-        auto node = set.extract(position++);
-
-        META_HPP_TRY {
-            node.value() = std::move(value);
-        }
-        META_HPP_CATCH(...) {
-            set.insert(position, std::move(node));
-            META_HPP_RETHROW();
-        }
-
-        return set.insert(position, std::move(node));
+        return vector.insert(vector.end(), std::move(value));
     }
 
-    template < typename Key, typename Compare, typename Allocator >
-        requires std::is_copy_constructible_v<Key> && std::is_copy_assignable_v<Key>
-    typename std::set<Key, Compare, Allocator>::iterator insert_or_assign( //
-        std::set<Key, Compare, Allocator>& set,
-        const typename std::set<Key, Compare, Allocator>::value_type& value
+    template < typename Value, typename Allocator >
+        requires std::is_copy_constructible_v<Value> && std::is_copy_assignable_v<Value>
+    typename std::vector<Value, Allocator>::iterator insert_or_assign( //
+        std::vector<Value, Allocator>& vector,
+        const typename std::vector<Value, Allocator>::value_type& value
     ) {
-        auto&& [position, inserted] = set.insert(value);
-
-        if ( inserted ) {
+        if ( auto&& position{std::find(vector.begin(), vector.end(), value)}; position != vector.end() ) {
+            *position = value;
             return position;
         }
-
-        auto node = set.extract(position++);
-
-        META_HPP_TRY {
-            node.value() = value;
-        }
-        META_HPP_CATCH(...) {
-            set.insert(position, std::move(node));
-            META_HPP_RETHROW();
-        }
-
-        return set.insert(position, std::move(node));
+        return vector.insert(vector.end(), value);
     }
 }
 

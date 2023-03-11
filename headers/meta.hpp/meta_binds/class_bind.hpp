@@ -18,19 +18,27 @@ namespace meta_hpp::detail::class_bind_impl
     using upcast_func_t = class_type_data::upcast_func_t;
     using upcast_func_list_t = class_type_data::upcast_func_list_t;
 
-    using new_bases_db_t = std::map<class_type, upcast_func_t>;
+    using new_bases_db_t = std::vector<std::pair<class_type, upcast_func_t>>;
     using deep_upcasts_db_t = std::map<class_type, deep_upcasts_t, std::less<>>;
-    using derived_classes_db_t = std::map<class_type, class_set, std::less<>>;
+    using derived_classes_db_t = std::map<class_type, class_list, std::less<>>;
 
     template < class_kind Class, class_kind Base >
         requires std::is_base_of_v<Base, Class>
     void update_new_bases_db( //
         new_bases_db_t& new_bases_db
     ) {
-        new_bases_db.try_emplace( //
-            resolve_type<Base>(),
-            std::in_place_type<Class>,
-            std::in_place_type<Base>);
+        const class_type& new_base = resolve_type<Base>();
+
+        for ( auto&& [db_base, _] : new_bases_db ) {
+            if ( db_base == new_base ) {
+                return;
+            }
+        }
+
+        new_bases_db.emplace_back( //
+            new_base,
+            upcast_func_t{std::in_place_type<Class>, std::in_place_type<Base>}
+        );
     }
 
     inline void update_deep_upcasts_db( //
@@ -73,8 +81,8 @@ namespace meta_hpp::detail::class_bind_impl
         derived_classes_db_t& derived_classes_db
     ) {
         const class_type_data& base_class_data = *type_access(new_base_class);
-        class_set new_derived_classes{base_class_data.derived_classes};
-        new_derived_classes.emplace(self_class);
+        class_list new_derived_classes{base_class_data.derived_classes};
+        insert_or_assign(new_derived_classes, self_class);
         derived_classes_db.emplace(new_base_class, std::move(new_derived_classes));
     }
 }
@@ -100,28 +108,24 @@ namespace meta_hpp
         using namespace detail;
         using namespace detail::class_bind_impl;
 
-        if ( (... && get_data().base_classes.contains(resolve_type<Bases>())) ) {
-            return *this;
-        }
-
         new_bases_db_t new_bases_db;
         (update_new_bases_db<Class, Bases>(new_bases_db), ...);
 
         deep_upcasts_db_t deep_upcasts_db;
         derived_classes_db_t derived_classes_db;
 
-        class_set new_base_classes{get_data().base_classes};
+        class_list new_base_classes{get_data().base_classes};
         base_upcasts_t new_base_upcasts{get_data().base_upcasts};
 
         for ( auto&& [new_base_class, self_to_new_base] : new_bases_db ) {
-            if ( new_base_classes.contains(new_base_class) ) {
+            if ( std::find(new_base_classes.begin(), new_base_classes.end(), new_base_class) != new_base_classes.end() ) {
                 continue;
             }
 
             update_deep_upcasts_db(*this, new_base_class, self_to_new_base, deep_upcasts_db);
             updata_derived_classes_db(*this, new_base_class, derived_classes_db);
 
-            new_base_classes.emplace(new_base_class);
+            new_base_classes.emplace_back(new_base_class);
             new_base_upcasts.emplace(new_base_class, self_to_new_base);
         }
 

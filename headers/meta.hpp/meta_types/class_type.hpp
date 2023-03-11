@@ -59,7 +59,7 @@ namespace meta_hpp::detail
         }
     }
 
-    inline class_type_data::upcast_func_list_t::upcast_func_list_t(upcasts_t _upcasts, class_set _vbases)
+    inline class_type_data::upcast_func_list_t::upcast_func_list_t(upcasts_t _upcasts, vbases_t _vbases)
     : upcasts{std::move(_upcasts)}
     , vbases{std::move(_vbases)} {}
 
@@ -84,7 +84,7 @@ namespace meta_hpp::detail
         new_upcasts.insert(new_upcasts.end(), l.upcasts.begin(), l.upcasts.end());
         new_upcasts.insert(new_upcasts.end(), r.upcasts.begin(), r.upcasts.end());
 
-        class_set new_vbases;
+        class_type_data::upcast_func_list_t::vbases_t new_vbases;
         new_vbases.insert(l.vbases.begin(), l.vbases.end());
         new_vbases.insert(r.vbases.begin(), r.vbases.end());
 
@@ -118,31 +118,31 @@ namespace meta_hpp
         return data_->argument_types;
     }
 
-    inline const class_set& class_type::get_base_classes() const noexcept {
+    inline const class_list& class_type::get_base_classes() const noexcept {
         return data_->base_classes;
     }
 
-    inline const class_set& class_type::get_derived_classes() const noexcept {
+    inline const class_list& class_type::get_derived_classes() const noexcept {
         return data_->derived_classes;
     }
 
-    inline const constructor_set& class_type::get_constructors() const noexcept {
+    inline const constructor_list& class_type::get_constructors() const noexcept {
         return data_->constructors;
     }
 
-    inline const destructor_set& class_type::get_destructors() const noexcept {
+    inline const destructor_list& class_type::get_destructors() const noexcept {
         return data_->destructors;
     }
 
-    inline const function_set& class_type::get_functions() const noexcept {
+    inline const function_list& class_type::get_functions() const noexcept {
         return data_->functions;
     }
 
-    inline const member_set& class_type::get_members() const noexcept {
+    inline const member_list& class_type::get_members() const noexcept {
         return data_->members;
     }
 
-    inline const method_set& class_type::get_methods() const noexcept {
+    inline const method_list& class_type::get_methods() const noexcept {
         return data_->methods;
     }
 
@@ -150,7 +150,7 @@ namespace meta_hpp
         return data_->typedefs;
     }
 
-    inline const variable_set& class_type::get_variables() const noexcept {
+    inline const variable_list& class_type::get_variables() const noexcept {
         return data_->variables;
     }
 
@@ -266,8 +266,8 @@ namespace meta_hpp
         }
 
         if ( recursively ) {
-            for ( const class_type& base : data_->base_classes ) {
-                if ( const function& function = base.get_function(name, recursively) ) {
+            for ( auto iter{data_->base_classes.rbegin()}, end{data_->base_classes.rend()}; iter != end; ++iter ) {
+                if ( const function& function = iter->get_function(name, recursively) ) {
                     return function;
                 }
             }
@@ -284,8 +284,8 @@ namespace meta_hpp
         }
 
         if ( recursively ) {
-            for ( const class_type& base : data_->base_classes ) {
-                if ( const member& member = base.get_member(name, recursively) ) {
+            for ( auto iter{data_->base_classes.rbegin()}, end{data_->base_classes.rend()}; iter != end; ++iter ) {
+                if ( const member& member = iter->get_member(name, recursively) ) {
                     return member;
                 }
             }
@@ -302,8 +302,8 @@ namespace meta_hpp
         }
 
         if ( recursively ) {
-            for ( const class_type& base : data_->base_classes ) {
-                if ( const method& method = base.get_method(name, recursively) ) {
+            for ( auto iter{data_->base_classes.rbegin()}, end{data_->base_classes.rend()}; iter != end; ++iter ) {
+                if ( const method& method = iter->get_method(name, recursively) ) {
                     return method;
                 }
             }
@@ -318,8 +318,8 @@ namespace meta_hpp
         }
 
         if ( recursively ) {
-            for ( const class_type& base : data_->base_classes ) {
-                if ( const any_type& type = base.get_typedef(name, recursively) ) {
+            for ( auto iter{data_->base_classes.rbegin()}, end{data_->base_classes.rend()}; iter != end; ++iter ) {
+                if ( const any_type& type = iter->get_typedef(name, recursively) ) {
                     return type;
                 }
             }
@@ -336,8 +336,8 @@ namespace meta_hpp
         }
 
         if ( recursively ) {
-            for ( const class_type& base : data_->base_classes ) {
-                if ( const variable& variable = base.get_variable(name, recursively) ) {
+            for ( auto iter{data_->base_classes.rbegin()}, end{data_->base_classes.rend()}; iter != end; ++iter ) {
+                if ( const variable& variable = iter->get_variable(name, recursively) ) {
                     return variable;
                 }
             }
@@ -418,8 +418,8 @@ namespace meta_hpp
         }
 
         if ( recursively ) {
-            for ( const class_type& base : data_->base_classes ) {
-                if ( const function& function = base.get_function_with(name, first, last, recursively) ) {
+            for ( auto iter{data_->base_classes.rbegin()}, end{data_->base_classes.rend()}; iter != end; ++iter ) {
+                if ( const function& function = iter->get_function_with(name, first, last, recursively) ) {
                     return function;
                 }
             }
@@ -476,8 +476,8 @@ namespace meta_hpp
         }
 
         if ( recursively ) {
-            for ( const class_type& base : data_->base_classes ) {
-                if ( const method& method = base.get_method_with(name, first, last, recursively) ) {
+            for ( auto iter{data_->base_classes.rbegin()}, end{data_->base_classes.rend()}; iter != end; ++iter ) {
+                if ( const method& method = iter->get_method_with(name, first, last, recursively) ) {
                     return method;
                 }
             }
