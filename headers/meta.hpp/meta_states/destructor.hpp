@@ -37,7 +37,7 @@ namespace meta_hpp::detail
     }
 
     template < class_kind Class >
-    uerror raw_destructor_destroy_error(type_registry& registry, const uarg_base& arg) {
+    uerror raw_destructor_destroy_error(type_registry& registry, const uarg_base& arg) noexcept {
         using dt = destructor_traits<Class>;
         using class_type = typename dt::class_type;
 

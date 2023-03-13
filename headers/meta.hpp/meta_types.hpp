@@ -52,21 +52,43 @@ namespace meta_hpp
     public:
         type_id() = default;
 
-        explicit type_id(std::uintptr_t id)
-        : id_{id} {}
+        [[nodiscard]] bool is_valid() const noexcept {
+            return data_ != nullptr;
+        }
+
+        [[nodiscard]] explicit operator bool() const noexcept {
+            return is_valid();
+        }
 
         void swap(type_id& other) noexcept {
-            std::swap(id_, other.id_);
+            std::swap(data_, other.data_);
         }
 
         [[nodiscard]] std::size_t get_hash() const noexcept {
-            return detail::hash_combiner{}(id_);
+            return data_ != nullptr ? detail::hash_combiner{}(data_) : 0;
         }
 
         [[nodiscard]] std::strong_ordering operator<=>(const type_id& other) const = default;
 
     private:
-        std::uintptr_t id_{};
+        template < detail::type_family T >
+        friend class type_base;
+
+        explicit type_id(const detail::type_data_base* data)
+        : data_{data} {}
+
+    private:
+        const detail::type_data_base* data_{};
+    };
+}
+
+namespace std
+{
+    template <>
+    struct hash<meta_hpp::type_id> {
+        size_t operator()(const meta_hpp::type_id& id) const noexcept {
+            return id.get_hash();
+        }
     };
 }
 
@@ -100,8 +122,7 @@ namespace meta_hpp
         }
 
         [[nodiscard]] id_type get_id() const noexcept {
-            // NOLINTNEXTLINE(*-reinterpret-cast)
-            return id_type{reinterpret_cast<std::uintptr_t>(data_)};
+            return id_type{data_};
         }
 
         [[nodiscard]] type_kind get_kind() const noexcept {

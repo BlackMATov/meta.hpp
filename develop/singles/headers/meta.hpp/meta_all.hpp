@@ -1798,10 +1798,10 @@ namespace meta_hpp
     using metadata_map = std::map<std::string, uvalue, std::less<>>;
     using typedef_map = std::map<std::string, any_type, std::less<>>;
 
+    using any_type_list = std::vector<any_type>;
     using class_list = std::vector<class_type>;
     using enum_list = std::vector<enum_type>;
 
-    using any_type_list = std::vector<any_type>;
     using argument_list = std::vector<argument>;
     using constructor_list = std::vector<constructor>;
     using destructor_list = std::vector<destructor>;
@@ -2457,21 +2457,43 @@ namespace meta_hpp
     public:
         type_id() = default;
 
-        explicit type_id(std::uintptr_t id)
-        : id_{id} {}
+        [[nodiscard]] bool is_valid() const noexcept {
+            return data_ != nullptr;
+        }
+
+        [[nodiscard]] explicit operator bool() const noexcept {
+            return is_valid();
+        }
 
         void swap(type_id& other) noexcept {
-            std::swap(id_, other.id_);
+            std::swap(data_, other.data_);
         }
 
         [[nodiscard]] std::size_t get_hash() const noexcept {
-            return detail::hash_combiner{}(id_);
+            return data_ != nullptr ? detail::hash_combiner{}(data_) : 0;
         }
 
         [[nodiscard]] std::strong_ordering operator<=>(const type_id& other) const = default;
 
     private:
-        std::uintptr_t id_{};
+        template < detail::type_family T >
+        friend class type_base;
+
+        explicit type_id(const detail::type_data_base* data)
+        : data_{data} {}
+
+    private:
+        const detail::type_data_base* data_{};
+    };
+}
+
+namespace std
+{
+    template <>
+    struct hash<meta_hpp::type_id> {
+        size_t operator()(const meta_hpp::type_id& id) const noexcept {
+            return id.get_hash();
+        }
     };
 }
 
@@ -2505,8 +2527,7 @@ namespace meta_hpp
         }
 
         [[nodiscard]] id_type get_id() const noexcept {
-            // NOLINTNEXTLINE(*-reinterpret-cast)
-            return id_type{reinterpret_cast<std::uintptr_t>(data_)};
+            return id_type{data_};
         }
 
         [[nodiscard]] type_kind get_kind() const noexcept {
@@ -5597,8 +5618,14 @@ namespace meta_hpp
     template < typename... Args >
     uvalue invoke(const function& function, Args&&... args);
 
+    template < typename... Args >
+    uresult try_invoke(const function& function, Args&&... args);
+
     template < detail::function_pointer_kind Function, typename... Args >
     uvalue invoke(Function function_ptr, Args&&... args);
+
+    template < detail::function_pointer_kind Function, typename... Args >
+    uresult try_invoke(Function function_ptr, Args&&... args);
 }
 
 namespace meta_hpp
@@ -5606,8 +5633,14 @@ namespace meta_hpp
     template < typename Instance >
     uvalue invoke(const member& member, Instance&& instance);
 
+    template < typename Instance >
+    uresult try_invoke(const member& member, Instance&& instance);
+
     template < detail::member_pointer_kind Member, typename Instance >
     uvalue invoke(Member member_ptr, Instance&& instance);
+
+    template < detail::member_pointer_kind Member, typename Instance >
+    uresult try_invoke(Member member_ptr, Instance&& instance);
 }
 
 namespace meta_hpp
@@ -5615,53 +5648,59 @@ namespace meta_hpp
     template < typename Instance, typename... Args >
     uvalue invoke(const method& method, Instance&& instance, Args&&... args);
 
+    template < typename Instance, typename... Args >
+    uresult try_invoke(const method& method, Instance&& instance, Args&&... args);
+
     template < detail::method_pointer_kind Method, typename Instance, typename... Args >
     uvalue invoke(Method method_ptr, Instance&& instance, Args&&... args);
+
+    template < detail::method_pointer_kind Method, typename Instance, typename... Args >
+    uresult try_invoke(Method method_ptr, Instance&& instance, Args&&... args);
 }
 
 namespace meta_hpp
 {
     template < typename... Args >
-    bool is_invocable_with(const function& function);
+    bool is_invocable_with(const function& function) noexcept;
 
     template < typename... Args >
-    bool is_invocable_with(const function& function, Args&&... args);
+    bool is_invocable_with(const function& function, Args&&... args) noexcept;
 
     template < typename... Args, detail::function_pointer_kind Function >
-    bool is_invocable_with(Function);
+    bool is_invocable_with(Function) noexcept;
 
     template < typename... Args, detail::function_pointer_kind Function >
-    bool is_invocable_with(Function, Args&&... args);
+    bool is_invocable_with(Function, Args&&... args) noexcept;
 }
 
 namespace meta_hpp
 {
     template < typename Instance >
-    bool is_invocable_with(const member& member);
+    bool is_invocable_with(const member& member) noexcept;
 
     template < typename Instance >
-    bool is_invocable_with(const member& member, Instance&& instance);
+    bool is_invocable_with(const member& member, Instance&& instance) noexcept;
 
     template < typename Instance, detail::member_pointer_kind Member >
-    bool is_invocable_with(Member);
+    bool is_invocable_with(Member) noexcept;
 
     template < typename Instance, detail::member_pointer_kind Member >
-    bool is_invocable_with(Member, Instance&& instance);
+    bool is_invocable_with(Member, Instance&& instance) noexcept;
 }
 
 namespace meta_hpp
 {
     template < typename Instance, typename... Args >
-    bool is_invocable_with(const method& method);
+    bool is_invocable_with(const method& method) noexcept;
 
     template < typename Instance, typename... Args >
-    bool is_invocable_with(const method& method, Instance&& instance, Args&&... args);
+    bool is_invocable_with(const method& method, Instance&& instance, Args&&... args) noexcept;
 
     template < typename Instance, typename... Args, detail::method_pointer_kind Method >
-    bool is_invocable_with(Method);
+    bool is_invocable_with(Method) noexcept;
 
     template < typename Instance, typename... Args, detail::method_pointer_kind Method >
-    bool is_invocable_with(Method, Instance&& instance, Args&&... args);
+    bool is_invocable_with(Method, Instance&& instance, Args&&... args) noexcept;
 }
 
 namespace meta_hpp::detail
@@ -6178,7 +6217,7 @@ namespace meta_hpp::detail
 namespace meta_hpp::detail
 {
     template < typename ArgTypeList >
-    bool can_cast_all_uargs(type_registry& registry, std::span<const uarg> args) {
+    bool can_cast_all_uargs(type_registry& registry, std::span<const uarg> args) noexcept {
         if ( args.size() != type_list_arity_v<ArgTypeList> ) {
             return false;
         }
@@ -6189,7 +6228,7 @@ namespace meta_hpp::detail
     }
 
     template < typename ArgTypeList >
-    bool can_cast_all_uargs(type_registry& registry, std::span<const uarg_base> args) {
+    bool can_cast_all_uargs(type_registry& registry, std::span<const uarg_base> args) noexcept {
         if ( args.size() != type_list_arity_v<ArgTypeList> ) {
             return false;
         }
@@ -6293,7 +6332,7 @@ namespace meta_hpp::detail
     }
 
     template < function_pointer_kind Function >
-    uerror raw_function_invoke_error(type_registry& registry, std::span<const uarg_base> args) {
+    uerror raw_function_invoke_error(type_registry& registry, std::span<const uarg_base> args) noexcept {
         using ft = function_traits<Function>;
         using argument_types = typename ft::argument_types;
 
@@ -6734,7 +6773,7 @@ namespace meta_hpp::detail
     }
 
     template < member_pointer_kind Member >
-    uerror raw_member_getter_error(type_registry& registry, const uinst_base& inst) {
+    uerror raw_member_getter_error(type_registry& registry, const uinst_base& inst) noexcept {
         using mt = member_traits<Member>;
         using class_type = typename mt::class_type;
 
@@ -6787,7 +6826,7 @@ namespace meta_hpp::detail
     }
 
     template < member_pointer_kind Member >
-    uerror raw_member_setter_error(type_registry& registry, const uinst_base& inst, const uarg_base& arg) {
+    uerror raw_member_setter_error(type_registry& registry, const uinst_base& inst, const uarg_base& arg) noexcept {
         using mt = member_traits<Member>;
         using class_type = typename mt::class_type;
         using value_type = typename mt::value_type;
@@ -7066,7 +7105,7 @@ namespace meta_hpp::detail
     }
 
     template < method_pointer_kind Method >
-    uerror raw_method_invoke_error(type_registry& registry, const uinst_base& inst, std::span<const uarg_base> args) {
+    uerror raw_method_invoke_error(type_registry& registry, const uinst_base& inst, std::span<const uarg_base> args) noexcept {
         using mt = method_traits<Method>;
         using qualified_type = typename mt::qualified_type;
         using argument_types = typename mt::argument_types;
@@ -7322,17 +7361,17 @@ namespace meta_hpp
 namespace meta_hpp
 {
     template < typename... Args >
-    bool is_invocable_with(const function& function) {
+    bool is_invocable_with(const function& function) noexcept {
         return function.is_invocable_with<Args...>();
     }
 
     template < typename... Args >
-    bool is_invocable_with(const function& function, Args&&... args) {
+    bool is_invocable_with(const function& function, Args&&... args) noexcept {
         return function.is_invocable_with(std::forward<Args>(args)...);
     }
 
     template < typename... Args, detail::function_pointer_kind Function >
-    bool is_invocable_with(Function) {
+    bool is_invocable_with(Function) noexcept {
         using namespace detail;
         type_registry& registry{type_registry::instance()};
         const std::array<uarg_base, sizeof...(Args)> vargs{uarg_base{registry, type_list<Args>{}}...};
@@ -7340,7 +7379,7 @@ namespace meta_hpp
     }
 
     template < typename... Args, detail::function_pointer_kind Function >
-    bool is_invocable_with(Function, Args&&... args) {
+    bool is_invocable_with(Function, Args&&... args) noexcept {
         using namespace detail;
         type_registry& registry{type_registry::instance()};
         const std::array<uarg_base, sizeof...(Args)> vargs{uarg_base{registry, std::forward<Args>(args)}...};
@@ -7351,17 +7390,17 @@ namespace meta_hpp
 namespace meta_hpp
 {
     template < typename Instance >
-    bool is_invocable_with(const member& member) {
+    bool is_invocable_with(const member& member) noexcept {
         return member.is_gettable_with<Instance>();
     }
 
     template < typename Instance >
-    bool is_invocable_with(const member& member, Instance&& instance) {
+    bool is_invocable_with(const member& member, Instance&& instance) noexcept {
         return member.is_gettable_with(std::forward<Instance>(instance));
     }
 
     template < typename Instance, detail::member_pointer_kind Member >
-    bool is_invocable_with(Member) {
+    bool is_invocable_with(Member) noexcept {
         using namespace detail;
         type_registry& registry{type_registry::instance()};
         const uinst_base vinst{registry, type_list<Instance>{}};
@@ -7369,7 +7408,7 @@ namespace meta_hpp
     }
 
     template < typename Instance, detail::member_pointer_kind Member >
-    bool is_invocable_with(Member, Instance&& instance) {
+    bool is_invocable_with(Member, Instance&& instance) noexcept {
         using namespace detail;
         type_registry& registry{type_registry::instance()};
         const uinst_base vinst{registry, std::forward<Instance>(instance)};
@@ -7380,17 +7419,17 @@ namespace meta_hpp
 namespace meta_hpp
 {
     template < typename Instance, typename... Args >
-    bool is_invocable_with(const method& method) {
+    bool is_invocable_with(const method& method) noexcept {
         return method.is_invocable_with<Instance, Args...>();
     }
 
     template < typename Instance, typename... Args >
-    bool is_invocable_with(const method& method, Instance&& instance, Args&&... args) {
+    bool is_invocable_with(const method& method, Instance&& instance, Args&&... args) noexcept {
         return method.is_invocable_with(std::forward<Instance>(instance), std::forward<Args>(args)...);
     }
 
     template < typename Instance, typename... Args, detail::method_pointer_kind Method >
-    bool is_invocable_with(Method) {
+    bool is_invocable_with(Method) noexcept {
         using namespace detail;
         type_registry& registry{type_registry::instance()};
         const uinst_base vinst{registry, type_list<Instance>{}};
@@ -7399,7 +7438,7 @@ namespace meta_hpp
     }
 
     template < typename Instance, typename... Args, detail::method_pointer_kind Method >
-    bool is_invocable_with(Method, Instance&& instance, Args&&... args) {
+    bool is_invocable_with(Method, Instance&& instance, Args&&... args) noexcept {
         using namespace detail;
         type_registry& registry{type_registry::instance()};
         const uinst_base vinst{registry, std::forward<Instance>(instance)};
@@ -7537,7 +7576,7 @@ namespace meta_hpp::detail
     }
 
     template < class_kind Class, typename... Args >
-    uerror raw_constructor_create_error(type_registry& registry, std::span<const uarg_base> args) {
+    uerror raw_constructor_create_error(type_registry& registry, std::span<const uarg_base> args) noexcept {
         using ct = constructor_traits<Class, Args...>;
         using argument_types = typename ct::argument_types;
 
@@ -7733,7 +7772,7 @@ namespace meta_hpp::detail
     }
 
     template < class_kind Class >
-    uerror raw_destructor_destroy_error(type_registry& registry, const uarg_base& arg) {
+    uerror raw_destructor_destroy_error(type_registry& registry, const uarg_base& arg) noexcept {
         using dt = destructor_traits<Class>;
         using class_type = typename dt::class_type;
 
@@ -8007,7 +8046,7 @@ namespace meta_hpp::detail
     }
 
     template < pointer_kind Pointer >
-    uerror raw_variable_setter_error(type_registry& registry, const uarg_base& arg) {
+    uerror raw_variable_setter_error(type_registry& registry, const uarg_base& arg) noexcept {
         using pt = pointer_traits<Pointer>;
         using data_type = typename pt::data_type;
 

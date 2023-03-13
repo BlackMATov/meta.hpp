@@ -80,7 +80,7 @@ namespace meta_hpp::detail
     }
 
     template < class_kind Class, typename... Args >
-    uerror raw_constructor_create_error(type_registry& registry, std::span<const uarg_base> args) {
+    uerror raw_constructor_create_error(type_registry& registry, std::span<const uarg_base> args) noexcept {
         using ct = constructor_traits<Class, Args...>;
         using argument_types = typename ct::argument_types;
 

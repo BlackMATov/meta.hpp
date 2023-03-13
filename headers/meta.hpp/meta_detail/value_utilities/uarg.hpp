@@ -341,7 +341,7 @@ namespace meta_hpp::detail
 namespace meta_hpp::detail
 {
     template < typename ArgTypeList >
-    bool can_cast_all_uargs(type_registry& registry, std::span<const uarg> args) {
+    bool can_cast_all_uargs(type_registry& registry, std::span<const uarg> args) noexcept {
         if ( args.size() != type_list_arity_v<ArgTypeList> ) {
             return false;
         }
@@ -352,7 +352,7 @@ namespace meta_hpp::detail
     }
 
     template < typename ArgTypeList >
-    bool can_cast_all_uargs(type_registry& registry, std::span<const uarg_base> args) {
+    bool can_cast_all_uargs(type_registry& registry, std::span<const uarg_base> args) noexcept {
         if ( args.size() != type_list_arity_v<ArgTypeList> ) {
             return false;
         }

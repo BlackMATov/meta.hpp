@@ -68,7 +68,7 @@ namespace meta_hpp::detail
     }
 
     template < pointer_kind Pointer >
-    uerror raw_variable_setter_error(type_registry& registry, const uarg_base& arg) {
+    uerror raw_variable_setter_error(type_registry& registry, const uarg_base& arg) noexcept {
         using pt = pointer_traits<Pointer>;
         using data_type = typename pt::data_type;
 
