@@ -134,17 +134,17 @@ namespace meta_hpp
 namespace meta_hpp
 {
     template < typename... Args >
-    bool is_invocable_with(const function& function) {
+    bool is_invocable_with(const function& function) noexcept {
         return function.is_invocable_with<Args...>();
     }
 
     template < typename... Args >
-    bool is_invocable_with(const function& function, Args&&... args) {
+    bool is_invocable_with(const function& function, Args&&... args) noexcept {
         return function.is_invocable_with(std::forward<Args>(args)...);
     }
 
     template < typename... Args, detail::function_pointer_kind Function >
-    bool is_invocable_with(Function) {
+    bool is_invocable_with(Function) noexcept {
         using namespace detail;
         type_registry& registry{type_registry::instance()};
         const std::array<uarg_base, sizeof...(Args)> vargs{uarg_base{registry, type_list<Args>{}}...};
@@ -152,7 +152,7 @@ namespace meta_hpp
     }
 
     template < typename... Args, detail::function_pointer_kind Function >
-    bool is_invocable_with(Function, Args&&... args) {
+    bool is_invocable_with(Function, Args&&... args) noexcept {
         using namespace detail;
         type_registry& registry{type_registry::instance()};
         const std::array<uarg_base, sizeof...(Args)> vargs{uarg_base{registry, std::forward<Args>(args)}...};
@@ -163,17 +163,17 @@ namespace meta_hpp
 namespace meta_hpp
 {
     template < typename Instance >
-    bool is_invocable_with(const member& member) {
+    bool is_invocable_with(const member& member) noexcept {
         return member.is_gettable_with<Instance>();
     }
 
     template < typename Instance >
-    bool is_invocable_with(const member& member, Instance&& instance) {
+    bool is_invocable_with(const member& member, Instance&& instance) noexcept {
         return member.is_gettable_with(std::forward<Instance>(instance));
     }
 
     template < typename Instance, detail::member_pointer_kind Member >
-    bool is_invocable_with(Member) {
+    bool is_invocable_with(Member) noexcept {
         using namespace detail;
         type_registry& registry{type_registry::instance()};
         const uinst_base vinst{registry, type_list<Instance>{}};
@@ -181,7 +181,7 @@ namespace meta_hpp
     }
 
     template < typename Instance, detail::member_pointer_kind Member >
-    bool is_invocable_with(Member, Instance&& instance) {
+    bool is_invocable_with(Member, Instance&& instance) noexcept {
         using namespace detail;
         type_registry& registry{type_registry::instance()};
         const uinst_base vinst{registry, std::forward<Instance>(instance)};
@@ -192,17 +192,17 @@ namespace meta_hpp
 namespace meta_hpp
 {
     template < typename Instance, typename... Args >
-    bool is_invocable_with(const method& method) {
+    bool is_invocable_with(const method& method) noexcept {
         return method.is_invocable_with<Instance, Args...>();
     }
 
     template < typename Instance, typename... Args >
-    bool is_invocable_with(const method& method, Instance&& instance, Args&&... args) {
+    bool is_invocable_with(const method& method, Instance&& instance, Args&&... args) noexcept {
         return method.is_invocable_with(std::forward<Instance>(instance), std::forward<Args>(args)...);
     }
 
     template < typename Instance, typename... Args, detail::method_pointer_kind Method >
-    bool is_invocable_with(Method) {
+    bool is_invocable_with(Method) noexcept {
         using namespace detail;
         type_registry& registry{type_registry::instance()};
         const uinst_base vinst{registry, type_list<Instance>{}};
@@ -211,7 +211,7 @@ namespace meta_hpp
     }
 
     template < typename Instance, typename... Args, detail::method_pointer_kind Method >
-    bool is_invocable_with(Method, Instance&& instance, Args&&... args) {
+    bool is_invocable_with(Method, Instance&& instance, Args&&... args) noexcept {
         using namespace detail;
         type_registry& registry{type_registry::instance()};
         const uinst_base vinst{registry, std::forward<Instance>(instance)};

@@ -64,7 +64,7 @@ namespace meta_hpp::detail
     }
 
     template < function_pointer_kind Function >
-    uerror raw_function_invoke_error(type_registry& registry, std::span<const uarg_base> args) {
+    uerror raw_function_invoke_error(type_registry& registry, std::span<const uarg_base> args) noexcept {
         using ft = function_traits<Function>;
         using argument_types = typename ft::argument_types;
 

@@ -222,10 +222,10 @@ namespace meta_hpp
     using metadata_map = std::map<std::string, uvalue, std::less<>>;
     using typedef_map = std::map<std::string, any_type, std::less<>>;
 
+    using any_type_list = std::vector<any_type>;
     using class_list = std::vector<class_type>;
     using enum_list = std::vector<enum_type>;
 
-    using any_type_list = std::vector<any_type>;
     using argument_list = std::vector<argument>;
     using constructor_list = std::vector<constructor>;
     using destructor_list = std::vector<destructor>;

@@ -76,7 +76,7 @@ namespace meta_hpp::detail
     }
 
     template < member_pointer_kind Member >
-    uerror raw_member_getter_error(type_registry& registry, const uinst_base& inst) {
+    uerror raw_member_getter_error(type_registry& registry, const uinst_base& inst) noexcept {
         using mt = member_traits<Member>;
         using class_type = typename mt::class_type;
 
@@ -129,7 +129,7 @@ namespace meta_hpp::detail
     }
 
     template < member_pointer_kind Member >
-    uerror raw_member_setter_error(type_registry& registry, const uinst_base& inst, const uarg_base& arg) {
+    uerror raw_member_setter_error(type_registry& registry, const uinst_base& inst, const uarg_base& arg) noexcept {
         using mt = member_traits<Member>;
         using class_type = typename mt::class_type;
         using value_type = typename mt::value_type;
