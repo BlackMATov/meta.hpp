@@ -20,9 +20,12 @@ namespace meta_hpp
         if constexpr ( std::is_same_v<Type, any_type> ) {
             return data_ != nullptr;
         } else {
-            constexpr type_kind is_kind{detail::type_traits<Type>::kind};
-            return data_ != nullptr && data_->kind == is_kind;
+            return is(detail::type_traits<Type>::kind);
         }
+    }
+
+    [[nodiscard]] inline bool any_type::is(type_kind kind) const noexcept {
+        return data_ != nullptr && data_->kind == kind;
     }
 
     template < detail::type_family Type >

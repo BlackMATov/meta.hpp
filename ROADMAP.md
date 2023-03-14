@@ -17,7 +17,6 @@
 - `try_invoke`/`is_invocable` should return error codes
 - conan package config
 - test and support shared libraries
-- add `for_each_type` for specific kind of types
 
 ## Thoughts
 

@@ -2556,6 +2556,7 @@ namespace meta_hpp
 
         template < detail::type_family Type >
         [[nodiscard]] bool is() const noexcept;
+        [[nodiscard]] bool is(type_kind kind) const noexcept;
 
         template < detail::type_family Type >
         [[nodiscard]] Type as() const noexcept;
@@ -4395,11 +4396,15 @@ namespace meta_hpp::detail
 
 namespace meta_hpp
 {
-    template < typename F >
+    template < detail::type_family Type = any_type, typename F >
     void for_each_type(F&& f) {
         using namespace detail;
         type_registry& registry = type_registry::instance();
-        registry.for_each_type(std::forward<F>(f));
+        registry.for_each_type([&f](const any_type& type) {
+            if ( type.is<Type>() ) {
+                std::invoke(f, type.as<Type>());
+            }
+        });
     }
 
     template < typename T >
@@ -8766,9 +8771,12 @@ namespace meta_hpp
         if constexpr ( std::is_same_v<Type, any_type> ) {
             return data_ != nullptr;
         } else {
-            constexpr type_kind is_kind{detail::type_traits<Type>::kind};
-            return data_ != nullptr && data_->kind == is_kind;
+            return is(detail::type_traits<Type>::kind);
         }
+    }
+
+    [[nodiscard]] inline bool any_type::is(type_kind kind) const noexcept {
+        return data_ != nullptr && data_->kind == kind;
     }
 
     template < detail::type_family Type >
