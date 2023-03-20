@@ -16,11 +16,15 @@
 
 namespace meta_hpp
 {
-    template < typename F >
+    template < detail::type_family Type = any_type, typename F >
     void for_each_type(F&& f) {
         using namespace detail;
         type_registry& registry = type_registry::instance();
-        registry.for_each_type(std::forward<F>(f));
+        registry.for_each_type([&f](const any_type& type) {
+            if ( type.is<Type>() ) {
+                std::invoke(f, type.as<Type>());
+            }
+        });
     }
 
     template < typename T >

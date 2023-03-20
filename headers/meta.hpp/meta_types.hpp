@@ -151,6 +151,7 @@ namespace meta_hpp
 
         template < detail::type_family Type >
         [[nodiscard]] bool is() const noexcept;
+        [[nodiscard]] bool is(type_kind kind) const noexcept;
 
         template < detail::type_family Type >
         [[nodiscard]] Type as() const noexcept;
