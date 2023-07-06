@@ -119,8 +119,7 @@ namespace meta_hpp::detail
                 return argument{argument_state::make<P>(I, metadata_map{})};
             };
             return argument_list{make_argument(index_constant<Is>{})...};
-        }
-        (std::make_index_sequence<mt::arity>());
+        }(std::make_index_sequence<mt::arity>());
     }
 }
 
@@ -133,10 +132,16 @@ namespace meta_hpp::detail
     template < method_policy_family Policy, method_pointer_kind Method >
     method_state_ptr method_state::make(std::string name, Method method_ptr, metadata_map metadata) {
         type_registry& registry{type_registry::instance()};
-        method_state state{method_index{registry.resolve_type<Method>(), std::move(name)}, std::move(metadata)};
+
+        method_state state{
+            method_index{registry.resolve_type<Method>(), std::move(name)},
+            std::move(metadata),
+        };
+
         state.invoke = make_method_invoke<Policy>(registry, method_ptr);
         state.invoke_error = make_method_invoke_error<Method>(registry);
         state.arguments = make_method_arguments<Method>();
+
         return make_intrusive<method_state>(std::move(state));
     }
 }

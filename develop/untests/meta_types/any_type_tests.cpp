@@ -118,11 +118,11 @@ TEST_CASE("meta/meta_types/any_type") {
     }
 
     SUBCASE("function") {
-        const meta::any_type& type = meta::resolve_type(&function_v);
+        const meta::any_type& type = meta::resolve_type(function_v);
 
         REQUIRE(type);
-        REQUIRE(type == meta::resolve_type<decltype(&function_v)>());
-        REQUIRE(type.get_id() == meta::resolve_type<decltype(&function_v)>().get_id());
+        REQUIRE(type == meta::resolve_type<decltype(function_v)>());
+        REQUIRE(type.get_id() == meta::resolve_type<decltype(function_v)>().get_id());
 
         CHECK(type.is_function());
         CHECK(type.get_kind() == meta::type_kind::function_);

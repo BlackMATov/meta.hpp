@@ -70,7 +70,7 @@ TEST_CASE("meta/meta_states/function") {
         CHECK(func.get_index().get_type() == func.get_type());
         CHECK(func.get_index().get_name() == "iadd");
 
-        CHECK(func.get_type() == meta::resolve_type(&ivec2::iadd));
+        CHECK(func.get_type() == meta::resolve_type(ivec2::iadd));
         CHECK(func.get_name() == "iadd");
 
         CHECK_FALSE(func.is_invocable_with<>());
@@ -99,7 +99,7 @@ TEST_CASE("meta/meta_states/function") {
         CHECK(func.get_index().get_type() == func.get_type());
         CHECK(func.get_index().get_name() == "ilength2");
 
-        CHECK(func.get_type() == meta::resolve_type(&ivec2::ilength2));
+        CHECK(func.get_type() == meta::resolve_type(ivec2::ilength2));
         CHECK(func.get_name() == "ilength2");
 
         CHECK_FALSE(func.is_invocable_with<>());

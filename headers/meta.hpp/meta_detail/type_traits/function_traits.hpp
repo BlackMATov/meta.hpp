@@ -20,11 +20,11 @@ namespace meta_hpp::detail
 
 namespace meta_hpp::detail
 {
-    template < function_pointer_kind Function >
+    template < function_kind Function >
     struct function_traits;
 
     template < typename R, typename... Args >
-    struct function_traits<R (*)(Args...)> {
+    struct function_traits<R(Args...)> {
         static constexpr std::size_t arity{sizeof...(Args)};
 
         using return_type = R;
@@ -36,7 +36,7 @@ namespace meta_hpp::detail
     };
 
     template < typename R, typename... Args >
-    struct function_traits<R (*)(Args...) noexcept> : function_traits<R (*)(Args...)> {
+    struct function_traits<R(Args...) noexcept> : function_traits<R(Args...)> {
         [[nodiscard]] static constexpr function_bitflags make_flags() noexcept {
             return function_flags::is_noexcept;
         }

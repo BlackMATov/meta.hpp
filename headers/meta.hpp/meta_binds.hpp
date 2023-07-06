@@ -235,7 +235,7 @@ namespace meta_hpp
 
 namespace meta_hpp
 {
-    template < detail::function_pointer_kind Function >
+    template < detail::function_kind Function >
     class function_bind final : public type_bind_base<function_type> {
     public:
         explicit function_bind(metadata_map metadata);
@@ -354,7 +354,7 @@ namespace meta_hpp
         return enum_bind<Enum>{std::move(metadata)};
     }
 
-    template < detail::function_pointer_kind Function >
+    template < detail::function_kind Function >
     function_bind<Function> function_(metadata_map metadata = {}) {
         return function_bind<Function>{std::move(metadata)};
     }

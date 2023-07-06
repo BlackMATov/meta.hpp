@@ -462,7 +462,9 @@ namespace meta_hpp
 namespace meta_hpp::detail
 {
     struct type_data_base {
+        // NOLINTBEGIN(*-avoid-const-or-ref-data-members)
         const type_kind kind;
+        // NOLINTEND(*-avoid-const-or-ref-data-members)
 
         metadata_map metadata{};
 
@@ -479,19 +481,23 @@ namespace meta_hpp::detail
     };
 
     struct array_type_data final : type_data_base {
+        // NOLINTBEGIN(*-avoid-const-or-ref-data-members)
         const array_bitflags flags;
         const std::size_t extent;
         const any_type data_type;
+        // NOLINTEND(*-avoid-const-or-ref-data-members)
 
         template < array_kind Array >
         explicit array_type_data(type_list<Array>);
     };
 
     struct class_type_data final : type_data_base {
+        // NOLINTBEGIN(*-avoid-const-or-ref-data-members)
         const class_bitflags flags;
         const std::size_t size;
         const std::size_t align;
         const any_type_list argument_types;
+        // NOLINTEND(*-avoid-const-or-ref-data-members)
 
         class_list base_classes;
         class_list derived_classes;
@@ -546,25 +552,31 @@ namespace meta_hpp::detail
     };
 
     struct constructor_type_data final : type_data_base {
+        // NOLINTBEGIN(*-avoid-const-or-ref-data-members)
         const constructor_bitflags flags;
         const class_type owner_type;
         const any_type_list argument_types;
+        // NOLINTEND(*-avoid-const-or-ref-data-members)
 
         template < class_kind Class, typename... Args >
         explicit constructor_type_data(type_list<Class>, type_list<Args...>);
     };
 
     struct destructor_type_data final : type_data_base {
+        // NOLINTBEGIN(*-avoid-const-or-ref-data-members)
         const destructor_bitflags flags;
         const class_type owner_type;
+        // NOLINTEND(*-avoid-const-or-ref-data-members)
 
         template < class_kind Class >
         explicit destructor_type_data(type_list<Class>);
     };
 
     struct enum_type_data final : type_data_base {
+        // NOLINTBEGIN(*-avoid-const-or-ref-data-members)
         const enum_bitflags flags;
         const number_type underlying_type;
+        // NOLINTEND(*-avoid-const-or-ref-data-members)
 
         evalue_list evalues;
 
@@ -573,28 +585,34 @@ namespace meta_hpp::detail
     };
 
     struct function_type_data final : type_data_base {
+        // NOLINTBEGIN(*-avoid-const-or-ref-data-members)
         const function_bitflags flags;
         const any_type return_type;
         const any_type_list argument_types;
+        // NOLINTEND(*-avoid-const-or-ref-data-members)
 
-        template < function_pointer_kind Function >
+        template < function_kind Function >
         explicit function_type_data(type_list<Function>);
     };
 
     struct member_type_data final : type_data_base {
+        // NOLINTBEGIN(*-avoid-const-or-ref-data-members)
         const member_bitflags flags;
         const class_type owner_type;
         const any_type value_type;
+        // NOLINTEND(*-avoid-const-or-ref-data-members)
 
         template < member_pointer_kind Member >
         explicit member_type_data(type_list<Member>);
     };
 
     struct method_type_data final : type_data_base {
+        // NOLINTBEGIN(*-avoid-const-or-ref-data-members)
         const method_bitflags flags;
         const class_type owner_type;
         const any_type return_type;
         const any_type_list argument_types;
+        // NOLINTEND(*-avoid-const-or-ref-data-members)
 
         template < method_pointer_kind Method >
         explicit method_type_data(type_list<Method>);
@@ -606,25 +624,31 @@ namespace meta_hpp::detail
     };
 
     struct number_type_data final : type_data_base {
+        // NOLINTBEGIN(*-avoid-const-or-ref-data-members)
         const number_bitflags flags;
         const std::size_t size;
         const std::size_t align;
+        // NOLINTEND(*-avoid-const-or-ref-data-members)
 
         template < number_kind Number >
         explicit number_type_data(type_list<Number>);
     };
 
     struct pointer_type_data final : type_data_base {
+        // NOLINTBEGIN(*-avoid-const-or-ref-data-members)
         const pointer_bitflags flags;
         const any_type data_type;
+        // NOLINTEND(*-avoid-const-or-ref-data-members)
 
         template < pointer_kind Pointer >
         explicit pointer_type_data(type_list<Pointer>);
     };
 
     struct reference_type_data final : type_data_base {
+        // NOLINTBEGIN(*-avoid-const-or-ref-data-members)
         const reference_bitflags flags;
         const any_type data_type;
+        // NOLINTEND(*-avoid-const-or-ref-data-members)
 
         template < reference_kind Reference >
         explicit reference_type_data(type_list<Reference>);

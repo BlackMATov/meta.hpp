@@ -80,10 +80,16 @@ namespace meta_hpp::detail
     template < class_kind Class >
     destructor_state_ptr destructor_state::make(metadata_map metadata) {
         type_registry& registry{type_registry::instance()};
-        destructor_state state{destructor_index{registry.resolve_destructor_type<Class>()}, std::move(metadata)};
+
+        destructor_state state{
+            destructor_index{registry.resolve_destructor_type<Class>()},
+            std::move(metadata),
+        };
+
         state.destroy = make_destructor_destroy<Class>(registry);
         state.destroy_at = make_destructor_destroy_at<Class>();
         state.destroy_error = make_destructor_destroy_error<Class>(registry);
+
         return make_intrusive<destructor_state>(std::move(state));
     }
 }

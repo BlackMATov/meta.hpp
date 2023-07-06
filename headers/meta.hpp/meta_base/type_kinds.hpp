@@ -20,7 +20,7 @@ namespace meta_hpp::detail
     concept enum_kind = std::is_enum_v<T>;
 
     template < typename T >
-    concept function_pointer_kind = (std::is_pointer_v<T> && std::is_function_v<std::remove_pointer_t<T>>);
+    concept function_kind = std::is_function_v<T>;
 
     template < typename T >
     concept member_pointer_kind = std::is_member_object_pointer_v<T>;
@@ -35,7 +35,7 @@ namespace meta_hpp::detail
     concept number_kind = std::is_arithmetic_v<T>;
 
     template < typename T >
-    concept pointer_kind = (std::is_pointer_v<T> && !std::is_function_v<std::remove_pointer_t<T>>);
+    concept pointer_kind = std::is_pointer_v<T>;
 
     template < typename T >
     concept reference_kind = std::is_reference_v<T>;
@@ -47,7 +47,13 @@ namespace meta_hpp::detail
 namespace meta_hpp::detail
 {
     template < typename T >
-    concept non_pointer_kind = (!pointer_kind<T>);
+    concept non_pointer_kind = !std::is_pointer_v<T>;
+
+    template < typename T >
+    concept function_pointer_kind = std::is_pointer_v<T> && std::is_function_v<std::remove_pointer_t<T>>;
+
+    template < typename T >
+    concept non_function_pointer_kind = std::is_pointer_v<T> && !std::is_function_v<std::remove_pointer_t<T>>;
 }
 
 namespace meta_hpp::detail
@@ -74,7 +80,7 @@ namespace meta_hpp::detail
         if constexpr ( array_kind<T> ) { return type_kind::array_; }
         if constexpr ( class_kind<T> ) { return type_kind::class_; }
         if constexpr ( enum_kind<T> ) { return type_kind::enum_; }
-        if constexpr ( function_pointer_kind<T> ) { return type_kind::function_; }
+        if constexpr ( function_kind<T> ) { return type_kind::function_; }
         if constexpr ( member_pointer_kind<T> ) { return type_kind::member_; }
         if constexpr ( method_pointer_kind<T> ) { return type_kind::method_; }
         if constexpr ( nullptr_kind<T> ) { return type_kind::nullptr_; }
