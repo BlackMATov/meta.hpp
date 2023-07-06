@@ -709,9 +709,13 @@ namespace meta_hpp::detail
 {
     template < typename R, typename... Args >
     struct fixed_function<R(Args...)>::vtable_t final {
+        // NOLINTBEGIN(*-avoid-const-or-ref-data-members)
+
         R (*const call)(const fixed_function& self, Args... args);
         void (*const move)(fixed_function& from, fixed_function& to) noexcept;
         void (*const destroy)(fixed_function& self);
+
+        // NOLINTEND(*-avoid-const-or-ref-data-members)
 
         template < typename T >
         static T* buffer_cast(buffer_t& buffer) noexcept {
@@ -1670,7 +1674,7 @@ namespace meta_hpp
            || std::is_same_v<T, uvalue>;    //
 
         template < typename T >
-        concept non_uvalue_family = (!uvalue_family<T>);
+        concept non_uvalue_family = !uvalue_family<T>;
     }
 }
 
