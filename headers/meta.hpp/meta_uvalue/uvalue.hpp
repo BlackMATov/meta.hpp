@@ -20,6 +20,7 @@
 namespace meta_hpp
 {
     struct uvalue::vtable_t final {
+        // NOLINTBEGIN(*-avoid-const-or-ref-data-members)
         const any_type type;
 
         void (*const move)(uvalue&& self, uvalue& to) noexcept;
@@ -29,6 +30,7 @@ namespace meta_hpp
         uvalue (*const deref)(const storage_u& self);
         uvalue (*const index)(const storage_u& self, std::size_t i);
         uvalue (*const unmap)(const storage_u& self);
+        // NOLINTEND(*-avoid-const-or-ref-data-members)
 
         template < typename T >
         inline static constexpr bool in_internal_v = //

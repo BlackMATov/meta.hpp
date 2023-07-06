@@ -118,10 +118,16 @@ namespace meta_hpp::detail
     template < variable_policy_family Policy, pointer_kind Pointer >
     variable_state_ptr variable_state::make(std::string name, Pointer variable_ptr, metadata_map metadata) {
         type_registry& registry{type_registry::instance()};
-        variable_state state{variable_index{registry.resolve_type<Pointer>(), std::move(name)}, std::move(metadata)};
+
+        variable_state state{
+            variable_index{registry.resolve_type<Pointer>(), std::move(name)},
+            std::move(metadata),
+        };
+
         state.getter = make_variable_getter<Policy>(registry, variable_ptr);
         state.setter = make_variable_setter(registry, variable_ptr);
         state.setter_error = make_variable_setter_error<Pointer>(registry);
+
         return make_intrusive<variable_state>(std::move(state));
     }
 }

@@ -197,11 +197,17 @@ namespace meta_hpp::detail
     template < member_policy_family Policy, member_pointer_kind Member >
     member_state_ptr member_state::make(std::string name, Member member_ptr, metadata_map metadata) {
         type_registry& registry{type_registry::instance()};
-        member_state state{member_index{registry.resolve_type<Member>(), std::move(name)}, std::move(metadata)};
+
+        member_state state{
+            member_index{registry.resolve_type<Member>(), std::move(name)},
+            std::move(metadata),
+        };
+
         state.getter = make_member_getter<Policy>(registry, member_ptr);
         state.setter = make_member_setter(registry, member_ptr);
         state.getter_error = make_member_getter_error<Member>(registry);
         state.setter_error = make_member_setter_error<Member>(registry);
+
         return make_intrusive<member_state>(std::move(state));
     }
 }

@@ -82,10 +82,11 @@ namespace meta_hpp::detail
             return raw_type_;
         }
 
-        template < pointer_kind To >
+        template < non_function_pointer_kind To >
         [[nodiscard]] bool can_cast_to(type_registry& registry) const noexcept;
 
-        template < non_pointer_kind To >
+        template < typename To >
+            requires(!non_function_pointer_kind<To>)
         [[nodiscard]] bool can_cast_to(type_registry& registry) const noexcept;
 
     private:
@@ -124,10 +125,11 @@ namespace meta_hpp::detail
         : uarg_base{registry, std::forward<T>(v)}
         , data_{const_cast<std::remove_cvref_t<T>*>(std::addressof(v))} {} // NOLINT(*-const-cast)
 
-        template < pointer_kind To >
+        template < non_function_pointer_kind To >
         [[nodiscard]] decltype(auto) cast(type_registry& registry) const;
 
-        template < non_pointer_kind To >
+        template < typename To >
+            requires(!non_function_pointer_kind<To>)
         [[nodiscard]] decltype(auto) cast(type_registry& registry) const;
 
     private:
@@ -137,7 +139,7 @@ namespace meta_hpp::detail
 
 namespace meta_hpp::detail
 {
-    template < pointer_kind To >
+    template < non_function_pointer_kind To >
     [[nodiscard]] bool uarg_base::can_cast_to(type_registry& registry) const noexcept {
         using to_raw_type = std::remove_cv_t<To>;
 
@@ -183,7 +185,8 @@ namespace meta_hpp::detail
         return false;
     }
 
-    template < non_pointer_kind To >
+    template < typename To >
+        requires(!non_function_pointer_kind<To>)
     [[nodiscard]] bool uarg_base::can_cast_to(type_registry& registry) const noexcept {
         using to_raw_type_cv = std::remove_reference_t<To>;
         using to_raw_type = std::remove_cv_t<to_raw_type_cv>;
@@ -230,7 +233,7 @@ namespace meta_hpp::detail
             }
         }
 
-        if constexpr ( non_pointer_kind<To> && !std::is_reference_v<To> ) {
+        if constexpr ( !std::is_reference_v<To> ) {
             if ( is_a(to_type, from_type) && is_constructible_from_type(type_list<to_raw_type>{}) ) {
                 return true;
             }
@@ -242,7 +245,7 @@ namespace meta_hpp::detail
 
 namespace meta_hpp::detail
 {
-    template < pointer_kind To >
+    template < non_function_pointer_kind To >
     [[nodiscard]] decltype(auto) uarg::cast(type_registry& registry) const {
         META_HPP_DEV_ASSERT(can_cast_to<To>(registry) && "bad argument cast");
 
@@ -284,7 +287,8 @@ namespace meta_hpp::detail
         throw_exception(error_code::bad_argument_cast);
     }
 
-    template < non_pointer_kind To >
+    template < typename To >
+        requires(!non_function_pointer_kind<To>)
     [[nodiscard]] decltype(auto) uarg::cast(type_registry& registry) const {
         META_HPP_DEV_ASSERT(can_cast_to<To>(registry) && "bad argument cast");
 
@@ -345,10 +349,9 @@ namespace meta_hpp::detail
         if ( args.size() != type_list_arity_v<ArgTypeList> ) {
             return false;
         }
-        return [ args, &registry ]<std::size_t... Is>(std::index_sequence<Is...>) {
+        return [args, &registry]<std::size_t... Is>(std::index_sequence<Is...>) {
             return (... && args[Is].can_cast_to<type_list_at_t<Is, ArgTypeList>>(registry));
-        }
-        (std::make_index_sequence<type_list_arity_v<ArgTypeList>>());
+        }(std::make_index_sequence<type_list_arity_v<ArgTypeList>>());
     }
 
     template < typename ArgTypeList >
@@ -356,18 +359,16 @@ namespace meta_hpp::detail
         if ( args.size() != type_list_arity_v<ArgTypeList> ) {
             return false;
         }
-        return [ args, &registry ]<std::size_t... Is>(std::index_sequence<Is...>) {
+        return [args, &registry]<std::size_t... Is>(std::index_sequence<Is...>) {
             return (... && args[Is].can_cast_to<type_list_at_t<Is, ArgTypeList>>(registry));
-        }
-        (std::make_index_sequence<type_list_arity_v<ArgTypeList>>());
+        }(std::make_index_sequence<type_list_arity_v<ArgTypeList>>());
     }
 
     template < typename ArgTypeList, typename F >
     auto unchecked_call_with_uargs(type_registry& registry, std::span<const uarg> args, F&& f) {
         META_HPP_DEV_ASSERT(args.size() == type_list_arity_v<ArgTypeList>);
-        return [ args, &registry, &f ]<std::size_t... Is>(std::index_sequence<Is...>) {
+        return [args, &registry, &f]<std::size_t... Is>(std::index_sequence<Is...>) {
             return f(args[Is].cast<type_list_at_t<Is, ArgTypeList>>(registry)...);
-        }
-        (std::make_index_sequence<type_list_arity_v<ArgTypeList>>());
+        }(std::make_index_sequence<type_list_arity_v<ArgTypeList>>());
     }
 }

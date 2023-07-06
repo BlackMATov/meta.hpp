@@ -9,26 +9,26 @@ jobs:
       fail-fast: false
       matrix:
         config:
-        # https://github.com/actions/virtual-environments/tree/main/images/macos
-        - { os: "macos-12", xcode: "14.0", arch: "x64" }
-        - { os: "macos-12", xcode: "14.1", arch: "x64" }
-        - { os: "macos-12", xcode: "14.2", arch: "x64" }
+          # https://github.com/actions/virtual-environments/tree/main/images/macos
+          - { os: "macos-12", xcode: "14.0", arch: "x64" }
+          - { os: "macos-12", xcode: "14.1", arch: "x64" }
+          - { os: "macos-12", xcode: "14.2", arch: "x64" }
     name: "xcode-${{matrix.config.xcode}}"
     steps:
-    - name: Setup
-      run: |
-        brew update
-        brew install cmake ninja
-    - name: Checkout
-      uses: actions/checkout@v3
-      with:
-        submodules: true
-    - name: Select Xcode
-      run: sudo xcode-select --switch "/Applications/Xcode_${{matrix.config.xcode}}.app"
-    - name: Build
-      run: |
-        cmake --preset macos-${{matrix.config.arch}}
-        cmake --build --preset macos-${{matrix.config.arch}}-release
-    - name: Test
-      run: |
-        ctest --preset macos-${{matrix.config.arch}}-release
+      - name: Setup
+        run: |
+          brew update
+          brew install cmake ninja
+      - name: Checkout
+        uses: actions/checkout@v3
+        with:
+          submodules: true
+      - name: Select Xcode
+        run: sudo xcode-select --switch "/Applications/Xcode_${{matrix.config.xcode}}.app"
+      - name: Build
+        run: |
+          cmake --preset macos-${{matrix.config.arch}}
+          cmake --build --preset macos-${{matrix.config.arch}}-release
+      - name: Test
+        run: |
+          ctest --preset macos-${{matrix.config.arch}}

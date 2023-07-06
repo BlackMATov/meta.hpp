@@ -52,7 +52,7 @@ namespace meta_hpp::detail
             if constexpr ( array_kind<T> ) { return resolve_array_type<T>(); }
             if constexpr ( class_kind<T> ) { return resolve_class_type<T>(); }
             if constexpr ( enum_kind<T> ) { return resolve_enum_type<T>(); }
-            if constexpr ( function_pointer_kind<T> ) { return resolve_function_type<T>(); }
+            if constexpr ( function_kind<T> ) { return resolve_function_type<T>(); }
             if constexpr ( member_pointer_kind<T> ) { return resolve_member_type<T>(); }
             if constexpr ( method_pointer_kind<T> ) { return resolve_method_type<T>(); }
             if constexpr ( nullptr_kind<T> ) { return resolve_nullptr_type<T>(); }
@@ -99,7 +99,7 @@ namespace meta_hpp::detail
             return type;
         }
 
-        template < function_pointer_kind Function >
+        template < function_kind Function >
         [[nodiscard]] function_type resolve_function_type() {
             using function_t = std::remove_cv_t<Function>;
             static function_type type{ensure_type<function_type_data>(type_list<function_t>{})};

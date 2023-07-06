@@ -130,8 +130,7 @@ namespace meta_hpp::detail
                 return argument{argument_state::make<P>(I, metadata_map{})};
             };
             return argument_list{make_argument(index_constant<Is>{})...};
-        }
-        (std::make_index_sequence<ct::arity>());
+        }(std::make_index_sequence<ct::arity>());
     }
 }
 
@@ -144,11 +143,17 @@ namespace meta_hpp::detail
     template < constructor_policy_family Policy, class_kind Class, typename... Args >
     constructor_state_ptr constructor_state::make(metadata_map metadata) {
         type_registry& registry{type_registry::instance()};
-        constructor_state state{constructor_index{registry.resolve_constructor_type<Class, Args...>()}, std::move(metadata)};
+
+        constructor_state state{
+            constructor_index{registry.resolve_constructor_type<Class, Args...>()},
+            std::move(metadata),
+        };
+
         state.create = make_constructor_create<Policy, Class, Args...>(registry);
         state.create_at = make_constructor_create_at<Class, Args...>(registry);
         state.create_error = make_constructor_create_error<Class, Args...>(registry);
         state.arguments = make_constructor_arguments<Class, Args...>();
+
         return make_intrusive<constructor_state>(std::move(state));
     }
 }

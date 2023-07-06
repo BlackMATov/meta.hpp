@@ -129,16 +129,28 @@ namespace meta_hpp::detail
 
 #ifdef __COUNTER__
 #    define META_HPP_DEFER(...) \
-        auto META_HPP_PP_CAT(meta_hpp_generated_defer_, __COUNTER__) { ::meta_hpp::detail::make_defer(__VA_ARGS__) }
+        auto META_HPP_PP_CAT(meta_hpp_generated_defer_, __COUNTER__) { \
+            ::meta_hpp::detail::make_defer(__VA_ARGS__) \
+        }
 #    define META_HPP_ERROR_DEFER(...) \
-        auto META_HPP_PP_CAT(meta_hpp_generated_error_defer_, __COUNTER__) { ::meta_hpp::detail::make_error_defer(__VA_ARGS__) }
+        auto META_HPP_PP_CAT(meta_hpp_generated_error_defer_, __COUNTER__) { \
+            ::meta_hpp::detail::make_error_defer(__VA_ARGS__) \
+        }
 #    define META_HPP_RETURN_DEFER(...) \
-        auto META_HPP_PP_CAT(meta_hpp_generated_return_defer_, __COUNTER__) { ::meta_hpp::detail::make_return_defer(__VA_ARGS__) }
+        auto META_HPP_PP_CAT(meta_hpp_generated_return_defer_, __COUNTER__) { \
+            ::meta_hpp::detail::make_return_defer(__VA_ARGS__) \
+        }
 #else
 #    define META_HPP_DEFER(...) \
-        auto META_HPP_PP_CAT(meta_hpp_generated_defer_, __LINE__) { ::meta_hpp::detail::make_defer(__VA_ARGS__) }
+        auto META_HPP_PP_CAT(meta_hpp_generated_defer_, __LINE__) { \
+            ::meta_hpp::detail::make_defer(__VA_ARGS__) \
+        }
 #    define META_HPP_ERROR_DEFER(...) \
-        auto META_HPP_PP_CAT(meta_hpp_generated_error_defer_, __LINE__) { ::meta_hpp::detail::make_error_defer(__VA_ARGS__) }
+        auto META_HPP_PP_CAT(meta_hpp_generated_error_defer_, __LINE__) { \
+            ::meta_hpp::detail::make_error_defer(__VA_ARGS__) \
+        }
 #    define META_HPP_RETURN_DEFER(...) \
-        auto META_HPP_PP_CAT(meta_hpp_generated_return_defer_, __LINE__) { ::meta_hpp::detail::make_return_defer(__VA_ARGS__) }
+        auto META_HPP_PP_CAT(meta_hpp_generated_return_defer_, __LINE__) { \
+            ::meta_hpp::detail::make_return_defer(__VA_ARGS__) \
+        }
 #endif

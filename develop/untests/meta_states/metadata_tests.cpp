@@ -269,10 +269,10 @@ TEST_CASE("meta/meta_states/metadata/other") {
     }
 
     SUBCASE("function") {
-        meta::function_<int(*)(int)>({
+        meta::function_<int(int)>({
             {"desc", "int->int"s}
         });
-        CHECK(meta::resolve_type<int(*)(int)>().get_metadata().at("desc").as<std::string>() == "int->int"s);
+        CHECK(meta::resolve_type<int(int)>().get_metadata().at("desc").as<std::string>() == "int->int"s);
     }
 
     SUBCASE("member") {

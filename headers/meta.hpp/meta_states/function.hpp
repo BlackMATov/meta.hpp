@@ -17,7 +17,7 @@ namespace meta_hpp::detail
 {
     template < function_policy_family Policy, function_pointer_kind Function >
     uvalue raw_function_invoke(type_registry& registry, Function function_ptr, std::span<const uarg> args) {
-        using ft = function_traits<Function>;
+        using ft = function_traits<std::remove_pointer_t<Function>>;
         using return_type = typename ft::return_type;
         using argument_types = typename ft::argument_types;
 
@@ -65,7 +65,7 @@ namespace meta_hpp::detail
 
     template < function_pointer_kind Function >
     uerror raw_function_invoke_error(type_registry& registry, std::span<const uarg_base> args) noexcept {
-        using ft = function_traits<Function>;
+        using ft = function_traits<std::remove_pointer_t<Function>>;
         using argument_types = typename ft::argument_types;
 
         if ( args.size() != ft::arity ) {
@@ -98,7 +98,7 @@ namespace meta_hpp::detail
 
     template < function_pointer_kind Function >
     argument_list make_function_arguments() {
-        using ft = function_traits<Function>;
+        using ft = function_traits<std::remove_pointer_t<Function>>;
         using ft_argument_types = typename ft::argument_types;
 
         return []<std::size_t... Is>(std::index_sequence<Is...>) {
@@ -107,8 +107,7 @@ namespace meta_hpp::detail
                 return argument{argument_state::make<P>(I, metadata_map{})};
             };
             return argument_list{make_argument(index_constant<Is>{})...};
-        }
-        (std::make_index_sequence<ft::arity>());
+        }(std::make_index_sequence<ft::arity>());
     }
 }
 
@@ -121,10 +120,16 @@ namespace meta_hpp::detail
     template < function_policy_family Policy, function_pointer_kind Function >
     function_state_ptr function_state::make(std::string name, Function function_ptr, metadata_map metadata) {
         type_registry& registry{type_registry::instance()};
-        function_state state{function_index{registry.resolve_type<Function>(), std::move(name)}, std::move(metadata)};
+
+        function_state state{
+            function_index{registry.resolve_type<std::remove_pointer_t<Function>>(), std::move(name)},
+            std::move(metadata),
+        };
+
         state.invoke = make_function_invoke<Policy>(registry, function_ptr);
         state.invoke_error = make_function_invoke_error<Function>(registry);
         state.arguments = make_function_arguments<Function>();
+
         return make_intrusive<function_state>(std::move(state));
     }
 }

@@ -12,7 +12,7 @@
 
 namespace meta_hpp
 {
-    template < detail::function_pointer_kind Function >
+    template < detail::function_kind Function >
     function_bind<Function>::function_bind(metadata_map metadata)
     : type_bind_base{resolve_type<Function>(), std::move(metadata)} {}
 }

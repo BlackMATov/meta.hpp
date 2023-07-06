@@ -23,11 +23,11 @@ namespace
 TEST_CASE("meta/meta_manuals/function/type") {
     namespace meta = meta_hpp;
 
-    // resolves a function type by pointer
-    const meta::function_type add_function_type = meta::resolve_type(&add);
+    // resolves a function type by reference
+    const meta::function_type add_function_type = meta::resolve_type(add);
 
     // also, it can be resolved by static function type declaration
-    CHECK(add_function_type == meta::resolve_type<int(*)(int, int)>());
+    CHECK(add_function_type == meta::resolve_type<int(int, int)>());
 
     // checks a return value type
     CHECK(add_function_type.get_return_type() == meta::resolve_type<int>());
@@ -55,7 +55,7 @@ TEST_CASE("meta/meta_manuals/function/usage") {
     CHECK(sub_function == math_scope.get_function_with<int, int>("sub"));
 
     // checks a type of the found function
-    CHECK(sub_function.get_type() == meta::resolve_type<int(*)(int, int)>());
+    CHECK(sub_function.get_type() == meta::resolve_type<int(int, int)>());
 
     // checks the ability to call the function with specific arguments
     CHECK(sub_function.is_invocable_with(60, 18));

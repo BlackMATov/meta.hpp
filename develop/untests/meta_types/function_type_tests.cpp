@@ -34,10 +34,10 @@ TEST_CASE("meta/meta_types/function_type") {
     }
 
     SUBCASE("arg_copy") {
-        const meta::function_type type = meta::resolve_type(&arg_copy);
+        const meta::function_type type = meta::resolve_type(arg_copy);
         REQUIRE(type);
 
-        CHECK(type.get_id() == meta::resolve_type(&arg_copy).get_id());
+        CHECK(type.get_id() == meta::resolve_type(arg_copy).get_id());
         CHECK(type.get_flags() == meta::function_flags{});
 
         CHECK(type.get_arity() == 1);
@@ -49,10 +49,10 @@ TEST_CASE("meta/meta_types/function_type") {
     }
 
     SUBCASE("arg_ref_noexcept") {
-        const meta::function_type type = meta::resolve_type(&arg_ref_noexcept);
+        const meta::function_type type = meta::resolve_type(arg_ref_noexcept);
         REQUIRE(type);
 
-        CHECK(type.get_id() == meta::resolve_type(&arg_ref_noexcept).get_id());
+        CHECK(type.get_id() == meta::resolve_type(arg_ref_noexcept).get_id());
         CHECK(type.get_flags() == meta::function_flags::is_noexcept);
         CHECK(type.get_argument_types() == meta::any_type_list{meta::resolve_type<ivec2&>()});
 
@@ -61,10 +61,10 @@ TEST_CASE("meta/meta_types/function_type") {
     }
 
     SUBCASE("arg_cref_noexcept") {
-        const meta::function_type type = meta::resolve_type(&arg_cref_noexcept);
+        const meta::function_type type = meta::resolve_type(arg_cref_noexcept);
         REQUIRE(type);
 
-        CHECK(type.get_id() == meta::resolve_type(&arg_cref_noexcept).get_id());
+        CHECK(type.get_id() == meta::resolve_type(arg_cref_noexcept).get_id());
         CHECK(type.get_flags() == meta::function_flags::is_noexcept);
         CHECK(type.get_argument_types() == meta::any_type_list{meta::resolve_type<const ivec2&>()});
 
@@ -73,10 +73,10 @@ TEST_CASE("meta/meta_types/function_type") {
     }
 
     SUBCASE("arg_bounded_arr") {
-        const meta::function_type type = meta::resolve_type(&arg_bounded_arr);
+        const meta::function_type type = meta::resolve_type(arg_bounded_arr);
         REQUIRE(type);
 
-        CHECK(type.get_id() == meta::resolve_type(&arg_bounded_arr).get_id());
+        CHECK(type.get_id() == meta::resolve_type(arg_bounded_arr).get_id());
         CHECK(type.get_flags() == meta::function_flags{});
         CHECK(type.get_argument_types() == meta::any_type_list{meta::resolve_type<ivec2*>()});
 
@@ -85,10 +85,10 @@ TEST_CASE("meta/meta_types/function_type") {
     }
 
     SUBCASE("arg_unbounded_arr") {
-        const meta::function_type type = meta::resolve_type(&arg_unbounded_arr);
+        const meta::function_type type = meta::resolve_type(arg_unbounded_arr);
         REQUIRE(type);
 
-        CHECK(type.get_id() == meta::resolve_type(&arg_unbounded_arr).get_id());
+        CHECK(type.get_id() == meta::resolve_type(arg_unbounded_arr).get_id());
         CHECK(type.get_flags() == meta::function_flags{});
         CHECK(type.get_argument_types() == meta::any_type_list{meta::resolve_type<ivec2*>()});
 
@@ -97,10 +97,10 @@ TEST_CASE("meta/meta_types/function_type") {
     }
 
     SUBCASE("arg_bounded_const_arr") {
-        const meta::function_type type = meta::resolve_type(&arg_bounded_const_arr);
+        const meta::function_type type = meta::resolve_type(arg_bounded_const_arr);
         REQUIRE(type);
 
-        CHECK(type.get_id() == meta::resolve_type(&arg_bounded_const_arr).get_id());
+        CHECK(type.get_id() == meta::resolve_type(arg_bounded_const_arr).get_id());
         CHECK(type.get_flags() == meta::function_flags{});
         CHECK(type.get_argument_types() == meta::any_type_list{meta::resolve_type<const ivec2*>()});
 
@@ -109,10 +109,10 @@ TEST_CASE("meta/meta_types/function_type") {
     }
 
     SUBCASE("arg_unbounded_const_arr") {
-        const meta::function_type type = meta::resolve_type(&arg_unbounded_const_arr);
+        const meta::function_type type = meta::resolve_type(arg_unbounded_const_arr);
         REQUIRE(type);
 
-        CHECK(type.get_id() == meta::resolve_type(&arg_unbounded_const_arr).get_id());
+        CHECK(type.get_id() == meta::resolve_type(arg_unbounded_const_arr).get_id());
         CHECK(type.get_flags() == meta::function_flags{});
         CHECK(type.get_argument_types() == meta::any_type_list{meta::resolve_type<const ivec2*>()});
 

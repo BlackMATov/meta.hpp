@@ -9,25 +9,25 @@ jobs:
       fail-fast: false
       matrix:
         config:
-        # https://github.com/actions/virtual-environments/tree/main/images/linux
-        - { os: "ubuntu-20.04", cc: "gcc-10", cxx: "g++-10" }
-        - { os: "ubuntu-20.04", cc: "clang-10", cxx: "clang++-10" }
-        - { os: "ubuntu-22.04", cc: "gcc-12", cxx: "g++-12" }
-        - { os: "ubuntu-22.04", cc: "clang-14", cxx: "clang++-14" }
+          # https://github.com/actions/virtual-environments/tree/main/images/linux
+          - { os: "ubuntu-20.04", cc: "gcc-10", cxx: "g++-10" }
+          - { os: "ubuntu-20.04", cc: "clang-10", cxx: "clang++-10" }
+          - { os: "ubuntu-22.04", cc: "gcc-12", cxx: "g++-12" }
+          - { os: "ubuntu-22.04", cc: "clang-14", cxx: "clang++-14" }
     name: "${{matrix.config.cxx}}"
     steps:
-    - name: Setup
-      run: |
-        sudo apt-get update -o Acquire::Retries=10
-        sudo apt-get install -o Acquire::Retries=10 -y cmake ninja-build ${{matrix.config.cc}} ${{matrix.config.cxx}}
-    - name: Checkout
-      uses: actions/checkout@v3
-      with:
-        submodules: true
-    - name: Build
-      run: |
-        cmake --preset linux-${{matrix.config.cc}}
-        cmake --build --preset linux-${{matrix.config.cc}}-release
-    - name: Test
-      run: |
-        ctest --preset linux-${{matrix.config.cc}}-release
+      - name: Setup
+        run: |
+          sudo apt-get update -o Acquire::Retries=10
+          sudo apt-get install -o Acquire::Retries=10 -y cmake ninja-build ${{matrix.config.cc}} ${{matrix.config.cxx}}
+      - name: Checkout
+        uses: actions/checkout@v3
+        with:
+          submodules: true
+      - name: Build
+        run: |
+          cmake --preset linux-${{matrix.config.cc}}
+          cmake --build --preset linux-${{matrix.config.cc}}-release
+      - name: Test
+        run: |
+          ctest --preset linux-${{matrix.config.cc}}

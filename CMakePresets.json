@@ -1,12 +1,10 @@
 {
     "version": 3,
-
     "cmakeMinimumRequired": {
         "major": 3,
         "minor": 21,
         "patch": 0
     },
-
     "configurePresets": [
         {
             "name": "ninja-base",
@@ -203,7 +201,6 @@
             }
         }
     ],
-
     "buildPresets": [
         {
             "name": "linux-clang-10-debug",
@@ -336,63 +333,91 @@
             "configurePreset": "windows-x64-msvc2022"
         }
     ],
-
     "testPresets": [
         {
             "name": "test-base",
             "hidden": true,
             "output": {
                 "verbosity": "verbose"
-            },
-            "configuration": "Release"
+            }
         },
         {
-            "name": "linux-clang-10-release",
+            "name": "linux-clang-10",
             "inherits": "test-base",
             "configurePreset": "linux-clang-10"
         },
         {
-            "name": "linux-clang-14-release",
+            "name": "linux-clang-14",
             "inherits": "test-base",
             "configurePreset": "linux-clang-14"
         },
         {
-            "name": "linux-gcc-10-release",
+            "name": "linux-gcc-10",
             "inherits": "test-base",
             "configurePreset": "linux-gcc-10"
         },
         {
-            "name": "linux-gcc-12-release",
+            "name": "linux-gcc-12",
             "inherits": "test-base",
             "configurePreset": "linux-gcc-12"
         },
         {
-            "name": "macos-arm64-release",
+            "name": "macos-arm64",
             "inherits": "test-base",
             "configurePreset": "macos-arm64"
         },
         {
-            "name": "macos-x64-release",
+            "name": "macos-arm64-san",
+            "inherits": "test-base",
+            "configurePreset": "macos-arm64-san"
+        },
+        {
+            "name": "macos-arm64-san-no-exceptions",
+            "inherits": "test-base",
+            "configurePreset": "macos-arm64-san-no-exceptions"
+        },
+        {
+            "name": "macos-arm64-san-no-rtti",
+            "inherits": "test-base",
+            "configurePreset": "macos-arm64-san-no-rtti"
+        },
+        {
+            "name": "macos-x64",
             "inherits": "test-base",
             "configurePreset": "macos-x64"
         },
         {
-            "name": "windows-x86-msvc2019-release",
+            "name": "macos-x64-san",
+            "inherits": "test-base",
+            "configurePreset": "macos-x64-san"
+        },
+        {
+            "name": "macos-x64-san-no-exceptions",
+            "inherits": "test-base",
+            "configurePreset": "macos-x64-san-no-exceptions"
+        },
+        {
+            "name": "macos-x64-san-no-rtti",
+            "inherits": "test-base",
+            "configurePreset": "macos-x64-san-no-rtti"
+        },
+        {
+            "name": "windows-x86-msvc2019",
             "inherits": "test-base",
             "configurePreset": "windows-x86-msvc2019"
         },
         {
-            "name": "windows-x64-msvc2019-release",
+            "name": "windows-x64-msvc2019",
             "inherits": "test-base",
             "configurePreset": "windows-x64-msvc2019"
         },
         {
-            "name": "windows-x86-msvc2022-release",
+            "name": "windows-x86-msvc2022",
             "inherits": "test-base",
             "configurePreset": "windows-x86-msvc2022"
         },
         {
-            "name": "windows-x64-msvc2022-release",
+            "name": "windows-x64-msvc2022",
             "inherits": "test-base",
             "configurePreset": "windows-x64-msvc2022"
         }

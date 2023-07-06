@@ -76,7 +76,7 @@ namespace meta_hpp
            || std::is_same_v<T, uvalue>;    //
 
         template < typename T >
-        concept non_uvalue_family = (!uvalue_family<T>);
+        concept non_uvalue_family = !uvalue_family<T>;
     }
 }
 
