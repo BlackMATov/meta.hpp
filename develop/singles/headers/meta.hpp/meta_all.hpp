@@ -1350,6 +1350,25 @@ namespace meta_hpp::detail
 
 namespace meta_hpp::detail
 {
+    enum class type_kind : std::uint32_t {
+        array_,
+        class_,
+        constructor_,
+        destructor_,
+        enum_,
+        function_,
+        member_,
+        method_,
+        nullptr_,
+        number_,
+        pointer_,
+        reference_,
+        void_,
+    };
+}
+
+namespace meta_hpp::detail
+{
     template < typename T >
     concept array_kind = std::is_array_v<T>;
 
@@ -1394,42 +1413,6 @@ namespace meta_hpp::detail
 
     template < typename T >
     concept non_function_pointer_kind = std::is_pointer_v<T> && !std::is_function_v<std::remove_pointer_t<T>>;
-}
-
-namespace meta_hpp::detail
-{
-    enum class type_kind : std::uint32_t {
-        array_,
-        class_,
-        constructor_,
-        destructor_,
-        enum_,
-        function_,
-        member_,
-        method_,
-        nullptr_,
-        number_,
-        pointer_,
-        reference_,
-        void_,
-    };
-
-    template < typename T >
-    constexpr type_kind make_type_kind() noexcept {
-        // clang-format off
-        if constexpr ( array_kind<T> ) { return type_kind::array_; }
-        if constexpr ( class_kind<T> ) { return type_kind::class_; }
-        if constexpr ( enum_kind<T> ) { return type_kind::enum_; }
-        if constexpr ( function_kind<T> ) { return type_kind::function_; }
-        if constexpr ( member_pointer_kind<T> ) { return type_kind::member_; }
-        if constexpr ( method_pointer_kind<T> ) { return type_kind::method_; }
-        if constexpr ( nullptr_kind<T> ) { return type_kind::nullptr_; }
-        if constexpr ( number_kind<T> ) { return type_kind::number_; }
-        if constexpr ( pointer_kind<T> ) { return type_kind::pointer_; }
-        if constexpr ( reference_kind<T> ) { return type_kind::reference_; }
-        if constexpr ( void_kind<T> ) { return type_kind::void_; }
-        // clang-format on
-    }
 }
 
 namespace meta_hpp::detail
