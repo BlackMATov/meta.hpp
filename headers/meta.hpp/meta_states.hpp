@@ -192,6 +192,12 @@ namespace meta_hpp
         template < typename... Args >
         [[nodiscard]] bool is_invocable_with(Args&&... args) const noexcept;
 
+        template < typename... Args >
+        [[nodiscard]] uerror check_invocable_error() const noexcept;
+
+        template < typename... Args >
+        [[nodiscard]] uerror check_invocable_error(Args&&... args) const noexcept;
+
         [[nodiscard]] argument get_argument(std::size_t position) const noexcept;
         [[nodiscard]] const argument_list& get_arguments() const noexcept;
     };
@@ -217,6 +223,12 @@ namespace meta_hpp
 
         template < typename Arg >
         [[nodiscard]] bool is_invocable_with(Arg&& arg) const noexcept;
+
+        template < typename Arg >
+        [[nodiscard]] uerror check_invocable_error() const noexcept;
+
+        template < typename Arg >
+        [[nodiscard]] uerror check_invocable_error(Arg&& arg) const noexcept;
     };
 
     class evalue final : public state_base<evalue> {
@@ -251,6 +263,12 @@ namespace meta_hpp
 
         template < typename... Args >
         [[nodiscard]] bool is_invocable_with(Args&&... args) const noexcept;
+
+        template < typename... Args >
+        [[nodiscard]] uerror check_invocable_error() const noexcept;
+
+        template < typename... Args >
+        [[nodiscard]] uerror check_invocable_error(Args&&... args) const noexcept;
 
         [[nodiscard]] argument get_argument(std::size_t position) const noexcept;
         [[nodiscard]] const argument_list& get_arguments() const noexcept;
@@ -292,6 +310,18 @@ namespace meta_hpp
 
         template < typename Instance, typename Value >
         [[nodiscard]] bool is_settable_with(Instance&& instance, Value&& value) const noexcept;
+
+        template < typename Instance >
+        [[nodiscard]] uerror check_gettable_error() const noexcept;
+
+        template < typename Instance >
+        [[nodiscard]] uerror check_gettable_error(Instance&& instance) const noexcept;
+
+        template < typename Instance, typename Value >
+        [[nodiscard]] uerror check_settable_error() const noexcept;
+
+        template < typename Instance, typename Value >
+        [[nodiscard]] uerror check_settable_error(Instance&& instance, Value&& value) const noexcept;
     };
 
     class method final : public state_base<method> {
@@ -315,6 +345,12 @@ namespace meta_hpp
 
         template < typename Instance, typename... Args >
         [[nodiscard]] bool is_invocable_with(Instance&& instance, Args&&... args) const noexcept;
+
+        template < typename Instance, typename... Args >
+        [[nodiscard]] uerror check_invocable_error() const noexcept;
+
+        template < typename Instance, typename... Args >
+        [[nodiscard]] uerror check_invocable_error(Instance&& instance, Args&&... args) const noexcept;
 
         [[nodiscard]] argument get_argument(std::size_t position) const noexcept;
         [[nodiscard]] const argument_list& get_arguments() const noexcept;
@@ -383,6 +419,12 @@ namespace meta_hpp
 
         template < typename Value >
         [[nodiscard]] bool is_settable_with(Value&& value) const noexcept;
+
+        template < typename Value >
+        [[nodiscard]] uerror check_settable_error() const noexcept;
+
+        template < typename Value >
+        [[nodiscard]] uerror check_settable_error(Value&& value) const noexcept;
     };
 }
 

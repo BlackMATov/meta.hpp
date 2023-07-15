@@ -104,7 +104,7 @@ namespace meta_hpp
     void destructor::destroy(Arg&& arg) const {
         using namespace detail;
         type_registry& registry{type_registry::instance()};
-        const uarg varg{registry, std::forward<Arg>(arg)};
+        const uarg varg{registry, META_HPP_FWD(arg)};
         return state_->destroy(varg);
     }
 
@@ -114,13 +114,13 @@ namespace meta_hpp
         type_registry& registry{type_registry::instance()};
 
         {
-            const uarg_base varg{registry, std::forward<Arg>(arg)};
+            const uarg_base varg{registry, META_HPP_FWD(arg)};
             if ( const uerror err = state_->destroy_error(varg) ) {
                 return err;
             }
         }
 
-        const uarg varg{registry, std::forward<Arg>(arg)};
+        const uarg varg{registry, META_HPP_FWD(arg)};
         state_->destroy(varg);
         return uerror{error_code::no_error};
     }
@@ -136,17 +136,27 @@ namespace meta_hpp
 
     template < typename Arg >
     bool destructor::is_invocable_with() const noexcept {
-        using namespace detail;
-        type_registry& registry{type_registry::instance()};
-        const uarg_base varg{registry, type_list<Arg>{}};
-        return !state_->destroy_error(varg);
+        return !check_invocable_error<Arg>();
     }
 
     template < typename Arg >
     bool destructor::is_invocable_with(Arg&& arg) const noexcept {
+        return !check_invocable_error(META_HPP_FWD(arg));
+    }
+
+    template < typename Arg >
+    uerror destructor::check_invocable_error() const noexcept {
         using namespace detail;
         type_registry& registry{type_registry::instance()};
-        const uarg_base varg{registry, std::forward<Arg>(arg)};
-        return !state_->destroy_error(varg);
+        const uarg_base varg{registry, type_list<Arg>{}};
+        return state_->destroy_error(varg);
+    }
+
+    template < typename Arg >
+    uerror destructor::check_invocable_error(Arg&& arg) const noexcept {
+        using namespace detail;
+        type_registry& registry{type_registry::instance()};
+        const uarg_base varg{registry, META_HPP_FWD(arg)};
+        return state_->destroy_error(varg);
     }
 }

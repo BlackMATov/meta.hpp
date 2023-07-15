@@ -158,7 +158,7 @@ namespace meta_hpp
     void variable::set(Value&& value) const {
         using namespace detail;
         type_registry& registry{type_registry::instance()};
-        const uarg vvalue{registry, std::forward<Value>(value)};
+        const uarg vvalue{registry, META_HPP_FWD(value)};
         state_->setter(vvalue);
     }
 
@@ -168,35 +168,45 @@ namespace meta_hpp
         type_registry& registry{type_registry::instance()};
 
         {
-            const uarg_base vvalue{registry, std::forward<Value>(value)};
+            const uarg_base vvalue{registry, META_HPP_FWD(value)};
             if ( const uerror err = state_->setter_error(vvalue) ) {
                 return err;
             }
         }
 
-        const uarg vvalue{registry, std::forward<Value>(value)};
+        const uarg vvalue{registry, META_HPP_FWD(value)};
         state_->setter(vvalue);
         return uerror{error_code::no_error};
     }
 
     template < typename Value >
     void variable::operator()(Value&& value) const {
-        set(std::forward<Value>(value));
+        set(META_HPP_FWD(value));
     }
 
     template < typename Value >
     bool variable::is_settable_with() const noexcept {
-        using namespace detail;
-        type_registry& registry{type_registry::instance()};
-        const uarg_base vvalue{registry, type_list<Value>{}};
-        return !state_->setter_error(vvalue);
+        return !check_settable_error<Value>();
     }
 
     template < typename Value >
     bool variable::is_settable_with(Value&& value) const noexcept {
+        return !check_settable_error(META_HPP_FWD(value));
+    }
+
+    template < typename Value >
+    uerror variable::check_settable_error() const noexcept {
         using namespace detail;
         type_registry& registry{type_registry::instance()};
-        const uarg_base vvalue{registry, std::forward<Value>(value)};
-        return !state_->setter_error(vvalue);
+        const uarg_base vvalue{registry, type_list<Value>{}};
+        return state_->setter_error(vvalue);
+    }
+
+    template < typename Value >
+    uerror variable::check_settable_error(Value&& value) const noexcept {
+        using namespace detail;
+        type_registry& registry{type_registry::instance()};
+        const uarg_base vvalue{registry, META_HPP_FWD(value)};
+        return state_->setter_error(vvalue);
     }
 }
