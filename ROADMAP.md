@@ -5,9 +5,7 @@
 - type conversions
 - non-linear search of methods/functions/...
 - register base types by `META_HPP_ENABLE_POLY_INFO`
-- add the library version to sources
 - fix all includes to work with the library more flexible
-- `try_invoke`/`is_invocable` should return error codes
 - test and support shared libraries
 
 ## Thoughts

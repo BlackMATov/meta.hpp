@@ -157,8 +157,10 @@ namespace meta_hpp
     template < typename... Args >
     uvalue class_type::create(Args&&... args) const {
         for ( const constructor& ctor : data_->constructors ) {
-            if ( ctor.is_invocable_with(std::forward<Args>(args)...) ) {
-                return ctor.create(std::forward<Args>(args)...);
+            if ( ctor.is_invocable_with(META_HPP_FWD(args)...) ) {
+                // there is no 'use after move' here because
+                // 'is_invocable_with' doesn't actually move 'args'
+                return ctor.create(META_HPP_FWD(args)...);
             }
         }
         return uvalue{};
@@ -167,8 +169,10 @@ namespace meta_hpp
     template < typename... Args >
     uvalue class_type::create_at(void* mem, Args&&... args) const {
         for ( const constructor& ctor : data_->constructors ) {
-            if ( ctor.is_invocable_with(std::forward<Args>(args)...) ) {
-                return ctor.create_at(mem, std::forward<Args>(args)...);
+            if ( ctor.is_invocable_with(META_HPP_FWD(args)...) ) {
+                // there is no 'use after move' here because
+                // 'is_invocable_with' doesn't actually move 'args'
+                return ctor.create_at(mem, META_HPP_FWD(args)...);
             }
         }
         return uvalue{};
@@ -177,8 +181,10 @@ namespace meta_hpp
     template < typename Arg >
     bool class_type::destroy(Arg&& arg) const {
         if ( const destructor& dtor = get_destructor() ) {
-            if ( dtor.is_invocable_with(std::forward<Arg>(arg)) ) {
-                dtor.destroy(std::forward<Arg>(arg));
+            if ( dtor.is_invocable_with(META_HPP_FWD(arg)) ) {
+                // there is no 'use after move' here because
+                // 'is_invocable_with' doesn't actually move an 'arg'
+                dtor.destroy(META_HPP_FWD(arg));
                 return true;
             }
         }

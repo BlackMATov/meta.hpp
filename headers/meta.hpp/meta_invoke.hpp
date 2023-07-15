@@ -64,10 +64,22 @@ namespace meta_hpp
     bool is_invocable_with(const function& function, Args&&... args) noexcept;
 
     template < typename... Args, detail::function_pointer_kind Function >
-    bool is_invocable_with(Function) noexcept;
+    bool is_invocable_with(Function function_ptr) noexcept;
 
     template < typename... Args, detail::function_pointer_kind Function >
-    bool is_invocable_with(Function, Args&&... args) noexcept;
+    bool is_invocable_with(Function function_ptr, Args&&... args) noexcept;
+
+    template < typename... Args >
+    uerror check_invocable_error(const function& function) noexcept;
+
+    template < typename... Args >
+    uerror check_invocable_error(const function& function, Args&&... args) noexcept;
+
+    template < typename... Args, detail::function_pointer_kind Function >
+    uerror check_invocable_error(Function function_ptr) noexcept;
+
+    template < typename... Args, detail::function_pointer_kind Function >
+    uerror check_invocable_error(Function function_ptr, Args&&... args) noexcept;
 }
 
 namespace meta_hpp
@@ -79,10 +91,22 @@ namespace meta_hpp
     bool is_invocable_with(const member& member, Instance&& instance) noexcept;
 
     template < typename Instance, detail::member_pointer_kind Member >
-    bool is_invocable_with(Member) noexcept;
+    bool is_invocable_with(Member member_ptr) noexcept;
 
     template < typename Instance, detail::member_pointer_kind Member >
-    bool is_invocable_with(Member, Instance&& instance) noexcept;
+    bool is_invocable_with(Member member_ptr, Instance&& instance) noexcept;
+
+    template < typename Instance >
+    uerror check_invocable_error(const member& member) noexcept;
+
+    template < typename Instance >
+    uerror check_invocable_error(const member& member, Instance&& instance) noexcept;
+
+    template < typename Instance, detail::member_pointer_kind Member >
+    uerror check_invocable_error(Member member_ptr) noexcept;
+
+    template < typename Instance, detail::member_pointer_kind Member >
+    uerror check_invocable_error(Member member_ptr, Instance&& instance) noexcept;
 }
 
 namespace meta_hpp
@@ -94,8 +118,20 @@ namespace meta_hpp
     bool is_invocable_with(const method& method, Instance&& instance, Args&&... args) noexcept;
 
     template < typename Instance, typename... Args, detail::method_pointer_kind Method >
-    bool is_invocable_with(Method) noexcept;
+    bool is_invocable_with(Method method_ptr) noexcept;
 
     template < typename Instance, typename... Args, detail::method_pointer_kind Method >
-    bool is_invocable_with(Method, Instance&& instance, Args&&... args) noexcept;
+    bool is_invocable_with(Method method_ptr, Instance&& instance, Args&&... args) noexcept;
+
+    template < typename Instance, typename... Args >
+    uerror check_invocable_error(const method& method) noexcept;
+
+    template < typename Instance, typename... Args >
+    uerror check_invocable_error(const method& method, Instance&& instance, Args&&... args) noexcept;
+
+    template < typename Instance, typename... Args, detail::method_pointer_kind Method >
+    uerror check_invocable_error(Method method_ptr) noexcept;
+
+    template < typename Instance, typename... Args, detail::method_pointer_kind Method >
+    uerror check_invocable_error(Method method_ptr, Instance&& instance, Args&&... args) noexcept;
 }

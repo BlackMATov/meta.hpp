@@ -226,7 +226,7 @@ namespace meta_hpp
     uvalue member::get(Instance&& instance) const {
         using namespace detail;
         type_registry& registry{type_registry::instance()};
-        const uinst vinst{registry, std::forward<Instance>(instance)};
+        const uinst vinst{registry, META_HPP_FWD(instance)};
         return state_->getter(vinst);
     }
 
@@ -236,27 +236,28 @@ namespace meta_hpp
         type_registry& registry{type_registry::instance()};
 
         {
-            const uinst_base vinst{registry, std::forward<Instance>(instance)};
+            // doesn't actually move an 'instance', just checks conversion errors
+            const uinst_base vinst{registry, META_HPP_FWD(instance)};
             if ( const uerror err = state_->getter_error(vinst) ) {
                 return err;
             }
         }
 
-        const uinst vinst{registry, std::forward<Instance>(instance)};
+        const uinst vinst{registry, META_HPP_FWD(instance)};
         return state_->getter(vinst);
     }
 
     template < typename Instance >
     uvalue member::operator()(Instance&& instance) const {
-        return get(std::forward<Instance>(instance));
+        return get(META_HPP_FWD(instance));
     }
 
     template < typename Instance, typename Value >
     void member::set(Instance&& instance, Value&& value) const {
         using namespace detail;
         type_registry& registry{type_registry::instance()};
-        const uinst vinst{registry, std::forward<Instance>(instance)};
-        const uarg vvalue{registry, std::forward<Value>(value)};
+        const uinst vinst{registry, META_HPP_FWD(instance)};
+        const uarg vvalue{registry, META_HPP_FWD(value)};
         state_->setter(vinst, vvalue);
     }
 
@@ -266,55 +267,76 @@ namespace meta_hpp
         type_registry& registry{type_registry::instance()};
 
         {
-            const uinst_base vinst{registry, std::forward<Instance>(instance)};
-            const uarg_base vvalue{registry, std::forward<Value>(value)};
+            // doesn't actually move an 'instance' and 'args', just checks conversion errors
+            const uinst_base vinst{registry, META_HPP_FWD(instance)};
+            const uarg_base vvalue{registry, META_HPP_FWD(value)};
             if ( const uerror err = state_->setter_error(vinst, vvalue) ) {
                 return err;
             }
         }
 
-        const uinst vinst{registry, std::forward<Instance>(instance)};
-        const uarg vvalue{registry, std::forward<Value>(value)};
+        const uinst vinst{registry, META_HPP_FWD(instance)};
+        const uarg vvalue{registry, META_HPP_FWD(value)};
         state_->setter(vinst, vvalue);
         return uerror{error_code::no_error};
     }
 
     template < typename Instance, typename Value >
     void member::operator()(Instance&& instance, Value&& value) const {
-        set(std::forward<Instance>(instance), std::forward<Value>(value));
+        set(META_HPP_FWD(instance), META_HPP_FWD(value));
     }
 
     template < typename Instance >
     [[nodiscard]] bool member::is_gettable_with() const noexcept {
-        using namespace detail;
-        type_registry& registry{type_registry::instance()};
-        const uinst_base vinst{registry, type_list<Instance>{}};
-        return !state_->getter_error(vinst);
+        return !check_gettable_error<Instance>();
     }
 
     template < typename Instance >
     [[nodiscard]] bool member::is_gettable_with(Instance&& instance) const noexcept {
-        using namespace detail;
-        type_registry& registry{type_registry::instance()};
-        const uinst_base vinst{registry, std::forward<Instance>(instance)};
-        return !state_->getter_error(vinst);
+        return !check_gettable_error(META_HPP_FWD(instance));
     }
 
     template < typename Instance, typename Value >
     [[nodiscard]] bool member::is_settable_with() const noexcept {
-        using namespace detail;
-        type_registry& registry{type_registry::instance()};
-        const uinst_base vinst{registry, type_list<Instance>{}};
-        const uarg_base vvalue{registry, type_list<Value>{}};
-        return !state_->setter_error(vinst, vvalue);
+        return !check_settable_error<Instance, Value>();
     }
 
     template < typename Instance, typename Value >
     [[nodiscard]] bool member::is_settable_with(Instance&& instance, Value&& value) const noexcept {
+        return !check_settable_error(META_HPP_FWD(instance), META_HPP_FWD(value));
+    }
+
+    template < typename Instance >
+    [[nodiscard]] uerror member::check_gettable_error() const noexcept {
         using namespace detail;
         type_registry& registry{type_registry::instance()};
-        const uinst_base vinst{registry, std::forward<Instance>(instance)};
-        const uarg_base vvalue{registry, std::forward<Value>(value)};
-        return !state_->setter_error(vinst, vvalue);
+        const uinst_base vinst{registry, type_list<Instance>{}};
+        return state_->getter_error(vinst);
+    }
+
+    template < typename Instance >
+    [[nodiscard]] uerror member::check_gettable_error(Instance&& instance) const noexcept {
+        using namespace detail;
+        type_registry& registry{type_registry::instance()};
+        const uinst_base vinst{registry, META_HPP_FWD(instance)};
+        return state_->getter_error(vinst);
+    }
+
+    template < typename Instance, typename Value >
+    [[nodiscard]] uerror member::check_settable_error() const noexcept {
+        using namespace detail;
+        type_registry& registry{type_registry::instance()};
+        const uinst_base vinst{registry, type_list<Instance>{}};
+        const uarg_base vvalue{registry, type_list<Value>{}};
+        return state_->setter_error(vinst, vvalue);
+    }
+
+    template < typename Instance, typename Value >
+    [[nodiscard]] uerror member::check_settable_error(Instance&& instance, Value&& value) const noexcept {
+        using namespace detail;
+        type_registry& registry{type_registry::instance()};
+        const uinst_base vinst{registry, META_HPP_FWD(instance)};
+        const uarg_base vvalue{registry, META_HPP_FWD(value)};
+        return state_->setter_error(vinst, vvalue);
     }
 }

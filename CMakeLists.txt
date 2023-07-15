@@ -1,8 +1,40 @@
 cmake_minimum_required(VERSION 3.21 FATAL_ERROR)
 
+#
+# version
+#
+
+file(READ "headers/meta.hpp/meta_base/base.hpp" META_HPP_BASE_HEADER_CONTENT)
+
+set(META_HPP_VERSION_MAJOR_MATCHER "#[\t\r\n ]*define[\t\r\n ]*META_HPP_VERSION_MAJOR[\t\r\n ]*([0-9]+)")
+set(META_HPP_VERSION_MINOR_MATCHER "#[\t\r\n ]*define[\t\r\n ]*META_HPP_VERSION_MINOR[\t\r\n ]*([0-9]+)")
+set(META_HPP_VERSION_PATCH_MATCHER "#[\t\r\n ]*define[\t\r\n ]*META_HPP_VERSION_PATCH[\t\r\n ]*([0-9]+)")
+
+if(META_HPP_BASE_HEADER_CONTENT MATCHES ${META_HPP_VERSION_MAJOR_MATCHER})
+    set(META_HPP_VERSION_MAJOR ${CMAKE_MATCH_1})
+else()
+    message(FATAL_ERROR "meta.hpp: failed to resolve a major version number")
+endif()
+
+if(META_HPP_BASE_HEADER_CONTENT MATCHES ${META_HPP_VERSION_MINOR_MATCHER})
+    set(META_HPP_VERSION_MINOR ${CMAKE_MATCH_1})
+else()
+    message(FATAL_ERROR "meta.hpp: failed to resolve a minor version number")
+endif()
+
+if(META_HPP_BASE_HEADER_CONTENT MATCHES ${META_HPP_VERSION_PATCH_MATCHER})
+    set(META_HPP_VERSION_PATCH ${CMAKE_MATCH_1})
+else()
+    message(FATAL_ERROR "meta.hpp: failed to resolve a patch version number")
+endif()
+
+#
+# project
+#
+
 project(meta.hpp
-    VERSION "0.0.1"
-    DESCRIPTION "C++20 tiny dynamic reflection library"
+    VERSION "${META_HPP_VERSION_MAJOR}.${META_HPP_VERSION_MINOR}.${META_HPP_VERSION_PATCH}"
+    DESCRIPTION "C++20 Dynamic Reflection Library"
     HOMEPAGE_URL "https://github.com/blackmatov/meta.hpp"
     LANGUAGES CXX)
 

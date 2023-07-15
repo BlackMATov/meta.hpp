@@ -160,8 +160,8 @@ namespace meta_hpp
     uvalue method::invoke(Instance&& instance, Args&&... args) const {
         using namespace detail;
         type_registry& registry{type_registry::instance()};
-        const uinst vinst{registry, std::forward<Instance>(instance)};
-        const std::array<uarg, sizeof...(Args)> vargs{uarg{registry, std::forward<Args>(args)}...};
+        const uinst vinst{registry, META_HPP_FWD(instance)};
+        const std::array<uarg, sizeof...(Args)> vargs{uarg{registry, META_HPP_FWD(args)}...};
         return state_->invoke(vinst, vargs);
     }
 
@@ -171,39 +171,50 @@ namespace meta_hpp
         type_registry& registry{type_registry::instance()};
 
         {
-            const uinst_base vinst{registry, std::forward<Instance>(instance)};
-            const std::array<uarg_base, sizeof...(Args)> vargs{uarg_base{registry, std::forward<Args>(args)}...};
+            // doesn't actually move an 'instance' and 'args', just checks conversion errors
+            const uinst_base vinst{registry, META_HPP_FWD(instance)};
+            const std::array<uarg_base, sizeof...(Args)> vargs{uarg_base{registry, META_HPP_FWD(args)}...};
             if ( const uerror err = state_->invoke_error(vinst, vargs) ) {
                 return err;
             }
         }
 
-        const uinst vinst{registry, std::forward<Instance>(instance)};
-        const std::array<uarg, sizeof...(Args)> vargs{uarg{registry, std::forward<Args>(args)}...};
+        const uinst vinst{registry, META_HPP_FWD(instance)};
+        const std::array<uarg, sizeof...(Args)> vargs{uarg{registry, META_HPP_FWD(args)}...};
         return state_->invoke(vinst, vargs);
     }
 
     template < typename Instance, typename... Args >
     uvalue method::operator()(Instance&& instance, Args&&... args) const {
-        return invoke(std::forward<Instance>(instance), std::forward<Args>(args)...);
+        return invoke(META_HPP_FWD(instance), META_HPP_FWD(args)...);
     }
 
     template < typename Instance, typename... Args >
     bool method::is_invocable_with() const noexcept {
-        using namespace detail;
-        type_registry& registry{type_registry::instance()};
-        const uinst_base vinst{registry, type_list<Instance>{}};
-        const std::array<uarg_base, sizeof...(Args)> vargs{uarg_base{registry, type_list<Args>{}}...};
-        return !state_->invoke_error(vinst, vargs);
+        return !check_invocable_error<Instance, Args...>();
     }
 
     template < typename Instance, typename... Args >
     bool method::is_invocable_with(Instance&& instance, Args&&... args) const noexcept {
+        return !check_invocable_error(META_HPP_FWD(instance), META_HPP_FWD(args)...);
+    }
+
+    template < typename Instance, typename... Args >
+    uerror method::check_invocable_error() const noexcept {
         using namespace detail;
         type_registry& registry{type_registry::instance()};
-        const uinst_base vinst{registry, std::forward<Instance>(instance)};
-        const std::array<uarg_base, sizeof...(Args)> vargs{uarg_base{registry, std::forward<Args>(args)}...};
-        return !state_->invoke_error(vinst, vargs);
+        const uinst_base vinst{registry, type_list<Instance>{}};
+        const std::array<uarg_base, sizeof...(Args)> vargs{uarg_base{registry, type_list<Args>{}}...};
+        return state_->invoke_error(vinst, vargs);
+    }
+
+    template < typename Instance, typename... Args >
+    uerror method::check_invocable_error(Instance&& instance, Args&&... args) const noexcept {
+        using namespace detail;
+        type_registry& registry{type_registry::instance()};
+        const uinst_base vinst{registry, META_HPP_FWD(instance)};
+        const std::array<uarg_base, sizeof...(Args)> vargs{uarg_base{registry, META_HPP_FWD(args)}...};
+        return state_->invoke_error(vinst, vargs);
     }
 
     inline argument method::get_argument(std::size_t position) const noexcept {

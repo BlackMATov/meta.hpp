@@ -168,7 +168,7 @@ namespace meta_hpp
     uvalue constructor::create(Args&&... args) const {
         using namespace detail;
         type_registry& registry{type_registry::instance()};
-        const std::array<uarg, sizeof...(Args)> vargs{uarg{registry, std::forward<Args>(args)}...};
+        const std::array<uarg, sizeof...(Args)> vargs{uarg{registry, META_HPP_FWD(args)}...};
         return state_->create(vargs);
     }
 
@@ -178,13 +178,14 @@ namespace meta_hpp
         type_registry& registry{type_registry::instance()};
 
         {
-            const std::array<uarg_base, sizeof...(Args)> vargs{uarg_base{registry, std::forward<Args>(args)}...};
+            // doesn't actually move 'args', just checks conversion errors
+            const std::array<uarg_base, sizeof...(Args)> vargs{uarg_base{registry, META_HPP_FWD(args)}...};
             if ( const uerror err = state_->create_error(vargs) ) {
                 return err;
             }
         }
 
-        const std::array<uarg, sizeof...(Args)> vargs{uarg{registry, std::forward<Args>(args)}...};
+        const std::array<uarg, sizeof...(Args)> vargs{uarg{registry, META_HPP_FWD(args)}...};
         return state_->create(vargs);
     }
 
@@ -192,7 +193,7 @@ namespace meta_hpp
     uvalue constructor::create_at(void* mem, Args&&... args) const {
         using namespace detail;
         type_registry& registry{type_registry::instance()};
-        const std::array<uarg, sizeof...(Args)> vargs{uarg{registry, std::forward<Args>(args)}...};
+        const std::array<uarg, sizeof...(Args)> vargs{uarg{registry, META_HPP_FWD(args)}...};
         return state_->create_at(mem, vargs);
     }
 
@@ -202,30 +203,41 @@ namespace meta_hpp
         type_registry& registry{type_registry::instance()};
 
         {
-            const std::array<uarg_base, sizeof...(Args)> vargs{uarg_base{registry, std::forward<Args>(args)}...};
+            // doesn't actually move 'args', just checks conversion errors
+            const std::array<uarg_base, sizeof...(Args)> vargs{uarg_base{registry, META_HPP_FWD(args)}...};
             if ( const uerror err = state_->create_error(vargs) ) {
                 return err;
             }
         }
 
-        const std::array<uarg, sizeof...(Args)> vargs{uarg{registry, std::forward<Args>(args)}...};
+        const std::array<uarg, sizeof...(Args)> vargs{uarg{registry, META_HPP_FWD(args)}...};
         return state_->create_at(mem, vargs);
     }
 
     template < typename... Args >
     bool constructor::is_invocable_with() const noexcept {
-        using namespace detail;
-        type_registry& registry{type_registry::instance()};
-        const std::array<uarg_base, sizeof...(Args)> vargs{uarg_base{registry, type_list<Args>{}}...};
-        return !state_->create_error(vargs);
+        return !check_invocable_error<Args...>();
     }
 
     template < typename... Args >
     bool constructor::is_invocable_with(Args&&... args) const noexcept {
+        return !check_invocable_error(META_HPP_FWD(args)...);
+    }
+
+    template < typename... Args >
+    uerror constructor::check_invocable_error() const noexcept {
         using namespace detail;
         type_registry& registry{type_registry::instance()};
-        const std::array<uarg_base, sizeof...(Args)> vargs{uarg_base{registry, std::forward<Args>(args)}...};
-        return !state_->create_error(vargs);
+        const std::array<uarg_base, sizeof...(Args)> vargs{uarg_base{registry, type_list<Args>{}}...};
+        return state_->create_error(vargs);
+    }
+
+    template < typename... Args >
+    uerror constructor::check_invocable_error(Args&&... args) const noexcept {
+        using namespace detail;
+        type_registry& registry{type_registry::instance()};
+        const std::array<uarg_base, sizeof...(Args)> vargs{uarg_base{registry, META_HPP_FWD(args)}...};
+        return state_->create_error(vargs);
     }
 
     inline argument constructor::get_argument(std::size_t position) const noexcept {
