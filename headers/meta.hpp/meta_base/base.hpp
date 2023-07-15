@@ -39,6 +39,36 @@
 //
 //
 
+#if !defined(META_HPP_VERSION_MAJOR)
+#    define META_HPP_VERSION_MAJOR 0
+#endif
+
+#if !defined(META_HPP_VERSION_MINOR)
+#    define META_HPP_VERSION_MINOR 0
+#endif
+
+#if !defined(META_HPP_VERSION_PATCH)
+#    define META_HPP_VERSION_PATCH 1
+#endif
+
+//
+//
+//
+
+#if META_HPP_VERSION_MINOR < 0 || META_HPP_VERSION_MINOR > 99
+#    error "meta.hpp: incorrect minor version number"
+#endif
+
+#if META_HPP_VERSION_PATCH < 0 || META_HPP_VERSION_PATCH > 99
+#    error "meta.hpp: incorrect patch version number"
+#endif
+
+#define META_HPP_VERSION META_HPP_VERSION_MAJOR * 10000 + META_HPP_VERSION_MINOR * 100 + META_HPP_VERSION_PATCH
+
+//
+//
+//
+
 #if !defined(META_HPP_NO_EXCEPTIONS) && !defined(__cpp_exceptions)
 #    define META_HPP_NO_EXCEPTIONS
 #endif
@@ -59,15 +89,12 @@
 #    define META_HPP_ASSERT(...) assert(__VA_ARGS__) // NOLINT
 #endif
 
-#if defined(META_HPP_SANITIZERS)
-#    define META_HPP_DEV_ASSERT(...) META_HPP_ASSERT(__VA_ARGS__)
-#else
-#    define META_HPP_DEV_ASSERT(...) (void)0
-#endif
-
-#if !defined(META_HPP_PP_CAT)
-#    define META_HPP_PP_CAT(x, y) META_HPP_PP_CAT_I(x, y)
-#    define META_HPP_PP_CAT_I(x, y) x##y
+#if !defined(META_HPP_DEV_ASSERT)
+#    if defined(META_HPP_SANITIZERS)
+#        define META_HPP_DEV_ASSERT(...) META_HPP_ASSERT(__VA_ARGS__)
+#    else
+#        define META_HPP_DEV_ASSERT(...) (void)0
+#    endif
 #endif
 
 //
