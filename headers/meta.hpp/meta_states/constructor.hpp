@@ -178,6 +178,7 @@ namespace meta_hpp
         type_registry& registry{type_registry::instance()};
 
         {
+            // doesn't actually move 'args', just checks conversion errors
             const std::array<uarg_base, sizeof...(Args)> vargs{uarg_base{registry, META_HPP_FWD(args)}...};
             if ( const uerror err = state_->create_error(vargs) ) {
                 return err;
@@ -202,6 +203,7 @@ namespace meta_hpp
         type_registry& registry{type_registry::instance()};
 
         {
+            // doesn't actually move 'args', just checks conversion errors
             const std::array<uarg_base, sizeof...(Args)> vargs{uarg_base{registry, META_HPP_FWD(args)}...};
             if ( const uerror err = state_->create_error(vargs) ) {
                 return err;

@@ -168,6 +168,7 @@ namespace meta_hpp
         type_registry& registry{type_registry::instance()};
 
         {
+            // doesn't actually move a 'value', just checks conversion errors
             const uarg_base vvalue{registry, META_HPP_FWD(value)};
             if ( const uerror err = state_->setter_error(vvalue) ) {
                 return err;

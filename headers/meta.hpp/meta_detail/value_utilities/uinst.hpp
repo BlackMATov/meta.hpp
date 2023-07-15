@@ -113,18 +113,27 @@ namespace meta_hpp::detail
             requires std::is_same_v<Tp, uvalue>
         explicit uinst(type_registry& registry, T&& v)
         : uinst_base{registry, std::forward<T>(v)}
-        , data_{const_cast<void*>(v.get_data())} {} // NOLINT(*-const-cast)
+        , data_{const_cast<void*>(v.get_data())} { // NOLINT(*-const-cast)
+            // there is no 'use after move' here because
+            // 'uinst_base' doesn't actually move 'v', just gets its type
+        }
 
         template < typename T, typename Tp = std::decay_t<T> >
             requires std::is_same_v<Tp, uresult>
         explicit uinst(type_registry& registry, T&& v)
         : uinst_base{registry, std::forward<T>(v)}
-        , data_{const_cast<void*>(v->get_data())} {} // NOLINT(*-const-cast)
+        , data_{const_cast<void*>(v->get_data())} { // NOLINT(*-const-cast)
+            // there is no 'use after move' here because
+            // 'uinst_base' doesn't actually move 'v', just gets its type
+        }
 
         template < typename T, non_uvalue_family Tp = std::decay_t<T> >
         explicit uinst(type_registry& registry, T&& v)
         : uinst_base{registry, std::forward<T>(v)}
-        , data_{const_cast<std::remove_cvref_t<T>*>(std::addressof(v))} {} // NOLINT(*-const-cast)
+        , data_{const_cast<std::remove_cvref_t<T>*>(std::addressof(v))} { // NOLINT(*-const-cast)
+            // there is no 'use after move' here because
+            // 'uinst_base' doesn't actually move 'v', just gets its type
+        }
 
         template < inst_class_ref_kind Q >
         [[nodiscard]] decltype(auto) cast(type_registry& registry) const;

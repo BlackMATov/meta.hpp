@@ -114,6 +114,7 @@ namespace meta_hpp
         type_registry& registry{type_registry::instance()};
 
         {
+            // doesn't actually move an 'arg', just checks conversion errors
             const uarg_base varg{registry, META_HPP_FWD(arg)};
             if ( const uerror err = state_->destroy_error(varg) ) {
                 return err;

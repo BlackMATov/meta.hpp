@@ -158,8 +158,8 @@ namespace meta_hpp
     uvalue class_type::create(Args&&... args) const {
         for ( const constructor& ctor : data_->constructors ) {
             if ( ctor.is_invocable_with(META_HPP_FWD(args)...) ) {
-                // There is no 'use after move' here because
-                // 'is_invocable_with' doesn't actually move its arguments
+                // there is no 'use after move' here because
+                // 'is_invocable_with' doesn't actually move 'args'
                 return ctor.create(META_HPP_FWD(args)...);
             }
         }
@@ -170,8 +170,8 @@ namespace meta_hpp
     uvalue class_type::create_at(void* mem, Args&&... args) const {
         for ( const constructor& ctor : data_->constructors ) {
             if ( ctor.is_invocable_with(META_HPP_FWD(args)...) ) {
-                // There is no 'use after move' here because
-                // 'is_invocable_with' doesn't actually move its arguments
+                // there is no 'use after move' here because
+                // 'is_invocable_with' doesn't actually move 'args'
                 return ctor.create_at(mem, META_HPP_FWD(args)...);
             }
         }
@@ -182,8 +182,8 @@ namespace meta_hpp
     bool class_type::destroy(Arg&& arg) const {
         if ( const destructor& dtor = get_destructor() ) {
             if ( dtor.is_invocable_with(META_HPP_FWD(arg)) ) {
-                // There is no 'use after move' here because
-                // 'is_invocable_with' doesn't actually move its arguments
+                // there is no 'use after move' here because
+                // 'is_invocable_with' doesn't actually move an 'arg'
                 dtor.destroy(META_HPP_FWD(arg));
                 return true;
             }

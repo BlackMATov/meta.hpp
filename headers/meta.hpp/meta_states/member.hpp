@@ -236,6 +236,7 @@ namespace meta_hpp
         type_registry& registry{type_registry::instance()};
 
         {
+            // doesn't actually move an 'instance', just checks conversion errors
             const uinst_base vinst{registry, META_HPP_FWD(instance)};
             if ( const uerror err = state_->getter_error(vinst) ) {
                 return err;
@@ -266,6 +267,7 @@ namespace meta_hpp
         type_registry& registry{type_registry::instance()};
 
         {
+            // doesn't actually move an 'instance' and 'args', just checks conversion errors
             const uinst_base vinst{registry, META_HPP_FWD(instance)};
             const uarg_base vvalue{registry, META_HPP_FWD(value)};
             if ( const uerror err = state_->setter_error(vinst, vvalue) ) {

@@ -171,6 +171,7 @@ namespace meta_hpp
         type_registry& registry{type_registry::instance()};
 
         {
+            // doesn't actually move an 'instance' and 'args', just checks conversion errors
             const uinst_base vinst{registry, META_HPP_FWD(instance)};
             const std::array<uarg_base, sizeof...(Args)> vargs{uarg_base{registry, META_HPP_FWD(args)}...};
             if ( const uerror err = state_->invoke_error(vinst, vargs) ) {

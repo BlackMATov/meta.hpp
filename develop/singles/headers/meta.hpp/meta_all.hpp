@@ -5969,18 +5969,27 @@ namespace meta_hpp::detail
             requires std::is_same_v<Tp, uvalue>
         explicit uarg(type_registry& registry, T&& v)
         : uarg_base{registry, std::forward<T>(v)}
-        , data_{const_cast<void*>(v.get_data())} {} // NOLINT(*-const-cast)
+        , data_{const_cast<void*>(v.get_data())} { // NOLINT(*-const-cast)
+            // there is no 'use after move' here because
+            // 'uarg_base' doesn't actually move 'v', just gets its type
+        }
 
         template < typename T, typename Tp = std::decay_t<T> >
             requires std::is_same_v<Tp, uresult>
         explicit uarg(type_registry& registry, T&& v)
         : uarg_base{registry, std::forward<T>(v)}
-        , data_{const_cast<void*>(v->get_data())} {} // NOLINT(*-const-cast)
+        , data_{const_cast<void*>(v->get_data())} { // NOLINT(*-const-cast)
+            // there is no 'use after move' here because
+            // 'uarg_base' doesn't actually move 'v', just gets its type
+        }
 
         template < typename T, non_uvalue_family Tp = std::decay_t<T> >
         explicit uarg(type_registry& registry, T&& v)
         : uarg_base{registry, std::forward<T>(v)}
-        , data_{const_cast<std::remove_cvref_t<T>*>(std::addressof(v))} {} // NOLINT(*-const-cast)
+        , data_{const_cast<std::remove_cvref_t<T>*>(std::addressof(v))} { // NOLINT(*-const-cast)
+            // there is no 'use after move' here because
+            // 'uarg_base' doesn't actually move 'v', just gets its type
+        }
 
         template < non_function_pointer_kind To >
         [[nodiscard]] decltype(auto) cast(type_registry& registry) const;
@@ -6408,6 +6417,7 @@ namespace meta_hpp
         type_registry& registry{type_registry::instance()};
 
         {
+            // doesn't actually move 'args', just checks conversion errors
             const std::array<uarg_base, sizeof...(Args)> vargs{uarg_base{registry, META_HPP_FWD(args)}...};
             if ( const uerror err = state_->invoke_error(vargs) ) {
                 return err;
@@ -6558,18 +6568,27 @@ namespace meta_hpp::detail
             requires std::is_same_v<Tp, uvalue>
         explicit uinst(type_registry& registry, T&& v)
         : uinst_base{registry, std::forward<T>(v)}
-        , data_{const_cast<void*>(v.get_data())} {} // NOLINT(*-const-cast)
+        , data_{const_cast<void*>(v.get_data())} { // NOLINT(*-const-cast)
+            // there is no 'use after move' here because
+            // 'uinst_base' doesn't actually move 'v', just gets its type
+        }
 
         template < typename T, typename Tp = std::decay_t<T> >
             requires std::is_same_v<Tp, uresult>
         explicit uinst(type_registry& registry, T&& v)
         : uinst_base{registry, std::forward<T>(v)}
-        , data_{const_cast<void*>(v->get_data())} {} // NOLINT(*-const-cast)
+        , data_{const_cast<void*>(v->get_data())} { // NOLINT(*-const-cast)
+            // there is no 'use after move' here because
+            // 'uinst_base' doesn't actually move 'v', just gets its type
+        }
 
         template < typename T, non_uvalue_family Tp = std::decay_t<T> >
         explicit uinst(type_registry& registry, T&& v)
         : uinst_base{registry, std::forward<T>(v)}
-        , data_{const_cast<std::remove_cvref_t<T>*>(std::addressof(v))} {} // NOLINT(*-const-cast)
+        , data_{const_cast<std::remove_cvref_t<T>*>(std::addressof(v))} { // NOLINT(*-const-cast)
+            // there is no 'use after move' here because
+            // 'uinst_base' doesn't actually move 'v', just gets its type
+        }
 
         template < inst_class_ref_kind Q >
         [[nodiscard]] decltype(auto) cast(type_registry& registry) const;
@@ -6930,6 +6949,7 @@ namespace meta_hpp
         type_registry& registry{type_registry::instance()};
 
         {
+            // doesn't actually move an 'instance', just checks conversion errors
             const uinst_base vinst{registry, META_HPP_FWD(instance)};
             if ( const uerror err = state_->getter_error(vinst) ) {
                 return err;
@@ -6960,6 +6980,7 @@ namespace meta_hpp
         type_registry& registry{type_registry::instance()};
 
         {
+            // doesn't actually move an 'instance' and 'args', just checks conversion errors
             const uinst_base vinst{registry, META_HPP_FWD(instance)};
             const uarg_base vvalue{registry, META_HPP_FWD(value)};
             if ( const uerror err = state_->setter_error(vinst, vvalue) ) {
@@ -7228,6 +7249,7 @@ namespace meta_hpp
         type_registry& registry{type_registry::instance()};
 
         {
+            // doesn't actually move an 'instance' and 'args', just checks conversion errors
             const uinst_base vinst{registry, META_HPP_FWD(instance)};
             const std::array<uarg_base, sizeof...(Args)> vargs{uarg_base{registry, META_HPP_FWD(args)}...};
             if ( const uerror err = state_->invoke_error(vinst, vargs) ) {
@@ -7308,6 +7330,7 @@ namespace meta_hpp
         type_registry& registry{type_registry::instance()};
 
         {
+            // doesn't actually move 'args', just checks conversion errors
             const std::array<uarg_base, sizeof...(Args)> vargs{uarg_base{registry, META_HPP_FWD(args)}...};
             if ( const uerror err = raw_function_invoke_error<Function>(registry, vargs) ) {
                 return err;
@@ -7345,6 +7368,7 @@ namespace meta_hpp
         type_registry& registry{type_registry::instance()};
 
         {
+            // doesn't actually move an 'instance', just checks conversion errors
             const uinst_base vinst{registry, META_HPP_FWD(instance)};
             if ( const uerror err = raw_member_getter_error<Member>(registry, vinst) ) {
                 return err;
@@ -7383,6 +7407,7 @@ namespace meta_hpp
         type_registry& registry{type_registry::instance()};
 
         {
+            // doesn't actually move an 'instance' and 'args', just checks conversion errors
             const uinst_base vinst{registry, META_HPP_FWD(instance)};
             const std::array<uarg_base, sizeof...(Args)> vargs{uarg_base{registry, META_HPP_FWD(args)}...};
             if ( const uerror err = raw_method_invoke_error<Method>(registry, vinst, vargs) ) {
@@ -7777,6 +7802,7 @@ namespace meta_hpp
         type_registry& registry{type_registry::instance()};
 
         {
+            // doesn't actually move 'args', just checks conversion errors
             const std::array<uarg_base, sizeof...(Args)> vargs{uarg_base{registry, META_HPP_FWD(args)}...};
             if ( const uerror err = state_->create_error(vargs) ) {
                 return err;
@@ -7801,6 +7827,7 @@ namespace meta_hpp
         type_registry& registry{type_registry::instance()};
 
         {
+            // doesn't actually move 'args', just checks conversion errors
             const std::array<uarg_base, sizeof...(Args)> vargs{uarg_base{registry, META_HPP_FWD(args)}...};
             if ( const uerror err = state_->create_error(vargs) ) {
                 return err;
@@ -7967,6 +7994,7 @@ namespace meta_hpp
         type_registry& registry{type_registry::instance()};
 
         {
+            // doesn't actually move an 'arg', just checks conversion errors
             const uarg_base varg{registry, META_HPP_FWD(arg)};
             if ( const uerror err = state_->destroy_error(varg) ) {
                 return err;
@@ -8286,6 +8314,7 @@ namespace meta_hpp
         type_registry& registry{type_registry::instance()};
 
         {
+            // doesn't actually move a 'value', just checks conversion errors
             const uarg_base vvalue{registry, META_HPP_FWD(value)};
             if ( const uerror err = state_->setter_error(vvalue) ) {
                 return err;
@@ -8469,8 +8498,8 @@ namespace meta_hpp
     uvalue class_type::create(Args&&... args) const {
         for ( const constructor& ctor : data_->constructors ) {
             if ( ctor.is_invocable_with(META_HPP_FWD(args)...) ) {
-                // There is no 'use after move' here because
-                // 'is_invocable_with' doesn't actually move its arguments
+                // there is no 'use after move' here because
+                // 'is_invocable_with' doesn't actually move 'args'
                 return ctor.create(META_HPP_FWD(args)...);
             }
         }
@@ -8481,8 +8510,8 @@ namespace meta_hpp
     uvalue class_type::create_at(void* mem, Args&&... args) const {
         for ( const constructor& ctor : data_->constructors ) {
             if ( ctor.is_invocable_with(META_HPP_FWD(args)...) ) {
-                // There is no 'use after move' here because
-                // 'is_invocable_with' doesn't actually move its arguments
+                // there is no 'use after move' here because
+                // 'is_invocable_with' doesn't actually move 'args'
                 return ctor.create_at(mem, META_HPP_FWD(args)...);
             }
         }
@@ -8493,8 +8522,8 @@ namespace meta_hpp
     bool class_type::destroy(Arg&& arg) const {
         if ( const destructor& dtor = get_destructor() ) {
             if ( dtor.is_invocable_with(META_HPP_FWD(arg)) ) {
-                // There is no 'use after move' here because
-                // 'is_invocable_with' doesn't actually move its arguments
+                // there is no 'use after move' here because
+                // 'is_invocable_with' doesn't actually move an 'arg'
                 dtor.destroy(META_HPP_FWD(arg));
                 return true;
             }
