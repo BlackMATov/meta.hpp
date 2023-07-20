@@ -1524,9 +1524,6 @@ namespace meta_hpp
            || std::is_same_v<T, uerror>     //
            || std::is_same_v<T, uresult>    //
            || std::is_same_v<T, uvalue>;    //
-
-        template < typename T >
-        concept non_uvalue_family = !uvalue_family<T>;
     }
 }
 
@@ -3132,8 +3129,8 @@ namespace meta_hpp
             typename T,                            //
             typename Tp = std::decay_t<T>,         //
             typename = std::enable_if_t<           //
+                !std::is_same_v<Tp, uvalue> &&     //
                 !detail::is_in_place_type_v<Tp> && //
-                detail::non_uvalue_family<Tp> &&   //
                 std::is_copy_constructible_v<Tp>>> //
         uvalue(T&& val);
 
@@ -3141,7 +3138,7 @@ namespace meta_hpp
             typename T,                            //
             typename Tp = std::decay_t<T>,         //
             typename = std::enable_if_t<           //
-                detail::non_uvalue_family<Tp> &&   //
+                !std::is_same_v<Tp, uvalue> &&     //
                 std::is_copy_constructible_v<Tp>>> //
         uvalue& operator=(T&& val);
 
@@ -3337,8 +3334,8 @@ namespace meta_hpp
             typename T,                            //
             typename Tp = std::decay_t<T>,         //
             typename = std::enable_if_t<           //
+                !std::is_same_v<Tp, uresult> &&    //
                 !detail::is_in_place_type_v<Tp> && //
-                detail::non_uvalue_family<Tp> &&   //
                 std::is_copy_constructible_v<Tp>>> //
         uresult(T&& val);
 
@@ -3346,7 +3343,7 @@ namespace meta_hpp
             typename T,                            //
             typename Tp = std::decay_t<T>,         //
             typename = std::enable_if_t<           //
-                detail::non_uvalue_family<Tp> &&   //
+                !std::is_same_v<Tp, uresult> &&    //
                 std::is_copy_constructible_v<Tp>>> //
         uresult& operator=(T&& val);
 
@@ -5687,13 +5684,13 @@ namespace meta_hpp
 namespace meta_hpp::detail
 {
     template < typename T, typename Tp = std::decay_t<T> >
-    concept arg_lvalue_ref_kind   //
-        = (non_uvalue_family<Tp>) //
+    concept arg_lvalue_ref_kind //
+        = (!uvalue_family<Tp>)  //
         &&(std::is_lvalue_reference_v<T>);
 
     template < typename T, typename Tp = std::decay_t<T> >
-    concept arg_rvalue_ref_kind   //
-        = (non_uvalue_family<Tp>) //
+    concept arg_rvalue_ref_kind //
+        = (!uvalue_family<Tp>)  //
         &&(!std::is_reference_v<T> || std::is_rvalue_reference_v<T>);
 }
 
@@ -5706,13 +5703,13 @@ namespace meta_hpp::detail
 
     template < typename T, typename Tp = std::decay_t<T> >
     concept inst_class_lvalue_ref_kind    //
-        = (non_uvalue_family<Tp>)         //
+        = (!uvalue_family<Tp>)            //
         &&(std::is_lvalue_reference_v<T>) //
         &&(std::is_class_v<std::remove_pointer_t<std::remove_reference_t<T>>>);
 
     template < typename T, typename Tp = std::decay_t<T> >
     concept inst_class_rvalue_ref_kind                               //
-        = (non_uvalue_family<Tp>)                                    //
+        = (!uvalue_family<Tp>)                                       //
         &&(!std::is_reference_v<T> || std::is_rvalue_reference_v<T>) //
         &&(std::is_class_v<std::remove_pointer_t<std::remove_reference_t<T>>>);
 }
@@ -5891,7 +5888,8 @@ namespace meta_hpp::detail
         uarg_base& operator=(uarg_base&&) = delete;
         uarg_base& operator=(const uarg_base&) = delete;
 
-        template < typename T, non_uvalue_family Tp = std::decay_t<T> >
+        template < typename T, typename Tp = std::decay_t<T> >
+            requires(!uvalue_family<Tp>)
         explicit uarg_base(type_registry& registry, T&&)
         : uarg_base{registry, type_list<T&&>{}} {}
 
@@ -5983,7 +5981,8 @@ namespace meta_hpp::detail
             // 'uarg_base' doesn't actually move 'v', just gets its type
         }
 
-        template < typename T, non_uvalue_family Tp = std::decay_t<T> >
+        template < typename T, typename Tp = std::decay_t<T> >
+            requires(!uvalue_family<Tp>)
         explicit uarg(type_registry& registry, T&& v)
         : uarg_base{registry, std::forward<T>(v)}
         , data_{const_cast<std::remove_cvref_t<T>*>(std::addressof(v))} { // NOLINT(*-const-cast)
@@ -6489,7 +6488,8 @@ namespace meta_hpp::detail
         uinst_base& operator=(uinst_base&&) = delete;
         uinst_base& operator=(const uinst_base&) = delete;
 
-        template < typename T, non_uvalue_family Tp = std::decay_t<T> >
+        template < typename T, typename Tp = std::decay_t<T> >
+            requires(!uvalue_family<Tp>)
         explicit uinst_base(type_registry& registry, T&&)
         : uinst_base{registry, type_list<T&&>{}} {}
 
@@ -6582,7 +6582,8 @@ namespace meta_hpp::detail
             // 'uinst_base' doesn't actually move 'v', just gets its type
         }
 
-        template < typename T, non_uvalue_family Tp = std::decay_t<T> >
+        template < typename T, typename Tp = std::decay_t<T> >
+            requires(!uvalue_family<Tp>)
         explicit uinst(type_registry& registry, T&& v)
         : uinst_base{registry, std::forward<T>(v)}
         , data_{const_cast<std::remove_cvref_t<T>*>(std::addressof(v))} { // NOLINT(*-const-cast)
@@ -9507,7 +9508,7 @@ namespace meta_hpp
             }
         }
 
-        static void do_copy(const uvalue& self, uvalue& to) noexcept {
+        static void do_copy(const uvalue& self, uvalue& to) {
             META_HPP_DEV_ASSERT(!to);
 
             auto&& [tag, vtable] = unpack_vtag(self);
@@ -9548,15 +9549,21 @@ namespace meta_hpp
 
             if ( l && r ) {
                 if ( unpack_vtag(l).first == storage_e::external ) {
-                    r = std::exchange(l, std::move(r));
+                    uvalue o;
+                    do_move(std::move(l), o);
+                    do_move(std::move(r), l);
+                    do_move(std::move(o), r);
                 } else {
-                    l = std::exchange(r, std::move(l));
+                    uvalue o;
+                    do_move(std::move(r), o);
+                    do_move(std::move(l), r);
+                    do_move(std::move(o), l);
                 }
             } else {
                 if ( l ) {
-                    r = std::move(l);
+                    do_move(std::move(l), r);
                 } else {
-                    l = std::move(r);
+                    do_move(std::move(r), l);
                 }
             }
         }
@@ -9667,16 +9674,14 @@ namespace meta_hpp
 
     inline uvalue& uvalue::operator=(uvalue&& other) noexcept {
         if ( this != &other ) {
-            vtable_t::do_reset(*this);
-            vtable_t::do_move(std::move(other), *this);
+            uvalue{std::move(other)}.swap(*this);
         }
         return *this;
     }
 
     inline uvalue& uvalue::operator=(const uvalue& other) {
         if ( this != &other ) {
-            vtable_t::do_reset(*this);
-            vtable_t::do_copy(other, *this);
+            uvalue{other}.swap(*this);
         }
         return *this;
     }
@@ -9688,8 +9693,7 @@ namespace meta_hpp
 
     template < typename T, typename Tp, typename >
     uvalue& uvalue::operator=(T&& val) {
-        vtable_t::do_reset(*this);
-        vtable_t::do_ctor<T>(*this, std::forward<T>(val));
+        uvalue{std::forward<T>(val)}.swap(*this);
         return *this;
     }
 

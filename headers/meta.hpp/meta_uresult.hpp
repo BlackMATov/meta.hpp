@@ -83,8 +83,8 @@ namespace meta_hpp
             typename T,                            //
             typename Tp = std::decay_t<T>,         //
             typename = std::enable_if_t<           //
+                !std::is_same_v<Tp, uresult> &&    //
                 !detail::is_in_place_type_v<Tp> && //
-                detail::non_uvalue_family<Tp> &&   //
                 std::is_copy_constructible_v<Tp>>> //
         uresult(T&& val);
 
@@ -92,7 +92,7 @@ namespace meta_hpp
             typename T,                            //
             typename Tp = std::decay_t<T>,         //
             typename = std::enable_if_t<           //
-                detail::non_uvalue_family<Tp> &&   //
+                !std::is_same_v<Tp, uresult> &&    //
                 std::is_copy_constructible_v<Tp>>> //
         uresult& operator=(T&& val);
 
