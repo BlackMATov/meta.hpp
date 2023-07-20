@@ -34,7 +34,8 @@ namespace meta_hpp::detail
         uarg_base& operator=(uarg_base&&) = delete;
         uarg_base& operator=(const uarg_base&) = delete;
 
-        template < typename T, non_uvalue_family Tp = std::decay_t<T> >
+        template < typename T, typename Tp = std::decay_t<T> >
+            requires(!uvalue_family<Tp>)
         explicit uarg_base(type_registry& registry, T&&)
         : uarg_base{registry, type_list<T&&>{}} {}
 
@@ -126,7 +127,8 @@ namespace meta_hpp::detail
             // 'uarg_base' doesn't actually move 'v', just gets its type
         }
 
-        template < typename T, non_uvalue_family Tp = std::decay_t<T> >
+        template < typename T, typename Tp = std::decay_t<T> >
+            requires(!uvalue_family<Tp>)
         explicit uarg(type_registry& registry, T&& v)
         : uarg_base{registry, std::forward<T>(v)}
         , data_{const_cast<std::remove_cvref_t<T>*>(std::addressof(v))} { // NOLINT(*-const-cast)
