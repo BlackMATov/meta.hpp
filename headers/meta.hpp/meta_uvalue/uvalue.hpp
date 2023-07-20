@@ -111,7 +111,7 @@ namespace meta_hpp
             }
         }
 
-        static void do_copy(const uvalue& self, uvalue& to) noexcept {
+        static void do_copy(const uvalue& self, uvalue& to) {
             META_HPP_DEV_ASSERT(!to);
 
             auto&& [tag, vtable] = unpack_vtag(self);
@@ -152,15 +152,21 @@ namespace meta_hpp
 
             if ( l && r ) {
                 if ( unpack_vtag(l).first == storage_e::external ) {
-                    r = std::exchange(l, std::move(r));
+                    uvalue o;
+                    do_move(std::move(l), o);
+                    do_move(std::move(r), l);
+                    do_move(std::move(o), r);
                 } else {
-                    l = std::exchange(r, std::move(l));
+                    uvalue o;
+                    do_move(std::move(r), o);
+                    do_move(std::move(l), r);
+                    do_move(std::move(o), l);
                 }
             } else {
                 if ( l ) {
-                    r = std::move(l);
+                    do_move(std::move(l), r);
                 } else {
-                    l = std::move(r);
+                    do_move(std::move(r), l);
                 }
             }
         }
@@ -271,16 +277,14 @@ namespace meta_hpp
 
     inline uvalue& uvalue::operator=(uvalue&& other) noexcept {
         if ( this != &other ) {
-            vtable_t::do_reset(*this);
-            vtable_t::do_move(std::move(other), *this);
+            uvalue{std::move(other)}.swap(*this);
         }
         return *this;
     }
 
     inline uvalue& uvalue::operator=(const uvalue& other) {
         if ( this != &other ) {
-            vtable_t::do_reset(*this);
-            vtable_t::do_copy(other, *this);
+            uvalue{other}.swap(*this);
         }
         return *this;
     }
@@ -292,8 +296,7 @@ namespace meta_hpp
 
     template < typename T, typename Tp, typename >
     uvalue& uvalue::operator=(T&& val) {
-        vtable_t::do_reset(*this);
-        vtable_t::do_ctor<T>(*this, std::forward<T>(val));
+        uvalue{std::forward<T>(val)}.swap(*this);
         return *this;
     }
 

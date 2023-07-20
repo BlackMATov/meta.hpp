@@ -381,7 +381,7 @@ TEST_CASE("meta/meta_utilities/value") {
 
         val_dst = std::move(val_src2);
         CHECK(val_dst.as<ivec2>() == ivec2{1,2});
-        CHECK(ivec2::move_constructor_counter == 2);
+        CHECK(ivec2::move_constructor_counter == 3);
         CHECK(ivec2::copy_constructor_counter == 0);
     }
 
@@ -400,7 +400,7 @@ TEST_CASE("meta/meta_utilities/value") {
 
         val_dst = val_src2;
         CHECK(val_dst.as<ivec2>() == ivec2{1,2});
-        CHECK(ivec2::move_constructor_counter == 1);
+        CHECK(ivec2::move_constructor_counter == 2);
         CHECK(ivec2::copy_constructor_counter == 1);
 
         CHECK(val_src2.as<ivec2>() == ivec2{1,2});
