@@ -9,6 +9,8 @@
 #include "meta_base.hpp"
 #include "meta_registry.hpp"
 #include "meta_states.hpp"
+#include "meta_types.hpp"
+#include "meta_uvalue.hpp"
 
 namespace meta_hpp::detail
 {

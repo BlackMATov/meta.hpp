@@ -19,3 +19,9 @@ target_link_libraries(${PROJECT_NAME}.singles PRIVATE
     meta.hpp.vendors::gbench
     meta.hpp.vendors::rttr
     meta.hpp.vendors::vmath.hpp)
+
+target_compile_definitions(${PROJECT_NAME} PRIVATE
+    META_HPP_HEADERS_BUILD)
+
+target_compile_definitions(${PROJECT_NAME}.singles PRIVATE
+    META_HPP_SINGLES_BUILD)

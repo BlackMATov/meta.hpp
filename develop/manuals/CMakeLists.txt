@@ -18,5 +18,11 @@ target_link_libraries(${PROJECT_NAME}.singles PRIVATE
     meta.hpp.vendors::doctest
     meta.hpp.vendors::fmt)
 
+target_compile_definitions(${PROJECT_NAME} PRIVATE
+    META_HPP_HEADERS_BUILD)
+
+target_compile_definitions(${PROJECT_NAME}.singles PRIVATE
+    META_HPP_SINGLES_BUILD)
+
 add_test(${PROJECT_NAME} ${PROJECT_NAME})
 add_test(${PROJECT_NAME} ${PROJECT_NAME}.singles)

@@ -7,6 +7,7 @@
 #pragma once
 
 #include "meta_base.hpp"
+#include "meta_uvalue.hpp"
 
 #include "meta_detail/type_family.hpp"
 
@@ -466,7 +467,7 @@ namespace meta_hpp::detail
         const type_kind kind;
         // NOLINTEND(*-avoid-const-or-ref-data-members)
 
-        metadata_map metadata{};
+        metadata_map metadata;
 
         explicit type_data_base(type_kind nkind)
         : kind{nkind} {}

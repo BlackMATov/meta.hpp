@@ -8,6 +8,7 @@
 
 #include "meta_base.hpp"
 #include "meta_states.hpp"
+#include "meta_uresult.hpp"
 #include "meta_uvalue.hpp"
 
 namespace meta_hpp
