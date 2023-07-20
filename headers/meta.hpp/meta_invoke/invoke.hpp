@@ -9,6 +9,8 @@
 #include "../meta_base.hpp"
 #include "../meta_invoke.hpp"
 #include "../meta_states.hpp"
+#include "../meta_uresult.hpp"
+#include "../meta_uvalue.hpp"
 
 #include "../meta_states/function.hpp"
 #include "../meta_states/member.hpp"
