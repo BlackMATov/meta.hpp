@@ -1513,18 +1513,15 @@ namespace meta_hpp
         class uinst;
     }
 
-    namespace detail
-    {
-        template < typename T >
-        concept uvalue_family               //
-            = std::is_same_v<T, uarg_base>  //
-           || std::is_same_v<T, uarg>       //
-           || std::is_same_v<T, uinst_base> //
-           || std::is_same_v<T, uinst>      //
-           || std::is_same_v<T, uerror>     //
-           || std::is_same_v<T, uresult>    //
-           || std::is_same_v<T, uvalue>;    //
-    }
+    template < typename T >
+    concept uvalue_family                       //
+        = std::is_same_v<T, uerror>             //
+       || std::is_same_v<T, uresult>            //
+       || std::is_same_v<T, uvalue>             //
+       || std::is_same_v<T, detail::uarg_base>  //
+       || std::is_same_v<T, detail::uarg>       //
+       || std::is_same_v<T, detail::uinst_base> //
+       || std::is_same_v<T, detail::uinst>;     //
 }
 
 namespace meta_hpp
@@ -1562,20 +1559,17 @@ namespace meta_hpp
         using variable_state_ptr = intrusive_ptr<variable_state>;
     }
 
-    namespace detail
-    {
-        template < typename T >
-        concept state_family                 //
-            = std::is_same_v<T, argument>    //
-           || std::is_same_v<T, constructor> //
-           || std::is_same_v<T, destructor>  //
-           || std::is_same_v<T, evalue>      //
-           || std::is_same_v<T, function>    //
-           || std::is_same_v<T, member>      //
-           || std::is_same_v<T, method>      //
-           || std::is_same_v<T, scope>       //
-           || std::is_same_v<T, variable>;   //
-    }
+    template < typename T >
+    concept state_family                 //
+        = std::is_same_v<T, argument>    //
+       || std::is_same_v<T, constructor> //
+       || std::is_same_v<T, destructor>  //
+       || std::is_same_v<T, evalue>      //
+       || std::is_same_v<T, function>    //
+       || std::is_same_v<T, member>      //
+       || std::is_same_v<T, method>      //
+       || std::is_same_v<T, scope>       //
+       || std::is_same_v<T, variable>;   //
 }
 
 namespace meta_hpp
@@ -1613,25 +1607,22 @@ namespace meta_hpp
         struct void_type_data;
     }
 
-    namespace detail
-    {
-        template < typename T >
-        concept type_family                       //
-            = std::is_same_v<T, any_type>         //
-           || std::is_same_v<T, array_type>       //
-           || std::is_same_v<T, class_type>       //
-           || std::is_same_v<T, constructor_type> //
-           || std::is_same_v<T, destructor_type>  //
-           || std::is_same_v<T, enum_type>        //
-           || std::is_same_v<T, function_type>    //
-           || std::is_same_v<T, member_type>      //
-           || std::is_same_v<T, method_type>      //
-           || std::is_same_v<T, nullptr_type>     //
-           || std::is_same_v<T, number_type>      //
-           || std::is_same_v<T, pointer_type>     //
-           || std::is_same_v<T, reference_type>   //
-           || std::is_same_v<T, void_type>;       //
-    }
+    template < typename T >
+    concept type_family                       //
+        = std::is_same_v<T, any_type>         //
+       || std::is_same_v<T, array_type>       //
+       || std::is_same_v<T, class_type>       //
+       || std::is_same_v<T, constructor_type> //
+       || std::is_same_v<T, destructor_type>  //
+       || std::is_same_v<T, enum_type>        //
+       || std::is_same_v<T, function_type>    //
+       || std::is_same_v<T, member_type>      //
+       || std::is_same_v<T, method_type>      //
+       || std::is_same_v<T, nullptr_type>     //
+       || std::is_same_v<T, number_type>      //
+       || std::is_same_v<T, pointer_type>     //
+       || std::is_same_v<T, reference_type>   //
+       || std::is_same_v<T, void_type>;       //
 }
 
 namespace meta_hpp
@@ -1646,20 +1637,17 @@ namespace meta_hpp
     class scope_index;
     class variable_index;
 
-    namespace detail
-    {
-        template < typename T >
-        concept index_family                       //
-            = std::is_same_v<T, argument_index>    //
-           || std::is_same_v<T, constructor_index> //
-           || std::is_same_v<T, destructor_index>  //
-           || std::is_same_v<T, evalue_index>      //
-           || std::is_same_v<T, function_index>    //
-           || std::is_same_v<T, member_index>      //
-           || std::is_same_v<T, method_index>      //
-           || std::is_same_v<T, scope_index>       //
-           || std::is_same_v<T, variable_index>;   //
-    }
+    template < typename T >
+    concept index_family                       //
+        = std::is_same_v<T, argument_index>    //
+       || std::is_same_v<T, constructor_index> //
+       || std::is_same_v<T, destructor_index>  //
+       || std::is_same_v<T, evalue_index>      //
+       || std::is_same_v<T, function_index>    //
+       || std::is_same_v<T, member_index>      //
+       || std::is_same_v<T, method_index>      //
+       || std::is_same_v<T, scope_index>       //
+       || std::is_same_v<T, variable_index>;   //
 }
 
 namespace meta_hpp
@@ -1700,7 +1688,7 @@ namespace meta_hpp
             typename T,                            //
             typename Tp = std::decay_t<T>,         //
             typename = std::enable_if_t<           //
-                !std::is_same_v<Tp, uvalue> &&     //
+                !uvalue_family<Tp> &&              //
                 !detail::is_in_place_type_v<Tp> && //
                 std::is_copy_constructible_v<Tp>>> //
         uvalue(T&& val);
@@ -1709,7 +1697,7 @@ namespace meta_hpp
             typename T,                            //
             typename Tp = std::decay_t<T>,         //
             typename = std::enable_if_t<           //
-                !std::is_same_v<Tp, uvalue> &&     //
+                !uvalue_family<Tp> &&              //
                 std::is_copy_constructible_v<Tp>>> //
         uvalue& operator=(T&& val);
 
@@ -2495,7 +2483,7 @@ namespace meta_hpp
         [[nodiscard]] std::strong_ordering operator<=>(const type_id& other) const = default;
 
     private:
-        template < detail::type_family T >
+        template < type_family T >
         friend class type_base;
 
         explicit type_id(const detail::type_data_base* data)
@@ -2518,7 +2506,7 @@ namespace std
 
 namespace meta_hpp
 {
-    template < detail::type_family Type >
+    template < type_family Type >
     class type_base {
         using data_ptr = typename detail::type_traits<Type>::data_ptr;
         friend data_ptr detail::type_access<Type>(const Type&);
@@ -2570,14 +2558,14 @@ namespace meta_hpp
     public:
         using type_base<any_type>::type_base;
 
-        template < detail::type_family Type >
+        template < type_family Type >
         any_type(const Type& other) noexcept;
 
-        template < detail::type_family Type >
+        template < type_family Type >
         [[nodiscard]] bool is() const noexcept;
         [[nodiscard]] bool is(type_kind kind) const noexcept;
 
-        template < detail::type_family Type >
+        template < type_family Type >
         [[nodiscard]] Type as() const noexcept;
 
         [[nodiscard]] bool is_array() const noexcept;
@@ -2846,7 +2834,7 @@ namespace meta_hpp
 
 namespace std
 {
-    template < meta_hpp::detail::type_family Type >
+    template < meta_hpp::type_family Type >
     struct hash<Type> {
         size_t operator()(const Type& type) const noexcept {
             return type.is_valid() ? type.get_id().get_hash() : 0;
@@ -2856,12 +2844,12 @@ namespace std
 
 namespace meta_hpp
 {
-    template < detail::type_family TypeL, detail::type_family TypeR >
+    template < type_family TypeL, type_family TypeR >
     [[nodiscard]] bool operator==(const TypeL& l, const TypeR& r) noexcept {
         return l.is_valid() == r.is_valid() && (!l.is_valid() || l.get_id() == r.get_id());
     }
 
-    template < detail::type_family TypeL, detail::type_family TypeR >
+    template < type_family TypeL, type_family TypeR >
     [[nodiscard]] std::strong_ordering operator<=>(const TypeL& l, const TypeR& r) noexcept {
         if ( const std::strong_ordering cmp{l.is_valid() <=> r.is_valid()}; cmp != std::strong_ordering::equal ) {
             return cmp;
@@ -2872,12 +2860,12 @@ namespace meta_hpp
 
 namespace meta_hpp
 {
-    template < detail::type_family Type >
+    template < type_family Type >
     [[nodiscard]] bool operator==(const Type& l, const typename Type::id_type& r) noexcept {
         return l.is_valid() && l.get_id() == r;
     }
 
-    template < detail::type_family Type >
+    template < type_family Type >
     [[nodiscard]] std::strong_ordering operator<=>(const Type& l, const typename Type::id_type& r) noexcept {
         return l.is_valid() ? l.get_id() <=> r : std::strong_ordering::less;
     }
@@ -3244,7 +3232,7 @@ namespace meta_hpp
         std::string name_;
     };
 
-    template < detail::index_family Index >
+    template < index_family Index >
     void swap(Index& l, Index& r) noexcept {
         l.swap(r);
     }
@@ -3252,7 +3240,7 @@ namespace meta_hpp
 
 namespace std
 {
-    template < meta_hpp::detail::index_family Index >
+    template < meta_hpp::index_family Index >
     struct hash<Index> {
         size_t operator()(const Index& index) const noexcept {
             return index.get_hash();
@@ -3334,7 +3322,7 @@ namespace meta_hpp
             typename T,                            //
             typename Tp = std::decay_t<T>,         //
             typename = std::enable_if_t<           //
-                !std::is_same_v<Tp, uresult> &&    //
+                !uvalue_family<Tp> &&              //
                 !detail::is_in_place_type_v<Tp> && //
                 std::is_copy_constructible_v<Tp>>> //
         uresult(T&& val);
@@ -3343,7 +3331,7 @@ namespace meta_hpp
             typename T,                            //
             typename Tp = std::decay_t<T>,         //
             typename = std::enable_if_t<           //
-                !std::is_same_v<Tp, uresult> &&    //
+                !uvalue_family<Tp> &&              //
                 std::is_copy_constructible_v<Tp>>> //
         uresult& operator=(T&& val);
 
@@ -3577,7 +3565,7 @@ namespace meta_hpp
 
 namespace meta_hpp
 {
-    template < detail::state_family State >
+    template < state_family State >
     class state_base {
         using state_ptr = typename detail::state_traits<State>::state_ptr;
         friend state_ptr detail::state_access<State>(const State&);
@@ -3893,7 +3881,7 @@ namespace meta_hpp
 
 namespace std
 {
-    template < meta_hpp::detail::state_family State >
+    template < meta_hpp::state_family State >
     struct hash<State> {
         size_t operator()(const State& state) const noexcept {
             return state.is_valid() ? state.get_index().get_hash() : 0;
@@ -3903,12 +3891,12 @@ namespace std
 
 namespace meta_hpp
 {
-    template < detail::state_family State >
+    template < state_family State >
     [[nodiscard]] bool operator==(const State& l, const State& r) noexcept {
         return l.is_valid() == r.is_valid() && (!l.is_valid() || l.get_index() == r.get_index());
     }
 
-    template < detail::state_family State >
+    template < state_family State >
     [[nodiscard]] std::strong_ordering operator<=>(const State& l, const State& r) noexcept {
         if ( const std::strong_ordering cmp{l.is_valid() <=> r.is_valid()}; cmp != std::strong_ordering::equal ) {
             return cmp;
@@ -3919,12 +3907,12 @@ namespace meta_hpp
 
 namespace meta_hpp
 {
-    template < detail::state_family State >
+    template < state_family State >
     [[nodiscard]] bool operator==(const State& l, const typename State::index_type& r) noexcept {
         return l.is_valid() && l.get_index() == r;
     }
 
-    template < detail::state_family State >
+    template < state_family State >
     [[nodiscard]] std::strong_ordering operator<=>(const State& l, const typename State::index_type& r) noexcept {
         return l.is_valid() ? l.get_index() <=> r : std::strong_ordering::less;
     }
@@ -4333,7 +4321,7 @@ namespace meta_hpp::detail
 
 namespace meta_hpp
 {
-    template < detail::type_family Type = any_type, typename F >
+    template < type_family Type = any_type, typename F >
     void for_each_type(F&& f) {
         using namespace detail;
         type_registry& registry = type_registry::instance();
@@ -4498,7 +4486,7 @@ namespace meta_hpp
 
 namespace meta_hpp
 {
-    template < detail::type_family Type >
+    template < type_family Type >
     class type_bind_base {
     public:
         explicit type_bind_base(const Type& type, metadata_map metadata)
@@ -4523,7 +4511,7 @@ namespace meta_hpp
         detail::type_registry::locker locker_;
     };
 
-    template < detail::state_family State >
+    template < state_family State >
     class state_bind_base {
     public:
         explicit state_bind_base(const State& state, metadata_map metadata)
@@ -8952,11 +8940,11 @@ namespace meta_hpp
 
 namespace meta_hpp
 {
-    template < detail::type_family Type >
+    template < type_family Type >
     any_type::any_type(const Type& other) noexcept
     : any_type{detail::type_access(other)} {}
 
-    template < detail::type_family Type >
+    template < type_family Type >
     bool any_type::is() const noexcept {
         if constexpr ( std::is_same_v<Type, any_type> ) {
             return data_ != nullptr;
@@ -8969,7 +8957,7 @@ namespace meta_hpp
         return data_ != nullptr && data_->kind == kind;
     }
 
-    template < detail::type_family Type >
+    template < type_family Type >
     Type any_type::as() const noexcept {
         if constexpr ( std::is_same_v<Type, any_type> ) {
             return *this;

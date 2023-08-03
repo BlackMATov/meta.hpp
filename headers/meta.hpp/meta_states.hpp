@@ -114,7 +114,7 @@ namespace meta_hpp
 
 namespace meta_hpp
 {
-    template < detail::state_family State >
+    template < state_family State >
     class state_base {
         using state_ptr = typename detail::state_traits<State>::state_ptr;
         friend state_ptr detail::state_access<State>(const State&);
@@ -430,7 +430,7 @@ namespace meta_hpp
 
 namespace std
 {
-    template < meta_hpp::detail::state_family State >
+    template < meta_hpp::state_family State >
     struct hash<State> {
         size_t operator()(const State& state) const noexcept {
             return state.is_valid() ? state.get_index().get_hash() : 0;
@@ -440,12 +440,12 @@ namespace std
 
 namespace meta_hpp
 {
-    template < detail::state_family State >
+    template < state_family State >
     [[nodiscard]] bool operator==(const State& l, const State& r) noexcept {
         return l.is_valid() == r.is_valid() && (!l.is_valid() || l.get_index() == r.get_index());
     }
 
-    template < detail::state_family State >
+    template < state_family State >
     [[nodiscard]] std::strong_ordering operator<=>(const State& l, const State& r) noexcept {
         if ( const std::strong_ordering cmp{l.is_valid() <=> r.is_valid()}; cmp != std::strong_ordering::equal ) {
             return cmp;
@@ -456,12 +456,12 @@ namespace meta_hpp
 
 namespace meta_hpp
 {
-    template < detail::state_family State >
+    template < state_family State >
     [[nodiscard]] bool operator==(const State& l, const typename State::index_type& r) noexcept {
         return l.is_valid() && l.get_index() == r;
     }
 
-    template < detail::state_family State >
+    template < state_family State >
     [[nodiscard]] std::strong_ordering operator<=>(const State& l, const typename State::index_type& r) noexcept {
         return l.is_valid() ? l.get_index() <=> r : std::strong_ordering::less;
     }

@@ -72,7 +72,7 @@ namespace meta_hpp
         [[nodiscard]] std::strong_ordering operator<=>(const type_id& other) const = default;
 
     private:
-        template < detail::type_family T >
+        template < type_family T >
         friend class type_base;
 
         explicit type_id(const detail::type_data_base* data)
@@ -95,7 +95,7 @@ namespace std
 
 namespace meta_hpp
 {
-    template < detail::type_family Type >
+    template < type_family Type >
     class type_base {
         using data_ptr = typename detail::type_traits<Type>::data_ptr;
         friend data_ptr detail::type_access<Type>(const Type&);
@@ -147,14 +147,14 @@ namespace meta_hpp
     public:
         using type_base<any_type>::type_base;
 
-        template < detail::type_family Type >
+        template < type_family Type >
         any_type(const Type& other) noexcept;
 
-        template < detail::type_family Type >
+        template < type_family Type >
         [[nodiscard]] bool is() const noexcept;
         [[nodiscard]] bool is(type_kind kind) const noexcept;
 
-        template < detail::type_family Type >
+        template < type_family Type >
         [[nodiscard]] Type as() const noexcept;
 
         [[nodiscard]] bool is_array() const noexcept;
@@ -423,7 +423,7 @@ namespace meta_hpp
 
 namespace std
 {
-    template < meta_hpp::detail::type_family Type >
+    template < meta_hpp::type_family Type >
     struct hash<Type> {
         size_t operator()(const Type& type) const noexcept {
             return type.is_valid() ? type.get_id().get_hash() : 0;
@@ -433,12 +433,12 @@ namespace std
 
 namespace meta_hpp
 {
-    template < detail::type_family TypeL, detail::type_family TypeR >
+    template < type_family TypeL, type_family TypeR >
     [[nodiscard]] bool operator==(const TypeL& l, const TypeR& r) noexcept {
         return l.is_valid() == r.is_valid() && (!l.is_valid() || l.get_id() == r.get_id());
     }
 
-    template < detail::type_family TypeL, detail::type_family TypeR >
+    template < type_family TypeL, type_family TypeR >
     [[nodiscard]] std::strong_ordering operator<=>(const TypeL& l, const TypeR& r) noexcept {
         if ( const std::strong_ordering cmp{l.is_valid() <=> r.is_valid()}; cmp != std::strong_ordering::equal ) {
             return cmp;
@@ -449,12 +449,12 @@ namespace meta_hpp
 
 namespace meta_hpp
 {
-    template < detail::type_family Type >
+    template < type_family Type >
     [[nodiscard]] bool operator==(const Type& l, const typename Type::id_type& r) noexcept {
         return l.is_valid() && l.get_id() == r;
     }
 
-    template < detail::type_family Type >
+    template < type_family Type >
     [[nodiscard]] std::strong_ordering operator<=>(const Type& l, const typename Type::id_type& r) noexcept {
         return l.is_valid() ? l.get_id() <=> r : std::strong_ordering::less;
     }

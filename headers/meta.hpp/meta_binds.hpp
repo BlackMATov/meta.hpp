@@ -10,7 +10,6 @@
 #include "meta_registry.hpp"
 #include "meta_states.hpp"
 #include "meta_types.hpp"
-#include "meta_uvalue.hpp"
 
 namespace meta_hpp::detail
 {
@@ -82,7 +81,7 @@ namespace meta_hpp
 
 namespace meta_hpp
 {
-    template < detail::type_family Type >
+    template < type_family Type >
     class type_bind_base {
     public:
         explicit type_bind_base(const Type& type, metadata_map metadata)
@@ -107,7 +106,7 @@ namespace meta_hpp
         detail::type_registry::locker locker_;
     };
 
-    template < detail::state_family State >
+    template < state_family State >
     class state_bind_base {
     public:
         explicit state_bind_base(const State& state, metadata_map metadata)

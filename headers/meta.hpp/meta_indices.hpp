@@ -169,7 +169,7 @@ namespace meta_hpp
         std::string name_;
     };
 
-    template < detail::index_family Index >
+    template < index_family Index >
     void swap(Index& l, Index& r) noexcept {
         l.swap(r);
     }
@@ -177,7 +177,7 @@ namespace meta_hpp
 
 namespace std
 {
-    template < meta_hpp::detail::index_family Index >
+    template < meta_hpp::index_family Index >
     struct hash<Index> {
         size_t operator()(const Index& index) const noexcept {
             return index.get_hash();

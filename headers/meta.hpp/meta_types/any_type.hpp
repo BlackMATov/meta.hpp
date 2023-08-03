@@ -11,11 +11,11 @@
 
 namespace meta_hpp
 {
-    template < detail::type_family Type >
+    template < type_family Type >
     any_type::any_type(const Type& other) noexcept
     : any_type{detail::type_access(other)} {}
 
-    template < detail::type_family Type >
+    template < type_family Type >
     bool any_type::is() const noexcept {
         if constexpr ( std::is_same_v<Type, any_type> ) {
             return data_ != nullptr;
@@ -28,7 +28,7 @@ namespace meta_hpp
         return data_ != nullptr && data_->kind == kind;
     }
 
-    template < detail::type_family Type >
+    template < type_family Type >
     Type any_type::as() const noexcept {
         if constexpr ( std::is_same_v<Type, any_type> ) {
             return *this;
