@@ -15,7 +15,7 @@ namespace meta_hpp
     inline scope_index::scope_index(std::string name)
     : name_{std::move(name)} {}
 
-    inline std::string&& scope_index::get_name() && noexcept {
+    inline std::string scope_index::get_name() && noexcept {
         return std::move(name_);
     }
 

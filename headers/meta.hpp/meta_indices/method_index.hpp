@@ -20,7 +20,7 @@ namespace meta_hpp
         return type_;
     }
 
-    inline std::string&& method_index::get_name() && noexcept {
+    inline std::string method_index::get_name() && noexcept {
         return std::move(name_);
     }
 
