@@ -4447,42 +4447,79 @@ namespace meta_hpp::detail
 
 namespace meta_hpp
 {
-    struct argument_opts final {
-        std::string name{};
-        metadata_map metadata{};
+    class argument_info final {
+    public:
+        argument_info() = default;
+        ~argument_info() = default;
+
+        argument_info(argument_info&& other) = default;
+        argument_info& operator=(argument_info&&) = default;
+
+        argument_info(const argument_info&) = delete;
+        argument_info& operator=(const argument_info&) = delete;
+
+        argument_info(std::string name)
+        : name_{std::move(name)} {}
+
+        argument_info(std::string name, metadata_map metadata)
+        : name_{std::move(name)}
+        , metadata_{std::move(metadata)} {}
+
+        [[nodiscard]] std::string& get_name() {
+            return name_;
+        }
+
+        [[nodiscard]] const std::string& get_name() const {
+            return name_;
+        }
+
+        [[nodiscard]] metadata_map& get_metadata() {
+            return metadata_;
+        }
+
+        [[nodiscard]] const metadata_map& get_metadata() const {
+            return metadata_;
+        }
+
+    private:
+        std::string name_;
+        metadata_map metadata_;
     };
 
-    using argument_opts_list = std::vector<argument_opts>;
+    using argument_info_list = std::vector<argument_info>;
+}
 
+namespace meta_hpp
+{
     struct constructor_opts final {
-        argument_opts_list arguments{};
-        metadata_map metadata{};
+        argument_info_list arguments;
+        metadata_map metadata;
     };
 
     struct destructor_opts final {
-        metadata_map metadata{};
+        metadata_map metadata;
     };
 
     struct evalue_opts final {
-        metadata_map metadata{};
+        metadata_map metadata;
     };
 
     struct function_opts final {
-        argument_opts_list arguments{};
-        metadata_map metadata{};
+        argument_info_list arguments;
+        metadata_map metadata;
     };
 
     struct member_opts final {
-        metadata_map metadata{};
+        metadata_map metadata;
     };
 
     struct method_opts final {
-        argument_opts_list arguments{};
-        metadata_map metadata{};
+        argument_info_list arguments;
+        metadata_map metadata;
     };
 
     struct variable_opts final {
-        metadata_map metadata{};
+        metadata_map metadata;
     };
 }
 
@@ -4834,41 +4871,31 @@ namespace meta_hpp
         arguments_bind& operator=(const arguments_bind&) = delete;
 
         arguments_bind& operator()(std::string name) & {
-            arguments_.push_back(argument_opts{
-                .name = std::move(name),
-            });
+            arguments_.emplace_back(std::move(name));
             return *this;
         }
 
         arguments_bind operator()(std::string name) && {
-            arguments_.push_back(argument_opts{
-                .name = std::move(name),
-            });
+            arguments_.emplace_back(std::move(name));
             return std::move(*this);
         }
 
         arguments_bind& operator()(std::string name, metadata_map metadata) & {
-            arguments_.push_back(argument_opts{
-                .name = std::move(name),
-                .metadata = std::move(metadata),
-            });
+            arguments_.emplace_back(std::move(name), std::move(metadata));
             return *this;
         }
 
         arguments_bind operator()(std::string name, metadata_map metadata) && {
-            arguments_.push_back(argument_opts{
-                .name = std::move(name),
-                .metadata = std::move(metadata),
-            });
+            arguments_.emplace_back(std::move(name), std::move(metadata));
             return std::move(*this);
         }
 
-        operator argument_opts_list() && {
+        operator argument_info_list() && {
             return std::move(arguments_);
         }
 
     private:
-        argument_opts_list arguments_;
+        argument_info_list arguments_;
     };
 
     inline arguments_bind arguments_() {
@@ -5080,8 +5107,8 @@ namespace meta_hpp
 
         for ( std::size_t i{}, e{std::min(opts.arguments.size(), state->arguments.size())}; i < e; ++i ) {
             argument& arg = state->arguments[i];
-            detail::state_access(arg)->name = std::move(opts.arguments[i].name);
-            detail::state_access(arg)->metadata = std::move(opts.arguments[i].metadata);
+            detail::state_access(arg)->name = std::move(opts.arguments[i].get_name());
+            detail::state_access(arg)->metadata = std::move(opts.arguments[i].get_metadata());
         }
 
         detail::insert_or_assign(get_data().constructors, constructor{std::move(state)});
@@ -5130,8 +5157,8 @@ namespace meta_hpp
 
         for ( std::size_t i{}, e{std::min(opts.arguments.size(), state->arguments.size())}; i < e; ++i ) {
             argument& arg = state->arguments[i];
-            detail::state_access(arg)->name = std::move(opts.arguments[i].name);
-            detail::state_access(arg)->metadata = std::move(opts.arguments[i].metadata);
+            detail::state_access(arg)->name = std::move(opts.arguments[i].get_name());
+            detail::state_access(arg)->metadata = std::move(opts.arguments[i].get_metadata());
         }
 
         detail::insert_or_assign(get_data().functions, function{std::move(state)});
@@ -5202,8 +5229,8 @@ namespace meta_hpp
 
         for ( std::size_t i{}, e{std::min(opts.arguments.size(), state->arguments.size())}; i < e; ++i ) {
             argument& arg = state->arguments[i];
-            detail::state_access(arg)->name = std::move(opts.arguments[i].name);
-            detail::state_access(arg)->metadata = std::move(opts.arguments[i].metadata);
+            detail::state_access(arg)->name = std::move(opts.arguments[i].get_name());
+            detail::state_access(arg)->metadata = std::move(opts.arguments[i].get_metadata());
         }
 
         detail::insert_or_assign(get_data().methods, method{std::move(state)});
@@ -5354,8 +5381,8 @@ namespace meta_hpp
 
         for ( std::size_t i{}, e{std::min(opts.arguments.size(), state->arguments.size())}; i < e; ++i ) {
             argument& arg = state->arguments[i];
-            detail::state_access(arg)->name = std::move(opts.arguments[i].name);
-            detail::state_access(arg)->metadata = std::move(opts.arguments[i].metadata);
+            detail::state_access(arg)->name = std::move(opts.arguments[i].get_name());
+            detail::state_access(arg)->metadata = std::move(opts.arguments[i].get_metadata());
         }
 
         detail::insert_or_assign(get_state().functions, function{std::move(state)});

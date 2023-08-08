@@ -35,8 +35,8 @@ namespace meta_hpp
 
         for ( std::size_t i{}, e{std::min(opts.arguments.size(), state->arguments.size())}; i < e; ++i ) {
             argument& arg = state->arguments[i];
-            detail::state_access(arg)->name = std::move(opts.arguments[i].name);
-            detail::state_access(arg)->metadata = std::move(opts.arguments[i].metadata);
+            detail::state_access(arg)->name = std::move(opts.arguments[i].get_name());
+            detail::state_access(arg)->metadata = std::move(opts.arguments[i].get_metadata());
         }
 
         detail::insert_or_assign(get_state().functions, function{std::move(state)});

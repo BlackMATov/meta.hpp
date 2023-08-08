@@ -171,8 +171,8 @@ namespace meta_hpp
 
         for ( std::size_t i{}, e{std::min(opts.arguments.size(), state->arguments.size())}; i < e; ++i ) {
             argument& arg = state->arguments[i];
-            detail::state_access(arg)->name = std::move(opts.arguments[i].name);
-            detail::state_access(arg)->metadata = std::move(opts.arguments[i].metadata);
+            detail::state_access(arg)->name = std::move(opts.arguments[i].get_name());
+            detail::state_access(arg)->metadata = std::move(opts.arguments[i].get_metadata());
         }
 
         detail::insert_or_assign(get_data().constructors, constructor{std::move(state)});
@@ -221,8 +221,8 @@ namespace meta_hpp
 
         for ( std::size_t i{}, e{std::min(opts.arguments.size(), state->arguments.size())}; i < e; ++i ) {
             argument& arg = state->arguments[i];
-            detail::state_access(arg)->name = std::move(opts.arguments[i].name);
-            detail::state_access(arg)->metadata = std::move(opts.arguments[i].metadata);
+            detail::state_access(arg)->name = std::move(opts.arguments[i].get_name());
+            detail::state_access(arg)->metadata = std::move(opts.arguments[i].get_metadata());
         }
 
         detail::insert_or_assign(get_data().functions, function{std::move(state)});
@@ -293,8 +293,8 @@ namespace meta_hpp
 
         for ( std::size_t i{}, e{std::min(opts.arguments.size(), state->arguments.size())}; i < e; ++i ) {
             argument& arg = state->arguments[i];
-            detail::state_access(arg)->name = std::move(opts.arguments[i].name);
-            detail::state_access(arg)->metadata = std::move(opts.arguments[i].metadata);
+            detail::state_access(arg)->name = std::move(opts.arguments[i].get_name());
+            detail::state_access(arg)->metadata = std::move(opts.arguments[i].get_metadata());
         }
 
         detail::insert_or_assign(get_data().methods, method{std::move(state)});

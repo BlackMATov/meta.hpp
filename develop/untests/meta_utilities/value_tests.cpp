@@ -476,6 +476,22 @@ TEST_CASE("meta/meta_utilities/value") {
         }
     }
 
+    SUBCASE("copy") {
+        {
+            const meta::uvalue u{42};
+            CHECK(u.has_copy_op());
+
+            const meta::uvalue v{u.copy()};
+            CHECK(v.get_type() == meta::resolve_type<int>());
+            CHECK(v.as<int>() == 42);
+        }
+        {
+            const meta::uvalue u{std::unique_ptr<int>{}};
+            CHECK_FALSE(u.has_copy_op());
+            CHECK_FALSE(u.copy());
+        }
+    }
+
     SUBCASE("unmap") {
         {
             const meta::uvalue u{42};

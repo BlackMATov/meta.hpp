@@ -158,23 +158,6 @@ TEST_CASE("meta/meta_utilities/value2/counters/small") {
         CHECK(ivec2::copy_constructor_counter == 0);
     }
 
-    SUBCASE("copy ctor") {
-        {
-            meta::uvalue v1{ivec2{1,2}};
-            meta::uvalue v2{std::as_const(v1).copy()};
-
-            CHECK(v1.as<ivec2>().x == 1);
-            CHECK(v2.as<ivec2>().y == 2);
-
-            CHECK(ivec2::destructor_counter == 1);
-            CHECK(ivec2::move_constructor_counter == 1);
-            CHECK(ivec2::copy_constructor_counter == 1);
-        }
-        CHECK(ivec2::destructor_counter == 3);
-        CHECK(ivec2::move_constructor_counter == 1);
-        CHECK(ivec2::copy_constructor_counter == 1);
-    }
-
     SUBCASE("swap") {
         {
             meta::uvalue v1{ivec2{1,2}};
