@@ -21,7 +21,7 @@ namespace meta_hpp::detail
         using data_type = typename pt::data_type;
 
         constexpr bool as_copy                                    //
-            = std::is_copy_constructible_v<data_type>             //
+            = std::is_constructible_v<uvalue, data_type>          //
            && std::is_same_v<Policy, variable_policy::as_copy_t>; //
 
         constexpr bool as_ptr                                        //

@@ -350,7 +350,7 @@ namespace meta_hpp
 
         template < detail::enum_kind Enum >
         [[nodiscard]] std::string_view value_to_name(Enum value) const noexcept;
-        [[nodiscard]] uvalue name_to_value(std::string_view name) const noexcept;
+        [[nodiscard]] const uvalue& name_to_value(std::string_view name) const noexcept;
     };
 
     class function_type final : public type_base<function_type> {

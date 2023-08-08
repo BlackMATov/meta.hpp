@@ -23,8 +23,8 @@ namespace meta_hpp::detail
         using qualified_type = typename mt::qualified_type;
         using argument_types = typename mt::argument_types;
 
-        constexpr bool as_copy                          //
-            = std::is_copy_constructible_v<return_type> //
+        constexpr bool as_copy                             //
+            = std::is_constructible_v<uvalue, return_type> //
            && std::is_same_v<Policy, method_policy::as_copy_t>;
 
         constexpr bool as_void            //

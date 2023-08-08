@@ -161,7 +161,7 @@ TEST_CASE("meta/meta_utilities/value2/counters/small") {
     SUBCASE("copy ctor") {
         {
             meta::uvalue v1{ivec2{1,2}};
-            meta::uvalue v2{std::as_const(v1)};
+            meta::uvalue v2{std::as_const(v1).copy()};
 
             CHECK(v1.as<ivec2>().x == 1);
             CHECK(v2.as<ivec2>().y == 2);
@@ -248,7 +248,7 @@ TEST_CASE("meta/meta_utilities/value2/counters/big") {
     SUBCASE("copy ctor") {
         {
             meta::uvalue v1{ivec2_big{1,2}};
-            meta::uvalue v2{std::as_const(v1)};
+            meta::uvalue v2{std::as_const(v1).copy()};
 
             CHECK(v1.as<ivec2_big>().x == 1);
             CHECK(v2.as<ivec2_big>().y == 2);

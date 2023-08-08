@@ -38,9 +38,8 @@ TEST_CASE("meta/meta_states/dtor") {
 
     meta::class_<clazz_dtor_metadata>()
         .destructor_({
-            .metadata{
-                {"desc", "virtual dtor"s}
-            }
+            .metadata = meta::metadata_()
+                ("desc", "virtual dtor"s)
         });
 
     SUBCASE("closed_dtor") {

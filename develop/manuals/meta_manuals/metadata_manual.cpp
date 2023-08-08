@@ -33,29 +33,31 @@ TEST_CASE("meta/meta_manuals/metadata") {
     //   key: std::string
     //   value: meta::uvalue
 
-    meta::class_<ivec3>({
-        {"tooltip", "3D Vector"s} // for class type
-    })
+    meta::class_<ivec3>(meta::metadata_() // for class type
+        ("tooltip", "3D Vector"s)
+    )
     .member_("x", &ivec3::x, {
-        .metadata { {"tooltip", "X-Coordinate"s} } // for class members
+        .metadata = meta::metadata_() // for class members
+            ("tooltip", "X-Coordinate"s)
     })
     .member_("y", &ivec3::y, {
-        .metadata { {"tooltip", "Y-Coordinate"s} }
+        .metadata = meta::metadata_()
+            ("tooltip", "Y-Coordinate"s)
     })
     .member_("z", &ivec3::z, {
-        .metadata { {"tooltip", "Z-Coordinate"s} }
+        .metadata = meta::metadata_()
+            ("tooltip", "Z-Coordinate"s)
     });
 
     const meta::scope math_scope = meta::local_scope_("math")
         .typedef_<ivec3>("ivec3")
         .function_("cross", &cross, {
-            .arguments {{
-                .name = "first vector",
-                .metadata {} // even function arguments can have metadata
-            },{
-                .name = "second vector"
-            }},
-            .metadata { {"tooltip", "Cross product of vectors"s} } // for functions in a scope
+            .arguments = meta::arguments_()
+                ("first vector")
+                ("second vector", meta::metadata_() // even function arguments can have metadata
+                    ("tooltip", "The second cross product argument"s)),
+            .metadata = meta::metadata_() // for functions in a scope
+                ("tooltip", "Cross product of vectors"s),
         });
 
     // after binding, you can use it as you wish

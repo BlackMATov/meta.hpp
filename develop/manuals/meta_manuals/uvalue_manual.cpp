@@ -61,7 +61,7 @@ TEST_CASE("meta/meta_manuals/uvalue") {
 TEST_CASE("meta/meta_manuals/uvalue/usage") {
     namespace meta = meta_hpp;
 
-    // the 'uvalue' class allows to store any copyable value inside
+    // the 'uvalue' class allows to store any typed value inside
     // it's widely used as return value types and as containers for storing metadata
 
     meta::uvalue val{42};

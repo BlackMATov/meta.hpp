@@ -70,7 +70,7 @@ namespace meta_hpp
     };
 
     struct method_opts final {
-        argument_opts_list arguments;
+        argument_opts_list arguments{};
         metadata_map metadata{};
     };
 
@@ -410,5 +410,97 @@ namespace meta_hpp
 
     inline scope_bind extend_scope_(const scope& scope, metadata_map metadata = {}) {
         return scope_bind{scope, std::move(metadata)};
+    }
+}
+
+namespace meta_hpp
+{
+    class arguments_bind final {
+    public:
+        arguments_bind() = default;
+        ~arguments_bind() = default;
+
+        arguments_bind(arguments_bind&&) = default;
+        arguments_bind(const arguments_bind&) = delete;
+
+        arguments_bind& operator=(arguments_bind&&) = default;
+        arguments_bind& operator=(const arguments_bind&) = delete;
+
+        arguments_bind& operator()(std::string name) & {
+            arguments_.push_back(argument_opts{
+                .name = std::move(name),
+            });
+            return *this;
+        }
+
+        arguments_bind operator()(std::string name) && {
+            arguments_.push_back(argument_opts{
+                .name = std::move(name),
+            });
+            return std::move(*this);
+        }
+
+        arguments_bind& operator()(std::string name, metadata_map metadata) & {
+            arguments_.push_back(argument_opts{
+                .name = std::move(name),
+                .metadata = std::move(metadata),
+            });
+            return *this;
+        }
+
+        arguments_bind operator()(std::string name, metadata_map metadata) && {
+            arguments_.push_back(argument_opts{
+                .name = std::move(name),
+                .metadata = std::move(metadata),
+            });
+            return std::move(*this);
+        }
+
+        operator argument_opts_list() && {
+            return std::move(arguments_);
+        }
+
+    private:
+        argument_opts_list arguments_;
+    };
+
+    inline arguments_bind arguments_() {
+        return arguments_bind{};
+    }
+}
+
+namespace meta_hpp
+{
+    class metadata_bind final {
+    public:
+        metadata_bind() = default;
+        ~metadata_bind() = default;
+
+        metadata_bind(metadata_bind&&) = default;
+        metadata_bind(const metadata_bind&) = delete;
+
+        metadata_bind& operator=(metadata_bind&&) = default;
+        metadata_bind& operator=(const metadata_bind&) = delete;
+
+        metadata_bind& operator()(std::string name, uvalue value) & {
+            metadata_.insert_or_assign(std::move(name), std::move(value));
+            return *this;
+        }
+
+        metadata_bind operator()(std::string name, uvalue value) && {
+            metadata_.insert_or_assign(std::move(name), std::move(value));
+            return std::move(*this);
+        }
+
+        operator metadata_map() && {
+            return std::move(metadata_);
+        }
+
+    private:
+        metadata_map metadata_;
+    };
+
+    inline metadata_bind metadata_() {
+        return metadata_bind{};
     }
 }

@@ -38,32 +38,29 @@ TEST_CASE("meta/meta_states/metadata/enum") {
     namespace meta = meta_hpp;
     using namespace std::string_literals;
 
-    meta::enum_<color>({
-        {"desc1", "enum-desc1"s},
-        {"desc2", "enum-desc2"s},
-    })
+    meta::enum_<color>(meta::metadata_()
+        ("desc1", "enum-desc1"s)
+        ("desc2", "enum-desc2"s))
     .evalue_("red", color::red, {
-        .metadata{{"desc1", "red-color"s}}
+        .metadata{meta::metadata_()("desc1", "red-color"s)}
     })
     .evalue_("green", color::green, {
-        .metadata{{"desc1", "green-color"s}}
+        .metadata{meta::metadata_()("desc1", "green-color"s)}
     })
     .evalue_("blue", color::blue, {
-        .metadata{{"desc1", "blue-color"s}}
+        .metadata{meta::metadata_()("desc1", "blue-color"s)}
     });
 
     // metadata override
 
-    meta::enum_<color>({
-        {"desc2", "new-enum-desc2"s},
-        {"desc3", "new-enum-desc3"s},
-    });
+    meta::enum_<color>(meta::metadata_()
+        ("desc2", "new-enum-desc2"s)
+        ("desc3", "new-enum-desc3"s));
 
     meta::enum_<color>()
         .evalue_("red", color::red, {
-            .metadata{
-                {"desc2", "new-red-color"s},
-            }
+            .metadata = meta::metadata_()
+                ("desc2", "new-red-color"s)
         });
 
     //
@@ -89,57 +86,45 @@ TEST_CASE("meta/meta_states/metadata/class") {
     namespace meta = meta_hpp;
     using namespace std::string_literals;
 
-    meta::class_<ivec2>({
-        {"desc1", "class-desc1"s},
-        {"desc2", "class-desc2"s},
-    })
+    meta::class_<ivec2>(meta::metadata_()
+        ("desc1", "class-desc1"s)
+        ("desc2", "class-desc2"s))
     .constructor_<int>({
-        .arguments{{
-            .name{"v"},
-            .metadata{{"desc", "the ctor arg"s}},
-        }},
-        .metadata{{"desc", "one arg 2d vector ctor"s}},
+        .arguments{meta::arguments_()
+            ("v", meta::metadata_()("desc", "the ctor arg"s))},
+        .metadata{meta::metadata_()("desc", "one arg 2d vector ctor"s)},
     })
     .constructor_<int, int>({
-        .arguments{{
-            .name{"x"},
-            .metadata{{"desc", "the 1st ctor arg"s}},
-        },{
-            .name{"y"},
-            .metadata{{"desc", "the 2nd ctor arg"s}},
-        }},
-        .metadata{{"desc", "two args 2d vector ctor"s}}
+        .arguments{meta::arguments_()
+            ("x", meta::metadata_()("desc", "the 1st ctor arg"s))
+            ("y", meta::metadata_()("desc", "the 2nd ctor arg"s))
+        },
+        .metadata{meta::metadata_()("desc", "two args 2d vector ctor"s)}
     })
     .member_("x", &ivec2::x, {
-        .metadata{{"desc", "x-member"s}}
+        .metadata{meta::metadata_()("desc", "x-member"s)}
     })
     .member_("y", &ivec2::y, {
-        .metadata{{"desc", "y-member"s}}
+        .metadata{meta::metadata_()("desc", "y-member"s)}
     })
     .method_("add", &ivec2::add, {
-        .arguments{{
-            .name{"other"},
-            .metadata{{"desc", "other-arg"s}}
-        }},
-        .metadata{{"desc", "add-method"s}}
+        .arguments{meta::arguments_()
+            ("other", meta::metadata_()("desc", "other-arg"s))},
+        .metadata{meta::metadata_()("desc", "add-method"s)}
     })
     .function_("iadd", &ivec2::iadd, {
-        .arguments{{
-            .name{"l"},
-            .metadata{{"desc", "l-arg"s}}
-        },{
-            .name{"r"},
-            .metadata{{"desc", "r-arg"s}}
-        }},
-        .metadata{{"desc", "iadd-function"s}}
+        .arguments{meta::arguments_()
+            ("l", meta::metadata_()("desc", "l-arg"s))
+            ("r", meta::metadata_()("desc", "r-arg"s))
+        },
+        .metadata{meta::metadata_()("desc", "iadd-function"s)}
     });
 
     // metadata override
 
-    meta::class_<ivec2>({
-        {"desc2", "new-class-desc2"s},
-        {"desc3", "new-class-desc3"s},
-    });
+    meta::class_<ivec2>(meta::metadata_()
+        ("desc2", "new-class-desc2"s)
+        ("desc3", "new-class-desc3"s));
 
     //
 
@@ -243,16 +228,14 @@ TEST_CASE("meta/meta_states/metadata/scope") {
     using namespace std::string_literals;
 
     SUBCASE("local_scope") {
-        const meta::scope lscope = meta::local_scope_("local-scope", {
-            {"desc", "scope-desc"s}
-        });
+        const meta::scope lscope = meta::local_scope_("local-scope", meta::metadata_()
+            ("desc", "scope-desc"s));
         CHECK(lscope.get_metadata().at("desc").as<std::string>() == "scope-desc"s);
     }
 
     SUBCASE("static_scope") {
-        meta::static_scope_("meta/meta_states/metadata/scope/static-scope", {
-            {"desc", "scope-desc"s}
-        });
+        meta::static_scope_("meta/meta_states/metadata/scope/static-scope", meta::metadata_()
+            ("desc", "scope-desc"s));
         CHECK(meta::resolve_scope("meta/meta_states/metadata/scope/static-scope").get_metadata().at("desc").as<std::string>() == "scope-desc"s);
     }
 }
@@ -262,65 +245,56 @@ TEST_CASE("meta/meta_states/metadata/other") {
     using namespace std::string_literals;
 
     SUBCASE("array") {
-        meta::array_<int[]>({
-            {"desc", "int[]-type"s}
-        });
+        meta::array_<int[]>(meta::metadata_()
+            ("desc", "int[]-type"s));
         CHECK(meta::resolve_type<int[]>().get_metadata().at("desc").as<std::string>() == "int[]-type"s);
     }
 
     SUBCASE("function") {
-        meta::function_<int(int)>({
-            {"desc", "int->int"s}
-        });
+        meta::function_<int(int)>(meta::metadata_()
+            ("desc", "int->int"s));
         CHECK(meta::resolve_type<int(int)>().get_metadata().at("desc").as<std::string>() == "int->int"s);
     }
 
     SUBCASE("member") {
-        meta::member_<int ivec2::*>({
-            {"desc", "ivec2::int"s}
-        });
+        meta::member_<int ivec2::*>(meta::metadata_()
+            ("desc", "ivec2::int"s));
         CHECK(meta::resolve_type<int ivec2::*>().get_metadata().at("desc").as<std::string>() == "ivec2::int"s);
     }
 
     SUBCASE("method") {
-        meta::method_<int (ivec2::*)(int)>({
-            {"desc", "ivec2(int -> int)"s}
-        });
+        meta::method_<int (ivec2::*)(int)>(meta::metadata_()
+            ("desc", "ivec2(int -> int)"s));
         CHECK(meta::resolve_type<int (ivec2::*)(int)>().get_metadata().at("desc").as<std::string>() == "ivec2(int -> int)"s);
     }
 
     SUBCASE("nullptr") {
-        meta::nullptr_<std::nullptr_t>({
-            {"desc", "nullptr_t"s}
-        });
+        meta::nullptr_<std::nullptr_t>(meta::metadata_()
+            ("desc", "nullptr_t"s));
         CHECK(meta::resolve_type<std::nullptr_t>().get_metadata().at("desc").as<std::string>() == "nullptr_t"s);
     }
 
     SUBCASE("number") {
-        meta::number_<int>({
-            {"desc", "int-type"s}
-        });
+        meta::number_<int>(meta::metadata_()
+            ("desc", "int-type"s));
         CHECK(meta::resolve_type<int>().get_metadata().at("desc").as<std::string>() == "int-type"s);
     }
 
     SUBCASE("pointer") {
-        meta::pointer_<int*>({
-            {"desc", "int*-type"s}
-        });
+        meta::pointer_<int*>(meta::metadata_()
+            ("desc", "int*-type"s));
         CHECK(meta::resolve_type<int*>().get_metadata().at("desc").as<std::string>() == "int*-type"s);
     }
 
     SUBCASE("reference") {
-        meta::reference_<int&>({
-            {"desc", "int&-type"s}
-        });
+        meta::reference_<int&>(meta::metadata_()
+            ("desc", "int&-type"s));
         CHECK(meta::resolve_type<int&>().get_metadata().at("desc").as<std::string>() == "int&-type"s);
     }
 
     SUBCASE("void") {
-        meta::void_<void>({
-            {"desc", "void-type"s}
-        });
+        meta::void_<void>(meta::metadata_()
+            ("desc", "void-type"s));
         CHECK(meta::resolve_type<void>().get_metadata().at("desc").as<std::string>() == "void-type"s);
     }
 }

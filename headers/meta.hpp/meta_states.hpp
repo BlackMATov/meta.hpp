@@ -24,9 +24,12 @@ namespace meta_hpp
 
         struct as_shared_pointer_t final {};
 
+        struct as_unique_pointer_t final {};
+
         inline constexpr as_object_t as_object{};
         inline constexpr as_raw_pointer_t as_raw_pointer{};
         inline constexpr as_shared_pointer_t as_shared_pointer{};
+        inline constexpr as_unique_pointer_t as_unique_pointer{};
     }
 
     namespace function_policy
@@ -82,34 +85,35 @@ namespace meta_hpp
     }
 
     template < typename Policy >
-    concept constructor_policy_family                                  //
-        = std::is_same_v<Policy, constructor_policy::as_object_t>      //
-       || std::is_same_v<Policy, constructor_policy::as_raw_pointer_t> //
-       || std::is_same_v<Policy, constructor_policy::as_shared_pointer_t>;
+    concept constructor_policy_family                                      //
+        = std::is_same_v<Policy, constructor_policy::as_object_t>          //
+       || std::is_same_v<Policy, constructor_policy::as_raw_pointer_t>     //
+       || std::is_same_v<Policy, constructor_policy::as_shared_pointer_t>  //
+       || std::is_same_v<Policy, constructor_policy::as_unique_pointer_t>; //
 
     template < typename Policy >
-    concept function_policy_family                                  //
-        = std::is_same_v<Policy, function_policy::as_copy_t>        //
-       || std::is_same_v<Policy, function_policy::discard_return_t> //
-       || std::is_same_v<Policy, function_policy::return_reference_as_pointer_t>;
+    concept function_policy_family                                                //
+        = std::is_same_v<Policy, function_policy::as_copy_t>                      //
+       || std::is_same_v<Policy, function_policy::discard_return_t>               //
+       || std::is_same_v<Policy, function_policy::return_reference_as_pointer_t>; //
 
     template < typename Policy >
-    concept member_policy_family                              //
-        = std::is_same_v<Policy, member_policy::as_copy_t>    //
-       || std::is_same_v<Policy, member_policy::as_pointer_t> //
-       || std::is_same_v<Policy, member_policy::as_reference_wrapper_t>;
+    concept member_policy_family                                         //
+        = std::is_same_v<Policy, member_policy::as_copy_t>               //
+       || std::is_same_v<Policy, member_policy::as_pointer_t>            //
+       || std::is_same_v<Policy, member_policy::as_reference_wrapper_t>; //
 
     template < typename Policy >
-    concept method_policy_family                                  //
-        = std::is_same_v<Policy, method_policy::as_copy_t>        //
-       || std::is_same_v<Policy, method_policy::discard_return_t> //
-       || std::is_same_v<Policy, method_policy::return_reference_as_pointer_t>;
+    concept method_policy_family                                                //
+        = std::is_same_v<Policy, method_policy::as_copy_t>                      //
+       || std::is_same_v<Policy, method_policy::discard_return_t>               //
+       || std::is_same_v<Policy, method_policy::return_reference_as_pointer_t>; //
 
     template < typename Policy >
-    concept variable_policy_family                              //
-        = std::is_same_v<Policy, variable_policy::as_copy_t>    //
-       || std::is_same_v<Policy, variable_policy::as_pointer_t> //
-       || std::is_same_v<Policy, variable_policy::as_reference_wrapper_t>;
+    concept variable_policy_family                                         //
+        = std::is_same_v<Policy, variable_policy::as_copy_t>               //
+       || std::is_same_v<Policy, variable_policy::as_pointer_t>            //
+       || std::is_same_v<Policy, variable_policy::as_reference_wrapper_t>; //
 }
 
 namespace meta_hpp

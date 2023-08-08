@@ -202,11 +202,11 @@ TEST_CASE("meta/meta_utilities/value") {
         CHECK(std::as_const(val).as<ivec2>() == ivec2{1,2});
 
         {
-            meta::uvalue val_copy{val};
+            meta::uvalue val_copy{val.copy()};
             CHECK(std::move(val_copy).as<ivec2>() == ivec2{1,2});
         }
         {
-            meta::uvalue val_copy{val};
+            meta::uvalue val_copy{val.copy()};
             CHECK(std::move(std::as_const(val_copy)).as<ivec2>() == ivec2{1,2});
         }
 
@@ -242,11 +242,11 @@ TEST_CASE("meta/meta_utilities/value") {
         CHECK(std::as_const(val).as<ivec2>() == ivec2{1,2});
 
         {
-            meta::uvalue val_copy{val};
+            meta::uvalue val_copy{val.copy()};
             CHECK(std::move(val_copy).as<ivec2>() == ivec2{1,2});
         }
         {
-            meta::uvalue val_copy{val};
+            meta::uvalue val_copy{val.copy()};
             CHECK(std::move(std::as_const(val_copy)).as<ivec2>() == ivec2{1,2});
         }
 
@@ -276,11 +276,11 @@ TEST_CASE("meta/meta_utilities/value") {
         CHECK(std::as_const(val).as<ivec2>() == ivec2{1,2});
 
         {
-            meta::uvalue val_copy{val};
+            meta::uvalue val_copy{val.copy()};
             CHECK(std::move(val_copy).as<ivec2>() == ivec2{1,2});
         }
         {
-            meta::uvalue val_copy{val};
+            meta::uvalue val_copy{val.copy()};
             CHECK(std::move(std::as_const(val_copy)).as<ivec2>() == ivec2{1,2});
         }
 
@@ -310,11 +310,11 @@ TEST_CASE("meta/meta_utilities/value") {
         CHECK(std::as_const(val).as<ivec2>() == ivec2{1,2});
 
         {
-            meta::uvalue val_copy{val};
+            meta::uvalue val_copy{val.copy()};
             CHECK(std::move(val_copy).as<ivec2>() == ivec2{1,2});
         }
         {
-            meta::uvalue val_copy{val};
+            meta::uvalue val_copy{val.copy()};
             CHECK(std::move(std::as_const(val_copy)).as<ivec2>() == ivec2{1,2});
         }
 
@@ -339,21 +339,6 @@ TEST_CASE("meta/meta_utilities/value") {
         CHECK(val_dst.as<ivec2>() == ivec2{1,2});
         CHECK(ivec2::move_constructor_counter == 2);
         CHECK(ivec2::copy_constructor_counter == 0);
-    }
-
-    SUBCASE("value(const meta::value&)") {
-        const ivec2 v{1,2};
-        meta::uvalue val_src{v};
-        CHECK(ivec2::move_constructor_counter == 0);
-        CHECK(ivec2::copy_constructor_counter == 1);
-
-        meta::uvalue val_dst{val_src};
-        CHECK(val_dst.as<ivec2>() == ivec2{1,2});
-        CHECK(ivec2::move_constructor_counter == 0);
-        CHECK(ivec2::copy_constructor_counter == 2);
-
-        CHECK(val_src.as<ivec2>() == ivec2{1,2});
-        CHECK(val_src.get_data() != val_dst.get_data());
     }
 
     SUBCASE("value& operator=(T&&)") {
@@ -383,28 +368,6 @@ TEST_CASE("meta/meta_utilities/value") {
         CHECK(val_dst.as<ivec2>() == ivec2{1,2});
         CHECK(ivec2::move_constructor_counter == 3);
         CHECK(ivec2::copy_constructor_counter == 0);
-    }
-
-    SUBCASE("value& operator=(const meta::value&)") {
-        meta::uvalue val_src1{"world"s};
-        meta::uvalue val_src2{ivec2{1,2}};
-        CHECK(ivec2::move_constructor_counter == 1);
-        CHECK(ivec2::copy_constructor_counter == 0);
-
-        meta::uvalue val_dst{"hello"s};
-
-        val_dst = val_src1;
-        CHECK(val_dst.as<std::string>() == "world"s);
-        CHECK(ivec2::move_constructor_counter == 1);
-        CHECK(ivec2::copy_constructor_counter == 0);
-
-        val_dst = val_src2;
-        CHECK(val_dst.as<ivec2>() == ivec2{1,2});
-        CHECK(ivec2::move_constructor_counter == 2);
-        CHECK(ivec2::copy_constructor_counter == 1);
-
-        CHECK(val_src2.as<ivec2>() == ivec2{1,2});
-        CHECK(val_src2.get_data() != val_dst.get_data());
     }
 
     SUBCASE("swap/0") {
