@@ -22,61 +22,20 @@ namespace meta_hpp::detail
     concept class_bind_destructor_kind                        //
         = class_kind<Class> && std::is_destructible_v<Class>; //
 
-    template < typename Class, typename Base >
+    template < typename Base, typename Class >
     concept class_bind_base_kind                //
-        = class_kind<Class> && class_kind<Base> //
+        = class_kind<Base> && class_kind<Class> //
        && std::derived_from<Class, Base>;       //
 
-    template < typename Class, typename Member >
+    template < typename Member, typename Class >
     concept class_bind_member_kind                                           //
-        = class_kind<Class> && member_pointer_kind<Member>                   //
+        = member_pointer_kind<Member> && class_kind<Class>                   //
        && std::is_same_v<Class, typename member_traits<Member>::class_type>; //
 
-    template < typename Class, typename Method >
+    template < typename Method, typename Class >
     concept class_bind_method_kind                                           //
-        = class_kind<Class> && method_pointer_kind<Method>                   //
+        = method_pointer_kind<Method> && class_kind<Class>                   //
        && std::is_same_v<Class, typename method_traits<Method>::class_type>; //
-}
-
-namespace meta_hpp
-{
-    struct argument_opts final {
-        std::string name{};
-        metadata_map metadata{};
-    };
-
-    using argument_opts_list = std::vector<argument_opts>;
-
-    struct constructor_opts final {
-        argument_opts_list arguments{};
-        metadata_map metadata{};
-    };
-
-    struct destructor_opts final {
-        metadata_map metadata{};
-    };
-
-    struct evalue_opts final {
-        metadata_map metadata{};
-    };
-
-    struct function_opts final {
-        argument_opts_list arguments{};
-        metadata_map metadata{};
-    };
-
-    struct member_opts final {
-        metadata_map metadata{};
-    };
-
-    struct method_opts final {
-        argument_opts_list arguments;
-        metadata_map metadata{};
-    };
-
-    struct variable_opts final {
-        metadata_map metadata{};
-    };
 }
 
 namespace meta_hpp
@@ -148,77 +107,31 @@ namespace meta_hpp
     public:
         explicit class_bind(metadata_map metadata);
 
-        // base_
-
-        template < detail::class_kind... Bases >
-            requires(... && detail::class_bind_base_kind<Class, Bases>)
+        template < detail::class_bind_base_kind<Class>... Bases >
         class_bind& base_();
 
-        // constructor_
-
-        template < typename... Args, constructor_policy_family Policy = constructor_policy::as_object_t >
-        class_bind& constructor_(Policy = {})
+        template < typename... Args, typename... Opts >
+        class_bind& constructor_(Opts&&... opts)
             requires detail::class_bind_constructor_kind<Class, Args...>;
 
-        template < typename... Args, constructor_policy_family Policy = constructor_policy::as_object_t >
-        class_bind& constructor_(constructor_opts opts, Policy = {})
-            requires detail::class_bind_constructor_kind<Class, Args...>;
-
-        // destructor_
-
-        class_bind& destructor_()
+        template < typename... Opts >
+        class_bind& destructor_(Opts&&... opts)
             requires detail::class_bind_destructor_kind<Class>;
 
-        class_bind& destructor_(destructor_opts opts)
-            requires detail::class_bind_destructor_kind<Class>;
+        template < detail::function_pointer_kind Function, typename... Opts >
+        class_bind& function_(std::string name, Function function_ptr, Opts&&... opts);
 
-        // function_
+        template < detail::class_bind_member_kind<Class> Member, typename... Opts >
+        class_bind& member_(std::string name, Member member_ptr, Opts&&... opts);
 
-        template < detail::function_pointer_kind Function, function_policy_family Policy = function_policy::as_copy_t >
-        class_bind& function_(std::string name, Function function_ptr, Policy = {});
-
-        template < detail::function_pointer_kind Function, function_policy_family Policy = function_policy::as_copy_t >
-        class_bind& function_(std::string name, Function function_ptr, function_opts opts, Policy = {});
-
-        template < detail::function_pointer_kind Function, function_policy_family Policy = function_policy::as_copy_t >
-        class_bind& function_(std::string name, Function function_ptr, string_ilist arguments, Policy = {});
-
-        // member_
-
-        template < detail::member_pointer_kind Member, member_policy_family Policy = member_policy::as_copy_t >
-            requires detail::class_bind_member_kind<Class, Member>
-        class_bind& member_(std::string name, Member member_ptr, Policy = {});
-
-        template < detail::member_pointer_kind Member, member_policy_family Policy = member_policy::as_copy_t >
-            requires detail::class_bind_member_kind<Class, Member>
-        class_bind& member_(std::string name, Member member_ptr, member_opts opts, Policy = {});
-
-        // method_
-
-        template < detail::method_pointer_kind Method, method_policy_family Policy = method_policy::as_copy_t >
-            requires detail::class_bind_method_kind<Class, Method>
-        class_bind& method_(std::string name, Method method_ptr, Policy = {});
-
-        template < detail::method_pointer_kind Method, method_policy_family Policy = method_policy::as_copy_t >
-            requires detail::class_bind_method_kind<Class, Method>
-        class_bind& method_(std::string name, Method method_ptr, method_opts opts, Policy = {});
-
-        template < detail::method_pointer_kind Method, method_policy_family Policy = method_policy::as_copy_t >
-            requires detail::class_bind_method_kind<Class, Method>
-        class_bind& method_(std::string name, Method method_ptr, string_ilist arguments, Policy = {});
-
-        // typdef_
+        template < detail::class_bind_method_kind<Class> Method, typename... Opts >
+        class_bind& method_(std::string name, Method method_ptr, Opts&&... opts);
 
         template < typename Type >
         class_bind& typedef_(std::string name);
 
-        // variable_
-
-        template < detail::pointer_kind Pointer, variable_policy_family Policy = variable_policy::as_copy_t >
-        class_bind& variable_(std::string name, Pointer variable_ptr, Policy = {});
-
-        template < detail::pointer_kind Pointer, variable_policy_family Policy = variable_policy::as_copy_t >
-        class_bind& variable_(std::string name, Pointer variable_ptr, variable_opts opts, Policy = {});
+        template < detail::pointer_kind Pointer, typename... Opts >
+        class_bind& variable_(std::string name, Pointer variable_ptr, Opts&&... opts);
     };
 }
 
@@ -229,8 +142,8 @@ namespace meta_hpp
     public:
         explicit enum_bind(metadata_map metadata);
 
-        enum_bind& evalue_(std::string name, Enum value);
-        enum_bind& evalue_(std::string name, Enum value, evalue_opts opts);
+        template < typename... Opts >
+        enum_bind& evalue_(std::string name, Enum value, Opts&&... opts);
     };
 }
 
@@ -312,29 +225,14 @@ namespace meta_hpp
     public:
         explicit scope_bind(const scope& scope, metadata_map metadata);
 
-        // function_
-
-        template < detail::function_pointer_kind Function, function_policy_family Policy = function_policy::as_copy_t >
-        scope_bind& function_(std::string name, Function function_ptr, Policy = {});
-
-        template < detail::function_pointer_kind Function, function_policy_family Policy = function_policy::as_copy_t >
-        scope_bind& function_(std::string name, Function function_ptr, function_opts opts, Policy = {});
-
-        template < detail::function_pointer_kind Function, function_policy_family Policy = function_policy::as_copy_t >
-        scope_bind& function_(std::string name, Function function_ptr, string_ilist arguments, Policy = {});
-
-        // typedef_
+        template < detail::function_pointer_kind Function, typename... Opts >
+        scope_bind& function_(std::string name, Function function_ptr, Opts&&... opts);
 
         template < typename Type >
         scope_bind& typedef_(std::string name);
 
-        // variable_
-
-        template < detail::pointer_kind Pointer, variable_policy_family Policy = variable_policy::as_copy_t >
-        scope_bind& variable_(std::string name, Pointer variable_ptr, Policy = {});
-
-        template < detail::pointer_kind Pointer, variable_policy_family Policy = variable_policy::as_copy_t >
-        scope_bind& variable_(std::string name, Pointer variable_ptr, variable_opts opts, Policy = {});
+        template < detail::pointer_kind Pointer, typename... Opts >
+        scope_bind& variable_(std::string name, Pointer variable_ptr, Opts&&... opts);
     };
 }
 
@@ -410,5 +308,209 @@ namespace meta_hpp
 
     inline scope_bind extend_scope_(const scope& scope, metadata_map metadata = {}) {
         return scope_bind{scope, std::move(metadata)};
+    }
+}
+
+namespace meta_hpp
+{
+    class arguments_bind final {
+    public:
+        class argument_info final {
+        public:
+            argument_info() = default;
+            ~argument_info() = default;
+
+            argument_info(argument_info&&) = default;
+            argument_info& operator=(argument_info&&) = default;
+
+            argument_info(const argument_info&) = delete;
+            argument_info& operator=(const argument_info&) = delete;
+
+            argument_info(std::string name)
+            : name_{std::move(name)} {}
+
+            argument_info(std::string name, metadata_map metadata)
+            : name_{std::move(name)}
+            , metadata_{std::move(metadata)} {}
+
+            [[nodiscard]] std::string& get_name() noexcept {
+                return name_;
+            }
+
+            [[nodiscard]] const std::string& get_name() const noexcept {
+                return name_;
+            }
+
+            [[nodiscard]] metadata_map& get_metadata() noexcept {
+                return metadata_;
+            }
+
+            [[nodiscard]] const metadata_map& get_metadata() const noexcept {
+                return metadata_;
+            }
+
+        private:
+            std::string name_;
+            metadata_map metadata_;
+        };
+
+    public:
+        using values_t = std::vector<argument_info>;
+
+    public:
+        arguments_bind() = default;
+        ~arguments_bind() = default;
+
+        arguments_bind(arguments_bind&&) = default;
+        arguments_bind(const arguments_bind&) = delete;
+
+        arguments_bind& operator=(arguments_bind&&) = default;
+        arguments_bind& operator=(const arguments_bind&) = delete;
+
+        arguments_bind& operator()(std::string name) & {
+            values_.emplace_back(std::move(name));
+            return *this;
+        }
+
+        arguments_bind operator()(std::string name) && {
+            values_.emplace_back(std::move(name));
+            return std::move(*this);
+        }
+
+        arguments_bind& operator()(std::string name, metadata_map metadata) & {
+            values_.emplace_back(std::move(name), std::move(metadata));
+            return *this;
+        }
+
+        arguments_bind operator()(std::string name, metadata_map metadata) && {
+            values_.emplace_back(std::move(name), std::move(metadata));
+            return std::move(*this);
+        }
+
+        arguments_bind& operator()(values_t values) & {
+            values_.insert( //
+                values_.end(),
+                std::make_move_iterator(values.begin()),
+                std::make_move_iterator(values.end())
+            );
+            return *this;
+        }
+
+        arguments_bind operator()(values_t values) && {
+            values_.insert( //
+                values_.end(),
+                std::make_move_iterator(values.begin()),
+                std::make_move_iterator(values.end())
+            );
+            return std::move(*this);
+        }
+
+        arguments_bind& operator()(arguments_bind bind) & {
+            (*this)(std::move(bind.values_));
+            return *this;
+        }
+
+        arguments_bind operator()(arguments_bind bind) && {
+            (*this)(std::move(bind.values_));
+            return std::move(*this);
+        }
+
+        operator values_t() && {
+            return std::move(values_);
+        }
+
+        [[nodiscard]] values_t& get_values() noexcept {
+            return values_;
+        }
+
+        [[nodiscard]] const values_t& get_values() const noexcept {
+            return values_;
+        }
+
+    private:
+        values_t values_;
+    };
+
+    inline arguments_bind arguments_() {
+        return arguments_bind{};
+    }
+
+    inline arguments_bind argument_(std::string name) {
+        return arguments_()(std::move(name));
+    }
+
+    inline arguments_bind argument_(std::string name, metadata_map metadata) {
+        return arguments_()(std::move(name), std::move(metadata));
+    }
+}
+
+namespace meta_hpp
+{
+    class metadata_bind final {
+    public:
+        using values_t = metadata_map;
+
+    public:
+        metadata_bind() = default;
+        ~metadata_bind() = default;
+
+        metadata_bind(metadata_bind&&) = default;
+        metadata_bind(const metadata_bind&) = delete;
+
+        metadata_bind& operator=(metadata_bind&&) = default;
+        metadata_bind& operator=(const metadata_bind&) = delete;
+
+        metadata_bind& operator()(std::string name, uvalue value) & {
+            values_.insert_or_assign(std::move(name), std::move(value));
+            return *this;
+        }
+
+        metadata_bind operator()(std::string name, uvalue value) && {
+            values_.insert_or_assign(std::move(name), std::move(value));
+            return std::move(*this);
+        }
+
+        metadata_bind& operator()(values_t values) & {
+            detail::insert_or_assign(values_, std::move(values));
+            return *this;
+        }
+
+        metadata_bind operator()(values_t values) && {
+            detail::insert_or_assign(values_, std::move(values));
+            return std::move(*this);
+        }
+
+        metadata_bind& operator()(metadata_bind bind) & {
+            (*this)(std::move(bind.values_));
+            return *this;
+        }
+
+        metadata_bind operator()(metadata_bind bind) && {
+            (*this)(std::move(bind.values_));
+            return std::move(*this);
+        }
+
+        operator values_t() && {
+            return std::move(values_);
+        }
+
+        [[nodiscard]] values_t& get_values() noexcept {
+            return values_;
+        }
+
+        [[nodiscard]] const values_t& get_values() const noexcept {
+            return values_;
+        }
+
+    private:
+        values_t values_;
+    };
+
+    inline metadata_bind metadata_() {
+        return metadata_bind{};
+    }
+
+    inline metadata_bind metadata_(std::string name, uvalue value) {
+        return metadata_()(std::move(name), std::move(value));
     }
 }

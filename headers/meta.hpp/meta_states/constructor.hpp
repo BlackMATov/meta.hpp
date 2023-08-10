@@ -15,15 +15,14 @@
 
 namespace meta_hpp::detail
 {
-    template < constructor_policy_family Policy, class_kind Class, typename... Args >
+    template < constructor_policy::family Policy, class_kind Class, typename... Args >
     uvalue raw_constructor_create(type_registry& registry, std::span<const uarg> args) {
         using ct = constructor_traits<Class, Args...>;
         using class_type = typename ct::class_type;
         using argument_types = typename ct::argument_types;
 
-        constexpr bool as_object                       //
-            = std::is_copy_constructible_v<class_type> //
-           && std::is_same_v<Policy, constructor_policy::as_object_t>;
+        constexpr bool as_object //
+            = std::is_same_v<Policy, constructor_policy::as_object_t>;
 
         constexpr bool as_raw_ptr //
             = std::is_same_v<Policy, constructor_policy::as_raw_pointer_t>;
@@ -31,7 +30,10 @@ namespace meta_hpp::detail
         constexpr bool as_shared_ptr //
             = std::is_same_v<Policy, constructor_policy::as_shared_pointer_t>;
 
-        static_assert(as_object || as_raw_ptr || as_shared_ptr);
+        constexpr bool as_unique_ptr //
+            = std::is_same_v<Policy, constructor_policy::as_unique_pointer_t>;
+
+        static_assert(as_object || as_raw_ptr || as_shared_ptr || as_unique_ptr);
 
         META_HPP_ASSERT(             //
             args.size() == ct::arity //
@@ -54,6 +56,10 @@ namespace meta_hpp::detail
 
             if constexpr ( as_shared_ptr ) {
                 return std::make_shared<class_type>(META_HPP_FWD(all_args)...);
+            }
+
+            if constexpr ( as_unique_ptr ) {
+                return std::make_unique<class_type>(META_HPP_FWD(all_args)...);
             }
         });
     }
@@ -98,7 +104,7 @@ namespace meta_hpp::detail
 
 namespace meta_hpp::detail
 {
-    template < constructor_policy_family Policy, class_kind Class, typename... Args >
+    template < constructor_policy::family Policy, class_kind Class, typename... Args >
     constructor_state::create_impl make_constructor_create(type_registry& registry) {
         return [&registry](std::span<const uarg> args) { //
             return raw_constructor_create<Policy, Class, Args...>(registry, args);
@@ -140,7 +146,7 @@ namespace meta_hpp::detail
     : index{nindex}
     , metadata{std::move(nmetadata)} {}
 
-    template < constructor_policy_family Policy, class_kind Class, typename... Args >
+    template < constructor_policy::family Policy, class_kind Class, typename... Args >
     constructor_state_ptr constructor_state::make(metadata_map metadata) {
         type_registry& registry{type_registry::instance()};
 

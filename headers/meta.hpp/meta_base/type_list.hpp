@@ -45,3 +45,37 @@ namespace meta_hpp::detail
     template < typename TypeList >
     inline constexpr std::size_t type_list_arity_v = type_list_arity<TypeList>::value;
 }
+
+namespace meta_hpp::detail
+{
+    template < template < typename > class Pred, typename TypeList >
+    struct type_list_count_of;
+
+    template < template < typename > class Pred, typename... Types >
+    struct type_list_count_of<Pred, type_list<Types...>> : size_constant<(0 + ... + Pred<Types>::value)> {};
+
+    template < template < typename > class Pred, typename TypeList >
+    inline constexpr std::size_t type_list_count_of_v = type_list_count_of<Pred, TypeList>::value;
+}
+
+namespace meta_hpp::detail
+{
+    template < template < typename > class Pred, typename Default, typename TypeList >
+    struct type_list_first_of;
+
+    template < template < typename > class Pred, typename Default >
+    struct type_list_first_of<Pred, Default, type_list<>> {
+        using type = Default;
+    };
+
+    template < template < typename > class Pred, typename Default, typename Type, typename... Types >
+    struct type_list_first_of<Pred, Default, type_list<Type, Types...>> {
+        using type = std::conditional_t< //
+            Pred<Type>::value,
+            Type,
+            typename type_list_first_of<Pred, Default, type_list<Types...>>::type>;
+    };
+
+    template < template < typename > class Pred, typename Default, typename TypeList >
+    using type_list_first_of_t = typename type_list_first_of<Pred, Default, TypeList>::type;
+}

@@ -32,15 +32,6 @@ namespace meta_hpp::detail
         }
     };
 
-    template < typename T >
-        requires std::is_copy_constructible_v<T>
-    struct index_traits<const T*> {
-        uvalue operator()(const T* v, std::size_t i) const {
-            // NOLINTNEXTLINE(*-pointer-arithmetic)
-            return v != nullptr ? uvalue{v[i]} : uvalue{};
-        }
-    };
-
     template < typename T, std::size_t Size >
         requires std::is_copy_constructible_v<T>
     struct index_traits<std::array<T, Size>> {

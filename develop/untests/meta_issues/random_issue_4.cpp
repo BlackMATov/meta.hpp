@@ -50,7 +50,7 @@ TEST_CASE("meta/meta_issues/random/4") {
 
     SUBCASE("3") {
         meta::uvalue v2{std::in_place_type<throw_on_copy>};
-        CHECK_THROWS(v = v2);
+        CHECK_THROWS(v = v2.copy());
         CHECK(v.get_type() == meta::resolve_type<int>());
         CHECK_NOTHROW(v = std::move(v2));
         CHECK(v.get_type() == meta::resolve_type<throw_on_copy>());
@@ -58,7 +58,7 @@ TEST_CASE("meta/meta_issues/random/4") {
 
     SUBCASE("4") {
         meta::uvalue v2{std::in_place_type<throw_on_move>};
-        CHECK_THROWS(v = v2);
+        CHECK_THROWS(v = v2.copy());
         CHECK(v.get_type() == meta::resolve_type<int>());
         CHECK_NOTHROW(v = std::move(v2));
         CHECK(v.get_type() == meta::resolve_type<throw_on_move>());

@@ -43,17 +43,18 @@ namespace
 
 TEST_CASE("meta/meta_states/scope") {
     namespace meta = meta_hpp;
+    using namespace std::string_literals;
 
     meta::static_scope_("meta/meta_states/scope/math")
         .typedef_<color>("color")
         .typedef_<ivec2>("ivec2")
         .typedef_<ivec3>("ivec3")
-        .function_("iadd2", &iadd2, {"l", "r"})
-        .function_("iadd3", &iadd3, {"l"})
+        .function_("iadd2", &iadd2, meta::arguments_()("l")("r"), meta::metadata_()("desc", "iadd2"s))
+        .function_("iadd3", &iadd3, meta::arguments_()("l"), meta::metadata_()("desc", "iadd3"s))
         .function_("function_overloaded", meta::select_overload<int(int)>(&function_overloaded))
         .function_("function_overloaded", meta::select_overload<int(int,int)>(&function_overloaded))
-        .variable_("static_ivec2", &static_ivec2)
-        .variable_("static_const_ivec3", &static_const_ivec3);
+        .variable_("static_ivec2", &static_ivec2, meta::metadata_()("desc", "static_ivec2"s))
+        .variable_("static_const_ivec3", &static_const_ivec3, meta::metadata_()("desc", "static_const_ivec3"s));
 
     const meta::scope math_scope = meta::resolve_scope("meta/meta_states/scope/math");
     REQUIRE(math_scope);
@@ -114,6 +115,9 @@ TEST_CASE("meta/meta_states/scope") {
             CHECK(iadd2_func.get_argument(1).get_name() == "r");
 
             CHECK_FALSE(iadd2_func.get_argument(2));
+
+            REQUIRE(iadd2_func.get_metadata().contains("desc"));
+            CHECK(iadd2_func.get_metadata().at("desc").as<std::string>() == "iadd2"s);
         }
 
         const meta::function iadd3_func = math_scope.get_function("iadd3");
@@ -133,6 +137,9 @@ TEST_CASE("meta/meta_states/scope") {
             CHECK(iadd3_func.get_argument(1).get_name() == "");
 
             CHECK_FALSE(iadd3_func.get_argument(2));
+
+            REQUIRE(iadd3_func.get_metadata().contains("desc"));
+            CHECK(iadd3_func.get_metadata().at("desc").as<std::string>() == "iadd3"s);
         }
     }
 
@@ -199,10 +206,14 @@ TEST_CASE("meta/meta_states/scope") {
         const meta::variable static_ivec2_var = math_scope.get_variable("static_ivec2");
         REQUIRE(static_ivec2_var);
         CHECK(static_ivec2_var.get_type().get_data_type() == meta::resolve_type<ivec2>());
+        REQUIRE(static_ivec2_var.get_metadata().contains("desc"));
+        CHECK(static_ivec2_var.get_metadata().at("desc").as<std::string>() == "static_ivec2"s);
 
         const meta::variable static_const_ivec3_var = math_scope.get_variable("static_const_ivec3");
         REQUIRE(static_const_ivec3_var);
         CHECK(static_const_ivec3_var.get_type().get_data_type() == meta::resolve_type<ivec3>());
+        REQUIRE(static_const_ivec3_var.get_metadata().contains("desc"));
+        CHECK(static_const_ivec3_var.get_metadata().at("desc").as<std::string>() == "static_const_ivec3"s);
     }
 }
 

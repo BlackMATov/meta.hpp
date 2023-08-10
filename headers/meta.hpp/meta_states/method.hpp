@@ -16,15 +16,15 @@
 
 namespace meta_hpp::detail
 {
-    template < method_policy_family Policy, method_pointer_kind Method >
+    template < method_policy::family Policy, method_pointer_kind Method >
     uvalue raw_method_invoke(type_registry& registry, Method method_ptr, const uinst& inst, std::span<const uarg> args) {
         using mt = method_traits<Method>;
         using return_type = typename mt::return_type;
         using qualified_type = typename mt::qualified_type;
         using argument_types = typename mt::argument_types;
 
-        constexpr bool as_copy                          //
-            = std::is_copy_constructible_v<return_type> //
+        constexpr bool as_copy                             //
+            = std::is_constructible_v<uvalue, return_type> //
            && std::is_same_v<Policy, method_policy::as_copy_t>;
 
         constexpr bool as_void            //
@@ -94,7 +94,7 @@ namespace meta_hpp::detail
 
 namespace meta_hpp::detail
 {
-    template < method_policy_family Policy, method_pointer_kind Method >
+    template < method_policy::family Policy, method_pointer_kind Method >
     method_state::invoke_impl make_method_invoke(type_registry& registry, Method method_ptr) {
         return [&registry, method_ptr](const uinst& inst, std::span<const uarg> args) {
             return raw_method_invoke<Policy>(registry, method_ptr, inst, args);
@@ -129,7 +129,7 @@ namespace meta_hpp::detail
     : index{std::move(nindex)}
     , metadata{std::move(nmetadata)} {}
 
-    template < method_policy_family Policy, method_pointer_kind Method >
+    template < method_policy::family Policy, method_pointer_kind Method >
     method_state_ptr method_state::make(std::string name, Method method_ptr, metadata_map metadata) {
         type_registry& registry{type_registry::instance()};
 

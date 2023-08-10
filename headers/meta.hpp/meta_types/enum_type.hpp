@@ -62,11 +62,10 @@ namespace meta_hpp
         return std::string_view{};
     }
 
-    inline uvalue enum_type::name_to_value(std::string_view name) const noexcept {
+    inline const uvalue& enum_type::name_to_value(std::string_view name) const noexcept {
         if ( const evalue& value = get_evalue(name) ) {
             return value.get_value();
         }
-
-        return uvalue{};
+        return uvalue::empty_value;
     }
 }
