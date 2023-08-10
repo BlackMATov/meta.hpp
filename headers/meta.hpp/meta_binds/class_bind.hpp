@@ -153,46 +153,32 @@ namespace meta_hpp
             "constructor policy may be specified only once"
         );
 
-        metadata_map metadata;
-        argument_info_list arguments;
+        metadata_bind metadata;
+        arguments_bind arguments;
 
         {
-            // clang-format off
             const auto process_opt = detail::overloaded{
-                [](auto&&, constructor_policy::family auto) {
-                    // nothing
-                },
-                [&metadata](auto&&, metadata_map m) {
-                    detail::insert_or_assign(metadata, std::move(m));
-                },
-                [](auto&& self, metadata_bind b) {
-                    self(self, metadata_map{std::move(b)});
-                },
-                [&arguments](auto&&, argument_info_list l) {
-                    arguments.insert(arguments.end(),
-                        std::make_move_iterator(l.begin()),
-                        std::make_move_iterator(l.end()));
-                },
-                [](auto&& self, arguments_bind b) {
-                    self(self, argument_info_list{std::move(b)});
-                },
+                [](constructor_policy::family auto) {}, // nothing
+                [&metadata](metadata_bind b) { metadata(std::move(b)); },
+                [&metadata](metadata_bind::values_t vs) { metadata(std::move(vs)); },
+                [&arguments](arguments_bind b) { arguments(std::move(b)); },
+                [&arguments](arguments_bind::values_t vs) { arguments(std::move(vs)); },
             };
-            // clang-format on
 
-            (process_opt(process_opt, std::forward<Opts>(opts)), ...);
+            (process_opt(std::forward<Opts>(opts)), ...);
         }
 
         auto state = detail::constructor_state::make<policy_t, Class, Args...>(std::move(metadata));
 
-        META_HPP_ASSERT(                                //
-            arguments.size() <= state->arguments.size() //
+        META_HPP_ASSERT(                                             //
+            arguments.get_values().size() <= state->arguments.size() //
             && "provided argument names don't match constructor argument count"
         );
 
-        for ( std::size_t i{}, e{std::min(arguments.size(), state->arguments.size())}; i < e; ++i ) {
+        for ( std::size_t i{}, e{std::min(arguments.get_values().size(), state->arguments.size())}; i < e; ++i ) {
             argument& arg = state->arguments[i];
-            detail::state_access(arg)->name = std::move(arguments[i].get_name());
-            detail::state_access(arg)->metadata = std::move(arguments[i].get_metadata());
+            detail::state_access(arg)->name = std::move(arguments.get_values()[i].get_name());
+            detail::state_access(arg)->metadata = std::move(arguments.get_values()[i].get_metadata());
         }
 
         detail::insert_or_assign(get_data().constructors, constructor{std::move(state)});
@@ -204,21 +190,15 @@ namespace meta_hpp
     class_bind<Class>& class_bind<Class>::destructor_(Opts&&... opts)
         requires detail::class_bind_destructor_kind<Class>
     {
-        metadata_map metadata;
+        metadata_bind metadata;
 
         {
-            // clang-format off
             const auto process_opt = detail::overloaded{
-                [&metadata](auto&&, metadata_map m) {
-                    detail::insert_or_assign(metadata, std::move(m));
-                },
-                [](auto&& self, metadata_bind b) {
-                    self(self, metadata_map{std::move(b)});
-                },
+                [&metadata](metadata_bind b) { metadata(std::move(b)); },
+                [&metadata](metadata_bind::values_t vs) { metadata(std::move(vs)); },
             };
-            // clang-format on
 
-            (process_opt(process_opt, std::forward<Opts>(opts)), ...);
+            (process_opt(std::forward<Opts>(opts)), ...);
         }
 
         auto state = detail::destructor_state::make<Class>(std::move(metadata));
@@ -237,46 +217,32 @@ namespace meta_hpp
             "function policy may be specified only once"
         );
 
-        metadata_map metadata;
-        argument_info_list arguments;
+        metadata_bind metadata;
+        arguments_bind arguments;
 
         {
-            // clang-format off
             const auto process_opt = detail::overloaded{
-                [](auto&&, function_policy::family auto) {
-                    // nothing
-                },
-                [&metadata](auto&&, metadata_map m) {
-                    detail::insert_or_assign(metadata, std::move(m));
-                },
-                [](auto&& self, metadata_bind b) {
-                    self(self, metadata_map{std::move(b)});
-                },
-                [&arguments](auto&&, argument_info_list l) {
-                    arguments.insert(arguments.end(),
-                        std::make_move_iterator(l.begin()),
-                        std::make_move_iterator(l.end()));
-                },
-                [](auto&& self, arguments_bind b) {
-                    self(self, argument_info_list{std::move(b)});
-                },
+                [](function_policy::family auto) {}, // nothing
+                [&metadata](metadata_bind b) { metadata(std::move(b)); },
+                [&metadata](metadata_bind::values_t vs) { metadata(std::move(vs)); },
+                [&arguments](arguments_bind b) { arguments(std::move(b)); },
+                [&arguments](arguments_bind::values_t vs) { arguments(std::move(vs)); },
             };
-            // clang-format on
 
-            (process_opt(process_opt, std::forward<Opts>(opts)), ...);
+            (process_opt(std::forward<Opts>(opts)), ...);
         }
 
         auto state = detail::function_state::make<policy_t>(std::move(name), function_ptr, std::move(metadata));
 
-        META_HPP_ASSERT(                                //
-            arguments.size() <= state->arguments.size() //
+        META_HPP_ASSERT(                                             //
+            arguments.get_values().size() <= state->arguments.size() //
             && "provided argument names don't match function argument count"
         );
 
-        for ( std::size_t i{}, e{std::min(arguments.size(), state->arguments.size())}; i < e; ++i ) {
+        for ( std::size_t i{}, e{std::min(arguments.get_values().size(), state->arguments.size())}; i < e; ++i ) {
             argument& arg = state->arguments[i];
-            detail::state_access(arg)->name = std::move(arguments[i].get_name());
-            detail::state_access(arg)->metadata = std::move(arguments[i].get_metadata());
+            detail::state_access(arg)->name = std::move(arguments.get_values()[i].get_name());
+            detail::state_access(arg)->metadata = std::move(arguments.get_values()[i].get_metadata());
         }
 
         detail::insert_or_assign(get_data().functions, function{std::move(state)});
@@ -294,24 +260,16 @@ namespace meta_hpp
             "member policy may be specified only once"
         );
 
-        metadata_map metadata;
+        metadata_bind metadata;
 
         {
-            // clang-format off
             const auto process_opt = detail::overloaded{
-                [](auto&&, member_policy::family auto) {
-                    // nothing
-                },
-                [&metadata](auto&&, metadata_map m) {
-                    detail::insert_or_assign(metadata, std::move(m));
-                },
-                [](auto&& self, metadata_bind b) {
-                    self(self, metadata_map{std::move(b)});
-                },
+                [](member_policy::family auto) {}, // nothing
+                [&metadata](metadata_bind b) { metadata(std::move(b)); },
+                [&metadata](metadata_bind::values_t vs) { metadata(std::move(vs)); },
             };
-            // clang-format on
 
-            (process_opt(process_opt, std::forward<Opts>(opts)), ...);
+            (process_opt(std::forward<Opts>(opts)), ...);
         }
 
         auto state = detail::member_state::make<policy_t>(std::move(name), member_ptr, std::move(metadata));
@@ -330,46 +288,32 @@ namespace meta_hpp
             "method policy may be specified only once"
         );
 
-        metadata_map metadata;
-        argument_info_list arguments;
+        metadata_bind metadata;
+        arguments_bind arguments;
 
         {
-            // clang-format off
             const auto process_opt = detail::overloaded{
-                [](auto&&, method_policy::family auto) {
-                    // nothing
-                },
-                [&metadata](auto&&, metadata_map m) {
-                    detail::insert_or_assign(metadata, std::move(m));
-                },
-                [](auto&& self, metadata_bind b) {
-                    self(self, metadata_map{std::move(b)});
-                },
-                [&arguments](auto&&, argument_info_list l) {
-                    arguments.insert(arguments.end(),
-                        std::make_move_iterator(l.begin()),
-                        std::make_move_iterator(l.end()));
-                },
-                [](auto&& self, arguments_bind b) {
-                    self(self, argument_info_list{std::move(b)});
-                },
+                [](method_policy::family auto) {}, // nothing
+                [&metadata](metadata_bind b) { metadata(std::move(b)); },
+                [&metadata](metadata_bind::values_t vs) { metadata(std::move(vs)); },
+                [&arguments](arguments_bind b) { arguments(std::move(b)); },
+                [&arguments](arguments_bind::values_t vs) { arguments(std::move(vs)); },
             };
-            // clang-format on
 
-            (process_opt(process_opt, std::forward<Opts>(opts)), ...);
+            (process_opt(std::forward<Opts>(opts)), ...);
         }
 
         auto state = detail::method_state::make<policy_t>(std::move(name), method_ptr, std::move(metadata));
 
-        META_HPP_ASSERT(                                //
-            arguments.size() <= state->arguments.size() //
+        META_HPP_ASSERT(                                             //
+            arguments.get_values().size() <= state->arguments.size() //
             && "provided argument names don't match method argument count"
         );
 
-        for ( std::size_t i{}, e{std::min(arguments.size(), state->arguments.size())}; i < e; ++i ) {
+        for ( std::size_t i{}, e{std::min(arguments.get_values().size(), state->arguments.size())}; i < e; ++i ) {
             argument& arg = state->arguments[i];
-            detail::state_access(arg)->name = std::move(arguments[i].get_name());
-            detail::state_access(arg)->metadata = std::move(arguments[i].get_metadata());
+            detail::state_access(arg)->name = std::move(arguments.get_values()[i].get_name());
+            detail::state_access(arg)->metadata = std::move(arguments.get_values()[i].get_metadata());
         }
 
         detail::insert_or_assign(get_data().methods, method{std::move(state)});
@@ -394,24 +338,16 @@ namespace meta_hpp
             "variable policy may be specified only once"
         );
 
-        metadata_map metadata;
+        metadata_bind metadata;
 
         {
-            // clang-format off
             const auto process_opt = detail::overloaded{
-                [](auto&&, variable_policy::family auto) {
-                    // nothing
-                },
-                [&metadata](auto&&, metadata_map m) {
-                    detail::insert_or_assign(metadata, std::move(m));
-                },
-                [](auto&& self, metadata_bind b) {
-                    self(self, metadata_map{std::move(b)});
-                },
+                [](variable_policy::family auto) {}, // nothing
+                [&metadata](metadata_bind b) { metadata(std::move(b)); },
+                [&metadata](metadata_bind::values_t vs) { metadata(std::move(vs)); },
             };
-            // clang-format on
 
-            (process_opt(process_opt, std::forward<Opts>(opts)), ...);
+            (process_opt(std::forward<Opts>(opts)), ...);
         }
 
         auto state = detail::variable_state::make<policy_t>(std::move(name), variable_ptr, std::move(metadata));

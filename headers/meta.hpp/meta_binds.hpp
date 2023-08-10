@@ -40,50 +40,6 @@ namespace meta_hpp::detail
 
 namespace meta_hpp
 {
-    class argument_info final {
-    public:
-        argument_info() = default;
-        ~argument_info() = default;
-
-        argument_info(argument_info&& other) = default;
-        argument_info& operator=(argument_info&&) = default;
-
-        argument_info(const argument_info&) = delete;
-        argument_info& operator=(const argument_info&) = delete;
-
-        argument_info(std::string name)
-        : name_{std::move(name)} {}
-
-        argument_info(std::string name, metadata_map metadata)
-        : name_{std::move(name)}
-        , metadata_{std::move(metadata)} {}
-
-        [[nodiscard]] std::string& get_name() {
-            return name_;
-        }
-
-        [[nodiscard]] const std::string& get_name() const {
-            return name_;
-        }
-
-        [[nodiscard]] metadata_map& get_metadata() {
-            return metadata_;
-        }
-
-        [[nodiscard]] const metadata_map& get_metadata() const {
-            return metadata_;
-        }
-
-    private:
-        std::string name_;
-        metadata_map metadata_;
-    };
-
-    using argument_info_list = std::vector<argument_info>;
-}
-
-namespace meta_hpp
-{
     template < type_family Type >
     class type_bind_base {
     public:
@@ -359,6 +315,49 @@ namespace meta_hpp
 {
     class arguments_bind final {
     public:
+        class argument_info final {
+        public:
+            argument_info() = default;
+            ~argument_info() = default;
+
+            argument_info(argument_info&&) = default;
+            argument_info& operator=(argument_info&&) = default;
+
+            argument_info(const argument_info&) = delete;
+            argument_info& operator=(const argument_info&) = delete;
+
+            argument_info(std::string name)
+            : name_{std::move(name)} {}
+
+            argument_info(std::string name, metadata_map metadata)
+            : name_{std::move(name)}
+            , metadata_{std::move(metadata)} {}
+
+            [[nodiscard]] std::string& get_name() noexcept {
+                return name_;
+            }
+
+            [[nodiscard]] const std::string& get_name() const noexcept {
+                return name_;
+            }
+
+            [[nodiscard]] metadata_map& get_metadata() noexcept {
+                return metadata_;
+            }
+
+            [[nodiscard]] const metadata_map& get_metadata() const noexcept {
+                return metadata_;
+            }
+
+        private:
+            std::string name_;
+            metadata_map metadata_;
+        };
+
+    public:
+        using values_t = std::vector<argument_info>;
+
+    public:
         arguments_bind() = default;
         ~arguments_bind() = default;
 
@@ -369,31 +368,67 @@ namespace meta_hpp
         arguments_bind& operator=(const arguments_bind&) = delete;
 
         arguments_bind& operator()(std::string name) & {
-            arguments_.emplace_back(std::move(name));
+            values_.emplace_back(std::move(name));
             return *this;
         }
 
         arguments_bind operator()(std::string name) && {
-            arguments_.emplace_back(std::move(name));
+            values_.emplace_back(std::move(name));
             return std::move(*this);
         }
 
         arguments_bind& operator()(std::string name, metadata_map metadata) & {
-            arguments_.emplace_back(std::move(name), std::move(metadata));
+            values_.emplace_back(std::move(name), std::move(metadata));
             return *this;
         }
 
         arguments_bind operator()(std::string name, metadata_map metadata) && {
-            arguments_.emplace_back(std::move(name), std::move(metadata));
+            values_.emplace_back(std::move(name), std::move(metadata));
             return std::move(*this);
         }
 
-        operator argument_info_list() && {
-            return std::move(arguments_);
+        arguments_bind& operator()(values_t values) & {
+            values_.insert( //
+                values_.end(),
+                std::make_move_iterator(values.begin()),
+                std::make_move_iterator(values.end())
+            );
+            return *this;
+        }
+
+        arguments_bind operator()(values_t values) && {
+            values_.insert( //
+                values_.end(),
+                std::make_move_iterator(values.begin()),
+                std::make_move_iterator(values.end())
+            );
+            return std::move(*this);
+        }
+
+        arguments_bind& operator()(arguments_bind bind) & {
+            (*this)(std::move(bind.values_));
+            return *this;
+        }
+
+        arguments_bind operator()(arguments_bind bind) && {
+            (*this)(std::move(bind.values_));
+            return std::move(*this);
+        }
+
+        operator values_t() && {
+            return std::move(values_);
+        }
+
+        [[nodiscard]] values_t& get_values() noexcept {
+            return values_;
+        }
+
+        [[nodiscard]] const values_t& get_values() const noexcept {
+            return values_;
         }
 
     private:
-        argument_info_list arguments_;
+        values_t values_;
     };
 
     inline arguments_bind arguments_() {
@@ -413,6 +448,9 @@ namespace meta_hpp
 {
     class metadata_bind final {
     public:
+        using values_t = metadata_map;
+
+    public:
         metadata_bind() = default;
         ~metadata_bind() = default;
 
@@ -423,21 +461,49 @@ namespace meta_hpp
         metadata_bind& operator=(const metadata_bind&) = delete;
 
         metadata_bind& operator()(std::string name, uvalue value) & {
-            metadata_.insert_or_assign(std::move(name), std::move(value));
+            values_.insert_or_assign(std::move(name), std::move(value));
             return *this;
         }
 
         metadata_bind operator()(std::string name, uvalue value) && {
-            metadata_.insert_or_assign(std::move(name), std::move(value));
+            values_.insert_or_assign(std::move(name), std::move(value));
             return std::move(*this);
         }
 
-        operator metadata_map() && {
-            return std::move(metadata_);
+        metadata_bind& operator()(values_t values) & {
+            detail::insert_or_assign(values_, std::move(values));
+            return *this;
+        }
+
+        metadata_bind operator()(values_t values) && {
+            detail::insert_or_assign(values_, std::move(values));
+            return std::move(*this);
+        }
+
+        metadata_bind& operator()(metadata_bind bind) & {
+            (*this)(std::move(bind.values_));
+            return *this;
+        }
+
+        metadata_bind operator()(metadata_bind bind) && {
+            (*this)(std::move(bind.values_));
+            return std::move(*this);
+        }
+
+        operator values_t() && {
+            return std::move(values_);
+        }
+
+        [[nodiscard]] values_t& get_values() noexcept {
+            return values_;
+        }
+
+        [[nodiscard]] const values_t& get_values() const noexcept {
+            return values_;
         }
 
     private:
-        metadata_map metadata_;
+        values_t values_;
     };
 
     inline metadata_bind metadata_() {
