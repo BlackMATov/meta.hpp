@@ -7,9 +7,6 @@
 #include <meta.hpp/meta_all.hpp>
 #include <vmath.hpp/vmath_all.hpp>
 
-#include <rttr/type>
-#include <rttr/registration>
-
 #include <benchmark/benchmark.h>
 
 namespace
@@ -57,17 +54,6 @@ namespace
         .function_("invoke_function_2", &static_function_2)
         .function_("invoke_function_3", &static_function_3)
         .function_("invoke_function_4", &static_function_4);
-}
-
-RTTR_REGISTRATION
-{
-    using namespace rttr;
-
-    registration::method("invoke_function_0", &static_function_0);
-    registration::method("invoke_function_1", &static_function_1);
-    registration::method("invoke_function_2", &static_function_2);
-    registration::method("invoke_function_3", &static_function_3);
-    registration::method("invoke_function_4", &static_function_4);
 }
 
 //
@@ -167,79 +153,17 @@ namespace
     }
 }
 
-//
-// rttr
-//
-
-namespace
-{
-    [[maybe_unused]]
-    void rttr_invoke_function_0(benchmark::State &state) {
-        rttr::method m = rttr::type::get_global_method("invoke_function_0");
-        META_HPP_ASSERT(m.is_valid());
-
-        for ( auto _ : state ) {
-            m.invoke({});
-        }
-    }
-
-    [[maybe_unused]]
-    void rttr_invoke_function_1(benchmark::State &state) {
-        rttr::method m = rttr::type::get_global_method("invoke_function_1");
-        META_HPP_ASSERT(m.is_valid());
-
-        for ( auto _ : state ) {
-            m.invoke({}, static_angle);
-        }
-    }
-
-    [[maybe_unused]]
-    void rttr_invoke_function_2(benchmark::State &state) {
-        rttr::method m = rttr::type::get_global_method("invoke_function_2");
-        META_HPP_ASSERT(m.is_valid());
-
-        for ( auto _ : state ) {
-            m.invoke({}, static_angle, vmath::unit3_x<float>);
-        }
-    }
-
-    [[maybe_unused]]
-    void rttr_invoke_function_3(benchmark::State &state) {
-        rttr::method m = rttr::type::get_global_method("invoke_function_3");
-        META_HPP_ASSERT(m.is_valid());
-
-        for ( auto _ : state ) {
-            m.invoke({}, static_angle, vmath::unit3_x<float>, 2.f);
-        }
-    }
-
-    [[maybe_unused]]
-    void rttr_invoke_function_4(benchmark::State &state) {
-        rttr::method m = rttr::type::get_global_method("invoke_function_4");
-        META_HPP_ASSERT(m.is_valid());
-
-        for ( auto _ : state ) {
-            m.invoke({}, static_angle, vmath::unit3_x<float>, 2.f, vmath::midentity3<float>);
-        }
-    }
-}
-
 BENCHMARK(invoke_function_0)->Teardown(static_function_reset);
 BENCHMARK(meta_invoke_function_0)->Teardown(static_function_reset);
-BENCHMARK(rttr_invoke_function_0)->Teardown(static_function_reset);
 
 BENCHMARK(invoke_function_1)->Teardown(static_function_reset);
 BENCHMARK(meta_invoke_function_1)->Teardown(static_function_reset);
-BENCHMARK(rttr_invoke_function_1)->Teardown(static_function_reset);
 
 BENCHMARK(invoke_function_2)->Teardown(static_function_reset);
 BENCHMARK(meta_invoke_function_2)->Teardown(static_function_reset);
-BENCHMARK(rttr_invoke_function_2)->Teardown(static_function_reset);
 
 BENCHMARK(invoke_function_3)->Teardown(static_function_reset);
 BENCHMARK(meta_invoke_function_3)->Teardown(static_function_reset);
-BENCHMARK(rttr_invoke_function_3)->Teardown(static_function_reset);
 
 BENCHMARK(invoke_function_4)->Teardown(static_function_reset);
 BENCHMARK(meta_invoke_function_4)->Teardown(static_function_reset);
-BENCHMARK(rttr_invoke_function_4)->Teardown(static_function_reset);
