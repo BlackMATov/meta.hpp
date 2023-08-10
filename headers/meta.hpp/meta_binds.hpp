@@ -108,30 +108,56 @@ namespace meta_hpp
         explicit class_bind(metadata_map metadata);
 
         template < detail::class_bind_base_kind<Class>... Bases >
-        class_bind& base_();
+        class_bind& base_() &;
+
+        template < detail::class_bind_base_kind<Class>... Bases >
+        class_bind base_() &&;
 
         template < typename... Args, typename... Opts >
-        class_bind& constructor_(Opts&&... opts)
-            requires detail::class_bind_constructor_kind<Class, Args...>;
+            requires detail::class_bind_constructor_kind<Class, Args...>
+        class_bind& constructor_(Opts&&... opts) &;
+
+        template < typename... Args, typename... Opts >
+            requires detail::class_bind_constructor_kind<Class, Args...>
+        class_bind constructor_(Opts&&... opts) &&;
 
         template < typename... Opts >
-        class_bind& destructor_(Opts&&... opts)
-            requires detail::class_bind_destructor_kind<Class>;
+            requires detail::class_bind_destructor_kind<Class>
+        class_bind& destructor_(Opts&&... opts) &;
+
+        template < typename... Opts >
+            requires detail::class_bind_destructor_kind<Class>
+        class_bind destructor_(Opts&&... opts) &&;
 
         template < detail::function_pointer_kind Function, typename... Opts >
-        class_bind& function_(std::string name, Function function_ptr, Opts&&... opts);
+        class_bind& function_(std::string name, Function function_ptr, Opts&&... opts) &;
+
+        template < detail::function_pointer_kind Function, typename... Opts >
+        class_bind function_(std::string name, Function function_ptr, Opts&&... opts) &&;
 
         template < detail::class_bind_member_kind<Class> Member, typename... Opts >
-        class_bind& member_(std::string name, Member member_ptr, Opts&&... opts);
+        class_bind& member_(std::string name, Member member_ptr, Opts&&... opts) &;
+
+        template < detail::class_bind_member_kind<Class> Member, typename... Opts >
+        class_bind member_(std::string name, Member member_ptr, Opts&&... opts) &&;
 
         template < detail::class_bind_method_kind<Class> Method, typename... Opts >
-        class_bind& method_(std::string name, Method method_ptr, Opts&&... opts);
+        class_bind& method_(std::string name, Method method_ptr, Opts&&... opts) &;
+
+        template < detail::class_bind_method_kind<Class> Method, typename... Opts >
+        class_bind method_(std::string name, Method method_ptr, Opts&&... opts) &&;
 
         template < typename Type >
-        class_bind& typedef_(std::string name);
+        class_bind& typedef_(std::string name) &;
+
+        template < typename Type >
+        class_bind typedef_(std::string name) &&;
 
         template < detail::pointer_kind Pointer, typename... Opts >
-        class_bind& variable_(std::string name, Pointer variable_ptr, Opts&&... opts);
+        class_bind& variable_(std::string name, Pointer variable_ptr, Opts&&... opts) &;
+
+        template < detail::pointer_kind Pointer, typename... Opts >
+        class_bind variable_(std::string name, Pointer variable_ptr, Opts&&... opts) &&;
     };
 }
 
@@ -226,13 +252,22 @@ namespace meta_hpp
         explicit scope_bind(const scope& scope, metadata_map metadata);
 
         template < detail::function_pointer_kind Function, typename... Opts >
-        scope_bind& function_(std::string name, Function function_ptr, Opts&&... opts);
+        scope_bind& function_(std::string name, Function function_ptr, Opts&&... opts) &;
+
+        template < detail::function_pointer_kind Function, typename... Opts >
+        scope_bind function_(std::string name, Function function_ptr, Opts&&... opts) &&;
 
         template < typename Type >
-        scope_bind& typedef_(std::string name);
+        scope_bind& typedef_(std::string name) &;
+
+        template < typename Type >
+        scope_bind typedef_(std::string name) &&;
 
         template < detail::pointer_kind Pointer, typename... Opts >
-        scope_bind& variable_(std::string name, Pointer variable_ptr, Opts&&... opts);
+        scope_bind& variable_(std::string name, Pointer variable_ptr, Opts&&... opts) &;
+
+        template < detail::pointer_kind Pointer, typename... Opts >
+        scope_bind variable_(std::string name, Pointer variable_ptr, Opts&&... opts) &&;
     };
 }
 

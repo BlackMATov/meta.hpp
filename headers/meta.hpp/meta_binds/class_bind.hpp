@@ -99,7 +99,7 @@ namespace meta_hpp
 
     template < detail::class_kind Class >
     template < detail::class_bind_base_kind<Class>... Bases >
-    class_bind<Class>& class_bind<Class>::base_() {
+    class_bind<Class>& class_bind<Class>::base_() & {
         using namespace detail;
         using namespace detail::class_bind_impl;
 
@@ -141,10 +141,16 @@ namespace meta_hpp
     }
 
     template < detail::class_kind Class >
+    template < detail::class_bind_base_kind<Class>... Bases >
+    class_bind<Class> class_bind<Class>::base_() && {
+        base_<Bases...>();
+        return std::move(*this);
+    }
+
+    template < detail::class_kind Class >
     template < typename... Args, typename... Opts >
-    class_bind<Class>& class_bind<Class>::constructor_(Opts&&... opts)
         requires detail::class_bind_constructor_kind<Class, Args...>
-    {
+    class_bind<Class>& class_bind<Class>::constructor_(Opts&&... opts) & {
         using opts_t = detail::type_list<std::remove_cvref_t<Opts>...>;
         using policy_t = detail::type_list_first_of_t<constructor_policy::is_family, constructor_policy::as_object_t, opts_t>;
 
@@ -186,10 +192,17 @@ namespace meta_hpp
     }
 
     template < detail::class_kind Class >
+    template < typename... Args, typename... Opts >
+        requires detail::class_bind_constructor_kind<Class, Args...>
+    class_bind<Class> class_bind<Class>::constructor_(Opts&&... opts) && {
+        constructor_<Args...>(std::forward<Opts>(opts)...);
+        return std::move(*this);
+    }
+
+    template < detail::class_kind Class >
     template < typename... Opts >
-    class_bind<Class>& class_bind<Class>::destructor_(Opts&&... opts)
         requires detail::class_bind_destructor_kind<Class>
-    {
+    class_bind<Class>& class_bind<Class>::destructor_(Opts&&... opts) & {
         metadata_bind metadata;
 
         {
@@ -207,8 +220,16 @@ namespace meta_hpp
     }
 
     template < detail::class_kind Class >
+    template < typename... Opts >
+        requires detail::class_bind_destructor_kind<Class>
+    class_bind<Class> class_bind<Class>::destructor_(Opts&&... opts) && {
+        destructor_(std::forward<Opts>(opts)...);
+        return std::move(*this);
+    }
+
+    template < detail::class_kind Class >
     template < detail::function_pointer_kind Function, typename... Opts >
-    class_bind<Class>& class_bind<Class>::function_(std::string name, Function function_ptr, Opts&&... opts) {
+    class_bind<Class>& class_bind<Class>::function_(std::string name, Function function_ptr, Opts&&... opts) & {
         using opts_t = detail::type_list<std::remove_cvref_t<Opts>...>;
         using policy_t = detail::type_list_first_of_t<function_policy::is_family, function_policy::as_copy_t, opts_t>;
 
@@ -250,8 +271,15 @@ namespace meta_hpp
     }
 
     template < detail::class_kind Class >
+    template < detail::function_pointer_kind Function, typename... Opts >
+    class_bind<Class> class_bind<Class>::function_(std::string name, Function function_ptr, Opts&&... opts) && {
+        function_(std::move(name), function_ptr, std::forward<Opts>(opts)...);
+        return std::move(*this);
+    }
+
+    template < detail::class_kind Class >
     template < detail::class_bind_member_kind<Class> Member, typename... Opts >
-    class_bind<Class>& class_bind<Class>::member_(std::string name, Member member_ptr, [[maybe_unused]] Opts&&... opts) {
+    class_bind<Class>& class_bind<Class>::member_(std::string name, Member member_ptr, Opts&&... opts) & {
         using opts_t = detail::type_list<std::remove_cvref_t<Opts>...>;
         using policy_t = detail::type_list_first_of_t<member_policy::is_family, member_policy::as_copy_t, opts_t>;
 
@@ -278,8 +306,15 @@ namespace meta_hpp
     }
 
     template < detail::class_kind Class >
+    template < detail::class_bind_member_kind<Class> Member, typename... Opts >
+    class_bind<Class> class_bind<Class>::member_(std::string name, Member member_ptr, Opts&&... opts) && {
+        member_(std::move(name), member_ptr, std::forward<Opts>(opts)...);
+        return std::move(*this);
+    }
+
+    template < detail::class_kind Class >
     template < detail::class_bind_method_kind<Class> Method, typename... Opts >
-    class_bind<Class>& class_bind<Class>::method_(std::string name, Method method_ptr, Opts&&... opts) {
+    class_bind<Class>& class_bind<Class>::method_(std::string name, Method method_ptr, Opts&&... opts) & {
         using opts_t = detail::type_list<std::remove_cvref_t<Opts>...>;
         using policy_t = detail::type_list_first_of_t<method_policy::is_family, method_policy::as_copy_t, opts_t>;
 
@@ -321,15 +356,29 @@ namespace meta_hpp
     }
 
     template < detail::class_kind Class >
+    template < detail::class_bind_method_kind<Class> Method, typename... Opts >
+    class_bind<Class> class_bind<Class>::method_(std::string name, Method method_ptr, Opts&&... opts) && {
+        method_(std::move(name), method_ptr, std::forward<Opts>(opts)...);
+        return std::move(*this);
+    }
+
+    template < detail::class_kind Class >
     template < typename Type >
-    class_bind<Class>& class_bind<Class>::typedef_(std::string name) {
+    class_bind<Class>& class_bind<Class>::typedef_(std::string name) & {
         get_data().typedefs.insert_or_assign(std::move(name), resolve_type<Type>());
         return *this;
     }
 
     template < detail::class_kind Class >
+    template < typename Type >
+    class_bind<Class> class_bind<Class>::typedef_(std::string name) && {
+        typedef_<Type>(std::move(name));
+        return std::move(*this);
+    }
+
+    template < detail::class_kind Class >
     template < detail::pointer_kind Pointer, typename... Opts >
-    class_bind<Class>& class_bind<Class>::variable_(std::string name, Pointer variable_ptr, Opts&&... opts) {
+    class_bind<Class>& class_bind<Class>::variable_(std::string name, Pointer variable_ptr, Opts&&... opts) & {
         using opts_t = detail::type_list<std::remove_cvref_t<Opts>...>;
         using policy_t = detail::type_list_first_of_t<variable_policy::is_family, variable_policy::as_copy_t, opts_t>;
 
@@ -353,5 +402,12 @@ namespace meta_hpp
         auto state = detail::variable_state::make<policy_t>(std::move(name), variable_ptr, std::move(metadata));
         detail::insert_or_assign(get_data().variables, variable{std::move(state)});
         return *this;
+    }
+
+    template < detail::class_kind Class >
+    template < detail::pointer_kind Pointer, typename... Opts >
+    class_bind<Class> class_bind<Class>::variable_(std::string name, Pointer variable_ptr, Opts&&... opts) && {
+        variable_(std::move(name), variable_ptr, std::forward<Opts>(opts)...);
+        return std::move(*this);
     }
 }
