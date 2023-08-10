@@ -98,8 +98,7 @@ namespace meta_hpp
     }
 
     template < detail::class_kind Class >
-    template < detail::class_kind... Bases >
-        requires(... && detail::class_bind_base_kind<Class, Bases>)
+    template < detail::class_bind_base_kind<Class>... Bases >
     class_bind<Class>& class_bind<Class>::base_() {
         using namespace detail;
         using namespace detail::class_bind_impl;
@@ -285,7 +284,7 @@ namespace meta_hpp
     }
 
     template < detail::class_kind Class >
-    template < detail::member_pointer_kind Member, typename... Opts >
+    template < detail::class_bind_member_kind<Class> Member, typename... Opts >
     class_bind<Class>& class_bind<Class>::member_(std::string name, Member member_ptr, [[maybe_unused]] Opts&&... opts) {
         using opts_t = detail::type_list<std::remove_cvref_t<Opts>...>;
         using policy_t = detail::type_list_first_of_t<member_policy::is_family, member_policy::as_copy_t, opts_t>;
@@ -321,8 +320,7 @@ namespace meta_hpp
     }
 
     template < detail::class_kind Class >
-    template < detail::method_pointer_kind Method, typename... Opts >
-        requires detail::class_bind_method_kind<Class, Method>
+    template < detail::class_bind_method_kind<Class> Method, typename... Opts >
     class_bind<Class>& class_bind<Class>::method_(std::string name, Method method_ptr, Opts&&... opts) {
         using opts_t = detail::type_list<std::remove_cvref_t<Opts>...>;
         using policy_t = detail::type_list_first_of_t<method_policy::is_family, method_policy::as_copy_t, opts_t>;
