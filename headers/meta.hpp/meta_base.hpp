@@ -23,6 +23,7 @@
 #include "meta_base/memory_buffer.hpp"
 #include "meta_base/noncopyable.hpp"
 #include "meta_base/nonesuch.hpp"
+#include "meta_base/overloaded.hpp"
 #include "meta_base/select_overload.hpp"
 #include "meta_base/to_underlying.hpp"
 #include "meta_base/type_kinds.hpp"

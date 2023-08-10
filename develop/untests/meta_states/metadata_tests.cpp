@@ -31,7 +31,13 @@ namespace
         static ivec2 iadd(const ivec2& l, const ivec2& r) noexcept {
             return {l.x + r.x, l.y + r.y};
         }
+
+        static const ivec2 zero;
+        static const ivec2 unit;
     };
+
+    const ivec2 ivec2::zero{0, 0};
+    const ivec2 ivec2::unit{1, 1};
 }
 
 TEST_CASE("meta/meta_states/metadata/enum") {
@@ -41,15 +47,12 @@ TEST_CASE("meta/meta_states/metadata/enum") {
     meta::enum_<color>(meta::metadata_()
         ("desc1", "enum-desc1"s)
         ("desc2", "enum-desc2"s))
-    .evalue_("red", color::red, {
-        .metadata{meta::metadata_()("desc1", "red-color"s)}
-    })
-    .evalue_("green", color::green, {
-        .metadata{meta::metadata_()("desc1", "green-color"s)}
-    })
-    .evalue_("blue", color::blue, {
-        .metadata{meta::metadata_()("desc1", "blue-color"s)}
-    });
+    .evalue_("red", color::red,
+        meta::metadata_()("desc1", "red-color"s))
+    .evalue_("green", color::green,
+        meta::metadata_()("desc1", "green-color"s))
+    .evalue_("blue", color::blue,
+        meta::metadata_()("desc1", "blue-color"s));
 
     // metadata override
 
@@ -58,10 +61,9 @@ TEST_CASE("meta/meta_states/metadata/enum") {
         ("desc3", "new-enum-desc3"s));
 
     meta::enum_<color>()
-        .evalue_("red", color::red, {
-            .metadata = meta::metadata_()
-                ("desc2", "new-red-color"s)
-        });
+        .evalue_("red", color::red,
+            meta::metadata_()
+                ("desc2", "new-red-color"s));
 
     //
 
@@ -89,36 +91,28 @@ TEST_CASE("meta/meta_states/metadata/class") {
     meta::class_<ivec2>(meta::metadata_()
         ("desc1", "class-desc1"s)
         ("desc2", "class-desc2"s))
-    .constructor_<int>({
-        .arguments{meta::arguments_()
-            ("v", meta::metadata_()("desc", "the ctor arg"s))},
-        .metadata{meta::metadata_()("desc", "one arg 2d vector ctor"s)},
-    })
-    .constructor_<int, int>({
-        .arguments{meta::arguments_()
-            ("x", meta::metadata_()("desc", "the 1st ctor arg"s))
-            ("y", meta::metadata_()("desc", "the 2nd ctor arg"s))
-        },
-        .metadata{meta::metadata_()("desc", "two args 2d vector ctor"s)}
-    })
-    .member_("x", &ivec2::x, {
-        .metadata{meta::metadata_()("desc", "x-member"s)}
-    })
-    .member_("y", &ivec2::y, {
-        .metadata{meta::metadata_()("desc", "y-member"s)}
-    })
-    .method_("add", &ivec2::add, {
-        .arguments{meta::arguments_()
-            ("other", meta::metadata_()("desc", "other-arg"s))},
-        .metadata{meta::metadata_()("desc", "add-method"s)}
-    })
-    .function_("iadd", &ivec2::iadd, {
-        .arguments{meta::arguments_()
-            ("l", meta::metadata_()("desc", "l-arg"s))
-            ("r", meta::metadata_()("desc", "r-arg"s))
-        },
-        .metadata{meta::metadata_()("desc", "iadd-function"s)}
-    });
+    .constructor_<int>(
+        meta::arguments_()
+            ("v", meta::metadata_()("desc", "the ctor arg"s)),
+        meta::metadata_()("desc", "one arg 2d vector ctor"s))
+    .constructor_<int, int>(
+        meta::argument_("x", meta::metadata_("desc", "the 1st ctor arg"s)),
+        meta::argument_("y", meta::metadata_("desc", "the 2nd ctor arg"s)),
+        meta::metadata_()("desc", "two args 2d vector ctor"s))
+    .member_("x", &ivec2::x, meta::metadata_()("desc", "x-member"s))
+    .member_("y", &ivec2::y, meta::metadata_()("desc", "y-member"s))
+    .method_("add", &ivec2::add,
+        meta::arguments_()
+            ("other", meta::metadata_()("desc", "other-arg"s)),
+        meta::metadata_()("desc", "add-method"s))
+    .function_("iadd", &ivec2::iadd,
+        meta::arguments_()
+            ("l", meta::metadata_()("desc", "l-arg"s)),
+        meta::arguments_()
+            ("r", meta::metadata_()("desc", "r-arg"s)),
+        meta::metadata_()("desc", "iadd-function"s))
+    .variable_("zero", &ivec2::zero, meta::metadata_("desc", "{0,0} vector"s))
+    .variable_("unit", &ivec2::unit, meta::metadata_("desc", "{1,1} vector"s));
 
     // metadata override
 
@@ -220,6 +214,22 @@ TEST_CASE("meta/meta_states/metadata/class") {
         REQUIRE(ivec2_iadd.get_argument(1));
         REQUIRE(ivec2_iadd.get_argument(1).get_metadata().contains("desc"));
         CHECK(ivec2_iadd.get_argument(1).get_metadata().at("desc").as<std::string>() == "r-arg"s);
+    }
+
+    SUBCASE("ivec2::zero") {
+        const meta::variable ivec2_zero = ivec2_type.get_variable("zero");
+        REQUIRE(ivec2_zero);
+
+        REQUIRE(ivec2_zero.get_metadata().contains("desc"));
+        CHECK(ivec2_zero.get_metadata().at("desc").as<std::string>() == "{0,0} vector"s);
+    }
+
+    SUBCASE("ivec2::unit") {
+        const meta::variable ivec2_unit = ivec2_type.get_variable("unit");
+        REQUIRE(ivec2_unit);
+
+        REQUIRE(ivec2_unit.get_metadata().contains("desc"));
+        CHECK(ivec2_unit.get_metadata().at("desc").as<std::string>() == "{1,1} vector"s);
     }
 }
 

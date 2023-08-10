@@ -84,40 +84,6 @@ namespace meta_hpp
 
 namespace meta_hpp
 {
-    struct constructor_opts final {
-        argument_info_list arguments;
-        metadata_map metadata;
-    };
-
-    struct destructor_opts final {
-        metadata_map metadata;
-    };
-
-    struct evalue_opts final {
-        metadata_map metadata;
-    };
-
-    struct function_opts final {
-        argument_info_list arguments;
-        metadata_map metadata;
-    };
-
-    struct member_opts final {
-        metadata_map metadata;
-    };
-
-    struct method_opts final {
-        argument_info_list arguments;
-        metadata_map metadata;
-    };
-
-    struct variable_opts final {
-        metadata_map metadata;
-    };
-}
-
-namespace meta_hpp
-{
     template < type_family Type >
     class type_bind_base {
     public:
@@ -185,77 +151,33 @@ namespace meta_hpp
     public:
         explicit class_bind(metadata_map metadata);
 
-        // base_
-
         template < detail::class_kind... Bases >
             requires(... && detail::class_bind_base_kind<Class, Bases>)
         class_bind& base_();
 
-        // constructor_
-
-        template < typename... Args, constructor_policy_family Policy = constructor_policy::as_object_t >
-        class_bind& constructor_(Policy = {})
+        template < typename... Args, typename... Opts >
+        class_bind& constructor_(Opts&&... opts)
             requires detail::class_bind_constructor_kind<Class, Args...>;
 
-        template < typename... Args, constructor_policy_family Policy = constructor_policy::as_object_t >
-        class_bind& constructor_(constructor_opts opts, Policy = {})
-            requires detail::class_bind_constructor_kind<Class, Args...>;
-
-        // destructor_
-
-        class_bind& destructor_()
+        template < typename... Opts >
+        class_bind& destructor_(Opts&&... opts)
             requires detail::class_bind_destructor_kind<Class>;
 
-        class_bind& destructor_(destructor_opts opts)
-            requires detail::class_bind_destructor_kind<Class>;
+        template < detail::function_pointer_kind Function, typename... Opts >
+        class_bind& function_(std::string name, Function function_ptr, Opts&&... opts);
 
-        // function_
+        template < detail::member_pointer_kind Member, typename... Opts >
+        class_bind& member_(std::string name, Member member_ptr, Opts&&... opts);
 
-        template < detail::function_pointer_kind Function, function_policy_family Policy = function_policy::as_copy_t >
-        class_bind& function_(std::string name, Function function_ptr, Policy = {});
-
-        template < detail::function_pointer_kind Function, function_policy_family Policy = function_policy::as_copy_t >
-        class_bind& function_(std::string name, Function function_ptr, function_opts opts, Policy = {});
-
-        template < detail::function_pointer_kind Function, function_policy_family Policy = function_policy::as_copy_t >
-        class_bind& function_(std::string name, Function function_ptr, string_ilist arguments, Policy = {});
-
-        // member_
-
-        template < detail::member_pointer_kind Member, member_policy_family Policy = member_policy::as_copy_t >
-            requires detail::class_bind_member_kind<Class, Member>
-        class_bind& member_(std::string name, Member member_ptr, Policy = {});
-
-        template < detail::member_pointer_kind Member, member_policy_family Policy = member_policy::as_copy_t >
-            requires detail::class_bind_member_kind<Class, Member>
-        class_bind& member_(std::string name, Member member_ptr, member_opts opts, Policy = {});
-
-        // method_
-
-        template < detail::method_pointer_kind Method, method_policy_family Policy = method_policy::as_copy_t >
+        template < detail::method_pointer_kind Method, typename... Opts >
             requires detail::class_bind_method_kind<Class, Method>
-        class_bind& method_(std::string name, Method method_ptr, Policy = {});
-
-        template < detail::method_pointer_kind Method, method_policy_family Policy = method_policy::as_copy_t >
-            requires detail::class_bind_method_kind<Class, Method>
-        class_bind& method_(std::string name, Method method_ptr, method_opts opts, Policy = {});
-
-        template < detail::method_pointer_kind Method, method_policy_family Policy = method_policy::as_copy_t >
-            requires detail::class_bind_method_kind<Class, Method>
-        class_bind& method_(std::string name, Method method_ptr, string_ilist arguments, Policy = {});
-
-        // typdef_
+        class_bind& method_(std::string name, Method method_ptr, Opts&&... opts);
 
         template < typename Type >
         class_bind& typedef_(std::string name);
 
-        // variable_
-
-        template < detail::pointer_kind Pointer, variable_policy_family Policy = variable_policy::as_copy_t >
-        class_bind& variable_(std::string name, Pointer variable_ptr, Policy = {});
-
-        template < detail::pointer_kind Pointer, variable_policy_family Policy = variable_policy::as_copy_t >
-        class_bind& variable_(std::string name, Pointer variable_ptr, variable_opts opts, Policy = {});
+        template < detail::pointer_kind Pointer, typename... Opts >
+        class_bind& variable_(std::string name, Pointer variable_ptr, Opts&&... opts);
     };
 }
 
@@ -266,8 +188,8 @@ namespace meta_hpp
     public:
         explicit enum_bind(metadata_map metadata);
 
-        enum_bind& evalue_(std::string name, Enum value);
-        enum_bind& evalue_(std::string name, Enum value, evalue_opts opts);
+        template < typename... Opts >
+        enum_bind& evalue_(std::string name, Enum value, Opts&&... opts);
     };
 }
 
@@ -349,29 +271,14 @@ namespace meta_hpp
     public:
         explicit scope_bind(const scope& scope, metadata_map metadata);
 
-        // function_
-
-        template < detail::function_pointer_kind Function, function_policy_family Policy = function_policy::as_copy_t >
-        scope_bind& function_(std::string name, Function function_ptr, Policy = {});
-
-        template < detail::function_pointer_kind Function, function_policy_family Policy = function_policy::as_copy_t >
-        scope_bind& function_(std::string name, Function function_ptr, function_opts opts, Policy = {});
-
-        template < detail::function_pointer_kind Function, function_policy_family Policy = function_policy::as_copy_t >
-        scope_bind& function_(std::string name, Function function_ptr, string_ilist arguments, Policy = {});
-
-        // typedef_
+        template < detail::function_pointer_kind Function, typename... Opts >
+        scope_bind& function_(std::string name, Function function_ptr, Opts&&... opts);
 
         template < typename Type >
         scope_bind& typedef_(std::string name);
 
-        // variable_
-
-        template < detail::pointer_kind Pointer, variable_policy_family Policy = variable_policy::as_copy_t >
-        scope_bind& variable_(std::string name, Pointer variable_ptr, Policy = {});
-
-        template < detail::pointer_kind Pointer, variable_policy_family Policy = variable_policy::as_copy_t >
-        scope_bind& variable_(std::string name, Pointer variable_ptr, variable_opts opts, Policy = {});
+        template < detail::pointer_kind Pointer, typename... Opts >
+        scope_bind& variable_(std::string name, Pointer variable_ptr, Opts&&... opts);
     };
 }
 
@@ -494,6 +401,14 @@ namespace meta_hpp
     inline arguments_bind arguments_() {
         return arguments_bind{};
     }
+
+    inline arguments_bind argument_(std::string name) {
+        return arguments_()(std::move(name));
+    }
+
+    inline arguments_bind argument_(std::string name, metadata_map metadata) {
+        return arguments_()(std::move(name), std::move(metadata));
+    }
 }
 
 namespace meta_hpp
@@ -529,5 +444,9 @@ namespace meta_hpp
 
     inline metadata_bind metadata_() {
         return metadata_bind{};
+    }
+
+    inline metadata_bind metadata_(std::string name, uvalue value) {
+        return metadata_()(std::move(name), std::move(value));
     }
 }

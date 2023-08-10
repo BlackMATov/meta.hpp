@@ -15,7 +15,7 @@
 
 namespace meta_hpp::detail
 {
-    template < function_policy_family Policy, function_pointer_kind Function >
+    template < function_policy::family Policy, function_pointer_kind Function >
     uvalue raw_function_invoke(type_registry& registry, Function function_ptr, std::span<const uarg> args) {
         using ft = function_traits<std::remove_pointer_t<Function>>;
         using return_type = typename ft::return_type;
@@ -82,7 +82,7 @@ namespace meta_hpp::detail
 
 namespace meta_hpp::detail
 {
-    template < function_policy_family Policy, function_pointer_kind Function >
+    template < function_policy::family Policy, function_pointer_kind Function >
     function_state::invoke_impl make_function_invoke(type_registry& registry, Function function_ptr) {
         return [&registry, function_ptr](std::span<const uarg> args) { //
             return raw_function_invoke<Policy>(registry, function_ptr, args);
@@ -117,7 +117,7 @@ namespace meta_hpp::detail
     : index{std::move(nindex)}
     , metadata{std::move(nmetadata)} {}
 
-    template < function_policy_family Policy, function_pointer_kind Function >
+    template < function_policy::family Policy, function_pointer_kind Function >
     function_state_ptr function_state::make(std::string name, Function function_ptr, metadata_map metadata) {
         type_registry& registry{type_registry::instance()};
 

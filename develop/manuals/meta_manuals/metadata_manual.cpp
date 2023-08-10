@@ -36,29 +36,25 @@ TEST_CASE("meta/meta_manuals/metadata") {
     meta::class_<ivec3>(meta::metadata_() // for class type
         ("tooltip", "3D Vector"s)
     )
-    .member_("x", &ivec3::x, {
-        .metadata = meta::metadata_() // for class members
-            ("tooltip", "X-Coordinate"s)
-    })
-    .member_("y", &ivec3::y, {
-        .metadata = meta::metadata_()
-            ("tooltip", "Y-Coordinate"s)
-    })
-    .member_("z", &ivec3::z, {
-        .metadata = meta::metadata_()
-            ("tooltip", "Z-Coordinate"s)
-    });
+    .member_("x", &ivec3::x, meta::metadata_() // for class members
+        ("tooltip", "X-Coordinate"s)
+    )
+    .member_("y", &ivec3::y, meta::metadata_()
+        ("tooltip", "Y-Coordinate"s)
+    )
+    .member_("z", &ivec3::z, meta::metadata_()
+        ("tooltip", "Z-Coordinate"s)
+    );
 
     const meta::scope math_scope = meta::local_scope_("math")
         .typedef_<ivec3>("ivec3")
-        .function_("cross", &cross, {
-            .arguments = meta::arguments_()
+        .function_("cross", &cross,
+            meta::arguments_()
                 ("first vector")
                 ("second vector", meta::metadata_() // even function arguments can have metadata
                     ("tooltip", "The second cross product argument"s)),
-            .metadata = meta::metadata_() // for functions in a scope
-                ("tooltip", "Cross product of vectors"s),
-        });
+            meta::metadata_() // for functions in a scope
+                ("tooltip", "Cross product of vectors"s));
 
     // after binding, you can use it as you wish
     // in this example, I'm just going to print all of them to stdout

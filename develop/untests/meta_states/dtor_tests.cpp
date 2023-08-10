@@ -37,10 +37,8 @@ TEST_CASE("meta/meta_states/dtor") {
     meta::class_<clazz_virtual_dtor>();
 
     meta::class_<clazz_dtor_metadata>()
-        .destructor_({
-            .metadata = meta::metadata_()
-                ("desc", "virtual dtor"s)
-        });
+        .destructor_(meta::metadata_()
+            ("desc", "virtual dtor"s));
 
     SUBCASE("closed_dtor") {
         const meta::class_type clazz_type = meta::resolve_type<clazz_closed_dtor>();

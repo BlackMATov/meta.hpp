@@ -97,10 +97,6 @@ namespace meta_hpp
         }
     }
 
-    //
-    // base_
-    //
-
     template < detail::class_kind Class >
     template < detail::class_kind... Bases >
         requires(... && detail::class_bind_base_kind<Class, Bases>)
@@ -145,167 +141,227 @@ namespace meta_hpp
         return *this;
     }
 
-    //
-    // constructor_
-    //
-
     template < detail::class_kind Class >
-    template < typename... Args, constructor_policy_family Policy >
-    class_bind<Class>& class_bind<Class>::constructor_(Policy policy)
+    template < typename... Args, typename... Opts >
+    class_bind<Class>& class_bind<Class>::constructor_(Opts&&... opts)
         requires detail::class_bind_constructor_kind<Class, Args...>
     {
-        return constructor_<Args...>({}, policy);
-    }
+        using opts_t = detail::type_list<std::remove_cvref_t<Opts>...>;
+        using policy_t = detail::type_list_first_of_t<constructor_policy::is_family, constructor_policy::as_object_t, opts_t>;
 
-    template < detail::class_kind Class >
-    template < typename... Args, constructor_policy_family Policy >
-    class_bind<Class>& class_bind<Class>::constructor_(constructor_opts opts, Policy)
-        requires detail::class_bind_constructor_kind<Class, Args...>
-    {
-        auto state = detail::constructor_state::make<Policy, Class, Args...>(std::move(opts.metadata));
+        static_assert( //
+            detail::type_list_count_of_v<constructor_policy::is_family, opts_t> <= 1,
+            "constructor policy may be specified only once"
+        );
 
-        META_HPP_ASSERT(                                     //
-            opts.arguments.size() <= state->arguments.size() //
+        metadata_map metadata;
+        argument_info_list arguments;
+
+        {
+            // clang-format off
+            const auto process_opt = detail::overloaded{
+                [](auto&&, constructor_policy::family auto) {
+                    // nothing
+                },
+                [&metadata](auto&&, metadata_map m) {
+                    detail::insert_or_assign(metadata, std::move(m));
+                },
+                [](auto&& self, metadata_bind b) {
+                    self(self, metadata_map{std::move(b)});
+                },
+                [&arguments](auto&&, argument_info_list l) {
+                    arguments.insert(arguments.end(),
+                        std::make_move_iterator(l.begin()),
+                        std::make_move_iterator(l.end()));
+                },
+                [](auto&& self, arguments_bind b) {
+                    self(self, argument_info_list{std::move(b)});
+                },
+            };
+            // clang-format on
+
+            (process_opt(process_opt, std::forward<Opts>(opts)), ...);
+        }
+
+        auto state = detail::constructor_state::make<policy_t, Class, Args...>(std::move(metadata));
+
+        META_HPP_ASSERT(                                //
+            arguments.size() <= state->arguments.size() //
             && "provided argument names don't match constructor argument count"
         );
 
-        for ( std::size_t i{}, e{std::min(opts.arguments.size(), state->arguments.size())}; i < e; ++i ) {
+        for ( std::size_t i{}, e{std::min(arguments.size(), state->arguments.size())}; i < e; ++i ) {
             argument& arg = state->arguments[i];
-            detail::state_access(arg)->name = std::move(opts.arguments[i].get_name());
-            detail::state_access(arg)->metadata = std::move(opts.arguments[i].get_metadata());
+            detail::state_access(arg)->name = std::move(arguments[i].get_name());
+            detail::state_access(arg)->metadata = std::move(arguments[i].get_metadata());
         }
 
         detail::insert_or_assign(get_data().constructors, constructor{std::move(state)});
         return *this;
     }
 
-    //
-    // destructor_
-    //
-
     template < detail::class_kind Class >
-    class_bind<Class>& class_bind<Class>::destructor_()
+    template < typename... Opts >
+    class_bind<Class>& class_bind<Class>::destructor_(Opts&&... opts)
         requires detail::class_bind_destructor_kind<Class>
     {
-        return destructor_({});
-    }
+        metadata_map metadata;
 
-    template < detail::class_kind Class >
-    class_bind<Class>& class_bind<Class>::destructor_(destructor_opts opts)
-        requires detail::class_bind_destructor_kind<Class>
-    {
-        auto state = detail::destructor_state::make<Class>(std::move(opts.metadata));
+        {
+            // clang-format off
+            const auto process_opt = detail::overloaded{
+                [&metadata](auto&&, metadata_map m) {
+                    detail::insert_or_assign(metadata, std::move(m));
+                },
+                [](auto&& self, metadata_bind b) {
+                    self(self, metadata_map{std::move(b)});
+                },
+            };
+            // clang-format on
+
+            (process_opt(process_opt, std::forward<Opts>(opts)), ...);
+        }
+
+        auto state = detail::destructor_state::make<Class>(std::move(metadata));
         detail::insert_or_assign(get_data().destructors, destructor{std::move(state)});
         return *this;
     }
 
-    //
-    // function_
-    //
-
     template < detail::class_kind Class >
-    template < detail::function_pointer_kind Function, function_policy_family Policy >
-    class_bind<Class>& class_bind<Class>::function_(std::string name, Function function_ptr, Policy policy) {
-        return function_(std::move(name), function_ptr, {}, policy);
-    }
+    template < detail::function_pointer_kind Function, typename... Opts >
+    class_bind<Class>& class_bind<Class>::function_(std::string name, Function function_ptr, Opts&&... opts) {
+        using opts_t = detail::type_list<std::remove_cvref_t<Opts>...>;
+        using policy_t = detail::type_list_first_of_t<function_policy::is_family, function_policy::as_copy_t, opts_t>;
 
-    template < detail::class_kind Class >
-    template < detail::function_pointer_kind Function, function_policy_family Policy >
-    class_bind<Class>& class_bind<Class>::function_(std::string name, Function function_ptr, function_opts opts, Policy) {
-        auto state = detail::function_state::make<Policy>(std::move(name), function_ptr, std::move(opts.metadata));
-
-        META_HPP_ASSERT(                                     //
-            opts.arguments.size() <= state->arguments.size() //
-            && "provided arguments don't match function argument count"
+        static_assert( //
+            detail::type_list_count_of_v<function_policy::is_family, opts_t> <= 1,
+            "function policy may be specified only once"
         );
 
-        for ( std::size_t i{}, e{std::min(opts.arguments.size(), state->arguments.size())}; i < e; ++i ) {
-            argument& arg = state->arguments[i];
-            detail::state_access(arg)->name = std::move(opts.arguments[i].get_name());
-            detail::state_access(arg)->metadata = std::move(opts.arguments[i].get_metadata());
+        metadata_map metadata;
+        argument_info_list arguments;
+
+        {
+            // clang-format off
+            const auto process_opt = detail::overloaded{
+                [](auto&&, function_policy::family auto) {
+                    // nothing
+                },
+                [&metadata](auto&&, metadata_map m) {
+                    detail::insert_or_assign(metadata, std::move(m));
+                },
+                [](auto&& self, metadata_bind b) {
+                    self(self, metadata_map{std::move(b)});
+                },
+                [&arguments](auto&&, argument_info_list l) {
+                    arguments.insert(arguments.end(),
+                        std::make_move_iterator(l.begin()),
+                        std::make_move_iterator(l.end()));
+                },
+                [](auto&& self, arguments_bind b) {
+                    self(self, argument_info_list{std::move(b)});
+                },
+            };
+            // clang-format on
+
+            (process_opt(process_opt, std::forward<Opts>(opts)), ...);
         }
 
-        detail::insert_or_assign(get_data().functions, function{std::move(state)});
-        return *this;
-    }
+        auto state = detail::function_state::make<policy_t>(std::move(name), function_ptr, std::move(metadata));
 
-    template < detail::class_kind Class >
-    template < detail::function_pointer_kind Function, function_policy_family Policy >
-    class_bind<Class>& class_bind<Class>::function_(std::string name, Function function_ptr, string_ilist arguments, Policy) {
-        auto state = detail::function_state::make<Policy>(std::move(name), function_ptr, {});
-
-        META_HPP_ASSERT(
+        META_HPP_ASSERT(                                //
             arguments.size() <= state->arguments.size() //
             && "provided argument names don't match function argument count"
         );
 
         for ( std::size_t i{}, e{std::min(arguments.size(), state->arguments.size())}; i < e; ++i ) {
             argument& arg = state->arguments[i];
-            // NOLINTNEXTLINE(*-pointer-arithmetic)
-            detail::state_access(arg)->name = std::data(arguments)[i];
+            detail::state_access(arg)->name = std::move(arguments[i].get_name());
+            detail::state_access(arg)->metadata = std::move(arguments[i].get_metadata());
         }
 
         detail::insert_or_assign(get_data().functions, function{std::move(state)});
         return *this;
     }
 
-    //
-    // member_
-    //
-
     template < detail::class_kind Class >
-    template < detail::member_pointer_kind Member, member_policy_family Policy >
-        requires detail::class_bind_member_kind<Class, Member>
-    class_bind<Class>& class_bind<Class>::member_(std::string name, Member member_ptr, Policy policy) {
-        return member_(std::move(name), member_ptr, {}, policy);
-    }
+    template < detail::member_pointer_kind Member, typename... Opts >
+    class_bind<Class>& class_bind<Class>::member_(std::string name, Member member_ptr, [[maybe_unused]] Opts&&... opts) {
+        using opts_t = detail::type_list<std::remove_cvref_t<Opts>...>;
+        using policy_t = detail::type_list_first_of_t<member_policy::is_family, member_policy::as_copy_t, opts_t>;
 
-    template < detail::class_kind Class >
-    template < detail::member_pointer_kind Member, member_policy_family Policy >
-        requires detail::class_bind_member_kind<Class, Member>
-    class_bind<Class>& class_bind<Class>::member_(std::string name, Member member_ptr, member_opts opts, Policy) {
-        auto state = detail::member_state::make<Policy>(std::move(name), member_ptr, std::move(opts.metadata));
+        static_assert( //
+            detail::type_list_count_of_v<member_policy::is_family, opts_t> <= 1,
+            "member policy may be specified only once"
+        );
+
+        metadata_map metadata;
+
+        {
+            // clang-format off
+            const auto process_opt = detail::overloaded{
+                [](auto&&, member_policy::family auto) {
+                    // nothing
+                },
+                [&metadata](auto&&, metadata_map m) {
+                    detail::insert_or_assign(metadata, std::move(m));
+                },
+                [](auto&& self, metadata_bind b) {
+                    self(self, metadata_map{std::move(b)});
+                },
+            };
+            // clang-format on
+
+            (process_opt(process_opt, std::forward<Opts>(opts)), ...);
+        }
+
+        auto state = detail::member_state::make<policy_t>(std::move(name), member_ptr, std::move(metadata));
         detail::insert_or_assign(get_data().members, member{std::move(state)});
         return *this;
     }
 
-    //
-    // method_
-    //
-
     template < detail::class_kind Class >
-    template < detail::method_pointer_kind Method, method_policy_family Policy >
+    template < detail::method_pointer_kind Method, typename... Opts >
         requires detail::class_bind_method_kind<Class, Method>
-    class_bind<Class>& class_bind<Class>::method_(std::string name, Method method_ptr, Policy policy) {
-        return method_(std::move(name), method_ptr, {}, policy);
-    }
+    class_bind<Class>& class_bind<Class>::method_(std::string name, Method method_ptr, Opts&&... opts) {
+        using opts_t = detail::type_list<std::remove_cvref_t<Opts>...>;
+        using policy_t = detail::type_list_first_of_t<method_policy::is_family, method_policy::as_copy_t, opts_t>;
 
-    template < detail::class_kind Class >
-    template < detail::method_pointer_kind Method, method_policy_family Policy >
-        requires detail::class_bind_method_kind<Class, Method>
-    class_bind<Class>& class_bind<Class>::method_(std::string name, Method method_ptr, method_opts opts, Policy) {
-        auto state = detail::method_state::make<Policy>(std::move(name), method_ptr, std::move(opts.metadata));
-
-        META_HPP_ASSERT(                                     //
-            opts.arguments.size() <= state->arguments.size() //
-            && "provided arguments don't match method argument count"
+        static_assert( //
+            detail::type_list_count_of_v<method_policy::is_family, opts_t> <= 1,
+            "method policy may be specified only once"
         );
 
-        for ( std::size_t i{}, e{std::min(opts.arguments.size(), state->arguments.size())}; i < e; ++i ) {
-            argument& arg = state->arguments[i];
-            detail::state_access(arg)->name = std::move(opts.arguments[i].get_name());
-            detail::state_access(arg)->metadata = std::move(opts.arguments[i].get_metadata());
+        metadata_map metadata;
+        argument_info_list arguments;
+
+        {
+            // clang-format off
+            const auto process_opt = detail::overloaded{
+                [](auto&&, method_policy::family auto) {
+                    // nothing
+                },
+                [&metadata](auto&&, metadata_map m) {
+                    detail::insert_or_assign(metadata, std::move(m));
+                },
+                [](auto&& self, metadata_bind b) {
+                    self(self, metadata_map{std::move(b)});
+                },
+                [&arguments](auto&&, argument_info_list l) {
+                    arguments.insert(arguments.end(),
+                        std::make_move_iterator(l.begin()),
+                        std::make_move_iterator(l.end()));
+                },
+                [](auto&& self, arguments_bind b) {
+                    self(self, argument_info_list{std::move(b)});
+                },
+            };
+            // clang-format on
+
+            (process_opt(process_opt, std::forward<Opts>(opts)), ...);
         }
 
-        detail::insert_or_assign(get_data().methods, method{std::move(state)});
-        return *this;
-    }
-
-    template < detail::class_kind Class >
-    template < detail::method_pointer_kind Method, method_policy_family Policy >
-        requires detail::class_bind_method_kind<Class, Method>
-    class_bind<Class>& class_bind<Class>::method_(std::string name, Method method_ptr, string_ilist arguments, Policy) {
-        auto state = detail::method_state::make<Policy>(std::move(name), method_ptr, {});
+        auto state = detail::method_state::make<policy_t>(std::move(name), method_ptr, std::move(metadata));
 
         META_HPP_ASSERT(                                //
             arguments.size() <= state->arguments.size() //
@@ -314,17 +370,13 @@ namespace meta_hpp
 
         for ( std::size_t i{}, e{std::min(arguments.size(), state->arguments.size())}; i < e; ++i ) {
             argument& arg = state->arguments[i];
-            // NOLINTNEXTLINE(*-pointer-arithmetic)
-            detail::state_access(arg)->name = std::data(arguments)[i];
+            detail::state_access(arg)->name = std::move(arguments[i].get_name());
+            detail::state_access(arg)->metadata = std::move(arguments[i].get_metadata());
         }
 
         detail::insert_or_assign(get_data().methods, method{std::move(state)});
         return *this;
     }
-
-    //
-    // typedef_
-    //
 
     template < detail::class_kind Class >
     template < typename Type >
@@ -333,20 +385,38 @@ namespace meta_hpp
         return *this;
     }
 
-    //
-    // variable_
-    //
-
     template < detail::class_kind Class >
-    template < detail::pointer_kind Pointer, variable_policy_family Policy >
-    class_bind<Class>& class_bind<Class>::variable_(std::string name, Pointer variable_ptr, Policy policy) {
-        return variable_(std::move(name), variable_ptr, {}, policy);
-    }
+    template < detail::pointer_kind Pointer, typename... Opts >
+    class_bind<Class>& class_bind<Class>::variable_(std::string name, Pointer variable_ptr, Opts&&... opts) {
+        using opts_t = detail::type_list<std::remove_cvref_t<Opts>...>;
+        using policy_t = detail::type_list_first_of_t<variable_policy::is_family, variable_policy::as_copy_t, opts_t>;
 
-    template < detail::class_kind Class >
-    template < detail::pointer_kind Pointer, variable_policy_family Policy >
-    class_bind<Class>& class_bind<Class>::variable_(std::string name, Pointer variable_ptr, variable_opts opts, Policy) {
-        auto state = detail::variable_state::make<Policy>(std::move(name), variable_ptr, std::move(opts.metadata));
+        static_assert( //
+            detail::type_list_count_of_v<variable_policy::is_family, opts_t> <= 1,
+            "variable policy may be specified only once"
+        );
+
+        metadata_map metadata;
+
+        {
+            // clang-format off
+            const auto process_opt = detail::overloaded{
+                [](auto&&, variable_policy::family auto) {
+                    // nothing
+                },
+                [&metadata](auto&&, metadata_map m) {
+                    detail::insert_or_assign(metadata, std::move(m));
+                },
+                [](auto&& self, metadata_bind b) {
+                    self(self, metadata_map{std::move(b)});
+                },
+            };
+            // clang-format on
+
+            (process_opt(process_opt, std::forward<Opts>(opts)), ...);
+        }
+
+        auto state = detail::variable_state::make<policy_t>(std::move(name), variable_ptr, std::move(metadata));
         detail::insert_or_assign(get_data().variables, variable{std::move(state)});
         return *this;
     }
