@@ -65,7 +65,7 @@ namespace meta_hpp
 
         [[nodiscard]] enum_type get_type() const noexcept;
 
-        [[nodiscard]] std::string&& get_name() && noexcept;
+        [[nodiscard]] std::string get_name() && noexcept;
         [[nodiscard]] const std::string& get_name() const& noexcept;
 
         void swap(evalue_index& other) noexcept;
@@ -84,7 +84,7 @@ namespace meta_hpp
 
         [[nodiscard]] function_type get_type() const noexcept;
 
-        [[nodiscard]] std::string&& get_name() && noexcept;
+        [[nodiscard]] std::string get_name() && noexcept;
         [[nodiscard]] const std::string& get_name() const& noexcept;
 
         void swap(function_index& other) noexcept;
@@ -103,7 +103,7 @@ namespace meta_hpp
 
         [[nodiscard]] member_type get_type() const noexcept;
 
-        [[nodiscard]] std::string&& get_name() && noexcept;
+        [[nodiscard]] std::string get_name() && noexcept;
         [[nodiscard]] const std::string& get_name() const& noexcept;
 
         void swap(member_index& other) noexcept;
@@ -122,7 +122,7 @@ namespace meta_hpp
 
         [[nodiscard]] method_type get_type() const noexcept;
 
-        [[nodiscard]] std::string&& get_name() && noexcept;
+        [[nodiscard]] std::string get_name() && noexcept;
         [[nodiscard]] const std::string& get_name() const& noexcept;
 
         void swap(method_index& other) noexcept;
@@ -139,7 +139,7 @@ namespace meta_hpp
         scope_index() = delete;
         explicit scope_index(std::string name);
 
-        [[nodiscard]] std::string&& get_name() && noexcept;
+        [[nodiscard]] std::string get_name() && noexcept;
         [[nodiscard]] const std::string& get_name() const& noexcept;
 
         void swap(scope_index& other) noexcept;
@@ -157,7 +157,7 @@ namespace meta_hpp
 
         [[nodiscard]] pointer_type get_type() const noexcept;
 
-        [[nodiscard]] std::string&& get_name() && noexcept;
+        [[nodiscard]] std::string get_name() && noexcept;
         [[nodiscard]] const std::string& get_name() const& noexcept;
 
         void swap(variable_index& other) noexcept;
@@ -169,7 +169,7 @@ namespace meta_hpp
         std::string name_;
     };
 
-    template < detail::index_family Index >
+    template < index_family Index >
     void swap(Index& l, Index& r) noexcept {
         l.swap(r);
     }
@@ -177,7 +177,7 @@ namespace meta_hpp
 
 namespace std
 {
-    template < meta_hpp::detail::index_family Index >
+    template < meta_hpp::index_family Index >
     struct hash<Index> {
         size_t operator()(const Index& index) const noexcept {
             return index.get_hash();

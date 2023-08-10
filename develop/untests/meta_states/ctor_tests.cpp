@@ -443,3 +443,78 @@ TEST_CASE("meta/meta_states/ctor/as_shared_pointer") {
         CHECK(clazz_t::copy_constructor_counter == 1);
     }
 }
+
+TEST_CASE("meta/meta_states/ctor/as_unique_pointer") {
+    namespace meta = meta_hpp;
+
+    using clazz_t = clazz<meta::constructor_policy::as_unique_pointer_t>;
+
+    meta::class_<clazz_t>()
+        .constructor_<int>(meta::constructor_policy::as_unique_pointer)
+        .constructor_<clazz_t&&>(meta::constructor_policy::as_unique_pointer)
+        .constructor_<const clazz_t&>(meta::constructor_policy::as_unique_pointer);
+
+    clazz_t::constructor_counter = 0;
+    clazz_t::destructor_counter = 0;
+    clazz_t::move_constructor_counter = 0;
+    clazz_t::copy_constructor_counter = 0;
+
+    const meta::class_type clazz_type = meta::resolve_type<clazz_t>();
+    REQUIRE(clazz_type);
+
+    SUBCASE("int") {
+        {
+            const meta::constructor ctor = clazz_type.get_constructor_with<int>();
+            REQUIRE(ctor);
+            CHECK(ctor.get_type() == meta::resolve_constructor_type<clazz_t, int>());
+        }
+        {
+            const meta::uvalue v = clazz_type.create(42);
+            CHECK(v.get_type() == meta::resolve_type<std::unique_ptr<clazz_t>>());
+            CHECK(v.as<std::unique_ptr<clazz_t>>()->i == 42);
+            CHECK_FALSE(clazz_type.destroy(v));
+        }
+        CHECK(clazz_t::constructor_counter == 1);
+        CHECK(clazz_t::destructor_counter == 1);
+        CHECK(clazz_t::move_constructor_counter == 0);
+        CHECK(clazz_t::copy_constructor_counter == 0);
+    }
+
+    SUBCASE("clazz_t&&") {
+        {
+            const meta::constructor ctor = clazz_type.get_constructor_with<clazz_t&&>();
+            REQUIRE(ctor);
+            CHECK(ctor.get_type() == meta::resolve_constructor_type<clazz_t, clazz_t&&>());
+        }
+        {
+            clazz_t o{42};
+            const meta::uvalue v = clazz_type.create(std::move(o));
+            CHECK(v.get_type() == meta::resolve_type<std::unique_ptr<clazz_t>>());
+            CHECK(v.as<std::unique_ptr<clazz_t>>()->i == 42);
+            CHECK_FALSE(clazz_type.destroy(v));
+        }
+        CHECK(clazz_t::constructor_counter == 1);
+        CHECK(clazz_t::destructor_counter == 2);
+        CHECK(clazz_t::move_constructor_counter == 1);
+        CHECK(clazz_t::copy_constructor_counter == 0);
+    }
+
+    SUBCASE("const clazz_t&") {
+        {
+            const meta::constructor ctor = clazz_type.get_constructor_with<const clazz_t&>();
+            REQUIRE(ctor);
+            CHECK(ctor.get_type() == meta::resolve_constructor_type<clazz_t, const clazz_t&>());
+        }
+        {
+            clazz_t o{42};
+            const meta::uvalue v = clazz_type.create(std::as_const(o));
+            CHECK(v.get_type() == meta::resolve_type<std::unique_ptr<clazz_t>>());
+            CHECK(v.as<std::unique_ptr<clazz_t>>()->i == 42);
+            CHECK_FALSE(clazz_type.destroy(v));
+        }
+        CHECK(clazz_t::constructor_counter == 1);
+        CHECK(clazz_t::destructor_counter == 2);
+        CHECK(clazz_t::move_constructor_counter == 0);
+        CHECK(clazz_t::copy_constructor_counter == 1);
+    }
+}

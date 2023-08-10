@@ -27,8 +27,8 @@ TEST_CASE("meta/meta_states/function2") {
     namespace meta = meta_hpp;
 
     meta::class_<ivec2>()
-        .function_("iadd", &ivec2::iadd, { "l" })
-        .function_("isub", &ivec2::isub, { "l", "r" });
+        .function_("iadd", &ivec2::iadd, meta::arguments_()("l"))
+        .function_("isub", &ivec2::isub, meta::arguments_()("l")("r"));
 
     const meta::class_type ivec2_type = meta::resolve_type<ivec2>();
     REQUIRE(ivec2_type);

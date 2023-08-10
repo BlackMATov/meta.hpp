@@ -16,7 +16,7 @@
 
 namespace meta_hpp
 {
-    template < detail::type_family Type = any_type, typename F >
+    template < type_family Type = any_type, typename F >
     void for_each_type(F&& f) {
         using namespace detail;
         type_registry& registry = type_registry::instance();

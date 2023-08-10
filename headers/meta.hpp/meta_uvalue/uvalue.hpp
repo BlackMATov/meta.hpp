@@ -10,6 +10,7 @@
 #include "../meta_registry.hpp"
 #include "../meta_uvalue.hpp"
 
+#include "../meta_detail/value_traits/copy_traits.hpp"
 #include "../meta_detail/value_traits/deref_traits.hpp"
 #include "../meta_detail/value_traits/index_traits.hpp"
 #include "../meta_detail/value_traits/unmap_traits.hpp"
@@ -24,9 +25,9 @@ namespace meta_hpp
         const any_type type;
 
         void (*const move)(uvalue&& self, uvalue& to) noexcept;
-        void (*const copy)(const uvalue& self, uvalue& to);
         void (*const reset)(uvalue& self) noexcept;
 
+        uvalue (*const copy)(const storage_u& self);
         uvalue (*const deref)(const storage_u& self);
         uvalue (*const index)(const storage_u& self, std::size_t i);
         uvalue (*const unmap)(const storage_u& self);
@@ -111,24 +112,6 @@ namespace meta_hpp
             }
         }
 
-        static void do_copy(const uvalue& self, uvalue& to) {
-            META_HPP_DEV_ASSERT(!to);
-
-            auto&& [tag, vtable] = unpack_vtag(self);
-
-            switch ( tag ) {
-            case storage_e::nothing:
-                break;
-            case storage_e::trivial:
-                to.storage_ = self.storage_;
-                break;
-            case storage_e::internal:
-            case storage_e::external:
-                vtable->copy(self, to);
-                break;
-            }
-        }
-
         static void do_reset(uvalue& self) noexcept {
             auto&& [tag, vtable] = unpack_vtag(self);
 
@@ -195,21 +178,6 @@ namespace meta_hpp
                     }
                 }},
 
-                .copy{[](const uvalue& self, uvalue& to) {
-                    META_HPP_DEV_ASSERT(!to);
-                    META_HPP_DEV_ASSERT(self);
-
-                    const Tp* src = storage_cast<Tp>(self.storage_);
-
-                    if constexpr ( in_internal_v<Tp> ) {
-                        do_ctor<Tp>(to, *src);
-                    } else {
-                        // NOLINTNEXTLINE(*-union-access, *-owning-memory)
-                        to.storage_.external.ptr = new Tp(*src);
-                        to.storage_.vtag = self.storage_.vtag;
-                    }
-                }},
-
                 .reset{[](uvalue& self) noexcept {
                     META_HPP_DEV_ASSERT(self);
 
@@ -224,6 +192,16 @@ namespace meta_hpp
 
                     self.storage_.vtag = 0;
                 }},
+
+                .copy{[]() {
+                    if constexpr ( detail::has_copy_traits<Tp> ) {
+                        return +[](const storage_u& self) -> uvalue {
+                            return detail::copy_traits<Tp>{}(*storage_cast<Tp>(self));
+                        };
+                    } else {
+                        return nullptr;
+                    }
+                }()},
 
                 .deref{[]() {
                     if constexpr ( detail::has_deref_traits<Tp> ) {
@@ -263,6 +241,8 @@ namespace meta_hpp
 
 namespace meta_hpp
 {
+    inline const uvalue uvalue::empty_value;
+
     inline uvalue::~uvalue() noexcept {
         reset();
     }
@@ -271,20 +251,9 @@ namespace meta_hpp
         vtable_t::do_move(std::move(other), *this);
     }
 
-    inline uvalue::uvalue(const uvalue& other) {
-        vtable_t::do_copy(other, *this);
-    }
-
     inline uvalue& uvalue::operator=(uvalue&& other) noexcept {
         if ( this != &other ) {
             uvalue{std::move(other)}.swap(*this);
-        }
-        return *this;
-    }
-
-    inline uvalue& uvalue::operator=(const uvalue& other) {
-        if ( this != &other ) {
-            uvalue{other}.swap(*this);
         }
         return *this;
     }
@@ -301,30 +270,26 @@ namespace meta_hpp
     }
 
     template < typename T, typename... Args, typename Tp >
-        requires std::is_copy_constructible_v<Tp> //
-              && std::is_constructible_v<Tp, Args...>
+        requires std::is_constructible_v<Tp, Args...>
     uvalue::uvalue(std::in_place_type_t<T>, Args&&... args) {
         vtable_t::do_ctor<T>(*this, std::forward<Args>(args)...);
     }
 
     template < typename T, typename U, typename... Args, typename Tp >
-        requires std::is_copy_constructible_v<Tp> //
-              && std::is_constructible_v<Tp, std::initializer_list<U>&, Args...>
+        requires std::is_constructible_v<Tp, std::initializer_list<U>&, Args...>
     uvalue::uvalue(std::in_place_type_t<T>, std::initializer_list<U> ilist, Args&&... args) {
         vtable_t::do_ctor<T>(*this, ilist, std::forward<Args>(args)...);
     }
 
     template < typename T, typename... Args, typename Tp >
-        requires std::is_copy_constructible_v<Tp> //
-              && std::is_constructible_v<Tp, Args...>
+        requires std::is_constructible_v<Tp, Args...>
     Tp& uvalue::emplace(Args&&... args) {
         vtable_t::do_reset(*this);
         return vtable_t::do_ctor<T>(*this, std::forward<Args>(args)...);
     }
 
     template < typename T, typename U, typename... Args, typename Tp >
-        requires std::is_copy_constructible_v<Tp> //
-              && std::is_constructible_v<Tp, std::initializer_list<U>&, Args...>
+        requires std::is_constructible_v<Tp, std::initializer_list<U>&, Args...>
     Tp& uvalue::emplace(std::initializer_list<U> ilist, Args&&... args) {
         vtable_t::do_reset(*this);
         return vtable_t::do_ctor<T>(*this, ilist, std::forward<Args>(args)...);
@@ -424,6 +389,18 @@ namespace meta_hpp
     inline bool uvalue::has_index_op() const noexcept {
         auto&& [tag, vtable] = vtable_t::unpack_vtag(*this);
         return tag != storage_e::nothing && vtable->index != nullptr;
+    }
+
+    inline uvalue uvalue::copy() const {
+        auto&& [tag, vtable] = vtable_t::unpack_vtag(*this);
+        return tag != storage_e::nothing && vtable->copy != nullptr //
+                 ? vtable->copy(storage_)
+                 : uvalue{};
+    }
+
+    inline bool uvalue::has_copy_op() const noexcept {
+        auto&& [tag, vtable] = vtable_t::unpack_vtag(*this);
+        return tag != storage_e::nothing && vtable->copy != nullptr;
     }
 
     inline uvalue uvalue::unmap() const {

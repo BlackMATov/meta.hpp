@@ -10,14 +10,12 @@ target_link_libraries(${PROJECT_NAME} PRIVATE
     meta.hpp::meta.hpp
     meta.hpp::setup_targets
     meta.hpp.vendors::gbench
-    meta.hpp.vendors::rttr
     meta.hpp.vendors::vmath.hpp)
 
 target_link_libraries(${PROJECT_NAME}.singles PRIVATE
     meta.hpp::singles
     meta.hpp::setup_targets
     meta.hpp.vendors::gbench
-    meta.hpp.vendors::rttr
     meta.hpp.vendors::vmath.hpp)
 
 target_compile_definitions(${PROJECT_NAME} PRIVATE

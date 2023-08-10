@@ -1342,8 +1342,8 @@ TEST_CASE("meta/meta_utilities/arg/ptr_values") {
     }
 
     {
-        auto PRV_PTR = []() -> meta::uvalue { static clazz v; static clazz* p{&v}; static meta::uvalue vv{p}; return vv; };
-        auto PRV2_PTR = []() -> meta::uvalue { static dclazz v; static dclazz* p{&v}; static meta::uvalue vv{p}; return vv; };
+        auto PRV_PTR = []() -> meta::uvalue { static clazz v; static clazz* p{&v}; static meta::uvalue vv{p}; return vv.copy(); };
+        auto PRV2_PTR = []() -> meta::uvalue { static dclazz v; static dclazz* p{&v}; static meta::uvalue vv{p}; return vv.copy(); };
 
         uarg a{r, PRV_PTR()};
         CHECK(a.get_raw_type() == meta::resolve_type<clazz*>());
@@ -1379,8 +1379,8 @@ TEST_CASE("meta/meta_utilities/arg/ptr_values") {
     }
 
     {
-        auto PRV_CPTR = []() -> meta::uvalue { static clazz v; static const clazz* p{&v}; static meta::uvalue vv{p}; return vv; };
-        auto PRV2_CPTR = []() -> meta::uvalue { static dclazz v; static const dclazz* p{&v}; static meta::uvalue vv{p}; return vv; };
+        auto PRV_CPTR = []() -> meta::uvalue { static clazz v; static const clazz* p{&v}; static meta::uvalue vv{p}; return vv.copy(); };
+        auto PRV2_CPTR = []() -> meta::uvalue { static dclazz v; static const dclazz* p{&v}; static meta::uvalue vv{p}; return vv.copy(); };
 
         uarg a{r, PRV_CPTR()};
         CHECK(a.get_raw_type() == meta::resolve_type<const clazz*>());
@@ -1416,8 +1416,8 @@ TEST_CASE("meta/meta_utilities/arg/ptr_values") {
     }
 
     {
-        auto CPRV_PTR = []() -> const meta::uvalue { static clazz v; static clazz* p{&v}; static meta::uvalue vv{p}; return vv; };
-        auto CPRV2_PTR = []() -> const meta::uvalue { static dclazz v; static dclazz* p{&v}; static meta::uvalue vv{p}; return vv; };
+        auto CPRV_PTR = []() -> const meta::uvalue { static clazz v; static clazz* p{&v}; static meta::uvalue vv{p}; return vv.copy(); };
+        auto CPRV2_PTR = []() -> const meta::uvalue { static dclazz v; static dclazz* p{&v}; static meta::uvalue vv{p}; return vv.copy(); };
 
         uarg a{r, CPRV_PTR()};
         CHECK(a.get_raw_type() == meta::resolve_type<clazz*>());
@@ -1453,8 +1453,8 @@ TEST_CASE("meta/meta_utilities/arg/ptr_values") {
     }
 
     {
-        auto CPRV_CPTR = []() -> const meta::uvalue { static clazz v; static const clazz* p{&v}; static meta::uvalue vv{p}; return vv; };
-        auto CPRV2_CPTR = []() -> const meta::uvalue { static dclazz v; static const dclazz* p{&v}; static meta::uvalue vv{p}; return vv; };
+        auto CPRV_CPTR = []() -> const meta::uvalue { static clazz v; static const clazz* p{&v}; static meta::uvalue vv{p}; return vv.copy(); };
+        auto CPRV2_CPTR = []() -> const meta::uvalue { static dclazz v; static const dclazz* p{&v}; static meta::uvalue vv{p}; return vv.copy(); };
 
         uarg a{r, CPRV_CPTR()};
         CHECK(a.get_raw_type() == meta::resolve_type<const clazz*>());

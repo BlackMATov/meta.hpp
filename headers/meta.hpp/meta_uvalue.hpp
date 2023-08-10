@@ -12,50 +12,49 @@ namespace meta_hpp
 {
     class uvalue final {
     public:
+        static const uvalue empty_value;
+
+    public:
         uvalue() = default;
         ~uvalue() noexcept;
 
         uvalue(uvalue&& other) noexcept;
-        uvalue(const uvalue& other);
+        uvalue(const uvalue& other) = delete;
 
         uvalue& operator=(uvalue&& other) noexcept;
-        uvalue& operator=(const uvalue& other);
+        uvalue& operator=(const uvalue& other) = delete;
 
         template <                                 //
             typename T,                            //
             typename Tp = std::decay_t<T>,         //
             typename = std::enable_if_t<           //
-                !std::is_same_v<Tp, uvalue> &&     //
+                !uvalue_family<Tp> &&              //
                 !detail::is_in_place_type_v<Tp> && //
-                std::is_copy_constructible_v<Tp>>> //
+                std::is_constructible_v<Tp, T>>>   //
         uvalue(T&& val);
 
-        template <                                 //
-            typename T,                            //
-            typename Tp = std::decay_t<T>,         //
-            typename = std::enable_if_t<           //
-                !std::is_same_v<Tp, uvalue> &&     //
-                std::is_copy_constructible_v<Tp>>> //
+        template <                               //
+            typename T,                          //
+            typename Tp = std::decay_t<T>,       //
+            typename = std::enable_if_t<         //
+                !uvalue_family<Tp> &&            //
+                std::is_constructible_v<Tp, T>>> //
         uvalue& operator=(T&& val);
 
         template < typename T, typename... Args, typename Tp = std::decay_t<T> >
-            requires std::is_copy_constructible_v<Tp>     //
-                  && std::is_constructible_v<Tp, Args...> //
+            requires std::is_constructible_v<Tp, Args...> //
         explicit uvalue(std::in_place_type_t<T>, Args&&... args);
 
         template < typename T, typename U, typename... Args, typename Tp = std::decay_t<T> >
-            requires std::is_copy_constructible_v<Tp>                                //
-                  && std::is_constructible_v<Tp, std::initializer_list<U>&, Args...> //
+            requires std::is_constructible_v<Tp, std::initializer_list<U>&, Args...> //
         explicit uvalue(std::in_place_type_t<T>, std::initializer_list<U> ilist, Args&&... args);
 
         template < typename T, typename... Args, typename Tp = std::decay_t<T> >
-            requires std::is_copy_constructible_v<Tp>     //
-                  && std::is_constructible_v<Tp, Args...> //
+            requires std::is_constructible_v<Tp, Args...> //
         Tp& emplace(Args&&... args);
 
         template < typename T, typename U, typename... Args, typename Tp = std::decay_t<T> >
-            requires std::is_copy_constructible_v<Tp>                                //
-                  && std::is_constructible_v<Tp, std::initializer_list<U>&, Args...> //
+            requires std::is_constructible_v<Tp, std::initializer_list<U>&, Args...> //
         Tp& emplace(std::initializer_list<U> ilist, Args&&... args);
 
         [[nodiscard]] bool has_value() const noexcept;
@@ -75,6 +74,9 @@ namespace meta_hpp
 
         [[nodiscard]] uvalue operator[](std::size_t index) const;
         [[nodiscard]] bool has_index_op() const noexcept;
+
+        [[nodiscard]] uvalue copy() const;
+        [[nodiscard]] bool has_copy_op() const noexcept;
 
         [[nodiscard]] uvalue unmap() const;
         [[nodiscard]] bool has_unmap_op() const noexcept;

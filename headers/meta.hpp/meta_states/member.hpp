@@ -16,14 +16,14 @@
 
 namespace meta_hpp::detail
 {
-    template < member_policy_family Policy, member_pointer_kind Member >
+    template < member_policy::family Policy, member_pointer_kind Member >
     uvalue raw_member_getter(type_registry& registry, Member member_ptr, const uinst& inst) {
         using mt = member_traits<Member>;
         using class_type = typename mt::class_type;
         using value_type = typename mt::value_type;
 
         constexpr bool as_copy                                  //
-            = std::is_copy_constructible_v<value_type>          //
+            = std::is_constructible_v<uvalue, value_type>       //
            && std::is_same_v<Policy, member_policy::as_copy_t>; //
 
         constexpr bool as_ptr                                      //
@@ -159,7 +159,7 @@ namespace meta_hpp::detail
 
 namespace meta_hpp::detail
 {
-    template < member_policy_family Policy, member_pointer_kind Member >
+    template < member_policy::family Policy, member_pointer_kind Member >
     member_state::getter_impl make_member_getter(type_registry& registry, Member member_ptr) {
         return [&registry, member_ptr](const uinst& inst) { //
             return raw_member_getter<Policy>(registry, member_ptr, inst);
@@ -194,7 +194,7 @@ namespace meta_hpp::detail
     : index{std::move(nindex)}
     , metadata{std::move(nmetadata)} {}
 
-    template < member_policy_family Policy, member_pointer_kind Member >
+    template < member_policy::family Policy, member_pointer_kind Member >
     member_state_ptr member_state::make(std::string name, Member member_ptr, metadata_map metadata) {
         type_registry& registry{type_registry::instance()};
 

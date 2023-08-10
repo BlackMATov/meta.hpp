@@ -83,20 +83,17 @@ namespace meta_hpp
     }
 
     template < typename T, typename... Args, typename Tp >
-        requires std::is_copy_constructible_v<Tp>     //
-              && std::is_constructible_v<Tp, Args...> //
+        requires std::is_constructible_v<Tp, Args...> //
     uresult::uresult(std::in_place_type_t<T>, Args&&... args)
     : value_{std::in_place_type<T>, std::forward<Args>(args)...} {}
 
     template < typename T, typename U, typename... Args, typename Tp >
-        requires std::is_copy_constructible_v<Tp>                                //
-              && std::is_constructible_v<Tp, std::initializer_list<U>&, Args...> //
+        requires std::is_constructible_v<Tp, std::initializer_list<U>&, Args...> //
     uresult::uresult(std::in_place_type_t<T>, std::initializer_list<U> ilist, Args&&... args)
     : value_{std::in_place_type<T>, ilist, std::forward<Args>(args)...} {}
 
     template < typename T, typename... Args, typename Tp >
-        requires std::is_copy_constructible_v<Tp>     //
-              && std::is_constructible_v<Tp, Args...> //
+        requires std::is_constructible_v<Tp, Args...> //
     Tp& uresult::emplace(Args&&... args) {
         Tp& val{value_.emplace<Tp>(std::forward<Args>(args)...)};
         error_ = error_code::no_error;
@@ -104,8 +101,7 @@ namespace meta_hpp
     }
 
     template < typename T, typename U, typename... Args, typename Tp >
-        requires std::is_copy_constructible_v<Tp>                                //
-              && std::is_constructible_v<Tp, std::initializer_list<U>&, Args...> //
+        requires std::is_constructible_v<Tp, std::initializer_list<U>&, Args...> //
     Tp& uresult::emplace(std::initializer_list<U> ilist, Args&&... args) {
         Tp& val{value_.emplace<Tp>(ilist, std::forward<Args>(args)...)};
         error_ = error_code::no_error;
