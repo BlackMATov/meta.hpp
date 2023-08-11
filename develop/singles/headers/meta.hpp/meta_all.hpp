@@ -1534,6 +1534,8 @@ namespace meta_hpp
     using detail::hashed_string;
     using detail::memory_buffer;
 
+    using detail::overloaded;
+
     using detail::select_const;
     using detail::select_non_const;
     using detail::select_overload;
@@ -2614,6 +2616,9 @@ namespace meta_hpp
 
         template < type_family Type >
         [[nodiscard]] Type as() const noexcept;
+
+        template < typename F >
+        bool match(F&& f) const;
 
         [[nodiscard]] bool is_array() const noexcept;
         [[nodiscard]] bool is_class() const noexcept;
@@ -9273,6 +9278,58 @@ namespace meta_hpp
             using as_data_ptr = typename detail::type_traits<Type>::data_ptr;
             return is<Type>() ? Type{static_cast<as_data_ptr>(data_)} : Type{};
         }
+    }
+
+    template < typename F >
+    bool any_type::match(F&& f) const {
+        if ( !is_valid() ) {
+            return false;
+        }
+
+        switch ( get_kind() ) {
+        case type_kind::array_:
+            std::invoke(std::forward<F>(f), as_array());
+            return true;
+        case type_kind::class_:
+            std::invoke(std::forward<F>(f), as_class());
+            return true;
+        case type_kind::constructor_:
+            std::invoke(std::forward<F>(f), as_constructor());
+            return true;
+        case type_kind::destructor_:
+            std::invoke(std::forward<F>(f), as_destructor());
+            return true;
+        case type_kind::enum_:
+            std::invoke(std::forward<F>(f), as_enum());
+            return true;
+        case type_kind::function_:
+            std::invoke(std::forward<F>(f), as_function());
+            return true;
+        case type_kind::member_:
+            std::invoke(std::forward<F>(f), as_member());
+            return true;
+        case type_kind::method_:
+            std::invoke(std::forward<F>(f), as_method());
+            return true;
+        case type_kind::nullptr_:
+            std::invoke(std::forward<F>(f), as_nullptr());
+            return true;
+        case type_kind::number_:
+            std::invoke(std::forward<F>(f), as_number());
+            return true;
+        case type_kind::pointer_:
+            std::invoke(std::forward<F>(f), as_pointer());
+            return true;
+        case type_kind::reference_:
+            std::invoke(std::forward<F>(f), as_reference());
+            return true;
+        case type_kind::void_:
+            std::invoke(std::forward<F>(f), as_void());
+            return true;
+        }
+
+        META_HPP_ASSERT(false);
+        return false;
     }
 
     inline bool any_type::is_array() const noexcept {

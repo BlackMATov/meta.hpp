@@ -38,6 +38,8 @@ namespace meta_hpp
     using detail::hashed_string;
     using detail::memory_buffer;
 
+    using detail::overloaded;
+
     using detail::select_const;
     using detail::select_non_const;
     using detail::select_overload;

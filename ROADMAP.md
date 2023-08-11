@@ -8,7 +8,6 @@
 - fix all includes to work with the library more flexible
 - test and support shared libraries
 - remove `resolve_poly_type`, use `resolve_type(T&&)` instead
-- add `match` function to `any_type` class
 
 ## Thoughts
 
