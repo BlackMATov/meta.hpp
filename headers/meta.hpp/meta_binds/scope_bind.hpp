@@ -16,7 +16,7 @@ namespace meta_hpp
     : state_bind_base{scope, std::move(metadata)} {}
 
     template < detail::function_pointer_kind Function, typename... Opts >
-    scope_bind& scope_bind::function_(std::string name, Function function_ptr, Opts&&... opts) & {
+    scope_bind& scope_bind::function_(std::string name, Function function_ptr, Opts&&... opts) {
         using opts_t = detail::type_list<std::remove_cvref_t<Opts>...>;
         using policy_t = detail::type_list_first_of_t<function_policy::is_family, function_policy::as_copy_t, opts_t>;
 
@@ -25,58 +25,35 @@ namespace meta_hpp
             "function policy may be specified only once"
         );
 
-        metadata_bind metadata;
-        arguments_bind arguments;
-
-        {
-            const auto process_opt = detail::overloaded{
-                [](function_policy::family auto) {}, // nothing
-                [&metadata](metadata_bind b) { metadata(std::move(b)); },
-                [&metadata](metadata_bind::values_t vs) { metadata(std::move(vs)); },
-                [&arguments](arguments_bind b) { arguments(std::move(b)); },
-                [&arguments](arguments_bind::values_t vs) { arguments(std::move(vs)); },
-            };
-
-            (process_opt(std::forward<Opts>(opts)), ...);
-        }
+        // there is no 'use after move' here because `from opts` takes only relevant opts
+        metadata_bind::values_t metadata = metadata_bind::from_opts(META_HPP_FWD(opts)...);
+        arguments_bind::values_t arguments = arguments_bind::from_opts(META_HPP_FWD(opts)...);
 
         auto state = detail::function_state::make<policy_t>(std::move(name), function_ptr, std::move(metadata));
 
-        META_HPP_ASSERT(                                             //
-            arguments.get_values().size() <= state->arguments.size() //
+        META_HPP_ASSERT(                                //
+            arguments.size() <= state->arguments.size() //
             && "provided arguments don't match function argument count"
         );
 
-        for ( std::size_t i{}, e{std::min(arguments.get_values().size(), state->arguments.size())}; i < e; ++i ) {
+        for ( std::size_t i{}, e{std::min(arguments.size(), state->arguments.size())}; i < e; ++i ) {
             argument& arg = state->arguments[i];
-            detail::state_access(arg)->name = std::move(arguments.get_values()[i].get_name());
-            detail::state_access(arg)->metadata = std::move(arguments.get_values()[i].get_metadata());
+            detail::state_access(arg)->name = std::move(arguments[i].get_name());
+            detail::state_access(arg)->metadata = std::move(arguments[i].get_metadata());
         }
 
         detail::insert_or_assign(get_state().functions, function{std::move(state)});
         return *this;
     }
 
-    template < detail::function_pointer_kind Function, typename... Opts >
-    scope_bind scope_bind::function_(std::string name, Function function_ptr, Opts&&... opts) && {
-        function_(std::move(name), function_ptr, std::forward<Opts>(opts)...);
-        return std::move(*this);
-    }
-
     template < typename Type >
-    scope_bind& scope_bind::typedef_(std::string name) & {
+    scope_bind& scope_bind::typedef_(std::string name) {
         get_state().typedefs.insert_or_assign(std::move(name), resolve_type<Type>());
         return *this;
     }
 
-    template < typename Type >
-    scope_bind scope_bind::typedef_(std::string name) && {
-        typedef_<Type>(std::move(name));
-        return std::move(*this);
-    }
-
     template < detail::pointer_kind Pointer, typename... Opts >
-    scope_bind& scope_bind::variable_(std::string name, Pointer variable_ptr, Opts&&... opts) & {
+    scope_bind& scope_bind::variable_(std::string name, Pointer variable_ptr, Opts&&... opts) {
         using opts_t = detail::type_list<std::remove_cvref_t<Opts>...>;
         using policy_t = detail::type_list_first_of_t<variable_policy::is_family, variable_policy::as_copy_t, opts_t>;
 
@@ -85,26 +62,9 @@ namespace meta_hpp
             "variable policy may be specified only once"
         );
 
-        metadata_bind metadata;
-
-        {
-            const auto process_opt = detail::overloaded{
-                [](variable_policy::family auto) {}, // nothing
-                [&metadata](metadata_bind b) { metadata(std::move(b)); },
-                [&metadata](metadata_bind::values_t vs) { metadata(std::move(vs)); },
-            };
-
-            (process_opt(std::forward<Opts>(opts)), ...);
-        }
-
+        metadata_bind::values_t metadata = metadata_bind::from_opts(META_HPP_FWD(opts)...);
         auto state = detail::variable_state::make<policy_t>(std::move(name), variable_ptr, std::move(metadata));
         detail::insert_or_assign(get_state().variables, variable{std::move(state)});
         return *this;
-    }
-
-    template < detail::pointer_kind Pointer, typename... Opts >
-    scope_bind scope_bind::variable_(std::string name, Pointer variable_ptr, Opts&&... opts) && {
-        variable_(std::move(name), variable_ptr, std::forward<Opts>(opts)...);
-        return std::move(*this);
     }
 }
