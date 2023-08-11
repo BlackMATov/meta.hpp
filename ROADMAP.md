@@ -7,12 +7,12 @@
 - register base types by `META_HPP_ENABLE_POLY_INFO`
 - fix all includes to work with the library more flexible
 - test and support shared libraries
+- remove `resolve_poly_type`, use `resolve_type(T&&)` instead
+- add ucast manual
 
 ## Thoughts
 
-- should `uvalue` dereference operators return `reference_wrapper`?
-- `array_view`/`pointer_view` instead `unmap`/`operator[]`/`operator*`?
-- can we add move-only uvalue analog to return move-only values?
+- store only `hashed_string` in indices instead `string`
 
 ## Version 1.0
 

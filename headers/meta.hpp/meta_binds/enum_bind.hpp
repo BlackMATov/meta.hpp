@@ -19,23 +19,7 @@ namespace meta_hpp
     template < detail::enum_kind Enum >
     template < typename... Opts >
     enum_bind<Enum>& enum_bind<Enum>::evalue_(std::string name, Enum value, Opts&&... opts) {
-        metadata_map metadata;
-
-        {
-            // clang-format off
-            const auto process_opt = detail::overloaded{
-                [&metadata](auto&&, metadata_map m) {
-                    detail::insert_or_assign(metadata, std::move(m));
-                },
-                [](auto&& self, metadata_bind b) {
-                    self(self, metadata_map{std::move(b)});
-                },
-            };
-            // clang-format on
-
-            (process_opt(process_opt, std::forward<Opts>(opts)), ...);
-        }
-
+        metadata_bind::values_t metadata = metadata_bind::from_opts(META_HPP_FWD(opts)...);
         auto state = detail::evalue_state::make(std::move(name), std::move(value), std::move(metadata));
         detail::insert_or_assign(get_data().evalues, evalue{std::move(state)});
         return *this;

@@ -157,6 +157,9 @@ namespace meta_hpp
         template < type_family Type >
         [[nodiscard]] Type as() const noexcept;
 
+        template < typename F >
+        bool match(F&& f) const;
+
         [[nodiscard]] bool is_array() const noexcept;
         [[nodiscard]] bool is_class() const noexcept;
         [[nodiscard]] bool is_constructor() const noexcept;

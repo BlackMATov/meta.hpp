@@ -43,6 +43,10 @@ TEST_CASE("meta/meta_types/any_type") {
 
         CHECK_FALSE(type.is_array());
         CHECK_FALSE(type.as_array());
+
+        CHECK_FALSE(type.match(meta::overloaded{
+            [](auto&&){}
+        }));
     }
 
     SUBCASE("array") {
@@ -61,6 +65,15 @@ TEST_CASE("meta/meta_types/any_type") {
         const meta::array_type& specific_type = type.as_array();
         REQUIRE(specific_type);
         CHECK(specific_type.get_id() == type.get_id());
+
+        {
+            bool match_called = false;
+            CHECK(type.match(meta::overloaded{
+                [&type, &match_called](meta::array_type t){ CHECK(t == type); match_called = true; },
+                [](auto&&){}
+            }));
+            CHECK(match_called);
+        }
     }
 
     SUBCASE("class") {
@@ -79,6 +92,15 @@ TEST_CASE("meta/meta_types/any_type") {
         const meta::class_type& specific_type = type.as_class();
         REQUIRE(specific_type);
         CHECK(specific_type.get_id() == type.get_id());
+
+        {
+            bool match_called = false;
+            CHECK(type.match(meta::overloaded{
+                [&type, &match_called](meta::class_type t){ CHECK(t == type); match_called = true; },
+                [](auto&&){}
+            }));
+            CHECK(match_called);
+        }
     }
 
     SUBCASE("ctor") {
@@ -97,6 +119,15 @@ TEST_CASE("meta/meta_types/any_type") {
         const meta::constructor_type& specific_type = type.as_constructor();
         REQUIRE(specific_type);
         CHECK(specific_type.get_id() == type.get_id());
+
+        {
+            bool match_called = false;
+            CHECK(type.match(meta::overloaded{
+                [&type, &match_called](meta::constructor_type t){ CHECK(t == type); match_called = true; },
+                [](auto&&){}
+            }));
+            CHECK(match_called);
+        }
     }
 
     SUBCASE("enum") {
@@ -115,6 +146,15 @@ TEST_CASE("meta/meta_types/any_type") {
         const meta::enum_type& specific_type = type.as_enum();
         REQUIRE(specific_type);
         CHECK(specific_type.get_id() == type.get_id());
+
+        {
+            bool match_called = false;
+            CHECK(type.match(meta::overloaded{
+                [&type, &match_called](meta::enum_type t){ CHECK(t == type); match_called = true; },
+                [](auto&&){}
+            }));
+            CHECK(match_called);
+        }
     }
 
     SUBCASE("function") {
@@ -133,6 +173,15 @@ TEST_CASE("meta/meta_types/any_type") {
         const meta::function_type& specific_type = type.as_function();
         REQUIRE(specific_type);
         CHECK(specific_type.get_id() == type.get_id());
+
+        {
+            bool match_called = false;
+            CHECK(type.match(meta::overloaded{
+                [&type, &match_called](meta::function_type t){ CHECK(t == type); match_called = true; },
+                [](auto&&){}
+            }));
+            CHECK(match_called);
+        }
     }
 
     SUBCASE("member") {
@@ -151,6 +200,15 @@ TEST_CASE("meta/meta_types/any_type") {
         const meta::member_type& specific_type = type.as_member();
         REQUIRE(specific_type);
         CHECK(specific_type.get_id() == type.get_id());
+
+        {
+            bool match_called = false;
+            CHECK(type.match(meta::overloaded{
+                [&type, &match_called](meta::member_type t){ CHECK(t == type); match_called = true; },
+                [](auto&&){}
+            }));
+            CHECK(match_called);
+        }
     }
 
     SUBCASE("method") {
@@ -169,6 +227,15 @@ TEST_CASE("meta/meta_types/any_type") {
         const meta::method_type& specific_type = type.as_method();
         REQUIRE(specific_type);
         CHECK(specific_type.get_id() == type.get_id());
+
+        {
+            bool match_called = false;
+            CHECK(type.match(meta::overloaded{
+                [&type, &match_called](meta::method_type t){ CHECK(t == type); match_called = true; },
+                [](auto&&){}
+            }));
+            CHECK(match_called);
+        }
     }
 
     SUBCASE("nullptr") {
@@ -187,6 +254,15 @@ TEST_CASE("meta/meta_types/any_type") {
         const meta::nullptr_type& specific_type = type.as_nullptr();
         REQUIRE(specific_type);
         CHECK(specific_type.get_id() == type.get_id());
+
+        {
+            bool match_called = false;
+            CHECK(type.match(meta::overloaded{
+                [&type, &match_called](meta::nullptr_type t){ CHECK(t == type); match_called = true; },
+                [](auto&&){}
+            }));
+            CHECK(match_called);
+        }
     }
 
     SUBCASE("number") {
@@ -205,6 +281,15 @@ TEST_CASE("meta/meta_types/any_type") {
         const meta::number_type& specific_type = type.as_number();
         REQUIRE(specific_type);
         CHECK(specific_type.get_id() == type.get_id());
+
+        {
+            bool match_called = false;
+            CHECK(type.match(meta::overloaded{
+                [&type, &match_called](meta::number_type t){ CHECK(t == type); match_called = true; },
+                [](auto&&){}
+            }));
+            CHECK(match_called);
+        }
     }
 
     SUBCASE("pointer") {
@@ -223,6 +308,15 @@ TEST_CASE("meta/meta_types/any_type") {
         const meta::pointer_type& specific_type = type.as_pointer();
         REQUIRE(specific_type);
         CHECK(specific_type.get_id() == type.get_id());
+
+        {
+            bool match_called = false;
+            CHECK(type.match(meta::overloaded{
+                [&type, &match_called](meta::pointer_type t){ CHECK(t == type); match_called = true; },
+                [](auto&&){}
+            }));
+            CHECK(match_called);
+        }
     }
 
     SUBCASE("reference") {
@@ -239,6 +333,15 @@ TEST_CASE("meta/meta_types/any_type") {
         const meta::reference_type& specific_type = type.as_reference();
         REQUIRE(specific_type);
         CHECK(specific_type.get_id() == type.get_id());
+
+        {
+            bool match_called = false;
+            CHECK(type.match(meta::overloaded{
+                [&type, &match_called](meta::reference_type t){ CHECK(t == type); match_called = true; },
+                [](auto&&){}
+            }));
+            CHECK(match_called);
+        }
     }
 
     SUBCASE("void") {
@@ -255,6 +358,15 @@ TEST_CASE("meta/meta_types/any_type") {
         const meta::void_type& specific_type = type.as_void();
         REQUIRE(specific_type);
         CHECK(specific_type.get_id() == type.get_id());
+
+        {
+            bool match_called = false;
+            CHECK(type.match(meta::overloaded{
+                [&type, &match_called](meta::void_type t){ CHECK(t == type); match_called = true; },
+                [](auto&&){}
+            }));
+            CHECK(match_called);
+        }
     }
 
     SUBCASE("is/as") {
