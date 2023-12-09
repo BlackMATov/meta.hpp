@@ -50,6 +50,7 @@ namespace meta_hpp
 
     template < typename To, typename From >
         requires detail::lvalue_reference_ucast_kind<To, From>
+    // NOLINTNEXTLINE(*-missing-std-forward)
     To ucast(From&& from) {
         using from_data_type = std::remove_reference_t<From>;
         using to_data_type = std::remove_reference_t<To>;

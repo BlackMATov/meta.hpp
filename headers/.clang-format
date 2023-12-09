@@ -21,7 +21,6 @@ ConstructorInitializerIndentWidth: 0
 FixNamespaceComments: false
 IndentPPDirectives: AfterHash
 IndentWidth: 4
-LambdaBodyIndentation: OuterScope
 NamespaceIndentation: All
 PackConstructorInitializers: Never
 PenaltyBreakAssignment: 100

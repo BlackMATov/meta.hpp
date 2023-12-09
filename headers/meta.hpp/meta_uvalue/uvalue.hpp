@@ -162,6 +162,7 @@ namespace meta_hpp
             static vtable_t table{
                 .type = resolve_type<Tp>(),
 
+                // NOLINTNEXTLINE(*-param-not-moved)
                 .move{[](uvalue&& self, uvalue& to) noexcept {
                     META_HPP_DEV_ASSERT(!to);
                     META_HPP_DEV_ASSERT(self);

@@ -36,6 +36,7 @@ namespace meta_hpp::detail
 
         template < typename T, typename Tp = std::decay_t<T> >
             requires(!uvalue_family<Tp>)
+        // NOLINTNEXTLINE(*-missing-std-forward)
         explicit uarg_base(type_registry& registry, T&&)
         : uarg_base{registry, type_list<T&&>{}} {}
 
@@ -57,6 +58,7 @@ namespace meta_hpp::detail
         : ref_type_{ref_types::const_lvalue}
         , raw_type_{v.get_type()} {}
 
+        // NOLINTNEXTLINE(*-param-not-moved)
         explicit uarg_base(type_registry&, uvalue&& v)
         : ref_type_{ref_types::rvalue}
         , raw_type_{v.get_type()} {}
@@ -378,8 +380,8 @@ namespace meta_hpp::detail
     template < typename ArgTypeList, typename F >
     auto unchecked_call_with_uargs(type_registry& registry, std::span<const uarg> args, F&& f) {
         META_HPP_DEV_ASSERT(args.size() == type_list_arity_v<ArgTypeList>);
-        return [args, &registry, &f]<std::size_t... Is>(std::index_sequence<Is...>) {
-            return f(args[Is].cast<type_list_at_t<Is, ArgTypeList>>(registry)...);
-        }(std::make_index_sequence<type_list_arity_v<ArgTypeList>>());
+        return [args, &registry]<std::size_t... Is>(auto&& captured_f, std::index_sequence<Is...>) {
+            return std::invoke(META_HPP_FWD(captured_f), args[Is].cast<type_list_at_t<Is, ArgTypeList>>(registry)...);
+        }(META_HPP_FWD(f), std::make_index_sequence<type_list_arity_v<ArgTypeList>>());
     }
 }
