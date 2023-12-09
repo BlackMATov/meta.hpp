@@ -9,7 +9,8 @@
         "files.trimTrailingWhitespace": true
     },
     "clangd.arguments": [
-        "--header-insertion=never"
+        "--header-insertion=never",
+        "--compile-commands-dir=${workspaceFolder}/develop/.cdb"
     ],
     "cmake.copyCompileCommands": "${workspaceFolder}/develop/.cdb/compile_commands.json"
 }

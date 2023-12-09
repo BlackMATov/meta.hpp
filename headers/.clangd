@@ -20,10 +20,7 @@ Diagnostics:
       - misc-unused-using-decls
       - modernize-use-trailing-return-type
       - readability-identifier-length
-      - readability-named-parameter
+      - readability-named-parameter``
       - readability-redundant-access-specifiers
       - readability-simplify-boolean-expr
       - readability-use-anyofallof
-
-CompileFlags:
-  CompilationDatabase: ../develop/.cdb
