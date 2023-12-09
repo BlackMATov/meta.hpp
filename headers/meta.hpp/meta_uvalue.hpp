@@ -129,6 +129,7 @@ namespace meta_hpp
             external,
         };
 
+        // NOLINTNEXTLINE(*-union-access)
         struct storage_u final {
             union {
                 internal_storage_t internal;

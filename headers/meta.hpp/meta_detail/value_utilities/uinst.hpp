@@ -36,6 +36,7 @@ namespace meta_hpp::detail
 
         template < typename T, typename Tp = std::decay_t<T> >
             requires(!uvalue_family<Tp>)
+        // NOLINTNEXTLINE(*-missing-std-forward)
         explicit uinst_base(type_registry& registry, T&&)
         : uinst_base{registry, type_list<T&&>{}} {}
 
@@ -57,6 +58,7 @@ namespace meta_hpp::detail
         : ref_type_{ref_types::const_lvalue}
         , raw_type_{v.get_type()} {}
 
+        // NOLINTNEXTLINE(*-param-not-moved)
         explicit uinst_base(type_registry&, uvalue&& v)
         : ref_type_{ref_types::rvalue}
         , raw_type_{v.get_type()} {}

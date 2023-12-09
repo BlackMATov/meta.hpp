@@ -17,6 +17,7 @@
 namespace meta_hpp
 {
     template < type_family Type = any_type, typename F >
+    // NOLINTNEXTLINE(*-missing-std-forward)
     void for_each_type(F&& f) {
         using namespace detail;
         type_registry& registry = type_registry::instance();
@@ -35,6 +36,7 @@ namespace meta_hpp
     }
 
     template < typename T >
+    // NOLINTNEXTLINE(*-missing-std-forward)
     [[nodiscard]] auto resolve_type(T&&) {
         using namespace detail;
         type_registry& registry = type_registry::instance();
@@ -59,6 +61,7 @@ namespace meta_hpp
 namespace meta_hpp
 {
     template < typename T >
+    // NOLINTNEXTLINE(*-missing-std-forward)
     [[nodiscard]] auto resolve_poly_type(T&& from) {
         using namespace detail;
 

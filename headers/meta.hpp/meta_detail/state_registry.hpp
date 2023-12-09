@@ -37,6 +37,7 @@ namespace meta_hpp::detail
 
     public:
         template < typename F >
+        // NOLINTNEXTLINE(*-missing-std-forward)
         void for_each_scope(F&& f) const {
             const locker lock;
 
