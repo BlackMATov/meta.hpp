@@ -22,11 +22,6 @@ namespace meta_hpp::detail
     concept class_bind_destructor_kind                        //
         = class_kind<Class> && std::is_destructible_v<Class>; //
 
-    template < typename Base, typename Class >
-    concept class_bind_base_kind                //
-        = class_kind<Base> && class_kind<Class> //
-       && std::derived_from<Class, Base>;       //
-
     template < typename Member, typename Class >
     concept class_bind_member_kind                                           //
         = member_pointer_kind<Member> && class_kind<Class>                   //
@@ -106,9 +101,6 @@ namespace meta_hpp
     class class_bind final : public type_bind_base<class_type> {
     public:
         explicit class_bind(metadata_map metadata);
-
-        template < detail::class_bind_base_kind<Class>... Bases >
-        class_bind& base_();
 
         template < typename... Args, typename... Opts >
             requires detail::class_bind_constructor_kind<Class, Args...>

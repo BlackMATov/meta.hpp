@@ -19,13 +19,24 @@ namespace meta_hpp::detail
     };
 
     template < typename T >
+    concept check_base_info_enabled //
+        = requires { typename T::meta_base_info; };
+
+    template < typename T >
     concept check_poly_info_enabled //
         = requires(type_registry& r, const T& v) {
               { v.get_most_derived_poly_info(r) } -> std::convertible_to<poly_info>;
           };
 }
 
-#define META_HPP_ENABLE_POLY_INFO() \
+#define META_HPP_ENABLE_BASE_INFO(...) \
+public: \
+    using meta_base_info = ::meta_hpp::detail::type_list<__VA_ARGS__>; \
+\
+private:
+
+#define META_HPP_ENABLE_POLY_INFO(...) \
+    META_HPP_ENABLE_BASE_INFO(__VA_ARGS__) \
 public: \
     META_HPP_IGNORE_OVERRIDE_WARNINGS_PUSH() \
     virtual ::meta_hpp::detail::poly_info get_most_derived_poly_info(::meta_hpp::detail::type_registry& registry) const { \

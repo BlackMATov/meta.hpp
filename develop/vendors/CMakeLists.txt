@@ -54,6 +54,9 @@ target_include_directories(${PROJECT_NAME}.gbench SYSTEM
 target_compile_definitions(${PROJECT_NAME}.gbench
     PUBLIC BENCHMARK_STATIC_DEFINE)
 
+target_link_libraries(${PROJECT_NAME}.gbench
+    PRIVATE $<$<PLATFORM_ID:Windows>:shlwapi>)
+
 #
 # vmath.hpp
 #

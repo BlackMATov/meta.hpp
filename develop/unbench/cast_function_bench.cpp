@@ -28,14 +28,17 @@ namespace
 
     struct base2 : base1 {
         unsigned b2{2};
+        META_HPP_ENABLE_BASE_INFO(base1)
     };
 
     struct base3 : base2 {
         unsigned b3{3};
+        META_HPP_ENABLE_BASE_INFO(base2)
     };
 
     struct base4 : base3 {
         unsigned b4{4};
+        META_HPP_ENABLE_BASE_INFO(base3)
     };
 
     unsigned static_function_1(base1* b1) {
@@ -66,14 +69,6 @@ namespace
     void static_function_reset(const benchmark::State&) {
         static_acc = 0;
     }
-
-    const bool registered = [](){
-        meta::class_<base1>();
-        meta::class_<base2>().base_<base1>();
-        meta::class_<base3>().base_<base2>();
-        meta::class_<base4>().base_<base3>();
-        return true;
-    }();
 
     meta::scope meta_bench_scope = meta::local_scope_("")
         .function_("cast_function_1", &static_function_1)

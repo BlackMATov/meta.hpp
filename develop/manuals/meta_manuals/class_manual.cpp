@@ -21,6 +21,7 @@ namespace
     };
 
     class rectangle : public shape {
+        META_HPP_ENABLE_BASE_INFO(shape)
     public:
         explicit rectangle(int width, int height)
         : width_{width}
@@ -52,7 +53,6 @@ TEST_CASE("meta/meta_manuals/class/type") {
 
     // 'rectangle' class type registration
     meta::class_<rectangle>()
-        .base_<shape>()
         .constructor_<int, int>()
         .method_("get_width", &rectangle::get_width)
         .method_("get_height", &rectangle::get_height);

@@ -211,7 +211,6 @@ namespace meta_hpp
         [[nodiscard]] const any_type_list& get_argument_types() const noexcept;
 
         [[nodiscard]] const class_list& get_base_classes() const noexcept;
-        [[nodiscard]] const class_list& get_derived_classes() const noexcept;
         [[nodiscard]] const constructor_list& get_constructors() const noexcept;
         [[nodiscard]] const destructor_list& get_destructors() const noexcept;
         [[nodiscard]] const function_list& get_functions() const noexcept;
@@ -504,7 +503,6 @@ namespace meta_hpp::detail
         // NOLINTEND(*-avoid-const-or-ref-data-members)
 
         class_list base_classes;
-        class_list derived_classes;
         constructor_list constructors;
         destructor_list destructors;
         function_list functions;
@@ -536,8 +534,8 @@ namespace meta_hpp::detail
             vbases_t vbases{};
             bool is_ambiguous{};
 
-            upcast_func_list_t(const upcast_func_t& _upcast);
-            upcast_func_list_t(upcasts_t _upcasts, vbases_t _vbases);
+            upcast_func_list_t(const upcast_func_t& in_upcast);
+            upcast_func_list_t(upcasts_t in_upcasts, vbases_t in_vbases);
 
             [[nodiscard]] void* apply(void* ptr) const noexcept;
             [[nodiscard]] const void* apply(const void* ptr) const noexcept;

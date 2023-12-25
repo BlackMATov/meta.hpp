@@ -10,30 +10,20 @@
 namespace
 {
     struct A { std::string a{"a"}; };
-    struct B0 : virtual A { std::string b0{"b0"}; };
-    struct B1 : virtual A { std::string b1{"b1"}; };
+    struct B0 : virtual A { std::string b0{"b0"}; META_HPP_ENABLE_BASE_INFO(A) };
+    struct B1 : virtual A { std::string b1{"b1"}; META_HPP_ENABLE_BASE_INFO(A) };
 
-    struct C : B0, B1 { std::string c{"c"}; };
+    struct C : B0, B1 { std::string c{"c"}; META_HPP_ENABLE_BASE_INFO(B0, B1) };
 
-    struct D0 : C { std::string d0{"d0"}; };
-    struct E0 : D0 { std::string e0{"e0"}; };
+    struct D0 : C { std::string d0{"d0"}; META_HPP_ENABLE_BASE_INFO(C) };
+    struct E0 : D0 { std::string e0{"e0"}; META_HPP_ENABLE_BASE_INFO(D0) };
 
-    struct D1 : C { std::string d1{"d1"}; };
-    struct E1 : D1 { std::string e1{"e1"}; };
+    struct D1 : C { std::string d1{"d1"}; META_HPP_ENABLE_BASE_INFO(C) };
+    struct E1 : D1 { std::string e1{"e1"}; META_HPP_ENABLE_BASE_INFO(D1) };
 }
 
 TEST_CASE("meta/meta_features/multiple2/_") {
     namespace meta = meta_hpp;
-
-    meta::class_<C>().base_<B0, B1>();
-    meta::class_<B0>().base_<A>();
-    meta::class_<B1>().base_<A>();
-
-    meta::class_<E0>().base_<D0>();
-    meta::class_<E1>().base_<D1>();
-
-    meta::class_<D0>().base_<C>();
-    meta::class_<D1>().base_<C>();
 
     //  * <- B0 <- * * <- D0 * <- E0
     // A            C

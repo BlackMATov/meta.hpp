@@ -21,6 +21,7 @@ namespace
     };
 
     struct dclazz : fake, clazz {
+        META_HPP_ENABLE_BASE_INFO(fake, clazz)
     };
 
     int f1(int v) { return v; }
@@ -109,14 +110,6 @@ namespace
             CHECK_FALSE(f_state.try_invoke(FromValue));\
         }\
     }
-
-TEST_CASE("meta/meta_utilities/arg") {
-    namespace meta = meta_hpp;
-
-    meta::class_<fake>();
-    meta::class_<clazz>();
-    meta::class_<dclazz>().base_<fake>().base_<clazz>();
-}
 
 TEST_CASE("meta/meta_utilities/arg/refs") {
     namespace meta = meta_hpp;

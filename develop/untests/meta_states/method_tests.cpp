@@ -53,10 +53,15 @@ namespace
         //
 
         int ii = 0;
+
+        //
+
+        META_HPP_ENABLE_BASE_INFO(base)
     };
 
     struct derived_clazz : fake, clazz {
         int pure_virtual_method() override { return -2; }
+        META_HPP_ENABLE_BASE_INFO(fake, clazz)
     };
 
     struct clazz2 {};
@@ -69,8 +74,6 @@ TEST_CASE("meta/meta_states/method/_") {
         .method_("pure_virtual_method", &base::pure_virtual_method);
 
     meta::class_<clazz>()
-        .base_<base>()
-
         .method_("non_const_method", &clazz::non_const_method)
         .method_("non_const_method_noexcept", &clazz::non_const_method_noexcept)
 
@@ -88,9 +91,6 @@ TEST_CASE("meta/meta_states/method/_") {
 
         .method_("const_method_rref", &clazz::const_method_rref)
         .method_("const_method_noexcept_rref", &clazz::const_method_noexcept_rref);
-
-    meta::class_<derived_clazz>()
-        .base_<clazz>();
 }
 
 TEST_CASE("meta/meta_states/method") {

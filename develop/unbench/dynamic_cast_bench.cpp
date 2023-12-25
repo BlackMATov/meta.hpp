@@ -28,17 +28,17 @@ namespace
 
     struct base2 : base1 {
         unsigned b2{2};
-        META_HPP_ENABLE_POLY_INFO()
+        META_HPP_ENABLE_POLY_INFO(base1)
     };
 
     struct base3 : base2 {
         unsigned b3{3};
-        META_HPP_ENABLE_POLY_INFO()
+        META_HPP_ENABLE_POLY_INFO(base2)
     };
 
     struct base4 : base3 {
         unsigned b4{4};
-        META_HPP_ENABLE_POLY_INFO()
+        META_HPP_ENABLE_POLY_INFO(base3)
     };
 
     base4* dynamic_cast_1(base1* b1) {
@@ -56,14 +56,6 @@ namespace
     base4* dynamic_cast_4(base4* b4) {
         return dynamic_cast<base4*>(b4);
     }
-
-    const bool registered = [](){
-        meta::class_<base1>();
-        meta::class_<base2>().base_<base1>();
-        meta::class_<base3>().base_<base2>();
-        meta::class_<base4>().base_<base3>();
-        return true;
-    }();
 }
 
 //

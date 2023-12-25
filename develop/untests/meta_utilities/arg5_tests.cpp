@@ -23,14 +23,17 @@ namespace
 
     struct B : virtual A {
         int bi = 2;
+        META_HPP_ENABLE_BASE_INFO(A)
     };
 
     struct C : virtual A {
         int ci = 3;
+        META_HPP_ENABLE_BASE_INFO(A)
     };
 
     struct D : B, C {
         int di = 4;
+        META_HPP_ENABLE_BASE_INFO(B, C)
     };
 }
 
@@ -40,11 +43,6 @@ TEST_CASE("meta/meta_utilities/arg5") {
     //  * <- B <- *
     // A           D
     //  * <- C <- *
-
-    meta::class_<A>();
-    meta::class_<B>().base_<A>();
-    meta::class_<C>().base_<A>();
-    meta::class_<D>().base_<B>().base_<C>();
 }
 
 TEST_CASE("meta/meta_utilities/arg5/cast") {

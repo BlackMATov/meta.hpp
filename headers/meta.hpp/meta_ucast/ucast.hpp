@@ -9,7 +9,7 @@
 #include "../meta_base.hpp"
 #include "../meta_ucast.hpp"
 
-#include "../meta_detail/poly_info.hpp"
+#include "../meta_detail/base_info.hpp"
 #include "../meta_detail/type_registry.hpp"
 #include "../meta_detail/value_utilities/utraits.hpp"
 

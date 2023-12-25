@@ -2672,7 +2672,6 @@ namespace meta_hpp
         [[nodiscard]] const any_type_list& get_argument_types() const noexcept;
 
         [[nodiscard]] const class_list& get_base_classes() const noexcept;
-        [[nodiscard]] const class_list& get_derived_classes() const noexcept;
         [[nodiscard]] const constructor_list& get_constructors() const noexcept;
         [[nodiscard]] const destructor_list& get_destructors() const noexcept;
         [[nodiscard]] const function_list& get_functions() const noexcept;
@@ -2965,7 +2964,6 @@ namespace meta_hpp::detail
         // NOLINTEND(*-avoid-const-or-ref-data-members)
 
         class_list base_classes;
-        class_list derived_classes;
         constructor_list constructors;
         destructor_list destructors;
         function_list functions;
@@ -2997,8 +2995,8 @@ namespace meta_hpp::detail
             vbases_t vbases{};
             bool is_ambiguous{};
 
-            upcast_func_list_t(const upcast_func_t& _upcast);
-            upcast_func_list_t(upcasts_t _upcasts, vbases_t _vbases);
+            upcast_func_list_t(const upcast_func_t& in_upcast);
+            upcast_func_list_t(upcasts_t in_upcasts, vbases_t in_vbases);
 
             [[nodiscard]] void* apply(void* ptr) const noexcept;
             [[nodiscard]] const void* apply(const void* ptr) const noexcept;
@@ -4313,13 +4311,24 @@ namespace meta_hpp::detail
     };
 
     template < typename T >
+    concept check_base_info_enabled //
+        = requires { typename T::meta_base_info; };
+
+    template < typename T >
     concept check_poly_info_enabled //
         = requires(type_registry& r, const T& v) {
               { v.get_most_derived_poly_info(r) } -> std::convertible_to<poly_info>;
           };
 }
 
-#define META_HPP_ENABLE_POLY_INFO() \
+#define META_HPP_ENABLE_BASE_INFO(...) \
+public: \
+    using meta_base_info = ::meta_hpp::detail::type_list<__VA_ARGS__>; \
+\
+private:
+
+#define META_HPP_ENABLE_POLY_INFO(...) \
+    META_HPP_ENABLE_BASE_INFO(__VA_ARGS__) \
 public: \
     META_HPP_IGNORE_OVERRIDE_WARNINGS_PUSH() \
     virtual ::meta_hpp::detail::poly_info get_most_derived_poly_info(::meta_hpp::detail::type_registry& registry) const { \
@@ -4511,11 +4520,6 @@ namespace meta_hpp::detail
     concept class_bind_destructor_kind                        //
         = class_kind<Class> && std::is_destructible_v<Class>; //
 
-    template < typename Base, typename Class >
-    concept class_bind_base_kind                //
-        = class_kind<Base> && class_kind<Class> //
-       && std::derived_from<Class, Base>;       //
-
     template < typename Member, typename Class >
     concept class_bind_member_kind                                           //
         = member_pointer_kind<Member> && class_kind<Class>                   //
@@ -4595,9 +4599,6 @@ namespace meta_hpp
     class class_bind final : public type_bind_base<class_type> {
     public:
         explicit class_bind(metadata_map metadata);
-
-        template < detail::class_bind_base_kind<Class>... Bases >
-        class_bind& base_();
 
         template < typename... Args, typename... Opts >
             requires detail::class_bind_constructor_kind<Class, Args...>
@@ -5023,83 +5024,6 @@ namespace meta_hpp
     : type_bind_base{resolve_type<Array>(), std::move(metadata)} {}
 }
 
-namespace meta_hpp::detail::class_bind_impl
-{
-    using base_upcasts_t = class_type_data::base_upcasts_t;
-    using deep_upcasts_t = class_type_data::deep_upcasts_t;
-
-    using upcast_func_t = class_type_data::upcast_func_t;
-    using upcast_func_list_t = class_type_data::upcast_func_list_t;
-
-    using new_bases_db_t = std::vector<std::pair<class_type, upcast_func_t>>;
-    using deep_upcasts_db_t = std::map<class_type, deep_upcasts_t, std::less<>>;
-    using derived_classes_db_t = std::map<class_type, class_list, std::less<>>;
-
-    template < class_kind Class, class_kind Base >
-        requires std::is_base_of_v<Base, Class>
-    void update_new_bases_db( //
-        new_bases_db_t& new_bases_db
-    ) {
-        const class_type& new_base = resolve_type<Base>();
-
-        for ( auto&& [db_base, _] : new_bases_db ) {
-            if ( db_base == new_base ) {
-                return;
-            }
-        }
-
-        new_bases_db.emplace_back( //
-            new_base,
-            upcast_func_t{std::in_place_type<Class>, std::in_place_type<Base>}
-        );
-    }
-
-    inline void update_deep_upcasts_db( //
-        const class_type& derived_class,
-        const class_type& new_base_class,
-        upcast_func_list_t&& derived_to_new_base,
-        deep_upcasts_db_t& deep_upcasts_db
-    ) {
-        const class_type_data& derived_class_data = *type_access(derived_class);
-        const class_type_data& new_base_class_data = *type_access(new_base_class);
-
-        const auto [deep_upcasts_db_iter, _] = deep_upcasts_db.try_emplace(derived_class, derived_class_data.deep_upcasts);
-        deep_upcasts_t& derived_deep_upcasts = deep_upcasts_db_iter->second;
-
-        const auto add_derived_deep_upcast = [&derived_deep_upcasts](const class_type& deep_class, upcast_func_list_t&& upcasts) {
-            auto&& [position, emplaced] = derived_deep_upcasts.try_emplace(deep_class, std::move(upcasts));
-            if ( !emplaced ) {
-                position->second.is_ambiguous = is_disjoint(position->second.vbases, upcasts.vbases);
-            }
-        };
-
-        for ( auto&& [new_deep_class, new_base_to_deep] : new_base_class_data.deep_upcasts ) {
-            upcast_func_list_t derived_to_new_deep = derived_to_new_base + new_base_to_deep;
-            add_derived_deep_upcast(new_deep_class, std::move(derived_to_new_deep));
-        }
-
-        for ( const class_type& subderived_class : derived_class_data.derived_classes ) {
-            const class_type_data& subderived_data = *type_access(subderived_class);
-            upcast_func_t subderived_to_derived = subderived_data.base_upcasts.at(derived_class);
-            upcast_func_list_t subderived_to_new_base = subderived_to_derived + derived_to_new_base;
-            update_deep_upcasts_db(subderived_class, new_base_class, std::move(subderived_to_new_base), deep_upcasts_db);
-        }
-
-        add_derived_deep_upcast(new_base_class, std::move(derived_to_new_base));
-    }
-
-    inline void updata_derived_classes_db( //
-        const class_type& self_class,
-        const class_type& new_base_class,
-        derived_classes_db_t& derived_classes_db
-    ) {
-        const class_type_data& base_class_data = *type_access(new_base_class);
-        class_list new_derived_classes{base_class_data.derived_classes};
-        insert_or_assign(new_derived_classes, self_class);
-        derived_classes_db.emplace(new_base_class, std::move(new_derived_classes));
-    }
-}
-
 namespace meta_hpp
 {
     template < detail::class_kind Class >
@@ -5108,49 +5032,6 @@ namespace meta_hpp
         if constexpr ( std::is_destructible_v<Class> ) {
             destructor_();
         }
-    }
-
-    template < detail::class_kind Class >
-    template < detail::class_bind_base_kind<Class>... Bases >
-    class_bind<Class>& class_bind<Class>::base_() {
-        using namespace detail;
-        using namespace detail::class_bind_impl;
-
-        new_bases_db_t new_bases_db;
-        (update_new_bases_db<Class, Bases>(new_bases_db), ...);
-
-        deep_upcasts_db_t deep_upcasts_db;
-        derived_classes_db_t derived_classes_db;
-
-        class_list new_base_classes{get_data().base_classes};
-        base_upcasts_t new_base_upcasts{get_data().base_upcasts};
-
-        for ( auto&& [new_base_class, self_to_new_base] : new_bases_db ) {
-            if ( std::find(new_base_classes.begin(), new_base_classes.end(), new_base_class) != new_base_classes.end() ) {
-                continue;
-            }
-
-            update_deep_upcasts_db(*this, new_base_class, self_to_new_base, deep_upcasts_db);
-            updata_derived_classes_db(*this, new_base_class, derived_classes_db);
-
-            new_base_classes.emplace_back(new_base_class);
-            new_base_upcasts.emplace(new_base_class, self_to_new_base);
-        }
-
-        get_data().base_classes.swap(new_base_classes);
-        get_data().base_upcasts.swap(new_base_upcasts);
-
-        for ( auto&& [derived_class, new_deep_upcasts] : deep_upcasts_db ) {
-            class_type_data& derived_data = *type_access(derived_class);
-            derived_data.deep_upcasts.swap(new_deep_upcasts);
-        }
-
-        for ( auto&& [base_class, new_derived_classes] : derived_classes_db ) {
-            class_type_data& base_data = *type_access(base_class);
-            base_data.derived_classes.swap(new_derived_classes);
-        }
-
-        return *this;
     }
 
     template < detail::class_kind Class >
@@ -8476,7 +8357,48 @@ namespace meta_hpp::detail
     , flags{class_traits<Class>::make_flags()}
     , size{class_traits<Class>::size}
     , align{class_traits<Class>::align}
-    , argument_types{resolve_types(typename class_traits<Class>::argument_types{})} {}
+    , argument_types{resolve_types(typename class_traits<Class>::argument_types{})} {
+        if constexpr ( check_base_info_enabled<Class> ) {
+            using meta_base_info = typename Class::meta_base_info;
+
+            [this]<std::size_t... Is>(std::index_sequence<Is...>) {
+                struct {
+                    class_list base_classes;
+                    base_upcasts_t base_upcasts;
+                    deep_upcasts_t deep_upcasts;
+                } new_base_data;
+
+                const auto add_new_base_class = [&new_base_data]<class_kind Base>(std::in_place_type_t<Base>) {
+                    const class_type& base_class = resolve_type<Base>();
+                    const class_type_data& base_class_data = *type_access(base_class);
+
+                    upcast_func_t self_to_base{std::in_place_type<Class>, std::in_place_type<Base>};
+
+                    new_base_data.base_classes.emplace_back(base_class);
+                    new_base_data.base_upcasts.emplace(base_class, self_to_base);
+
+                    for ( const auto& [deep_class, base_to_deep] : base_class_data.deep_upcasts ) {
+                        upcast_func_list_t self_to_deep = self_to_base + base_to_deep;
+
+                        const auto& [position, emplaced] = new_base_data.deep_upcasts.try_emplace(
+                            deep_class, std::move(self_to_deep)
+                        );
+
+                        if ( !emplaced ) {
+                            position->second.is_ambiguous = is_disjoint(position->second.vbases, self_to_deep.vbases);
+                        }
+                    }
+
+                    new_base_data.deep_upcasts.emplace(base_class, upcast_func_list_t{self_to_base});
+                };
+                (add_new_base_class(std::in_place_type<type_list_at_t<Is, meta_base_info>>), ...);
+
+                base_classes.swap(new_base_data.base_classes);
+                base_upcasts.swap(new_base_data.base_upcasts);
+                deep_upcasts.swap(new_base_data.deep_upcasts);
+            }(std::make_index_sequence<type_list_arity_v<meta_base_info>>());
+        }
+    }
 }
 
 namespace meta_hpp::detail
@@ -8500,8 +8422,8 @@ namespace meta_hpp::detail
 
 namespace meta_hpp::detail
 {
-    inline class_type_data::upcast_func_list_t::upcast_func_list_t(const upcast_func_t& _upcast)
-    : upcasts{_upcast} {
+    inline class_type_data::upcast_func_list_t::upcast_func_list_t(const upcast_func_t& in_upcast)
+    : upcasts{in_upcast} {
         for ( const upcast_func_t& upcast : upcasts ) {
             if ( upcast.is_virtual ) {
                 vbases.emplace(upcast.target);
@@ -8509,9 +8431,9 @@ namespace meta_hpp::detail
         }
     }
 
-    inline class_type_data::upcast_func_list_t::upcast_func_list_t(upcasts_t _upcasts, vbases_t _vbases)
-    : upcasts{std::move(_upcasts)}
-    , vbases{std::move(_vbases)} {}
+    inline class_type_data::upcast_func_list_t::upcast_func_list_t(upcasts_t in_upcasts, vbases_t in_vbases)
+    : upcasts{std::move(in_upcasts)}
+    , vbases{std::move(in_vbases)} {}
 
     inline void* class_type_data::upcast_func_list_t::apply(void* ptr) const noexcept {
         for ( const upcast_func_t& upcast : upcasts ) {
@@ -8538,7 +8460,9 @@ namespace meta_hpp::detail
         new_vbases.insert(l.vbases.begin(), l.vbases.end());
         new_vbases.insert(r.vbases.begin(), r.vbases.end());
 
-        return class_type_data::upcast_func_list_t{std::move(new_upcasts), std::move(new_vbases)};
+        class_type_data::upcast_func_list_t result{std::move(new_upcasts), std::move(new_vbases)};
+        result.is_ambiguous = l.is_ambiguous || r.is_ambiguous;
+        return result;
     }
 }
 
@@ -8570,10 +8494,6 @@ namespace meta_hpp
 
     inline const class_list& class_type::get_base_classes() const noexcept {
         return data_->base_classes;
-    }
-
-    inline const class_list& class_type::get_derived_classes() const noexcept {
-        return data_->derived_classes;
     }
 
     inline const constructor_list& class_type::get_constructors() const noexcept {

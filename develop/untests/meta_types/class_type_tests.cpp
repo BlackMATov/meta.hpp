@@ -49,10 +49,12 @@ namespace
         static double derived_function() { return 3.0; }
 
         static constexpr double derived_variable = 3.0;
+        META_HPP_ENABLE_BASE_INFO(base_clazz_1, base_clazz_2)
     };
 
     struct final_derived_clazz final : derived_clazz {
         using derived_clazz::derived_clazz;
+        META_HPP_ENABLE_BASE_INFO(derived_clazz)
     };
 
     template < typename... Args >
@@ -64,7 +66,6 @@ TEST_CASE("meta/meta_types/class_type/_") {
 
     meta::class_<base_clazz_1>()
         .constructor_<int>()
-        .base_<>()
         .member_("base_member_1", &base_clazz_1::base_member_1)
         .method_("base_method_1", &base_clazz_1::base_method_1)
         .function_("base_function_1", &base_clazz_1::base_function_1)
@@ -83,15 +84,13 @@ TEST_CASE("meta/meta_types/class_type/_") {
 
     meta::class_<derived_clazz>()
         .constructor_<int, float>()
-        .base_<base_clazz_1, base_clazz_2>()
         .member_("derived_member", &derived_clazz::derived_member)
         .method_("derived_method", &derived_clazz::derived_method)
         .function_("derived_function", &derived_clazz::derived_function)
         .variable_("derived_variable", &derived_clazz::derived_variable);
 
     meta::class_<final_derived_clazz>()
-        .constructor_<int, float>()
-        .base_<derived_clazz>();
+        .constructor_<int, float>();
 }
 
 TEST_CASE("meta/meta_types/class_type") {
@@ -207,13 +206,6 @@ TEST_CASE("meta/meta_types/class_type") {
         CHECK(base_clazz_2_type.get_base_classes() == meta::class_list{});
         CHECK(derived_clazz_type.get_base_classes() == meta::class_list{base_clazz_1_type, base_clazz_2_type});
         CHECK(final_derived_clazz_type.get_base_classes() == meta::class_list{derived_clazz_type});
-    }
-
-    SUBCASE("get_derived_classes") {
-        CHECK(base_clazz_1_type.get_derived_classes() == meta::class_list{derived_clazz_type});
-        CHECK(base_clazz_2_type.get_derived_classes() == meta::class_list{derived_clazz_type});
-        CHECK(derived_clazz_type.get_derived_classes() == meta::class_list{final_derived_clazz_type});
-        CHECK(final_derived_clazz_type.get_derived_classes() == meta::class_list{});
     }
 
     SUBCASE("get_functions") {

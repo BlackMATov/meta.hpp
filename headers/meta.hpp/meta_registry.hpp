@@ -10,7 +10,7 @@
 #include "meta_states.hpp"
 #include "meta_types.hpp"
 
-#include "meta_detail/poly_info.hpp"
+#include "meta_detail/base_info.hpp"
 #include "meta_detail/state_registry.hpp"
 #include "meta_detail/type_registry.hpp"
 
