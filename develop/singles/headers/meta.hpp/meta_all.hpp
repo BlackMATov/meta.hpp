@@ -8368,7 +8368,7 @@ namespace meta_hpp::detail
                     deep_upcasts_t deep_upcasts;
                 } new_base_data;
 
-                const auto add_new_base_class = [&new_base_data]<class_kind Base>(std::in_place_type_t<Base>) {
+                [[maybe_unused]] const auto add_base_class = [&new_base_data]<class_kind Base>(std::in_place_type_t<Base>) {
                     const class_type& base_class = resolve_type<Base>();
                     const class_type_data& base_class_data = *type_access(base_class);
 
@@ -8391,7 +8391,7 @@ namespace meta_hpp::detail
 
                     new_base_data.deep_upcasts.emplace(base_class, upcast_func_list_t{self_to_base});
                 };
-                (add_new_base_class(std::in_place_type<type_list_at_t<Is, meta_base_info>>), ...);
+                (add_base_class(std::in_place_type<type_list_at_t<Is, meta_base_info>>), ...);
 
                 base_classes.swap(new_base_data.base_classes);
                 base_upcasts.swap(new_base_data.base_upcasts);
