@@ -534,7 +534,7 @@ namespace meta_hpp::detail
             vbases_t vbases{};
             bool is_ambiguous{};
 
-            upcast_func_list_t(const upcast_func_t& in_upcast);
+            explicit upcast_func_list_t(const upcast_func_t& in_upcast);
             upcast_func_list_t(upcasts_t in_upcasts, vbases_t in_vbases);
 
             [[nodiscard]] void* apply(void* ptr) const noexcept;

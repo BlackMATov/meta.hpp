@@ -21,7 +21,7 @@ namespace
     };
 
     class rectangle : public shape {
-        META_HPP_ENABLE_BASE_INFO(shape)
+        META_HPP_ENABLE_POLY_INFO(shape)
     public:
         explicit rectangle(int width, int height)
         : width_{width}

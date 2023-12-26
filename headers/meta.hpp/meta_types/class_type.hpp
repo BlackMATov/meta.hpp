@@ -37,17 +37,18 @@ namespace meta_hpp::detail
                     deep_upcasts_t deep_upcasts;
                 } new_base_data;
 
-                [[maybe_unused]] const auto add_base_class = [&new_base_data]<class_kind Base>(std::in_place_type_t<Base>) {
+                [[maybe_unused]] const auto add_base_class = [&new_base_data]<class_kind Base>() {
                     const class_type& base_class = resolve_type<Base>();
-                    const class_type_data& base_class_data = *type_access(base_class);
+                    const class_type_data& base_data = *type_access(base_class);
 
                     upcast_func_t self_to_base{std::in_place_type<Class>, std::in_place_type<Base>};
+                    upcast_func_list_t self_to_base_list{self_to_base};
 
                     new_base_data.base_classes.emplace_back(base_class);
                     new_base_data.base_upcasts.emplace(base_class, self_to_base);
 
-                    for ( const auto& [deep_class, base_to_deep] : base_class_data.deep_upcasts ) {
-                        upcast_func_list_t self_to_deep = self_to_base + base_to_deep;
+                    for ( const auto& [deep_class, base_to_deep] : base_data.deep_upcasts ) {
+                        upcast_func_list_t self_to_deep = self_to_base_list + base_to_deep;
 
                         const auto& [position, emplaced] = new_base_data.deep_upcasts.try_emplace(
                             deep_class, std::move(self_to_deep)
@@ -58,9 +59,9 @@ namespace meta_hpp::detail
                         }
                     }
 
-                    new_base_data.deep_upcasts.emplace(base_class, upcast_func_list_t{self_to_base});
+                    new_base_data.deep_upcasts.emplace(base_class, std::move(self_to_base_list));
                 };
-                (add_base_class(std::in_place_type<type_list_at_t<Is, meta_base_info>>), ...);
+                (add_base_class.template operator()<type_list_at_t<Is, meta_base_info>>(), ...);
 
                 base_classes.swap(new_base_data.base_classes);
                 base_upcasts.swap(new_base_data.base_upcasts);
