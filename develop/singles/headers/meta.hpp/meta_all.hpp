@@ -4258,7 +4258,7 @@ namespace meta_hpp::detail
     template < typename T >
     concept check_poly_info_enabled //
         = requires(type_registry& r, const T& v) {
-              { v.get_most_derived_poly_info(r) } -> std::convertible_to<poly_info>;
+              { v.get_most_derived_meta_poly_info(r) } -> std::convertible_to<poly_info>;
           };
 }
 
@@ -4272,7 +4272,7 @@ private:
     META_HPP_ENABLE_BASE_INFO(__VA_ARGS__) \
 public: \
     META_HPP_IGNORE_OVERRIDE_WARNINGS_PUSH() \
-    virtual ::meta_hpp::detail::poly_info get_most_derived_poly_info(::meta_hpp::detail::type_registry& registry) const { \
+    virtual ::meta_hpp::detail::poly_info get_most_derived_meta_poly_info(::meta_hpp::detail::type_registry& registry) const { \
         using self_type = std::remove_cvref_t<decltype(*this)>; \
         return ::meta_hpp::detail::poly_info{.ptr = this, .type = registry.resolve_class_type<self_type>()}; \
     } \
@@ -4409,7 +4409,7 @@ namespace meta_hpp
                 detail::check_poly_info_enabled<raw_type>,
                 "The class doesn't support polymorphic type resolving. Use the META_HPP_ENABLE_POLY_INFO macro to fix it."
             );
-            return from.get_most_derived_poly_info(registry).type;
+            return from.get_most_derived_meta_poly_info(registry).type;
         } else {
             (void)from;
             return registry.resolve_type<raw_type>();
@@ -8294,6 +8294,50 @@ namespace meta_hpp
     }
 }
 
+namespace meta_hpp::detail::class_type_data_impl
+{
+    struct new_base_info_t final {
+        class_list base_classes;
+        class_type_data::deep_upcasts_t deep_upcasts;
+    };
+
+    template < class_kind Class, class_kind Target >
+    void add_upcast_info(new_base_info_t& info) {
+        const class_type_data::upcast_func_t::upcast_t class_to_target = []() {
+            if constexpr ( requires { static_cast<Target*>(std::declval<Class*>()); } ) {
+                return +[](void* from) -> void* { //
+                    return static_cast<Target*>(static_cast<Class*>(from));
+                };
+            } else {
+                return nullptr;
+            }
+        }();
+
+        info.deep_upcasts.push_back(class_type_data::upcast_func_t{
+            .target{resolve_type<Target>().get_id()},
+            .upcast{class_to_target},
+        });
+
+        if constexpr ( check_base_info_enabled<Target> ) {
+            using target_base_info = typename Target::meta_base_info;
+            target_base_info::for_each([&info]<class_kind TargetBase>() { //
+                add_upcast_info<Class, TargetBase>(info);
+            });
+        }
+    }
+
+    template < class_kind Class >
+    void fill_upcast_info(new_base_info_t& info) {
+        if constexpr ( check_base_info_enabled<Class> ) {
+            using class_base_info = typename Class::meta_base_info;
+            class_base_info::for_each([&info]<class_kind ClassBase>() {
+                info.base_classes.push_back(resolve_type<ClassBase>());
+                add_upcast_info<Class, ClassBase>(info);
+            });
+        }
+    }
+}
+
 namespace meta_hpp::detail
 {
     template < class_kind Class >
@@ -8303,47 +8347,10 @@ namespace meta_hpp::detail
     , size{class_traits<Class>::size}
     , align{class_traits<Class>::align}
     , argument_types{resolve_types(typename class_traits<Class>::argument_types{})} {
-        class_list new_base_classes;
-        deep_upcasts_t new_deep_upcasts;
-
-        const auto add_new_base = [&]<class_kind Base, class_kind Derived>(auto&& recur) {
-            const class_type& base_class = resolve_type<Base>();
-
-            new_deep_upcasts.push_back(upcast_func_t{
-                .target{base_class.get_id()},
-                .upcast{[]() {
-                    if constexpr ( requires { static_cast<Base*>(std::declval<Class*>()); } ) {
-                        return +[](void* from) -> void* { //
-                            return static_cast<Base*>(static_cast<Class*>(from));
-                        };
-                    } else {
-                        return nullptr;
-                    }
-                }()},
-            });
-
-            if constexpr ( std::is_same_v<Class, Derived> ) {
-                new_base_classes.push_back(base_class);
-            }
-
-            recur.template operator()<Base>(recur);
-        };
-
-        const auto add_new_bases = [&]<class_kind Derived>(auto&& recur) {
-            if constexpr ( check_base_info_enabled<Derived> ) {
-                using meta_base_info = typename Derived::meta_base_info;
-                meta_base_info::for_each([&]<class_kind Base>() { //
-                    add_new_base.template operator()<Base, Derived>(recur);
-                });
-            } else {
-                (void)recur;
-            }
-        };
-
-        add_new_bases.template operator()<Class>(add_new_bases);
-
-        base_classes.swap(new_base_classes);
-        deep_upcasts.swap(new_deep_upcasts);
+        class_type_data_impl::new_base_info_t new_base_info;
+        class_type_data_impl::fill_upcast_info<Class>(new_base_info);
+        base_classes.swap(new_base_info.base_classes);
+        deep_upcasts.swap(new_base_info.deep_upcasts);
     }
 }
 
@@ -9190,7 +9197,7 @@ namespace meta_hpp
             return from;
         } else {
             detail::type_registry& registry{detail::type_registry::instance()};
-            const detail::poly_info& meta_info{from->get_most_derived_poly_info(registry)};
+            const detail::poly_info& meta_info{from->get_most_derived_meta_poly_info(registry)};
 
             // NOLINTNEXTLINE(*-const-cast)
             void* most_derived_object_ptr = const_cast<void*>(meta_info.ptr);

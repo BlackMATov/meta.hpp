@@ -73,7 +73,7 @@ namespace meta_hpp
                 detail::check_poly_info_enabled<raw_type>,
                 "The class doesn't support polymorphic type resolving. Use the META_HPP_ENABLE_POLY_INFO macro to fix it."
             );
-            return from.get_most_derived_poly_info(registry).type;
+            return from.get_most_derived_meta_poly_info(registry).type;
         } else {
             (void)from;
             return registry.resolve_type<raw_type>();

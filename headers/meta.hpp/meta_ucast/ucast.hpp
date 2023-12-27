@@ -34,7 +34,7 @@ namespace meta_hpp
             return from;
         } else {
             detail::type_registry& registry{detail::type_registry::instance()};
-            const detail::poly_info& meta_info{from->get_most_derived_poly_info(registry)};
+            const detail::poly_info& meta_info{from->get_most_derived_meta_poly_info(registry)};
 
             // NOLINTNEXTLINE(*-const-cast)
             void* most_derived_object_ptr = const_cast<void*>(meta_info.ptr);
