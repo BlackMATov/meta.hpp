@@ -126,10 +126,6 @@ namespace meta_hpp
             return id_type{data_};
         }
 
-        [[nodiscard]] explicit operator id_type() const noexcept {
-            return get_id();
-        }
-
         [[nodiscard]] type_kind get_kind() const noexcept {
             return data_->kind;
         }

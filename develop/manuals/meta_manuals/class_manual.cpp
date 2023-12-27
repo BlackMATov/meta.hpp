@@ -12,6 +12,7 @@
 namespace
 {
     class shape {
+        META_HPP_ENABLE_POLY_INFO()
     public:
         shape() = default;
         shape(const shape&) = default;

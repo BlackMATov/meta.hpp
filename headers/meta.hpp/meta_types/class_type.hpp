@@ -27,19 +27,19 @@ namespace meta_hpp::detail
     , size{class_traits<Class>::size}
     , align{class_traits<Class>::align}
     , argument_types{resolve_types(typename class_traits<Class>::argument_types{})} {
-        struct {
-            class_list base_classes;
-            deep_upcasts_t deep_upcasts;
-        } new_base_data;
+        class_list new_base_classes;
+        deep_upcasts_t new_deep_upcasts;
 
-        const auto add_new_base = [&new_base_data]<class_kind Base, class_kind Derived>(auto&& recur) {
+        const auto add_new_base = [&]<class_kind Base, class_kind Derived>(auto&& recur) {
             const class_type& base_class = resolve_type<Base>();
 
-            new_base_data.deep_upcasts.push_back(upcast_func_t{
-                .target{base_class},
+            new_deep_upcasts.push_back(upcast_func_t{
+                .target{base_class.get_id()},
                 .upcast{[]() {
                     if constexpr ( requires { static_cast<Base*>(std::declval<Class*>()); } ) {
-                        return +[](void* from) -> void* { return static_cast<Base*>(static_cast<Class*>(from)); };
+                        return +[](void* from) -> void* { //
+                            return static_cast<Base*>(static_cast<Class*>(from));
+                        };
                     } else {
                         return nullptr;
                     }
@@ -47,16 +47,16 @@ namespace meta_hpp::detail
             });
 
             if constexpr ( std::is_same_v<Class, Derived> ) {
-                new_base_data.base_classes.push_back(base_class);
+                new_base_classes.push_back(base_class);
             }
 
             recur.template operator()<Base>(recur);
         };
 
-        const auto add_new_bases = [&add_new_base]<class_kind Derived>(auto&& recur) {
+        const auto add_new_bases = [&]<class_kind Derived>(auto&& recur) {
             if constexpr ( check_base_info_enabled<Derived> ) {
                 using meta_base_info = typename Derived::meta_base_info;
-                meta_base_info::for_each([&add_new_base, &recur]<class_kind Base>() {
+                meta_base_info::for_each([&]<class_kind Base>() { //
                     add_new_base.template operator()<Base, Derived>(recur);
                 });
             } else {
@@ -66,8 +66,8 @@ namespace meta_hpp::detail
 
         add_new_bases.template operator()<Class>(add_new_bases);
 
-        base_classes.swap(new_base_data.base_classes);
-        deep_upcasts.swap(new_base_data.deep_upcasts);
+        base_classes.swap(new_base_classes);
+        deep_upcasts.swap(new_deep_upcasts);
     }
 }
 
