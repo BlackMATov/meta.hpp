@@ -38,10 +38,10 @@ private:
 #define META_HPP_ENABLE_POLY_INFO(...) \
     META_HPP_ENABLE_BASE_INFO(__VA_ARGS__) \
 public: \
-    META_HPP_IGNORE_OVERRIDE_WARNINGS_PUSH() \
+    META_HPP_DETAIL_IGNORE_OVERRIDE_WARNINGS_PUSH() \
     virtual ::meta_hpp::detail::poly_info get_most_derived_meta_poly_info(::meta_hpp::detail::type_registry& registry) const { \
         using self_type = std::remove_cvref_t<decltype(*this)>; \
         return ::meta_hpp::detail::poly_info{.ptr = this, .type = registry.resolve_class_type<self_type>()}; \
     } \
-    META_HPP_IGNORE_OVERRIDE_WARNINGS_POP() \
+    META_HPP_DETAIL_IGNORE_OVERRIDE_WARNINGS_POP() \
 private:

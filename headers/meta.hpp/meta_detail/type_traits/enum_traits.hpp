@@ -14,8 +14,8 @@ namespace meta_hpp::detail
         is_scoped = 1 << 0,
     };
 
-    META_HPP_BITFLAGS_OPERATORS_DECL(enum_flags)
     using enum_bitflags = bitflags<enum_flags>;
+    META_HPP_DETAIL_BITFLAGS_OPERATORS_DECL(enum_flags)
 }
 
 namespace meta_hpp::detail

@@ -100,70 +100,70 @@
 //
 //
 
-#define META_HPP_CLANG_COMPILER_ID 1
-#define META_HPP_GCC_COMPILER_ID 2
-#define META_HPP_MSVC_COMPILER_ID 3
-#define META_HPP_UNKNOWN_COMPILER_ID 4
+#define META_HPP_DETAIL_CLANG_COMPILER_ID 1
+#define META_HPP_DETAIL_GCC_COMPILER_ID 2
+#define META_HPP_DETAIL_MSVC_COMPILER_ID 3
+#define META_HPP_DETAIL_UNKNOWN_COMPILER_ID 4
 
 #if defined(__clang__)
-#    define META_HPP_COMPILER_ID META_HPP_CLANG_COMPILER_ID
+#    define META_HPP_DETAIL_COMPILER_ID META_HPP_DETAIL_CLANG_COMPILER_ID
 #elif defined(__GNUC__)
-#    define META_HPP_COMPILER_ID META_HPP_GCC_COMPILER_ID
+#    define META_HPP_DETAIL_COMPILER_ID META_HPP_DETAIL_GCC_COMPILER_ID
 #elif defined(_MSC_VER)
-#    define META_HPP_COMPILER_ID META_HPP_MSVC_COMPILER_ID
+#    define META_HPP_DETAIL_COMPILER_ID META_HPP_DETAIL_MSVC_COMPILER_ID
 #else
-#    define META_HPP_COMPILER_ID META_HPP_UNKNOWN_COMPILER_ID
+#    define META_HPP_DETAIL_COMPILER_ID META_HPP_DETAIL_UNKNOWN_COMPILER_ID
 #endif
 
 //
 //
 //
 
-#if META_HPP_COMPILER_ID == META_HPP_CLANG_COMPILER_ID
-#    define META_HPP_CLANG_PRAGMA_TO_STR(x) _Pragma(#x)
-#    define META_HPP_CLANG_IGNORE_WARNING(w) META_HPP_CLANG_PRAGMA_TO_STR(clang diagnostic ignored w)
-#    define META_HPP_CLANG_IGNORE_WARNINGS_PUSH() _Pragma("clang diagnostic push")
-#    define META_HPP_CLANG_IGNORE_WARNINGS_POP() _Pragma("clang diagnostic pop")
+#if META_HPP_DETAIL_COMPILER_ID == META_HPP_DETAIL_CLANG_COMPILER_ID
+#    define META_HPP_DETAIL_CLANG_PRAGMA_TO_STR(x) _Pragma(#x)
+#    define META_HPP_DETAIL_CLANG_IGNORE_WARNING(w) META_HPP_DETAIL_CLANG_PRAGMA_TO_STR(clang diagnostic ignored w)
+#    define META_HPP_DETAIL_CLANG_IGNORE_WARNINGS_PUSH() _Pragma("clang diagnostic push")
+#    define META_HPP_DETAIL_CLANG_IGNORE_WARNINGS_POP() _Pragma("clang diagnostic pop")
 #else
-#    define META_HPP_CLANG_PRAGMA_TO_STR(x)
-#    define META_HPP_CLANG_IGNORE_WARNING(w)
-#    define META_HPP_CLANG_IGNORE_WARNINGS_PUSH()
-#    define META_HPP_CLANG_IGNORE_WARNINGS_POP()
+#    define META_HPP_DETAIL_CLANG_PRAGMA_TO_STR(x)
+#    define META_HPP_DETAIL_CLANG_IGNORE_WARNING(w)
+#    define META_HPP_DETAIL_CLANG_IGNORE_WARNINGS_PUSH()
+#    define META_HPP_DETAIL_CLANG_IGNORE_WARNINGS_POP()
 #endif
 
-#if META_HPP_COMPILER_ID == META_HPP_GCC_COMPILER_ID
-#    define META_HPP_GCC_PRAGMA_TO_STR(x) _Pragma(#x)
-#    define META_HPP_GCC_IGNORE_WARNING(w) META_HPP_GCC_PRAGMA_TO_STR(GCC diagnostic ignored w)
-#    define META_HPP_GCC_IGNORE_WARNINGS_PUSH() _Pragma("GCC diagnostic push")
-#    define META_HPP_GCC_IGNORE_WARNINGS_POP() _Pragma("GCC diagnostic pop")
+#if META_HPP_DETAIL_COMPILER_ID == META_HPP_DETAIL_GCC_COMPILER_ID
+#    define META_HPP_DETAIL_GCC_PRAGMA_TO_STR(x) _Pragma(#x)
+#    define META_HPP_DETAIL_GCC_IGNORE_WARNING(w) META_HPP_DETAIL_GCC_PRAGMA_TO_STR(GCC diagnostic ignored w)
+#    define META_HPP_DETAIL_GCC_IGNORE_WARNINGS_PUSH() _Pragma("GCC diagnostic push")
+#    define META_HPP_DETAIL_GCC_IGNORE_WARNINGS_POP() _Pragma("GCC diagnostic pop")
 #else
-#    define META_HPP_GCC_PRAGMA_TO_STR(x)
-#    define META_HPP_GCC_IGNORE_WARNING(w)
-#    define META_HPP_GCC_IGNORE_WARNINGS_PUSH()
-#    define META_HPP_GCC_IGNORE_WARNINGS_POP()
+#    define META_HPP_DETAIL_GCC_PRAGMA_TO_STR(x)
+#    define META_HPP_DETAIL_GCC_IGNORE_WARNING(w)
+#    define META_HPP_DETAIL_GCC_IGNORE_WARNINGS_PUSH()
+#    define META_HPP_DETAIL_GCC_IGNORE_WARNINGS_POP()
 #endif
 
-#if META_HPP_COMPILER_ID == META_HPP_MSVC_COMPILER_ID
-#    define META_HPP_MSVC_IGNORE_WARNING(w) __pragma(warning(disable : w))
-#    define META_HPP_MSVC_IGNORE_WARNINGS_PUSH() __pragma(warning(push))
-#    define META_HPP_MSVC_IGNORE_WARNINGS_POP() __pragma(warning(pop))
+#if META_HPP_DETAIL_COMPILER_ID == META_HPP_DETAIL_MSVC_COMPILER_ID
+#    define META_HPP_DETAIL_MSVC_IGNORE_WARNING(w) __pragma(warning(disable : w))
+#    define META_HPP_DETAIL_MSVC_IGNORE_WARNINGS_PUSH() __pragma(warning(push))
+#    define META_HPP_DETAIL_MSVC_IGNORE_WARNINGS_POP() __pragma(warning(pop))
 #else
-#    define META_HPP_MSVC_IGNORE_WARNING(w)
-#    define META_HPP_MSVC_IGNORE_WARNINGS_PUSH()
-#    define META_HPP_MSVC_IGNORE_WARNINGS_POP()
+#    define META_HPP_DETAIL_MSVC_IGNORE_WARNING(w)
+#    define META_HPP_DETAIL_MSVC_IGNORE_WARNINGS_PUSH()
+#    define META_HPP_DETAIL_MSVC_IGNORE_WARNINGS_POP()
 #endif
 
 //
 //
 //
 
-#define META_HPP_IGNORE_OVERRIDE_WARNINGS_PUSH() \
-    META_HPP_CLANG_IGNORE_WARNINGS_PUSH() \
-    META_HPP_CLANG_IGNORE_WARNING("-Wunknown-warning-option") \
-    META_HPP_CLANG_IGNORE_WARNING("-Winconsistent-missing-override") \
-    META_HPP_CLANG_IGNORE_WARNING("-Wsuggest-override")
+#define META_HPP_DETAIL_IGNORE_OVERRIDE_WARNINGS_PUSH() \
+    META_HPP_DETAIL_CLANG_IGNORE_WARNINGS_PUSH() \
+    META_HPP_DETAIL_CLANG_IGNORE_WARNING("-Wunknown-warning-option") \
+    META_HPP_DETAIL_CLANG_IGNORE_WARNING("-Winconsistent-missing-override") \
+    META_HPP_DETAIL_CLANG_IGNORE_WARNING("-Wsuggest-override")
 
-#define META_HPP_IGNORE_OVERRIDE_WARNINGS_POP() META_HPP_CLANG_IGNORE_WARNINGS_POP()
+#define META_HPP_DETAIL_IGNORE_OVERRIDE_WARNINGS_POP() META_HPP_DETAIL_CLANG_IGNORE_WARNINGS_POP()
 
 namespace meta_hpp::detail
 {
@@ -246,7 +246,7 @@ namespace std
 
 namespace meta_hpp::detail
 {
-#define META_HPP_DEFINE_BINARY_OPERATOR(op) \
+#define META_HPP_DETAIL_DEFINE_BINARY_OPERATOR(op) \
     template < typename Enum > \
     constexpr bool operator op(Enum l, bitflags<Enum> r) noexcept { \
         return l op r.as_enum(); \
@@ -267,13 +267,13 @@ namespace meta_hpp::detail
     constexpr bool operator op(bitflags<Enum> l, bitflags<Enum> r) noexcept { \
         return l.as_raw() op r.as_raw(); \
     }
-    META_HPP_DEFINE_BINARY_OPERATOR(<)
-    META_HPP_DEFINE_BINARY_OPERATOR(>)
-    META_HPP_DEFINE_BINARY_OPERATOR(<=)
-    META_HPP_DEFINE_BINARY_OPERATOR(>=)
-    META_HPP_DEFINE_BINARY_OPERATOR(==)
-    META_HPP_DEFINE_BINARY_OPERATOR(!=)
-#undef META_HPP_DEFINE_BINARY_OPERATOR
+    META_HPP_DETAIL_DEFINE_BINARY_OPERATOR(<)
+    META_HPP_DETAIL_DEFINE_BINARY_OPERATOR(>)
+    META_HPP_DETAIL_DEFINE_BINARY_OPERATOR(<=)
+    META_HPP_DETAIL_DEFINE_BINARY_OPERATOR(>=)
+    META_HPP_DETAIL_DEFINE_BINARY_OPERATOR(==)
+    META_HPP_DETAIL_DEFINE_BINARY_OPERATOR(!=)
+#undef META_HPP_DETAIL_DEFINE_BINARY_OPERATOR
 }
 
 namespace meta_hpp::detail
@@ -283,7 +283,7 @@ namespace meta_hpp::detail
         return static_cast<Enum>(~l.as_raw());
     }
 
-#define META_HPP_DEFINE_BINARY_OPERATOR(op) \
+#define META_HPP_DETAIL_DEFINE_BINARY_OPERATOR(op) \
     template < typename Enum > \
     constexpr bitflags<Enum> operator op(Enum l, bitflags<Enum> r) noexcept { \
         return bitflags{l} op r; \
@@ -304,17 +304,17 @@ namespace meta_hpp::detail
     constexpr bitflags<Enum>& operator op##=(bitflags<Enum>& l, bitflags<Enum> r) noexcept { \
         return l = l op r; \
     }
-    META_HPP_DEFINE_BINARY_OPERATOR(|)
-    META_HPP_DEFINE_BINARY_OPERATOR(&)
-    META_HPP_DEFINE_BINARY_OPERATOR(^)
-#undef META_HPP_DEFINE_BINARY_OPERATOR
+    META_HPP_DETAIL_DEFINE_BINARY_OPERATOR(|)
+    META_HPP_DETAIL_DEFINE_BINARY_OPERATOR(&)
+    META_HPP_DETAIL_DEFINE_BINARY_OPERATOR(^)
+#undef META_HPP_DETAIL_DEFINE_BINARY_OPERATOR
 }
 
 //
-// META_HPP_BITFLAGS_OPERATORS_DECL
+// META_HPP_DETAIL_BITFLAGS_OPERATORS_DECL
 //
 
-#define META_HPP_BITFLAGS_OPERATORS_DECL(Enum) \
+#define META_HPP_DETAIL_BITFLAGS_OPERATORS_DECL(Enum) \
     constexpr ::meta_hpp::detail::bitflags<Enum> operator~[[maybe_unused]] (Enum l) noexcept { \
         return ~::meta_hpp::detail::bitflags<Enum>(l); \
     } \
@@ -409,16 +409,6 @@ namespace meta_hpp::detail
     template < typename From, typename To >
     using copy_cvref_t = typename copy_cvref<From, To>::type;
 }
-
-#if !defined(META_HPP_NO_EXCEPTIONS)
-#    define META_HPP_TRY try
-#    define META_HPP_CATCH(...) catch ( __VA_ARGS__ )
-#    define META_HPP_RETHROW() throw
-#else
-#    define META_HPP_TRY if ( true )
-#    define META_HPP_CATCH(...) if ( false )
-#    define META_HPP_RETHROW() (void)0
-#endif
 
 namespace meta_hpp::detail
 {
@@ -1850,8 +1840,8 @@ namespace meta_hpp::detail
         is_unbounded = 1 << 1,
     };
 
-    META_HPP_BITFLAGS_OPERATORS_DECL(array_flags)
     using array_bitflags = bitflags<array_flags>;
+    META_HPP_DETAIL_BITFLAGS_OPERATORS_DECL(array_flags)
 }
 
 namespace meta_hpp::detail
@@ -1888,8 +1878,8 @@ namespace meta_hpp::detail
         is_template_instantiation = 1 << 4,
     };
 
-    META_HPP_BITFLAGS_OPERATORS_DECL(class_flags)
     using class_bitflags = bitflags<class_flags>;
+    META_HPP_DETAIL_BITFLAGS_OPERATORS_DECL(class_flags)
 }
 
 namespace meta_hpp::detail
@@ -1954,8 +1944,8 @@ namespace meta_hpp::detail
         is_noexcept = 1 << 0,
     };
 
-    META_HPP_BITFLAGS_OPERATORS_DECL(constructor_flags)
     using constructor_bitflags = bitflags<constructor_flags>;
+    META_HPP_DETAIL_BITFLAGS_OPERATORS_DECL(constructor_flags)
 }
 
 namespace meta_hpp::detail
@@ -1986,8 +1976,8 @@ namespace meta_hpp::detail
         is_virtual = 1 << 1,
     };
 
-    META_HPP_BITFLAGS_OPERATORS_DECL(destructor_flags)
     using destructor_bitflags = bitflags<destructor_flags>;
+    META_HPP_DETAIL_BITFLAGS_OPERATORS_DECL(destructor_flags)
 }
 
 namespace meta_hpp::detail
@@ -2018,8 +2008,8 @@ namespace meta_hpp::detail
         is_scoped = 1 << 0,
     };
 
-    META_HPP_BITFLAGS_OPERATORS_DECL(enum_flags)
     using enum_bitflags = bitflags<enum_flags>;
+    META_HPP_DETAIL_BITFLAGS_OPERATORS_DECL(enum_flags)
 }
 
 namespace meta_hpp::detail
@@ -2046,8 +2036,8 @@ namespace meta_hpp::detail
         is_noexcept = 1 << 0,
     };
 
-    META_HPP_BITFLAGS_OPERATORS_DECL(function_flags)
     using function_bitflags = bitflags<function_flags>;
+    META_HPP_DETAIL_BITFLAGS_OPERATORS_DECL(function_flags)
 }
 
 namespace meta_hpp::detail
@@ -2081,8 +2071,8 @@ namespace meta_hpp::detail
         is_readonly = 1 << 0,
     };
 
-    META_HPP_BITFLAGS_OPERATORS_DECL(member_flags)
     using member_bitflags = bitflags<member_flags>;
+    META_HPP_DETAIL_BITFLAGS_OPERATORS_DECL(member_flags)
 }
 
 namespace meta_hpp::detail
@@ -2116,8 +2106,8 @@ namespace meta_hpp::detail
         is_rvalue_qualified = 1 << 3,
     };
 
-    META_HPP_BITFLAGS_OPERATORS_DECL(method_flags)
     using method_bitflags = bitflags<method_flags>;
+    META_HPP_DETAIL_BITFLAGS_OPERATORS_DECL(method_flags)
 }
 
 namespace meta_hpp::detail
@@ -2248,8 +2238,8 @@ namespace meta_hpp::detail
         is_floating_point = 1 << 3,
     };
 
-    META_HPP_BITFLAGS_OPERATORS_DECL(number_flags)
     using number_bitflags = bitflags<number_flags>;
+    META_HPP_DETAIL_BITFLAGS_OPERATORS_DECL(number_flags)
 }
 
 namespace meta_hpp::detail
@@ -2289,8 +2279,8 @@ namespace meta_hpp::detail
         is_readonly = 1 << 0,
     };
 
-    META_HPP_BITFLAGS_OPERATORS_DECL(pointer_flags)
     using pointer_bitflags = bitflags<pointer_flags>;
+    META_HPP_DETAIL_BITFLAGS_OPERATORS_DECL(pointer_flags)
 }
 
 namespace meta_hpp::detail
@@ -2319,8 +2309,8 @@ namespace meta_hpp::detail
         is_rvalue = 1 << 2,
     };
 
-    META_HPP_BITFLAGS_OPERATORS_DECL(reference_flags)
     using reference_bitflags = bitflags<reference_flags>;
+    META_HPP_DETAIL_BITFLAGS_OPERATORS_DECL(reference_flags)
 }
 
 namespace meta_hpp::detail
@@ -4271,12 +4261,12 @@ private:
 #define META_HPP_ENABLE_POLY_INFO(...) \
     META_HPP_ENABLE_BASE_INFO(__VA_ARGS__) \
 public: \
-    META_HPP_IGNORE_OVERRIDE_WARNINGS_PUSH() \
+    META_HPP_DETAIL_IGNORE_OVERRIDE_WARNINGS_PUSH() \
     virtual ::meta_hpp::detail::poly_info get_most_derived_meta_poly_info(::meta_hpp::detail::type_registry& registry) const { \
         using self_type = std::remove_cvref_t<decltype(*this)>; \
         return ::meta_hpp::detail::poly_info{.ptr = this, .type = registry.resolve_class_type<self_type>()}; \
     } \
-    META_HPP_IGNORE_OVERRIDE_WARNINGS_POP() \
+    META_HPP_DETAIL_IGNORE_OVERRIDE_WARNINGS_POP() \
 private:
 
 namespace meta_hpp::detail

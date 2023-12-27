@@ -8,11 +8,6 @@
 - test and support shared libraries
 - remove `resolve_poly_type`, use `resolve_type(T&&)` instead
 - add ucast manual
-- mark all internal macro with DETAIL prefix
-
-## Thoughts
-
-- store only `hashed_string` in indices instead `string`
 
 ## Version 1.0
 
