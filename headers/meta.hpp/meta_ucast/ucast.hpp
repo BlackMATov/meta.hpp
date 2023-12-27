@@ -9,7 +9,7 @@
 #include "../meta_base.hpp"
 #include "../meta_ucast.hpp"
 
-#include "../meta_detail/poly_info.hpp"
+#include "../meta_detail/base_info.hpp"
 #include "../meta_detail/type_registry.hpp"
 #include "../meta_detail/value_utilities/utraits.hpp"
 
@@ -34,7 +34,7 @@ namespace meta_hpp
             return from;
         } else {
             detail::type_registry& registry{detail::type_registry::instance()};
-            const detail::poly_info& meta_info{from->get_most_derived_poly_info(registry)};
+            const detail::poly_info& meta_info{from->get_most_derived_meta_poly_info(registry)};
 
             // NOLINTNEXTLINE(*-const-cast)
             void* most_derived_object_ptr = const_cast<void*>(meta_info.ptr);

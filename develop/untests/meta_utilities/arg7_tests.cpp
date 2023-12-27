@@ -40,11 +40,6 @@ TEST_CASE("meta/meta_utilities/arg7") {
     //  * <- B <- *
     // A           D
     //  * <- C <- *
-
-    meta::class_<A>();
-    meta::class_<B>().base_<A>();
-    meta::class_<C>().base_<A>();
-    meta::class_<D>().base_<B>().base_<C>();
 }
 
 TEST_CASE("meta/meta_utilities/arg7/cast/to_void") {

@@ -4,15 +4,10 @@
 
 - type conversions
 - non-linear search of methods/functions/...
-- register base types by `META_HPP_ENABLE_POLY_INFO`
 - fix all includes to work with the library more flexible
 - test and support shared libraries
 - remove `resolve_poly_type`, use `resolve_type(T&&)` instead
 - add ucast manual
-
-## Thoughts
-
-- store only `hashed_string` in indices instead `string`
 
 ## Version 1.0
 

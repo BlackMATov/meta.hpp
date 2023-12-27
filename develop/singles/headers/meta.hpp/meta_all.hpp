@@ -100,70 +100,70 @@
 //
 //
 
-#define META_HPP_CLANG_COMPILER_ID 1
-#define META_HPP_GCC_COMPILER_ID 2
-#define META_HPP_MSVC_COMPILER_ID 3
-#define META_HPP_UNKNOWN_COMPILER_ID 4
+#define META_HPP_DETAIL_CLANG_COMPILER_ID 1
+#define META_HPP_DETAIL_GCC_COMPILER_ID 2
+#define META_HPP_DETAIL_MSVC_COMPILER_ID 3
+#define META_HPP_DETAIL_UNKNOWN_COMPILER_ID 4
 
 #if defined(__clang__)
-#    define META_HPP_COMPILER_ID META_HPP_CLANG_COMPILER_ID
+#    define META_HPP_DETAIL_COMPILER_ID META_HPP_DETAIL_CLANG_COMPILER_ID
 #elif defined(__GNUC__)
-#    define META_HPP_COMPILER_ID META_HPP_GCC_COMPILER_ID
+#    define META_HPP_DETAIL_COMPILER_ID META_HPP_DETAIL_GCC_COMPILER_ID
 #elif defined(_MSC_VER)
-#    define META_HPP_COMPILER_ID META_HPP_MSVC_COMPILER_ID
+#    define META_HPP_DETAIL_COMPILER_ID META_HPP_DETAIL_MSVC_COMPILER_ID
 #else
-#    define META_HPP_COMPILER_ID META_HPP_UNKNOWN_COMPILER_ID
+#    define META_HPP_DETAIL_COMPILER_ID META_HPP_DETAIL_UNKNOWN_COMPILER_ID
 #endif
 
 //
 //
 //
 
-#if META_HPP_COMPILER_ID == META_HPP_CLANG_COMPILER_ID
-#    define META_HPP_CLANG_PRAGMA_TO_STR(x) _Pragma(#x)
-#    define META_HPP_CLANG_IGNORE_WARNING(w) META_HPP_CLANG_PRAGMA_TO_STR(clang diagnostic ignored w)
-#    define META_HPP_CLANG_IGNORE_WARNINGS_PUSH() _Pragma("clang diagnostic push")
-#    define META_HPP_CLANG_IGNORE_WARNINGS_POP() _Pragma("clang diagnostic pop")
+#if META_HPP_DETAIL_COMPILER_ID == META_HPP_DETAIL_CLANG_COMPILER_ID
+#    define META_HPP_DETAIL_CLANG_PRAGMA_TO_STR(x) _Pragma(#x)
+#    define META_HPP_DETAIL_CLANG_IGNORE_WARNING(w) META_HPP_DETAIL_CLANG_PRAGMA_TO_STR(clang diagnostic ignored w)
+#    define META_HPP_DETAIL_CLANG_IGNORE_WARNINGS_PUSH() _Pragma("clang diagnostic push")
+#    define META_HPP_DETAIL_CLANG_IGNORE_WARNINGS_POP() _Pragma("clang diagnostic pop")
 #else
-#    define META_HPP_CLANG_PRAGMA_TO_STR(x)
-#    define META_HPP_CLANG_IGNORE_WARNING(w)
-#    define META_HPP_CLANG_IGNORE_WARNINGS_PUSH()
-#    define META_HPP_CLANG_IGNORE_WARNINGS_POP()
+#    define META_HPP_DETAIL_CLANG_PRAGMA_TO_STR(x)
+#    define META_HPP_DETAIL_CLANG_IGNORE_WARNING(w)
+#    define META_HPP_DETAIL_CLANG_IGNORE_WARNINGS_PUSH()
+#    define META_HPP_DETAIL_CLANG_IGNORE_WARNINGS_POP()
 #endif
 
-#if META_HPP_COMPILER_ID == META_HPP_GCC_COMPILER_ID
-#    define META_HPP_GCC_PRAGMA_TO_STR(x) _Pragma(#x)
-#    define META_HPP_GCC_IGNORE_WARNING(w) META_HPP_GCC_PRAGMA_TO_STR(GCC diagnostic ignored w)
-#    define META_HPP_GCC_IGNORE_WARNINGS_PUSH() _Pragma("GCC diagnostic push")
-#    define META_HPP_GCC_IGNORE_WARNINGS_POP() _Pragma("GCC diagnostic pop")
+#if META_HPP_DETAIL_COMPILER_ID == META_HPP_DETAIL_GCC_COMPILER_ID
+#    define META_HPP_DETAIL_GCC_PRAGMA_TO_STR(x) _Pragma(#x)
+#    define META_HPP_DETAIL_GCC_IGNORE_WARNING(w) META_HPP_DETAIL_GCC_PRAGMA_TO_STR(GCC diagnostic ignored w)
+#    define META_HPP_DETAIL_GCC_IGNORE_WARNINGS_PUSH() _Pragma("GCC diagnostic push")
+#    define META_HPP_DETAIL_GCC_IGNORE_WARNINGS_POP() _Pragma("GCC diagnostic pop")
 #else
-#    define META_HPP_GCC_PRAGMA_TO_STR(x)
-#    define META_HPP_GCC_IGNORE_WARNING(w)
-#    define META_HPP_GCC_IGNORE_WARNINGS_PUSH()
-#    define META_HPP_GCC_IGNORE_WARNINGS_POP()
+#    define META_HPP_DETAIL_GCC_PRAGMA_TO_STR(x)
+#    define META_HPP_DETAIL_GCC_IGNORE_WARNING(w)
+#    define META_HPP_DETAIL_GCC_IGNORE_WARNINGS_PUSH()
+#    define META_HPP_DETAIL_GCC_IGNORE_WARNINGS_POP()
 #endif
 
-#if META_HPP_COMPILER_ID == META_HPP_MSVC_COMPILER_ID
-#    define META_HPP_MSVC_IGNORE_WARNING(w) __pragma(warning(disable : w))
-#    define META_HPP_MSVC_IGNORE_WARNINGS_PUSH() __pragma(warning(push))
-#    define META_HPP_MSVC_IGNORE_WARNINGS_POP() __pragma(warning(pop))
+#if META_HPP_DETAIL_COMPILER_ID == META_HPP_DETAIL_MSVC_COMPILER_ID
+#    define META_HPP_DETAIL_MSVC_IGNORE_WARNING(w) __pragma(warning(disable : w))
+#    define META_HPP_DETAIL_MSVC_IGNORE_WARNINGS_PUSH() __pragma(warning(push))
+#    define META_HPP_DETAIL_MSVC_IGNORE_WARNINGS_POP() __pragma(warning(pop))
 #else
-#    define META_HPP_MSVC_IGNORE_WARNING(w)
-#    define META_HPP_MSVC_IGNORE_WARNINGS_PUSH()
-#    define META_HPP_MSVC_IGNORE_WARNINGS_POP()
+#    define META_HPP_DETAIL_MSVC_IGNORE_WARNING(w)
+#    define META_HPP_DETAIL_MSVC_IGNORE_WARNINGS_PUSH()
+#    define META_HPP_DETAIL_MSVC_IGNORE_WARNINGS_POP()
 #endif
 
 //
 //
 //
 
-#define META_HPP_IGNORE_OVERRIDE_WARNINGS_PUSH() \
-    META_HPP_CLANG_IGNORE_WARNINGS_PUSH() \
-    META_HPP_CLANG_IGNORE_WARNING("-Wunknown-warning-option") \
-    META_HPP_CLANG_IGNORE_WARNING("-Winconsistent-missing-override") \
-    META_HPP_CLANG_IGNORE_WARNING("-Wsuggest-override")
+#define META_HPP_DETAIL_IGNORE_OVERRIDE_WARNINGS_PUSH() \
+    META_HPP_DETAIL_CLANG_IGNORE_WARNINGS_PUSH() \
+    META_HPP_DETAIL_CLANG_IGNORE_WARNING("-Wunknown-warning-option") \
+    META_HPP_DETAIL_CLANG_IGNORE_WARNING("-Winconsistent-missing-override") \
+    META_HPP_DETAIL_CLANG_IGNORE_WARNING("-Wsuggest-override")
 
-#define META_HPP_IGNORE_OVERRIDE_WARNINGS_POP() META_HPP_CLANG_IGNORE_WARNINGS_POP()
+#define META_HPP_DETAIL_IGNORE_OVERRIDE_WARNINGS_POP() META_HPP_DETAIL_CLANG_IGNORE_WARNINGS_POP()
 
 namespace meta_hpp::detail
 {
@@ -246,7 +246,7 @@ namespace std
 
 namespace meta_hpp::detail
 {
-#define META_HPP_DEFINE_BINARY_OPERATOR(op) \
+#define META_HPP_DETAIL_DEFINE_BINARY_OPERATOR(op) \
     template < typename Enum > \
     constexpr bool operator op(Enum l, bitflags<Enum> r) noexcept { \
         return l op r.as_enum(); \
@@ -267,13 +267,13 @@ namespace meta_hpp::detail
     constexpr bool operator op(bitflags<Enum> l, bitflags<Enum> r) noexcept { \
         return l.as_raw() op r.as_raw(); \
     }
-    META_HPP_DEFINE_BINARY_OPERATOR(<)
-    META_HPP_DEFINE_BINARY_OPERATOR(>)
-    META_HPP_DEFINE_BINARY_OPERATOR(<=)
-    META_HPP_DEFINE_BINARY_OPERATOR(>=)
-    META_HPP_DEFINE_BINARY_OPERATOR(==)
-    META_HPP_DEFINE_BINARY_OPERATOR(!=)
-#undef META_HPP_DEFINE_BINARY_OPERATOR
+    META_HPP_DETAIL_DEFINE_BINARY_OPERATOR(<)
+    META_HPP_DETAIL_DEFINE_BINARY_OPERATOR(>)
+    META_HPP_DETAIL_DEFINE_BINARY_OPERATOR(<=)
+    META_HPP_DETAIL_DEFINE_BINARY_OPERATOR(>=)
+    META_HPP_DETAIL_DEFINE_BINARY_OPERATOR(==)
+    META_HPP_DETAIL_DEFINE_BINARY_OPERATOR(!=)
+#undef META_HPP_DETAIL_DEFINE_BINARY_OPERATOR
 }
 
 namespace meta_hpp::detail
@@ -283,7 +283,7 @@ namespace meta_hpp::detail
         return static_cast<Enum>(~l.as_raw());
     }
 
-#define META_HPP_DEFINE_BINARY_OPERATOR(op) \
+#define META_HPP_DETAIL_DEFINE_BINARY_OPERATOR(op) \
     template < typename Enum > \
     constexpr bitflags<Enum> operator op(Enum l, bitflags<Enum> r) noexcept { \
         return bitflags{l} op r; \
@@ -304,17 +304,17 @@ namespace meta_hpp::detail
     constexpr bitflags<Enum>& operator op##=(bitflags<Enum>& l, bitflags<Enum> r) noexcept { \
         return l = l op r; \
     }
-    META_HPP_DEFINE_BINARY_OPERATOR(|)
-    META_HPP_DEFINE_BINARY_OPERATOR(&)
-    META_HPP_DEFINE_BINARY_OPERATOR(^)
-#undef META_HPP_DEFINE_BINARY_OPERATOR
+    META_HPP_DETAIL_DEFINE_BINARY_OPERATOR(|)
+    META_HPP_DETAIL_DEFINE_BINARY_OPERATOR(&)
+    META_HPP_DETAIL_DEFINE_BINARY_OPERATOR(^)
+#undef META_HPP_DETAIL_DEFINE_BINARY_OPERATOR
 }
 
 //
-// META_HPP_BITFLAGS_OPERATORS_DECL
+// META_HPP_DETAIL_BITFLAGS_OPERATORS_DECL
 //
 
-#define META_HPP_BITFLAGS_OPERATORS_DECL(Enum) \
+#define META_HPP_DETAIL_BITFLAGS_OPERATORS_DECL(Enum) \
     constexpr ::meta_hpp::detail::bitflags<Enum> operator~[[maybe_unused]] (Enum l) noexcept { \
         return ~::meta_hpp::detail::bitflags<Enum>(l); \
     } \
@@ -409,16 +409,6 @@ namespace meta_hpp::detail
     template < typename From, typename To >
     using copy_cvref_t = typename copy_cvref<From, To>::type;
 }
-
-#if !defined(META_HPP_NO_EXCEPTIONS)
-#    define META_HPP_TRY try
-#    define META_HPP_CATCH(...) catch ( __VA_ARGS__ )
-#    define META_HPP_RETHROW() throw
-#else
-#    define META_HPP_TRY if ( true )
-#    define META_HPP_CATCH(...) if ( false )
-#    define META_HPP_RETHROW() (void)0
-#endif
 
 namespace meta_hpp::detail
 {
@@ -1159,38 +1149,6 @@ namespace meta_hpp::detail
 
 namespace meta_hpp::detail
 {
-    namespace impl
-    {
-        template < typename From, typename To >
-        constexpr bool is_virtual_base_of_impl(...) noexcept {
-            return false;
-        }
-
-        template <
-            typename From,
-            typename To,
-            decltype(static_cast<const volatile To*>(std::declval<const volatile From*>())) = nullptr >
-        constexpr bool is_virtual_base_of_impl(int) noexcept {
-            return true;
-        }
-    }
-
-    // clang-format off
-
-    template < typename Base, typename Derived >
-    struct is_virtual_base_of : std::integral_constant<bool,
-          std::is_base_of_v<Base, Derived> &&
-          impl::is_virtual_base_of_impl<Derived, Base>(0) &&
-          !impl::is_virtual_base_of_impl<Base, Derived>(0)> {};
-
-    // clang-format on
-
-    template < typename Base, typename Derived >
-    inline constexpr bool is_virtual_base_of_v = is_virtual_base_of<Base, Derived>::value;
-}
-
-namespace meta_hpp::detail
-{
     class memory_buffer final {
     public:
         memory_buffer() = default;
@@ -1456,7 +1414,13 @@ namespace meta_hpp::detail
 namespace meta_hpp::detail
 {
     template < typename... Types >
-    struct type_list {};
+    struct type_list {
+        template < typename F >
+        // NOLINTNEXTLINE(*-missing-std-forward)
+        static void for_each(F&& f) {
+            (f.template operator()<Types>(), ...);
+        }
+    };
 
     template < std::size_t I >
     using size_constant = std::integral_constant<std::size_t, I>;
@@ -1876,8 +1840,8 @@ namespace meta_hpp::detail
         is_unbounded = 1 << 1,
     };
 
-    META_HPP_BITFLAGS_OPERATORS_DECL(array_flags)
     using array_bitflags = bitflags<array_flags>;
+    META_HPP_DETAIL_BITFLAGS_OPERATORS_DECL(array_flags)
 }
 
 namespace meta_hpp::detail
@@ -1914,8 +1878,8 @@ namespace meta_hpp::detail
         is_template_instantiation = 1 << 4,
     };
 
-    META_HPP_BITFLAGS_OPERATORS_DECL(class_flags)
     using class_bitflags = bitflags<class_flags>;
+    META_HPP_DETAIL_BITFLAGS_OPERATORS_DECL(class_flags)
 }
 
 namespace meta_hpp::detail
@@ -1980,8 +1944,8 @@ namespace meta_hpp::detail
         is_noexcept = 1 << 0,
     };
 
-    META_HPP_BITFLAGS_OPERATORS_DECL(constructor_flags)
     using constructor_bitflags = bitflags<constructor_flags>;
+    META_HPP_DETAIL_BITFLAGS_OPERATORS_DECL(constructor_flags)
 }
 
 namespace meta_hpp::detail
@@ -2012,8 +1976,8 @@ namespace meta_hpp::detail
         is_virtual = 1 << 1,
     };
 
-    META_HPP_BITFLAGS_OPERATORS_DECL(destructor_flags)
     using destructor_bitflags = bitflags<destructor_flags>;
+    META_HPP_DETAIL_BITFLAGS_OPERATORS_DECL(destructor_flags)
 }
 
 namespace meta_hpp::detail
@@ -2044,8 +2008,8 @@ namespace meta_hpp::detail
         is_scoped = 1 << 0,
     };
 
-    META_HPP_BITFLAGS_OPERATORS_DECL(enum_flags)
     using enum_bitflags = bitflags<enum_flags>;
+    META_HPP_DETAIL_BITFLAGS_OPERATORS_DECL(enum_flags)
 }
 
 namespace meta_hpp::detail
@@ -2072,8 +2036,8 @@ namespace meta_hpp::detail
         is_noexcept = 1 << 0,
     };
 
-    META_HPP_BITFLAGS_OPERATORS_DECL(function_flags)
     using function_bitflags = bitflags<function_flags>;
+    META_HPP_DETAIL_BITFLAGS_OPERATORS_DECL(function_flags)
 }
 
 namespace meta_hpp::detail
@@ -2107,8 +2071,8 @@ namespace meta_hpp::detail
         is_readonly = 1 << 0,
     };
 
-    META_HPP_BITFLAGS_OPERATORS_DECL(member_flags)
     using member_bitflags = bitflags<member_flags>;
+    META_HPP_DETAIL_BITFLAGS_OPERATORS_DECL(member_flags)
 }
 
 namespace meta_hpp::detail
@@ -2142,8 +2106,8 @@ namespace meta_hpp::detail
         is_rvalue_qualified = 1 << 3,
     };
 
-    META_HPP_BITFLAGS_OPERATORS_DECL(method_flags)
     using method_bitflags = bitflags<method_flags>;
+    META_HPP_DETAIL_BITFLAGS_OPERATORS_DECL(method_flags)
 }
 
 namespace meta_hpp::detail
@@ -2274,8 +2238,8 @@ namespace meta_hpp::detail
         is_floating_point = 1 << 3,
     };
 
-    META_HPP_BITFLAGS_OPERATORS_DECL(number_flags)
     using number_bitflags = bitflags<number_flags>;
+    META_HPP_DETAIL_BITFLAGS_OPERATORS_DECL(number_flags)
 }
 
 namespace meta_hpp::detail
@@ -2315,8 +2279,8 @@ namespace meta_hpp::detail
         is_readonly = 1 << 0,
     };
 
-    META_HPP_BITFLAGS_OPERATORS_DECL(pointer_flags)
     using pointer_bitflags = bitflags<pointer_flags>;
+    META_HPP_DETAIL_BITFLAGS_OPERATORS_DECL(pointer_flags)
 }
 
 namespace meta_hpp::detail
@@ -2345,8 +2309,8 @@ namespace meta_hpp::detail
         is_rvalue = 1 << 2,
     };
 
-    META_HPP_BITFLAGS_OPERATORS_DECL(reference_flags)
     using reference_bitflags = bitflags<reference_flags>;
+    META_HPP_DETAIL_BITFLAGS_OPERATORS_DECL(reference_flags)
 }
 
 namespace meta_hpp::detail
@@ -2672,7 +2636,6 @@ namespace meta_hpp
         [[nodiscard]] const any_type_list& get_argument_types() const noexcept;
 
         [[nodiscard]] const class_list& get_base_classes() const noexcept;
-        [[nodiscard]] const class_list& get_derived_classes() const noexcept;
         [[nodiscard]] const constructor_list& get_constructors() const noexcept;
         [[nodiscard]] const destructor_list& get_destructors() const noexcept;
         [[nodiscard]] const function_list& get_functions() const noexcept;
@@ -2698,10 +2661,6 @@ namespace meta_hpp
         [[nodiscard]] bool is_direct_base_of() const noexcept;
         [[nodiscard]] bool is_direct_base_of(const class_type& derived) const noexcept;
 
-        template < detail::class_kind Derived >
-        [[nodiscard]] bool is_virtual_base_of() const noexcept;
-        [[nodiscard]] bool is_virtual_base_of(const class_type& derived) const noexcept;
-
         template < detail::class_kind Base >
         [[nodiscard]] bool is_derived_from() const noexcept;
         [[nodiscard]] bool is_derived_from(const class_type& base) const noexcept;
@@ -2709,10 +2668,6 @@ namespace meta_hpp
         template < detail::class_kind Base >
         [[nodiscard]] bool is_direct_derived_from() const noexcept;
         [[nodiscard]] bool is_direct_derived_from(const class_type& base) const noexcept;
-
-        template < detail::class_kind Base >
-        [[nodiscard]] bool is_virtual_derived_from() const noexcept;
-        [[nodiscard]] bool is_virtual_derived_from(const class_type& base) const noexcept;
 
         [[nodiscard]] function get_function(std::string_view name, bool recursively = true) const noexcept;
         [[nodiscard]] member get_member(std::string_view name, bool recursively = true) const noexcept;
@@ -2965,7 +2920,6 @@ namespace meta_hpp::detail
         // NOLINTEND(*-avoid-const-or-ref-data-members)
 
         class_list base_classes;
-        class_list derived_classes;
         constructor_list constructors;
         destructor_list destructors;
         function_list functions;
@@ -2977,39 +2931,14 @@ namespace meta_hpp::detail
         struct upcast_func_t final {
             using upcast_t = void* (*)(void*);
 
+            type_id target{};
             upcast_t upcast{};
-            class_type target{};
-            bool is_virtual{};
-
-            template < typename Derived, typename Base >
-                requires std::is_base_of_v<Base, Derived>
-            upcast_func_t(std::in_place_type_t<Derived>, std::in_place_type_t<Base>);
 
             [[nodiscard]] void* apply(void* ptr) const noexcept;
             [[nodiscard]] const void* apply(const void* ptr) const noexcept;
         };
 
-        struct upcast_func_list_t final {
-            using upcasts_t = std::vector<upcast_func_t>;
-            using vbases_t = std::set<class_type, std::less<>>;
-
-            upcasts_t upcasts{};
-            vbases_t vbases{};
-            bool is_ambiguous{};
-
-            upcast_func_list_t(const upcast_func_t& _upcast);
-            upcast_func_list_t(upcasts_t _upcasts, vbases_t _vbases);
-
-            [[nodiscard]] void* apply(void* ptr) const noexcept;
-            [[nodiscard]] const void* apply(const void* ptr) const noexcept;
-
-            friend upcast_func_list_t operator+(const upcast_func_list_t& l, const upcast_func_list_t& r);
-        };
-
-        using base_upcasts_t = std::map<class_type, upcast_func_t, std::less<>>;
-        using deep_upcasts_t = std::map<class_type, upcast_func_list_t, std::less<>>;
-
-        base_upcasts_t base_upcasts;
+        using deep_upcasts_t = std::vector<upcast_func_t>;
         deep_upcasts_t deep_upcasts;
 
         template < class_kind Class >
@@ -4313,20 +4242,31 @@ namespace meta_hpp::detail
     };
 
     template < typename T >
+    concept check_base_info_enabled //
+        = requires { typename T::meta_base_info; };
+
+    template < typename T >
     concept check_poly_info_enabled //
         = requires(type_registry& r, const T& v) {
-              { v.get_most_derived_poly_info(r) } -> std::convertible_to<poly_info>;
+              { v.get_most_derived_meta_poly_info(r) } -> std::convertible_to<poly_info>;
           };
 }
 
-#define META_HPP_ENABLE_POLY_INFO() \
+#define META_HPP_ENABLE_BASE_INFO(...) \
 public: \
-    META_HPP_IGNORE_OVERRIDE_WARNINGS_PUSH() \
-    virtual ::meta_hpp::detail::poly_info get_most_derived_poly_info(::meta_hpp::detail::type_registry& registry) const { \
+    using meta_base_info = ::meta_hpp::detail::type_list<__VA_ARGS__>; \
+\
+private:
+
+#define META_HPP_ENABLE_POLY_INFO(...) \
+    META_HPP_ENABLE_BASE_INFO(__VA_ARGS__) \
+public: \
+    META_HPP_DETAIL_IGNORE_OVERRIDE_WARNINGS_PUSH() \
+    virtual ::meta_hpp::detail::poly_info get_most_derived_meta_poly_info(::meta_hpp::detail::type_registry& registry) const { \
         using self_type = std::remove_cvref_t<decltype(*this)>; \
         return ::meta_hpp::detail::poly_info{.ptr = this, .type = registry.resolve_class_type<self_type>()}; \
     } \
-    META_HPP_IGNORE_OVERRIDE_WARNINGS_POP() \
+    META_HPP_DETAIL_IGNORE_OVERRIDE_WARNINGS_POP() \
 private:
 
 namespace meta_hpp::detail
@@ -4459,7 +4399,7 @@ namespace meta_hpp
                 detail::check_poly_info_enabled<raw_type>,
                 "The class doesn't support polymorphic type resolving. Use the META_HPP_ENABLE_POLY_INFO macro to fix it."
             );
-            return from.get_most_derived_poly_info(registry).type;
+            return from.get_most_derived_meta_poly_info(registry).type;
         } else {
             (void)from;
             return registry.resolve_type<raw_type>();
@@ -4510,11 +4450,6 @@ namespace meta_hpp::detail
     template < typename Class >
     concept class_bind_destructor_kind                        //
         = class_kind<Class> && std::is_destructible_v<Class>; //
-
-    template < typename Base, typename Class >
-    concept class_bind_base_kind                //
-        = class_kind<Base> && class_kind<Class> //
-       && std::derived_from<Class, Base>;       //
 
     template < typename Member, typename Class >
     concept class_bind_member_kind                                           //
@@ -4595,9 +4530,6 @@ namespace meta_hpp
     class class_bind final : public type_bind_base<class_type> {
     public:
         explicit class_bind(metadata_map metadata);
-
-        template < detail::class_bind_base_kind<Class>... Bases >
-        class_bind& base_();
 
         template < typename... Args, typename... Opts >
             requires detail::class_bind_constructor_kind<Class, Args...>
@@ -5023,83 +4955,6 @@ namespace meta_hpp
     : type_bind_base{resolve_type<Array>(), std::move(metadata)} {}
 }
 
-namespace meta_hpp::detail::class_bind_impl
-{
-    using base_upcasts_t = class_type_data::base_upcasts_t;
-    using deep_upcasts_t = class_type_data::deep_upcasts_t;
-
-    using upcast_func_t = class_type_data::upcast_func_t;
-    using upcast_func_list_t = class_type_data::upcast_func_list_t;
-
-    using new_bases_db_t = std::vector<std::pair<class_type, upcast_func_t>>;
-    using deep_upcasts_db_t = std::map<class_type, deep_upcasts_t, std::less<>>;
-    using derived_classes_db_t = std::map<class_type, class_list, std::less<>>;
-
-    template < class_kind Class, class_kind Base >
-        requires std::is_base_of_v<Base, Class>
-    void update_new_bases_db( //
-        new_bases_db_t& new_bases_db
-    ) {
-        const class_type& new_base = resolve_type<Base>();
-
-        for ( auto&& [db_base, _] : new_bases_db ) {
-            if ( db_base == new_base ) {
-                return;
-            }
-        }
-
-        new_bases_db.emplace_back( //
-            new_base,
-            upcast_func_t{std::in_place_type<Class>, std::in_place_type<Base>}
-        );
-    }
-
-    inline void update_deep_upcasts_db( //
-        const class_type& derived_class,
-        const class_type& new_base_class,
-        upcast_func_list_t&& derived_to_new_base,
-        deep_upcasts_db_t& deep_upcasts_db
-    ) {
-        const class_type_data& derived_class_data = *type_access(derived_class);
-        const class_type_data& new_base_class_data = *type_access(new_base_class);
-
-        const auto [deep_upcasts_db_iter, _] = deep_upcasts_db.try_emplace(derived_class, derived_class_data.deep_upcasts);
-        deep_upcasts_t& derived_deep_upcasts = deep_upcasts_db_iter->second;
-
-        const auto add_derived_deep_upcast = [&derived_deep_upcasts](const class_type& deep_class, upcast_func_list_t&& upcasts) {
-            auto&& [position, emplaced] = derived_deep_upcasts.try_emplace(deep_class, std::move(upcasts));
-            if ( !emplaced ) {
-                position->second.is_ambiguous = is_disjoint(position->second.vbases, upcasts.vbases);
-            }
-        };
-
-        for ( auto&& [new_deep_class, new_base_to_deep] : new_base_class_data.deep_upcasts ) {
-            upcast_func_list_t derived_to_new_deep = derived_to_new_base + new_base_to_deep;
-            add_derived_deep_upcast(new_deep_class, std::move(derived_to_new_deep));
-        }
-
-        for ( const class_type& subderived_class : derived_class_data.derived_classes ) {
-            const class_type_data& subderived_data = *type_access(subderived_class);
-            upcast_func_t subderived_to_derived = subderived_data.base_upcasts.at(derived_class);
-            upcast_func_list_t subderived_to_new_base = subderived_to_derived + derived_to_new_base;
-            update_deep_upcasts_db(subderived_class, new_base_class, std::move(subderived_to_new_base), deep_upcasts_db);
-        }
-
-        add_derived_deep_upcast(new_base_class, std::move(derived_to_new_base));
-    }
-
-    inline void updata_derived_classes_db( //
-        const class_type& self_class,
-        const class_type& new_base_class,
-        derived_classes_db_t& derived_classes_db
-    ) {
-        const class_type_data& base_class_data = *type_access(new_base_class);
-        class_list new_derived_classes{base_class_data.derived_classes};
-        insert_or_assign(new_derived_classes, self_class);
-        derived_classes_db.emplace(new_base_class, std::move(new_derived_classes));
-    }
-}
-
 namespace meta_hpp
 {
     template < detail::class_kind Class >
@@ -5108,49 +4963,6 @@ namespace meta_hpp
         if constexpr ( std::is_destructible_v<Class> ) {
             destructor_();
         }
-    }
-
-    template < detail::class_kind Class >
-    template < detail::class_bind_base_kind<Class>... Bases >
-    class_bind<Class>& class_bind<Class>::base_() {
-        using namespace detail;
-        using namespace detail::class_bind_impl;
-
-        new_bases_db_t new_bases_db;
-        (update_new_bases_db<Class, Bases>(new_bases_db), ...);
-
-        deep_upcasts_db_t deep_upcasts_db;
-        derived_classes_db_t derived_classes_db;
-
-        class_list new_base_classes{get_data().base_classes};
-        base_upcasts_t new_base_upcasts{get_data().base_upcasts};
-
-        for ( auto&& [new_base_class, self_to_new_base] : new_bases_db ) {
-            if ( std::find(new_base_classes.begin(), new_base_classes.end(), new_base_class) != new_base_classes.end() ) {
-                continue;
-            }
-
-            update_deep_upcasts_db(*this, new_base_class, self_to_new_base, deep_upcasts_db);
-            updata_derived_classes_db(*this, new_base_class, derived_classes_db);
-
-            new_base_classes.emplace_back(new_base_class);
-            new_base_upcasts.emplace(new_base_class, self_to_new_base);
-        }
-
-        get_data().base_classes.swap(new_base_classes);
-        get_data().base_upcasts.swap(new_base_upcasts);
-
-        for ( auto&& [derived_class, new_deep_upcasts] : deep_upcasts_db ) {
-            class_type_data& derived_data = *type_access(derived_class);
-            derived_data.deep_upcasts.swap(new_deep_upcasts);
-        }
-
-        for ( auto&& [base_class, new_derived_classes] : derived_classes_db ) {
-            class_type_data& base_data = *type_access(base_class);
-            base_data.derived_classes.swap(new_derived_classes);
-        }
-
-        return *this;
     }
 
     template < detail::class_kind Class >
@@ -5881,8 +5693,10 @@ namespace meta_hpp::detail
             const class_type_data& derived_data = *type_access(derived_class);
             const class_type_data::deep_upcasts_t& deep_upcasts = derived_data.deep_upcasts;
 
-            if ( auto iter{deep_upcasts.find(base)}; iter != deep_upcasts.end() && !iter->second.is_ambiguous ) {
-                return true;
+            for ( const auto& upcast : deep_upcasts ) {
+                if ( upcast.target == base_class ) {
+                    return upcast.upcast != nullptr;
+                }
             }
         }
 
@@ -5904,8 +5718,10 @@ namespace meta_hpp::detail
         const class_type_data& from_data = *type_access(from);
         const class_type_data::deep_upcasts_t& deep_upcasts = from_data.deep_upcasts;
 
-        if ( auto iter{deep_upcasts.find(to)}; iter != deep_upcasts.end() && !iter->second.is_ambiguous ) {
-            return iter->second.apply(ptr);
+        for ( const auto& upcast : deep_upcasts ) {
+            if ( upcast.target == to ) {
+                return upcast.upcast != nullptr ? upcast.apply(ptr) : nullptr;
+            }
         }
 
         return nullptr;
@@ -8468,6 +8284,50 @@ namespace meta_hpp
     }
 }
 
+namespace meta_hpp::detail::class_type_data_impl
+{
+    struct new_base_info_t final {
+        class_list base_classes;
+        class_type_data::deep_upcasts_t deep_upcasts;
+    };
+
+    template < class_kind Class, class_kind Target >
+    void add_upcast_info(new_base_info_t& info) {
+        const class_type_data::upcast_func_t::upcast_t class_to_target = []() {
+            if constexpr ( requires { static_cast<Target*>(std::declval<Class*>()); } ) {
+                return +[](void* from) -> void* { //
+                    return static_cast<Target*>(static_cast<Class*>(from));
+                };
+            } else {
+                return nullptr;
+            }
+        }();
+
+        info.deep_upcasts.push_back(class_type_data::upcast_func_t{
+            .target{resolve_type<Target>().get_id()},
+            .upcast{class_to_target},
+        });
+
+        if constexpr ( check_base_info_enabled<Target> ) {
+            using target_base_info = typename Target::meta_base_info;
+            target_base_info::for_each([&info]<class_kind TargetBase>() { //
+                add_upcast_info<Class, TargetBase>(info);
+            });
+        }
+    }
+
+    template < class_kind Class >
+    void fill_upcast_info(new_base_info_t& info) {
+        if constexpr ( check_base_info_enabled<Class> ) {
+            using class_base_info = typename Class::meta_base_info;
+            class_base_info::for_each([&info]<class_kind ClassBase>() {
+                info.base_classes.push_back(resolve_type<ClassBase>());
+                add_upcast_info<Class, ClassBase>(info);
+            });
+        }
+    }
+}
+
 namespace meta_hpp::detail
 {
     template < class_kind Class >
@@ -8476,18 +8336,16 @@ namespace meta_hpp::detail
     , flags{class_traits<Class>::make_flags()}
     , size{class_traits<Class>::size}
     , align{class_traits<Class>::align}
-    , argument_types{resolve_types(typename class_traits<Class>::argument_types{})} {}
+    , argument_types{resolve_types(typename class_traits<Class>::argument_types{})} {
+        class_type_data_impl::new_base_info_t new_base_info;
+        class_type_data_impl::fill_upcast_info<Class>(new_base_info);
+        base_classes.swap(new_base_info.base_classes);
+        deep_upcasts.swap(new_base_info.deep_upcasts);
+    }
 }
 
 namespace meta_hpp::detail
 {
-    template < typename Derived, typename Base >
-        requires std::is_base_of_v<Base, Derived>
-    inline class_type_data::upcast_func_t::upcast_func_t(std::in_place_type_t<Derived>, std::in_place_type_t<Base>)
-    : upcast{[](void* from) -> void* { return static_cast<Base*>(static_cast<Derived*>(from)); }}
-    , target{resolve_type<Base>()}
-    , is_virtual{is_virtual_base_of_v<Base, Derived>} {}
-
     inline void* class_type_data::upcast_func_t::apply(void* ptr) const noexcept {
         return upcast(ptr);
     }
@@ -8495,50 +8353,6 @@ namespace meta_hpp::detail
     inline const void* class_type_data::upcast_func_t::apply(const void* ptr) const noexcept {
         // NOLINTNEXTLINE(*-const-cast)
         return apply(const_cast<void*>(ptr));
-    }
-}
-
-namespace meta_hpp::detail
-{
-    inline class_type_data::upcast_func_list_t::upcast_func_list_t(const upcast_func_t& _upcast)
-    : upcasts{_upcast} {
-        for ( const upcast_func_t& upcast : upcasts ) {
-            if ( upcast.is_virtual ) {
-                vbases.emplace(upcast.target);
-            }
-        }
-    }
-
-    inline class_type_data::upcast_func_list_t::upcast_func_list_t(upcasts_t _upcasts, vbases_t _vbases)
-    : upcasts{std::move(_upcasts)}
-    , vbases{std::move(_vbases)} {}
-
-    inline void* class_type_data::upcast_func_list_t::apply(void* ptr) const noexcept {
-        for ( const upcast_func_t& upcast : upcasts ) {
-            ptr = upcast.apply(ptr);
-        }
-        return ptr;
-    }
-
-    inline const void* class_type_data::upcast_func_list_t::apply(const void* ptr) const noexcept {
-        // NOLINTNEXTLINE(*-const-cast)
-        return apply(const_cast<void*>(ptr));
-    }
-
-    inline class_type_data::upcast_func_list_t operator+( //
-        const class_type_data::upcast_func_list_t& l,
-        const class_type_data::upcast_func_list_t& r
-    ) {
-        class_type_data::upcast_func_list_t::upcasts_t new_upcasts;
-        new_upcasts.reserve(l.upcasts.size() + r.upcasts.size());
-        new_upcasts.insert(new_upcasts.end(), l.upcasts.begin(), l.upcasts.end());
-        new_upcasts.insert(new_upcasts.end(), r.upcasts.begin(), r.upcasts.end());
-
-        class_type_data::upcast_func_list_t::vbases_t new_vbases;
-        new_vbases.insert(l.vbases.begin(), l.vbases.end());
-        new_vbases.insert(r.vbases.begin(), r.vbases.end());
-
-        return class_type_data::upcast_func_list_t{std::move(new_upcasts), std::move(new_vbases)};
     }
 }
 
@@ -8570,10 +8384,6 @@ namespace meta_hpp
 
     inline const class_list& class_type::get_base_classes() const noexcept {
         return data_->base_classes;
-    }
-
-    inline const class_list& class_type::get_derived_classes() const noexcept {
-        return data_->derived_classes;
     }
 
     inline const constructor_list& class_type::get_constructors() const noexcept {
@@ -8655,7 +8465,17 @@ namespace meta_hpp
     }
 
     inline bool class_type::is_base_of(const class_type& derived) const noexcept {
-        return is_valid() && derived.is_valid() && derived.data_->deep_upcasts.contains(*this);
+        if ( !is_valid() || !derived.is_valid() ) {
+            return false;
+        }
+
+        for ( const auto& upcast : derived.data_->deep_upcasts ) {
+            if ( upcast.target == *this ) {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     template < detail::class_kind Derived >
@@ -8664,24 +8484,14 @@ namespace meta_hpp
     }
 
     inline bool class_type::is_direct_base_of(const class_type& derived) const noexcept {
-        return is_valid() && derived.is_valid() && derived.data_->base_upcasts.contains(*this);
-    }
-
-    template < detail::class_kind Derived >
-    bool class_type::is_virtual_base_of() const noexcept {
-        return is_virtual_base_of(resolve_type<Derived>());
-    }
-
-    inline bool class_type::is_virtual_base_of(const class_type& derived) const noexcept {
         if ( !is_valid() || !derived.is_valid() ) {
             return false;
         }
 
-        using deep_upcasts_t = detail::class_type_data::deep_upcasts_t;
-        const deep_upcasts_t& deep_upcasts = derived.data_->deep_upcasts;
-
-        if ( auto iter{deep_upcasts.find(*this)}; iter != deep_upcasts.end() ) {
-            return !iter->second.is_ambiguous && !iter->second.vbases.empty();
+        for ( const class_type& base_class : derived.data_->base_classes ) {
+            if ( base_class == *this ) {
+                return true;
+            }
         }
 
         return false;
@@ -8703,15 +8513,6 @@ namespace meta_hpp
 
     inline bool class_type::is_direct_derived_from(const class_type& base) const noexcept {
         return base.is_direct_base_of(*this);
-    }
-
-    template < detail::class_kind Base >
-    bool class_type::is_virtual_derived_from() const noexcept {
-        return is_virtual_derived_from(resolve_type<Base>());
-    }
-
-    inline bool class_type::is_virtual_derived_from(const class_type& base) const noexcept {
-        return base.is_virtual_base_of(*this);
     }
 
     inline function class_type::get_function(std::string_view name, bool recursively) const noexcept {
@@ -9386,7 +9187,7 @@ namespace meta_hpp
             return from;
         } else {
             detail::type_registry& registry{detail::type_registry::instance()};
-            const detail::poly_info& meta_info{from->get_most_derived_poly_info(registry)};
+            const detail::poly_info& meta_info{from->get_most_derived_meta_poly_info(registry)};
 
             // NOLINTNEXTLINE(*-const-cast)
             void* most_derived_object_ptr = const_cast<void*>(meta_info.ptr);

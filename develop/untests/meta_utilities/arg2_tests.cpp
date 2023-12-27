@@ -32,16 +32,19 @@ namespace
     struct B : virtual A {
         int bi = 2;
         [[nodiscard]] int f() const { return bi; }
+        META_HPP_ENABLE_BASE_INFO(A)
     };
 
     struct C : virtual A {
         int ci = 3;
         [[nodiscard]] int f() const { return ci; }
+        META_HPP_ENABLE_BASE_INFO(A)
     };
 
     struct D : B, C {
         int di = 4;
         [[nodiscard]] int f() const { return di; }
+        META_HPP_ENABLE_BASE_INFO(B, C)
     };
 }
 
@@ -51,11 +54,6 @@ TEST_CASE("meta/meta_utilities/arg2") {
     //  * <- B <- *
     // A           D
     //  * <- C <- *
-
-    meta::class_<A>();
-    meta::class_<B>().base_<A>();
-    meta::class_<C>().base_<A>();
-    meta::class_<D>().base_<B>().base_<C>();
 }
 
 TEST_CASE("meta/meta_utilities/arg2/cast") {

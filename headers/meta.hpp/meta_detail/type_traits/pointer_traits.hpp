@@ -14,8 +14,8 @@ namespace meta_hpp::detail
         is_readonly = 1 << 0,
     };
 
-    META_HPP_BITFLAGS_OPERATORS_DECL(pointer_flags)
     using pointer_bitflags = bitflags<pointer_flags>;
+    META_HPP_DETAIL_BITFLAGS_OPERATORS_DECL(pointer_flags)
 }
 
 namespace meta_hpp::detail

@@ -21,21 +21,15 @@ namespace
         virtual ~A() = default;
     };
 
-    struct B : A {};
-    struct C : A {};
-    struct D : B, C {};
-    struct E : D {};
+    struct B : A { META_HPP_ENABLE_BASE_INFO(A) };
+    struct C : A { META_HPP_ENABLE_BASE_INFO(A) };
+    struct D : B, C { META_HPP_ENABLE_BASE_INFO(B, C) };
+    struct E : D { META_HPP_ENABLE_BASE_INFO(D) };
     struct F {};
 }
 
 TEST_CASE("meta/meta_features/multiple/_") {
     namespace meta = meta_hpp;
-
-    meta::class_<D>().base_<B, C>();
-    meta::class_<E>().base_<D>();
-
-    meta::class_<B>().base_<A>();
-    meta::class_<C>().base_<A>();
 
     // A * <- B <- *
     //              D * <- E

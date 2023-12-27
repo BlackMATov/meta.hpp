@@ -89,7 +89,7 @@ namespace std
 
 namespace meta_hpp::detail
 {
-#define META_HPP_DEFINE_BINARY_OPERATOR(op) \
+#define META_HPP_DETAIL_DEFINE_BINARY_OPERATOR(op) \
     template < typename Enum > \
     constexpr bool operator op(Enum l, bitflags<Enum> r) noexcept { \
         return l op r.as_enum(); \
@@ -110,13 +110,13 @@ namespace meta_hpp::detail
     constexpr bool operator op(bitflags<Enum> l, bitflags<Enum> r) noexcept { \
         return l.as_raw() op r.as_raw(); \
     }
-    META_HPP_DEFINE_BINARY_OPERATOR(<)
-    META_HPP_DEFINE_BINARY_OPERATOR(>)
-    META_HPP_DEFINE_BINARY_OPERATOR(<=)
-    META_HPP_DEFINE_BINARY_OPERATOR(>=)
-    META_HPP_DEFINE_BINARY_OPERATOR(==)
-    META_HPP_DEFINE_BINARY_OPERATOR(!=)
-#undef META_HPP_DEFINE_BINARY_OPERATOR
+    META_HPP_DETAIL_DEFINE_BINARY_OPERATOR(<)
+    META_HPP_DETAIL_DEFINE_BINARY_OPERATOR(>)
+    META_HPP_DETAIL_DEFINE_BINARY_OPERATOR(<=)
+    META_HPP_DETAIL_DEFINE_BINARY_OPERATOR(>=)
+    META_HPP_DETAIL_DEFINE_BINARY_OPERATOR(==)
+    META_HPP_DETAIL_DEFINE_BINARY_OPERATOR(!=)
+#undef META_HPP_DETAIL_DEFINE_BINARY_OPERATOR
 }
 
 namespace meta_hpp::detail
@@ -126,7 +126,7 @@ namespace meta_hpp::detail
         return static_cast<Enum>(~l.as_raw());
     }
 
-#define META_HPP_DEFINE_BINARY_OPERATOR(op) \
+#define META_HPP_DETAIL_DEFINE_BINARY_OPERATOR(op) \
     template < typename Enum > \
     constexpr bitflags<Enum> operator op(Enum l, bitflags<Enum> r) noexcept { \
         return bitflags{l} op r; \
@@ -147,17 +147,17 @@ namespace meta_hpp::detail
     constexpr bitflags<Enum>& operator op##=(bitflags<Enum>& l, bitflags<Enum> r) noexcept { \
         return l = l op r; \
     }
-    META_HPP_DEFINE_BINARY_OPERATOR(|)
-    META_HPP_DEFINE_BINARY_OPERATOR(&)
-    META_HPP_DEFINE_BINARY_OPERATOR(^)
-#undef META_HPP_DEFINE_BINARY_OPERATOR
+    META_HPP_DETAIL_DEFINE_BINARY_OPERATOR(|)
+    META_HPP_DETAIL_DEFINE_BINARY_OPERATOR(&)
+    META_HPP_DETAIL_DEFINE_BINARY_OPERATOR(^)
+#undef META_HPP_DETAIL_DEFINE_BINARY_OPERATOR
 }
 
 //
-// META_HPP_BITFLAGS_OPERATORS_DECL
+// META_HPP_DETAIL_BITFLAGS_OPERATORS_DECL
 //
 
-#define META_HPP_BITFLAGS_OPERATORS_DECL(Enum) \
+#define META_HPP_DETAIL_BITFLAGS_OPERATORS_DECL(Enum) \
     constexpr ::meta_hpp::detail::bitflags<Enum> operator~[[maybe_unused]] (Enum l) noexcept { \
         return ~::meta_hpp::detail::bitflags<Enum>(l); \
     } \

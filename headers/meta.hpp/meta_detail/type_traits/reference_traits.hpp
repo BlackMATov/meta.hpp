@@ -16,8 +16,8 @@ namespace meta_hpp::detail
         is_rvalue = 1 << 2,
     };
 
-    META_HPP_BITFLAGS_OPERATORS_DECL(reference_flags)
     using reference_bitflags = bitflags<reference_flags>;
+    META_HPP_DETAIL_BITFLAGS_OPERATORS_DECL(reference_flags)
 }
 
 namespace meta_hpp::detail

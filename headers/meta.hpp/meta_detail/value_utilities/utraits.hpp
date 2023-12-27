@@ -109,8 +109,10 @@ namespace meta_hpp::detail
             const class_type_data& derived_data = *type_access(derived_class);
             const class_type_data::deep_upcasts_t& deep_upcasts = derived_data.deep_upcasts;
 
-            if ( auto iter{deep_upcasts.find(base)}; iter != deep_upcasts.end() && !iter->second.is_ambiguous ) {
-                return true;
+            for ( const auto& upcast : deep_upcasts ) {
+                if ( upcast.target == base_class ) {
+                    return upcast.upcast != nullptr;
+                }
             }
         }
 
@@ -132,8 +134,10 @@ namespace meta_hpp::detail
         const class_type_data& from_data = *type_access(from);
         const class_type_data::deep_upcasts_t& deep_upcasts = from_data.deep_upcasts;
 
-        if ( auto iter{deep_upcasts.find(to)}; iter != deep_upcasts.end() && !iter->second.is_ambiguous ) {
-            return iter->second.apply(ptr);
+        for ( const auto& upcast : deep_upcasts ) {
+            if ( upcast.target == to ) {
+                return upcast.upcast != nullptr ? upcast.apply(ptr) : nullptr;
+            }
         }
 
         return nullptr;

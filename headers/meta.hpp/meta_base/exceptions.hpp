@@ -8,16 +8,6 @@
 
 #include "base.hpp"
 
-#if !defined(META_HPP_NO_EXCEPTIONS)
-#    define META_HPP_TRY try
-#    define META_HPP_CATCH(...) catch ( __VA_ARGS__ )
-#    define META_HPP_RETHROW() throw
-#else
-#    define META_HPP_TRY if ( true )
-#    define META_HPP_CATCH(...) if ( false )
-#    define META_HPP_RETHROW() (void)0
-#endif
-
 namespace meta_hpp::detail
 {
     enum class error_code {

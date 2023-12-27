@@ -23,7 +23,9 @@ namespace
         [[nodiscard]] int m6() const && { return ii; }
     };
 
-    struct dclazz : fake, clazz {};
+    struct dclazz : fake, clazz {
+        META_HPP_ENABLE_BASE_INFO(fake, clazz)
+    };
 }
 
 // NOLINTNEXTLINE(*-macro-usage)
@@ -69,14 +71,6 @@ namespace
             CHECK_FALSE(m_state.try_invoke(FromValue));\
         }\
     }
-
-TEST_CASE("meta/meta_utilities/inst2") {
-    namespace meta = meta_hpp;
-
-    meta::class_<fake>();
-    meta::class_<clazz>();
-    meta::class_<dclazz>().base_<fake>().base_<clazz>();
-}
 
 TEST_CASE("meta/meta_utilities/inst2/refs") {
     namespace meta = meta_hpp;

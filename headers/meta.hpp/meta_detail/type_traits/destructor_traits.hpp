@@ -15,8 +15,8 @@ namespace meta_hpp::detail
         is_virtual = 1 << 1,
     };
 
-    META_HPP_BITFLAGS_OPERATORS_DECL(destructor_flags)
     using destructor_bitflags = bitflags<destructor_flags>;
+    META_HPP_DETAIL_BITFLAGS_OPERATORS_DECL(destructor_flags)
 }
 
 namespace meta_hpp::detail

@@ -15,39 +15,23 @@ namespace
 
     struct base1 : virtual base0 {
         int j{42};
+        META_HPP_ENABLE_BASE_INFO(base0)
     };
 
     struct base2 : virtual base0 {
         int k{84};
+        META_HPP_ENABLE_BASE_INFO(base0)
     };
 
     struct derived : base1, base2 {
         int l{168};
+        META_HPP_ENABLE_BASE_INFO(base1, base2)
     };
 
     struct derived2 : base1, base2 {
         int m{336};
+        META_HPP_ENABLE_BASE_INFO(base1, base2)
     };
-}
-
-TEST_CASE("meta/meta_utilities/value3") {
-    namespace meta = meta_hpp;
-
-    meta::class_<base0>();
-
-    meta::class_<base1>()
-        .base_<base0>();
-
-    meta::class_<base2>()
-        .base_<base0>();
-
-    meta::class_<derived>()
-        .base_<base1>()
-        .base_<base2>();
-
-    meta::class_<derived2>()
-        .base_<base1>()
-        .base_<base2>();
 }
 
 TEST_CASE("meta/meta_utilities/value3/get_type") {

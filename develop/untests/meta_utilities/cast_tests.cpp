@@ -21,14 +21,14 @@ namespace
         B1() = default;
         B1(const B1&) = default;
         char b{'b'};
-        META_HPP_ENABLE_POLY_INFO()
+        META_HPP_ENABLE_POLY_INFO(A1)
     };
 
     struct C1 : B1 {
         C1() = default;
         C1(const C1&) = default;
         char c{'c'};
-        META_HPP_ENABLE_POLY_INFO()
+        META_HPP_ENABLE_POLY_INFO(B1)
     };
 
     // A1 <- B1 <- C1
@@ -45,14 +45,14 @@ namespace
         B2() = default;
         B2(const B2&) = default;
         char b{'b'};
-        META_HPP_ENABLE_POLY_INFO()
+        META_HPP_ENABLE_POLY_INFO(A2)
     };
 
     struct C2 : virtual A2 {
         C2() = default;
         C2(const C2&) = default;
         char c{'c'};
-        META_HPP_ENABLE_POLY_INFO()
+        META_HPP_ENABLE_POLY_INFO(A2)
     };
 
 
@@ -68,14 +68,14 @@ namespace
         E2() = default;
         E2(const E2&) = default;
         char e{'e'};
-        META_HPP_ENABLE_POLY_INFO()
+        META_HPP_ENABLE_POLY_INFO(D2)
     };
 
     struct F2 : B2, C2, E2 {
         F2() = default;
         F2(const F2&) = default;
         char f{'f'};
-        META_HPP_ENABLE_POLY_INFO()
+        META_HPP_ENABLE_POLY_INFO(B2, C2, E2)
     };
 
 
@@ -117,21 +117,6 @@ namespace
         check_casts_impl<From, To>(value);
         check_casts_impl<const From, const To>(std::as_const(value));
     }
-}
-
-TEST_CASE("meta/meta_utilities/ucast/_") {
-    namespace meta = meta_hpp;
-
-    meta::class_<A1>();
-    meta::class_<B1>().base_<A1>();
-    meta::class_<C1>().base_<B1>();
-
-    meta::class_<A2>();
-    meta::class_<B2>().base_<A2>();
-    meta::class_<C2>().base_<A2>();
-    meta::class_<D2>();
-    meta::class_<E2>().base_<D2>();
-    meta::class_<F2>().base_<B2, C2, E2>();
 }
 
 TEST_CASE("meta/meta_utilities/ucast") {

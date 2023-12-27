@@ -211,7 +211,6 @@ namespace meta_hpp
         [[nodiscard]] const any_type_list& get_argument_types() const noexcept;
 
         [[nodiscard]] const class_list& get_base_classes() const noexcept;
-        [[nodiscard]] const class_list& get_derived_classes() const noexcept;
         [[nodiscard]] const constructor_list& get_constructors() const noexcept;
         [[nodiscard]] const destructor_list& get_destructors() const noexcept;
         [[nodiscard]] const function_list& get_functions() const noexcept;
@@ -237,10 +236,6 @@ namespace meta_hpp
         [[nodiscard]] bool is_direct_base_of() const noexcept;
         [[nodiscard]] bool is_direct_base_of(const class_type& derived) const noexcept;
 
-        template < detail::class_kind Derived >
-        [[nodiscard]] bool is_virtual_base_of() const noexcept;
-        [[nodiscard]] bool is_virtual_base_of(const class_type& derived) const noexcept;
-
         template < detail::class_kind Base >
         [[nodiscard]] bool is_derived_from() const noexcept;
         [[nodiscard]] bool is_derived_from(const class_type& base) const noexcept;
@@ -248,10 +243,6 @@ namespace meta_hpp
         template < detail::class_kind Base >
         [[nodiscard]] bool is_direct_derived_from() const noexcept;
         [[nodiscard]] bool is_direct_derived_from(const class_type& base) const noexcept;
-
-        template < detail::class_kind Base >
-        [[nodiscard]] bool is_virtual_derived_from() const noexcept;
-        [[nodiscard]] bool is_virtual_derived_from(const class_type& base) const noexcept;
 
         [[nodiscard]] function get_function(std::string_view name, bool recursively = true) const noexcept;
         [[nodiscard]] member get_member(std::string_view name, bool recursively = true) const noexcept;
@@ -504,7 +495,6 @@ namespace meta_hpp::detail
         // NOLINTEND(*-avoid-const-or-ref-data-members)
 
         class_list base_classes;
-        class_list derived_classes;
         constructor_list constructors;
         destructor_list destructors;
         function_list functions;
@@ -516,39 +506,14 @@ namespace meta_hpp::detail
         struct upcast_func_t final {
             using upcast_t = void* (*)(void*);
 
+            type_id target{};
             upcast_t upcast{};
-            class_type target{};
-            bool is_virtual{};
-
-            template < typename Derived, typename Base >
-                requires std::is_base_of_v<Base, Derived>
-            upcast_func_t(std::in_place_type_t<Derived>, std::in_place_type_t<Base>);
 
             [[nodiscard]] void* apply(void* ptr) const noexcept;
             [[nodiscard]] const void* apply(const void* ptr) const noexcept;
         };
 
-        struct upcast_func_list_t final {
-            using upcasts_t = std::vector<upcast_func_t>;
-            using vbases_t = std::set<class_type, std::less<>>;
-
-            upcasts_t upcasts{};
-            vbases_t vbases{};
-            bool is_ambiguous{};
-
-            upcast_func_list_t(const upcast_func_t& _upcast);
-            upcast_func_list_t(upcasts_t _upcasts, vbases_t _vbases);
-
-            [[nodiscard]] void* apply(void* ptr) const noexcept;
-            [[nodiscard]] const void* apply(const void* ptr) const noexcept;
-
-            friend upcast_func_list_t operator+(const upcast_func_list_t& l, const upcast_func_list_t& r);
-        };
-
-        using base_upcasts_t = std::map<class_type, upcast_func_t, std::less<>>;
-        using deep_upcasts_t = std::map<class_type, upcast_func_list_t, std::less<>>;
-
-        base_upcasts_t base_upcasts;
+        using deep_upcasts_t = std::vector<upcast_func_t>;
         deep_upcasts_t deep_upcasts;
 
         template < class_kind Class >

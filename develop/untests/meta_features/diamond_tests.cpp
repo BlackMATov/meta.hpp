@@ -22,9 +22,9 @@ namespace
         META_HPP_ENABLE_POLY_INFO()
     };
 
-    struct B : virtual A { META_HPP_ENABLE_POLY_INFO() };
-    struct C : virtual A { META_HPP_ENABLE_POLY_INFO() };
-    struct D : B, C { META_HPP_ENABLE_POLY_INFO() };
+    struct B : virtual A { META_HPP_ENABLE_POLY_INFO(A) };
+    struct C : virtual A { META_HPP_ENABLE_POLY_INFO(A) };
+    struct D : B, C { META_HPP_ENABLE_POLY_INFO(B, C) };
     struct E {};
 }
 
@@ -34,12 +34,6 @@ TEST_CASE("meta/meta_features/diamond") {
     using meta::detail::uinst;
     using meta::detail::type_registry;
     type_registry& r{type_registry::instance()};
-
-    meta::class_<A>();
-    meta::class_<B>().base_<A>();
-    meta::class_<C>().base_<A>();
-    meta::class_<D>().base_<B>().base_<C>();
-    meta::class_<E>();
 
     //  * <- B <- *
     // A           D

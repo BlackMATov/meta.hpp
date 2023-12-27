@@ -14,152 +14,228 @@ namespace
     namespace meta = meta_hpp;
     namespace vmath = vmath_hpp;
 
-    struct base1 {
-        unsigned b1{1};
-
-        base1() = default;
-        virtual ~base1() = default;
-
-        base1(const base1&) = default;
-        base1& operator=(const base1&) = default;
-
-        META_HPP_ENABLE_POLY_INFO()
-    };
-
-    struct base2 : base1 {
-        unsigned b2{2};
-        META_HPP_ENABLE_POLY_INFO()
-    };
-
-    struct base3 : base2 {
-        unsigned b3{3};
-        META_HPP_ENABLE_POLY_INFO()
-    };
-
-    struct base4 : base3 {
-        unsigned b4{4};
-        META_HPP_ENABLE_POLY_INFO()
-    };
-
-    base4* dynamic_cast_1(base1* b1) {
-        return dynamic_cast<base4*>(b1);
+    template < typename To, typename From >
+    To* dyn_cast(From* from) {
+        return dynamic_cast<To*>(from);
     }
-
-    base4* dynamic_cast_2(base2* b2) {
-        return dynamic_cast<base4*>(b2);
-    }
-
-    base4* dynamic_cast_3(base3* b3) {
-        return dynamic_cast<base4*>(b3);
-    }
-
-    base4* dynamic_cast_4(base4* b4) {
-        return dynamic_cast<base4*>(b4);
-    }
-
-    const bool registered = [](){
-        meta::class_<base1>();
-        meta::class_<base2>().base_<base1>();
-        meta::class_<base3>().base_<base2>();
-        meta::class_<base4>().base_<base3>();
-        return true;
-    }();
 }
-
-//
-// native
-//
 
 namespace
 {
+    struct A1 {
+        META_HPP_ENABLE_POLY_INFO()
+    };
+
+    struct B1 : A1 {
+        META_HPP_ENABLE_POLY_INFO(A1)
+    };
+
+    struct C1 : B1 {
+        META_HPP_ENABLE_POLY_INFO(B1)
+    };
+
+    // A1 < B1 < C1
+
     [[maybe_unused]]
-    void dynamic_cast_1(benchmark::State &state) {
-        base4 b4;
+    void dynamic_cast_1a(benchmark::State &state) {
+        C1 c;
         for ( auto _ : state ) {
-            base4* r = dynamic_cast_1(&b4);
-            benchmark::DoNotOptimize(r);
+            A1* a = &c;
+            C1* cc = dyn_cast<C1>(a);
+            benchmark::DoNotOptimize(cc);
         }
     }
 
     [[maybe_unused]]
-    void dynamic_cast_2(benchmark::State &state) {
-        base4 b4;
+    void meta_dynamic_cast_1a(benchmark::State &state) {
+        C1 c;
         for ( auto _ : state ) {
-            base4* r = dynamic_cast_2(&b4);
-            benchmark::DoNotOptimize(r);
+            A1* a = &c;
+            C1* cc = meta::ucast<C1*>(a);
+            benchmark::DoNotOptimize(cc);
         }
     }
 
     [[maybe_unused]]
-    void dynamic_cast_3(benchmark::State &state) {
-        base4 b4;
+    void dynamic_cast_1b(benchmark::State &state) {
+        C1 c;
         for ( auto _ : state ) {
-            base4* r = dynamic_cast_3(&b4);
-            benchmark::DoNotOptimize(r);
+            A1* a = &c;
+            B1* b = dyn_cast<B1>(a);
+            benchmark::DoNotOptimize(b);
         }
     }
 
     [[maybe_unused]]
-    void dynamic_cast_4(benchmark::State &state) {
-        base4 b4;
+    void meta_dynamic_cast_1b(benchmark::State &state) {
+        C1 c;
         for ( auto _ : state ) {
-            base4* r = dynamic_cast_4(&b4);
-            benchmark::DoNotOptimize(r);
+            A1* a = &c;
+            B1* b = meta::ucast<B1*>(a);
+            benchmark::DoNotOptimize(b);
         }
     }
 }
 
-//
-// meta
-//
+BENCHMARK(dynamic_cast_1a);
+BENCHMARK(meta_dynamic_cast_1a);
+BENCHMARK(dynamic_cast_1b);
+BENCHMARK(meta_dynamic_cast_1b);
 
 namespace
 {
+    struct A2 {
+        META_HPP_ENABLE_POLY_INFO()
+    };
+
+    struct B2 {
+        META_HPP_ENABLE_POLY_INFO()
+    };
+
+    struct C2 : A2, B2 {
+        META_HPP_ENABLE_POLY_INFO(A2, B2)
+    };
+
+    struct D2 : C2 {
+        META_HPP_ENABLE_POLY_INFO(C2)
+    };
+
+    // A2
+    //   < C2 < D2
+    // B2
+
     [[maybe_unused]]
-    void meta_dynamic_cast_1(benchmark::State &state) {
-        base4 b4;
+    void dynamic_cast_2a(benchmark::State &state) {
+        D2 d;
         for ( auto _ : state ) {
-            base4* r = meta::ucast<base4*>(static_cast<base1*>(&b4));
-            benchmark::DoNotOptimize(r);
+            A2* a = &d;
+            D2* dd = dyn_cast<D2>(a);
+            benchmark::DoNotOptimize(dd);
         }
     }
 
     [[maybe_unused]]
-    void meta_dynamic_cast_2(benchmark::State &state) {
-        base4 b4;
+    void meta_dynamic_cast_2a(benchmark::State &state) {
+        D2 d;
         for ( auto _ : state ) {
-            base4* r = meta::ucast<base4*>(static_cast<base2*>(&b4));
-            benchmark::DoNotOptimize(r);
+            A2* a = &d;
+            D2* dd = meta::ucast<D2*>(a);
+            benchmark::DoNotOptimize(dd);
         }
     }
 
     [[maybe_unused]]
-    void meta_dynamic_cast_3(benchmark::State &state) {
-        base4 b4;
+    void dynamic_cast_2b(benchmark::State &state) {
+        D2 d;
         for ( auto _ : state ) {
-            base4* r = meta::ucast<base4*>(static_cast<base3*>(&b4));
-            benchmark::DoNotOptimize(r);
+            B2* b = &d;
+            C2* c = dyn_cast<C2>(b);
+            benchmark::DoNotOptimize(c);
         }
     }
 
     [[maybe_unused]]
-    void meta_dynamic_cast_4(benchmark::State &state) {
-        base4 b4;
+    void meta_dynamic_cast_2b(benchmark::State &state) {
+        D2 d;
         for ( auto _ : state ) {
-            base4* r = meta::ucast<base4*>(static_cast<base4*>(&b4));
-            benchmark::DoNotOptimize(r);
+            B2* b = &d;
+            C2* c = meta::ucast<C2*>(b);
+            benchmark::DoNotOptimize(c);
         }
     }
 }
 
-BENCHMARK(dynamic_cast_1);
-BENCHMARK(meta_dynamic_cast_1);
+BENCHMARK(dynamic_cast_2a);
+BENCHMARK(meta_dynamic_cast_2a);
+BENCHMARK(dynamic_cast_2b);
+BENCHMARK(meta_dynamic_cast_2b);
 
-BENCHMARK(dynamic_cast_2);
-BENCHMARK(meta_dynamic_cast_2);
+namespace
+{
+    struct A3 {
+        META_HPP_ENABLE_POLY_INFO()
+    };
 
-BENCHMARK(dynamic_cast_3);
-BENCHMARK(meta_dynamic_cast_3);
+    struct B3 : virtual A3 {
+        META_HPP_ENABLE_POLY_INFO(A3)
+    };
 
-BENCHMARK(dynamic_cast_4);
-BENCHMARK(meta_dynamic_cast_4);
+    struct C3 : virtual A3 {
+        META_HPP_ENABLE_POLY_INFO(A3)
+    };
+
+    struct D3 : B3, C3 {
+        META_HPP_ENABLE_POLY_INFO(B3, C3)
+    };
+
+    // A3 <= B3
+    //         < D3
+    // A3 <= C3
+
+    [[maybe_unused]]
+    void dynamic_cast_3a(benchmark::State &state) {
+        D3 d;
+        for ( auto _ : state ) {
+            A3* a = &d;
+            D3* dd = dyn_cast<D3>(a);
+            benchmark::DoNotOptimize(dd);
+        }
+    }
+
+    [[maybe_unused]]
+    void meta_dynamic_cast_3a(benchmark::State &state) {
+        D3 d;
+        for ( auto _ : state ) {
+            A3* a = &d;
+            D3* dd = meta::ucast<D3*>(a);
+            benchmark::DoNotOptimize(dd);
+        }
+    }
+
+    [[maybe_unused]]
+    void dynamic_cast_3b(benchmark::State &state) {
+        D3 d;
+        for ( auto _ : state ) {
+            B3* b = &d;
+            C3* c = dyn_cast<C3>(b);
+            benchmark::DoNotOptimize(c);
+        }
+    }
+
+    [[maybe_unused]]
+    void meta_dynamic_cast_3b(benchmark::State &state) {
+        D3 d;
+        for ( auto _ : state ) {
+            B3* b = &d;
+            C3* c = meta::ucast<C3*>(b);
+            benchmark::DoNotOptimize(c);
+        }
+    }
+
+    [[maybe_unused]]
+    void dynamic_cast_3c(benchmark::State &state) {
+        B3 b;
+        for ( auto _ : state ) {
+            A3* a = &b;
+            C3* c = dyn_cast<C3>(a);
+            benchmark::DoNotOptimize(c);
+        }
+    }
+
+    [[maybe_unused]]
+    void meta_dynamic_cast_3c(benchmark::State &state) {
+        B3 b;
+        for ( auto _ : state ) {
+            A3* a = &b;
+            C3* c = meta::ucast<C3*>(a);
+            benchmark::DoNotOptimize(c);
+        }
+    }
+}
+
+BENCHMARK(dynamic_cast_3a);
+BENCHMARK(meta_dynamic_cast_3a);
+BENCHMARK(dynamic_cast_3b);
+BENCHMARK(meta_dynamic_cast_3b);
+BENCHMARK(dynamic_cast_3c);
+BENCHMARK(meta_dynamic_cast_3c);
