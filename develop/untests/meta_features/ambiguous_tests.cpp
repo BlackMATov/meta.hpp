@@ -42,13 +42,6 @@ TEST_CASE("meta/meta_features/ambiguous") {
         CHECK(meta::is_invocable_with(+[](const A1&){}, B1{}));
         CHECK(meta::is_invocable_with(+[](const A1&){}, C1{}));
         CHECK_FALSE(meta::is_invocable_with(+[](const A1&){}, D1{}));
-
-        CHECK_FALSE(meta::resolve_type<A1>().is_virtual_base_of<B1>());
-        CHECK_FALSE(meta::resolve_type<A1>().is_virtual_base_of<C1>());
-        CHECK_FALSE(meta::resolve_type<A1>().is_virtual_base_of<D1>());
-
-        CHECK_FALSE(meta::resolve_type<B1>().is_virtual_base_of<D1>());
-        CHECK_FALSE(meta::resolve_type<C1>().is_virtual_base_of<D1>());
     }
 
     {
@@ -65,13 +58,6 @@ TEST_CASE("meta/meta_features/ambiguous") {
         CHECK(meta::is_invocable_with(+[](const A2&){}, B2{}));
         CHECK(meta::is_invocable_with(+[](const A2&){}, C2{}));
         CHECK(meta::is_invocable_with(+[](const A2&){}, D2{}));
-
-        CHECK(meta::resolve_type<A2>().is_virtual_base_of<B2>());
-        CHECK(meta::resolve_type<A2>().is_virtual_base_of<C2>());
-        CHECK(meta::resolve_type<A2>().is_virtual_base_of<D2>());
-
-        CHECK_FALSE(meta::resolve_type<B2>().is_virtual_base_of<D2>());
-        CHECK_FALSE(meta::resolve_type<C2>().is_virtual_base_of<D2>());
     }
 
     {
@@ -88,12 +74,5 @@ TEST_CASE("meta/meta_features/ambiguous") {
         CHECK(meta::is_invocable_with(+[](const A3&){}, B3{}));
         CHECK(meta::is_invocable_with(+[](const A3&){}, C3{}));
         CHECK_FALSE(meta::is_invocable_with(+[](const A3&){}, D3{}));
-
-        CHECK(meta::resolve_type<A3>().is_virtual_base_of<B3>());
-        CHECK_FALSE(meta::resolve_type<A3>().is_virtual_base_of<C3>());
-        CHECK_FALSE(meta::resolve_type<A3>().is_virtual_base_of<D3>());
-
-        CHECK_FALSE(meta::resolve_type<B3>().is_virtual_base_of<D3>());
-        CHECK_FALSE(meta::resolve_type<C3>().is_virtual_base_of<D3>());
     }
 }

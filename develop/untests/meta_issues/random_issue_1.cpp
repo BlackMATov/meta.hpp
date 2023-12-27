@@ -51,8 +51,6 @@ TEST_CASE("meta/meta_issues/random/1") {
         CHECK(meta::try_invoke(+[](const C1&){ return true; }, D1{}));
         CHECK(meta::try_invoke(+[](const B1&){ return true; }, D1{}));
         CHECK_FALSE(meta::try_invoke(+[](const A1&){ return true; }, D1{}));
-
-        CHECK_FALSE(meta::resolve_type<A1>().is_virtual_base_of<D1>());
     }
 
     {
@@ -65,8 +63,6 @@ TEST_CASE("meta/meta_issues/random/1") {
         CHECK(meta::try_invoke(+[](const B2&){ return true; }, E2{}));
         CHECK(meta::try_invoke(+[](const C2&){ return true; }, E2{}));
         CHECK(meta::try_invoke(+[](const D2&){ return true; }, E2{}));
-
-        CHECK(meta::resolve_type<A2>().is_virtual_base_of<E2>());
     }
 
     {
@@ -79,7 +75,5 @@ TEST_CASE("meta/meta_issues/random/1") {
         CHECK(meta::is_invocable_with(+[](const A3&){ return true; }, B3{}));
         CHECK(meta::is_invocable_with(+[](const A3&){ return true; }, C3{}));
         CHECK_FALSE(meta::is_invocable_with(+[](const A3&){ return true; }, D3{}));
-
-        CHECK_FALSE(meta::resolve_type<A3>().is_virtual_base_of<D3>());
     }
 }

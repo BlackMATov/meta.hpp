@@ -19,7 +19,6 @@
 #include "meta_base/intrusive_ptr.hpp"
 #include "meta_base/is_disjoint.hpp"
 #include "meta_base/is_in_place_type.hpp"
-#include "meta_base/is_virtual_base_of.hpp"
 #include "meta_base/memory_buffer.hpp"
 #include "meta_base/noncopyable.hpp"
 #include "meta_base/nonesuch.hpp"
