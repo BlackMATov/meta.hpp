@@ -22,8 +22,9 @@ namespace meta_hpp
         using to_data_type = std::remove_pointer_t<To>;
 
         static_assert(
-            detail::check_poly_info_enabled<from_data_type>,
-            "The type doesn't support ucasts. Use the META_HPP_ENABLE_POLY_INFO macro to fix it."
+            detail::poly_info_enabled<from_data_type>,
+            "The type doesn't support ucasts. "
+            "Use the META_HPP_ENABLE_POLY_INFO macro to fix it."
         );
 
         if ( from == nullptr ) {
@@ -34,7 +35,7 @@ namespace meta_hpp
             return from;
         } else {
             detail::type_registry& registry{detail::type_registry::instance()};
-            const detail::poly_info& meta_info{from->get_most_derived_meta_poly_info(registry)};
+            const detail::poly_info& meta_info{detail::get_meta_poly_info(registry, *from)};
 
             // NOLINTNEXTLINE(*-const-cast)
             void* most_derived_object_ptr = const_cast<void*>(meta_info.ptr);
@@ -56,8 +57,9 @@ namespace meta_hpp
         using to_data_type = std::remove_reference_t<To>;
 
         static_assert(
-            detail::check_poly_info_enabled<from_data_type>,
-            "The type doesn't support ucasts. Use the META_HPP_ENABLE_POLY_INFO macro to fix it."
+            detail::poly_info_enabled<from_data_type>,
+            "The type doesn't support ucasts. "
+            "Use the META_HPP_ENABLE_POLY_INFO macro to fix it."
         );
 
         if ( to_data_type* ptr = ucast<to_data_type*>(std::addressof(from)) ) {

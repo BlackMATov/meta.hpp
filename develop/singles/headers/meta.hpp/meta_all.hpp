@@ -4245,11 +4245,19 @@ namespace meta_hpp::detail
     concept check_base_info_enabled //
         = requires { typename T::meta_base_info; };
 
+    template < check_base_info_enabled T >
+    using get_meta_base_info = typename T::meta_base_info;
+
     template < typename T >
-    concept check_poly_info_enabled //
+    concept poly_info_enabled //
         = requires(type_registry& r, const T& v) {
-              { v.get_most_derived_meta_poly_info(r) } -> std::convertible_to<poly_info>;
+              { v.meta_poly_info(r) } -> std::convertible_to<poly_info>;
           };
+
+    template < poly_info_enabled T >
+    poly_info get_meta_poly_info(type_registry& r, const T& v) {
+        return v.meta_poly_info(r);
+    }
 }
 
 #define META_HPP_ENABLE_BASE_INFO(...) \
@@ -4262,7 +4270,7 @@ private:
     META_HPP_ENABLE_BASE_INFO(__VA_ARGS__) \
 public: \
     META_HPP_DETAIL_IGNORE_OVERRIDE_WARNINGS_PUSH() \
-    virtual ::meta_hpp::detail::poly_info get_most_derived_meta_poly_info(::meta_hpp::detail::type_registry& registry) const { \
+    virtual ::meta_hpp::detail::poly_info meta_poly_info(::meta_hpp::detail::type_registry& registry) const { \
         using self_type = std::remove_cvref_t<decltype(*this)>; \
         return ::meta_hpp::detail::poly_info{.ptr = this, .type = registry.resolve_class_type<self_type>()}; \
     } \
@@ -4363,10 +4371,23 @@ namespace meta_hpp
 
     template < typename T >
     // NOLINTNEXTLINE(*-missing-std-forward)
-    [[nodiscard]] auto resolve_type(T&&) {
+    [[nodiscard]] auto resolve_type(T&& from) {
         using namespace detail;
+
+        using raw_type = std::remove_cvref_t<T>;
         type_registry& registry = type_registry::instance();
-        return registry.resolve_type<std::remove_cvref_t<T>>();
+
+        if constexpr ( std::is_class_v<raw_type> && std::is_polymorphic_v<raw_type> ) {
+            static_assert(
+                detail::poly_info_enabled<T>,
+                "The class doesn't support polymorphic type resolving. "
+                "Use the META_HPP_ENABLE_POLY_INFO macro to fix it."
+            );
+            return detail::get_meta_poly_info(registry, from).type;
+        } else {
+            (void)from;
+            return registry.resolve_type<raw_type>();
+        }
     }
 
     template < typename... Ts >
@@ -4381,29 +4402,6 @@ namespace meta_hpp
         using namespace detail;
         type_registry& registry = type_registry::instance();
         return {registry.resolve_type<std::remove_cv_t<Ts>>()...};
-    }
-}
-
-namespace meta_hpp
-{
-    template < typename T >
-    // NOLINTNEXTLINE(*-missing-std-forward)
-    [[nodiscard]] auto resolve_poly_type(T&& from) {
-        using namespace detail;
-
-        using raw_type = std::remove_cvref_t<T>;
-        type_registry& registry = type_registry::instance();
-
-        if constexpr ( std::is_class_v<raw_type> ) {
-            static_assert(
-                detail::check_poly_info_enabled<raw_type>,
-                "The class doesn't support polymorphic type resolving. Use the META_HPP_ENABLE_POLY_INFO macro to fix it."
-            );
-            return from.get_most_derived_meta_poly_info(registry).type;
-        } else {
-            (void)from;
-            return registry.resolve_type<raw_type>();
-        }
     }
 }
 
@@ -8309,7 +8307,7 @@ namespace meta_hpp::detail::class_type_data_impl
         });
 
         if constexpr ( check_base_info_enabled<Target> ) {
-            using target_base_info = typename Target::meta_base_info;
+            using target_base_info = get_meta_base_info<Target>;
             target_base_info::for_each([&info]<class_kind TargetBase>() { //
                 add_upcast_info<Class, TargetBase>(info);
             });
@@ -8319,7 +8317,7 @@ namespace meta_hpp::detail::class_type_data_impl
     template < class_kind Class >
     void fill_upcast_info(new_base_info_t& info) {
         if constexpr ( check_base_info_enabled<Class> ) {
-            using class_base_info = typename Class::meta_base_info;
+            using class_base_info = get_meta_base_info<Class>;
             class_base_info::for_each([&info]<class_kind ClassBase>() {
                 info.base_classes.push_back(resolve_type<ClassBase>());
                 add_upcast_info<Class, ClassBase>(info);
@@ -9175,8 +9173,9 @@ namespace meta_hpp
         using to_data_type = std::remove_pointer_t<To>;
 
         static_assert(
-            detail::check_poly_info_enabled<from_data_type>,
-            "The type doesn't support ucasts. Use the META_HPP_ENABLE_POLY_INFO macro to fix it."
+            detail::poly_info_enabled<from_data_type>,
+            "The type doesn't support ucasts. "
+            "Use the META_HPP_ENABLE_POLY_INFO macro to fix it."
         );
 
         if ( from == nullptr ) {
@@ -9187,7 +9186,7 @@ namespace meta_hpp
             return from;
         } else {
             detail::type_registry& registry{detail::type_registry::instance()};
-            const detail::poly_info& meta_info{from->get_most_derived_meta_poly_info(registry)};
+            const detail::poly_info& meta_info{detail::get_meta_poly_info(registry, *from)};
 
             // NOLINTNEXTLINE(*-const-cast)
             void* most_derived_object_ptr = const_cast<void*>(meta_info.ptr);
@@ -9209,8 +9208,9 @@ namespace meta_hpp
         using to_data_type = std::remove_reference_t<To>;
 
         static_assert(
-            detail::check_poly_info_enabled<from_data_type>,
-            "The type doesn't support ucasts. Use the META_HPP_ENABLE_POLY_INFO macro to fix it."
+            detail::poly_info_enabled<from_data_type>,
+            "The type doesn't support ucasts. "
+            "Use the META_HPP_ENABLE_POLY_INFO macro to fix it."
         );
 
         if ( to_data_type* ptr = ucast<to_data_type*>(std::addressof(from)) ) {
