@@ -17,9 +17,19 @@ namespace
     // after this we will be able to use the library's polymorphic functions
     // like `ucast` or `resolve_type(T&&)`
 
-    struct A { META_HPP_ENABLE_POLY_INFO() };
-    struct B { META_HPP_ENABLE_POLY_INFO() };
-    struct C : A, B { META_HPP_ENABLE_POLY_INFO(A, B) };
+    struct A {
+        virtual ~A() = default;
+        META_HPP_ENABLE_POLY_INFO()
+    };
+
+    struct B {
+        virtual ~B() = default;
+        META_HPP_ENABLE_POLY_INFO()
+    };
+
+    struct C : A, B {
+        META_HPP_ENABLE_POLY_INFO(A, B)
+    };
 }
 
 TEST_CASE("meta/meta_manuals/ucast") {
