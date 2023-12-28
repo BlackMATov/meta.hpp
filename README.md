@@ -48,16 +48,17 @@ Or just use the single-header version of the library, which you can find [here](
 
 ## Manuals
 
-- [Class](develop/manuals/meta_manuals/class_manual.cpp)
-- [Enum](develop/manuals/meta_manuals/enum_manual.cpp)
-- [Function](develop/manuals/meta_manuals/function_manual.cpp)
-- [InPlace](develop/manuals/meta_manuals/inplace_manual.cpp)
-- [Member](develop/manuals/meta_manuals/member_manual.cpp)
-- [Metadata](develop/manuals/meta_manuals/metadata_manual.cpp)
-- [Method](develop/manuals/meta_manuals/method_manual.cpp)
-- [Scopes](develop/manuals/meta_manuals/scopes_manual.cpp)
-- [UValue](develop/manuals/meta_manuals/uvalue_manual.cpp)
-- [Variable](develop/manuals/meta_manuals/variable_manual.cpp)
+- [class](develop/manuals/meta_manuals/class_manual.cpp)
+- [enum](develop/manuals/meta_manuals/enum_manual.cpp)
+- [function](develop/manuals/meta_manuals/function_manual.cpp)
+- [inplace](develop/manuals/meta_manuals/inplace_manual.cpp)
+- [member](develop/manuals/meta_manuals/member_manual.cpp)
+- [metadata](develop/manuals/meta_manuals/metadata_manual.cpp)
+- [method](develop/manuals/meta_manuals/method_manual.cpp)
+- [scopes](develop/manuals/meta_manuals/scopes_manual.cpp)
+- [ucast](develop/manuals/meta_manuals/ucast_manual.cpp)
+- [uvalue](develop/manuals/meta_manuals/uvalue_manual.cpp)
+- [variable](develop/manuals/meta_manuals/variable_manual.cpp)
 
 ## Features
 

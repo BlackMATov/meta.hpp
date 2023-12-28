@@ -3,10 +3,9 @@
 ## Backlog
 
 - type conversions
-- non-linear search of methods/functions/...
 - fix all includes to work with the library more flexible
 - test and support shared libraries
-- add ucast manual
+- add debug type names
 
 ## Version 1.0
 
@@ -17,4 +16,3 @@
 - static binds listener
 - dynamic type visitor
 - conan package config
-- type names by [nameof](https://github.com/Neargye/nameof)
