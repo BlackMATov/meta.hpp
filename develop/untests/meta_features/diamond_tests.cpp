@@ -317,7 +317,7 @@ TEST_CASE("meta/meta_features/diamond") {
         }
     }
 
-    SUBCASE("resolve_poly_type") {
+    SUBCASE("resolve_type") {
         D d;
 
         A& ad = d;
@@ -325,34 +325,24 @@ TEST_CASE("meta/meta_features/diamond") {
         C& cd = d;
         D& dd = d;
 
-        CHECK(meta::resolve_type(ad) == meta::resolve_type<A>());
-        CHECK(meta::resolve_type(bd) == meta::resolve_type<B>());
-        CHECK(meta::resolve_type(cd) == meta::resolve_type<C>());
+        CHECK(meta::resolve_type(A{}) == meta::resolve_type<A>());
+        CHECK(meta::resolve_type(B{}) == meta::resolve_type<B>());
+        CHECK(meta::resolve_type(C{}) == meta::resolve_type<C>());
+        CHECK(meta::resolve_type(D{}) == meta::resolve_type<D>());
+
+        CHECK(meta::resolve_type(ad) == meta::resolve_type<D>());
+        CHECK(meta::resolve_type(bd) == meta::resolve_type<D>());
+        CHECK(meta::resolve_type(cd) == meta::resolve_type<D>());
         CHECK(meta::resolve_type(dd) == meta::resolve_type<D>());
 
-        CHECK(meta::resolve_type(std::as_const(ad)) == meta::resolve_type<A>());
-        CHECK(meta::resolve_type(std::as_const(bd)) == meta::resolve_type<B>());
-        CHECK(meta::resolve_type(std::as_const(cd)) == meta::resolve_type<C>());
+        CHECK(meta::resolve_type(std::move(ad)) == meta::resolve_type<D>());
+        CHECK(meta::resolve_type(std::move(bd)) == meta::resolve_type<D>());
+        CHECK(meta::resolve_type(std::move(cd)) == meta::resolve_type<D>());
+        CHECK(meta::resolve_type(std::move(dd)) == meta::resolve_type<D>());
+
+        CHECK(meta::resolve_type(std::as_const(ad)) == meta::resolve_type<D>());
+        CHECK(meta::resolve_type(std::as_const(bd)) == meta::resolve_type<D>());
+        CHECK(meta::resolve_type(std::as_const(cd)) == meta::resolve_type<D>());
         CHECK(meta::resolve_type(std::as_const(dd)) == meta::resolve_type<D>());
-
-        CHECK(meta::resolve_poly_type(A{}) == meta::resolve_type<A>());
-        CHECK(meta::resolve_poly_type(B{}) == meta::resolve_type<B>());
-        CHECK(meta::resolve_poly_type(C{}) == meta::resolve_type<C>());
-        CHECK(meta::resolve_poly_type(D{}) == meta::resolve_type<D>());
-
-        CHECK(meta::resolve_poly_type(ad) == meta::resolve_type<D>());
-        CHECK(meta::resolve_poly_type(bd) == meta::resolve_type<D>());
-        CHECK(meta::resolve_poly_type(cd) == meta::resolve_type<D>());
-        CHECK(meta::resolve_poly_type(dd) == meta::resolve_type<D>());
-
-        CHECK(meta::resolve_poly_type(std::move(ad)) == meta::resolve_type<D>());
-        CHECK(meta::resolve_poly_type(std::move(bd)) == meta::resolve_type<D>());
-        CHECK(meta::resolve_poly_type(std::move(cd)) == meta::resolve_type<D>());
-        CHECK(meta::resolve_poly_type(std::move(dd)) == meta::resolve_type<D>());
-
-        CHECK(meta::resolve_poly_type(std::as_const(ad)) == meta::resolve_type<D>());
-        CHECK(meta::resolve_poly_type(std::as_const(bd)) == meta::resolve_type<D>());
-        CHECK(meta::resolve_poly_type(std::as_const(cd)) == meta::resolve_type<D>());
-        CHECK(meta::resolve_poly_type(std::as_const(dd)) == meta::resolve_type<D>());
     }
 }

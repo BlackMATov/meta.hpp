@@ -14,61 +14,61 @@ namespace {
     };
 
     struct B : A {
-        META_HPP_ENABLE_POLY_INFO()
+        META_HPP_ENABLE_POLY_INFO(A)
     };
 }
 
 TEST_CASE("meta/meta_types/poly_resolving") {
     namespace meta = meta_hpp;
 
-    static_assert(std::is_same_v<meta::array_type, decltype(meta::resolve_poly_type(std::declval<int[]>()))>);
-    static_assert(std::is_same_v<meta::array_type, decltype(meta::resolve_poly_type(std::declval<const int[]>()))>);
+    static_assert(std::is_same_v<meta::array_type, decltype(meta::resolve_type(std::declval<int[]>()))>);
+    static_assert(std::is_same_v<meta::array_type, decltype(meta::resolve_type(std::declval<const int[]>()))>);
 
-    static_assert(std::is_same_v<meta::pointer_type, decltype(meta::resolve_poly_type(std::declval<int*>()))>);
-    static_assert(std::is_same_v<meta::pointer_type, decltype(meta::resolve_poly_type(std::declval<const int*>()))>);
+    static_assert(std::is_same_v<meta::pointer_type, decltype(meta::resolve_type(std::declval<int*>()))>);
+    static_assert(std::is_same_v<meta::pointer_type, decltype(meta::resolve_type(std::declval<const int*>()))>);
 
-    static_assert(std::is_same_v<meta::number_type, decltype(meta::resolve_poly_type(std::declval<int>()))>);
-    static_assert(std::is_same_v<meta::number_type, decltype(meta::resolve_poly_type(std::declval<int&>()))>);
-    static_assert(std::is_same_v<meta::number_type, decltype(meta::resolve_poly_type(std::declval<int&&>()))>);
-    static_assert(std::is_same_v<meta::number_type, decltype(meta::resolve_poly_type(std::declval<const int&>()))>);
-    static_assert(std::is_same_v<meta::number_type, decltype(meta::resolve_poly_type(std::declval<const int&&>()))>);
+    static_assert(std::is_same_v<meta::number_type, decltype(meta::resolve_type(std::declval<int>()))>);
+    static_assert(std::is_same_v<meta::number_type, decltype(meta::resolve_type(std::declval<int&>()))>);
+    static_assert(std::is_same_v<meta::number_type, decltype(meta::resolve_type(std::declval<int&&>()))>);
+    static_assert(std::is_same_v<meta::number_type, decltype(meta::resolve_type(std::declval<const int&>()))>);
+    static_assert(std::is_same_v<meta::number_type, decltype(meta::resolve_type(std::declval<const int&&>()))>);
 
-    static_assert(std::is_same_v<meta::class_type, decltype(meta::resolve_poly_type(std::declval<A>()))>);
-    static_assert(std::is_same_v<meta::class_type, decltype(meta::resolve_poly_type(std::declval<A&>()))>);
-    static_assert(std::is_same_v<meta::class_type, decltype(meta::resolve_poly_type(std::declval<A&&>()))>);
-    static_assert(std::is_same_v<meta::class_type, decltype(meta::resolve_poly_type(std::declval<const A&>()))>);
-    static_assert(std::is_same_v<meta::class_type, decltype(meta::resolve_poly_type(std::declval<const A&&>()))>);
+    static_assert(std::is_same_v<meta::class_type, decltype(meta::resolve_type(std::declval<A>()))>);
+    static_assert(std::is_same_v<meta::class_type, decltype(meta::resolve_type(std::declval<A&>()))>);
+    static_assert(std::is_same_v<meta::class_type, decltype(meta::resolve_type(std::declval<A&&>()))>);
+    static_assert(std::is_same_v<meta::class_type, decltype(meta::resolve_type(std::declval<const A&>()))>);
+    static_assert(std::is_same_v<meta::class_type, decltype(meta::resolve_type(std::declval<const A&&>()))>);
 
     {
         int i{42};
 
-        CHECK(meta::resolve_poly_type(i) == meta::resolve_type<int>());
-        CHECK(meta::resolve_poly_type(std::move(i)) == meta::resolve_type<int>());
-        CHECK(meta::resolve_poly_type(std::as_const(i)) == meta::resolve_type<int>());
-        CHECK(meta::resolve_poly_type(std::move(std::as_const(i))) == meta::resolve_type<int>());
+        CHECK(meta::resolve_type(i) == meta::resolve_type<int>());
+        CHECK(meta::resolve_type(std::move(i)) == meta::resolve_type<int>());
+        CHECK(meta::resolve_type(std::as_const(i)) == meta::resolve_type<int>());
+        CHECK(meta::resolve_type(std::move(std::as_const(i))) == meta::resolve_type<int>());
     }
 
     {
         A a{};
 
-        CHECK(meta::resolve_poly_type(a) == meta::resolve_type<A>());
-        CHECK(meta::resolve_poly_type(std::move(a)) == meta::resolve_type<A>());
-        CHECK(meta::resolve_poly_type(std::as_const(a)) == meta::resolve_type<A>());
-        CHECK(meta::resolve_poly_type(std::move(std::as_const(a))) == meta::resolve_type<A>());
+        CHECK(meta::resolve_type(a) == meta::resolve_type<A>());
+        CHECK(meta::resolve_type(std::move(a)) == meta::resolve_type<A>());
+        CHECK(meta::resolve_type(std::as_const(a)) == meta::resolve_type<A>());
+        CHECK(meta::resolve_type(std::move(std::as_const(a))) == meta::resolve_type<A>());
     }
 
     {
         B b{};
         A& a{b};
 
-        CHECK(meta::resolve_poly_type(a) == meta::resolve_type<B>());
-        CHECK(meta::resolve_poly_type(std::move(a)) == meta::resolve_type<B>());
-        CHECK(meta::resolve_poly_type(std::as_const(a)) == meta::resolve_type<B>());
-        CHECK(meta::resolve_poly_type(std::move(std::as_const(a))) == meta::resolve_type<B>());
+        CHECK(meta::resolve_type(a) == meta::resolve_type<B>());
+        CHECK(meta::resolve_type(std::move(a)) == meta::resolve_type<B>());
+        CHECK(meta::resolve_type(std::as_const(a)) == meta::resolve_type<B>());
+        CHECK(meta::resolve_type(std::move(std::as_const(a))) == meta::resolve_type<B>());
 
-        CHECK(meta::resolve_poly_type(b) == meta::resolve_type<B>());
-        CHECK(meta::resolve_poly_type(std::move(b)) == meta::resolve_type<B>());
-        CHECK(meta::resolve_poly_type(std::as_const(b)) == meta::resolve_type<B>());
-        CHECK(meta::resolve_poly_type(std::move(std::as_const(b))) == meta::resolve_type<B>());
+        CHECK(meta::resolve_type(b) == meta::resolve_type<B>());
+        CHECK(meta::resolve_type(std::move(b)) == meta::resolve_type<B>());
+        CHECK(meta::resolve_type(std::as_const(b)) == meta::resolve_type<B>());
+        CHECK(meta::resolve_type(std::move(std::as_const(b))) == meta::resolve_type<B>());
     }
 }

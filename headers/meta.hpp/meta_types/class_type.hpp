@@ -43,7 +43,7 @@ namespace meta_hpp::detail::class_type_data_impl
         });
 
         if constexpr ( check_base_info_enabled<Target> ) {
-            using target_base_info = typename Target::meta_base_info;
+            using target_base_info = get_meta_base_info<Target>;
             target_base_info::for_each([&info]<class_kind TargetBase>() { //
                 add_upcast_info<Class, TargetBase>(info);
             });
@@ -53,7 +53,7 @@ namespace meta_hpp::detail::class_type_data_impl
     template < class_kind Class >
     void fill_upcast_info(new_base_info_t& info) {
         if constexpr ( check_base_info_enabled<Class> ) {
-            using class_base_info = typename Class::meta_base_info;
+            using class_base_info = get_meta_base_info<Class>;
             class_base_info::for_each([&info]<class_kind ClassBase>() {
                 info.base_classes.push_back(resolve_type<ClassBase>());
                 add_upcast_info<Class, ClassBase>(info);

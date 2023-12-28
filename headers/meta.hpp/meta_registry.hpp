@@ -37,10 +37,23 @@ namespace meta_hpp
 
     template < typename T >
     // NOLINTNEXTLINE(*-missing-std-forward)
-    [[nodiscard]] auto resolve_type(T&&) {
+    [[nodiscard]] auto resolve_type(T&& from) {
         using namespace detail;
+
+        using raw_type = std::remove_cvref_t<T>;
         type_registry& registry = type_registry::instance();
-        return registry.resolve_type<std::remove_cvref_t<T>>();
+
+        if constexpr ( std::is_class_v<raw_type> && std::is_polymorphic_v<raw_type> ) {
+            static_assert(
+                detail::poly_info_enabled<T>,
+                "The class doesn't support polymorphic type resolving. "
+                "Use the META_HPP_ENABLE_POLY_INFO macro to fix it."
+            );
+            return detail::get_meta_poly_info(registry, from).type;
+        } else {
+            (void)from;
+            return registry.resolve_type<raw_type>();
+        }
     }
 
     template < typename... Ts >
@@ -55,29 +68,6 @@ namespace meta_hpp
         using namespace detail;
         type_registry& registry = type_registry::instance();
         return {registry.resolve_type<std::remove_cv_t<Ts>>()...};
-    }
-}
-
-namespace meta_hpp
-{
-    template < typename T >
-    // NOLINTNEXTLINE(*-missing-std-forward)
-    [[nodiscard]] auto resolve_poly_type(T&& from) {
-        using namespace detail;
-
-        using raw_type = std::remove_cvref_t<T>;
-        type_registry& registry = type_registry::instance();
-
-        if constexpr ( std::is_class_v<raw_type> ) {
-            static_assert(
-                detail::check_poly_info_enabled<raw_type>,
-                "The class doesn't support polymorphic type resolving. Use the META_HPP_ENABLE_POLY_INFO macro to fix it."
-            );
-            return from.get_most_derived_meta_poly_info(registry).type;
-        } else {
-            (void)from;
-            return registry.resolve_type<raw_type>();
-        }
     }
 }
 

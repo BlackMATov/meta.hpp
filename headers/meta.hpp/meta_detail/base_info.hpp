@@ -22,11 +22,19 @@ namespace meta_hpp::detail
     concept check_base_info_enabled //
         = requires { typename T::meta_base_info; };
 
+    template < check_base_info_enabled T >
+    using get_meta_base_info = typename T::meta_base_info;
+
     template < typename T >
-    concept check_poly_info_enabled //
+    concept poly_info_enabled //
         = requires(type_registry& r, const T& v) {
-              { v.get_most_derived_meta_poly_info(r) } -> std::convertible_to<poly_info>;
+              { v.meta_poly_info(r) } -> std::convertible_to<poly_info>;
           };
+
+    template < poly_info_enabled T >
+    poly_info get_meta_poly_info(type_registry& r, const T& v) {
+        return v.meta_poly_info(r);
+    }
 }
 
 #define META_HPP_ENABLE_BASE_INFO(...) \
@@ -39,7 +47,7 @@ private:
     META_HPP_ENABLE_BASE_INFO(__VA_ARGS__) \
 public: \
     META_HPP_DETAIL_IGNORE_OVERRIDE_WARNINGS_PUSH() \
-    virtual ::meta_hpp::detail::poly_info get_most_derived_meta_poly_info(::meta_hpp::detail::type_registry& registry) const { \
+    virtual ::meta_hpp::detail::poly_info meta_poly_info(::meta_hpp::detail::type_registry& registry) const { \
         using self_type = std::remove_cvref_t<decltype(*this)>; \
         return ::meta_hpp::detail::poly_info{.ptr = this, .type = registry.resolve_class_type<self_type>()}; \
     } \
