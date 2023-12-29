@@ -41,7 +41,7 @@ namespace meta_hpp::detail
         void for_each_scope(F&& f) const {
             const locker lock;
 
-            for ( auto&& [name, scope] : scopes_ ) {
+            for ( auto&& [_, scope] : scopes_ ) {
                 std::invoke(f, scope);
             }
         }

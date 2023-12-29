@@ -41,8 +41,10 @@ namespace meta_hpp::detail
         void for_each_type(F&& f) const {
             const locker lock;
 
-            for ( const any_type& type : types_ ) {
-                std::invoke(f, type);
+            // we use an index based for loop to avoid the iterator invalidation issues
+            // that can happen when adding a new type inside the loop
+            for ( std::size_t i{}; i < types_.size(); ++i ) {
+                std::invoke(f, types_[i]);
             }
         }
 
