@@ -14,7 +14,6 @@
 
 #include <algorithm>
 #include <array>
-#include <atomic>
 #include <compare>
 #include <deque>
 #include <exception>

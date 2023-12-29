@@ -499,7 +499,7 @@ namespace meta_hpp
 
 namespace meta_hpp::detail
 {
-    struct argument_state final : intrusive_ref_counter<argument_state> {
+    struct argument_state final {
         argument_index index;
         metadata_map metadata;
 
@@ -510,7 +510,7 @@ namespace meta_hpp::detail
         explicit argument_state(argument_index index, metadata_map metadata);
     };
 
-    struct constructor_state final : intrusive_ref_counter<constructor_state> {
+    struct constructor_state final {
         using create_impl = fixed_function<uvalue(std::span<const uarg>)>;
         using create_at_impl = fixed_function<uvalue(void*, std::span<const uarg>)>;
         using create_error_impl = fixed_function<uerror(std::span<const uarg_base>)>;
@@ -528,7 +528,7 @@ namespace meta_hpp::detail
         explicit constructor_state(constructor_index index, metadata_map metadata);
     };
 
-    struct destructor_state final : intrusive_ref_counter<destructor_state> {
+    struct destructor_state final {
         using destroy_impl = fixed_function<void(const uarg&)>;
         using destroy_at_impl = fixed_function<void(void*)>;
         using destroy_error_impl = fixed_function<uerror(const uarg_base&)>;
@@ -545,7 +545,7 @@ namespace meta_hpp::detail
         explicit destructor_state(destructor_index index, metadata_map metadata);
     };
 
-    struct evalue_state final : intrusive_ref_counter<evalue_state> {
+    struct evalue_state final {
         evalue_index index;
         metadata_map metadata;
 
@@ -557,7 +557,7 @@ namespace meta_hpp::detail
         explicit evalue_state(evalue_index index, metadata_map metadata);
     };
 
-    struct function_state final : intrusive_ref_counter<function_state> {
+    struct function_state final {
         using invoke_impl = fixed_function<uvalue(std::span<const uarg>)>;
         using invoke_error_impl = fixed_function<uerror(std::span<const uarg_base>)>;
 
@@ -573,7 +573,7 @@ namespace meta_hpp::detail
         explicit function_state(function_index index, metadata_map metadata);
     };
 
-    struct member_state final : intrusive_ref_counter<member_state> {
+    struct member_state final {
         using getter_impl = fixed_function<uvalue(const uinst&)>;
         using setter_impl = fixed_function<void(const uinst&, const uarg&)>;
 
@@ -593,7 +593,7 @@ namespace meta_hpp::detail
         explicit member_state(member_index index, metadata_map metadata);
     };
 
-    struct method_state final : intrusive_ref_counter<method_state> {
+    struct method_state final {
         using invoke_impl = fixed_function<uvalue(const uinst&, std::span<const uarg>)>;
         using invoke_error_impl = fixed_function<uerror(const uinst_base&, std::span<const uarg_base>)>;
 
@@ -609,7 +609,7 @@ namespace meta_hpp::detail
         explicit method_state(method_index index, metadata_map metadata);
     };
 
-    struct scope_state final : intrusive_ref_counter<scope_state> {
+    struct scope_state final {
         scope_index index;
         metadata_map metadata;
 
@@ -621,7 +621,7 @@ namespace meta_hpp::detail
         explicit scope_state(scope_index index, metadata_map metadata);
     };
 
-    struct variable_state final : intrusive_ref_counter<variable_state> {
+    struct variable_state final {
         using getter_impl = fixed_function<uvalue()>;
         using setter_impl = fixed_function<void(const uarg&)>;
         using setter_error_impl = fixed_function<uerror(const uarg_base&)>;

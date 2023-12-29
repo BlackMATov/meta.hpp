@@ -128,7 +128,7 @@ namespace meta_hpp::detail
         state.setter = make_variable_setter(registry, variable_ptr);
         state.setter_error = make_variable_setter_error<Pointer>(registry);
 
-        return make_intrusive<variable_state>(std::move(state));
+        return std::make_shared<variable_state>(std::move(state));
     }
 }
 

@@ -26,7 +26,7 @@ namespace meta_hpp::detail
             std::move(metadata),
         };
 
-        return make_intrusive<argument_state>(std::move(state));
+        return std::make_shared<argument_state>(std::move(state));
     }
 }
 

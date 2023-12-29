@@ -30,7 +30,7 @@ namespace meta_hpp::detail
         state.enum_value = uvalue{evalue};
         state.underlying_value = uvalue{to_underlying(evalue)};
 
-        return make_intrusive<evalue_state>(std::move(state));
+        return std::make_shared<evalue_state>(std::move(state));
     }
 }
 

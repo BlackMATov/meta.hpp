@@ -208,7 +208,7 @@ namespace meta_hpp::detail
         state.getter_error = make_member_getter_error<Member>(registry);
         state.setter_error = make_member_setter_error<Member>(registry);
 
-        return make_intrusive<member_state>(std::move(state));
+        return std::make_shared<member_state>(std::move(state));
     }
 }
 

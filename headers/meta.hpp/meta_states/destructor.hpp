@@ -90,7 +90,7 @@ namespace meta_hpp::detail
         state.destroy_at = make_destructor_destroy_at<Class>();
         state.destroy_error = make_destructor_destroy_error<Class>(registry);
 
-        return make_intrusive<destructor_state>(std::move(state));
+        return std::make_shared<destructor_state>(std::move(state));
     }
 }
 

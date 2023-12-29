@@ -8,7 +8,6 @@
 
 #include <algorithm>
 #include <array>
-#include <atomic>
 #include <cassert>
 #include <compare>
 #include <cstddef>
@@ -891,202 +890,6 @@ namespace meta_hpp::detail
 
 namespace meta_hpp::detail
 {
-    template < typename Derived >
-    class intrusive_ref_counter;
-
-    template < typename Derived >
-    void intrusive_ptr_add_ref(const intrusive_ref_counter<Derived>* ptr);
-
-    template < typename Derived >
-    void intrusive_ptr_release(const intrusive_ref_counter<Derived>* ptr);
-
-    template < typename Derived >
-    class intrusive_ref_counter {
-    public:
-        intrusive_ref_counter() = default;
-
-        intrusive_ref_counter(intrusive_ref_counter&&) noexcept {}
-
-        intrusive_ref_counter(const intrusive_ref_counter&) noexcept {}
-
-        intrusive_ref_counter& operator=(intrusive_ref_counter&&) noexcept {
-            return *this;
-        }
-
-        intrusive_ref_counter& operator=(const intrusive_ref_counter&) noexcept {
-            return *this;
-        }
-
-        [[nodiscard]] std::size_t get_use_count() const noexcept {
-            return counter_.load(std::memory_order_acquire);
-        }
-
-    protected:
-        ~intrusive_ref_counter() = default;
-
-    private:
-        mutable std::atomic_size_t counter_{};
-        friend void intrusive_ptr_add_ref<Derived>(const intrusive_ref_counter* ptr);
-        friend void intrusive_ptr_release<Derived>(const intrusive_ref_counter* ptr);
-    };
-
-    template < typename Derived >
-    void intrusive_ptr_add_ref(const intrusive_ref_counter<Derived>* ptr) {
-        ptr->counter_.fetch_add(1, std::memory_order_acq_rel);
-    }
-
-    template < typename Derived >
-    void intrusive_ptr_release(const intrusive_ref_counter<Derived>* ptr) {
-        if ( ptr->counter_.fetch_sub(1, std::memory_order_acq_rel) == 1 ) {
-            // NOLINTNEXTLINE(*-owning-memory)
-            delete static_cast<const Derived*>(ptr);
-        }
-    }
-}
-
-namespace meta_hpp::detail
-{
-    template < typename T >
-    class intrusive_ptr final {
-    public:
-        intrusive_ptr() = default;
-
-        ~intrusive_ptr() {
-            if ( ptr_ != nullptr ) {
-                intrusive_ptr_release(ptr_);
-            }
-        }
-
-        intrusive_ptr(T* ptr, bool add_ref = true)
-        : ptr_{ptr} {
-            if ( ptr_ != nullptr && add_ref ) {
-                intrusive_ptr_add_ref(ptr_);
-            }
-        }
-
-        intrusive_ptr(intrusive_ptr&& other) noexcept
-        : ptr_{other.ptr_} {
-            other.ptr_ = nullptr;
-        }
-
-        intrusive_ptr(const intrusive_ptr& other)
-        : ptr_{other.ptr_} {
-            if ( ptr_ != nullptr ) {
-                intrusive_ptr_add_ref(ptr_);
-            }
-        }
-
-        intrusive_ptr& operator=(T* ptr) noexcept {
-            intrusive_ptr{ptr}.swap(*this);
-            return *this;
-        }
-
-        intrusive_ptr& operator=(intrusive_ptr&& other) noexcept {
-            intrusive_ptr{std::move(other)}.swap(*this);
-            return *this;
-        }
-
-        intrusive_ptr& operator=(const intrusive_ptr& other) {
-            intrusive_ptr{other}.swap(*this);
-            return *this;
-        }
-
-        void reset() {
-            intrusive_ptr{}.swap(*this);
-        }
-
-        void reset(T* ptr) {
-            intrusive_ptr{ptr}.swap(*this);
-        }
-
-        void reset(T* ptr, bool add_ref) {
-            intrusive_ptr{ptr, add_ref}.swap(*this);
-        }
-
-        T* release() noexcept {
-            return std::exchange(ptr_, nullptr);
-        }
-
-        [[nodiscard]] T* get() const noexcept {
-            return ptr_;
-        }
-
-        [[nodiscard]] T& operator*() const noexcept {
-            return *ptr_;
-        }
-
-        [[nodiscard]] T* operator->() const noexcept {
-            return ptr_;
-        }
-
-        [[nodiscard]] explicit operator bool() const noexcept {
-            return ptr_ != nullptr;
-        }
-
-        void swap(intrusive_ptr& other) noexcept {
-            ptr_ = std::exchange(other.ptr_, ptr_);
-        }
-
-        [[nodiscard]] std::size_t get_hash() const noexcept {
-            return hash_combiner{}(ptr_);
-        }
-
-        [[nodiscard]] bool operator==(const intrusive_ptr& other) const noexcept {
-            return ptr_ == other.ptr_;
-        }
-
-        [[nodiscard]] std::strong_ordering operator<=>(const intrusive_ptr& other) const noexcept {
-            return ptr_ <=> other.ptr_;
-        }
-
-    private:
-        T* ptr_{};
-    };
-
-    template < typename T, typename... Args >
-    intrusive_ptr<T> make_intrusive(Args&&... args) {
-        // NOLINTNEXTLINE(*-owning-memory)
-        return new T(std::forward<Args>(args)...);
-    }
-
-    template < typename T >
-    void swap(intrusive_ptr<T>& l, intrusive_ptr<T>& r) noexcept {
-        return l.swap(r);
-    }
-
-    template < typename T >
-    [[nodiscard]] bool operator==(const intrusive_ptr<T>& l, const T* r) noexcept {
-        return l.get() == r;
-    }
-
-    template < typename T >
-    [[nodiscard]] std::strong_ordering operator<=>(const intrusive_ptr<T>& l, const T* r) noexcept {
-        return l.get() <=> r;
-    }
-
-    template < typename T >
-    [[nodiscard]] bool operator==(const intrusive_ptr<T>& l, std::nullptr_t) noexcept {
-        return l.get() == nullptr;
-    }
-
-    template < typename T >
-    [[nodiscard]] std::strong_ordering operator<=>(const intrusive_ptr<T>& l, std::nullptr_t) noexcept {
-        return l.get() <=> nullptr;
-    }
-}
-
-namespace std
-{
-    template < typename T >
-    struct hash<meta_hpp::detail::intrusive_ptr<T>> {
-        size_t operator()(const meta_hpp::detail::intrusive_ptr<T>& ip) const noexcept {
-            return ip.get_hash();
-        }
-    };
-}
-
-namespace meta_hpp::detail
-{
     template < typename T >
     struct is_in_place_type : std::false_type {};
 
@@ -1509,15 +1312,15 @@ namespace meta_hpp
         struct scope_state;
         struct variable_state;
 
-        using argument_state_ptr = intrusive_ptr<argument_state>;
-        using constructor_state_ptr = intrusive_ptr<constructor_state>;
-        using destructor_state_ptr = intrusive_ptr<destructor_state>;
-        using evalue_state_ptr = intrusive_ptr<evalue_state>;
-        using function_state_ptr = intrusive_ptr<function_state>;
-        using member_state_ptr = intrusive_ptr<member_state>;
-        using method_state_ptr = intrusive_ptr<method_state>;
-        using scope_state_ptr = intrusive_ptr<scope_state>;
-        using variable_state_ptr = intrusive_ptr<variable_state>;
+        using argument_state_ptr = std::shared_ptr<argument_state>;
+        using constructor_state_ptr = std::shared_ptr<constructor_state>;
+        using destructor_state_ptr = std::shared_ptr<destructor_state>;
+        using evalue_state_ptr = std::shared_ptr<evalue_state>;
+        using function_state_ptr = std::shared_ptr<function_state>;
+        using member_state_ptr = std::shared_ptr<member_state>;
+        using method_state_ptr = std::shared_ptr<method_state>;
+        using scope_state_ptr = std::shared_ptr<scope_state>;
+        using variable_state_ptr = std::shared_ptr<variable_state>;
     }
 
     template < typename T >
@@ -3878,7 +3681,7 @@ namespace meta_hpp
 
 namespace meta_hpp::detail
 {
-    struct argument_state final : intrusive_ref_counter<argument_state> {
+    struct argument_state final {
         argument_index index;
         metadata_map metadata;
 
@@ -3889,7 +3692,7 @@ namespace meta_hpp::detail
         explicit argument_state(argument_index index, metadata_map metadata);
     };
 
-    struct constructor_state final : intrusive_ref_counter<constructor_state> {
+    struct constructor_state final {
         using create_impl = fixed_function<uvalue(std::span<const uarg>)>;
         using create_at_impl = fixed_function<uvalue(void*, std::span<const uarg>)>;
         using create_error_impl = fixed_function<uerror(std::span<const uarg_base>)>;
@@ -3907,7 +3710,7 @@ namespace meta_hpp::detail
         explicit constructor_state(constructor_index index, metadata_map metadata);
     };
 
-    struct destructor_state final : intrusive_ref_counter<destructor_state> {
+    struct destructor_state final {
         using destroy_impl = fixed_function<void(const uarg&)>;
         using destroy_at_impl = fixed_function<void(void*)>;
         using destroy_error_impl = fixed_function<uerror(const uarg_base&)>;
@@ -3924,7 +3727,7 @@ namespace meta_hpp::detail
         explicit destructor_state(destructor_index index, metadata_map metadata);
     };
 
-    struct evalue_state final : intrusive_ref_counter<evalue_state> {
+    struct evalue_state final {
         evalue_index index;
         metadata_map metadata;
 
@@ -3936,7 +3739,7 @@ namespace meta_hpp::detail
         explicit evalue_state(evalue_index index, metadata_map metadata);
     };
 
-    struct function_state final : intrusive_ref_counter<function_state> {
+    struct function_state final {
         using invoke_impl = fixed_function<uvalue(std::span<const uarg>)>;
         using invoke_error_impl = fixed_function<uerror(std::span<const uarg_base>)>;
 
@@ -3952,7 +3755,7 @@ namespace meta_hpp::detail
         explicit function_state(function_index index, metadata_map metadata);
     };
 
-    struct member_state final : intrusive_ref_counter<member_state> {
+    struct member_state final {
         using getter_impl = fixed_function<uvalue(const uinst&)>;
         using setter_impl = fixed_function<void(const uinst&, const uarg&)>;
 
@@ -3972,7 +3775,7 @@ namespace meta_hpp::detail
         explicit member_state(member_index index, metadata_map metadata);
     };
 
-    struct method_state final : intrusive_ref_counter<method_state> {
+    struct method_state final {
         using invoke_impl = fixed_function<uvalue(const uinst&, std::span<const uarg>)>;
         using invoke_error_impl = fixed_function<uerror(const uinst_base&, std::span<const uarg_base>)>;
 
@@ -3988,7 +3791,7 @@ namespace meta_hpp::detail
         explicit method_state(method_index index, metadata_map metadata);
     };
 
-    struct scope_state final : intrusive_ref_counter<scope_state> {
+    struct scope_state final {
         scope_index index;
         metadata_map metadata;
 
@@ -4000,7 +3803,7 @@ namespace meta_hpp::detail
         explicit scope_state(scope_index index, metadata_map metadata);
     };
 
-    struct variable_state final : intrusive_ref_counter<variable_state> {
+    struct variable_state final {
         using getter_impl = fixed_function<uvalue()>;
         using setter_impl = fixed_function<void(const uarg&)>;
         using setter_error_impl = fixed_function<uerror(const uarg_base&)>;
@@ -6256,7 +6059,7 @@ namespace meta_hpp::detail
         state.invoke_error = make_function_invoke_error<Function>(registry);
         state.arguments = make_function_arguments<Function>();
 
-        return make_intrusive<function_state>(std::move(state));
+        return std::make_shared<function_state>(std::move(state));
     }
 }
 
@@ -6792,7 +6595,7 @@ namespace meta_hpp::detail
         state.getter_error = make_member_getter_error<Member>(registry);
         state.setter_error = make_member_setter_error<Member>(registry);
 
-        return make_intrusive<member_state>(std::move(state));
+        return std::make_shared<member_state>(std::move(state));
     }
 }
 
@@ -7091,7 +6894,7 @@ namespace meta_hpp::detail
         state.invoke_error = make_method_invoke_error<Method>(registry);
         state.arguments = make_method_arguments<Method>();
 
-        return make_intrusive<method_state>(std::move(state));
+        return std::make_shared<method_state>(std::move(state));
     }
 }
 
@@ -7456,7 +7259,7 @@ namespace meta_hpp::detail
             std::move(metadata),
         };
 
-        return make_intrusive<argument_state>(std::move(state));
+        return std::make_shared<argument_state>(std::move(state));
     }
 }
 
@@ -7655,7 +7458,7 @@ namespace meta_hpp::detail
         state.create_error = make_constructor_create_error<Class, Args...>(registry);
         state.arguments = make_constructor_arguments<Class, Args...>();
 
-        return make_intrusive<constructor_state>(std::move(state));
+        return std::make_shared<constructor_state>(std::move(state));
     }
 }
 
@@ -7847,7 +7650,7 @@ namespace meta_hpp::detail
         state.destroy_at = make_destructor_destroy_at<Class>();
         state.destroy_error = make_destructor_destroy_error<Class>(registry);
 
-        return make_intrusive<destructor_state>(std::move(state));
+        return std::make_shared<destructor_state>(std::move(state));
     }
 }
 
@@ -7992,7 +7795,7 @@ namespace meta_hpp::detail
         state.enum_value = uvalue{evalue};
         state.underlying_value = uvalue{to_underlying(evalue)};
 
-        return make_intrusive<evalue_state>(std::move(state));
+        return std::make_shared<evalue_state>(std::move(state));
     }
 }
 
@@ -8150,7 +7953,7 @@ namespace meta_hpp::detail
         state.setter = make_variable_setter(registry, variable_ptr);
         state.setter_error = make_variable_setter_error<Pointer>(registry);
 
-        return make_intrusive<variable_state>(std::move(state));
+        return std::make_shared<variable_state>(std::move(state));
     }
 }
 
@@ -8721,7 +8524,7 @@ namespace meta_hpp::detail
             scope_index{std::move(name)},
             std::move(metadata),
         };
-        return make_intrusive<scope_state>(std::move(state));
+        return std::make_shared<scope_state>(std::move(state));
     }
 }
 
