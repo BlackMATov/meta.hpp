@@ -164,13 +164,13 @@ namespace meta_hpp::detail
             static auto data{std::make_unique<TypeData>(std::forward<Args>(args)...)};
 
             const locker lock;
-            types_.emplace(any_type{data.get()});
+            types_.emplace_back(data.get());
 
             return data.get();
         }
 
     private:
         std::recursive_mutex mutex_;
-        std::set<any_type, std::less<>> types_;
+        std::vector<any_type> types_;
     };
 }

@@ -12,7 +12,6 @@
 #include <cassert>
 #include <climits>
 #include <compare>
-#include <concepts>
 #include <cstddef>
 #include <cstdint>
 #include <cstdlib>
@@ -24,7 +23,6 @@
 #include <map>
 #include <memory>
 #include <mutex>
-#include <set>
 #include <span>
 #include <string>
 #include <string_view>
@@ -873,27 +871,6 @@ namespace meta_hpp::detail
 
 namespace meta_hpp::detail
 {
-    template < typename Key, typename Compare, typename Allocator >
-    void insert_or_assign( //
-        std::set<Key, Compare, Allocator>& set,
-        std::set<Key, Compare, Allocator>& value
-    ) {
-        set.swap(value);
-        set.merge(value);
-    }
-
-    template < typename Key, typename Compare, typename Allocator >
-    void insert_or_assign( //
-        std::set<Key, Compare, Allocator>& set,
-        std::set<Key, Compare, Allocator>&& value
-    ) {
-        set.swap(value);
-        set.merge(std::move(value));
-    }
-}
-
-namespace meta_hpp::detail
-{
     template < typename Key, typename Value, typename Compare, typename Allocator >
     void insert_or_assign( //
         std::map<Key, Value, Compare, Allocator>& map,
@@ -1107,32 +1084,6 @@ namespace std
             return ip.get_hash();
         }
     };
-}
-
-namespace meta_hpp::detail
-{
-    template < typename SortedContainerL, typename SortedContainerR, typename Compare >
-    bool is_disjoint(const SortedContainerL& l, const SortedContainerR& r, Compare compare) {
-        using std::begin;
-        using std::end;
-
-        for ( auto iter_l{begin(l)}, iter_r{begin(r)}; iter_l != end(l) && iter_r != end(r); ) {
-            if ( compare(*iter_l, *iter_r) ) {
-                ++iter_l;
-            } else if ( compare(*iter_r, *iter_l) ) {
-                ++iter_r;
-            } else {
-                return false;
-            }
-        }
-
-        return true;
-    }
-
-    template < typename SortedContainerL, typename SortedContainerR >
-    bool is_disjoint(const SortedContainerL& l, const SortedContainerR& r) {
-        return is_disjoint(l, r, std::less<>{});
-    }
 }
 
 namespace meta_hpp::detail
@@ -4223,14 +4174,14 @@ namespace meta_hpp::detail
             static auto data{std::make_unique<TypeData>(std::forward<Args>(args)...)};
 
             const locker lock;
-            types_.emplace(any_type{data.get()});
+            types_.emplace_back(data.get());
 
             return data.get();
         }
 
     private:
         std::recursive_mutex mutex_;
-        std::set<any_type, std::less<>> types_;
+        std::vector<any_type> types_;
     };
 }
 

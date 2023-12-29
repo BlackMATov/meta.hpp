@@ -7,8 +7,6 @@
 #include <meta.hpp/meta_all.hpp>
 #include <doctest/doctest.h>
 
-#include <sstream>
-
 namespace
 {
     struct ivec2 {
