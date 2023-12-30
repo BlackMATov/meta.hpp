@@ -18,6 +18,7 @@
 #include "meta_base/insert_or_assign.hpp"
 #include "meta_base/is_in_place_type.hpp"
 #include "meta_base/memory_buffer.hpp"
+#include "meta_base/name_of.hpp"
 #include "meta_base/noncopyable.hpp"
 #include "meta_base/nonesuch.hpp"
 #include "meta_base/overloaded.hpp"
