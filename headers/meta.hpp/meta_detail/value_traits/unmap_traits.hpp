@@ -16,9 +16,7 @@ namespace meta_hpp::detail
 
     template < typename T >
     concept has_unmap_traits //
-        = requires(const T& v) {
-              { unmap_traits<T>{}(v) } -> std::convertible_to<uvalue>;
-          };
+        = requires(const T& v) { unmap_traits<T>{}(v); };
 }
 
 namespace meta_hpp::detail

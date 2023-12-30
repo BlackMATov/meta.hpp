@@ -13,18 +13,18 @@ namespace meta_hpp::detail
     // REFERENCE:
     // https://en.wikipedia.org/wiki/Fowler%E2%80%93Noll%E2%80%93Vo_hash_function
 
-    template < std::size_t SizeBits = CHAR_BIT * sizeof(std::size_t) >
+    template < std::size_t SizeBytes = sizeof(std::size_t) >
     struct fnv1a_hash_traits;
 
     template <>
-    struct fnv1a_hash_traits<32> { // NOLINT(*-magic-numbers)
+    struct fnv1a_hash_traits<sizeof(std::uint32_t)> {
         using underlying_type = std::uint32_t;
         static inline constexpr underlying_type prime{16777619U};
         static inline constexpr underlying_type offset_basis{2166136261U};
     };
 
     template <>
-    struct fnv1a_hash_traits<64> { // NOLINT(*-magic-numbers)
+    struct fnv1a_hash_traits<sizeof(std::uint64_t)> {
         using underlying_type = std::uint64_t;
         static inline constexpr underlying_type prime{1099511628211U};
         static inline constexpr underlying_type offset_basis{14695981039346656037U};

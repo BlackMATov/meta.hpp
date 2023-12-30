@@ -8,23 +8,18 @@
 
 #include <algorithm>
 #include <array>
-#include <atomic>
 #include <cassert>
-#include <climits>
 #include <compare>
-#include <concepts>
 #include <cstddef>
 #include <cstdint>
 #include <cstdlib>
 #include <cstring>
-#include <deque>
 #include <exception>
 #include <functional>
 #include <initializer_list>
 #include <map>
 #include <memory>
 #include <mutex>
-#include <set>
 #include <span>
 #include <string>
 #include <string_view>
@@ -733,18 +728,18 @@ namespace meta_hpp::detail
     // REFERENCE:
     // https://en.wikipedia.org/wiki/Fowler%E2%80%93Noll%E2%80%93Vo_hash_function
 
-    template < std::size_t SizeBits = CHAR_BIT * sizeof(std::size_t) >
+    template < std::size_t SizeBytes = sizeof(std::size_t) >
     struct fnv1a_hash_traits;
 
     template <>
-    struct fnv1a_hash_traits<32> { // NOLINT(*-magic-numbers)
+    struct fnv1a_hash_traits<sizeof(std::uint32_t)> {
         using underlying_type = std::uint32_t;
         static inline constexpr underlying_type prime{16777619U};
         static inline constexpr underlying_type offset_basis{2166136261U};
     };
 
     template <>
-    struct fnv1a_hash_traits<64> { // NOLINT(*-magic-numbers)
+    struct fnv1a_hash_traits<sizeof(std::uint64_t)> {
         using underlying_type = std::uint64_t;
         static inline constexpr underlying_type prime{1099511628211U};
         static inline constexpr underlying_type offset_basis{14695981039346656037U};
@@ -873,27 +868,6 @@ namespace meta_hpp::detail
 
 namespace meta_hpp::detail
 {
-    template < typename Key, typename Compare, typename Allocator >
-    void insert_or_assign( //
-        std::set<Key, Compare, Allocator>& set,
-        std::set<Key, Compare, Allocator>& value
-    ) {
-        set.swap(value);
-        set.merge(value);
-    }
-
-    template < typename Key, typename Compare, typename Allocator >
-    void insert_or_assign( //
-        std::set<Key, Compare, Allocator>& set,
-        std::set<Key, Compare, Allocator>&& value
-    ) {
-        set.swap(value);
-        set.merge(std::move(value));
-    }
-}
-
-namespace meta_hpp::detail
-{
     template < typename Key, typename Value, typename Compare, typename Allocator >
     void insert_or_assign( //
         std::map<Key, Value, Compare, Allocator>& map,
@@ -910,228 +884,6 @@ namespace meta_hpp::detail
     ) {
         map.swap(value);
         map.merge(std::move(value));
-    }
-}
-
-namespace meta_hpp::detail
-{
-    template < typename Derived >
-    class intrusive_ref_counter;
-
-    template < typename Derived >
-    void intrusive_ptr_add_ref(const intrusive_ref_counter<Derived>* ptr);
-
-    template < typename Derived >
-    void intrusive_ptr_release(const intrusive_ref_counter<Derived>* ptr);
-
-    template < typename Derived >
-    class intrusive_ref_counter {
-    public:
-        intrusive_ref_counter() = default;
-
-        intrusive_ref_counter(intrusive_ref_counter&&) noexcept {}
-
-        intrusive_ref_counter(const intrusive_ref_counter&) noexcept {}
-
-        intrusive_ref_counter& operator=(intrusive_ref_counter&&) noexcept {
-            return *this;
-        }
-
-        intrusive_ref_counter& operator=(const intrusive_ref_counter&) noexcept {
-            return *this;
-        }
-
-        [[nodiscard]] std::size_t get_use_count() const noexcept {
-            return counter_.load(std::memory_order_acquire);
-        }
-
-    protected:
-        ~intrusive_ref_counter() = default;
-
-    private:
-        mutable std::atomic_size_t counter_{};
-        friend void intrusive_ptr_add_ref<Derived>(const intrusive_ref_counter* ptr);
-        friend void intrusive_ptr_release<Derived>(const intrusive_ref_counter* ptr);
-    };
-
-    template < typename Derived >
-    void intrusive_ptr_add_ref(const intrusive_ref_counter<Derived>* ptr) {
-        ptr->counter_.fetch_add(1, std::memory_order_acq_rel);
-    }
-
-    template < typename Derived >
-    void intrusive_ptr_release(const intrusive_ref_counter<Derived>* ptr) {
-        if ( ptr->counter_.fetch_sub(1, std::memory_order_acq_rel) == 1 ) {
-            // NOLINTNEXTLINE(*-owning-memory)
-            delete static_cast<const Derived*>(ptr);
-        }
-    }
-}
-
-namespace meta_hpp::detail
-{
-    template < typename T >
-    class intrusive_ptr final {
-    public:
-        intrusive_ptr() = default;
-
-        ~intrusive_ptr() {
-            if ( ptr_ != nullptr ) {
-                intrusive_ptr_release(ptr_);
-            }
-        }
-
-        intrusive_ptr(T* ptr, bool add_ref = true)
-        : ptr_{ptr} {
-            if ( ptr_ != nullptr && add_ref ) {
-                intrusive_ptr_add_ref(ptr_);
-            }
-        }
-
-        intrusive_ptr(intrusive_ptr&& other) noexcept
-        : ptr_{other.ptr_} {
-            other.ptr_ = nullptr;
-        }
-
-        intrusive_ptr(const intrusive_ptr& other)
-        : ptr_{other.ptr_} {
-            if ( ptr_ != nullptr ) {
-                intrusive_ptr_add_ref(ptr_);
-            }
-        }
-
-        intrusive_ptr& operator=(T* ptr) noexcept {
-            intrusive_ptr{ptr}.swap(*this);
-            return *this;
-        }
-
-        intrusive_ptr& operator=(intrusive_ptr&& other) noexcept {
-            intrusive_ptr{std::move(other)}.swap(*this);
-            return *this;
-        }
-
-        intrusive_ptr& operator=(const intrusive_ptr& other) {
-            intrusive_ptr{other}.swap(*this);
-            return *this;
-        }
-
-        void reset() {
-            intrusive_ptr{}.swap(*this);
-        }
-
-        void reset(T* ptr) {
-            intrusive_ptr{ptr}.swap(*this);
-        }
-
-        void reset(T* ptr, bool add_ref) {
-            intrusive_ptr{ptr, add_ref}.swap(*this);
-        }
-
-        T* release() noexcept {
-            return std::exchange(ptr_, nullptr);
-        }
-
-        [[nodiscard]] T* get() const noexcept {
-            return ptr_;
-        }
-
-        [[nodiscard]] T& operator*() const noexcept {
-            return *ptr_;
-        }
-
-        [[nodiscard]] T* operator->() const noexcept {
-            return ptr_;
-        }
-
-        [[nodiscard]] explicit operator bool() const noexcept {
-            return ptr_ != nullptr;
-        }
-
-        void swap(intrusive_ptr& other) noexcept {
-            ptr_ = std::exchange(other.ptr_, ptr_);
-        }
-
-        [[nodiscard]] std::size_t get_hash() const noexcept {
-            return hash_combiner{}(ptr_);
-        }
-
-        [[nodiscard]] bool operator==(const intrusive_ptr& other) const noexcept {
-            return ptr_ == other.ptr_;
-        }
-
-        [[nodiscard]] std::strong_ordering operator<=>(const intrusive_ptr& other) const noexcept {
-            return ptr_ <=> other.ptr_;
-        }
-
-    private:
-        T* ptr_{};
-    };
-
-    template < typename T, typename... Args >
-    intrusive_ptr<T> make_intrusive(Args&&... args) {
-        // NOLINTNEXTLINE(*-owning-memory)
-        return new T(std::forward<Args>(args)...);
-    }
-
-    template < typename T >
-    void swap(intrusive_ptr<T>& l, intrusive_ptr<T>& r) noexcept {
-        return l.swap(r);
-    }
-
-    template < typename T >
-    [[nodiscard]] bool operator==(const intrusive_ptr<T>& l, const T* r) noexcept {
-        return l.get() == r;
-    }
-
-    template < typename T >
-    [[nodiscard]] std::strong_ordering operator<=>(const intrusive_ptr<T>& l, const T* r) noexcept {
-        return l.get() <=> r;
-    }
-
-    template < typename T >
-    [[nodiscard]] bool operator==(const intrusive_ptr<T>& l, std::nullptr_t) noexcept {
-        return l.get() == nullptr;
-    }
-
-    template < typename T >
-    [[nodiscard]] std::strong_ordering operator<=>(const intrusive_ptr<T>& l, std::nullptr_t) noexcept {
-        return l.get() <=> nullptr;
-    }
-}
-
-namespace std
-{
-    template < typename T >
-    struct hash<meta_hpp::detail::intrusive_ptr<T>> {
-        size_t operator()(const meta_hpp::detail::intrusive_ptr<T>& ip) const noexcept {
-            return ip.get_hash();
-        }
-    };
-}
-
-namespace meta_hpp::detail
-{
-    template < typename SortedContainerL, typename SortedContainerR, typename Compare >
-    bool is_disjoint(const SortedContainerL& l, const SortedContainerR& r, Compare compare) {
-        using std::begin;
-        using std::end;
-
-        for ( auto iter_l{begin(l)}, iter_r{begin(r)}; iter_l != end(l) && iter_r != end(r); ) {
-            if ( compare(*iter_l, *iter_r) ) {
-                ++iter_l;
-            } else if ( compare(*iter_r, *iter_l) ) {
-                ++iter_r;
-            } else {
-                return false;
-            }
-        }
-
-        return true;
-    }
-
-    template < typename SortedContainerL, typename SortedContainerR >
-    bool is_disjoint(const SortedContainerL& l, const SortedContainerR& r) {
-        return is_disjoint(l, r, std::less<>{});
     }
 }
 
@@ -1559,15 +1311,15 @@ namespace meta_hpp
         struct scope_state;
         struct variable_state;
 
-        using argument_state_ptr = intrusive_ptr<argument_state>;
-        using constructor_state_ptr = intrusive_ptr<constructor_state>;
-        using destructor_state_ptr = intrusive_ptr<destructor_state>;
-        using evalue_state_ptr = intrusive_ptr<evalue_state>;
-        using function_state_ptr = intrusive_ptr<function_state>;
-        using member_state_ptr = intrusive_ptr<member_state>;
-        using method_state_ptr = intrusive_ptr<method_state>;
-        using scope_state_ptr = intrusive_ptr<scope_state>;
-        using variable_state_ptr = intrusive_ptr<variable_state>;
+        using argument_state_ptr = std::shared_ptr<argument_state>;
+        using constructor_state_ptr = std::shared_ptr<constructor_state>;
+        using destructor_state_ptr = std::shared_ptr<destructor_state>;
+        using evalue_state_ptr = std::shared_ptr<evalue_state>;
+        using function_state_ptr = std::shared_ptr<function_state>;
+        using member_state_ptr = std::shared_ptr<member_state>;
+        using method_state_ptr = std::shared_ptr<method_state>;
+        using scope_state_ptr = std::shared_ptr<scope_state>;
+        using variable_state_ptr = std::shared_ptr<variable_state>;
     }
 
     template < typename T >
@@ -3928,7 +3680,7 @@ namespace meta_hpp
 
 namespace meta_hpp::detail
 {
-    struct argument_state final : intrusive_ref_counter<argument_state> {
+    struct argument_state final {
         argument_index index;
         metadata_map metadata;
 
@@ -3939,7 +3691,7 @@ namespace meta_hpp::detail
         explicit argument_state(argument_index index, metadata_map metadata);
     };
 
-    struct constructor_state final : intrusive_ref_counter<constructor_state> {
+    struct constructor_state final {
         using create_impl = fixed_function<uvalue(std::span<const uarg>)>;
         using create_at_impl = fixed_function<uvalue(void*, std::span<const uarg>)>;
         using create_error_impl = fixed_function<uerror(std::span<const uarg_base>)>;
@@ -3957,7 +3709,7 @@ namespace meta_hpp::detail
         explicit constructor_state(constructor_index index, metadata_map metadata);
     };
 
-    struct destructor_state final : intrusive_ref_counter<destructor_state> {
+    struct destructor_state final {
         using destroy_impl = fixed_function<void(const uarg&)>;
         using destroy_at_impl = fixed_function<void(void*)>;
         using destroy_error_impl = fixed_function<uerror(const uarg_base&)>;
@@ -3974,7 +3726,7 @@ namespace meta_hpp::detail
         explicit destructor_state(destructor_index index, metadata_map metadata);
     };
 
-    struct evalue_state final : intrusive_ref_counter<evalue_state> {
+    struct evalue_state final {
         evalue_index index;
         metadata_map metadata;
 
@@ -3986,7 +3738,7 @@ namespace meta_hpp::detail
         explicit evalue_state(evalue_index index, metadata_map metadata);
     };
 
-    struct function_state final : intrusive_ref_counter<function_state> {
+    struct function_state final {
         using invoke_impl = fixed_function<uvalue(std::span<const uarg>)>;
         using invoke_error_impl = fixed_function<uerror(std::span<const uarg_base>)>;
 
@@ -4002,7 +3754,7 @@ namespace meta_hpp::detail
         explicit function_state(function_index index, metadata_map metadata);
     };
 
-    struct member_state final : intrusive_ref_counter<member_state> {
+    struct member_state final {
         using getter_impl = fixed_function<uvalue(const uinst&)>;
         using setter_impl = fixed_function<void(const uinst&, const uarg&)>;
 
@@ -4022,7 +3774,7 @@ namespace meta_hpp::detail
         explicit member_state(member_index index, metadata_map metadata);
     };
 
-    struct method_state final : intrusive_ref_counter<method_state> {
+    struct method_state final {
         using invoke_impl = fixed_function<uvalue(const uinst&, std::span<const uarg>)>;
         using invoke_error_impl = fixed_function<uerror(const uinst_base&, std::span<const uarg_base>)>;
 
@@ -4038,7 +3790,7 @@ namespace meta_hpp::detail
         explicit method_state(method_index index, metadata_map metadata);
     };
 
-    struct scope_state final : intrusive_ref_counter<scope_state> {
+    struct scope_state final {
         scope_index index;
         metadata_map metadata;
 
@@ -4050,7 +3802,7 @@ namespace meta_hpp::detail
         explicit scope_state(scope_index index, metadata_map metadata);
     };
 
-    struct variable_state final : intrusive_ref_counter<variable_state> {
+    struct variable_state final {
         using getter_impl = fixed_function<uvalue()>;
         using setter_impl = fixed_function<void(const uarg&)>;
         using setter_error_impl = fixed_function<uerror(const uarg_base&)>;
@@ -4100,8 +3852,10 @@ namespace meta_hpp::detail
         void for_each_type(F&& f) const {
             const locker lock;
 
-            for ( const any_type& type : types_ ) {
-                std::invoke(f, type);
+            // we use an index based for loop to avoid the iterator invalidation issues
+            // that can happen when adding a new type inside the loop
+            for ( std::size_t i{}; i < types_.size(); ++i ) {
+                std::invoke(f, types_[i]);
             }
         }
 
@@ -4223,14 +3977,14 @@ namespace meta_hpp::detail
             static auto data{std::make_unique<TypeData>(std::forward<Args>(args)...)};
 
             const locker lock;
-            types_.emplace(any_type{data.get()});
+            types_.emplace_back(data.get());
 
             return data.get();
         }
 
     private:
         std::recursive_mutex mutex_;
-        std::set<any_type, std::less<>> types_;
+        std::vector<any_type> types_;
     };
 }
 
@@ -4250,9 +4004,7 @@ namespace meta_hpp::detail
 
     template < typename T >
     concept poly_info_enabled //
-        = requires(type_registry& r, const T& v) {
-              { v.meta_poly_info(r) } -> std::convertible_to<poly_info>;
-          };
+        = requires(type_registry& r, const T& v) { v.meta_poly_info(r); };
 
     template < poly_info_enabled T >
     poly_info get_meta_poly_info(type_registry& r, const T& v) {
@@ -4309,7 +4061,7 @@ namespace meta_hpp::detail
         void for_each_scope(F&& f) const {
             const locker lock;
 
-            for ( auto&& [name, scope] : scopes_ ) {
+            for ( auto&& [_, scope] : scopes_ ) {
                 std::invoke(f, scope);
             }
         }
@@ -6304,7 +6056,7 @@ namespace meta_hpp::detail
         state.invoke_error = make_function_invoke_error<Function>(registry);
         state.arguments = make_function_arguments<Function>();
 
-        return make_intrusive<function_state>(std::move(state));
+        return std::make_shared<function_state>(std::move(state));
     }
 }
 
@@ -6840,7 +6592,7 @@ namespace meta_hpp::detail
         state.getter_error = make_member_getter_error<Member>(registry);
         state.setter_error = make_member_setter_error<Member>(registry);
 
-        return make_intrusive<member_state>(std::move(state));
+        return std::make_shared<member_state>(std::move(state));
     }
 }
 
@@ -7139,7 +6891,7 @@ namespace meta_hpp::detail
         state.invoke_error = make_method_invoke_error<Method>(registry);
         state.arguments = make_method_arguments<Method>();
 
-        return make_intrusive<method_state>(std::move(state));
+        return std::make_shared<method_state>(std::move(state));
     }
 }
 
@@ -7504,7 +7256,7 @@ namespace meta_hpp::detail
             std::move(metadata),
         };
 
-        return make_intrusive<argument_state>(std::move(state));
+        return std::make_shared<argument_state>(std::move(state));
     }
 }
 
@@ -7703,7 +7455,7 @@ namespace meta_hpp::detail
         state.create_error = make_constructor_create_error<Class, Args...>(registry);
         state.arguments = make_constructor_arguments<Class, Args...>();
 
-        return make_intrusive<constructor_state>(std::move(state));
+        return std::make_shared<constructor_state>(std::move(state));
     }
 }
 
@@ -7895,7 +7647,7 @@ namespace meta_hpp::detail
         state.destroy_at = make_destructor_destroy_at<Class>();
         state.destroy_error = make_destructor_destroy_error<Class>(registry);
 
-        return make_intrusive<destructor_state>(std::move(state));
+        return std::make_shared<destructor_state>(std::move(state));
     }
 }
 
@@ -8040,7 +7792,7 @@ namespace meta_hpp::detail
         state.enum_value = uvalue{evalue};
         state.underlying_value = uvalue{to_underlying(evalue)};
 
-        return make_intrusive<evalue_state>(std::move(state));
+        return std::make_shared<evalue_state>(std::move(state));
     }
 }
 
@@ -8198,7 +7950,7 @@ namespace meta_hpp::detail
         state.setter = make_variable_setter(registry, variable_ptr);
         state.setter_error = make_variable_setter_error<Pointer>(registry);
 
-        return make_intrusive<variable_state>(std::move(state));
+        return std::make_shared<variable_state>(std::move(state));
     }
 }
 
@@ -8769,7 +8521,7 @@ namespace meta_hpp::detail
             scope_index{std::move(name)},
             std::move(metadata),
         };
-        return make_intrusive<scope_state>(std::move(state));
+        return std::make_shared<scope_state>(std::move(state));
     }
 }
 
@@ -9228,15 +8980,13 @@ namespace meta_hpp::detail
 
     template < typename T >
     concept has_copy_traits //
-        = requires(const T& v) {
-              { copy_traits<T>{}(v) } -> std::convertible_to<uvalue>;
-          };
+        = requires(const T& v) { copy_traits<T>{}(v); };
 }
 
 namespace meta_hpp::detail
 {
     template < typename T >
-        requires std::is_copy_constructible_v<T>
+        requires requires(const T& v) { uvalue{v}; }
     struct copy_traits<T> {
         uvalue operator()(const T& v) const {
             return uvalue{v};
@@ -9251,9 +9001,7 @@ namespace meta_hpp::detail
 
     template < typename T >
     concept has_deref_traits //
-        = requires(const T& v) {
-              { deref_traits<T>{}(v) } -> std::convertible_to<uvalue>;
-          };
+        = requires(const T& v) { deref_traits<T>{}(v); };
 }
 
 namespace meta_hpp::detail
@@ -9274,10 +9022,10 @@ namespace meta_hpp::detail
         }
     };
 
-    template < typename T >
+    template < typename T, typename Deleter >
         requires std::is_copy_constructible_v<T>
-    struct deref_traits<std::unique_ptr<T>> {
-        uvalue operator()(const std::unique_ptr<T>& v) const {
+    struct deref_traits<std::unique_ptr<T, Deleter>> {
+        uvalue operator()(const std::unique_ptr<T, Deleter>& v) const {
             return v != nullptr ? uvalue{*v} : uvalue{};
         }
     };
@@ -9290,9 +9038,7 @@ namespace meta_hpp::detail
 
     template < typename T >
     concept has_index_traits //
-        = requires(const T& v, std::size_t i) {
-              { index_traits<T>{}(v, i) } -> std::convertible_to<uvalue>;
-          };
+        = requires(const T& v, std::size_t i) { index_traits<T>{}(v, i); };
 }
 
 namespace meta_hpp::detail
@@ -9314,10 +9060,18 @@ namespace meta_hpp::detail
         }
     };
 
-    template < typename T, typename Allocator >
+    template < typename T, typename Traits, typename Allocator >
         requires std::is_copy_constructible_v<T>
-    struct index_traits<std::deque<T, Allocator>> {
-        uvalue operator()(const std::deque<T, Allocator>& v, std::size_t i) {
+    struct index_traits<std::basic_string<T, Traits, Allocator>> {
+        uvalue operator()(const std::basic_string<T, Traits, Allocator>& v, std::size_t i) const {
+            return i < v.size() ? uvalue{v[i]} : uvalue{};
+        }
+    };
+
+    template < typename T, typename Traits >
+        requires std::is_copy_constructible_v<T>
+    struct index_traits<std::basic_string_view<T, Traits>> {
+        uvalue operator()(const std::basic_string_view<T, Traits>& v, std::size_t i) const {
             return i < v.size() ? uvalue{v[i]} : uvalue{};
         }
     };
@@ -9330,18 +9084,10 @@ namespace meta_hpp::detail
         }
     };
 
-    template < typename T, typename Traits, typename Allocator >
-        requires std::is_copy_constructible_v<T>
-    struct index_traits<std::basic_string<T, Traits, Allocator>> {
-        uvalue operator()(const std::basic_string<T, Traits, Allocator>& v, std::size_t i) const {
-            return i < v.size() ? uvalue{v[i]} : uvalue{};
-        }
-    };
-
     template < typename T, typename Allocator >
         requires std::is_copy_constructible_v<T>
     struct index_traits<std::vector<T, Allocator>> {
-        uvalue operator()(const std::vector<T, Allocator>& v, std::size_t i) {
+        uvalue operator()(const std::vector<T, Allocator>& v, std::size_t i) const {
             return i < v.size() ? uvalue{v[i]} : uvalue{};
         }
     };
@@ -9354,9 +9100,7 @@ namespace meta_hpp::detail
 
     template < typename T >
     concept has_unmap_traits //
-        = requires(const T& v) {
-              { unmap_traits<T>{}(v) } -> std::convertible_to<uvalue>;
-          };
+        = requires(const T& v) { unmap_traits<T>{}(v); };
 }
 
 namespace meta_hpp::detail

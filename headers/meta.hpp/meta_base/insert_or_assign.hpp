@@ -40,27 +40,6 @@ namespace meta_hpp::detail
 
 namespace meta_hpp::detail
 {
-    template < typename Key, typename Compare, typename Allocator >
-    void insert_or_assign( //
-        std::set<Key, Compare, Allocator>& set,
-        std::set<Key, Compare, Allocator>& value
-    ) {
-        set.swap(value);
-        set.merge(value);
-    }
-
-    template < typename Key, typename Compare, typename Allocator >
-    void insert_or_assign( //
-        std::set<Key, Compare, Allocator>& set,
-        std::set<Key, Compare, Allocator>&& value
-    ) {
-        set.swap(value);
-        set.merge(std::move(value));
-    }
-}
-
-namespace meta_hpp::detail
-{
     template < typename Key, typename Value, typename Compare, typename Allocator >
     void insert_or_assign( //
         std::map<Key, Value, Compare, Allocator>& map,

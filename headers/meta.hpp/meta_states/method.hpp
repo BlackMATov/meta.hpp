@@ -142,7 +142,7 @@ namespace meta_hpp::detail
         state.invoke_error = make_method_invoke_error<Method>(registry);
         state.arguments = make_method_arguments<Method>();
 
-        return make_intrusive<method_state>(std::move(state));
+        return std::make_shared<method_state>(std::move(state));
     }
 }
 

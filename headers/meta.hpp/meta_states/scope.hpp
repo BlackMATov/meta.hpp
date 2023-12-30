@@ -27,7 +27,7 @@ namespace meta_hpp::detail
             scope_index{std::move(name)},
             std::move(metadata),
         };
-        return make_intrusive<scope_state>(std::move(state));
+        return std::make_shared<scope_state>(std::move(state));
     }
 }
 

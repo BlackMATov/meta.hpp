@@ -17,30 +17,30 @@ TEST_CASE("meta/meta_features/for_each_type") {
     namespace meta = meta_hpp;
 
     SUBCASE("any_type") {
-        std::set<meta_hpp::any_type> all_types;
+        std::vector<meta_hpp::any_type> all_types;
         meta::for_each_type([&all_types](const meta::any_type& type){
-            all_types.insert(type);
+            all_types.push_back(type);
         });
-        CHECK_FALSE(all_types.contains(meta::resolve_type<A>()));
+        CHECK_FALSE(std::find(all_types.begin(), all_types.end(), meta::resolve_type<A>()) != all_types.end());
 
         meta::for_each_type([&all_types](const meta::any_type& type){
-            all_types.insert(type);
+            all_types.push_back(type);
         });
-        CHECK(all_types.contains(meta::resolve_type<A>()));
+        CHECK(std::find(all_types.begin(), all_types.end(), meta::resolve_type<A>()) != all_types.end());
 
     }
 
     SUBCASE("specific_type") {
-        std::set<meta_hpp::array_type> all_types;
+        std::vector<meta_hpp::array_type> all_types;
 
         meta::for_each_type<meta::array_type>([&all_types](const meta::array_type& type){
-            all_types.insert(type);
+            all_types.push_back(type);
         });
-        CHECK_FALSE(all_types.contains(meta::resolve_type<A[]>()));
+        CHECK_FALSE(std::find(all_types.begin(), all_types.end(), meta::resolve_type<A[]>()) != all_types.end());
 
         meta::for_each_type<meta::array_type>([&all_types](const meta::array_type& type){
-            all_types.insert(type);
+            all_types.push_back(type);
         });
-        CHECK(all_types.contains(meta::resolve_type<A[]>()));
+        CHECK(std::find(all_types.begin(), all_types.end(), meta::resolve_type<A[]>()) != all_types.end());
     }
 }

@@ -16,15 +16,13 @@ namespace meta_hpp::detail
 
     template < typename T >
     concept has_copy_traits //
-        = requires(const T& v) {
-              { copy_traits<T>{}(v) } -> std::convertible_to<uvalue>;
-          };
+        = requires(const T& v) { copy_traits<T>{}(v); };
 }
 
 namespace meta_hpp::detail
 {
     template < typename T >
-        requires std::is_copy_constructible_v<T>
+        requires requires(const T& v) { uvalue{v}; }
     struct copy_traits<T> {
         uvalue operator()(const T& v) const {
             return uvalue{v};

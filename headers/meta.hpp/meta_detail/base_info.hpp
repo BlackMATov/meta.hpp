@@ -27,9 +27,7 @@ namespace meta_hpp::detail
 
     template < typename T >
     concept poly_info_enabled //
-        = requires(type_registry& r, const T& v) {
-              { v.meta_poly_info(r) } -> std::convertible_to<poly_info>;
-          };
+        = requires(type_registry& r, const T& v) { v.meta_poly_info(r); };
 
     template < poly_info_enabled T >
     poly_info get_meta_poly_info(type_registry& r, const T& v) {

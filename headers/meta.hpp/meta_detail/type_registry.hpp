@@ -41,8 +41,10 @@ namespace meta_hpp::detail
         void for_each_type(F&& f) const {
             const locker lock;
 
-            for ( const any_type& type : types_ ) {
-                std::invoke(f, type);
+            // we use an index based for loop to avoid the iterator invalidation issues
+            // that can happen when adding a new type inside the loop
+            for ( std::size_t i{}; i < types_.size(); ++i ) {
+                std::invoke(f, types_[i]);
             }
         }
 
@@ -164,13 +166,13 @@ namespace meta_hpp::detail
             static auto data{std::make_unique<TypeData>(std::forward<Args>(args)...)};
 
             const locker lock;
-            types_.emplace(any_type{data.get()});
+            types_.emplace_back(data.get());
 
             return data.get();
         }
 
     private:
         std::recursive_mutex mutex_;
-        std::set<any_type, std::less<>> types_;
+        std::vector<any_type> types_;
     };
 }

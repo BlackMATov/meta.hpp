@@ -160,7 +160,7 @@ namespace meta_hpp::detail
         state.create_error = make_constructor_create_error<Class, Args...>(registry);
         state.arguments = make_constructor_arguments<Class, Args...>();
 
-        return make_intrusive<constructor_state>(std::move(state));
+        return std::make_shared<constructor_state>(std::move(state));
     }
 }
 
