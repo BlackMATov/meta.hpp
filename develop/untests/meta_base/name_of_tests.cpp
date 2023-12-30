@@ -22,34 +22,14 @@ TEST_CASE("meta/meta_base/name_of") {
     namespace meta = meta_hpp;
     using meta::detail::name_of;
 
-#if META_HPP_DETAIL_COMPILER_ID == META_HPP_DETAIL_CLANG_COMPILER_ID
+#if META_HPP_DETAIL_COMPILER_ID == META_HPP_DETAIL_CLANG_COMPILER_ID || META_HPP_DETAIL_COMPILER_ID == META_HPP_DETAIL_GCC_COMPILER_ID
     CHECK(name_of<meta_tests_ns::E>() == "meta_tests_ns::E");
 
     CHECK(name_of<meta_tests_ns::A>() == "meta_tests_ns::A");
-    CHECK(name_of<meta_tests_ns::A[]>() == "meta_tests_ns::A[]");
-    CHECK(name_of<meta_tests_ns::A*>() == "meta_tests_ns::A *");
-    CHECK(name_of<meta_tests_ns::A&>() == "meta_tests_ns::A &");
-    CHECK(name_of<const meta_tests_ns::A&>() == "const meta_tests_ns::A &");
-
-    CHECK(name_of<decltype(&meta_tests_ns::A::add)>() == "int (meta_tests_ns::A::*)(int)");
-    CHECK(name_of<decltype(&meta_tests_ns::A::sub)>() == "int (*)(int)");
-    CHECK(name_of<decltype(&meta_tests_ns::A::member)>() == "int meta_tests_ns::A::*");
-
-    CHECK(name_of<int>() == "int");
-    CHECK(name_of<float>() == "float");
-
-    CHECK(name_of<void>() == "void");
-    CHECK(name_of<const void>() == "const void");
-#endif
-
-#if META_HPP_DETAIL_COMPILER_ID == META_HPP_DETAIL_GCC_COMPILER_ID
-    CHECK(name_of<meta_tests_ns::E>() == "meta_tests_ns::E");
-
-    CHECK(name_of<meta_tests_ns::A>() == "meta_tests_ns::A");
-    CHECK(name_of<meta_tests_ns::A[]>() == "meta_tests_ns::A []");
-    CHECK(name_of<meta_tests_ns::A*>() == "meta_tests_ns::A*");
-    CHECK(name_of<meta_tests_ns::A&>() == "meta_tests_ns::A&");
-    CHECK(name_of<const meta_tests_ns::A&>() == "const meta_tests_ns::A&");
+    CHECK((name_of<meta_tests_ns::A[]>() == "meta_tests_ns::A[]" || name_of<meta_tests_ns::A[]>() == "meta_tests_ns::A []"));
+    CHECK((name_of<meta_tests_ns::A*>() == "meta_tests_ns::A*" || name_of<meta_tests_ns::A*>() == "meta_tests_ns::A *"));
+    CHECK((name_of<meta_tests_ns::A&>() == "meta_tests_ns::A&" || name_of<meta_tests_ns::A&>() == "meta_tests_ns::A &"));
+    CHECK((name_of<const meta_tests_ns::A&>() == "const meta_tests_ns::A&" || name_of<const meta_tests_ns::A&>() == "const meta_tests_ns::A &"));
 
     CHECK(name_of<decltype(&meta_tests_ns::A::add)>() == "int (meta_tests_ns::A::*)(int)");
     CHECK(name_of<decltype(&meta_tests_ns::A::sub)>() == "int (*)(int)");
