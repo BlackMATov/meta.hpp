@@ -16,14 +16,14 @@ namespace meta_hpp::detail
         struct name_of_wrapper_impl {};
 
         template < typename T >
-        [[nodiscard]] constexpr std::string_view name_of_impl() noexcept {
+        [[nodiscard]] constexpr auto name_of_impl() noexcept {
 #if META_HPP_DETAIL_COMPILER_ID == META_HPP_DETAIL_CLANG_COMPILER_ID
-            constexpr auto prefix = std::string_view{"[T = "};
-            constexpr auto suffix = std::string_view{"]"};
+            constexpr auto prefix = std::string_view{"name_of_wrapper_impl<"};
+            constexpr auto suffix = std::string_view{">]"};
             constexpr auto fnsign = std::string_view{__PRETTY_FUNCTION__};
 #elif META_HPP_DETAIL_COMPILER_ID == META_HPP_DETAIL_GCC_COMPILER_ID
-            constexpr auto prefix = std::string_view{"with T = "};
-            constexpr auto suffix = std::string_view{"]"};
+            constexpr auto prefix = std::string_view{"name_of_wrapper_impl<"};
+            constexpr auto suffix = std::string_view{">]"};
             constexpr auto fnsign = std::string_view{__PRETTY_FUNCTION__};
 #elif META_HPP_DETAIL_COMPILER_ID == META_HPP_DETAIL_MSVC_COMPILER_ID
             constexpr auto prefix = std::string_view{"name_of_wrapper_impl<"};
