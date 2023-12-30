@@ -24,26 +24,10 @@ namespace meta_hpp::detail
 namespace meta_hpp::detail
 {
     template < typename T >
-        requires std::is_copy_constructible_v<T>
-    struct deref_traits<T*> {
-        uvalue operator()(T* v) const {
-            return v != nullptr ? uvalue{*v} : uvalue{};
-        }
-    };
-
-    template < typename T >
-        requires std::is_copy_constructible_v<T>
-    struct deref_traits<std::shared_ptr<T>> {
-        uvalue operator()(const std::shared_ptr<T>& v) const {
-            return v != nullptr ? uvalue{*v} : uvalue{};
-        }
-    };
-
-    template < typename T >
-        requires std::is_copy_constructible_v<T>
-    struct deref_traits<std::unique_ptr<T>> {
-        uvalue operator()(const std::unique_ptr<T>& v) const {
-            return v != nullptr ? uvalue{*v} : uvalue{};
+        requires requires(const T& v) { uvalue{*v}; }
+    struct deref_traits<T> {
+        uvalue operator()(const T& v) const {
+            return uvalue{*v};
         }
     };
 }

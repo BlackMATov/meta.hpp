@@ -34,7 +34,7 @@ TEST_CASE("meta/meta_issues/random/3") {
 
     {
         meta::uvalue v{&int_func};
-        CHECK_FALSE(v.has_deref_op());
+        CHECK(v.has_deref_op());
         CHECK(v.get_type() == meta::resolve_type<int(*)()>());
         CHECK((v.as<decltype(&int_func)>() == &int_func));
     }

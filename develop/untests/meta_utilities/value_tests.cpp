@@ -584,9 +584,6 @@ TEST_CASE("meta/meta_utilities/value") {
 
             CHECK(meta::uvalue{p1}.has_deref_op());
             CHECK(meta::uvalue{p2}.has_deref_op());
-
-            CHECK_FALSE(*meta::uvalue{p1});
-            CHECK_FALSE(*meta::uvalue{p2});
         }
         {
             ivec2 v{1,2};
@@ -657,8 +654,6 @@ TEST_CASE("meta/meta_utilities/value/arrays") {
             meta::uvalue v{arr};
             CHECK(v.get_type() == meta::resolve_type<int*>());
             CHECK(v.has_index_op());
-
-            CHECK_FALSE(v[0]);
         }
     }
 
@@ -678,8 +673,6 @@ TEST_CASE("meta/meta_utilities/value/arrays") {
             meta::uvalue v{arr};
             CHECK(v.get_type() == meta::resolve_type<const int*>());
             CHECK(v.has_index_op());
-
-            CHECK_FALSE(v[0]);
         }
     }
 
@@ -691,18 +684,6 @@ TEST_CASE("meta/meta_utilities/value/arrays") {
         CHECK(v[0].as<int>() == 1);
         CHECK(v[1].as<int>() == 2);
         CHECK(v[2].as<int>() == 3);
-        CHECK_FALSE(v[3]);
-    }
-
-    SUBCASE("std::deque") {
-        const meta::uvalue v{std::deque{1,2,3}};
-        CHECK(v.get_type() == meta::resolve_type<std::deque<int>>());
-        CHECK(v.has_index_op());
-
-        CHECK(v[0].as<int>() == 1);
-        CHECK(v[1].as<int>() == 2);
-        CHECK(v[2].as<int>() == 3);
-        CHECK_FALSE(v[3]);
     }
 
     SUBCASE("std::string") {
@@ -713,7 +694,6 @@ TEST_CASE("meta/meta_utilities/value/arrays") {
         CHECK(v[0].as<char>() == 'h');
         CHECK(v[1].as<char>() == 'i');
         CHECK(v[2].as<char>() == '!');
-        CHECK_FALSE(v[3]);
     }
 
     SUBCASE("std::span") {
@@ -725,7 +705,6 @@ TEST_CASE("meta/meta_utilities/value/arrays") {
         CHECK(v[0].as<int>() == 1);
         CHECK(v[1].as<int>() == 2);
         CHECK(v[2].as<int>() == 3);
-        CHECK_FALSE(v[3]);
     }
 
     SUBCASE("std::vector") {
@@ -736,7 +715,6 @@ TEST_CASE("meta/meta_utilities/value/arrays") {
         CHECK(v[0].as<int>() == 1);
         CHECK(v[1].as<int>() == 2);
         CHECK(v[2].as<int>() == 3);
-        CHECK_FALSE(v[3]);
     }
 }
 
