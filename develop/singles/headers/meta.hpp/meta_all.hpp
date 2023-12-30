@@ -10,7 +10,6 @@
 #include <array>
 #include <cassert>
 #include <compare>
-#include <concepts>
 #include <cstddef>
 #include <cstdint>
 #include <cstdlib>
@@ -160,17 +159,6 @@
     META_HPP_DETAIL_CLANG_IGNORE_WARNING("-Wsuggest-override")
 
 #define META_HPP_DETAIL_IGNORE_OVERRIDE_WARNINGS_POP() META_HPP_DETAIL_CLANG_IGNORE_WARNINGS_POP()
-
-//
-//
-//
-
-#define META_HPP_DETAIL_IGNORE_SIGN_CONVERSION_WARNINGS_PUSH() \
-    META_HPP_DETAIL_CLANG_IGNORE_WARNINGS_PUSH() \
-    META_HPP_DETAIL_CLANG_IGNORE_WARNING("-Wunknown-warning-option") \
-    META_HPP_DETAIL_CLANG_IGNORE_WARNING("-Wsign-conversion")
-
-#define META_HPP_DETAIL_IGNORE_SIGN_CONVERSION_WARNINGS_POP() META_HPP_DETAIL_CLANG_IGNORE_WARNINGS_POP()
 
 namespace meta_hpp::detail
 {
@@ -4016,9 +4004,7 @@ namespace meta_hpp::detail
 
     template < typename T >
     concept poly_info_enabled //
-        = requires(type_registry& r, const T& v) {
-              { v.meta_poly_info(r) } -> std::convertible_to<poly_info>;
-          };
+        = requires(type_registry& r, const T& v) { v.meta_poly_info(r); };
 
     template < poly_info_enabled T >
     poly_info get_meta_poly_info(type_registry& r, const T& v) {
@@ -8994,9 +8980,7 @@ namespace meta_hpp::detail
 
     template < typename T >
     concept has_copy_traits //
-        = requires(const T& v) {
-              { copy_traits<T>{}(v) } -> std::convertible_to<uvalue>;
-          };
+        = requires(const T& v) { copy_traits<T>{}(v); };
 }
 
 namespace meta_hpp::detail
@@ -9017,21 +9001,32 @@ namespace meta_hpp::detail
 
     template < typename T >
     concept has_deref_traits //
-        = requires(const T& v) {
-              { deref_traits<T>{}(v) } -> std::convertible_to<uvalue>;
-          };
+        = requires(const T& v) { deref_traits<T>{}(v); };
 }
 
 namespace meta_hpp::detail
 {
     template < typename T >
-        requires requires(const T& v) {
-            sizeof(*v);
-            uvalue{*v};
+        requires std::is_copy_constructible_v<T>
+    struct deref_traits<T*> {
+        uvalue operator()(T* v) const {
+            return v != nullptr ? uvalue{*v} : uvalue{};
         }
-    struct deref_traits<T> {
-        uvalue operator()(const T& v) const {
-            return uvalue{*v};
+    };
+
+    template < typename T >
+        requires std::is_copy_constructible_v<T>
+    struct deref_traits<std::shared_ptr<T>> {
+        uvalue operator()(const std::shared_ptr<T>& v) const {
+            return v != nullptr ? uvalue{*v} : uvalue{};
+        }
+    };
+
+    template < typename T, typename Deleter >
+        requires std::is_copy_constructible_v<T>
+    struct deref_traits<std::unique_ptr<T, Deleter>> {
+        uvalue operator()(const std::unique_ptr<T, Deleter>& v) const {
+            return v != nullptr ? uvalue{*v} : uvalue{};
         }
     };
 }
@@ -9043,27 +9038,59 @@ namespace meta_hpp::detail
 
     template < typename T >
     concept has_index_traits //
-        = requires(const T& v, std::size_t i) {
-              { index_traits<T>{}(v, i) } -> std::convertible_to<uvalue>;
-          };
+        = requires(const T& v, std::size_t i) { index_traits<T>{}(v, i); };
 }
 
 namespace meta_hpp::detail
 {
-    META_HPP_DETAIL_IGNORE_SIGN_CONVERSION_WARNINGS_PUSH()
-
     template < typename T >
-        requires requires(const T& v, std::size_t i) {
-            sizeof(v[i]);
-            uvalue{v[i]};
-        }
-    struct index_traits<T> {
-        uvalue operator()(const T& v, std::size_t i) const {
-            return uvalue{v[i]};
+        requires std::is_copy_constructible_v<T>
+    struct index_traits<T*> {
+        uvalue operator()(T* v, std::size_t i) const {
+            // NOLINTNEXTLINE(*-pointer-arithmetic)
+            return v != nullptr ? uvalue{v[i]} : uvalue{};
         }
     };
 
-    META_HPP_DETAIL_IGNORE_SIGN_CONVERSION_WARNINGS_POP()
+    template < typename T, std::size_t Size >
+        requires std::is_copy_constructible_v<T>
+    struct index_traits<std::array<T, Size>> {
+        uvalue operator()(const std::array<T, Size>& v, std::size_t i) const {
+            return i < v.size() ? uvalue{v[i]} : uvalue{};
+        }
+    };
+
+    template < typename T, typename Traits, typename Allocator >
+        requires std::is_copy_constructible_v<T>
+    struct index_traits<std::basic_string<T, Traits, Allocator>> {
+        uvalue operator()(const std::basic_string<T, Traits, Allocator>& v, std::size_t i) const {
+            return i < v.size() ? uvalue{v[i]} : uvalue{};
+        }
+    };
+
+    template < typename T, typename Traits >
+        requires std::is_copy_constructible_v<T>
+    struct index_traits<std::basic_string_view<T, Traits>> {
+        uvalue operator()(const std::basic_string_view<T, Traits>& v, std::size_t i) const {
+            return i < v.size() ? uvalue{v[i]} : uvalue{};
+        }
+    };
+
+    template < typename T, std::size_t Extent >
+        requires std::is_copy_constructible_v<T>
+    struct index_traits<std::span<T, Extent>> {
+        uvalue operator()(const std::span<T, Extent>& v, std::size_t i) const {
+            return i < v.size() ? uvalue{v[i]} : uvalue{};
+        }
+    };
+
+    template < typename T, typename Allocator >
+        requires std::is_copy_constructible_v<T>
+    struct index_traits<std::vector<T, Allocator>> {
+        uvalue operator()(const std::vector<T, Allocator>& v, std::size_t i) const {
+            return i < v.size() ? uvalue{v[i]} : uvalue{};
+        }
+    };
 }
 
 namespace meta_hpp::detail
@@ -9073,9 +9100,7 @@ namespace meta_hpp::detail
 
     template < typename T >
     concept has_unmap_traits //
-        = requires(const T& v) {
-              { unmap_traits<T>{}(v) } -> std::convertible_to<uvalue>;
-          };
+        = requires(const T& v) { unmap_traits<T>{}(v); };
 }
 
 namespace meta_hpp::detail

@@ -15,7 +15,6 @@
 #include <algorithm>
 #include <array>
 #include <compare>
-#include <concepts>
 #include <exception>
 #include <functional>
 #include <initializer_list>
@@ -161,14 +160,3 @@
     META_HPP_DETAIL_CLANG_IGNORE_WARNING("-Wsuggest-override")
 
 #define META_HPP_DETAIL_IGNORE_OVERRIDE_WARNINGS_POP() META_HPP_DETAIL_CLANG_IGNORE_WARNINGS_POP()
-
-//
-//
-//
-
-#define META_HPP_DETAIL_IGNORE_SIGN_CONVERSION_WARNINGS_PUSH() \
-    META_HPP_DETAIL_CLANG_IGNORE_WARNINGS_PUSH() \
-    META_HPP_DETAIL_CLANG_IGNORE_WARNING("-Wunknown-warning-option") \
-    META_HPP_DETAIL_CLANG_IGNORE_WARNING("-Wsign-conversion")
-
-#define META_HPP_DETAIL_IGNORE_SIGN_CONVERSION_WARNINGS_POP() META_HPP_DETAIL_CLANG_IGNORE_WARNINGS_POP()
