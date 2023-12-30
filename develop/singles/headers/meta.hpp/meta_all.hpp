@@ -161,6 +161,17 @@
 
 #define META_HPP_DETAIL_IGNORE_OVERRIDE_WARNINGS_POP() META_HPP_DETAIL_CLANG_IGNORE_WARNINGS_POP()
 
+//
+//
+//
+
+#define META_HPP_DETAIL_IGNORE_SIGN_CONVERSION_WARNINGS_PUSH() \
+    META_HPP_DETAIL_CLANG_IGNORE_WARNINGS_PUSH() \
+    META_HPP_DETAIL_CLANG_IGNORE_WARNING("-Wunknown-warning-option") \
+    META_HPP_DETAIL_CLANG_IGNORE_WARNING("-Wsign-conversion")
+
+#define META_HPP_DETAIL_IGNORE_SIGN_CONVERSION_WARNINGS_POP() META_HPP_DETAIL_CLANG_IGNORE_WARNINGS_POP()
+
 namespace meta_hpp::detail
 {
     template < typename Enum >
@@ -9014,7 +9025,10 @@ namespace meta_hpp::detail
 namespace meta_hpp::detail
 {
     template < typename T >
-        requires requires(const T& v) { uvalue{*v}; }
+        requires requires(const T& v) {
+            sizeof(*v);
+            uvalue{*v};
+        }
     struct deref_traits<T> {
         uvalue operator()(const T& v) const {
             return uvalue{*v};
@@ -9036,13 +9050,20 @@ namespace meta_hpp::detail
 
 namespace meta_hpp::detail
 {
+    META_HPP_DETAIL_IGNORE_SIGN_CONVERSION_WARNINGS_PUSH()
+
     template < typename T >
-        requires requires(const T& v, std::size_t i) { uvalue{v[i]}; }
+        requires requires(const T& v, std::size_t i) {
+            sizeof(v[i]);
+            uvalue{v[i]};
+        }
     struct index_traits<T> {
         uvalue operator()(const T& v, std::size_t i) const {
             return uvalue{v[i]};
         }
     };
+
+    META_HPP_DETAIL_IGNORE_SIGN_CONVERSION_WARNINGS_POP()
 }
 
 namespace meta_hpp::detail

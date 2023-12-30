@@ -23,11 +23,18 @@ namespace meta_hpp::detail
 
 namespace meta_hpp::detail
 {
+    META_HPP_DETAIL_IGNORE_SIGN_CONVERSION_WARNINGS_PUSH()
+
     template < typename T >
-        requires requires(const T& v, std::size_t i) { uvalue{v[i]}; }
+        requires requires(const T& v, std::size_t i) {
+            sizeof(v[i]);
+            uvalue{v[i]};
+        }
     struct index_traits<T> {
         uvalue operator()(const T& v, std::size_t i) const {
             return uvalue{v[i]};
         }
     };
+
+    META_HPP_DETAIL_IGNORE_SIGN_CONVERSION_WARNINGS_POP()
 }

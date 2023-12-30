@@ -24,7 +24,10 @@ namespace meta_hpp::detail
 namespace meta_hpp::detail
 {
     template < typename T >
-        requires requires(const T& v) { uvalue{*v}; }
+        requires requires(const T& v) {
+            sizeof(*v);
+            uvalue{*v};
+        }
     struct deref_traits<T> {
         uvalue operator()(const T& v) const {
             return uvalue{*v};
