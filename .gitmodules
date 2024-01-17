@@ -7,6 +7,3 @@
 [submodule "develop/vendors/gbench"]
 	path = develop/vendors/gbench
 	url = https://github.com/google/benchmark
-[submodule "develop/vendors/vmath.hpp"]
-	path = develop/vendors/vmath.hpp
-	url = https://github.com/BlackMATov/vmath.hpp

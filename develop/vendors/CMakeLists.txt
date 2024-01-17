@@ -56,16 +56,3 @@ target_compile_definitions(${PROJECT_NAME}.gbench
 
 target_link_libraries(${PROJECT_NAME}.gbench
     PRIVATE $<$<PLATFORM_ID:Windows>:shlwapi>)
-
-#
-# vmath.hpp
-#
-
-add_library(${PROJECT_NAME}.vmath.hpp INTERFACE EXCLUDE_FROM_ALL)
-add_library(${PROJECT_NAME}::vmath.hpp ALIAS ${PROJECT_NAME}.vmath.hpp)
-
-target_compile_features(${PROJECT_NAME}.vmath.hpp
-    INTERFACE cxx_std_20)
-
-target_include_directories(${PROJECT_NAME}.vmath.hpp SYSTEM
-    INTERFACE vmath.hpp/headers)
