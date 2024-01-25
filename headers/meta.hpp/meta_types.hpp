@@ -1,7 +1,7 @@
 /*******************************************************************************
  * This file is part of the "https://github.com/blackmatov/meta.hpp"
  * For conditions of distribution and use, see copyright notice in LICENSE.md
- * Copyright (C) 2021-2023, by Matvey Cherevko (blackmatov@gmail.com)
+ * Copyright (C) 2021-2024, by Matvey Cherevko (blackmatov@gmail.com)
  ******************************************************************************/
 
 #pragma once
@@ -208,7 +208,9 @@ namespace meta_hpp
 
         [[nodiscard]] std::size_t get_arity() const noexcept;
         [[nodiscard]] any_type get_argument_type(std::size_t position) const noexcept;
+        [[nodiscard]] const uvalue& get_argument_value(std::size_t position) const noexcept;
         [[nodiscard]] const any_type_list& get_argument_types() const noexcept;
+        [[nodiscard]] const uvalue_list& get_argument_values() const noexcept;
 
         [[nodiscard]] const class_list& get_base_classes() const noexcept;
         [[nodiscard]] const constructor_list& get_constructors() const noexcept;
@@ -492,6 +494,7 @@ namespace meta_hpp::detail
         const std::size_t size;
         const std::size_t align;
         const any_type_list argument_types;
+        const uvalue_list argument_values;
         // NOLINTEND(*-avoid-const-or-ref-data-members)
 
         class_list base_classes;

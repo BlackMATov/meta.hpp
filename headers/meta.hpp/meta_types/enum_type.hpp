@@ -1,7 +1,7 @@
 /*******************************************************************************
  * This file is part of the "https://github.com/blackmatov/meta.hpp"
  * For conditions of distribution and use, see copyright notice in LICENSE.md
- * Copyright (C) 2021-2023, by Matvey Cherevko (blackmatov@gmail.com)
+ * Copyright (C) 2021-2024, by Matvey Cherevko (blackmatov@gmail.com)
  ******************************************************************************/
 
 #pragma once
@@ -66,6 +66,7 @@ namespace meta_hpp
         if ( const evalue& value = get_evalue(name) ) {
             return value.get_value();
         }
-        return uvalue::empty_value;
+        static uvalue empty_value;
+        return empty_value;
     }
 }

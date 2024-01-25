@@ -1,7 +1,7 @@
 /*******************************************************************************
  * This file is part of the "https://github.com/blackmatov/meta.hpp"
  * For conditions of distribution and use, see copyright notice in LICENSE.md
- * Copyright (C) 2021-2023, by Matvey Cherevko (blackmatov@gmail.com)
+ * Copyright (C) 2021-2024, by Matvey Cherevko (blackmatov@gmail.com)
  ******************************************************************************/
 
 #pragma once
@@ -1419,6 +1419,7 @@ namespace meta_hpp
 
     using metadata_map = std::map<std::string, uvalue, std::less<>>;
     using typedef_map = std::map<std::string, any_type, std::less<>>;
+    using uvalue_list = std::vector<uvalue>;
 
     using any_type_list = std::vector<any_type>;
     using class_list = std::vector<class_type>;
@@ -1437,9 +1438,6 @@ namespace meta_hpp
 namespace meta_hpp
 {
     class uvalue final {
-    public:
-        static const uvalue empty_value;
-
     public:
         uvalue() = default;
         ~uvalue() noexcept;
@@ -1639,32 +1637,255 @@ namespace meta_hpp::detail
     namespace impl
     {
         template < class_kind Class >
-        struct class_traits_impl {
-            static constexpr std::size_t arity{0};
-
+        struct class_argument_traits_impl {
             using argument_types = type_list<>;
-
-            [[nodiscard]] static constexpr class_bitflags make_flags() noexcept {
-                return {};
-            }
+            static constexpr std::tuple argument_values = std::make_tuple();
         };
 
-        template < template < typename... > typename Class, typename... Args >
-        struct class_traits_impl<Class<Args...>> {
-            static constexpr std::size_t arity{sizeof...(Args)};
+        template < typename T >
+        inline constexpr decltype(std::ignore) type_to_ignore_v = std::ignore;
 
-            using argument_types = type_list<Args...>;
+        //
+        // typename...
+        //
 
-            [[nodiscard]] static constexpr class_bitflags make_flags() noexcept {
-                return class_flags::is_template_instantiation;
-            }
+        template < //
+            template < typename... >
+            typename Class,
+            typename... Zs >
+        struct class_argument_traits_impl<Class<Zs...>> {
+            using argument_types = type_list<Zs...>;
+            static constexpr std::tuple argument_values = std::make_tuple(type_to_ignore_v<Zs>...);
+        };
+
+        //
+        // auto, typename...
+        //
+
+        template < //
+            template < auto, typename... >
+            typename Class,
+            auto A,
+            typename... Zs >
+            requires(sizeof...(Zs) > 0)
+        struct class_argument_traits_impl<Class<A, Zs...>> {
+            using argument_types = type_list<decltype(A), Zs...>;
+            static constexpr std::tuple argument_values = std::make_tuple(A, type_to_ignore_v<Zs>...);
+        };
+
+        //
+        // auto, auto, typename...
+        // typename, auto, typename...
+        //
+
+        template < //
+            template < auto, auto, typename... >
+            typename Class,
+            auto A,
+            auto B,
+            typename... Zs >
+            requires(sizeof...(Zs) > 0)
+        struct class_argument_traits_impl<Class<A, B, Zs...>> {
+            using argument_types = type_list<decltype(A), decltype(B), Zs...>;
+            static constexpr std::tuple argument_values = std::make_tuple(A, B, type_to_ignore_v<Zs>...);
+        };
+
+        template < //
+            template < typename, auto, typename... >
+            typename Class,
+            typename A,
+            auto B,
+            typename... Zs >
+            requires(sizeof...(Zs) > 0)
+        struct class_argument_traits_impl<Class<A, B, Zs...>> {
+            using argument_types = type_list<A, decltype(B), Zs...>;
+            static constexpr std::tuple argument_values = std::make_tuple(std::ignore, B, type_to_ignore_v<Zs>...);
+        };
+
+        //
+        // auto, auto, auto, typename...
+        // typename, auto, auto, typename...
+        // auto, typename, auto, typename...
+        // typename, typename, auto, typename...
+        //
+
+        template < //
+            template < auto, auto, auto, typename... >
+            typename Class,
+            auto A,
+            auto B,
+            auto C,
+            typename... Zs >
+            requires(sizeof...(Zs) > 0)
+        struct class_argument_traits_impl<Class<A, B, C, Zs...>> {
+            using argument_types = type_list<decltype(A), decltype(B), decltype(C), Zs...>;
+            static constexpr std::tuple argument_values = std::make_tuple(A, B, C, type_to_ignore_v<Zs>...);
+        };
+
+        template < //
+            template < typename, auto, auto, typename... >
+            typename Class,
+            typename A,
+            auto B,
+            auto C,
+            typename... Zs >
+            requires(sizeof...(Zs) > 0)
+        struct class_argument_traits_impl<Class<A, B, C, Zs...>> {
+            using argument_types = type_list<A, decltype(B), decltype(C), Zs...>;
+            static constexpr std::tuple argument_values = std::make_tuple(std::ignore, B, C, type_to_ignore_v<Zs>...);
+        };
+
+        template < //
+            template < auto, typename, auto, typename... >
+            typename Class,
+            auto A,
+            typename B,
+            auto C,
+            typename... Zs >
+            requires(sizeof...(Zs) > 0)
+        struct class_argument_traits_impl<Class<A, B, C, Zs...>> {
+            using argument_types = type_list<decltype(A), B, decltype(C), Zs...>;
+            static constexpr std::tuple argument_values = std::make_tuple(A, std::ignore, C, type_to_ignore_v<Zs>...);
+        };
+
+        template < //
+            template < typename, typename, auto, typename... >
+            typename Class,
+            typename A,
+            typename B,
+            auto C,
+            typename... Zs >
+            requires(sizeof...(Zs) > 0)
+        struct class_argument_traits_impl<Class<A, B, C, Zs...>> {
+            using argument_types = type_list<A, B, decltype(C), Zs...>;
+            static constexpr std::tuple argument_values = std::make_tuple(std::ignore, std::ignore, C, type_to_ignore_v<Zs>...);
+        };
+
+        //
+        // auto...
+        //
+
+        template < //
+            template < auto... >
+            typename Class,
+            auto... Zs >
+        struct class_argument_traits_impl<Class<Zs...>> {
+            using argument_types = type_list<decltype(Zs)...>;
+            static constexpr std::tuple argument_values = std::make_tuple(Zs...);
+        };
+
+        //
+        // typename, auto...
+        //
+
+        template < //
+            template < typename, auto... >
+            typename Class,
+            typename A,
+            auto... Zs >
+            requires(sizeof...(Zs) > 0)
+        struct class_argument_traits_impl<Class<A, Zs...>> {
+            using argument_types = type_list<A, decltype(Zs)...>;
+            static constexpr std::tuple argument_values = std::make_tuple(std::ignore, Zs...);
+        };
+
+        //
+        // auto, typename, auto...
+        // typename, typename, auto...
+        //
+
+        template < //
+            template < auto, typename, auto... >
+            typename Class,
+            auto A,
+            typename B,
+            auto... Zs >
+            requires(sizeof...(Zs) > 0)
+        struct class_argument_traits_impl<Class<A, B, Zs...>> {
+            using argument_types = type_list<decltype(A), B, decltype(Zs)...>;
+            static constexpr std::tuple argument_values = std::make_tuple(A, std::ignore, Zs...);
+        };
+
+        template < //
+            template < typename, typename, auto... >
+            typename Class,
+            typename A,
+            typename B,
+            auto... Zs >
+            requires(sizeof...(Zs) > 0)
+        struct class_argument_traits_impl<Class<A, B, Zs...>> {
+            using argument_types = type_list<A, B, decltype(Zs)...>;
+            static constexpr std::tuple argument_values = std::make_tuple(std::ignore, std::ignore, Zs...);
+        };
+
+        //
+        // auto, auto, typename, auto...
+        // typename, auto, typename, auto...
+        // auto, typename, typename, auto...
+        // typename, typename, typename, auto...
+        //
+
+        template < //
+            template < auto, auto, typename, auto... >
+            typename Class,
+            auto A,
+            auto B,
+            typename C,
+            auto... Zs >
+            requires(sizeof...(Zs) > 0)
+        struct class_argument_traits_impl<Class<A, B, C, Zs...>> {
+            using argument_types = type_list<decltype(A), decltype(B), C, decltype(Zs)...>;
+            static constexpr std::tuple argument_values = std::make_tuple(A, B, std::ignore, Zs...);
+        };
+
+        template < //
+            template < typename, auto, typename, auto... >
+            typename Class,
+            typename A,
+            auto B,
+            typename C,
+            auto... Zs >
+            requires(sizeof...(Zs) > 0)
+        struct class_argument_traits_impl<Class<A, B, C, Zs...>> {
+            using argument_types = type_list<A, decltype(B), C, decltype(Zs)...>;
+            static constexpr std::tuple argument_values = std::make_tuple(std::ignore, B, std::ignore, Zs...);
+        };
+
+        template < //
+            template < auto, typename, typename, auto... >
+            typename Class,
+            auto A,
+            typename B,
+            typename C,
+            auto... Zs >
+            requires(sizeof...(Zs) > 0)
+        struct class_argument_traits_impl<Class<A, B, C, Zs...>> {
+            using argument_types = type_list<decltype(A), B, C, decltype(Zs)...>;
+            static constexpr std::tuple argument_values = std::make_tuple(A, std::ignore, std::ignore, Zs...);
+        };
+
+        template < //
+            template < typename, typename, typename, auto... >
+            typename Class,
+            typename A,
+            typename B,
+            typename C,
+            auto... Zs >
+            requires(sizeof...(Zs) > 0)
+        struct class_argument_traits_impl<Class<A, B, C, Zs...>> {
+            using argument_types = type_list<A, B, C, decltype(Zs)...>;
+            static constexpr std::tuple argument_values = std::make_tuple(std::ignore, std::ignore, std::ignore, Zs...);
         };
     }
 
     template < class_kind Class >
-    struct class_traits : impl::class_traits_impl<Class> {
+    struct class_traits {
         static constexpr std::size_t size{sizeof(Class)};
         static constexpr std::size_t align{alignof(Class)};
+
+        using argument_types = typename impl::class_argument_traits_impl<Class>::argument_types;
+        static constexpr std::tuple argument_values = impl::class_argument_traits_impl<Class>::argument_values;
+        static_assert(type_list_arity_v<argument_types> == std::tuple_size_v<decltype(argument_values)>);
 
         [[nodiscard]] static constexpr class_bitflags make_flags() noexcept {
             class_bitflags flags{};
@@ -1685,7 +1906,11 @@ namespace meta_hpp::detail
                 flags.set(class_flags::is_polymorphic);
             }
 
-            return flags | impl::class_traits_impl<Class>::make_flags();
+            if constexpr ( type_list_arity_v<argument_types> > 0 ) {
+                flags.set(class_flags::is_template_instantiation);
+            }
+
+            return flags;
         }
     };
 }
@@ -2385,7 +2610,9 @@ namespace meta_hpp
 
         [[nodiscard]] std::size_t get_arity() const noexcept;
         [[nodiscard]] any_type get_argument_type(std::size_t position) const noexcept;
+        [[nodiscard]] const uvalue& get_argument_value(std::size_t position) const noexcept;
         [[nodiscard]] const any_type_list& get_argument_types() const noexcept;
+        [[nodiscard]] const uvalue_list& get_argument_values() const noexcept;
 
         [[nodiscard]] const class_list& get_base_classes() const noexcept;
         [[nodiscard]] const constructor_list& get_constructors() const noexcept;
@@ -2669,6 +2896,7 @@ namespace meta_hpp::detail
         const std::size_t size;
         const std::size_t align;
         const any_type_list argument_types;
+        const uvalue_list argument_values;
         // NOLINTEND(*-avoid-const-or-ref-data-members)
 
         class_list base_classes;
@@ -4140,20 +4368,6 @@ namespace meta_hpp
             (void)from;
             return registry.resolve_type<raw_type>();
         }
-    }
-
-    template < typename... Ts >
-    [[nodiscard]] any_type_list resolve_types() {
-        using namespace detail;
-        type_registry& registry = type_registry::instance();
-        return {registry.resolve_type<std::remove_cv_t<Ts>>()...};
-    }
-
-    template < typename... Ts >
-    [[nodiscard]] any_type_list resolve_types(type_list<Ts...>) {
-        using namespace detail;
-        type_registry& registry = type_registry::instance();
-        return {registry.resolve_type<std::remove_cv_t<Ts>>()...};
     }
 }
 
@@ -5906,6 +6120,27 @@ namespace meta_hpp::detail
     }
 }
 
+namespace meta_hpp::detail::function_type_data_impl
+{
+    template < function_kind Function >
+    any_type_list make_argument_types() {
+        using ft = function_traits<Function>;
+        using ft_argument_types = typename ft::argument_types;
+
+        return []<std::size_t... Is>(std::index_sequence<Is...>) {
+            any_type_list argument_types;
+            argument_types.reserve(type_list_arity_v<ft_argument_types>);
+
+            [[maybe_unused]] const auto make_argument_type = []<std::size_t I>(index_constant<I>) {
+                return resolve_type<type_list_at_t<I, ft_argument_types>>();
+            };
+
+            (argument_types.emplace_back(make_argument_type(index_constant<Is>{})), ...);
+            return argument_types;
+        }(std::make_index_sequence<type_list_arity_v<ft_argument_types>>());
+    }
+}
+
 namespace meta_hpp::detail
 {
     template < function_kind Function >
@@ -5913,7 +6148,7 @@ namespace meta_hpp::detail
     : type_data_base{type_kind::function_}
     , flags{function_traits<Function>::make_flags()}
     , return_type{resolve_type<typename function_traits<Function>::return_type>()}
-    , argument_types{resolve_types(typename function_traits<Function>::argument_types{})} {}
+    , argument_types(function_type_data_impl::make_argument_types<Function>()) {}
 }
 
 namespace meta_hpp
@@ -6725,6 +6960,27 @@ namespace meta_hpp
     }
 }
 
+namespace meta_hpp::detail::method_type_data_impl
+{
+    template < method_pointer_kind Method >
+    any_type_list make_argument_types() {
+        using mt = method_traits<Method>;
+        using mt_argument_types = typename mt::argument_types;
+
+        return []<std::size_t... Is>(std::index_sequence<Is...>) {
+            any_type_list argument_types;
+            argument_types.reserve(type_list_arity_v<mt_argument_types>);
+
+            [[maybe_unused]] const auto make_argument_type = []<std::size_t I>(index_constant<I>) {
+                return resolve_type<type_list_at_t<I, mt_argument_types>>();
+            };
+
+            (argument_types.emplace_back(make_argument_type(index_constant<Is>{})), ...);
+            return argument_types;
+        }(std::make_index_sequence<type_list_arity_v<mt_argument_types>>());
+    }
+}
+
 namespace meta_hpp::detail
 {
     template < method_pointer_kind Method >
@@ -6733,7 +6989,7 @@ namespace meta_hpp::detail
     , flags{method_traits<Method>::make_flags()}
     , owner_type{resolve_type<typename method_traits<Method>::class_type>()}
     , return_type{resolve_type<typename method_traits<Method>::return_type>()}
-    , argument_types{resolve_types(typename method_traits<Method>::argument_types{})} {}
+    , argument_types(method_type_data_impl::make_argument_types<Method>()) {}
 }
 
 namespace meta_hpp
@@ -7275,6 +7531,27 @@ namespace meta_hpp
     }
 }
 
+namespace meta_hpp::detail::constructor_type_data_impl
+{
+    template < class_kind Class, typename... Args >
+    any_type_list make_argument_types() {
+        using ct = constructor_traits<Class, Args...>;
+        using ct_argument_types = typename ct::argument_types;
+
+        return []<std::size_t... Is>(std::index_sequence<Is...>) {
+            any_type_list argument_types;
+            argument_types.reserve(type_list_arity_v<ct_argument_types>);
+
+            [[maybe_unused]] const auto make_argument_type = []<std::size_t I>(index_constant<I>) {
+                return resolve_type<type_list_at_t<I, ct_argument_types>>();
+            };
+
+            (argument_types.emplace_back(make_argument_type(index_constant<Is>{})), ...);
+            return argument_types;
+        }(std::make_index_sequence<type_list_arity_v<ct_argument_types>>());
+    }
+}
+
 namespace meta_hpp::detail
 {
     template < class_kind Class, typename... Args >
@@ -7282,7 +7559,7 @@ namespace meta_hpp::detail
     : type_data_base{type_kind::constructor_}
     , flags{constructor_traits<Class, Args...>::make_flags()}
     , owner_type{resolve_type<typename constructor_traits<Class, Args...>::class_type>()}
-    , argument_types{resolve_types(typename constructor_traits<Class, Args...>::argument_types{})} {}
+    , argument_types(constructor_type_data_impl::make_argument_types<Class, Args...>()) {}
 }
 
 namespace meta_hpp
@@ -7770,7 +8047,8 @@ namespace meta_hpp
         if ( const evalue& value = get_evalue(name) ) {
             return value.get_value();
         }
-        return uvalue::empty_value;
+        static uvalue empty_value;
+        return empty_value;
     }
 }
 
@@ -8076,6 +8354,45 @@ namespace meta_hpp::detail::class_type_data_impl
             });
         }
     }
+
+    template < class_kind Class >
+    any_type_list make_argument_types() {
+        using ct = class_traits<Class>;
+        using ct_argument_types = typename ct::argument_types;
+
+        return []<std::size_t... Is>(std::index_sequence<Is...>) {
+            any_type_list argument_types;
+            argument_types.reserve(type_list_arity_v<ct_argument_types>);
+
+            [[maybe_unused]] const auto make_argument_type = []<std::size_t I>(index_constant<I>) {
+                return resolve_type<type_list_at_t<I, ct_argument_types>>();
+            };
+
+            (argument_types.emplace_back(make_argument_type(index_constant<Is>{})), ...);
+            return argument_types;
+        }(std::make_index_sequence<type_list_arity_v<ct_argument_types>>());
+    }
+
+    template < class_kind Class >
+    uvalue_list make_argument_values() {
+        using ct = class_traits<Class>;
+        using ct_argument_values = decltype(ct::argument_values);
+
+        return []<std::size_t... Is>(std::index_sequence<Is...>) {
+            uvalue_list argument_values;
+            argument_values.reserve(std::tuple_size_v<ct_argument_values>);
+
+            [[maybe_unused]] const auto make_argument_value = []<std::size_t I>(index_constant<I>) {
+                return overloaded{
+                    [](decltype(std::ignore)) { return uvalue{}; },
+                    [](auto&& value) { return uvalue{META_HPP_FWD(value)}; },
+                }(std::get<I>(ct::argument_values));
+            };
+
+            (argument_values.emplace_back(make_argument_value(index_constant<Is>{})), ...);
+            return argument_values;
+        }(std::make_index_sequence<std::tuple_size_v<ct_argument_values>>());
+    }
 }
 
 namespace meta_hpp::detail
@@ -8086,7 +8403,8 @@ namespace meta_hpp::detail
     , flags{class_traits<Class>::make_flags()}
     , size{class_traits<Class>::size}
     , align{class_traits<Class>::align}
-    , argument_types{resolve_types(typename class_traits<Class>::argument_types{})} {
+    , argument_types(class_type_data_impl::make_argument_types<Class>())
+    , argument_values(class_type_data_impl::make_argument_values<Class>()) {
         class_type_data_impl::new_base_info_t new_base_info;
         class_type_data_impl::fill_upcast_info<Class>(new_base_info);
         base_classes.swap(new_base_info.base_classes);
@@ -8128,8 +8446,20 @@ namespace meta_hpp
         return position < data_->argument_types.size() ? data_->argument_types[position] : any_type{};
     }
 
+    inline const uvalue& class_type::get_argument_value(std::size_t position) const noexcept {
+        if ( position < data_->argument_values.size() ) {
+            return data_->argument_values[position];
+        }
+        static uvalue empty_value;
+        return empty_value;
+    }
+
     inline const any_type_list& class_type::get_argument_types() const noexcept {
         return data_->argument_types;
+    }
+
+    inline const uvalue_list& class_type::get_argument_values() const noexcept {
+        return data_->argument_values;
     }
 
     inline const class_list& class_type::get_base_classes() const noexcept {
@@ -9351,8 +9681,6 @@ namespace meta_hpp
 
 namespace meta_hpp
 {
-    inline const uvalue uvalue::empty_value;
-
     inline uvalue::~uvalue() noexcept {
         reset();
     }

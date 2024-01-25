@@ -1,7 +1,7 @@
 /*******************************************************************************
  * This file is part of the "https://github.com/blackmatov/meta.hpp"
  * For conditions of distribution and use, see copyright notice in LICENSE.md
- * Copyright (C) 2021-2023, by Matvey Cherevko (blackmatov@gmail.com)
+ * Copyright (C) 2021-2024, by Matvey Cherevko (blackmatov@gmail.com)
  ******************************************************************************/
 
 #pragma once
@@ -54,20 +54,6 @@ namespace meta_hpp
             (void)from;
             return registry.resolve_type<raw_type>();
         }
-    }
-
-    template < typename... Ts >
-    [[nodiscard]] any_type_list resolve_types() {
-        using namespace detail;
-        type_registry& registry = type_registry::instance();
-        return {registry.resolve_type<std::remove_cv_t<Ts>>()...};
-    }
-
-    template < typename... Ts >
-    [[nodiscard]] any_type_list resolve_types(type_list<Ts...>) {
-        using namespace detail;
-        type_registry& registry = type_registry::instance();
-        return {registry.resolve_type<std::remove_cv_t<Ts>>()...};
     }
 }
 

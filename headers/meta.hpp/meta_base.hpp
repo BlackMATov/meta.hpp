@@ -1,7 +1,7 @@
 /*******************************************************************************
  * This file is part of the "https://github.com/blackmatov/meta.hpp"
  * For conditions of distribution and use, see copyright notice in LICENSE.md
- * Copyright (C) 2021-2023, by Matvey Cherevko (blackmatov@gmail.com)
+ * Copyright (C) 2021-2024, by Matvey Cherevko (blackmatov@gmail.com)
  ******************************************************************************/
 
 #pragma once
@@ -204,6 +204,7 @@ namespace meta_hpp
 
     using metadata_map = std::map<std::string, uvalue, std::less<>>;
     using typedef_map = std::map<std::string, any_type, std::less<>>;
+    using uvalue_list = std::vector<uvalue>;
 
     using any_type_list = std::vector<any_type>;
     using class_list = std::vector<class_type>;

@@ -5,7 +5,6 @@
 - type conversions
 - fix all includes to work with the library more flexible
 - test and support shared libraries
-- add debug type names
 
 ## Version 1.0
 
