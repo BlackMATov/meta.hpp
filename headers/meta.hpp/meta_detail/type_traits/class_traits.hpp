@@ -29,7 +29,7 @@ namespace meta_hpp::detail
         template < class_kind Class >
         struct class_argument_traits_impl {
             using argument_types = type_list<>;
-            static constexpr std::tuple argument_values{};
+            static constexpr std::tuple argument_values = std::make_tuple();
         };
 
         template < typename T >
@@ -273,7 +273,7 @@ namespace meta_hpp::detail
         static constexpr std::size_t size{sizeof(Class)};
         static constexpr std::size_t align{alignof(Class)};
 
-        using argument_types = impl::class_argument_traits_impl<Class>::argument_types;
+        using argument_types = typename impl::class_argument_traits_impl<Class>::argument_types;
         static constexpr std::tuple argument_values = impl::class_argument_traits_impl<Class>::argument_values;
         static_assert(type_list_arity_v<argument_types> == std::tuple_size_v<decltype(argument_values)>);
 
