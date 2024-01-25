@@ -42,10 +42,10 @@ namespace meta_hpp::detail
         template < //
             template < typename... >
             typename Class,
-            typename... Ts >
-        struct class_argument_traits_impl<Class<Ts...>> {
-            using argument_types = type_list<Ts...>;
-            static constexpr std::tuple argument_values = std::make_tuple(type_to_ignore_v<Ts>...);
+            typename... Zs >
+        struct class_argument_traits_impl<Class<Zs...>> {
+            using argument_types = type_list<Zs...>;
+            static constexpr std::tuple argument_values = std::make_tuple(type_to_ignore_v<Zs>...);
         };
 
         //
@@ -57,6 +57,7 @@ namespace meta_hpp::detail
             typename Class,
             auto A,
             typename... Zs >
+            requires(sizeof...(Zs) > 0)
         struct class_argument_traits_impl<Class<A, Zs...>> {
             using argument_types = type_list<decltype(A), Zs...>;
             static constexpr std::tuple argument_values = std::make_tuple(A, type_to_ignore_v<Zs>...);
@@ -73,6 +74,7 @@ namespace meta_hpp::detail
             auto A,
             auto B,
             typename... Zs >
+            requires(sizeof...(Zs) > 0)
         struct class_argument_traits_impl<Class<A, B, Zs...>> {
             using argument_types = type_list<decltype(A), decltype(B), Zs...>;
             static constexpr std::tuple argument_values = std::make_tuple(A, B, type_to_ignore_v<Zs>...);
@@ -84,6 +86,7 @@ namespace meta_hpp::detail
             typename A,
             auto B,
             typename... Zs >
+            requires(sizeof...(Zs) > 0)
         struct class_argument_traits_impl<Class<A, B, Zs...>> {
             using argument_types = type_list<A, decltype(B), Zs...>;
             static constexpr std::tuple argument_values = std::make_tuple(std::ignore, B, type_to_ignore_v<Zs>...);
@@ -103,6 +106,7 @@ namespace meta_hpp::detail
             auto B,
             auto C,
             typename... Zs >
+            requires(sizeof...(Zs) > 0)
         struct class_argument_traits_impl<Class<A, B, C, Zs...>> {
             using argument_types = type_list<decltype(A), decltype(B), decltype(C), Zs...>;
             static constexpr std::tuple argument_values = std::make_tuple(A, B, C, type_to_ignore_v<Zs>...);
@@ -115,6 +119,7 @@ namespace meta_hpp::detail
             auto B,
             auto C,
             typename... Zs >
+            requires(sizeof...(Zs) > 0)
         struct class_argument_traits_impl<Class<A, B, C, Zs...>> {
             using argument_types = type_list<A, decltype(B), decltype(C), Zs...>;
             static constexpr std::tuple argument_values = std::make_tuple(std::ignore, B, C, type_to_ignore_v<Zs>...);
@@ -127,6 +132,7 @@ namespace meta_hpp::detail
             typename B,
             auto C,
             typename... Zs >
+            requires(sizeof...(Zs) > 0)
         struct class_argument_traits_impl<Class<A, B, C, Zs...>> {
             using argument_types = type_list<decltype(A), B, decltype(C), Zs...>;
             static constexpr std::tuple argument_values = std::make_tuple(A, std::ignore, C, type_to_ignore_v<Zs>...);
@@ -139,6 +145,7 @@ namespace meta_hpp::detail
             typename B,
             auto C,
             typename... Zs >
+            requires(sizeof...(Zs) > 0)
         struct class_argument_traits_impl<Class<A, B, C, Zs...>> {
             using argument_types = type_list<A, B, decltype(C), Zs...>;
             static constexpr std::tuple argument_values = std::make_tuple(std::ignore, std::ignore, C, type_to_ignore_v<Zs>...);
@@ -166,6 +173,7 @@ namespace meta_hpp::detail
             typename Class,
             typename A,
             auto... Zs >
+            requires(sizeof...(Zs) > 0)
         struct class_argument_traits_impl<Class<A, Zs...>> {
             using argument_types = type_list<A, decltype(Zs)...>;
             static constexpr std::tuple argument_values = std::make_tuple(std::ignore, Zs...);
@@ -182,6 +190,7 @@ namespace meta_hpp::detail
             auto A,
             typename B,
             auto... Zs >
+            requires(sizeof...(Zs) > 0)
         struct class_argument_traits_impl<Class<A, B, Zs...>> {
             using argument_types = type_list<decltype(A), B, decltype(Zs)...>;
             static constexpr std::tuple argument_values = std::make_tuple(A, std::ignore, Zs...);
@@ -193,6 +202,7 @@ namespace meta_hpp::detail
             typename A,
             typename B,
             auto... Zs >
+            requires(sizeof...(Zs) > 0)
         struct class_argument_traits_impl<Class<A, B, Zs...>> {
             using argument_types = type_list<A, B, decltype(Zs)...>;
             static constexpr std::tuple argument_values = std::make_tuple(std::ignore, std::ignore, Zs...);
@@ -212,6 +222,7 @@ namespace meta_hpp::detail
             auto B,
             typename C,
             auto... Zs >
+            requires(sizeof...(Zs) > 0)
         struct class_argument_traits_impl<Class<A, B, C, Zs...>> {
             using argument_types = type_list<decltype(A), decltype(B), C, decltype(Zs)...>;
             static constexpr std::tuple argument_values = std::make_tuple(A, B, std::ignore, Zs...);
@@ -224,6 +235,7 @@ namespace meta_hpp::detail
             auto B,
             typename C,
             auto... Zs >
+            requires(sizeof...(Zs) > 0)
         struct class_argument_traits_impl<Class<A, B, C, Zs...>> {
             using argument_types = type_list<A, decltype(B), C, decltype(Zs)...>;
             static constexpr std::tuple argument_values = std::make_tuple(std::ignore, B, std::ignore, Zs...);
@@ -236,6 +248,7 @@ namespace meta_hpp::detail
             typename B,
             typename C,
             auto... Zs >
+            requires(sizeof...(Zs) > 0)
         struct class_argument_traits_impl<Class<A, B, C, Zs...>> {
             using argument_types = type_list<decltype(A), B, C, decltype(Zs)...>;
             static constexpr std::tuple argument_values = std::make_tuple(A, std::ignore, std::ignore, Zs...);
@@ -248,6 +261,7 @@ namespace meta_hpp::detail
             typename B,
             typename C,
             auto... Zs >
+            requires(sizeof...(Zs) > 0)
         struct class_argument_traits_impl<Class<A, B, C, Zs...>> {
             using argument_types = type_list<A, B, C, decltype(Zs)...>;
             static constexpr std::tuple argument_values = std::make_tuple(std::ignore, std::ignore, std::ignore, Zs...);
