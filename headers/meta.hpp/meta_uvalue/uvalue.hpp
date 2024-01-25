@@ -242,8 +242,6 @@ namespace meta_hpp
 
 namespace meta_hpp
 {
-    inline const uvalue uvalue::empty_value;
-
     inline uvalue::~uvalue() noexcept {
         reset();
     }

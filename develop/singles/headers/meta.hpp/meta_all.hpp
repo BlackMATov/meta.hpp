@@ -1439,9 +1439,6 @@ namespace meta_hpp
 {
     class uvalue final {
     public:
-        static const uvalue empty_value;
-
-    public:
         uvalue() = default;
         ~uvalue() noexcept;
 
@@ -8050,7 +8047,8 @@ namespace meta_hpp
         if ( const evalue& value = get_evalue(name) ) {
             return value.get_value();
         }
-        return uvalue::empty_value;
+        static uvalue empty_value;
+        return empty_value;
     }
 }
 
@@ -8449,7 +8447,11 @@ namespace meta_hpp
     }
 
     inline const uvalue& class_type::get_argument_value(std::size_t position) const noexcept {
-        return position < data_->argument_values.size() ? data_->argument_values[position] : uvalue::empty_value;
+        if ( position < data_->argument_values.size() ) {
+            return data_->argument_values[position];
+        }
+        static uvalue empty_value;
+        return empty_value;
     }
 
     inline const any_type_list& class_type::get_argument_types() const noexcept {
@@ -9679,8 +9681,6 @@ namespace meta_hpp
 
 namespace meta_hpp
 {
-    inline const uvalue uvalue::empty_value;
-
     inline uvalue::~uvalue() noexcept {
         reset();
     }

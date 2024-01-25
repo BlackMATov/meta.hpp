@@ -12,9 +12,6 @@ namespace meta_hpp
 {
     class uvalue final {
     public:
-        static const uvalue empty_value;
-
-    public:
         uvalue() = default;
         ~uvalue() noexcept;
 

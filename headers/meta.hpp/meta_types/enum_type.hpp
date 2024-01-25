@@ -66,6 +66,7 @@ namespace meta_hpp
         if ( const evalue& value = get_evalue(name) ) {
             return value.get_value();
         }
-        return uvalue::empty_value;
+        static uvalue empty_value;
+        return empty_value;
     }
 }
