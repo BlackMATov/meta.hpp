@@ -40,7 +40,7 @@ namespace meta_hpp::detail
     : type_data_base{type_kind::constructor_}
     , flags{constructor_traits<Class, Args...>::make_flags()}
     , owner_type{resolve_type<typename constructor_traits<Class, Args...>::class_type>()}
-    , argument_types{constructor_type_data_impl::make_argument_types<Class, Args...>()} {}
+    , argument_types(constructor_type_data_impl::make_argument_types<Class, Args...>()) {}
 }
 
 namespace meta_hpp

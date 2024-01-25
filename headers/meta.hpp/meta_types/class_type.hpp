@@ -109,8 +109,8 @@ namespace meta_hpp::detail
     , flags{class_traits<Class>::make_flags()}
     , size{class_traits<Class>::size}
     , align{class_traits<Class>::align}
-    , argument_types{class_type_data_impl::make_argument_types<Class>()}
-    , argument_values{class_type_data_impl::make_argument_values<Class>()} {
+    , argument_types(class_type_data_impl::make_argument_types<Class>())
+    , argument_values(class_type_data_impl::make_argument_values<Class>()) {
         class_type_data_impl::new_base_info_t new_base_info;
         class_type_data_impl::fill_upcast_info<Class>(new_base_info);
         base_classes.swap(new_base_info.base_classes);

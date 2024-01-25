@@ -40,7 +40,7 @@ namespace meta_hpp::detail
     : type_data_base{type_kind::function_}
     , flags{function_traits<Function>::make_flags()}
     , return_type{resolve_type<typename function_traits<Function>::return_type>()}
-    , argument_types{function_type_data_impl::make_argument_types<Function>()} {}
+    , argument_types(function_type_data_impl::make_argument_types<Function>()) {}
 }
 
 namespace meta_hpp
