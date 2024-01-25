@@ -296,7 +296,7 @@ namespace meta_hpp::detail
                 flags.set(class_flags::is_polymorphic);
             }
 
-            if constexpr ( type_list_arity_v<argument_types> ) {
+            if constexpr ( type_list_arity_v<argument_types> > 0 ) {
                 flags.set(class_flags::is_template_instantiation);
             }
 
