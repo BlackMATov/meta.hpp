@@ -12,6 +12,27 @@
 
 #include "../meta_detail/type_traits/method_traits.hpp"
 
+namespace meta_hpp::detail::method_type_data_impl
+{
+    template < method_pointer_kind Method >
+    any_type_list make_argument_types() {
+        using mt = method_traits<Method>;
+        using mt_argument_types = typename mt::argument_types;
+
+        return []<std::size_t... Is>(std::index_sequence<Is...>) {
+            any_type_list argument_types;
+            argument_types.reserve(type_list_arity_v<mt_argument_types>);
+
+            [[maybe_unused]] const auto make_argument_type = []<std::size_t I>(index_constant<I>) {
+                return resolve_type<type_list_at_t<I, mt_argument_types>>();
+            };
+
+            (argument_types.emplace_back(make_argument_type(index_constant<Is>{})), ...);
+            return argument_types;
+        }(std::make_index_sequence<type_list_arity_v<mt_argument_types>>());
+    }
+}
+
 namespace meta_hpp::detail
 {
     template < method_pointer_kind Method >
@@ -20,7 +41,7 @@ namespace meta_hpp::detail
     , flags{method_traits<Method>::make_flags()}
     , owner_type{resolve_type<typename method_traits<Method>::class_type>()}
     , return_type{resolve_type<typename method_traits<Method>::return_type>()}
-    , argument_types{resolve_types(typename method_traits<Method>::argument_types{})} {}
+    , argument_types{method_type_data_impl::make_argument_types<Method>()} {}
 }
 
 namespace meta_hpp

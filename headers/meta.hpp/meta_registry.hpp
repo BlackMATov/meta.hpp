@@ -55,20 +55,6 @@ namespace meta_hpp
             return registry.resolve_type<raw_type>();
         }
     }
-
-    template < typename... Ts >
-    [[nodiscard]] any_type_list resolve_types() {
-        using namespace detail;
-        type_registry& registry = type_registry::instance();
-        return {registry.resolve_type<std::remove_cv_t<Ts>>()...};
-    }
-
-    template < typename... Ts >
-    [[nodiscard]] any_type_list resolve_types(type_list<Ts...>) {
-        using namespace detail;
-        type_registry& registry = type_registry::instance();
-        return {registry.resolve_type<std::remove_cv_t<Ts>>()...};
-    }
 }
 
 namespace meta_hpp

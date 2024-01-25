@@ -12,6 +12,27 @@
 
 #include "../meta_detail/type_traits/function_traits.hpp"
 
+namespace meta_hpp::detail::function_type_data_impl
+{
+    template < function_kind Function >
+    any_type_list make_argument_types() {
+        using ft = function_traits<Function>;
+        using ft_argument_types = typename ft::argument_types;
+
+        return []<std::size_t... Is>(std::index_sequence<Is...>) {
+            any_type_list argument_types;
+            argument_types.reserve(type_list_arity_v<ft_argument_types>);
+
+            [[maybe_unused]] const auto make_argument_type = []<std::size_t I>(index_constant<I>) {
+                return resolve_type<type_list_at_t<I, ft_argument_types>>();
+            };
+
+            (argument_types.emplace_back(make_argument_type(index_constant<Is>{})), ...);
+            return argument_types;
+        }(std::make_index_sequence<type_list_arity_v<ft_argument_types>>());
+    }
+}
+
 namespace meta_hpp::detail
 {
     template < function_kind Function >
@@ -19,7 +40,7 @@ namespace meta_hpp::detail
     : type_data_base{type_kind::function_}
     , flags{function_traits<Function>::make_flags()}
     , return_type{resolve_type<typename function_traits<Function>::return_type>()}
-    , argument_types{resolve_types(typename function_traits<Function>::argument_types{})} {}
+    , argument_types{function_type_data_impl::make_argument_types<Function>()} {}
 }
 
 namespace meta_hpp
