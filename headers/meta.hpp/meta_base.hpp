@@ -204,6 +204,7 @@ namespace meta_hpp
 
     using metadata_map = std::map<std::string, uvalue, std::less<>>;
     using typedef_map = std::map<std::string, any_type, std::less<>>;
+    using uvalue_list = std::vector<uvalue>;
 
     using any_type_list = std::vector<any_type>;
     using class_list = std::vector<class_type>;

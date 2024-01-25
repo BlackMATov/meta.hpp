@@ -60,6 +60,45 @@ namespace meta_hpp::detail::class_type_data_impl
             });
         }
     }
+
+    template < class_kind Class >
+    any_type_list make_argument_types() {
+        using ct = class_traits<Class>;
+        using ct_argument_types = typename ct::argument_types;
+
+        return []<std::size_t... Is>(std::index_sequence<Is...>) {
+            any_type_list argument_types;
+            argument_types.reserve(type_list_arity_v<ct_argument_types>);
+
+            [[maybe_unused]] const auto make_argument_type = []<std::size_t I>(index_constant<I>) {
+                return resolve_type<type_list_at_t<I, ct_argument_types>>();
+            };
+
+            (argument_types.emplace_back(make_argument_type(index_constant<Is>{})), ...);
+            return argument_types;
+        }(std::make_index_sequence<type_list_arity_v<ct_argument_types>>());
+    }
+
+    template < class_kind Class >
+    uvalue_list make_argument_values() {
+        using ct = class_traits<Class>;
+        using ct_argument_values = decltype(ct::argument_values);
+
+        return []<std::size_t... Is>(std::index_sequence<Is...>) {
+            uvalue_list argument_values;
+            argument_values.reserve(std::tuple_size_v<ct_argument_values>);
+
+            [[maybe_unused]] const auto make_argument_value = []<std::size_t I>(index_constant<I>) {
+                return overloaded{
+                    [](decltype(std::ignore)) { return uvalue{}; },
+                    [](auto&& value) { return uvalue{META_HPP_FWD(value)}; },
+                }(std::get<I>(ct::argument_values));
+            };
+
+            (argument_values.emplace_back(make_argument_value(index_constant<Is>{})), ...);
+            return argument_values;
+        }(std::make_index_sequence<std::tuple_size_v<ct_argument_values>>());
+    }
 }
 
 namespace meta_hpp::detail
@@ -70,7 +109,8 @@ namespace meta_hpp::detail
     , flags{class_traits<Class>::make_flags()}
     , size{class_traits<Class>::size}
     , align{class_traits<Class>::align}
-    , argument_types{resolve_types(typename class_traits<Class>::argument_types{})} {
+    , argument_types{class_type_data_impl::make_argument_types<Class>()}
+    , argument_values{class_type_data_impl::make_argument_values<Class>()} {
         class_type_data_impl::new_base_info_t new_base_info;
         class_type_data_impl::fill_upcast_info<Class>(new_base_info);
         base_classes.swap(new_base_info.base_classes);
@@ -112,8 +152,16 @@ namespace meta_hpp
         return position < data_->argument_types.size() ? data_->argument_types[position] : any_type{};
     }
 
+    inline const uvalue& class_type::get_argument_value(std::size_t position) const noexcept {
+        return position < data_->argument_values.size() ? data_->argument_values[position] : uvalue::empty_value;
+    }
+
     inline const any_type_list& class_type::get_argument_types() const noexcept {
         return data_->argument_types;
+    }
+
+    inline const uvalue_list& class_type::get_argument_values() const noexcept {
+        return data_->argument_values;
     }
 
     inline const class_list& class_type::get_base_classes() const noexcept {
