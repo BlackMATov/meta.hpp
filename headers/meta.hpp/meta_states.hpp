@@ -204,6 +204,11 @@ namespace meta_hpp
 
         [[nodiscard]] constructor_type get_type() const noexcept;
 
+        [[nodiscard]] argument get_argument(std::size_t position) const noexcept;
+        [[nodiscard]] const argument_list& get_arguments() const noexcept;
+
+        //
+
         template < typename... Args >
         [[nodiscard]] uvalue create(Args&&... args) const;
 
@@ -228,8 +233,25 @@ namespace meta_hpp
         template < typename... Args >
         [[nodiscard]] uerror check_invocable_error(Args&&... args) const noexcept;
 
-        [[nodiscard]] argument get_argument(std::size_t position) const noexcept;
-        [[nodiscard]] const argument_list& get_arguments() const noexcept;
+        //
+
+        template < typename Iter >
+        [[nodiscard]] uvalue create_variadic(Iter first, Iter last) const;
+
+        template < typename Iter >
+        [[nodiscard]] uresult try_create_variadic(Iter first, Iter last) const;
+
+        template < typename Iter >
+        uvalue create_variadic_at(void* mem, Iter first, Iter last) const;
+
+        template < typename Iter >
+        uresult try_create_variadic_at(void* mem, Iter first, Iter last) const;
+
+        template < typename Iter >
+        [[nodiscard]] bool is_variadic_invocable_with(Iter first, Iter last) const noexcept;
+
+        template < typename Iter >
+        [[nodiscard]] uerror check_variadic_invocable_error(Iter first, Iter last) const noexcept;
     };
 
     class destructor final : public state_base<destructor> {
@@ -279,6 +301,11 @@ namespace meta_hpp
         [[nodiscard]] function_type get_type() const noexcept;
         [[nodiscard]] const std::string& get_name() const noexcept;
 
+        [[nodiscard]] argument get_argument(std::size_t position) const noexcept;
+        [[nodiscard]] const argument_list& get_arguments() const noexcept;
+
+        //
+
         template < typename... Args >
         uvalue invoke(Args&&... args) const;
 
@@ -300,8 +327,19 @@ namespace meta_hpp
         template < typename... Args >
         [[nodiscard]] uerror check_invocable_error(Args&&... args) const noexcept;
 
-        [[nodiscard]] argument get_argument(std::size_t position) const noexcept;
-        [[nodiscard]] const argument_list& get_arguments() const noexcept;
+        //
+
+        template < typename Iter >
+        uvalue invoke_variadic(Iter first, Iter last) const;
+
+        template < typename Iter >
+        uresult try_invoke_variadic(Iter first, Iter last) const;
+
+        template < typename Iter >
+        [[nodiscard]] bool is_variadic_invocable_with(Iter first, Iter last) const;
+
+        template < typename Iter >
+        [[nodiscard]] uerror check_variadic_invocable_error(Iter first, Iter last) const;
     };
 
     class member final : public state_base<member> {
@@ -361,6 +399,11 @@ namespace meta_hpp
         [[nodiscard]] method_type get_type() const noexcept;
         [[nodiscard]] const std::string& get_name() const noexcept;
 
+        [[nodiscard]] argument get_argument(std::size_t position) const noexcept;
+        [[nodiscard]] const argument_list& get_arguments() const noexcept;
+
+        //
+
         template < typename Instance, typename... Args >
         uvalue invoke(Instance&& instance, Args&&... args) const;
 
@@ -382,8 +425,19 @@ namespace meta_hpp
         template < typename Instance, typename... Args >
         [[nodiscard]] uerror check_invocable_error(Instance&& instance, Args&&... args) const noexcept;
 
-        [[nodiscard]] argument get_argument(std::size_t position) const noexcept;
-        [[nodiscard]] const argument_list& get_arguments() const noexcept;
+        //
+
+        template < typename Instance, typename Iter >
+        uvalue invoke_variadic(Instance&& instance, Iter first, Iter last) const;
+
+        template < typename Instance, typename Iter >
+        uresult try_invoke_variadic(Instance&& instance, Iter first, Iter last) const;
+
+        template < typename Instance, typename Iter >
+        [[nodiscard]] bool is_variadic_invocable_with(Instance&& instance, Iter first, Iter last) const;
+
+        template < typename Instance, typename Iter >
+        [[nodiscard]] uerror check_variadic_invocable_error(Instance&& instance, Iter first, Iter last) const;
     };
 
     class scope final : public state_base<scope> {
