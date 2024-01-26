@@ -156,6 +156,14 @@ namespace meta_hpp
         return state_->index.get_name();
     }
 
+    inline argument method::get_argument(std::size_t position) const noexcept {
+        return position < state_->arguments.size() ? state_->arguments[position] : argument{};
+    }
+
+    inline const argument_list& method::get_arguments() const noexcept {
+        return state_->arguments;
+    }
+
     template < typename Instance, typename... Args >
     uvalue method::invoke(Instance&& instance, Args&&... args) const {
         using namespace detail;
@@ -167,21 +175,11 @@ namespace meta_hpp
 
     template < typename Instance, typename... Args >
     uresult method::try_invoke(Instance&& instance, Args&&... args) const {
-        using namespace detail;
-        type_registry& registry{type_registry::instance()};
-
-        {
-            // doesn't actually move an 'instance' and 'args', just checks conversion errors
-            const uinst_base vinst{registry, META_HPP_FWD(instance)};
-            const std::array<uarg_base, sizeof...(Args)> vargs{uarg_base{registry, META_HPP_FWD(args)}...};
-            if ( const uerror err = state_->invoke_error(vinst, vargs) ) {
-                return err;
-            }
+        // doesn't actually move an 'instance' and 'args', just checks conversion errors
+        if ( const uerror err = check_invocable_error(META_HPP_FWD(instance), META_HPP_FWD(args)...) ) {
+            return err;
         }
-
-        const uinst vinst{registry, META_HPP_FWD(instance)};
-        const std::array<uarg, sizeof...(Args)> vargs{uarg{registry, META_HPP_FWD(args)}...};
-        return state_->invoke(vinst, vargs);
+        return invoke(META_HPP_FWD(instance), META_HPP_FWD(args)...);
     }
 
     template < typename Instance, typename... Args >
@@ -217,11 +215,52 @@ namespace meta_hpp
         return state_->invoke_error(vinst, vargs);
     }
 
-    inline argument method::get_argument(std::size_t position) const noexcept {
-        return position < state_->arguments.size() ? state_->arguments[position] : argument{};
+    template < typename Instance, typename Iter >
+    uvalue method::invoke_variadic(Instance&& instance, Iter first, Iter last) const {
+        using namespace detail;
+        type_registry& registry{type_registry::instance()};
+
+        const uinst vinst{registry, META_HPP_FWD(instance)};
+        static thread_local std::vector<uarg> vargs;
+
+        vargs.clear();
+        vargs.reserve(get_type().get_arity());
+
+        for ( ; first != last; ++first ) {
+            vargs.emplace_back(registry, *first);
+        }
+
+        return state_->invoke(vinst, vargs);
     }
 
-    inline const argument_list& method::get_arguments() const noexcept {
-        return state_->arguments;
+    template < typename Instance, typename Iter >
+    uresult method::try_invoke_variadic(Instance&& instance, Iter first, Iter last) const {
+        if ( const uerror err = check_variadic_invocable_error(META_HPP_FWD(instance), first, last) ) {
+            return err;
+        }
+        return invoke_variadic(META_HPP_FWD(instance), first, last);
+    }
+
+    template < typename Instance, typename Iter >
+    bool method::is_variadic_invocable_with(Instance&& instance, Iter first, Iter last) const {
+        return !check_variadic_invocable_error(META_HPP_FWD(instance), first, last);
+    }
+
+    template < typename Instance, typename Iter >
+    uerror method::check_variadic_invocable_error(Instance&& instance, Iter first, Iter last) const {
+        using namespace detail;
+        type_registry& registry{type_registry::instance()};
+
+        const uinst_base vinst{registry, META_HPP_FWD(instance)};
+        static thread_local std::vector<uarg_base> vargs;
+
+        vargs.clear();
+        vargs.reserve(get_type().get_arity());
+
+        for ( ; first != last; ++first ) {
+            vargs.emplace_back(registry, *first);
+        }
+
+        return state_->invoke_error(vinst, vargs);
     }
 }

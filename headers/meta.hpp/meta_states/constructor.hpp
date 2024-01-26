@@ -170,6 +170,14 @@ namespace meta_hpp
         return state_->index.get_type();
     }
 
+    inline argument constructor::get_argument(std::size_t position) const noexcept {
+        return position < state_->arguments.size() ? state_->arguments[position] : argument{};
+    }
+
+    inline const argument_list& constructor::get_arguments() const noexcept {
+        return state_->arguments;
+    }
+
     template < typename... Args >
     uvalue constructor::create(Args&&... args) const {
         using namespace detail;
@@ -180,19 +188,11 @@ namespace meta_hpp
 
     template < typename... Args >
     uresult constructor::try_create(Args&&... args) const {
-        using namespace detail;
-        type_registry& registry{type_registry::instance()};
-
-        {
-            // doesn't actually move 'args', just checks conversion errors
-            const std::array<uarg_base, sizeof...(Args)> vargs{uarg_base{registry, META_HPP_FWD(args)}...};
-            if ( const uerror err = state_->create_error(vargs) ) {
-                return err;
-            }
+        // doesn't actually move 'args', just checks conversion errors
+        if ( const uerror err = check_invocable_error(META_HPP_FWD(args)...) ) {
+            return err;
         }
-
-        const std::array<uarg, sizeof...(Args)> vargs{uarg{registry, META_HPP_FWD(args)}...};
-        return state_->create(vargs);
+        return create(META_HPP_FWD(args)...);
     }
 
     template < typename... Args >
@@ -205,19 +205,11 @@ namespace meta_hpp
 
     template < typename... Args >
     uresult constructor::try_create_at(void* mem, Args&&... args) const {
-        using namespace detail;
-        type_registry& registry{type_registry::instance()};
-
-        {
-            // doesn't actually move 'args', just checks conversion errors
-            const std::array<uarg_base, sizeof...(Args)> vargs{uarg_base{registry, META_HPP_FWD(args)}...};
-            if ( const uerror err = state_->create_error(vargs) ) {
-                return err;
-            }
+        // doesn't actually move 'args', just checks conversion errors
+        if ( const uerror err = check_invocable_error(META_HPP_FWD(args)...) ) {
+            return err;
         }
-
-        const std::array<uarg, sizeof...(Args)> vargs{uarg{registry, META_HPP_FWD(args)}...};
-        return state_->create_at(mem, vargs);
+        return create_at(mem, META_HPP_FWD(args)...);
     }
 
     template < typename... Args >
@@ -246,11 +238,75 @@ namespace meta_hpp
         return state_->create_error(vargs);
     }
 
-    inline argument constructor::get_argument(std::size_t position) const noexcept {
-        return position < state_->arguments.size() ? state_->arguments[position] : argument{};
+    template < typename Iter >
+    uvalue constructor::create_variadic(Iter first, Iter last) const {
+        using namespace detail;
+        type_registry& registry{type_registry::instance()};
+
+        static thread_local std::vector<uarg> vargs;
+
+        vargs.clear();
+        vargs.reserve(get_type().get_arity());
+
+        for ( ; first != last; ++first ) {
+            vargs.emplace_back(registry, *first);
+        }
+
+        return state_->create(vargs);
     }
 
-    inline const argument_list& constructor::get_arguments() const noexcept {
-        return state_->arguments;
+    template < typename Iter >
+    uresult constructor::try_create_variadic(Iter first, Iter last) const {
+        if ( const uerror err = check_variadic_invocable_error(first, last) ) {
+            return err;
+        }
+        return create_variadic(first, last);
+    }
+
+    template < typename Iter >
+    uvalue constructor::create_variadic_at(void* mem, Iter first, Iter last) const {
+        using namespace detail;
+        type_registry& registry{type_registry::instance()};
+
+        static thread_local std::vector<uarg> vargs;
+
+        vargs.clear();
+        vargs.reserve(get_type().get_arity());
+
+        for ( ; first != last; ++first ) {
+            vargs.emplace_back(registry, *first);
+        }
+
+        return state_->create_at(mem, vargs);
+    }
+
+    template < typename Iter >
+    uresult constructor::try_create_variadic_at(void* mem, Iter first, Iter last) const {
+        if ( const uerror err = check_variadic_invocable_error(first, last) ) {
+            return err;
+        }
+        return create_variadic_at(mem, first, last);
+    }
+
+    template < typename Iter >
+    bool constructor::is_variadic_invocable_with(Iter first, Iter last) const noexcept {
+        return !check_variadic_invocable_error(first, last);
+    }
+
+    template < typename Iter >
+    uerror constructor::check_variadic_invocable_error(Iter first, Iter last) const noexcept {
+        using namespace detail;
+        type_registry& registry{type_registry::instance()};
+
+        static thread_local std::vector<uarg_base> vargs;
+
+        vargs.clear();
+        vargs.reserve(get_type().get_arity());
+
+        for ( ; first != last; ++first ) {
+            vargs.emplace_back(registry, *first);
+        }
+
+        return state_->create_error(vargs);
     }
 }

@@ -3613,6 +3613,11 @@ namespace meta_hpp
 
         [[nodiscard]] constructor_type get_type() const noexcept;
 
+        [[nodiscard]] argument get_argument(std::size_t position) const noexcept;
+        [[nodiscard]] const argument_list& get_arguments() const noexcept;
+
+        //
+
         template < typename... Args >
         [[nodiscard]] uvalue create(Args&&... args) const;
 
@@ -3637,8 +3642,25 @@ namespace meta_hpp
         template < typename... Args >
         [[nodiscard]] uerror check_invocable_error(Args&&... args) const noexcept;
 
-        [[nodiscard]] argument get_argument(std::size_t position) const noexcept;
-        [[nodiscard]] const argument_list& get_arguments() const noexcept;
+        //
+
+        template < typename Iter >
+        [[nodiscard]] uvalue create_variadic(Iter first, Iter last) const;
+
+        template < typename Iter >
+        [[nodiscard]] uresult try_create_variadic(Iter first, Iter last) const;
+
+        template < typename Iter >
+        uvalue create_variadic_at(void* mem, Iter first, Iter last) const;
+
+        template < typename Iter >
+        uresult try_create_variadic_at(void* mem, Iter first, Iter last) const;
+
+        template < typename Iter >
+        [[nodiscard]] bool is_variadic_invocable_with(Iter first, Iter last) const noexcept;
+
+        template < typename Iter >
+        [[nodiscard]] uerror check_variadic_invocable_error(Iter first, Iter last) const noexcept;
     };
 
     class destructor final : public state_base<destructor> {
@@ -3688,6 +3710,11 @@ namespace meta_hpp
         [[nodiscard]] function_type get_type() const noexcept;
         [[nodiscard]] const std::string& get_name() const noexcept;
 
+        [[nodiscard]] argument get_argument(std::size_t position) const noexcept;
+        [[nodiscard]] const argument_list& get_arguments() const noexcept;
+
+        //
+
         template < typename... Args >
         uvalue invoke(Args&&... args) const;
 
@@ -3709,8 +3736,19 @@ namespace meta_hpp
         template < typename... Args >
         [[nodiscard]] uerror check_invocable_error(Args&&... args) const noexcept;
 
-        [[nodiscard]] argument get_argument(std::size_t position) const noexcept;
-        [[nodiscard]] const argument_list& get_arguments() const noexcept;
+        //
+
+        template < typename Iter >
+        uvalue invoke_variadic(Iter first, Iter last) const;
+
+        template < typename Iter >
+        uresult try_invoke_variadic(Iter first, Iter last) const;
+
+        template < typename Iter >
+        [[nodiscard]] bool is_variadic_invocable_with(Iter first, Iter last) const;
+
+        template < typename Iter >
+        [[nodiscard]] uerror check_variadic_invocable_error(Iter first, Iter last) const;
     };
 
     class member final : public state_base<member> {
@@ -3770,6 +3808,11 @@ namespace meta_hpp
         [[nodiscard]] method_type get_type() const noexcept;
         [[nodiscard]] const std::string& get_name() const noexcept;
 
+        [[nodiscard]] argument get_argument(std::size_t position) const noexcept;
+        [[nodiscard]] const argument_list& get_arguments() const noexcept;
+
+        //
+
         template < typename Instance, typename... Args >
         uvalue invoke(Instance&& instance, Args&&... args) const;
 
@@ -3791,8 +3834,19 @@ namespace meta_hpp
         template < typename Instance, typename... Args >
         [[nodiscard]] uerror check_invocable_error(Instance&& instance, Args&&... args) const noexcept;
 
-        [[nodiscard]] argument get_argument(std::size_t position) const noexcept;
-        [[nodiscard]] const argument_list& get_arguments() const noexcept;
+        //
+
+        template < typename Instance, typename Iter >
+        uvalue invoke_variadic(Instance&& instance, Iter first, Iter last) const;
+
+        template < typename Instance, typename Iter >
+        uresult try_invoke_variadic(Instance&& instance, Iter first, Iter last) const;
+
+        template < typename Instance, typename Iter >
+        [[nodiscard]] bool is_variadic_invocable_with(Instance&& instance, Iter first, Iter last) const;
+
+        template < typename Instance, typename Iter >
+        [[nodiscard]] uerror check_variadic_invocable_error(Instance&& instance, Iter first, Iter last) const;
     };
 
     class scope final : public state_base<scope> {
@@ -6305,6 +6359,14 @@ namespace meta_hpp
         return state_->index.get_name();
     }
 
+    inline argument function::get_argument(std::size_t position) const noexcept {
+        return position < state_->arguments.size() ? state_->arguments[position] : argument{};
+    }
+
+    inline const argument_list& function::get_arguments() const noexcept {
+        return state_->arguments;
+    }
+
     template < typename... Args >
     uvalue function::invoke(Args&&... args) const {
         using namespace detail;
@@ -6315,19 +6377,11 @@ namespace meta_hpp
 
     template < typename... Args >
     uresult function::try_invoke(Args&&... args) const {
-        using namespace detail;
-        type_registry& registry{type_registry::instance()};
-
-        {
-            // doesn't actually move 'args', just checks conversion errors
-            const std::array<uarg_base, sizeof...(Args)> vargs{uarg_base{registry, META_HPP_FWD(args)}...};
-            if ( const uerror err = state_->invoke_error(vargs) ) {
-                return err;
-            }
+        // doesn't actually move 'args', just checks conversion errors
+        if ( const uerror err = check_invocable_error(META_HPP_FWD(args)...) ) {
+            return err;
         }
-
-        const std::array<uarg, sizeof...(Args)> vargs{uarg{registry, META_HPP_FWD(args)}...};
-        return state_->invoke(vargs);
+        return invoke(META_HPP_FWD(args)...);
     }
 
     template < typename... Args >
@@ -6361,12 +6415,51 @@ namespace meta_hpp
         return state_->invoke_error(vargs);
     }
 
-    inline argument function::get_argument(std::size_t position) const noexcept {
-        return position < state_->arguments.size() ? state_->arguments[position] : argument{};
+    template < typename Iter >
+    uvalue function::invoke_variadic(Iter first, Iter last) const {
+        using namespace detail;
+        type_registry& registry{type_registry::instance()};
+
+        static thread_local std::vector<uarg> vargs;
+
+        vargs.clear();
+        vargs.reserve(get_type().get_arity());
+
+        for ( ; first != last; ++first ) {
+            vargs.emplace_back(registry, *first);
+        }
+
+        return state_->invoke(vargs);
     }
 
-    inline const argument_list& function::get_arguments() const noexcept {
-        return state_->arguments;
+    template < typename Iter >
+    uresult function::try_invoke_variadic(Iter first, Iter last) const {
+        if ( const uerror err = check_variadic_invocable_error(first, last) ) {
+            return err;
+        }
+        return invoke_variadic(first, last);
+    }
+
+    template < typename Iter >
+    bool function::is_variadic_invocable_with(Iter first, Iter last) const {
+        return !check_variadic_invocable_error(first, last);
+    }
+
+    template < typename Iter >
+    uerror function::check_variadic_invocable_error(Iter first, Iter last) const {
+        using namespace detail;
+        type_registry& registry{type_registry::instance()};
+
+        static thread_local std::vector<uarg_base> vargs;
+
+        vargs.clear();
+        vargs.reserve(get_type().get_arity());
+
+        for ( ; first != last; ++first ) {
+            vargs.emplace_back(registry, *first);
+        }
+
+        return state_->invoke_error(vargs);
     }
 }
 
@@ -7161,6 +7254,14 @@ namespace meta_hpp
         return state_->index.get_name();
     }
 
+    inline argument method::get_argument(std::size_t position) const noexcept {
+        return position < state_->arguments.size() ? state_->arguments[position] : argument{};
+    }
+
+    inline const argument_list& method::get_arguments() const noexcept {
+        return state_->arguments;
+    }
+
     template < typename Instance, typename... Args >
     uvalue method::invoke(Instance&& instance, Args&&... args) const {
         using namespace detail;
@@ -7172,21 +7273,11 @@ namespace meta_hpp
 
     template < typename Instance, typename... Args >
     uresult method::try_invoke(Instance&& instance, Args&&... args) const {
-        using namespace detail;
-        type_registry& registry{type_registry::instance()};
-
-        {
-            // doesn't actually move an 'instance' and 'args', just checks conversion errors
-            const uinst_base vinst{registry, META_HPP_FWD(instance)};
-            const std::array<uarg_base, sizeof...(Args)> vargs{uarg_base{registry, META_HPP_FWD(args)}...};
-            if ( const uerror err = state_->invoke_error(vinst, vargs) ) {
-                return err;
-            }
+        // doesn't actually move an 'instance' and 'args', just checks conversion errors
+        if ( const uerror err = check_invocable_error(META_HPP_FWD(instance), META_HPP_FWD(args)...) ) {
+            return err;
         }
-
-        const uinst vinst{registry, META_HPP_FWD(instance)};
-        const std::array<uarg, sizeof...(Args)> vargs{uarg{registry, META_HPP_FWD(args)}...};
-        return state_->invoke(vinst, vargs);
+        return invoke(META_HPP_FWD(instance), META_HPP_FWD(args)...);
     }
 
     template < typename Instance, typename... Args >
@@ -7222,12 +7313,53 @@ namespace meta_hpp
         return state_->invoke_error(vinst, vargs);
     }
 
-    inline argument method::get_argument(std::size_t position) const noexcept {
-        return position < state_->arguments.size() ? state_->arguments[position] : argument{};
+    template < typename Instance, typename Iter >
+    uvalue method::invoke_variadic(Instance&& instance, Iter first, Iter last) const {
+        using namespace detail;
+        type_registry& registry{type_registry::instance()};
+
+        const uinst vinst{registry, META_HPP_FWD(instance)};
+        static thread_local std::vector<uarg> vargs;
+
+        vargs.clear();
+        vargs.reserve(get_type().get_arity());
+
+        for ( ; first != last; ++first ) {
+            vargs.emplace_back(registry, *first);
+        }
+
+        return state_->invoke(vinst, vargs);
     }
 
-    inline const argument_list& method::get_arguments() const noexcept {
-        return state_->arguments;
+    template < typename Instance, typename Iter >
+    uresult method::try_invoke_variadic(Instance&& instance, Iter first, Iter last) const {
+        if ( const uerror err = check_variadic_invocable_error(META_HPP_FWD(instance), first, last) ) {
+            return err;
+        }
+        return invoke_variadic(META_HPP_FWD(instance), first, last);
+    }
+
+    template < typename Instance, typename Iter >
+    bool method::is_variadic_invocable_with(Instance&& instance, Iter first, Iter last) const {
+        return !check_variadic_invocable_error(META_HPP_FWD(instance), first, last);
+    }
+
+    template < typename Instance, typename Iter >
+    uerror method::check_variadic_invocable_error(Instance&& instance, Iter first, Iter last) const {
+        using namespace detail;
+        type_registry& registry{type_registry::instance()};
+
+        const uinst_base vinst{registry, META_HPP_FWD(instance)};
+        static thread_local std::vector<uarg_base> vargs;
+
+        vargs.clear();
+        vargs.reserve(get_type().get_arity());
+
+        for ( ; first != last; ++first ) {
+            vargs.emplace_back(registry, *first);
+        }
+
+        return state_->invoke_error(vinst, vargs);
     }
 }
 
@@ -7742,6 +7874,14 @@ namespace meta_hpp
         return state_->index.get_type();
     }
 
+    inline argument constructor::get_argument(std::size_t position) const noexcept {
+        return position < state_->arguments.size() ? state_->arguments[position] : argument{};
+    }
+
+    inline const argument_list& constructor::get_arguments() const noexcept {
+        return state_->arguments;
+    }
+
     template < typename... Args >
     uvalue constructor::create(Args&&... args) const {
         using namespace detail;
@@ -7752,19 +7892,11 @@ namespace meta_hpp
 
     template < typename... Args >
     uresult constructor::try_create(Args&&... args) const {
-        using namespace detail;
-        type_registry& registry{type_registry::instance()};
-
-        {
-            // doesn't actually move 'args', just checks conversion errors
-            const std::array<uarg_base, sizeof...(Args)> vargs{uarg_base{registry, META_HPP_FWD(args)}...};
-            if ( const uerror err = state_->create_error(vargs) ) {
-                return err;
-            }
+        // doesn't actually move 'args', just checks conversion errors
+        if ( const uerror err = check_invocable_error(META_HPP_FWD(args)...) ) {
+            return err;
         }
-
-        const std::array<uarg, sizeof...(Args)> vargs{uarg{registry, META_HPP_FWD(args)}...};
-        return state_->create(vargs);
+        return create(META_HPP_FWD(args)...);
     }
 
     template < typename... Args >
@@ -7777,19 +7909,11 @@ namespace meta_hpp
 
     template < typename... Args >
     uresult constructor::try_create_at(void* mem, Args&&... args) const {
-        using namespace detail;
-        type_registry& registry{type_registry::instance()};
-
-        {
-            // doesn't actually move 'args', just checks conversion errors
-            const std::array<uarg_base, sizeof...(Args)> vargs{uarg_base{registry, META_HPP_FWD(args)}...};
-            if ( const uerror err = state_->create_error(vargs) ) {
-                return err;
-            }
+        // doesn't actually move 'args', just checks conversion errors
+        if ( const uerror err = check_invocable_error(META_HPP_FWD(args)...) ) {
+            return err;
         }
-
-        const std::array<uarg, sizeof...(Args)> vargs{uarg{registry, META_HPP_FWD(args)}...};
-        return state_->create_at(mem, vargs);
+        return create_at(mem, META_HPP_FWD(args)...);
     }
 
     template < typename... Args >
@@ -7818,12 +7942,76 @@ namespace meta_hpp
         return state_->create_error(vargs);
     }
 
-    inline argument constructor::get_argument(std::size_t position) const noexcept {
-        return position < state_->arguments.size() ? state_->arguments[position] : argument{};
+    template < typename Iter >
+    uvalue constructor::create_variadic(Iter first, Iter last) const {
+        using namespace detail;
+        type_registry& registry{type_registry::instance()};
+
+        static thread_local std::vector<uarg> vargs;
+
+        vargs.clear();
+        vargs.reserve(get_type().get_arity());
+
+        for ( ; first != last; ++first ) {
+            vargs.emplace_back(registry, *first);
+        }
+
+        return state_->create(vargs);
     }
 
-    inline const argument_list& constructor::get_arguments() const noexcept {
-        return state_->arguments;
+    template < typename Iter >
+    uresult constructor::try_create_variadic(Iter first, Iter last) const {
+        if ( const uerror err = check_variadic_invocable_error(first, last) ) {
+            return err;
+        }
+        return create_variadic(first, last);
+    }
+
+    template < typename Iter >
+    uvalue constructor::create_variadic_at(void* mem, Iter first, Iter last) const {
+        using namespace detail;
+        type_registry& registry{type_registry::instance()};
+
+        static thread_local std::vector<uarg> vargs;
+
+        vargs.clear();
+        vargs.reserve(get_type().get_arity());
+
+        for ( ; first != last; ++first ) {
+            vargs.emplace_back(registry, *first);
+        }
+
+        return state_->create_at(mem, vargs);
+    }
+
+    template < typename Iter >
+    uresult constructor::try_create_variadic_at(void* mem, Iter first, Iter last) const {
+        if ( const uerror err = check_variadic_invocable_error(first, last) ) {
+            return err;
+        }
+        return create_variadic_at(mem, first, last);
+    }
+
+    template < typename Iter >
+    bool constructor::is_variadic_invocable_with(Iter first, Iter last) const noexcept {
+        return !check_variadic_invocable_error(first, last);
+    }
+
+    template < typename Iter >
+    uerror constructor::check_variadic_invocable_error(Iter first, Iter last) const noexcept {
+        using namespace detail;
+        type_registry& registry{type_registry::instance()};
+
+        static thread_local std::vector<uarg_base> vargs;
+
+        vargs.clear();
+        vargs.reserve(get_type().get_arity());
+
+        for ( ; first != last; ++first ) {
+            vargs.emplace_back(registry, *first);
+        }
+
+        return state_->create_error(vargs);
     }
 }
 
