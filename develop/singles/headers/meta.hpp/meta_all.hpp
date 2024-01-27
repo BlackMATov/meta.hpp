@@ -4243,13 +4243,13 @@ namespace meta_hpp::detail
 
         template < typename TypeData, typename... Args >
         TypeData* ensure_type(Args&&... args) {
-            static auto data = [this](Args&&... args) {
-                auto new_type_data = std::make_unique<TypeData>(META_HPP_FWD(args)...);
+            static auto data = [this](Args&&... captured_args) {
+                auto new_data{std::make_unique<TypeData>(META_HPP_FWD(captured_args)...)};
 
                 const locker lock;
-                types_.emplace_back(new_type_data.get());
+                types_.emplace_back(new_data.get());
 
-                return new_type_data;
+                return new_data;
             }(META_HPP_FWD(args)...);
             return data.get();
         }
