@@ -43,7 +43,8 @@ namespace meta_hpp
             && "provided argument names don't match constructor argument count"
         );
 
-        for ( std::size_t i{}, e{std::min(arguments.size(), state->arguments.size())}; i < e; ++i ) {
+        using std::min; // prevents windows.h min/max issues
+        for ( std::size_t i{}, e{min(arguments.size(), state->arguments.size())}; i < e; ++i ) {
             argument& arg = state->arguments[i];
             detail::state_access(arg)->name = std::move(arguments[i].get_name());
             detail::state_access(arg)->metadata = std::move(arguments[i].get_metadata());
@@ -85,7 +86,8 @@ namespace meta_hpp
             && "provided argument names don't match function argument count"
         );
 
-        for ( std::size_t i{}, e{std::min(arguments.size(), state->arguments.size())}; i < e; ++i ) {
+        using std::min; // prevents windows.h min/max issues
+        for ( std::size_t i{}, e{min(arguments.size(), state->arguments.size())}; i < e; ++i ) {
             argument& arg = state->arguments[i];
             detail::state_access(arg)->name = std::move(arguments[i].get_name());
             detail::state_access(arg)->metadata = std::move(arguments[i].get_metadata());
@@ -134,7 +136,8 @@ namespace meta_hpp
             && "provided argument names don't match method argument count"
         );
 
-        for ( std::size_t i{}, e{std::min(arguments.size(), state->arguments.size())}; i < e; ++i ) {
+        using std::min; // prevents windows.h min/max issues
+        for ( std::size_t i{}, e{min(arguments.size(), state->arguments.size())}; i < e; ++i ) {
             argument& arg = state->arguments[i];
             detail::state_access(arg)->name = std::move(arguments[i].get_name());
             detail::state_access(arg)->metadata = std::move(arguments[i].get_metadata());
