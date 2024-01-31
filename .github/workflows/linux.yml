@@ -9,11 +9,11 @@ jobs:
       fail-fast: false
       matrix:
         config:
-          # https://github.com/actions/virtual-environments/tree/main/images/linux
+          # https://github.com/actions/runner-images/tree/main/images/ubuntu
           - { os: "ubuntu-20.04", cc: "gcc-10", cxx: "g++-10" }
           - { os: "ubuntu-20.04", cc: "clang-10", cxx: "clang++-10" }
-          - { os: "ubuntu-22.04", cc: "gcc-12", cxx: "g++-12" }
-          - { os: "ubuntu-22.04", cc: "clang-14", cxx: "clang++-14" }
+          - { os: "ubuntu-22.04", cc: "gcc-13", cxx: "g++-13" }
+          - { os: "ubuntu-22.04", cc: "clang-15", cxx: "clang++-15" }
     name: "${{matrix.config.cxx}}"
     steps:
       - name: Setup
@@ -21,7 +21,7 @@ jobs:
           sudo apt-get update -o Acquire::Retries=10
           sudo apt-get install -o Acquire::Retries=10 -y cmake ninja-build ${{matrix.config.cc}} ${{matrix.config.cxx}}
       - name: Checkout
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           submodules: true
       - name: Build

@@ -144,6 +144,10 @@ namespace meta_hpp
         return state_->index.get_name();
     }
 
+    inline std::size_t function::get_arity() const noexcept {
+        return state_->arguments.size();
+    }
+
     inline argument function::get_argument(std::size_t position) const noexcept {
         return position < state_->arguments.size() ? state_->arguments[position] : argument{};
     }

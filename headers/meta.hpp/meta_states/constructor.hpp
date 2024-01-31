@@ -170,6 +170,10 @@ namespace meta_hpp
         return state_->index.get_type();
     }
 
+    inline std::size_t constructor::get_arity() const noexcept {
+        return state_->arguments.size();
+    }
+
     inline argument constructor::get_argument(std::size_t position) const noexcept {
         return position < state_->arguments.size() ? state_->arguments[position] : argument{};
     }
