@@ -93,8 +93,10 @@ namespace meta_hpp
                 continue;
             }
 
-            const any_type_list& args = function.get_type().get_argument_types();
-            if ( std::equal(first, last, args.begin(), args.end()) ) {
+            const function_type& function_type = function.get_type();
+            const any_type_list& function_args = function_type.get_argument_types();
+
+            if ( std::equal(first, last, function_args.begin(), function_args.end()) ) {
                 return function;
             }
         }

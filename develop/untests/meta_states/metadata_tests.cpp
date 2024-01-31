@@ -135,6 +135,8 @@ TEST_CASE("meta/meta_states/metadata/class") {
         const meta::constructor ivec2_ctor = ivec2_type.get_constructor_with<int>();
         REQUIRE(ivec2_ctor);
 
+        CHECK(ivec2_ctor.get_arity() == 1);
+
         REQUIRE(ivec2_ctor.get_metadata().contains("desc"));
         CHECK(ivec2_ctor.get_metadata().at("desc").as<std::string>() == "one arg 2d vector ctor"s);
 
@@ -151,6 +153,8 @@ TEST_CASE("meta/meta_states/metadata/class") {
     SUBCASE("ivec2(int, int)") {
         const meta::constructor ivec2_ctor = ivec2_type.get_constructor_with<int, int>();
         REQUIRE(ivec2_ctor);
+
+        CHECK(ivec2_ctor.get_arity() == 2);
 
         REQUIRE(ivec2_ctor.get_metadata().contains("desc"));
         CHECK(ivec2_ctor.get_metadata().at("desc").as<std::string>() == "two args 2d vector ctor"s);
@@ -203,6 +207,8 @@ TEST_CASE("meta/meta_states/metadata/class") {
     SUBCASE("ivec2::iadd") {
         const meta::function ivec2_iadd = ivec2_type.get_function("iadd");
         REQUIRE(ivec2_iadd);
+
+        CHECK(ivec2_iadd.get_arity() == 2);
 
         REQUIRE(ivec2_iadd.get_metadata().contains("desc"));
         CHECK(ivec2_iadd.get_metadata().at("desc").as<std::string>() == "iadd-function"s);

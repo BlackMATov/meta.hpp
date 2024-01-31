@@ -37,6 +37,7 @@ TEST_CASE("meta/meta_states/function2") {
         const meta::function func = ivec2_type.get_function("iadd");
         REQUIRE(func);
 
+        CHECK(func.get_arity() == 2);
         CHECK(func.get_arguments().size() == 2);
 
         REQUIRE(func.get_argument(0));
@@ -56,6 +57,7 @@ TEST_CASE("meta/meta_states/function2") {
         const meta::function func = ivec2_type.get_function("isub");
         REQUIRE(func);
 
+        CHECK(func.get_arity() == 2);
         REQUIRE(func.get_arguments().size() == 2);
 
         REQUIRE(func.get_argument(0));

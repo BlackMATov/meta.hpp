@@ -34,6 +34,7 @@ TEST_CASE("meta/meta_states/method2") {
         const meta::method add_m = ivec2_type.get_method("add");
         REQUIRE(add_m);
 
+        CHECK(add_m.get_arity() == 1);
         CHECK(add_m.get_arguments().size() == 1);
 
         REQUIRE(add_m.get_argument(0));

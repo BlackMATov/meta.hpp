@@ -202,11 +202,11 @@ namespace meta_hpp
 
     template < typename... Args >
     uvalue class_type::create(Args&&... args) const {
-        for ( const constructor& ctor : data_->constructors ) {
-            if ( ctor.is_invocable_with(META_HPP_FWD(args)...) ) {
+        for ( const constructor& constructor : data_->constructors ) {
+            if ( constructor.is_invocable_with(META_HPP_FWD(args)...) ) {
                 // there is no 'use after move' here because
                 // 'is_invocable_with' doesn't actually move 'args'
-                return ctor.create(META_HPP_FWD(args)...);
+                return constructor.create(META_HPP_FWD(args)...);
             }
         }
         return uvalue{};
@@ -214,11 +214,11 @@ namespace meta_hpp
 
     template < typename... Args >
     uvalue class_type::create_at(void* mem, Args&&... args) const {
-        for ( const constructor& ctor : data_->constructors ) {
-            if ( ctor.is_invocable_with(META_HPP_FWD(args)...) ) {
+        for ( const constructor& constructor : data_->constructors ) {
+            if ( constructor.is_invocable_with(META_HPP_FWD(args)...) ) {
                 // there is no 'use after move' here because
                 // 'is_invocable_with' doesn't actually move 'args'
-                return ctor.create_at(mem, META_HPP_FWD(args)...);
+                return constructor.create_at(mem, META_HPP_FWD(args)...);
             }
         }
         return uvalue{};
@@ -226,11 +226,11 @@ namespace meta_hpp
 
     template < typename Arg >
     bool class_type::destroy(Arg&& arg) const {
-        if ( const destructor& dtor = get_destructor() ) {
-            if ( dtor.is_invocable_with(META_HPP_FWD(arg)) ) {
+        if ( const destructor& destructor = get_destructor() ) {
+            if ( destructor.is_invocable_with(META_HPP_FWD(arg)) ) {
                 // there is no 'use after move' here because
                 // 'is_invocable_with' doesn't actually move an 'arg'
-                dtor.destroy(META_HPP_FWD(arg));
+                destructor.destroy(META_HPP_FWD(arg));
                 return true;
             }
         }
@@ -238,8 +238,8 @@ namespace meta_hpp
     }
 
     inline bool class_type::destroy_at(void* mem) const {
-        if ( const destructor& dtor = get_destructor() ) {
-            dtor.destroy_at(mem);
+        if ( const destructor& destructor = get_destructor() ) {
+            destructor.destroy_at(mem);
             return true;
         }
         return false;
@@ -401,10 +401,12 @@ namespace meta_hpp
 
     template < typename Iter >
     constructor class_type::get_constructor_with(Iter first, Iter last) const noexcept {
-        for ( const constructor& ctor : data_->constructors ) {
-            const any_type_list& args = ctor.get_type().get_argument_types();
-            if ( std::equal(first, last, args.begin(), args.end()) ) {
-                return ctor;
+        for ( const constructor& constructor : data_->constructors ) {
+            const constructor_type& constructor_type = constructor.get_type();
+            const any_type_list& constructor_args = constructor_type.get_argument_types();
+
+            if ( std::equal(first, last, constructor_args.begin(), constructor_args.end()) ) {
+                return constructor;
             }
         }
         return constructor{};
@@ -454,8 +456,10 @@ namespace meta_hpp
                 continue;
             }
 
-            const any_type_list& args = function.get_type().get_argument_types();
-            if ( std::equal(first, last, args.begin(), args.end()) ) {
+            const function_type& function_type = function.get_type();
+            const any_type_list& function_args = function_type.get_argument_types();
+
+            if ( std::equal(first, last, function_args.begin(), function_args.end()) ) {
                 return function;
             }
         }
@@ -512,8 +516,10 @@ namespace meta_hpp
                 continue;
             }
 
-            const any_type_list& args = method.get_type().get_argument_types();
-            if ( std::equal(first, last, args.begin(), args.end()) ) {
+            const method_type& method_type = method.get_type();
+            const any_type_list& method_args = method_type.get_argument_types();
+
+            if ( std::equal(first, last, method_args.begin(), method_args.end()) ) {
                 return method;
             }
         }
