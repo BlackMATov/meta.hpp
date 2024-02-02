@@ -2508,7 +2508,7 @@ namespace meta_hpp
         type_base() = default;
 
         explicit type_base(data_ptr data)
-        : data_{data} {}
+        : data_{std::move(data)} {}
 
         type_base(type_base&&) noexcept = default;
         type_base(const type_base&) = default;
@@ -3564,7 +3564,7 @@ namespace meta_hpp
         state_base() = default;
 
         explicit state_base(state_ptr state)
-        : state_{state} {}
+        : state_{std::move(state)} {}
 
         state_base(state_base&&) noexcept = default;
         state_base(const state_base&) = default;
@@ -4729,12 +4729,12 @@ namespace meta_hpp
 namespace meta_hpp
 {
     inline scope_bind local_scope_(std::string name, metadata_map metadata = {}) {
-        scope local_scope{detail::scope_state::make(std::move(name), std::move(metadata))};
+        const scope local_scope{detail::scope_state::make(std::move(name), std::move(metadata))};
         return scope_bind{local_scope, {}};
     }
 
     inline scope_bind static_scope_(std::string_view name, metadata_map metadata = {}) {
-        scope static_scope{resolve_scope(name)};
+        const scope static_scope{resolve_scope(name)};
         return scope_bind{static_scope, std::move(metadata)};
     }
 
@@ -8244,7 +8244,7 @@ namespace meta_hpp
         if ( const evalue& value = get_evalue(name) ) {
             return value.get_value();
         }
-        static uvalue empty_value;
+        static const uvalue empty_value;
         return empty_value;
     }
 }
@@ -8647,7 +8647,7 @@ namespace meta_hpp
         if ( position < data_->argument_values.size() ) {
             return data_->argument_values[position];
         }
-        static uvalue empty_value;
+        static const uvalue empty_value;
         return empty_value;
     }
 

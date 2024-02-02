@@ -155,7 +155,7 @@ namespace meta_hpp
         state_base() = default;
 
         explicit state_base(state_ptr state)
-        : state_{state} {}
+        : state_{std::move(state)} {}
 
         state_base(state_base&&) noexcept = default;
         state_base(const state_base&) = default;

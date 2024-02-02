@@ -156,7 +156,7 @@ namespace meta_hpp
         if ( position < data_->argument_values.size() ) {
             return data_->argument_values[position];
         }
-        static uvalue empty_value;
+        static const uvalue empty_value;
         return empty_value;
     }
 

@@ -106,7 +106,7 @@ namespace meta_hpp
         type_base() = default;
 
         explicit type_base(data_ptr data)
-        : data_{data} {}
+        : data_{std::move(data)} {}
 
         type_base(type_base&&) noexcept = default;
         type_base(const type_base&) = default;
