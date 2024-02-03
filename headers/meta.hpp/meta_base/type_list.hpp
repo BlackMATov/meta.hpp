@@ -14,7 +14,7 @@ namespace meta_hpp::detail
     struct type_list {
         template < typename F >
         // NOLINTNEXTLINE(*-missing-std-forward)
-        static void for_each(F&& f) {
+        static constexpr void for_each(F&& f) {
             (f.template operator()<Types>(), ...);
         }
     };
@@ -84,4 +84,28 @@ namespace meta_hpp::detail
 
     template < template < typename > class Pred, typename Default, typename TypeList >
     using type_list_first_of_t = typename type_list_first_of<Pred, Default, TypeList>::type;
+}
+
+namespace meta_hpp::detail
+{
+    template < template < typename > class Pred, typename TypeList >
+    struct type_list_and;
+
+    template < template < typename > class Pred, typename... Types >
+    struct type_list_and<Pred, type_list<Types...>> : std::bool_constant<(... && Pred<Types>::value)> {};
+
+    template < template < typename > class Pred, typename TypeList >
+    inline constexpr bool type_list_and_v = type_list_and<Pred, TypeList>::value;
+}
+
+namespace meta_hpp::detail
+{
+    template < template < typename > class Pred, typename TypeList >
+    struct type_list_or;
+
+    template < template < typename > class Pred, typename... Types >
+    struct type_list_or<Pred, type_list<Types...>> : std::bool_constant<(... || Pred<Types>::value)> {};
+
+    template < template < typename > class Pred, typename TypeList >
+    inline constexpr bool type_list_or_v = type_list_or<Pred, TypeList>::value;
 }
