@@ -5,6 +5,7 @@
 - type conversions
 - fix all includes to work with the library more flexible
 - test and support shared libraries
+- add volatile support for uarg/variable
 
 ## Version 1.0
 

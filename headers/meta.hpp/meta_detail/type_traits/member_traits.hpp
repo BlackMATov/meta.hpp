@@ -12,6 +12,7 @@ namespace meta_hpp::detail
 {
     enum class member_flags : std::uint32_t {
         is_readonly = 1 << 0,
+        is_volatile = 1 << 1,
     };
 
     using member_bitflags = bitflags<member_flags>;
@@ -33,6 +34,10 @@ namespace meta_hpp::detail
 
             if constexpr ( std::is_const_v<value_type> ) {
                 flags.set(member_flags::is_readonly);
+            }
+
+            if constexpr ( std::is_volatile_v<value_type> ) {
+                flags.set(member_flags::is_volatile);
             }
 
             return flags;

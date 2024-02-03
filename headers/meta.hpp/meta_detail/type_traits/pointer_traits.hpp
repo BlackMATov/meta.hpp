@@ -12,6 +12,7 @@ namespace meta_hpp::detail
 {
     enum class pointer_flags : std::uint32_t {
         is_readonly = 1 << 0,
+        is_volatile = 1 << 1,
     };
 
     using pointer_bitflags = bitflags<pointer_flags>;
@@ -29,6 +30,10 @@ namespace meta_hpp::detail
 
             if constexpr ( std::is_const_v<data_type> ) {
                 flags.set(pointer_flags::is_readonly);
+            }
+
+            if constexpr ( std::is_volatile_v<data_type> ) {
+                flags.set(pointer_flags::is_volatile);
             }
 
             return flags;

@@ -12,8 +12,9 @@ namespace meta_hpp::detail
 {
     enum class reference_flags : std::uint32_t {
         is_readonly = 1 << 0,
-        is_lvalue = 1 << 1,
-        is_rvalue = 1 << 2,
+        is_volatile = 1 << 1,
+        is_lvalue = 1 << 2,
+        is_rvalue = 1 << 3,
     };
 
     using reference_bitflags = bitflags<reference_flags>;
@@ -31,6 +32,10 @@ namespace meta_hpp::detail
 
             if constexpr ( std::is_const_v<data_type> ) {
                 flags.set(reference_flags::is_readonly);
+            }
+
+            if constexpr ( std::is_volatile_v<data_type> ) {
+                flags.set(reference_flags::is_volatile);
             }
 
             if constexpr ( std::is_lvalue_reference_v<Reference> ) {
