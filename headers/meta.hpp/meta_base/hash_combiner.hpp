@@ -12,14 +12,22 @@ namespace meta_hpp::detail
 {
     struct hash_combiner {
         template < typename T >
-        [[nodiscard]] std::size_t operator()(const T& x) noexcept {
+        [[nodiscard]] std::size_t operator()(const T& x) const noexcept {
             return std::hash<T>{}(x);
         }
 
         template < typename T >
-        [[nodiscard]] std::size_t operator()(std::size_t seed, const T& x) noexcept {
+            requires(sizeof(std::size_t) == sizeof(std::uint32_t))
+        [[nodiscard]] std::size_t operator()(std::size_t seed, const T& x) const noexcept {
             // NOLINTNEXTLINE(*-magic-numbers)
-            return (seed ^= std::hash<T>{}(x) + 0x9e3779b9 + (seed << 6) + (seed >> 2));
+            return (seed ^= std::hash<T>{}(x) + 0x9e3779b9U + (seed << 6) + (seed >> 2));
+        }
+
+        template < typename T >
+            requires(sizeof(std::size_t) == sizeof(std::uint64_t))
+        [[nodiscard]] std::size_t operator()(std::size_t seed, const T& x) const noexcept {
+            // NOLINTNEXTLINE(*-magic-numbers)
+            return (seed ^= std::hash<T>{}(x) + 0x9e3779b97f4a7c15LLU + (seed << 12) + (seed >> 4));
         }
     };
 }
