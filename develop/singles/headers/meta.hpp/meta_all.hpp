@@ -6371,7 +6371,7 @@ namespace meta_hpp::detail
 
 namespace meta_hpp::detail
 {
-    template < typename T >
+    template < typename >
     struct shared_type_name;
 
     template < type_kind, typename... >
@@ -6434,24 +6434,10 @@ namespace meta_hpp::detail
         }
     };
 
-    template < type_kind Kind, shared_type_kind Type >
-    struct shared_type_data_hash<Kind, Type> {
+    template < type_kind Kind, shared_type_kind... Types >
+    struct shared_type_data_hash<Kind, Types...> {
         [[nodiscard]] std::size_t operator()(const void*) const noexcept {
-            return shared_type_hash<Kind, Type>{}();
-        }
-    };
-
-    template < shared_type_kind Class, shared_type_kind... Args >
-    struct shared_type_data_hash<type_kind::constructor_, Class, Args...> {
-        [[nodiscard]] std::size_t operator()(const void*) const noexcept {
-            return shared_type_hash<type_kind::constructor_, Class, Args...>{}();
-        }
-    };
-
-    template < shared_type_kind Class >
-    struct shared_type_data_hash<type_kind::destructor_, Class> {
-        [[nodiscard]] std::size_t operator()(const void*) const noexcept {
-            return shared_type_hash<type_kind::destructor_, Class>{}();
+            return shared_type_hash<Kind, Types...>{}();
         }
     };
 }
