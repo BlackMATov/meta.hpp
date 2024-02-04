@@ -10,6 +10,7 @@
 #include "../meta_registry.hpp"
 #include "../meta_types.hpp"
 
+#include "../meta_detail/type_sharing.hpp"
 #include "../meta_detail/type_traits/constructor_traits.hpp"
 
 namespace meta_hpp::detail::constructor_type_data_impl
@@ -37,7 +38,7 @@ namespace meta_hpp::detail
 {
     template < class_kind Class, typename... Args >
     constructor_type_data::constructor_type_data(type_list<Class>, type_list<Args...>)
-    : type_data_base{type_kind::constructor_}
+    : type_data_base{type_kind::constructor_, shared_type_data_hash<type_kind::constructor_, Class, Args...>{}(this)}
     , flags{constructor_traits<Class, Args...>::make_flags()}
     , owner_type{resolve_type<typename constructor_traits<Class, Args...>::class_type>()}
     , argument_types(constructor_type_data_impl::make_argument_types<Class, Args...>()) {}

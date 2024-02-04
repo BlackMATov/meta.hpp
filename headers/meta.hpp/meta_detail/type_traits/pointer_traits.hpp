@@ -12,6 +12,7 @@ namespace meta_hpp::detail
 {
     enum class pointer_flags : std::uint32_t {
         is_readonly = 1 << 0,
+        is_volatile = 1 << 1,
     };
 
     using pointer_bitflags = bitflags<pointer_flags>;
@@ -22,13 +23,21 @@ namespace meta_hpp::detail
 {
     template < pointer_kind Pointer >
     struct pointer_traits {
-        using data_type = std::remove_pointer_t<Pointer>;
+        using cv_data_type = std::remove_pointer_t<Pointer>;
+        inline static constexpr bool is_readonly = std::is_const_v<cv_data_type>;
+        inline static constexpr bool is_volatile = std::is_volatile_v<cv_data_type>;
+
+        using data_type = std::remove_cv_t<cv_data_type>;
 
         [[nodiscard]] static constexpr pointer_bitflags make_flags() noexcept {
             pointer_bitflags flags{};
 
-            if constexpr ( std::is_const_v<data_type> ) {
+            if constexpr ( is_readonly ) {
                 flags.set(pointer_flags::is_readonly);
+            }
+
+            if constexpr ( is_volatile ) {
+                flags.set(pointer_flags::is_volatile);
             }
 
             return flags;

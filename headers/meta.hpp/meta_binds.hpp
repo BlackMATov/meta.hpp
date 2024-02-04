@@ -289,12 +289,12 @@ namespace meta_hpp
 namespace meta_hpp
 {
     inline scope_bind local_scope_(std::string name, metadata_map metadata = {}) {
-        scope local_scope{detail::scope_state::make(std::move(name), std::move(metadata))};
+        const scope local_scope{detail::scope_state::make(std::move(name), std::move(metadata))};
         return scope_bind{local_scope, {}};
     }
 
     inline scope_bind static_scope_(std::string_view name, metadata_map metadata = {}) {
-        scope static_scope{resolve_scope(name)};
+        const scope static_scope{resolve_scope(name)};
         return scope_bind{static_scope, std::move(metadata)};
     }
 

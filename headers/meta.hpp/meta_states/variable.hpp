@@ -52,7 +52,7 @@ namespace meta_hpp::detail
         using pt = pointer_traits<Pointer>;
         using data_type = typename pt::data_type;
 
-        if constexpr ( std::is_const_v<data_type> ) {
+        if constexpr ( pt::is_readonly ) {
             (void)registry;
             (void)variable_ptr;
             (void)arg;
@@ -72,7 +72,7 @@ namespace meta_hpp::detail
         using pt = pointer_traits<Pointer>;
         using data_type = typename pt::data_type;
 
-        if constexpr ( std::is_const_v<data_type> ) {
+        if constexpr ( pt::is_readonly ) {
             (void)registry;
             (void)arg;
             return uerror{error_code::bad_const_access};

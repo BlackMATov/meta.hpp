@@ -10,9 +10,11 @@
 #include "../meta_registry.hpp"
 #include "../meta_types.hpp"
 
+#include "../meta_detail/type_sharing.hpp"
+
 namespace meta_hpp::detail
 {
     template < void_kind Void >
     void_type_data::void_type_data(type_list<Void>)
-    : type_data_base{type_kind::void_} {}
+    : type_data_base{type_kind::void_, shared_type_data_hash<type_kind::void_, Void>{}(this)} {}
 }

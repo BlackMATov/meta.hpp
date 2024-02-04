@@ -6,15 +6,13 @@
 
 #pragma once
 
-#include "../meta_base.hpp"
-#include "../meta_registry.hpp"
-#include "../meta_types.hpp"
+#include <meta.hpp.shared.lib_export.h>
 
-#include "../meta_detail/type_sharing.hpp"
+#include <meta.hpp/meta_all.hpp>
 
-namespace meta_hpp::detail
+namespace meta_shared_lib
 {
-    template < nullptr_kind Nullptr >
-    nullptr_type_data::nullptr_type_data(type_list<Nullptr>)
-    : type_data_base{type_kind::nullptr_, shared_type_data_hash<type_kind::nullptr_, Nullptr>{}(this)} {}
+    namespace meta = meta_hpp;
+
+    META_HPP_SHARED_LIB_EXPORT meta::scope get_library_scope();
 }

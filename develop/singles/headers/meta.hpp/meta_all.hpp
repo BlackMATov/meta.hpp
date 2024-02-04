@@ -766,14 +766,22 @@ namespace meta_hpp::detail
 {
     struct hash_combiner {
         template < typename T >
-        [[nodiscard]] std::size_t operator()(const T& x) noexcept {
+        [[nodiscard]] std::size_t operator()(const T& x) const noexcept {
             return std::hash<T>{}(x);
         }
 
         template < typename T >
-        [[nodiscard]] std::size_t operator()(std::size_t seed, const T& x) noexcept {
+            requires(sizeof(std::size_t) == sizeof(std::uint32_t))
+        [[nodiscard]] std::size_t operator()(std::size_t seed, const T& x) const noexcept {
             // NOLINTNEXTLINE(*-magic-numbers)
-            return (seed ^= std::hash<T>{}(x) + 0x9e3779b9 + (seed << 6) + (seed >> 2));
+            return (seed ^= std::hash<T>{}(x) + 0x9e3779b9U + (seed << 6) + (seed >> 2));
+        }
+
+        template < typename T >
+            requires(sizeof(std::size_t) == sizeof(std::uint64_t))
+        [[nodiscard]] std::size_t operator()(std::size_t seed, const T& x) const noexcept {
+            // NOLINTNEXTLINE(*-magic-numbers)
+            return (seed ^= std::hash<T>{}(x) + 0x9e3779b97f4a7c15LLU + (seed << 12) + (seed >> 4));
         }
     };
 }
@@ -1165,11 +1173,56 @@ namespace meta_hpp::detail
 
 namespace meta_hpp::detail
 {
+    template < typename T >
+    struct type_to_kind;
+
+    template < typename T >
+    inline constexpr type_kind type_to_kind_v = type_to_kind<T>::value;
+}
+
+namespace meta_hpp::detail
+{
+    template < array_kind T >
+    struct type_to_kind<T> : std::integral_constant<type_kind, type_kind::array_> {};
+
+    template < class_kind T >
+    struct type_to_kind<T> : std::integral_constant<type_kind, type_kind::class_> {};
+
+    template < enum_kind T >
+    struct type_to_kind<T> : std::integral_constant<type_kind, type_kind::enum_> {};
+
+    template < function_kind T >
+    struct type_to_kind<T> : std::integral_constant<type_kind, type_kind::function_> {};
+
+    template < member_pointer_kind T >
+    struct type_to_kind<T> : std::integral_constant<type_kind, type_kind::member_> {};
+
+    template < method_pointer_kind T >
+    struct type_to_kind<T> : std::integral_constant<type_kind, type_kind::method_> {};
+
+    template < nullptr_kind T >
+    struct type_to_kind<T> : std::integral_constant<type_kind, type_kind::nullptr_> {};
+
+    template < number_kind T >
+    struct type_to_kind<T> : std::integral_constant<type_kind, type_kind::number_> {};
+
+    template < pointer_kind T >
+    struct type_to_kind<T> : std::integral_constant<type_kind, type_kind::pointer_> {};
+
+    template < reference_kind T >
+    struct type_to_kind<T> : std::integral_constant<type_kind, type_kind::reference_> {};
+
+    template < void_kind T >
+    struct type_to_kind<T> : std::integral_constant<type_kind, type_kind::void_> {};
+}
+
+namespace meta_hpp::detail
+{
     template < typename... Types >
     struct type_list {
         template < typename F >
         // NOLINTNEXTLINE(*-missing-std-forward)
-        static void for_each(F&& f) {
+        static constexpr void for_each(F&& f) {
             (f.template operator()<Types>(), ...);
         }
     };
@@ -1239,6 +1292,30 @@ namespace meta_hpp::detail
 
     template < template < typename > class Pred, typename Default, typename TypeList >
     using type_list_first_of_t = typename type_list_first_of<Pred, Default, TypeList>::type;
+}
+
+namespace meta_hpp::detail
+{
+    template < template < typename > class Pred, typename TypeList >
+    struct type_list_and;
+
+    template < template < typename > class Pred, typename... Types >
+    struct type_list_and<Pred, type_list<Types...>> : std::bool_constant<(... && Pred<Types>::value)> {};
+
+    template < template < typename > class Pred, typename TypeList >
+    inline constexpr bool type_list_and_v = type_list_and<Pred, TypeList>::value;
+}
+
+namespace meta_hpp::detail
+{
+    template < template < typename > class Pred, typename TypeList >
+    struct type_list_or;
+
+    template < template < typename > class Pred, typename... Types >
+    struct type_list_or<Pred, type_list<Types...>> : std::bool_constant<(... || Pred<Types>::value)> {};
+
+    template < template < typename > class Pred, typename TypeList >
+    inline constexpr bool type_list_or_v = type_list_or<Pred, TypeList>::value;
 }
 
 namespace meta_hpp
@@ -1586,8 +1663,10 @@ namespace meta_hpp
 namespace meta_hpp::detail
 {
     enum class array_flags : std::uint32_t {
-        is_bounded = 1 << 0,
-        is_unbounded = 1 << 1,
+        is_readonly = 1 << 0,
+        is_volatile = 1 << 1,
+        is_bounded = 1 << 2,
+        is_unbounded = 1 << 3,
     };
 
     using array_bitflags = bitflags<array_flags>;
@@ -1600,10 +1679,22 @@ namespace meta_hpp::detail
     struct array_traits {
         static constexpr std::size_t extent{std::extent_v<Array>};
 
-        using data_type = std::remove_extent_t<Array>;
+        using cv_data_type = std::remove_extent_t<Array>;
+        inline static constexpr bool is_readonly = std::is_const_v<cv_data_type>;
+        inline static constexpr bool is_volatile = std::is_volatile_v<cv_data_type>;
+
+        using data_type = std::remove_cv_t<cv_data_type>;
 
         [[nodiscard]] static constexpr array_bitflags make_flags() noexcept {
             array_bitflags flags{};
+
+            if constexpr ( is_readonly ) {
+                flags.set(array_flags::is_readonly);
+            }
+
+            if constexpr ( is_volatile ) {
+                flags.set(array_flags::is_volatile);
+            }
 
             if constexpr ( std::is_bounded_array_v<Array> ) {
                 flags.set(array_flags::is_bounded);
@@ -1932,7 +2023,7 @@ namespace meta_hpp::detail
         static constexpr std::size_t arity{sizeof...(Args)};
 
         using class_type = Class;
-        using argument_types = type_list<Args...>;
+        using argument_types = type_list<std::remove_cv_t<Args>...>;
 
         [[nodiscard]] static constexpr constructor_bitflags make_flags() noexcept {
             constructor_bitflags flags{};
@@ -2026,8 +2117,8 @@ namespace meta_hpp::detail
     struct function_traits<R(Args...)> {
         static constexpr std::size_t arity{sizeof...(Args)};
 
-        using return_type = R;
-        using argument_types = type_list<Args...>;
+        using return_type = std::remove_cv_t<R>;
+        using argument_types = type_list<std::remove_cv_t<Args>...>;
 
         [[nodiscard]] static constexpr function_bitflags make_flags() noexcept {
             return {};
@@ -2046,6 +2137,7 @@ namespace meta_hpp::detail
 {
     enum class member_flags : std::uint32_t {
         is_readonly = 1 << 0,
+        is_volatile = 1 << 1,
     };
 
     using member_bitflags = bitflags<member_flags>;
@@ -2059,14 +2151,22 @@ namespace meta_hpp::detail
 
     template < typename V, typename C >
     struct member_traits<V C::*> {
+        using cv_value_type = V;
+        inline static constexpr bool is_readonly = std::is_const_v<cv_value_type>;
+        inline static constexpr bool is_volatile = std::is_volatile_v<cv_value_type>;
+
         using class_type = C;
-        using value_type = V;
+        using value_type = std::remove_cv_t<cv_value_type>;
 
         [[nodiscard]] static constexpr member_bitflags make_flags() noexcept {
             member_bitflags flags{};
 
-            if constexpr ( std::is_const_v<value_type> ) {
+            if constexpr ( is_readonly ) {
                 flags.set(member_flags::is_readonly);
+            }
+
+            if constexpr ( is_volatile ) {
+                flags.set(member_flags::is_volatile);
             }
 
             return flags;
@@ -2097,9 +2197,9 @@ namespace meta_hpp::detail
         static constexpr std::size_t arity{sizeof...(Args)};
 
         using class_type = C;
-        using return_type = R;
+        using return_type = std::remove_cv_t<R>;
         using qualified_type = C;
-        using argument_types = type_list<Args...>;
+        using argument_types = type_list<std::remove_cv_t<Args>...>;
 
         [[nodiscard]] static constexpr method_bitflags make_flags() noexcept {
             return {};
@@ -2254,6 +2354,7 @@ namespace meta_hpp::detail
 {
     enum class pointer_flags : std::uint32_t {
         is_readonly = 1 << 0,
+        is_volatile = 1 << 1,
     };
 
     using pointer_bitflags = bitflags<pointer_flags>;
@@ -2264,13 +2365,21 @@ namespace meta_hpp::detail
 {
     template < pointer_kind Pointer >
     struct pointer_traits {
-        using data_type = std::remove_pointer_t<Pointer>;
+        using cv_data_type = std::remove_pointer_t<Pointer>;
+        inline static constexpr bool is_readonly = std::is_const_v<cv_data_type>;
+        inline static constexpr bool is_volatile = std::is_volatile_v<cv_data_type>;
+
+        using data_type = std::remove_cv_t<cv_data_type>;
 
         [[nodiscard]] static constexpr pointer_bitflags make_flags() noexcept {
             pointer_bitflags flags{};
 
-            if constexpr ( std::is_const_v<data_type> ) {
+            if constexpr ( is_readonly ) {
                 flags.set(pointer_flags::is_readonly);
+            }
+
+            if constexpr ( is_volatile ) {
+                flags.set(pointer_flags::is_volatile);
             }
 
             return flags;
@@ -2282,8 +2391,9 @@ namespace meta_hpp::detail
 {
     enum class reference_flags : std::uint32_t {
         is_readonly = 1 << 0,
-        is_lvalue = 1 << 1,
-        is_rvalue = 1 << 2,
+        is_volatile = 1 << 1,
+        is_lvalue = 1 << 2,
+        is_rvalue = 1 << 3,
     };
 
     using reference_bitflags = bitflags<reference_flags>;
@@ -2294,13 +2404,21 @@ namespace meta_hpp::detail
 {
     template < reference_kind Reference >
     struct reference_traits {
-        using data_type = std::remove_reference_t<Reference>;
+        using cv_data_type = std::remove_reference_t<Reference>;
+        inline static constexpr bool is_readonly = std::is_const_v<cv_data_type>;
+        inline static constexpr bool is_volatile = std::is_volatile_v<cv_data_type>;
+
+        using data_type = std::remove_cv_t<cv_data_type>;
 
         [[nodiscard]] static constexpr reference_bitflags make_flags() noexcept {
             reference_bitflags flags{};
 
-            if constexpr ( std::is_const_v<data_type> ) {
+            if constexpr ( is_readonly ) {
                 flags.set(reference_flags::is_readonly);
+            }
+
+            if constexpr ( is_volatile ) {
+                flags.set(reference_flags::is_volatile);
             }
 
             if constexpr ( std::is_lvalue_reference_v<Reference> ) {
@@ -2454,31 +2572,28 @@ namespace meta_hpp
     class type_id final {
     public:
         type_id() = default;
+        ~type_id() = default;
 
-        [[nodiscard]] bool is_valid() const noexcept {
-            return data_ != nullptr;
-        }
+        type_id(type_id&&) = default;
+        type_id(const type_id&) = default;
 
-        [[nodiscard]] explicit operator bool() const noexcept {
-            return is_valid();
-        }
+        type_id& operator=(type_id&&) = default;
+        type_id& operator=(const type_id&) = default;
 
-        void swap(type_id& other) noexcept {
-            std::swap(data_, other.data_);
-        }
+        [[nodiscard]] bool is_valid() const noexcept;
+        [[nodiscard]] explicit operator bool() const noexcept;
 
-        [[nodiscard]] std::size_t get_hash() const noexcept {
-            return data_ != nullptr ? detail::hash_combiner{}(data_) : 0;
-        }
+        void swap(type_id& other) noexcept;
+        [[nodiscard]] std::size_t get_hash() const noexcept;
 
-        [[nodiscard]] std::strong_ordering operator<=>(const type_id& other) const = default;
+        [[nodiscard]] bool operator==(const type_id& other) const noexcept;
+        [[nodiscard]] std::strong_ordering operator<=>(const type_id& other) const noexcept;
 
     private:
         template < type_family T >
         friend class type_base;
 
-        explicit type_id(const detail::type_data_base* data)
-        : data_{data} {}
+        explicit type_id(const detail::type_data_base* data);
 
     private:
         const detail::type_data_base* data_{};
@@ -2507,34 +2622,20 @@ namespace meta_hpp
 
         type_base() = default;
 
-        explicit type_base(data_ptr data)
-        : data_{data} {}
+        explicit type_base(data_ptr data);
 
-        type_base(type_base&&) noexcept = default;
+        type_base(type_base&&) = default;
         type_base(const type_base&) = default;
 
-        type_base& operator=(type_base&&) noexcept = default;
+        type_base& operator=(type_base&&) = default;
         type_base& operator=(const type_base&) = default;
 
-        [[nodiscard]] bool is_valid() const noexcept {
-            return data_ != nullptr;
-        }
+        [[nodiscard]] bool is_valid() const noexcept;
+        [[nodiscard]] explicit operator bool() const noexcept;
 
-        [[nodiscard]] explicit operator bool() const noexcept {
-            return is_valid();
-        }
-
-        [[nodiscard]] id_type get_id() const noexcept {
-            return id_type{data_};
-        }
-
-        [[nodiscard]] type_kind get_kind() const noexcept {
-            return data_->kind;
-        }
-
-        [[nodiscard]] const metadata_map& get_metadata() const noexcept {
-            return data_->metadata;
-        }
+        [[nodiscard]] id_type get_id() const noexcept;
+        [[nodiscard]] type_kind get_kind() const noexcept;
+        [[nodiscard]] const metadata_map& get_metadata() const noexcept;
 
     protected:
         ~type_base() = default;
@@ -2863,12 +2964,14 @@ namespace meta_hpp::detail
     struct type_data_base {
         // NOLINTBEGIN(*-avoid-const-or-ref-data-members)
         const type_kind kind;
+        const std::size_t shared;
         // NOLINTEND(*-avoid-const-or-ref-data-members)
 
         metadata_map metadata;
 
-        explicit type_data_base(type_kind nkind)
-        : kind{nkind} {}
+        explicit type_data_base(type_kind nkind, std::size_t nshared)
+        : kind{nkind}
+        , shared{nshared} {}
 
         type_data_base(type_data_base&&) = delete;
         type_data_base(const type_data_base&) = delete;
@@ -3032,6 +3135,85 @@ namespace meta_hpp::detail
         template < void_kind Void >
         explicit void_type_data(type_list<Void>);
     };
+}
+
+namespace meta_hpp
+{
+    inline type_id::type_id(const detail::type_data_base* data)
+    : data_{data} {}
+
+    inline bool type_id::is_valid() const noexcept {
+        return data_ != nullptr;
+    }
+
+    inline type_id::operator bool() const noexcept {
+        return is_valid();
+    }
+
+    inline void type_id::swap(type_id& other) noexcept {
+        std::swap(data_, other.data_);
+    }
+
+    inline std::size_t type_id::get_hash() const noexcept {
+        return data_ != nullptr ? data_->shared : 0;
+    }
+
+    inline bool type_id::operator==(const type_id& other) const noexcept {
+        if ( data_ == other.data_ ) {
+            return true;
+        }
+
+        if ( is_valid() != other.is_valid() ) {
+            return false;
+        }
+
+        return data_->shared == other.data_->shared;
+    }
+
+    inline std::strong_ordering type_id::operator<=>(const type_id& other) const noexcept {
+        if ( data_ == other.data_ ) {
+            return std::strong_ordering::equal;
+        }
+
+        // NOLINTNEXTLINE(*-bool-conversion)
+        if ( const std::strong_ordering cmp{is_valid() <=> other.is_valid()}; cmp != std::strong_ordering::equal ) {
+            return cmp;
+        }
+
+        return data_->shared <=> other.data_->shared;
+    }
+}
+
+namespace meta_hpp
+{
+    template < type_family Type >
+    type_base<Type>::type_base(data_ptr data)
+    : data_{std::move(data)} {}
+
+    template < type_family Type >
+    bool type_base<Type>::is_valid() const noexcept {
+        return data_ != nullptr;
+    }
+
+    template < type_family Type >
+    type_base<Type>::operator bool() const noexcept {
+        return is_valid();
+    }
+
+    template < type_family Type >
+    typename type_base<Type>::id_type type_base<Type>::get_id() const noexcept {
+        return id_type{data_};
+    }
+
+    template < type_family Type >
+    type_kind type_base<Type>::get_kind() const noexcept {
+        return data_->kind;
+    }
+
+    template < type_family Type >
+    const metadata_map& type_base<Type>::get_metadata() const noexcept {
+        return data_->metadata;
+    }
 }
 
 namespace meta_hpp
@@ -3563,30 +3745,19 @@ namespace meta_hpp
 
         state_base() = default;
 
-        explicit state_base(state_ptr state)
-        : state_{state} {}
+        explicit state_base(state_ptr state);
 
-        state_base(state_base&&) noexcept = default;
+        state_base(state_base&&) = default;
         state_base(const state_base&) = default;
 
-        state_base& operator=(state_base&&) noexcept = default;
+        state_base& operator=(state_base&&) = default;
         state_base& operator=(const state_base&) = default;
 
-        [[nodiscard]] bool is_valid() const noexcept {
-            return state_ != nullptr;
-        }
+        [[nodiscard]] bool is_valid() const noexcept;
+        [[nodiscard]] explicit operator bool() const noexcept;
 
-        [[nodiscard]] explicit operator bool() const noexcept {
-            return is_valid();
-        }
-
-        [[nodiscard]] const index_type& get_index() const noexcept {
-            return state_->index;
-        }
-
-        [[nodiscard]] const metadata_map& get_metadata() const noexcept {
-            return state_->metadata;
-        }
+        [[nodiscard]] const index_type& get_index() const noexcept;
+        [[nodiscard]] const metadata_map& get_metadata() const noexcept;
 
     protected:
         ~state_base() = default;
@@ -4103,6 +4274,33 @@ namespace meta_hpp::detail
         [[nodiscard]] static variable_state_ptr make(std::string name, Pointer variable_ptr, metadata_map metadata);
         explicit variable_state(variable_index index, metadata_map metadata);
     };
+}
+
+namespace meta_hpp
+{
+    template < state_family State >
+    state_base<State>::state_base(state_ptr state)
+    : state_{std::move(state)} {}
+
+    template < state_family State >
+    bool state_base<State>::is_valid() const noexcept {
+        return state_ != nullptr;
+    }
+
+    template < state_family State >
+    state_base<State>::operator bool() const noexcept {
+        return is_valid();
+    }
+
+    template < state_family State >
+    const typename state_base<State>::index_type& state_base<State>::get_index() const noexcept {
+        return state_->index;
+    }
+
+    template < state_family State >
+    const metadata_map& state_base<State>::get_metadata() const noexcept {
+        return state_->metadata;
+    }
 }
 
 namespace meta_hpp::detail
@@ -4729,12 +4927,12 @@ namespace meta_hpp
 namespace meta_hpp
 {
     inline scope_bind local_scope_(std::string name, metadata_map metadata = {}) {
-        scope local_scope{detail::scope_state::make(std::move(name), std::move(metadata))};
+        const scope local_scope{detail::scope_state::make(std::move(name), std::move(metadata))};
         return scope_bind{local_scope, {}};
     }
 
     inline scope_bind static_scope_(std::string_view name, metadata_map metadata = {}) {
-        scope static_scope{resolve_scope(name)};
+        const scope static_scope{resolve_scope(name)};
         return scope_bind{static_scope, std::move(metadata)};
     }
 
@@ -6171,6 +6369,346 @@ namespace meta_hpp::detail
     }
 }
 
+namespace meta_hpp::detail
+{
+    template < typename >
+    struct shared_type_name;
+
+    template < type_kind, typename... >
+    struct shared_type_hash;
+}
+
+namespace meta_hpp::detail
+{
+    template < typename Type >
+    [[nodiscard]] constexpr std::size_t shared_hash() noexcept {
+        return shared_type_hash<type_to_kind_v<Type>, Type>{}();
+    }
+
+    template < enum_kind Enum >
+    [[nodiscard]] constexpr std::size_t shared_hash(Enum value) noexcept {
+        return static_cast<std::size_t>(value);
+    }
+
+    template < enum_kind Enum >
+    [[nodiscard]] constexpr std::size_t shared_hash(bitflags<Enum> value) noexcept {
+        return static_cast<std::size_t>(value.as_raw());
+    }
+
+    template < typename Integral >
+        requires(std::is_integral_v<Integral> && sizeof(Integral) <= sizeof(std::size_t))
+    [[nodiscard]] constexpr std::size_t shared_hash(Integral value) noexcept {
+        return static_cast<std::size_t>(value);
+    }
+
+    template < typename Value >
+        requires(sizeof(std::size_t) == sizeof(std::uint32_t))
+    [[nodiscard]] constexpr std::size_t shared_hash_append(std::size_t seed, Value value) noexcept {
+        // NOLINTNEXTLINE(*-magic-numbers)
+        return (seed ^= shared_hash(value) + 0x9e3779b9U + (seed << 6) + (seed >> 2));
+    }
+
+    template < typename Value >
+        requires(sizeof(std::size_t) == sizeof(std::uint64_t))
+    [[nodiscard]] constexpr std::size_t shared_hash_append(std::size_t seed, Value value) noexcept {
+        // NOLINTNEXTLINE(*-magic-numbers)
+        return (seed ^= shared_hash(value) + 0x9e3779b97f4a7c15LLU + (seed << 12) + (seed >> 4));
+    }
+}
+
+namespace meta_hpp::detail
+{
+    template < typename T >
+    struct is_shared_type : std::false_type {};
+
+    template < typename T >
+    concept shared_type_kind = is_shared_type<std::remove_cv_t<T>>::value;
+}
+
+namespace meta_hpp::detail
+{
+    template < type_kind, typename... >
+    struct shared_type_data_hash {
+        [[nodiscard]] std::size_t operator()(const void* type_data) const noexcept {
+            return hash_combiner{}(type_data);
+        }
+    };
+
+    template < type_kind Kind, shared_type_kind... Types >
+    struct shared_type_data_hash<Kind, Types...> {
+        [[nodiscard]] std::size_t operator()(const void*) const noexcept {
+            return shared_type_hash<Kind, Types...>{}();
+        }
+    };
+}
+
+namespace meta_hpp::detail
+{
+    template < typename T >
+        requires requires {
+            { shared_type_name<T>{}() };
+        }
+    struct is_shared_type<T> : std::true_type {};
+
+    template < array_kind Array >
+        requires shared_type_kind<typename array_traits<Array>::data_type>
+    struct is_shared_type<Array> : std::true_type {};
+
+    template < function_kind Function >
+        requires shared_type_kind<typename function_traits<Function>::return_type>
+              && type_list_and_v<is_shared_type, typename function_traits<Function>::argument_types>
+    struct is_shared_type<Function> : std::true_type {};
+
+    template < member_pointer_kind Member >
+        requires shared_type_kind<typename member_traits<Member>::class_type>
+              && shared_type_kind<typename member_traits<Member>::value_type>
+    struct is_shared_type<Member> : std::true_type {};
+
+    template < method_pointer_kind Method >
+        requires shared_type_kind<typename method_traits<Method>::class_type>
+              && shared_type_kind<typename method_traits<Method>::return_type>
+              && type_list_and_v<is_shared_type, typename method_traits<Method>::argument_types>
+    struct is_shared_type<Method> : std::true_type {};
+
+    template < pointer_kind Pointer >
+        requires shared_type_kind<typename pointer_traits<Pointer>::data_type>
+    struct is_shared_type<Pointer> : std::true_type {};
+
+    template < reference_kind Reference >
+        requires shared_type_kind<typename reference_traits<Reference>::data_type>
+    struct is_shared_type<Reference> : std::true_type {};
+}
+
+namespace meta_hpp::detail
+{
+    template < shared_type_kind Array >
+    struct shared_type_hash<type_kind::array_, Array> {
+        [[nodiscard]] constexpr std::size_t operator()() const noexcept {
+            std::size_t hash = shared_hash(type_kind::array_);
+
+            using traits = array_traits<Array>;
+            hash = shared_hash_append(hash, traits::make_flags());
+
+            hash = shared_hash_append(hash, shared_hash<typename traits::data_type>());
+
+            hash = shared_hash_append(hash, traits::extent);
+
+            return hash;
+        }
+    };
+
+    template < shared_type_kind Class >
+    struct shared_type_hash<type_kind::class_, Class> {
+        [[nodiscard]] constexpr std::size_t operator()() const noexcept {
+            std::size_t hash = shared_hash(type_kind::class_);
+
+            using traits = class_traits<Class>;
+            hash = shared_hash_append(hash, traits::make_flags());
+
+            hash = shared_hash_append(hash, shared_type_name<Class>{}());
+
+            return hash;
+        }
+    };
+
+    template < shared_type_kind Class, shared_type_kind... Args >
+    struct shared_type_hash<type_kind::constructor_, Class, Args...> {
+        [[nodiscard]] constexpr std::size_t operator()() const noexcept {
+            std::size_t hash = shared_hash(type_kind::constructor_);
+
+            using traits = constructor_traits<Class, Args...>;
+            hash = shared_hash_append(hash, traits::make_flags());
+
+            hash = shared_hash_append(hash, shared_hash<typename traits::class_type>());
+
+            traits::argument_types::for_each([&hash]<typename Arg>() { //
+                hash = shared_hash_append(hash, shared_hash<Arg>());
+            });
+
+            return hash;
+        }
+    };
+
+    template < shared_type_kind Class >
+    struct shared_type_hash<type_kind::destructor_, Class> {
+        [[nodiscard]] constexpr std::size_t operator()() const noexcept {
+            std::size_t hash = shared_hash(type_kind::destructor_);
+
+            using traits = destructor_traits<Class>;
+            hash = shared_hash_append(hash, traits::make_flags());
+
+            hash = shared_hash_append(hash, shared_hash<typename traits::class_type>());
+
+            return hash;
+        }
+    };
+
+    template < shared_type_kind Enum >
+    struct shared_type_hash<type_kind::enum_, Enum> {
+        [[nodiscard]] constexpr std::size_t operator()() const noexcept {
+            std::size_t hash = shared_hash(type_kind::enum_);
+
+            using traits = enum_traits<Enum>;
+            hash = shared_hash_append(hash, traits::make_flags());
+
+            hash = shared_hash_append(hash, shared_type_name<Enum>{}());
+
+            return hash;
+        }
+    };
+
+    template < shared_type_kind Function >
+    struct shared_type_hash<type_kind::function_, Function> {
+        [[nodiscard]] constexpr std::size_t operator()() const noexcept {
+            std::size_t hash = shared_hash(type_kind::function_);
+
+            using traits = function_traits<Function>;
+            hash = shared_hash_append(hash, traits::make_flags());
+
+            hash = shared_hash_append(hash, shared_hash<typename traits::return_type>());
+
+            traits::argument_types::for_each([&hash]<typename Arg>() { //
+                hash = shared_hash_append(hash, shared_hash<Arg>());
+            });
+
+            return hash;
+        }
+    };
+
+    template < shared_type_kind Member >
+    struct shared_type_hash<type_kind::member_, Member> {
+        [[nodiscard]] constexpr std::size_t operator()() const noexcept {
+            std::size_t hash = shared_hash(type_kind::member_);
+
+            using traits = member_traits<Member>;
+            hash = shared_hash_append(hash, traits::make_flags());
+
+            hash = shared_hash_append(hash, shared_hash<typename traits::class_type>());
+            hash = shared_hash_append(hash, shared_hash<typename traits::value_type>());
+
+            return hash;
+        }
+    };
+
+    template < shared_type_kind Method >
+    struct shared_type_hash<type_kind::method_, Method> {
+        [[nodiscard]] constexpr std::size_t operator()() const noexcept {
+            std::size_t hash = shared_hash(type_kind::method_);
+
+            using traits = method_traits<Method>;
+            hash = shared_hash_append(hash, traits::make_flags());
+
+            hash = shared_hash_append(hash, shared_hash<typename traits::class_type>());
+            hash = shared_hash_append(hash, shared_hash<typename traits::return_type>());
+
+            traits::argument_types::for_each([&hash]<typename Arg>() { //
+                hash = shared_hash_append(hash, shared_hash<Arg>());
+            });
+
+            return hash;
+        }
+    };
+
+    template < shared_type_kind Nullptr >
+    struct shared_type_hash<type_kind::nullptr_, Nullptr> {
+        [[nodiscard]] constexpr std::size_t operator()() const noexcept {
+            std::size_t hash = shared_hash(type_kind::nullptr_);
+
+            hash = shared_hash_append(hash, shared_type_name<Nullptr>{}());
+
+            return hash;
+        }
+    };
+
+    template < shared_type_kind Number >
+    struct shared_type_hash<type_kind::number_, Number> {
+        [[nodiscard]] constexpr std::size_t operator()() const noexcept {
+            std::size_t hash = shared_hash(type_kind::number_);
+
+            using traits = number_traits<Number>;
+            hash = shared_hash_append(hash, traits::make_flags());
+
+            hash = shared_hash_append(hash, shared_type_name<Number>{}());
+
+            return hash;
+        }
+    };
+
+    template < shared_type_kind Pointer >
+    struct shared_type_hash<type_kind::pointer_, Pointer> {
+        [[nodiscard]] constexpr std::size_t operator()() const noexcept {
+            std::size_t hash = shared_hash(type_kind::pointer_);
+
+            using traits = pointer_traits<Pointer>;
+            hash = shared_hash_append(hash, traits::make_flags());
+
+            hash = shared_hash_append(hash, shared_hash<typename traits::data_type>());
+
+            return hash;
+        }
+    };
+
+    template < shared_type_kind Reference >
+    struct shared_type_hash<type_kind::reference_, Reference> {
+        [[nodiscard]] constexpr std::size_t operator()() const noexcept {
+            std::size_t hash = shared_hash(type_kind::reference_);
+
+            using traits = reference_traits<Reference>;
+            hash = shared_hash_append(hash, traits::make_flags());
+
+            hash = shared_hash_append(hash, shared_hash<typename traits::data_type>());
+
+            return hash;
+        }
+    };
+
+    template < shared_type_kind Void >
+    struct shared_type_hash<type_kind::void_, Void> {
+        [[nodiscard]] constexpr std::size_t operator()() const noexcept {
+            std::size_t hash = shared_hash(type_kind::void_);
+
+            hash = shared_hash_append(hash, shared_type_name<Void>{}());
+
+            return hash;
+        }
+    };
+}
+
+#define META_HPP_DEFINE_SHARED_TYPE(Type, Name) \
+    namespace meta_hpp::detail \
+    { \
+        template <> \
+        struct shared_type_name<Type> { \
+            [[nodiscard]] constexpr std::size_t operator()() const noexcept { \
+                return hashed_string{Name}.get_hash(); \
+            } \
+        }; \
+    }
+
+META_HPP_DEFINE_SHARED_TYPE(void, "void")
+META_HPP_DEFINE_SHARED_TYPE(bool, "bool")
+META_HPP_DEFINE_SHARED_TYPE(wchar_t, "wchar_t")
+META_HPP_DEFINE_SHARED_TYPE(decltype(nullptr), "nullptr_t")
+
+META_HPP_DEFINE_SHARED_TYPE(char8_t, "char8_t")
+META_HPP_DEFINE_SHARED_TYPE(char16_t, "char16_t")
+META_HPP_DEFINE_SHARED_TYPE(char32_t, "char32_t")
+
+META_HPP_DEFINE_SHARED_TYPE(float, "float")
+META_HPP_DEFINE_SHARED_TYPE(double, "double")
+META_HPP_DEFINE_SHARED_TYPE(long double, "long double")
+
+META_HPP_DEFINE_SHARED_TYPE(signed char, "schar")
+META_HPP_DEFINE_SHARED_TYPE(unsigned char, "uchar")
+META_HPP_DEFINE_SHARED_TYPE(signed short, "sshort")
+META_HPP_DEFINE_SHARED_TYPE(unsigned short, "ushort")
+META_HPP_DEFINE_SHARED_TYPE(signed int, "sint")
+META_HPP_DEFINE_SHARED_TYPE(unsigned int, "uint")
+META_HPP_DEFINE_SHARED_TYPE(signed long, "slong")
+META_HPP_DEFINE_SHARED_TYPE(unsigned long, "ulong")
+META_HPP_DEFINE_SHARED_TYPE(signed long long, "sllong")
+META_HPP_DEFINE_SHARED_TYPE(unsigned long long, "ullong")
+
 namespace meta_hpp::detail::function_type_data_impl
 {
     template < function_kind Function >
@@ -6196,7 +6734,7 @@ namespace meta_hpp::detail
 {
     template < function_kind Function >
     function_type_data::function_type_data(type_list<Function>)
-    : type_data_base{type_kind::function_}
+    : type_data_base{type_kind::function_, shared_type_data_hash<type_kind::function_, Function>{}(this)}
     , flags{function_traits<Function>::make_flags()}
     , return_type{resolve_type<typename function_traits<Function>::return_type>()}
     , argument_types(function_type_data_impl::make_argument_types<Function>()) {}
@@ -6706,7 +7244,7 @@ namespace meta_hpp::detail
 {
     template < member_pointer_kind Member >
     member_type_data::member_type_data(type_list<Member>)
-    : type_data_base{type_kind::member_}
+    : type_data_base{type_kind::member_, shared_type_data_hash<type_kind::member_, Member>{}(this)}
     , flags{member_traits<Member>::make_flags()}
     , owner_type{resolve_type<typename member_traits<Member>::class_type>()}
     , value_type{resolve_type<typename member_traits<Member>::value_type>()} {}
@@ -6815,7 +7353,7 @@ namespace meta_hpp::detail
         using class_type = typename mt::class_type;
         using value_type = typename mt::value_type;
 
-        if constexpr ( std::is_const_v<value_type> ) {
+        if constexpr ( mt::is_readonly ) {
             (void)registry;
             (void)member_ptr;
             (void)inst;
@@ -6847,7 +7385,7 @@ namespace meta_hpp::detail
         using class_type = typename mt::class_type;
         using value_type = typename mt::value_type;
 
-        if constexpr ( std::is_const_v<value_type> ) {
+        if constexpr ( mt::is_readonly ) {
             (void)registry;
             (void)inst;
             (void)arg;
@@ -7079,7 +7617,7 @@ namespace meta_hpp::detail
 {
     template < method_pointer_kind Method >
     method_type_data::method_type_data(type_list<Method>)
-    : type_data_base{type_kind::method_}
+    : type_data_base{type_kind::method_, shared_type_data_hash<type_kind::method_, Method>{}(this)}
     , flags{method_traits<Method>::make_flags()}
     , owner_type{resolve_type<typename method_traits<Method>::class_type>()}
     , return_type{resolve_type<typename method_traits<Method>::return_type>()}
@@ -7693,7 +8231,7 @@ namespace meta_hpp::detail
 {
     template < class_kind Class, typename... Args >
     constructor_type_data::constructor_type_data(type_list<Class>, type_list<Args...>)
-    : type_data_base{type_kind::constructor_}
+    : type_data_base{type_kind::constructor_, shared_type_data_hash<type_kind::constructor_, Class, Args...>{}(this)}
     , flags{constructor_traits<Class, Args...>::make_flags()}
     , owner_type{resolve_type<typename constructor_traits<Class, Args...>::class_type>()}
     , argument_types(constructor_type_data_impl::make_argument_types<Class, Args...>()) {}
@@ -8028,7 +8566,7 @@ namespace meta_hpp::detail
 {
     template < class_kind Class >
     destructor_type_data::destructor_type_data(type_list<Class>)
-    : type_data_base{type_kind::destructor_}
+    : type_data_base{type_kind::destructor_, shared_type_data_hash<type_kind::destructor_, Class>{}(this)}
     , flags{destructor_traits<Class>::make_flags()}
     , owner_type{resolve_type<typename destructor_traits<Class>::class_type>()} {}
 }
@@ -8197,7 +8735,7 @@ namespace meta_hpp::detail
 {
     template < enum_kind Enum >
     enum_type_data::enum_type_data(type_list<Enum>)
-    : type_data_base{type_kind::enum_}
+    : type_data_base{type_kind::enum_, shared_type_data_hash<type_kind::enum_, Enum>{}(this)}
     , flags{enum_traits<Enum>::make_flags()}
     , underlying_type{resolve_type<typename enum_traits<Enum>::underlying_type>()} {}
 }
@@ -8244,7 +8782,7 @@ namespace meta_hpp
         if ( const evalue& value = get_evalue(name) ) {
             return value.get_value();
         }
-        static uvalue empty_value;
+        static const uvalue empty_value;
         return empty_value;
     }
 }
@@ -8294,7 +8832,7 @@ namespace meta_hpp::detail
 {
     template < pointer_kind Pointer >
     pointer_type_data::pointer_type_data(type_list<Pointer>)
-    : type_data_base{type_kind::pointer_}
+    : type_data_base{type_kind::pointer_, shared_type_data_hash<type_kind::pointer_, Pointer>{}(this)}
     , flags{pointer_traits<Pointer>::make_flags()}
     , data_type{resolve_type<typename pointer_traits<Pointer>::data_type>()} {}
 }
@@ -8349,7 +8887,7 @@ namespace meta_hpp::detail
         using pt = pointer_traits<Pointer>;
         using data_type = typename pt::data_type;
 
-        if constexpr ( std::is_const_v<data_type> ) {
+        if constexpr ( pt::is_readonly ) {
             (void)registry;
             (void)variable_ptr;
             (void)arg;
@@ -8369,7 +8907,7 @@ namespace meta_hpp::detail
         using pt = pointer_traits<Pointer>;
         using data_type = typename pt::data_type;
 
-        if constexpr ( std::is_const_v<data_type> ) {
+        if constexpr ( pt::is_readonly ) {
             (void)registry;
             (void)arg;
             return uerror{error_code::bad_const_access};
@@ -8596,7 +9134,7 @@ namespace meta_hpp::detail
 {
     template < class_kind Class >
     class_type_data::class_type_data(type_list<Class>)
-    : type_data_base{type_kind::class_}
+    : type_data_base{type_kind::class_, shared_type_data_hash<type_kind::class_, Class>{}(this)}
     , flags{class_traits<Class>::make_flags()}
     , size{class_traits<Class>::size}
     , align{class_traits<Class>::align}
@@ -8647,7 +9185,7 @@ namespace meta_hpp
         if ( position < data_->argument_values.size() ) {
             return data_->argument_values[position];
         }
-        static uvalue empty_value;
+        static const uvalue empty_value;
         return empty_value;
     }
 
@@ -9335,7 +9873,7 @@ namespace meta_hpp::detail
 {
     template < array_kind Array >
     array_type_data::array_type_data(type_list<Array>)
-    : type_data_base{type_kind::array_}
+    : type_data_base{type_kind::array_, shared_type_data_hash<type_kind::array_, Array>{}(this)}
     , flags{array_traits<Array>::make_flags()}
     , extent{array_traits<Array>::extent}
     , data_type{resolve_type<typename array_traits<Array>::data_type>()} {}
@@ -9360,14 +9898,14 @@ namespace meta_hpp::detail
 {
     template < nullptr_kind Nullptr >
     nullptr_type_data::nullptr_type_data(type_list<Nullptr>)
-    : type_data_base{type_kind::nullptr_} {}
+    : type_data_base{type_kind::nullptr_, shared_type_data_hash<type_kind::nullptr_, Nullptr>{}(this)} {}
 }
 
 namespace meta_hpp::detail
 {
     template < number_kind Number >
     number_type_data::number_type_data(type_list<Number>)
-    : type_data_base{type_kind::number_}
+    : type_data_base{type_kind::number_, shared_type_data_hash<type_kind::number_, Number>{}(this)}
     , flags{number_traits<Number>::make_flags()}
     , size{number_traits<Number>::size}
     , align{number_traits<Number>::align} {}
@@ -9392,7 +9930,7 @@ namespace meta_hpp::detail
 {
     template < reference_kind Reference >
     reference_type_data::reference_type_data(type_list<Reference>)
-    : type_data_base{type_kind::reference_}
+    : type_data_base{type_kind::reference_, shared_type_data_hash<type_kind::reference_, Reference>{}(this)}
     , flags{reference_traits<Reference>::make_flags()}
     , data_type{resolve_type<typename reference_traits<Reference>::data_type>()} {}
 }
@@ -9412,7 +9950,7 @@ namespace meta_hpp::detail
 {
     template < void_kind Void >
     void_type_data::void_type_data(type_list<Void>)
-    : type_data_base{type_kind::void_} {}
+    : type_data_base{type_kind::void_, shared_type_data_hash<type_kind::void_, Void>{}(this)} {}
 }
 
 namespace meta_hpp::detail

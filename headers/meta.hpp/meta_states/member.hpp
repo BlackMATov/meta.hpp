@@ -102,7 +102,7 @@ namespace meta_hpp::detail
         using class_type = typename mt::class_type;
         using value_type = typename mt::value_type;
 
-        if constexpr ( std::is_const_v<value_type> ) {
+        if constexpr ( mt::is_readonly ) {
             (void)registry;
             (void)member_ptr;
             (void)inst;
@@ -134,7 +134,7 @@ namespace meta_hpp::detail
         using class_type = typename mt::class_type;
         using value_type = typename mt::value_type;
 
-        if constexpr ( std::is_const_v<value_type> ) {
+        if constexpr ( mt::is_readonly ) {
             (void)registry;
             (void)inst;
             (void)arg;

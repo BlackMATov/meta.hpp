@@ -25,7 +25,7 @@ namespace meta_hpp::detail
         static constexpr std::size_t arity{sizeof...(Args)};
 
         using class_type = Class;
-        using argument_types = type_list<Args...>;
+        using argument_types = type_list<std::remove_cv_t<Args>...>;
 
         [[nodiscard]] static constexpr constructor_bitflags make_flags() noexcept {
             constructor_bitflags flags{};

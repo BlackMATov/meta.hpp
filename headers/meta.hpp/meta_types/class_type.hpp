@@ -16,6 +16,7 @@
 #include "../meta_states/method.hpp"
 #include "../meta_states/variable.hpp"
 
+#include "../meta_detail/type_sharing.hpp"
 #include "../meta_detail/type_traits/class_traits.hpp"
 
 namespace meta_hpp::detail::class_type_data_impl
@@ -105,7 +106,7 @@ namespace meta_hpp::detail
 {
     template < class_kind Class >
     class_type_data::class_type_data(type_list<Class>)
-    : type_data_base{type_kind::class_}
+    : type_data_base{type_kind::class_, shared_type_data_hash<type_kind::class_, Class>{}(this)}
     , flags{class_traits<Class>::make_flags()}
     , size{class_traits<Class>::size}
     , align{class_traits<Class>::align}
@@ -156,7 +157,7 @@ namespace meta_hpp
         if ( position < data_->argument_values.size() ) {
             return data_->argument_values[position];
         }
-        static uvalue empty_value;
+        static const uvalue empty_value;
         return empty_value;
     }
 

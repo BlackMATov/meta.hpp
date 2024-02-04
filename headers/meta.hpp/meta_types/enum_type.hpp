@@ -12,6 +12,7 @@
 
 #include "../meta_states/evalue.hpp"
 
+#include "../meta_detail/type_sharing.hpp"
 #include "../meta_detail/type_traits/enum_traits.hpp"
 #include "../meta_detail/value_utilities/uarg.hpp"
 
@@ -19,7 +20,7 @@ namespace meta_hpp::detail
 {
     template < enum_kind Enum >
     enum_type_data::enum_type_data(type_list<Enum>)
-    : type_data_base{type_kind::enum_}
+    : type_data_base{type_kind::enum_, shared_type_data_hash<type_kind::enum_, Enum>{}(this)}
     , flags{enum_traits<Enum>::make_flags()}
     , underlying_type{resolve_type<typename enum_traits<Enum>::underlying_type>()} {}
 }
@@ -66,7 +67,7 @@ namespace meta_hpp
         if ( const evalue& value = get_evalue(name) ) {
             return value.get_value();
         }
-        static uvalue empty_value;
+        static const uvalue empty_value;
         return empty_value;
     }
 }

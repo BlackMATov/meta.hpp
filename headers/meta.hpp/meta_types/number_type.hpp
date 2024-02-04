@@ -10,13 +10,14 @@
 #include "../meta_registry.hpp"
 #include "../meta_types.hpp"
 
+#include "../meta_detail/type_sharing.hpp"
 #include "../meta_detail/type_traits/number_traits.hpp"
 
 namespace meta_hpp::detail
 {
     template < number_kind Number >
     number_type_data::number_type_data(type_list<Number>)
-    : type_data_base{type_kind::number_}
+    : type_data_base{type_kind::number_, shared_type_data_hash<type_kind::number_, Number>{}(this)}
     , flags{number_traits<Number>::make_flags()}
     , size{number_traits<Number>::size}
     , align{number_traits<Number>::align} {}

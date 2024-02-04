@@ -74,3 +74,48 @@ namespace meta_hpp::detail
     template < typename T >
     concept non_function_pointer_kind = std::is_pointer_v<T> && !std::is_function_v<std::remove_pointer_t<T>>;
 }
+
+namespace meta_hpp::detail
+{
+    template < typename T >
+    struct type_to_kind;
+
+    template < typename T >
+    inline constexpr type_kind type_to_kind_v = type_to_kind<T>::value;
+}
+
+namespace meta_hpp::detail
+{
+    template < array_kind T >
+    struct type_to_kind<T> : std::integral_constant<type_kind, type_kind::array_> {};
+
+    template < class_kind T >
+    struct type_to_kind<T> : std::integral_constant<type_kind, type_kind::class_> {};
+
+    template < enum_kind T >
+    struct type_to_kind<T> : std::integral_constant<type_kind, type_kind::enum_> {};
+
+    template < function_kind T >
+    struct type_to_kind<T> : std::integral_constant<type_kind, type_kind::function_> {};
+
+    template < member_pointer_kind T >
+    struct type_to_kind<T> : std::integral_constant<type_kind, type_kind::member_> {};
+
+    template < method_pointer_kind T >
+    struct type_to_kind<T> : std::integral_constant<type_kind, type_kind::method_> {};
+
+    template < nullptr_kind T >
+    struct type_to_kind<T> : std::integral_constant<type_kind, type_kind::nullptr_> {};
+
+    template < number_kind T >
+    struct type_to_kind<T> : std::integral_constant<type_kind, type_kind::number_> {};
+
+    template < pointer_kind T >
+    struct type_to_kind<T> : std::integral_constant<type_kind, type_kind::pointer_> {};
+
+    template < reference_kind T >
+    struct type_to_kind<T> : std::integral_constant<type_kind, type_kind::reference_> {};
+
+    template < void_kind T >
+    struct type_to_kind<T> : std::integral_constant<type_kind, type_kind::void_> {};
+}

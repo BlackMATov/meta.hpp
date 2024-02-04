@@ -24,6 +24,24 @@ TEST_CASE("meta/meta_types/member_type") {
         CHECK_FALSE(type.is_valid());
     }
 
+    SUBCASE("traits") {
+        using meta::detail::member_traits;
+
+        static_assert(!member_traits<int clazz_1::*>::is_readonly);
+        static_assert(member_traits<const int clazz_1::*>::is_readonly);
+
+        static_assert(!member_traits<int clazz_1::*>::is_volatile);
+        static_assert(member_traits<volatile int clazz_1::*>::is_volatile);
+
+        static_assert(std::is_same_v<member_traits<int clazz_1::*>::value_type, int>);
+        static_assert(std::is_same_v<member_traits<const int clazz_1::*>::value_type, int>);
+        static_assert(std::is_same_v<member_traits<const volatile int clazz_1::*>::value_type, int>);
+
+        static_assert(std::is_same_v<member_traits<int clazz_1::*>::cv_value_type, int>);
+        static_assert(std::is_same_v<member_traits<const int clazz_1::*>::cv_value_type, const int>);
+        static_assert(std::is_same_v<member_traits<const volatile int clazz_1::*>::cv_value_type, const volatile int>);
+    }
+
     SUBCASE("int") {
         const meta::member_type type = meta::resolve_type(&clazz_1::int_member);
         REQUIRE(type);

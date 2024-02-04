@@ -10,13 +10,14 @@
 #include "../meta_registry.hpp"
 #include "../meta_types.hpp"
 
+#include "../meta_detail/type_sharing.hpp"
 #include "../meta_detail/type_traits/member_traits.hpp"
 
 namespace meta_hpp::detail
 {
     template < member_pointer_kind Member >
     member_type_data::member_type_data(type_list<Member>)
-    : type_data_base{type_kind::member_}
+    : type_data_base{type_kind::member_, shared_type_data_hash<type_kind::member_, Member>{}(this)}
     , flags{member_traits<Member>::make_flags()}
     , owner_type{resolve_type<typename member_traits<Member>::class_type>()}
     , value_type{resolve_type<typename member_traits<Member>::value_type>()} {}

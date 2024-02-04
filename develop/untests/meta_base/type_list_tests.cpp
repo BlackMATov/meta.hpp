@@ -46,4 +46,22 @@ TEST_CASE("meta/meta_base/type_list") {
 
         static_assert(std::is_same_v<type_list_first_of_t<std::is_integral, long, type_list<float, double>>, long>);
     }
+
+    SUBCASE("type_list_and_v") {
+        using meta::detail::type_list_and_v;
+
+        static_assert(type_list_and_v<std::is_integral, type_list<int, unsigned>>);
+        static_assert(!type_list_and_v<std::is_integral, type_list<float, unsigned>>);
+        static_assert(!type_list_and_v<std::is_integral, type_list<int, float>>);
+        static_assert(!type_list_and_v<std::is_integral, type_list<float, double>>);
+    }
+
+    SUBCASE("type_list_or_v") {
+        using meta::detail::type_list_or_v;
+
+        static_assert(type_list_or_v<std::is_integral, type_list<int, unsigned>>);
+        static_assert(type_list_or_v<std::is_integral, type_list<float, unsigned>>);
+        static_assert(type_list_or_v<std::is_integral, type_list<int, float>>);
+        static_assert(!type_list_or_v<std::is_integral, type_list<float, double>>);
+    }
 }
