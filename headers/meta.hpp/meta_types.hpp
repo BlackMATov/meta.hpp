@@ -668,7 +668,7 @@ namespace meta_hpp
 {
     template < type_family Type >
     type_base<Type>::type_base(data_ptr data)
-    : data_{data} {}
+    : data_{std::move(data)} {}
 
     template < type_family Type >
     bool type_base<Type>::is_valid() const noexcept {
@@ -681,7 +681,7 @@ namespace meta_hpp
     }
 
     template < type_family Type >
-    type_base<Type>::id_type type_base<Type>::get_id() const noexcept {
+    typename type_base<Type>::id_type type_base<Type>::get_id() const noexcept {
         return id_type{data_};
     }
 

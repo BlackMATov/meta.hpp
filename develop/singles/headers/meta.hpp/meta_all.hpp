@@ -3188,7 +3188,7 @@ namespace meta_hpp
 {
     template < type_family Type >
     type_base<Type>::type_base(data_ptr data)
-    : data_{data} {}
+    : data_{std::move(data)} {}
 
     template < type_family Type >
     bool type_base<Type>::is_valid() const noexcept {
@@ -3201,7 +3201,7 @@ namespace meta_hpp
     }
 
     template < type_family Type >
-    type_base<Type>::id_type type_base<Type>::get_id() const noexcept {
+    typename type_base<Type>::id_type type_base<Type>::get_id() const noexcept {
         return id_type{data_};
     }
 
@@ -3745,30 +3745,19 @@ namespace meta_hpp
 
         state_base() = default;
 
-        explicit state_base(state_ptr state)
-        : state_{state} {}
+        explicit state_base(state_ptr state);
 
-        state_base(state_base&&) noexcept = default;
+        state_base(state_base&&) = default;
         state_base(const state_base&) = default;
 
-        state_base& operator=(state_base&&) noexcept = default;
+        state_base& operator=(state_base&&) = default;
         state_base& operator=(const state_base&) = default;
 
-        [[nodiscard]] bool is_valid() const noexcept {
-            return state_ != nullptr;
-        }
+        [[nodiscard]] bool is_valid() const noexcept;
+        [[nodiscard]] explicit operator bool() const noexcept;
 
-        [[nodiscard]] explicit operator bool() const noexcept {
-            return is_valid();
-        }
-
-        [[nodiscard]] const index_type& get_index() const noexcept {
-            return state_->index;
-        }
-
-        [[nodiscard]] const metadata_map& get_metadata() const noexcept {
-            return state_->metadata;
-        }
+        [[nodiscard]] const index_type& get_index() const noexcept;
+        [[nodiscard]] const metadata_map& get_metadata() const noexcept;
 
     protected:
         ~state_base() = default;
@@ -4285,6 +4274,33 @@ namespace meta_hpp::detail
         [[nodiscard]] static variable_state_ptr make(std::string name, Pointer variable_ptr, metadata_map metadata);
         explicit variable_state(variable_index index, metadata_map metadata);
     };
+}
+
+namespace meta_hpp
+{
+    template < state_family State >
+    state_base<State>::state_base(state_ptr state)
+    : state_{std::move(state)} {}
+
+    template < state_family State >
+    bool state_base<State>::is_valid() const noexcept {
+        return state_ != nullptr;
+    }
+
+    template < state_family State >
+    state_base<State>::operator bool() const noexcept {
+        return is_valid();
+    }
+
+    template < state_family State >
+    const typename state_base<State>::index_type& state_base<State>::get_index() const noexcept {
+        return state_->index;
+    }
+
+    template < state_family State >
+    const metadata_map& state_base<State>::get_metadata() const noexcept {
+        return state_->metadata;
+    }
 }
 
 namespace meta_hpp::detail
@@ -4911,12 +4927,12 @@ namespace meta_hpp
 namespace meta_hpp
 {
     inline scope_bind local_scope_(std::string name, metadata_map metadata = {}) {
-        scope local_scope{detail::scope_state::make(std::move(name), std::move(metadata))};
+        const scope local_scope{detail::scope_state::make(std::move(name), std::move(metadata))};
         return scope_bind{local_scope, {}};
     }
 
     inline scope_bind static_scope_(std::string_view name, metadata_map metadata = {}) {
-        scope static_scope{resolve_scope(name)};
+        const scope static_scope{resolve_scope(name)};
         return scope_bind{static_scope, std::move(metadata)};
     }
 
@@ -8780,7 +8796,7 @@ namespace meta_hpp
         if ( const evalue& value = get_evalue(name) ) {
             return value.get_value();
         }
-        static uvalue empty_value;
+        static const uvalue empty_value;
         return empty_value;
     }
 }
@@ -9183,7 +9199,7 @@ namespace meta_hpp
         if ( position < data_->argument_values.size() ) {
             return data_->argument_values[position];
         }
-        static uvalue empty_value;
+        static const uvalue empty_value;
         return empty_value;
     }
 

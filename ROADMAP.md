@@ -5,6 +5,7 @@
 - type conversions
 - fix all includes to work with the library more flexible
 - test and support shared libraries
+- remove ctor_type and dtor_type?
 
 ## Version 1.0
 
