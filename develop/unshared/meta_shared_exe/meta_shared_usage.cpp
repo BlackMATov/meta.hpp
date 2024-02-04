@@ -8,22 +8,22 @@
 
 #include <doctest/doctest.h>
 
-TEST_CASE("meta/meta_shared/exe") {
+namespace
+{
     namespace meta = meta_hpp;
     namespace shared = meta_shared_lib;
+}
 
+TEST_CASE("meta/meta_shared/usage") {
     const meta::scope library_scope = shared::get_library_scope();
     REQUIRE(library_scope);
 
     //
 
-    const meta::number_type int_type = library_scope.get_typedef("int").as_number();
-    REQUIRE(int_type);
-
     const meta::class_type ivec2_type = library_scope.get_typedef("ivec2").as_class();
     REQUIRE(ivec2_type);
 
-    const meta::constructor ivec2_ctor2 = ivec2_type.get_constructor_with({int_type, int_type});
+    const meta::constructor ivec2_ctor2 = ivec2_type.get_constructor_with<int, int>();
     REQUIRE(ivec2_ctor2);
 
     const meta::method ivec2_length2 = ivec2_type.get_method("length2");
@@ -31,11 +31,11 @@ TEST_CASE("meta/meta_shared/exe") {
 
     //
 
-    const meta::uvalue ivec2_inst = ivec2_ctor2.create(shared::wrap_int(3), shared::wrap_int(4));
+    const meta::uvalue ivec2_inst = ivec2_ctor2.create(3, 4);
     REQUIRE(ivec2_inst);
 
     const meta::uvalue ivec2_inst_length2 = ivec2_length2.invoke(ivec2_inst);
     REQUIRE(ivec2_inst_length2);
 
-    CHECK(shared::unwrap_int(ivec2_inst_length2) == 25);
+    CHECK(ivec2_inst_length2.as<int>() == 25);
 }

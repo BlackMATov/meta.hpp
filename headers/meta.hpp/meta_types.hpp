@@ -52,31 +52,28 @@ namespace meta_hpp
     class type_id final {
     public:
         type_id() = default;
+        ~type_id() = default;
 
-        [[nodiscard]] bool is_valid() const noexcept {
-            return data_ != nullptr;
-        }
+        type_id(type_id&&) = default;
+        type_id(const type_id&) = default;
 
-        [[nodiscard]] explicit operator bool() const noexcept {
-            return is_valid();
-        }
+        type_id& operator=(type_id&&) = default;
+        type_id& operator=(const type_id&) = default;
 
-        void swap(type_id& other) noexcept {
-            std::swap(data_, other.data_);
-        }
+        [[nodiscard]] bool is_valid() const noexcept;
+        [[nodiscard]] explicit operator bool() const noexcept;
 
-        [[nodiscard]] std::size_t get_hash() const noexcept {
-            return data_ != nullptr ? detail::hash_combiner{}(data_) : 0;
-        }
+        void swap(type_id& other) noexcept;
+        [[nodiscard]] std::size_t get_hash() const noexcept;
 
-        [[nodiscard]] std::strong_ordering operator<=>(const type_id& other) const = default;
+        [[nodiscard]] bool operator==(const type_id& other) const noexcept;
+        [[nodiscard]] std::strong_ordering operator<=>(const type_id& other) const noexcept;
 
     private:
         template < type_family T >
         friend class type_base;
 
-        explicit type_id(const detail::type_data_base* data)
-        : data_{data} {}
+        explicit type_id(const detail::type_data_base* data);
 
     private:
         const detail::type_data_base* data_{};
@@ -105,34 +102,20 @@ namespace meta_hpp
 
         type_base() = default;
 
-        explicit type_base(data_ptr data)
-        : data_{data} {}
+        explicit type_base(data_ptr data);
 
-        type_base(type_base&&) noexcept = default;
+        type_base(type_base&&) = default;
         type_base(const type_base&) = default;
 
-        type_base& operator=(type_base&&) noexcept = default;
+        type_base& operator=(type_base&&) = default;
         type_base& operator=(const type_base&) = default;
 
-        [[nodiscard]] bool is_valid() const noexcept {
-            return data_ != nullptr;
-        }
+        [[nodiscard]] bool is_valid() const noexcept;
+        [[nodiscard]] explicit operator bool() const noexcept;
 
-        [[nodiscard]] explicit operator bool() const noexcept {
-            return is_valid();
-        }
-
-        [[nodiscard]] id_type get_id() const noexcept {
-            return id_type{data_};
-        }
-
-        [[nodiscard]] type_kind get_kind() const noexcept {
-            return data_->kind;
-        }
-
-        [[nodiscard]] const metadata_map& get_metadata() const noexcept {
-            return data_->metadata;
-        }
+        [[nodiscard]] id_type get_id() const noexcept;
+        [[nodiscard]] type_kind get_kind() const noexcept;
+        [[nodiscard]] const metadata_map& get_metadata() const noexcept;
 
     protected:
         ~type_base() = default;
@@ -461,12 +444,14 @@ namespace meta_hpp::detail
     struct type_data_base {
         // NOLINTBEGIN(*-avoid-const-or-ref-data-members)
         const type_kind kind;
+        const std::size_t shared;
         // NOLINTEND(*-avoid-const-or-ref-data-members)
 
         metadata_map metadata;
 
-        explicit type_data_base(type_kind nkind)
-        : kind{nkind} {}
+        explicit type_data_base(type_kind nkind, std::size_t nshared)
+        : kind{nkind}
+        , shared{nshared} {}
 
         type_data_base(type_data_base&&) = delete;
         type_data_base(const type_data_base&) = delete;
@@ -630,4 +615,83 @@ namespace meta_hpp::detail
         template < void_kind Void >
         explicit void_type_data(type_list<Void>);
     };
+}
+
+namespace meta_hpp
+{
+    inline type_id::type_id(const detail::type_data_base* data)
+    : data_{data} {}
+
+    inline bool type_id::is_valid() const noexcept {
+        return data_ != nullptr;
+    }
+
+    inline type_id::operator bool() const noexcept {
+        return is_valid();
+    }
+
+    inline void type_id::swap(type_id& other) noexcept {
+        std::swap(data_, other.data_);
+    }
+
+    inline std::size_t type_id::get_hash() const noexcept {
+        return data_ != nullptr ? data_->shared : 0;
+    }
+
+    inline bool type_id::operator==(const type_id& other) const noexcept {
+        if ( data_ == other.data_ ) {
+            return true;
+        }
+
+        if ( is_valid() != other.is_valid() ) {
+            return false;
+        }
+
+        return data_->shared == other.data_->shared;
+    }
+
+    inline std::strong_ordering type_id::operator<=>(const type_id& other) const noexcept {
+        if ( data_ == other.data_ ) {
+            return std::strong_ordering::equal;
+        }
+
+        // NOLINTNEXTLINE(*-bool-conversion)
+        if ( const std::strong_ordering cmp{is_valid() <=> other.is_valid()}; cmp != std::strong_ordering::equal ) {
+            return cmp;
+        }
+
+        return data_->shared <=> other.data_->shared;
+    }
+}
+
+namespace meta_hpp
+{
+    template < type_family Type >
+    type_base<Type>::type_base(data_ptr data)
+    : data_{data} {}
+
+    template < type_family Type >
+    bool type_base<Type>::is_valid() const noexcept {
+        return data_ != nullptr;
+    }
+
+    template < type_family Type >
+    type_base<Type>::operator bool() const noexcept {
+        return is_valid();
+    }
+
+    template < type_family Type >
+    type_base<Type>::id_type type_base<Type>::get_id() const noexcept {
+        return id_type{data_};
+    }
+
+    template < type_family Type >
+    type_kind type_base<Type>::get_kind() const noexcept {
+        return data_->kind;
+    }
+
+    template < type_family Type >
+    const metadata_map& type_base<Type>::get_metadata() const noexcept {
+        return data_->metadata;
+    }
 }

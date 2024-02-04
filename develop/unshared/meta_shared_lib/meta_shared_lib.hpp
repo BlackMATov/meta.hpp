@@ -15,7 +15,4 @@ namespace meta_shared_lib
     namespace meta = meta_hpp;
 
     META_HPP_SHARED_LIB_EXPORT meta::scope get_library_scope();
-
-    META_HPP_SHARED_LIB_EXPORT meta::uvalue wrap_int(int value);
-    META_HPP_SHARED_LIB_EXPORT int unwrap_int(const meta::uvalue& value);
 }
