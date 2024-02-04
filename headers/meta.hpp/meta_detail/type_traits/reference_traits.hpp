@@ -25,16 +25,20 @@ namespace meta_hpp::detail
 {
     template < reference_kind Reference >
     struct reference_traits {
-        using data_type = std::remove_reference_t<Reference>;
+        using cv_data_type = std::remove_reference_t<Reference>;
+        inline static constexpr bool is_readonly = std::is_const_v<cv_data_type>;
+        inline static constexpr bool is_volatile = std::is_volatile_v<cv_data_type>;
+
+        using data_type = std::remove_cv_t<cv_data_type>;
 
         [[nodiscard]] static constexpr reference_bitflags make_flags() noexcept {
             reference_bitflags flags{};
 
-            if constexpr ( std::is_const_v<data_type> ) {
+            if constexpr ( is_readonly ) {
                 flags.set(reference_flags::is_readonly);
             }
 
-            if constexpr ( std::is_volatile_v<data_type> ) {
+            if constexpr ( is_volatile ) {
                 flags.set(reference_flags::is_volatile);
             }
 

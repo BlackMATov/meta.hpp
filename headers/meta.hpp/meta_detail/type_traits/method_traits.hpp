@@ -31,9 +31,9 @@ namespace meta_hpp::detail
         static constexpr std::size_t arity{sizeof...(Args)};
 
         using class_type = C;
-        using return_type = R;
+        using return_type = std::remove_cv_t<R>;
         using qualified_type = C;
-        using argument_types = type_list<Args...>;
+        using argument_types = type_list<std::remove_cv_t<Args>...>;
 
         [[nodiscard]] static constexpr method_bitflags make_flags() noexcept {
             return {};

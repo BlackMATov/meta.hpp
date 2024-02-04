@@ -16,6 +16,30 @@ TEST_CASE("meta/meta_types/pointer_type") {
         CHECK_FALSE(type.is_valid());
     }
 
+    SUBCASE("traits") {
+        using meta::detail::pointer_traits;
+
+        static_assert(!pointer_traits<int*>::is_readonly);
+        static_assert(!pointer_traits<volatile int*>::is_readonly);
+        static_assert(pointer_traits<const int*>::is_readonly);
+        static_assert(pointer_traits<const volatile int*>::is_readonly);
+
+        static_assert(!pointer_traits<int*>::is_volatile);
+        static_assert(pointer_traits<volatile int*>::is_volatile);
+        static_assert(!pointer_traits<const int*>::is_volatile);
+        static_assert(pointer_traits<const volatile int*>::is_volatile);
+
+        static_assert(std::is_same_v<pointer_traits<int*>::data_type, int>);
+        static_assert(std::is_same_v<pointer_traits<const int*>::data_type, int>);
+        static_assert(std::is_same_v<pointer_traits<volatile int*>::data_type, int>);
+        static_assert(std::is_same_v<pointer_traits<const volatile int*>::data_type, int>);
+
+        static_assert(std::is_same_v<pointer_traits<int*>::cv_data_type, int>);
+        static_assert(std::is_same_v<pointer_traits<const int*>::cv_data_type, const int>);
+        static_assert(std::is_same_v<pointer_traits<volatile int*>::cv_data_type, volatile int>);
+        static_assert(std::is_same_v<pointer_traits<const volatile int*>::cv_data_type, const volatile int>);
+    }
+
     SUBCASE("int*") {
         const meta::pointer_type type = meta::resolve_type<int*>();
         REQUIRE(type);

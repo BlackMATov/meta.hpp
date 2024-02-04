@@ -26,17 +26,21 @@ namespace meta_hpp::detail
 
     template < typename V, typename C >
     struct member_traits<V C::*> {
+        using cv_value_type = V;
+        inline static constexpr bool is_readonly = std::is_const_v<cv_value_type>;
+        inline static constexpr bool is_volatile = std::is_volatile_v<cv_value_type>;
+
         using class_type = C;
-        using value_type = V;
+        using value_type = std::remove_cv_t<cv_value_type>;
 
         [[nodiscard]] static constexpr member_bitflags make_flags() noexcept {
             member_bitflags flags{};
 
-            if constexpr ( std::is_const_v<value_type> ) {
+            if constexpr ( is_readonly ) {
                 flags.set(member_flags::is_readonly);
             }
 
-            if constexpr ( std::is_volatile_v<value_type> ) {
+            if constexpr ( is_volatile ) {
                 flags.set(member_flags::is_volatile);
             }
 

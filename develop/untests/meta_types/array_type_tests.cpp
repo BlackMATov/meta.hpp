@@ -16,6 +16,34 @@ TEST_CASE("meta/meta_types/array_type") {
         CHECK_FALSE(type.is_valid());
     }
 
+    SUBCASE("traits") {
+        using meta::detail::array_traits;
+
+        static_assert(array_traits<int[]>::extent == 0);
+        static_assert(array_traits<const int[]>::extent == 0);
+        static_assert(array_traits<const volatile int[]>::extent == 0);
+
+        static_assert(array_traits<int[42]>::extent == 42);
+        static_assert(array_traits<const int[42]>::extent == 42);
+        static_assert(array_traits<const volatile int[42]>::extent == 42);
+
+        static_assert(!array_traits<int[42]>::is_readonly);
+        static_assert(array_traits<const int[42]>::is_readonly);
+        static_assert(array_traits<const volatile int[42]>::is_readonly);
+
+        static_assert(!array_traits<int[42]>::is_volatile);
+        static_assert(!array_traits<const int[42]>::is_volatile);
+        static_assert(array_traits<const volatile int[42]>::is_volatile);
+
+        static_assert(std::is_same_v<array_traits<int[42]>::data_type, int>);
+        static_assert(std::is_same_v<array_traits<const int[42]>::data_type, int>);
+        static_assert(std::is_same_v<array_traits<const volatile int[42]>::data_type, int>);
+
+        static_assert(std::is_same_v<array_traits<int[42]>::cv_data_type, int>);
+        static_assert(std::is_same_v<array_traits<const int[42]>::cv_data_type, const int>);
+        static_assert(std::is_same_v<array_traits<const volatile int[42]>::cv_data_type, const volatile int>);
+    }
+
     SUBCASE("int[]") {
         const meta::array_type type = meta::resolve_type<int[]>();
         REQUIRE(type);
