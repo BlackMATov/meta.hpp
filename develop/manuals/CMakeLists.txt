@@ -4,7 +4,6 @@ file(GLOB_RECURSE MANUALS_SOURCES CONFIGURE_DEPENDS "*.cpp" "*.hpp")
 source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR} FILES ${MANUALS_SOURCES})
 
 add_executable(${PROJECT_NAME} ${MANUALS_SOURCES})
-add_executable(${PROJECT_NAME}.singles ${MANUALS_SOURCES})
 
 target_link_libraries(${PROJECT_NAME} PRIVATE
     meta.hpp::meta.hpp
@@ -12,17 +11,4 @@ target_link_libraries(${PROJECT_NAME} PRIVATE
     meta.hpp.vendors::doctest
     meta.hpp.vendors::fmt)
 
-target_link_libraries(${PROJECT_NAME}.singles PRIVATE
-    meta.hpp::singles
-    meta.hpp::setup_targets
-    meta.hpp.vendors::doctest
-    meta.hpp.vendors::fmt)
-
-target_compile_definitions(${PROJECT_NAME} PRIVATE
-    META_HPP_HEADERS_BUILD)
-
-target_compile_definitions(${PROJECT_NAME}.singles PRIVATE
-    META_HPP_SINGLES_BUILD)
-
 add_test(${PROJECT_NAME} ${PROJECT_NAME})
-add_test(${PROJECT_NAME} ${PROJECT_NAME}.singles)
