@@ -19,12 +19,14 @@ namespace meta_hpp
     using detail::function_pointer_kind;
     using detail::member_pointer_kind;
     using detail::method_pointer_kind;
-    using detail::non_pointer_kind;
     using detail::nullptr_kind;
     using detail::number_kind;
     using detail::pointer_kind;
     using detail::reference_kind;
     using detail::void_kind;
+
+    using detail::any_pointer_family;
+    using detail::not_any_pointer_family;
 }
 
 namespace meta_hpp

@@ -1149,9 +1149,6 @@ namespace meta_hpp::detail
     concept method_pointer_kind = std::is_member_function_pointer_v<T>;
 
     template < typename T >
-    concept non_pointer_kind = !std::is_pointer_v<T>;
-
-    template < typename T >
     concept nullptr_kind = std::is_null_pointer_v<T>;
 
     template < typename T >
@@ -1165,6 +1162,12 @@ namespace meta_hpp::detail
 
     template < typename T >
     concept void_kind = std::is_void_v<T>;
+
+    template < typename T >
+    concept any_pointer_family = std::is_pointer_v<T> || std::is_member_pointer_v<T>;
+
+    template < typename T >
+    concept not_any_pointer_family = !std::is_pointer_v<T> && !std::is_member_pointer_v<T>;
 }
 
 namespace meta_hpp::detail
@@ -2388,12 +2391,14 @@ namespace meta_hpp
     using detail::function_pointer_kind;
     using detail::member_pointer_kind;
     using detail::method_pointer_kind;
-    using detail::non_pointer_kind;
     using detail::nullptr_kind;
     using detail::number_kind;
     using detail::pointer_kind;
     using detail::reference_kind;
     using detail::void_kind;
+
+    using detail::any_pointer_family;
+    using detail::not_any_pointer_family;
 }
 
 namespace meta_hpp
@@ -2418,15 +2423,6 @@ namespace meta_hpp
        && std::is_same_v<Class, typename detail::method_traits<Method>::class_type>; //
 }
 
-namespace meta_hpp::detail
-{
-    template < typename T >
-    concept uvalue_as_object = !pointer_kind<T> && !member_pointer_kind<T> && !method_pointer_kind<T>;
-
-    template < typename T >
-    concept uvalue_as_pointer = pointer_kind<T> || member_pointer_kind<T> || method_pointer_kind<T>;
-}
-
 namespace meta_hpp
 {
     class uvalue final {
@@ -2435,43 +2431,41 @@ namespace meta_hpp
         ~uvalue() noexcept;
 
         uvalue(uvalue&& other) noexcept;
-        uvalue(const uvalue& other) = delete;
-
         uvalue& operator=(uvalue&& other) noexcept;
+
+        uvalue(const uvalue& other) = delete;
         uvalue& operator=(const uvalue& other) = delete;
 
-        template <                                 //
-            typename T,                            //
-            typename Tp = std::decay_t<T>,         //
-            typename = std::enable_if_t<           //
-                !uvalue_family<Tp> &&              //
-                !detail::is_in_place_type_v<Tp> && //
-                std::is_constructible_v<Tp, T>>>   //
+        template <                                              //
+            typename T,                                         //
+            typename = std::enable_if_t<                        //
+                !uvalue_family<std::decay_t<T>> &&              //
+                !detail::is_in_place_type_v<std::decay_t<T>> && //
+                std::is_constructible_v<std::decay_t<T>, T>>>   //
         uvalue(T&& val);
 
-        template <                               //
-            typename T,                          //
-            typename Tp = std::decay_t<T>,       //
-            typename = std::enable_if_t<         //
-                !uvalue_family<Tp> &&            //
-                std::is_constructible_v<Tp, T>>> //
+        template <                                            //
+            typename T,                                       //
+            typename = std::enable_if_t<                      //
+                !uvalue_family<std::decay_t<T>> &&            //
+                std::is_constructible_v<std::decay_t<T>, T>>> //
         uvalue& operator=(T&& val);
 
-        template < typename T, typename... Args, typename Tp = std::decay_t<T> >
-            requires std::is_constructible_v<Tp, Args...> //
+        template < typename T, typename... Args >
+            requires std::is_constructible_v<std::decay_t<T>, Args...>
         explicit uvalue(std::in_place_type_t<T>, Args&&... args);
 
-        template < typename T, typename U, typename... Args, typename Tp = std::decay_t<T> >
-            requires std::is_constructible_v<Tp, std::initializer_list<U>&, Args...> //
+        template < typename T, typename U, typename... Args >
+            requires std::is_constructible_v<std::decay_t<T>, std::initializer_list<U>&, Args...>
         explicit uvalue(std::in_place_type_t<T>, std::initializer_list<U> ilist, Args&&... args);
 
-        template < typename T, typename... Args, typename Tp = std::decay_t<T> >
-            requires std::is_constructible_v<Tp, Args...> //
-        Tp& emplace(Args&&... args);
+        template < typename T, typename... Args >
+            requires std::is_constructible_v<std::decay_t<T>, Args...>
+        std::decay_t<T>& emplace(Args&&... args);
 
-        template < typename T, typename U, typename... Args, typename Tp = std::decay_t<T> >
-            requires std::is_constructible_v<Tp, std::initializer_list<U>&, Args...> //
-        Tp& emplace(std::initializer_list<U> ilist, Args&&... args);
+        template < typename T, typename U, typename... Args >
+            requires std::is_constructible_v<std::decay_t<T>, std::initializer_list<U>&, Args...>
+        std::decay_t<T>& emplace(std::initializer_list<U> ilist, Args&&... args);
 
         [[nodiscard]] bool has_value() const noexcept;
         [[nodiscard]] explicit operator bool() const noexcept;
@@ -2500,32 +2494,32 @@ namespace meta_hpp
         template < typename T >
         [[nodiscard]] bool is() const noexcept;
 
-        template < detail::uvalue_as_pointer T >
+        template < any_pointer_family T >
         [[nodiscard]] T as();
-        template < detail::uvalue_as_pointer T >
+        template < any_pointer_family T >
         [[nodiscard]] T as() const;
 
-        template < detail::uvalue_as_object T >
+        template < not_any_pointer_family T >
         [[nodiscard]] T& as() &;
-        template < detail::uvalue_as_object T >
+        template < not_any_pointer_family T >
         [[nodiscard]] const T& as() const&;
-        template < detail::uvalue_as_object T >
+        template < not_any_pointer_family T >
         [[nodiscard]] T as() &&;
-        template < detail::uvalue_as_object T >
+        template < not_any_pointer_family T >
         [[nodiscard]] const T&& as() const&&;
 
-        template < detail::uvalue_as_pointer T >
+        template < any_pointer_family T >
         [[nodiscard]] T try_as() noexcept;
-        template < detail::uvalue_as_pointer T >
+        template < any_pointer_family T >
         [[nodiscard]] T try_as() const noexcept;
 
-        template < detail::uvalue_as_object T >
+        template < not_any_pointer_family T >
         [[nodiscard]] T* try_as() & noexcept;
-        template < detail::uvalue_as_object T >
+        template < not_any_pointer_family T >
         [[nodiscard]] const T* try_as() const& noexcept;
-        template < detail::uvalue_as_object T >
+        template < not_any_pointer_family T >
         void try_as() && = delete;
-        template < detail::uvalue_as_object T >
+        template < not_any_pointer_family T >
         void try_as() const&& = delete;
 
     private:
@@ -10472,39 +10466,39 @@ namespace meta_hpp
         return *this;
     }
 
-    template < typename T, typename Tp, typename >
+    template < typename T, typename >
     uvalue::uvalue(T&& val) {
         vtable_t::do_ctor<T>(*this, std::forward<T>(val));
     }
 
-    template < typename T, typename Tp, typename >
+    template < typename T, typename >
     uvalue& uvalue::operator=(T&& val) {
         uvalue{std::forward<T>(val)}.swap(*this);
         return *this;
     }
 
-    template < typename T, typename... Args, typename Tp >
-        requires std::is_constructible_v<Tp, Args...>
+    template < typename T, typename... Args >
+        requires std::is_constructible_v<std::decay_t<T>, Args...>
     uvalue::uvalue(std::in_place_type_t<T>, Args&&... args) {
         vtable_t::do_ctor<T>(*this, std::forward<Args>(args)...);
     }
 
-    template < typename T, typename U, typename... Args, typename Tp >
-        requires std::is_constructible_v<Tp, std::initializer_list<U>&, Args...>
+    template < typename T, typename U, typename... Args >
+        requires std::is_constructible_v<std::decay_t<T>, std::initializer_list<U>&, Args...>
     uvalue::uvalue(std::in_place_type_t<T>, std::initializer_list<U> ilist, Args&&... args) {
         vtable_t::do_ctor<T>(*this, ilist, std::forward<Args>(args)...);
     }
 
-    template < typename T, typename... Args, typename Tp >
-        requires std::is_constructible_v<Tp, Args...>
-    Tp& uvalue::emplace(Args&&... args) {
+    template < typename T, typename... Args >
+        requires std::is_constructible_v<std::decay_t<T>, Args...>
+    std::decay_t<T>& uvalue::emplace(Args&&... args) {
         vtable_t::do_reset(*this);
         return vtable_t::do_ctor<T>(*this, std::forward<Args>(args)...);
     }
 
-    template < typename T, typename U, typename... Args, typename Tp >
-        requires std::is_constructible_v<Tp, std::initializer_list<U>&, Args...>
-    Tp& uvalue::emplace(std::initializer_list<U> ilist, Args&&... args) {
+    template < typename T, typename U, typename... Args >
+        requires std::is_constructible_v<std::decay_t<T>, std::initializer_list<U>&, Args...>
+    std::decay_t<T>& uvalue::emplace(std::initializer_list<U> ilist, Args&&... args) {
         vtable_t::do_reset(*this);
         return vtable_t::do_ctor<T>(*this, ilist, std::forward<Args>(args)...);
     }
@@ -10635,7 +10629,7 @@ namespace meta_hpp
         return detail::is_a(resolve_type<T>(), get_type());
     }
 
-    template < detail::uvalue_as_pointer T >
+    template < any_pointer_family T >
     T uvalue::as() {
         static_assert(std::is_same_v<T, std::decay_t<T>>);
 
@@ -10646,7 +10640,7 @@ namespace meta_hpp
         throw_exception(error_code::bad_uvalue_access);
     }
 
-    template < detail::uvalue_as_pointer T >
+    template < any_pointer_family T >
     T uvalue::as() const {
         static_assert(std::is_same_v<T, std::decay_t<T>>);
 
@@ -10657,7 +10651,7 @@ namespace meta_hpp
         throw_exception(error_code::bad_uvalue_access);
     }
 
-    template < detail::uvalue_as_object T >
+    template < not_any_pointer_family T >
     T& uvalue::as() & {
         static_assert(std::is_same_v<T, std::decay_t<T>>);
 
@@ -10668,7 +10662,7 @@ namespace meta_hpp
         throw_exception(error_code::bad_uvalue_access);
     }
 
-    template < detail::uvalue_as_object T >
+    template < not_any_pointer_family T >
     const T& uvalue::as() const& {
         static_assert(std::is_same_v<T, std::decay_t<T>>);
 
@@ -10679,7 +10673,7 @@ namespace meta_hpp
         throw_exception(error_code::bad_uvalue_access);
     }
 
-    template < detail::uvalue_as_object T >
+    template < not_any_pointer_family T >
     T uvalue::as() && {
         static_assert(std::is_same_v<T, std::decay_t<T>>);
 
@@ -10690,7 +10684,7 @@ namespace meta_hpp
         throw_exception(error_code::bad_uvalue_access);
     }
 
-    template < detail::uvalue_as_object T >
+    template < not_any_pointer_family T >
     const T&& uvalue::as() const&& {
         static_assert(std::is_same_v<T, std::decay_t<T>>);
 
@@ -10701,7 +10695,7 @@ namespace meta_hpp
         throw_exception(error_code::bad_uvalue_access);
     }
 
-    template < detail::uvalue_as_pointer T >
+    template < any_pointer_family T >
     T uvalue::try_as() noexcept {
         static_assert(std::is_same_v<T, std::decay_t<T>>);
 
@@ -10715,7 +10709,7 @@ namespace meta_hpp
         return nullptr;
     }
 
-    template < detail::uvalue_as_pointer T >
+    template < any_pointer_family T >
     T uvalue::try_as() const noexcept {
         static_assert(std::is_same_v<T, std::decay_t<T>>);
 
@@ -10729,7 +10723,7 @@ namespace meta_hpp
         return nullptr;
     }
 
-    template < detail::uvalue_as_object T >
+    template < not_any_pointer_family T >
     T* uvalue::try_as() & noexcept {
         static_assert(std::is_same_v<T, std::decay_t<T>>);
 
@@ -10743,7 +10737,7 @@ namespace meta_hpp
         return nullptr;
     }
 
-    template < detail::uvalue_as_object T >
+    template < not_any_pointer_family T >
     const T* uvalue::try_as() const& noexcept {
         static_assert(std::is_same_v<T, std::decay_t<T>>);
 

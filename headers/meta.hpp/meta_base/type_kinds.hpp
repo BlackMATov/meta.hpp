@@ -51,9 +51,6 @@ namespace meta_hpp::detail
     concept method_pointer_kind = std::is_member_function_pointer_v<T>;
 
     template < typename T >
-    concept non_pointer_kind = !std::is_pointer_v<T>;
-
-    template < typename T >
     concept nullptr_kind = std::is_null_pointer_v<T>;
 
     template < typename T >
@@ -67,6 +64,12 @@ namespace meta_hpp::detail
 
     template < typename T >
     concept void_kind = std::is_void_v<T>;
+
+    template < typename T >
+    concept any_pointer_family = std::is_pointer_v<T> || std::is_member_pointer_v<T>;
+
+    template < typename T >
+    concept not_any_pointer_family = !std::is_pointer_v<T> && !std::is_member_pointer_v<T>;
 }
 
 namespace meta_hpp::detail
