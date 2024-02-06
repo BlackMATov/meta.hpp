@@ -20,7 +20,7 @@ jobs:
       - name: Setup
         run: |
           brew update
-          brew install cmake ninja
+          brew install cmake ninja doxygen
       - name: Checkout
         uses: actions/checkout@v4
         with:

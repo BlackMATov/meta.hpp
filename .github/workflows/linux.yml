@@ -19,7 +19,7 @@ jobs:
       - name: Setup
         run: |
           sudo apt-get update -o Acquire::Retries=10
-          sudo apt-get install -o Acquire::Retries=10 -y cmake ninja-build ${{matrix.config.cc}} ${{matrix.config.cxx}}
+          sudo apt-get install -o Acquire::Retries=10 -y cmake ninja-build doxygen ${{matrix.config.cc}} ${{matrix.config.cxx}}
       - name: Checkout
         uses: actions/checkout@v4
         with:
