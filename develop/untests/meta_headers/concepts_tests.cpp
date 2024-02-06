@@ -4,15 +4,13 @@
  * Copyright (C) 2021-2024, by Matvey Cherevko (blackmatov@gmail.com)
  ******************************************************************************/
 
-#pragma once
+#if defined(META_HPP_HEADERS_BUILD)
+#    include <meta.hpp/meta_concepts.hpp>
+#else
+#    include <meta.hpp/meta_all.hpp>
+#endif
 
-#include "../meta_base.hpp"
-#include "../meta_binds.hpp"
-#include "../meta_registry.hpp"
+#include <doctest/doctest.h>
 
-namespace meta_hpp
-{
-    template < number_kind Number >
-    number_bind<Number>::number_bind(metadata_map metadata)
-    : type_bind_base{resolve_type<Number>(), std::move(metadata)} {}
+TEST_CASE("meta/meta_headers/concepts") {
 }

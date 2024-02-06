@@ -12,7 +12,7 @@
 
 namespace meta_hpp
 {
-    template < detail::nullptr_kind Nullptr >
+    template < nullptr_kind Nullptr >
     nullptr_bind<Nullptr>::nullptr_bind(metadata_map metadata)
     : type_bind_base{resolve_type<Nullptr>(), std::move(metadata)} {}
 }

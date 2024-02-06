@@ -7,6 +7,7 @@
 #pragma once
 
 #include "../../meta_base.hpp"
+#include "../../meta_concepts.hpp"
 #include "../../meta_registry.hpp"
 #include "../../meta_uresult.hpp"
 #include "../../meta_uvalue.hpp"
@@ -85,11 +86,10 @@ namespace meta_hpp::detail
             return raw_type_;
         }
 
-        template < non_function_pointer_kind To >
+        template < pointer_kind To >
         [[nodiscard]] bool can_cast_to(type_registry& registry) const noexcept;
 
-        template < typename To >
-            requires(!non_function_pointer_kind<To>)
+        template < non_pointer_kind To >
         [[nodiscard]] bool can_cast_to(type_registry& registry) const noexcept;
 
     private:
@@ -138,11 +138,10 @@ namespace meta_hpp::detail
             // 'uarg_base' doesn't actually move 'v', just gets its type
         }
 
-        template < non_function_pointer_kind To >
+        template < pointer_kind To >
         [[nodiscard]] decltype(auto) cast(type_registry& registry) const;
 
-        template < typename To >
-            requires(!non_function_pointer_kind<To>)
+        template < non_pointer_kind To >
         [[nodiscard]] decltype(auto) cast(type_registry& registry) const;
 
     private:
@@ -152,7 +151,7 @@ namespace meta_hpp::detail
 
 namespace meta_hpp::detail
 {
-    template < non_function_pointer_kind To >
+    template < pointer_kind To >
     [[nodiscard]] bool uarg_base::can_cast_to(type_registry& registry) const noexcept {
         using to_raw_type = std::remove_cv_t<To>;
 
@@ -198,8 +197,7 @@ namespace meta_hpp::detail
         return false;
     }
 
-    template < typename To >
-        requires(!non_function_pointer_kind<To>)
+    template < non_pointer_kind To >
     [[nodiscard]] bool uarg_base::can_cast_to(type_registry& registry) const noexcept {
         using to_raw_type_cv = std::remove_reference_t<To>;
         using to_raw_type = std::remove_cv_t<to_raw_type_cv>;
@@ -258,7 +256,7 @@ namespace meta_hpp::detail
 
 namespace meta_hpp::detail
 {
-    template < non_function_pointer_kind To >
+    template < pointer_kind To >
     [[nodiscard]] decltype(auto) uarg::cast(type_registry& registry) const {
         META_HPP_DEV_ASSERT(can_cast_to<To>(registry) && "bad argument cast");
 
@@ -300,8 +298,7 @@ namespace meta_hpp::detail
         throw_exception(error_code::bad_argument_cast);
     }
 
-    template < typename To >
-        requires(!non_function_pointer_kind<To>)
+    template < non_pointer_kind To >
     [[nodiscard]] decltype(auto) uarg::cast(type_registry& registry) const {
         META_HPP_DEV_ASSERT(can_cast_to<To>(registry) && "bad argument cast");
 

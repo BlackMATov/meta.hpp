@@ -8,17 +8,7 @@
 
 #include "../meta_base.hpp"
 
-#include "type_traits/array_traits.hpp"
-#include "type_traits/class_traits.hpp"
-#include "type_traits/constructor_traits.hpp"
-#include "type_traits/destructor_traits.hpp"
-#include "type_traits/enum_traits.hpp"
-#include "type_traits/function_traits.hpp"
-#include "type_traits/member_traits.hpp"
-#include "type_traits/method_traits.hpp"
-#include "type_traits/number_traits.hpp"
-#include "type_traits/pointer_traits.hpp"
-#include "type_traits/reference_traits.hpp"
+#include "type_family.hpp"
 
 namespace meta_hpp::detail
 {

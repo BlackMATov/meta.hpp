@@ -12,7 +12,7 @@
 
 namespace meta_hpp
 {
-    template < detail::array_kind Array >
+    template < array_kind Array >
     array_bind<Array>::array_bind(metadata_map metadata)
     : type_bind_base{resolve_type<Array>(), std::move(metadata)} {}
 }

@@ -7,6 +7,7 @@
 #pragma once
 
 #include "meta_base.hpp"
+#include "meta_concepts.hpp"
 #include "meta_uvalue.hpp"
 
 #include "meta_detail/type_family.hpp"
@@ -213,19 +214,19 @@ namespace meta_hpp
         bool destroy(Arg&& arg) const;
         bool destroy_at(void* mem) const;
 
-        template < detail::class_kind Derived >
+        template < class_kind Derived >
         [[nodiscard]] bool is_base_of() const noexcept;
         [[nodiscard]] bool is_base_of(const class_type& derived) const noexcept;
 
-        template < detail::class_kind Derived >
+        template < class_kind Derived >
         [[nodiscard]] bool is_direct_base_of() const noexcept;
         [[nodiscard]] bool is_direct_base_of(const class_type& derived) const noexcept;
 
-        template < detail::class_kind Base >
+        template < class_kind Base >
         [[nodiscard]] bool is_derived_from() const noexcept;
         [[nodiscard]] bool is_derived_from(const class_type& base) const noexcept;
 
-        template < detail::class_kind Base >
+        template < class_kind Base >
         [[nodiscard]] bool is_direct_derived_from() const noexcept;
         [[nodiscard]] bool is_direct_derived_from(const class_type& base) const noexcept;
 
@@ -327,7 +328,7 @@ namespace meta_hpp
 
         [[nodiscard]] evalue get_evalue(std::string_view name) const noexcept;
 
-        template < detail::enum_kind Enum >
+        template < enum_kind Enum >
         [[nodiscard]] std::string_view value_to_name(Enum value) const noexcept;
         [[nodiscard]] const uvalue& name_to_value(std::string_view name) const noexcept;
     };

@@ -12,7 +12,7 @@
 
 namespace meta_hpp
 {
-    template < detail::reference_kind Reference >
+    template < reference_kind Reference >
     reference_bind<Reference>::reference_bind(metadata_map metadata)
     : type_bind_base{resolve_type<Reference>(), std::move(metadata)} {}
 }

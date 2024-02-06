@@ -7,31 +7,10 @@
 #pragma once
 
 #include "meta_base.hpp"
+#include "meta_concepts.hpp"
 #include "meta_registry.hpp"
 #include "meta_states.hpp"
 #include "meta_types.hpp"
-
-namespace meta_hpp::detail
-{
-    template < typename Class, typename... Args >
-    concept class_bind_constructor_kind            //
-        = class_kind<Class>                        //
-       && std::is_constructible_v<Class, Args...>; //
-
-    template < typename Class >
-    concept class_bind_destructor_kind                        //
-        = class_kind<Class> && std::is_destructible_v<Class>; //
-
-    template < typename Member, typename Class >
-    concept class_bind_member_kind                                           //
-        = member_pointer_kind<Member> && class_kind<Class>                   //
-       && std::is_same_v<Class, typename member_traits<Member>::class_type>; //
-
-    template < typename Method, typename Class >
-    concept class_bind_method_kind                                           //
-        = method_pointer_kind<Method> && class_kind<Class>                   //
-       && std::is_same_v<Class, typename method_traits<Method>::class_type>; //
-}
 
 namespace meta_hpp
 {
@@ -88,7 +67,7 @@ namespace meta_hpp
 
 namespace meta_hpp
 {
-    template < detail::array_kind Array >
+    template < array_kind Array >
     class array_bind final : public type_bind_base<array_type> {
     public:
         explicit array_bind(metadata_map metadata);
@@ -97,39 +76,39 @@ namespace meta_hpp
 
 namespace meta_hpp
 {
-    template < detail::class_kind Class >
+    template < class_kind Class >
     class class_bind final : public type_bind_base<class_type> {
     public:
         explicit class_bind(metadata_map metadata);
 
         template < typename... Args, typename... Opts >
-            requires detail::class_bind_constructor_kind<Class, Args...>
+            requires class_constructor_kind<Class, Args...>
         class_bind& constructor_(Opts&&... opts);
 
         template < typename... Opts >
-            requires detail::class_bind_destructor_kind<Class>
+            requires class_destructor_kind<Class>
         class_bind& destructor_(Opts&&... opts);
 
-        template < detail::function_pointer_kind Function, typename... Opts >
+        template < function_pointer_kind Function, typename... Opts >
         class_bind& function_(std::string name, Function function_ptr, Opts&&... opts);
 
-        template < detail::class_bind_member_kind<Class> Member, typename... Opts >
+        template < class_member_kind<Class> Member, typename... Opts >
         class_bind& member_(std::string name, Member member_ptr, Opts&&... opts);
 
-        template < detail::class_bind_method_kind<Class> Method, typename... Opts >
+        template < class_method_kind<Class> Method, typename... Opts >
         class_bind& method_(std::string name, Method method_ptr, Opts&&... opts);
 
         template < typename Type >
         class_bind& typedef_(std::string name);
 
-        template < detail::pointer_kind Pointer, typename... Opts >
+        template < pointer_kind Pointer, typename... Opts >
         class_bind& variable_(std::string name, Pointer variable_ptr, Opts&&... opts);
     };
 }
 
 namespace meta_hpp
 {
-    template < detail::enum_kind Enum >
+    template < enum_kind Enum >
     class enum_bind final : public type_bind_base<enum_type> {
     public:
         explicit enum_bind(metadata_map metadata);
@@ -141,7 +120,7 @@ namespace meta_hpp
 
 namespace meta_hpp
 {
-    template < detail::function_kind Function >
+    template < function_kind Function >
     class function_bind final : public type_bind_base<function_type> {
     public:
         explicit function_bind(metadata_map metadata);
@@ -150,7 +129,7 @@ namespace meta_hpp
 
 namespace meta_hpp
 {
-    template < detail::member_pointer_kind Member >
+    template < member_pointer_kind Member >
     class member_bind final : public type_bind_base<member_type> {
     public:
         explicit member_bind(metadata_map metadata);
@@ -159,7 +138,7 @@ namespace meta_hpp
 
 namespace meta_hpp
 {
-    template < detail::method_pointer_kind Method >
+    template < method_pointer_kind Method >
     class method_bind final : public type_bind_base<method_type> {
     public:
         explicit method_bind(metadata_map metadata);
@@ -168,7 +147,7 @@ namespace meta_hpp
 
 namespace meta_hpp
 {
-    template < detail::nullptr_kind Nullptr >
+    template < nullptr_kind Nullptr >
     class nullptr_bind final : public type_bind_base<nullptr_type> {
     public:
         explicit nullptr_bind(metadata_map metadata);
@@ -177,7 +156,7 @@ namespace meta_hpp
 
 namespace meta_hpp
 {
-    template < detail::number_kind Number >
+    template < number_kind Number >
     class number_bind final : public type_bind_base<number_type> {
     public:
         explicit number_bind(metadata_map metadata);
@@ -186,7 +165,7 @@ namespace meta_hpp
 
 namespace meta_hpp
 {
-    template < detail::pointer_kind Pointer >
+    template < pointer_kind Pointer >
     class pointer_bind final : public type_bind_base<pointer_type> {
     public:
         explicit pointer_bind(metadata_map metadata);
@@ -195,7 +174,7 @@ namespace meta_hpp
 
 namespace meta_hpp
 {
-    template < detail::reference_kind Reference >
+    template < reference_kind Reference >
     class reference_bind final : public type_bind_base<reference_type> {
     public:
         explicit reference_bind(metadata_map metadata);
@@ -204,7 +183,7 @@ namespace meta_hpp
 
 namespace meta_hpp
 {
-    template < detail::void_kind Void >
+    template < void_kind Void >
     class void_bind final : public type_bind_base<void_type> {
     public:
         explicit void_bind(metadata_map metadata);
@@ -217,70 +196,70 @@ namespace meta_hpp
     public:
         explicit scope_bind(const scope& scope, metadata_map metadata);
 
-        template < detail::function_pointer_kind Function, typename... Opts >
+        template < function_pointer_kind Function, typename... Opts >
         scope_bind& function_(std::string name, Function function_ptr, Opts&&... opts);
 
         template < typename Type >
         scope_bind& typedef_(std::string name);
 
-        template < detail::pointer_kind Pointer, typename... Opts >
+        template < pointer_kind Pointer, typename... Opts >
         scope_bind& variable_(std::string name, Pointer variable_ptr, Opts&&... opts);
     };
 }
 
 namespace meta_hpp
 {
-    template < detail::array_kind Array >
+    template < array_kind Array >
     array_bind<Array> array_(metadata_map metadata = {}) {
         return array_bind<Array>{std::move(metadata)};
     }
 
-    template < detail::class_kind Class >
+    template < class_kind Class >
     class_bind<Class> class_(metadata_map metadata = {}) {
         return class_bind<Class>{std::move(metadata)};
     }
 
-    template < detail::enum_kind Enum >
+    template < enum_kind Enum >
     enum_bind<Enum> enum_(metadata_map metadata = {}) {
         return enum_bind<Enum>{std::move(metadata)};
     }
 
-    template < detail::function_kind Function >
+    template < function_kind Function >
     function_bind<Function> function_(metadata_map metadata = {}) {
         return function_bind<Function>{std::move(metadata)};
     }
 
-    template < detail::member_pointer_kind Member >
+    template < member_pointer_kind Member >
     member_bind<Member> member_(metadata_map metadata = {}) {
         return member_bind<Member>{std::move(metadata)};
     }
 
-    template < detail::method_pointer_kind Method >
+    template < method_pointer_kind Method >
     method_bind<Method> method_(metadata_map metadata = {}) {
         return method_bind<Method>{std::move(metadata)};
     }
 
-    template < detail::nullptr_kind Nullptr >
+    template < nullptr_kind Nullptr >
     nullptr_bind<Nullptr> nullptr_(metadata_map metadata = {}) {
         return nullptr_bind<Nullptr>{std::move(metadata)};
     }
 
-    template < detail::number_kind Number >
+    template < number_kind Number >
     number_bind<Number> number_(metadata_map metadata = {}) {
         return number_bind<Number>{std::move(metadata)};
     }
 
-    template < detail::pointer_kind Pointer >
+    template < pointer_kind Pointer >
     pointer_bind<Pointer> pointer_(metadata_map metadata = {}) {
         return pointer_bind<Pointer>{std::move(metadata)};
     }
 
-    template < detail::reference_kind Reference >
+    template < reference_kind Reference >
     reference_bind<Reference> reference_(metadata_map metadata = {}) {
         return reference_bind<Reference>{std::move(metadata)};
     }
 
-    template < detail::void_kind Void >
+    template < void_kind Void >
     void_bind<Void> void_(metadata_map metadata = {}) {
         return void_bind<Void>{std::move(metadata)};
     }

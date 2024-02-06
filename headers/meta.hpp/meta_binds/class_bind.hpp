@@ -12,7 +12,7 @@
 
 namespace meta_hpp
 {
-    template < detail::class_kind Class >
+    template < class_kind Class >
     class_bind<Class>::class_bind(metadata_map metadata)
     : type_bind_base{resolve_type<Class>(), std::move(metadata)} {
         if constexpr ( std::is_destructible_v<Class> ) {
@@ -20,9 +20,9 @@ namespace meta_hpp
         }
     }
 
-    template < detail::class_kind Class >
+    template < class_kind Class >
     template < typename... Args, typename... Opts >
-        requires detail::class_bind_constructor_kind<Class, Args...>
+        requires class_constructor_kind<Class, Args...>
     class_bind<Class>& class_bind<Class>::constructor_(Opts&&... opts) {
         using namespace detail;
 
@@ -56,9 +56,9 @@ namespace meta_hpp
         return *this;
     }
 
-    template < detail::class_kind Class >
+    template < class_kind Class >
     template < typename... Opts >
-        requires detail::class_bind_destructor_kind<Class>
+        requires class_destructor_kind<Class>
     class_bind<Class>& class_bind<Class>::destructor_(Opts&&... opts) {
         using namespace detail;
         metadata_bind::values_t metadata = metadata_bind::from_opts(META_HPP_FWD(opts)...);
@@ -67,8 +67,8 @@ namespace meta_hpp
         return *this;
     }
 
-    template < detail::class_kind Class >
-    template < detail::function_pointer_kind Function, typename... Opts >
+    template < class_kind Class >
+    template < function_pointer_kind Function, typename... Opts >
     class_bind<Class>& class_bind<Class>::function_(std::string name, Function function_ptr, Opts&&... opts) {
         using namespace detail;
 
@@ -102,8 +102,8 @@ namespace meta_hpp
         return *this;
     }
 
-    template < detail::class_kind Class >
-    template < detail::class_bind_member_kind<Class> Member, typename... Opts >
+    template < class_kind Class >
+    template < class_member_kind<Class> Member, typename... Opts >
     class_bind<Class>& class_bind<Class>::member_(std::string name, Member member_ptr, Opts&&... opts) {
         using namespace detail;
 
@@ -121,8 +121,8 @@ namespace meta_hpp
         return *this;
     }
 
-    template < detail::class_kind Class >
-    template < detail::class_bind_method_kind<Class> Method, typename... Opts >
+    template < class_kind Class >
+    template < class_method_kind<Class> Method, typename... Opts >
     class_bind<Class>& class_bind<Class>::method_(std::string name, Method method_ptr, Opts&&... opts) {
         using namespace detail;
 
@@ -156,15 +156,15 @@ namespace meta_hpp
         return *this;
     }
 
-    template < detail::class_kind Class >
+    template < class_kind Class >
     template < typename Type >
     class_bind<Class>& class_bind<Class>::typedef_(std::string name) {
         get_data().typedefs.insert_or_assign(std::move(name), resolve_type<Type>());
         return *this;
     }
 
-    template < detail::class_kind Class >
-    template < detail::pointer_kind Pointer, typename... Opts >
+    template < class_kind Class >
+    template < pointer_kind Pointer, typename... Opts >
     class_bind<Class>& class_bind<Class>::variable_(std::string name, Pointer variable_ptr, Opts&&... opts) {
         using namespace detail;
 

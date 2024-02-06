@@ -15,7 +15,7 @@ namespace meta_hpp
     inline scope_bind::scope_bind(const scope& scope, metadata_map metadata)
     : state_bind_base{scope, std::move(metadata)} {}
 
-    template < detail::function_pointer_kind Function, typename... Opts >
+    template < function_pointer_kind Function, typename... Opts >
     scope_bind& scope_bind::function_(std::string name, Function function_ptr, Opts&&... opts) {
         using namespace detail;
 
@@ -55,7 +55,7 @@ namespace meta_hpp
         return *this;
     }
 
-    template < detail::pointer_kind Pointer, typename... Opts >
+    template < pointer_kind Pointer, typename... Opts >
     scope_bind& scope_bind::variable_(std::string name, Pointer variable_ptr, Opts&&... opts) {
         using namespace detail;
 

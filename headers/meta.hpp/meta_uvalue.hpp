@@ -7,6 +7,7 @@
 #pragma once
 
 #include "meta_base.hpp"
+#include "meta_concepts.hpp"
 
 namespace meta_hpp
 {
@@ -81,28 +82,28 @@ namespace meta_hpp
         template < typename T >
         [[nodiscard]] bool is() const noexcept;
 
-        template < detail::pointer_kind T >
+        template < pointer_kind T >
         [[nodiscard]] T as();
-        template < detail::pointer_kind T >
+        template < pointer_kind T >
         [[nodiscard]] T as() const;
 
-        template < detail::non_pointer_kind T >
+        template < non_pointer_kind T >
         [[nodiscard]] T as() &&;
-        template < detail::non_pointer_kind T >
+        template < non_pointer_kind T >
         [[nodiscard]] T& as() &;
-        template < detail::non_pointer_kind T >
+        template < non_pointer_kind T >
         [[nodiscard]] const T& as() const&;
-        template < detail::non_pointer_kind T >
+        template < non_pointer_kind T >
         [[nodiscard]] const T&& as() const&&;
 
-        template < detail::pointer_kind T >
+        template < pointer_kind T >
         [[nodiscard]] T try_as() noexcept;
-        template < detail::pointer_kind T >
+        template < pointer_kind T >
         [[nodiscard]] T try_as() const noexcept;
 
-        template < detail::non_pointer_kind T >
+        template < non_pointer_kind T >
         [[nodiscard]] T* try_as() noexcept;
-        template < detail::non_pointer_kind T >
+        template < non_pointer_kind T >
         [[nodiscard]] const T* try_as() const noexcept;
 
     private:

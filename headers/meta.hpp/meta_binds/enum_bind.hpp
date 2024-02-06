@@ -12,11 +12,11 @@
 
 namespace meta_hpp
 {
-    template < detail::enum_kind Enum >
+    template < enum_kind Enum >
     enum_bind<Enum>::enum_bind(metadata_map metadata)
     : type_bind_base{resolve_type<Enum>(), std::move(metadata)} {}
 
-    template < detail::enum_kind Enum >
+    template < enum_kind Enum >
     template < typename... Opts >
     enum_bind<Enum>& enum_bind<Enum>::evalue_(std::string name, Enum value, Opts&&... opts) {
         metadata_bind::values_t metadata = metadata_bind::from_opts(META_HPP_FWD(opts)...);
