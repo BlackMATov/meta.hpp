@@ -9,6 +9,15 @@
 #include "meta_base.hpp"
 #include "meta_concepts.hpp"
 
+namespace meta_hpp::detail
+{
+    template < typename T >
+    concept uvalue_as_object = !pointer_kind<T> && !member_pointer_kind<T> && !method_pointer_kind<T>;
+
+    template < typename T >
+    concept uvalue_as_pointer = pointer_kind<T> || member_pointer_kind<T> || method_pointer_kind<T>;
+}
+
 namespace meta_hpp
 {
     class uvalue final {
@@ -82,32 +91,32 @@ namespace meta_hpp
         template < typename T >
         [[nodiscard]] bool is() const noexcept;
 
-        template < pointer_kind T >
+        template < detail::uvalue_as_pointer T >
         [[nodiscard]] T as();
-        template < pointer_kind T >
+        template < detail::uvalue_as_pointer T >
         [[nodiscard]] T as() const;
 
-        template < non_pointer_kind T >
+        template < detail::uvalue_as_object T >
         [[nodiscard]] T& as() &;
-        template < non_pointer_kind T >
+        template < detail::uvalue_as_object T >
         [[nodiscard]] const T& as() const&;
-        template < non_pointer_kind T >
+        template < detail::uvalue_as_object T >
         [[nodiscard]] T as() &&;
-        template < non_pointer_kind T >
+        template < detail::uvalue_as_object T >
         [[nodiscard]] const T&& as() const&&;
 
-        template < pointer_kind T >
+        template < detail::uvalue_as_pointer T >
         [[nodiscard]] T try_as() noexcept;
-        template < pointer_kind T >
+        template < detail::uvalue_as_pointer T >
         [[nodiscard]] T try_as() const noexcept;
 
-        template < non_pointer_kind T >
+        template < detail::uvalue_as_object T >
         [[nodiscard]] T* try_as() & noexcept;
-        template < non_pointer_kind T >
+        template < detail::uvalue_as_object T >
         [[nodiscard]] const T* try_as() const& noexcept;
-        template < non_pointer_kind T >
+        template < detail::uvalue_as_object T >
         void try_as() && = delete;
-        template < non_pointer_kind T >
+        template < detail::uvalue_as_object T >
         void try_as() const&& = delete;
 
     private:

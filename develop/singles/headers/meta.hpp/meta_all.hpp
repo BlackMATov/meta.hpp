@@ -2418,6 +2418,15 @@ namespace meta_hpp
        && std::is_same_v<Class, typename detail::method_traits<Method>::class_type>; //
 }
 
+namespace meta_hpp::detail
+{
+    template < typename T >
+    concept uvalue_as_object = !pointer_kind<T> && !member_pointer_kind<T> && !method_pointer_kind<T>;
+
+    template < typename T >
+    concept uvalue_as_pointer = pointer_kind<T> || member_pointer_kind<T> || method_pointer_kind<T>;
+}
+
 namespace meta_hpp
 {
     class uvalue final {
@@ -2491,32 +2500,32 @@ namespace meta_hpp
         template < typename T >
         [[nodiscard]] bool is() const noexcept;
 
-        template < pointer_kind T >
+        template < detail::uvalue_as_pointer T >
         [[nodiscard]] T as();
-        template < pointer_kind T >
+        template < detail::uvalue_as_pointer T >
         [[nodiscard]] T as() const;
 
-        template < non_pointer_kind T >
+        template < detail::uvalue_as_object T >
         [[nodiscard]] T& as() &;
-        template < non_pointer_kind T >
+        template < detail::uvalue_as_object T >
         [[nodiscard]] const T& as() const&;
-        template < non_pointer_kind T >
+        template < detail::uvalue_as_object T >
         [[nodiscard]] T as() &&;
-        template < non_pointer_kind T >
+        template < detail::uvalue_as_object T >
         [[nodiscard]] const T&& as() const&&;
 
-        template < pointer_kind T >
+        template < detail::uvalue_as_pointer T >
         [[nodiscard]] T try_as() noexcept;
-        template < pointer_kind T >
+        template < detail::uvalue_as_pointer T >
         [[nodiscard]] T try_as() const noexcept;
 
-        template < non_pointer_kind T >
+        template < detail::uvalue_as_object T >
         [[nodiscard]] T* try_as() & noexcept;
-        template < non_pointer_kind T >
+        template < detail::uvalue_as_object T >
         [[nodiscard]] const T* try_as() const& noexcept;
-        template < non_pointer_kind T >
+        template < detail::uvalue_as_object T >
         void try_as() && = delete;
-        template < non_pointer_kind T >
+        template < detail::uvalue_as_object T >
         void try_as() const&& = delete;
 
     private:
@@ -6017,6 +6026,15 @@ namespace meta_hpp::detail
 
 namespace meta_hpp::detail
 {
+    template < typename T >
+    concept uarg_cast_to_object = !pointer_kind<T> || function_pointer_kind<T>;
+
+    template < typename T >
+    concept uarg_cast_to_pointer = pointer_kind<T> && !function_pointer_kind<T>;
+}
+
+namespace meta_hpp::detail
+{
     class uarg_base {
     public:
         enum class ref_types {
@@ -6087,10 +6105,10 @@ namespace meta_hpp::detail
             return raw_type_;
         }
 
-        template < pointer_kind To >
+        template < uarg_cast_to_pointer To >
         [[nodiscard]] bool can_cast_to(type_registry& registry) const noexcept;
 
-        template < non_pointer_kind To >
+        template < uarg_cast_to_object To >
         [[nodiscard]] bool can_cast_to(type_registry& registry) const noexcept;
 
     private:
@@ -6139,10 +6157,10 @@ namespace meta_hpp::detail
             // 'uarg_base' doesn't actually move 'v', just gets its type
         }
 
-        template < pointer_kind To >
+        template < uarg_cast_to_pointer To >
         [[nodiscard]] decltype(auto) cast(type_registry& registry) const;
 
-        template < non_pointer_kind To >
+        template < uarg_cast_to_object To >
         [[nodiscard]] decltype(auto) cast(type_registry& registry) const;
 
     private:
@@ -6152,7 +6170,7 @@ namespace meta_hpp::detail
 
 namespace meta_hpp::detail
 {
-    template < pointer_kind To >
+    template < uarg_cast_to_pointer To >
     [[nodiscard]] bool uarg_base::can_cast_to(type_registry& registry) const noexcept {
         using to_raw_type = std::remove_cv_t<To>;
 
@@ -6198,7 +6216,7 @@ namespace meta_hpp::detail
         return false;
     }
 
-    template < non_pointer_kind To >
+    template < uarg_cast_to_object To >
     [[nodiscard]] bool uarg_base::can_cast_to(type_registry& registry) const noexcept {
         using to_raw_type_cv = std::remove_reference_t<To>;
         using to_raw_type = std::remove_cv_t<to_raw_type_cv>;
@@ -6257,7 +6275,7 @@ namespace meta_hpp::detail
 
 namespace meta_hpp::detail
 {
-    template < pointer_kind To >
+    template < uarg_cast_to_pointer To >
     [[nodiscard]] decltype(auto) uarg::cast(type_registry& registry) const {
         META_HPP_DEV_ASSERT(can_cast_to<To>(registry) && "bad argument cast");
 
@@ -6299,7 +6317,7 @@ namespace meta_hpp::detail
         throw_exception(error_code::bad_argument_cast);
     }
 
-    template < non_pointer_kind To >
+    template < uarg_cast_to_object To >
     [[nodiscard]] decltype(auto) uarg::cast(type_registry& registry) const {
         META_HPP_DEV_ASSERT(can_cast_to<To>(registry) && "bad argument cast");
 
@@ -10617,7 +10635,7 @@ namespace meta_hpp
         return detail::is_a(resolve_type<T>(), get_type());
     }
 
-    template < pointer_kind T >
+    template < detail::uvalue_as_pointer T >
     T uvalue::as() {
         static_assert(std::is_same_v<T, std::decay_t<T>>);
 
@@ -10628,7 +10646,7 @@ namespace meta_hpp
         throw_exception(error_code::bad_uvalue_access);
     }
 
-    template < pointer_kind T >
+    template < detail::uvalue_as_pointer T >
     T uvalue::as() const {
         static_assert(std::is_same_v<T, std::decay_t<T>>);
 
@@ -10639,7 +10657,7 @@ namespace meta_hpp
         throw_exception(error_code::bad_uvalue_access);
     }
 
-    template < non_pointer_kind T >
+    template < detail::uvalue_as_object T >
     T& uvalue::as() & {
         static_assert(std::is_same_v<T, std::decay_t<T>>);
 
@@ -10650,7 +10668,7 @@ namespace meta_hpp
         throw_exception(error_code::bad_uvalue_access);
     }
 
-    template < non_pointer_kind T >
+    template < detail::uvalue_as_object T >
     const T& uvalue::as() const& {
         static_assert(std::is_same_v<T, std::decay_t<T>>);
 
@@ -10661,7 +10679,7 @@ namespace meta_hpp
         throw_exception(error_code::bad_uvalue_access);
     }
 
-    template < non_pointer_kind T >
+    template < detail::uvalue_as_object T >
     T uvalue::as() && {
         static_assert(std::is_same_v<T, std::decay_t<T>>);
 
@@ -10672,7 +10690,7 @@ namespace meta_hpp
         throw_exception(error_code::bad_uvalue_access);
     }
 
-    template < non_pointer_kind T >
+    template < detail::uvalue_as_object T >
     const T&& uvalue::as() const&& {
         static_assert(std::is_same_v<T, std::decay_t<T>>);
 
@@ -10683,7 +10701,7 @@ namespace meta_hpp
         throw_exception(error_code::bad_uvalue_access);
     }
 
-    template < pointer_kind T >
+    template < detail::uvalue_as_pointer T >
     T uvalue::try_as() noexcept {
         static_assert(std::is_same_v<T, std::decay_t<T>>);
 
@@ -10697,7 +10715,7 @@ namespace meta_hpp
         return nullptr;
     }
 
-    template < pointer_kind T >
+    template < detail::uvalue_as_pointer T >
     T uvalue::try_as() const noexcept {
         static_assert(std::is_same_v<T, std::decay_t<T>>);
 
@@ -10711,7 +10729,7 @@ namespace meta_hpp
         return nullptr;
     }
 
-    template < non_pointer_kind T >
+    template < detail::uvalue_as_object T >
     T* uvalue::try_as() & noexcept {
         static_assert(std::is_same_v<T, std::decay_t<T>>);
 
@@ -10725,7 +10743,7 @@ namespace meta_hpp
         return nullptr;
     }
 
-    template < non_pointer_kind T >
+    template < detail::uvalue_as_object T >
     const T* uvalue::try_as() const& noexcept {
         static_assert(std::is_same_v<T, std::decay_t<T>>);
 
