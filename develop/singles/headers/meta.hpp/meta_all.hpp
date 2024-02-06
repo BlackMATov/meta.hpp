@@ -9985,42 +9985,45 @@ namespace meta_hpp::detail
         typename From,
         typename ToDT = std::remove_pointer_t<To>,
         typename FromDT = std::remove_pointer_t<From> >
-    concept pointer_ucast_kind                                                      //
+    concept ucast_as_pointers                                                       //
         = (std::is_pointer_v<From> && std::is_class_v<FromDT>)                      //
        &&(std::is_pointer_v<To> && (std::is_class_v<ToDT> || std::is_void_v<ToDT>)) //
-       && (!std::is_const_v<FromDT> || std::is_const_v<ToDT>)                       //
-       &&(!std::is_volatile_v<FromDT> || std::is_volatile_v<ToDT>);                 //
+       && (std::is_const_v<ToDT> >= std::is_const_v<FromDT>)                        //
+       &&(std::is_volatile_v<ToDT> >= std::is_volatile_v<FromDT>);                  //
 
     template <
         typename To,
         typename From,
         typename ToDT = std::remove_reference_t<To>,
         typename FromDT = std::remove_reference_t<From> >
-    concept lvalue_reference_ucast_kind                                 //
+    concept ucast_as_references                                         //
         = (std::is_lvalue_reference_v<From> && std::is_class_v<FromDT>) //
         &&(std::is_lvalue_reference_v<To> && std::is_class_v<ToDT>)     //
-        &&(!std::is_const_v<FromDT> || std::is_const_v<ToDT>)           //
-        &&(!std::is_volatile_v<FromDT> || std::is_volatile_v<ToDT>);    //
+        &&(std::is_const_v<ToDT> >= std::is_const_v<FromDT>)            //
+        &&(std::is_volatile_v<ToDT> >= std::is_volatile_v<FromDT>);     //
 }
 
 namespace meta_hpp
 {
     template < typename To, typename From >
-        requires detail::pointer_ucast_kind<To, From>
+        requires detail::ucast_as_pointers<To, From>
     To ucast(From from);
 
     template < typename To, typename From >
-        requires detail::lvalue_reference_ucast_kind<To, From>
+        requires detail::ucast_as_references<To, From>
     To ucast(From&& from);
 }
 
 namespace meta_hpp
 {
     template < typename To, typename From >
-        requires detail::pointer_ucast_kind<To, From>
+        requires detail::ucast_as_pointers<To, From>
     To ucast(From from) {
-        using from_data_type = std::remove_pointer_t<From>;
-        using to_data_type = std::remove_pointer_t<To>;
+        using from_cv_data_type = std::remove_pointer_t<From>;
+        using from_data_type = std::remove_cv_t<from_cv_data_type>;
+
+        using to_cv_data_type = std::remove_pointer_t<To>;
+        using to_data_type = std::remove_cv_t<to_cv_data_type>;
 
         static_assert(
             detail::poly_info_enabled<from_data_type>,
@@ -10032,7 +10035,7 @@ namespace meta_hpp
             return nullptr;
         }
 
-        if constexpr ( std::is_same_v<std::remove_cv_t<from_data_type>, std::remove_cv_t<to_data_type>> ) {
+        if constexpr ( std::is_same_v<from_data_type, to_data_type> ) {
             return from;
         } else {
             detail::type_registry& registry{detail::type_registry::instance()};
@@ -10051,19 +10054,19 @@ namespace meta_hpp
     }
 
     template < typename To, typename From >
-        requires detail::lvalue_reference_ucast_kind<To, From>
+        requires detail::ucast_as_references<To, From>
     // NOLINTNEXTLINE(*-missing-std-forward)
     To ucast(From&& from) {
-        using from_data_type = std::remove_reference_t<From>;
-        using to_data_type = std::remove_reference_t<To>;
+        using from_cv_data_type = std::remove_reference_t<From>;
+        using to_cv_data_type = std::remove_reference_t<To>;
 
         static_assert(
-            detail::poly_info_enabled<from_data_type>,
+            detail::poly_info_enabled<from_cv_data_type>,
             "The type doesn't support ucasts. "
             "Use the META_HPP_ENABLE_POLY_INFO macro to fix it."
         );
 
-        if ( to_data_type* ptr = ucast<to_data_type*>(std::addressof(from)) ) {
+        if ( to_cv_data_type* ptr = ucast<to_cv_data_type*>(std::addressof(from)) ) {
             return *ptr;
         }
 
