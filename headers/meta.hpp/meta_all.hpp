@@ -36,6 +36,8 @@
 #include "meta_invoke.hpp"
 #include "meta_invoke/invoke.hpp"
 
+#include "meta_policies.hpp"
+
 #include "meta_registry.hpp"
 
 #include "meta_states.hpp"

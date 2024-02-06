@@ -15,7 +15,7 @@
 
 namespace meta_hpp::detail
 {
-    template < variable_policy::family Policy, pointer_kind Pointer >
+    template < variable_policy_family Policy, pointer_kind Pointer >
     uvalue raw_variable_getter(type_registry&, Pointer variable_ptr) {
         using pt = pointer_traits<Pointer>;
         using data_type = typename pt::data_type;
@@ -87,7 +87,7 @@ namespace meta_hpp::detail
 
 namespace meta_hpp::detail
 {
-    template < variable_policy::family Policy, pointer_kind Pointer >
+    template < variable_policy_family Policy, pointer_kind Pointer >
     variable_state::getter_impl make_variable_getter(type_registry& registry, Pointer variable_ptr) {
         return [&registry, variable_ptr]() { //
             return raw_variable_getter<Policy>(registry, variable_ptr);
@@ -115,7 +115,7 @@ namespace meta_hpp::detail
     : index{std::move(nindex)}
     , metadata{std::move(nmetadata)} {}
 
-    template < variable_policy::family Policy, pointer_kind Pointer >
+    template < variable_policy_family Policy, pointer_kind Pointer >
     variable_state_ptr variable_state::make(std::string name, Pointer variable_ptr, metadata_map metadata) {
         type_registry& registry{type_registry::instance()};
 

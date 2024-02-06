@@ -8,139 +8,12 @@
 
 #include "meta_base.hpp"
 #include "meta_indices.hpp"
+#include "meta_policies.hpp"
 #include "meta_types.hpp"
 #include "meta_uresult.hpp"
 #include "meta_uvalue.hpp"
 
 #include "meta_detail/state_family.hpp"
-
-namespace meta_hpp
-{
-    namespace constructor_policy
-    {
-        inline constexpr struct as_object_t final {
-        } as_object{};
-
-        inline constexpr struct as_raw_pointer_t final {
-        } as_raw_pointer{};
-
-        inline constexpr struct as_shared_pointer_t final {
-        } as_shared_pointer{};
-
-        inline constexpr struct as_unique_pointer_t final {
-        } as_unique_pointer{};
-
-        template < typename Policy >
-        concept family                                     //
-            = std::is_same_v<Policy, as_object_t>          //
-           || std::is_same_v<Policy, as_raw_pointer_t>     //
-           || std::is_same_v<Policy, as_shared_pointer_t>  //
-           || std::is_same_v<Policy, as_unique_pointer_t>; //
-
-        template < typename T >
-        using is_family = std::bool_constant<family<T>>;
-
-        template < typename T >
-        inline constexpr bool is_family_v = is_family<T>::value;
-    }
-
-    namespace function_policy
-    {
-        inline constexpr struct as_copy_t final {
-        } as_copy{};
-
-        inline constexpr struct discard_return_t final {
-        } discard_return{};
-
-        inline constexpr struct return_reference_as_pointer_t final {
-        } return_reference_as_pointer{};
-
-        template < typename Policy >
-        concept family                                               //
-            = std::is_same_v<Policy, as_copy_t>                      //
-           || std::is_same_v<Policy, discard_return_t>               //
-           || std::is_same_v<Policy, return_reference_as_pointer_t>; //
-
-        template < typename T >
-        using is_family = std::bool_constant<family<T>>;
-
-        template < typename T >
-        inline constexpr bool is_family_v = is_family<T>::value;
-    }
-
-    namespace member_policy
-    {
-        inline constexpr struct as_copy_t final {
-        } as_copy{};
-
-        inline constexpr struct as_pointer_t final {
-        } as_pointer{};
-
-        inline constexpr struct as_reference_wrapper_t final {
-        } as_reference_wrapper{};
-
-        template < typename Policy >
-        concept family                                        //
-            = std::is_same_v<Policy, as_copy_t>               //
-           || std::is_same_v<Policy, as_pointer_t>            //
-           || std::is_same_v<Policy, as_reference_wrapper_t>; //
-
-        template < typename T >
-        using is_family = std::bool_constant<family<T>>;
-
-        template < typename T >
-        inline constexpr bool is_family_v = is_family<T>::value;
-
-    }
-
-    namespace method_policy
-    {
-        inline constexpr struct as_copy_t final {
-        } as_copy{};
-
-        inline constexpr struct discard_return_t final {
-        } discard_return{};
-
-        inline constexpr struct return_reference_as_pointer_t final {
-        } return_reference_as_pointer{};
-
-        template < typename Policy >
-        concept family                                               //
-            = std::is_same_v<Policy, as_copy_t>                      //
-           || std::is_same_v<Policy, discard_return_t>               //
-           || std::is_same_v<Policy, return_reference_as_pointer_t>; //
-
-        template < typename T >
-        using is_family = std::bool_constant<family<T>>;
-
-        template < typename T >
-        inline constexpr bool is_family_v = is_family<T>::value;
-    }
-
-    namespace variable_policy
-    {
-        inline constexpr struct as_copy_t final {
-        } as_copy{};
-
-        inline constexpr struct as_pointer_t final {
-        } as_pointer{};
-
-        inline constexpr struct as_reference_wrapper_t final {
-        } as_reference_wrapper{};
-
-        template < typename Policy >
-        concept family                                        //
-            = std::is_same_v<Policy, as_copy_t>               //
-           || std::is_same_v<Policy, as_pointer_t>            //
-           || std::is_same_v<Policy, as_reference_wrapper_t>; //
-
-        template < typename T >
-        using is_family = std::bool_constant<family<T>>;
-
-        template < typename T >
-        inline constexpr bool is_family_v = is_family<T>::value;
-    }
-}
 
 namespace meta_hpp
 {
@@ -569,7 +442,7 @@ namespace meta_hpp::detail
         create_error_impl create_error{};
         argument_list arguments{};
 
-        template < constructor_policy::family Policy, class_kind Class, typename... Args >
+        template < constructor_policy_family Policy, class_kind Class, typename... Args >
         [[nodiscard]] static constructor_state_ptr make(metadata_map metadata);
         explicit constructor_state(constructor_index index, metadata_map metadata);
     };
@@ -614,7 +487,7 @@ namespace meta_hpp::detail
         invoke_error_impl invoke_error{};
         argument_list arguments{};
 
-        template < function_policy::family Policy, function_pointer_kind Function >
+        template < function_policy_family Policy, function_pointer_kind Function >
         [[nodiscard]] static function_state_ptr make(std::string name, Function function_ptr, metadata_map metadata);
         explicit function_state(function_index index, metadata_map metadata);
     };
@@ -634,7 +507,7 @@ namespace meta_hpp::detail
         getter_error_impl getter_error{};
         setter_error_impl setter_error{};
 
-        template < member_policy::family Policy, member_pointer_kind Member >
+        template < member_policy_family Policy, member_pointer_kind Member >
         [[nodiscard]] static member_state_ptr make(std::string name, Member member_ptr, metadata_map metadata);
         explicit member_state(member_index index, metadata_map metadata);
     };
@@ -650,7 +523,7 @@ namespace meta_hpp::detail
         invoke_error_impl invoke_error{};
         argument_list arguments{};
 
-        template < method_policy::family Policy, method_pointer_kind Method >
+        template < method_policy_family Policy, method_pointer_kind Method >
         [[nodiscard]] static method_state_ptr make(std::string name, Method method_ptr, metadata_map metadata);
         explicit method_state(method_index index, metadata_map metadata);
     };
@@ -679,7 +552,7 @@ namespace meta_hpp::detail
         setter_impl setter{};
         setter_error_impl setter_error{};
 
-        template < variable_policy::family Policy, pointer_kind Pointer >
+        template < variable_policy_family Policy, pointer_kind Pointer >
         [[nodiscard]] static variable_state_ptr make(std::string name, Pointer variable_ptr, metadata_map metadata);
         explicit variable_state(variable_index index, metadata_map metadata);
     };
