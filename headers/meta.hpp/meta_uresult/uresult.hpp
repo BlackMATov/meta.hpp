@@ -71,39 +71,39 @@ namespace meta_hpp
         return *this;
     }
 
-    template < typename T, typename Tp, typename >
+    template < typename T, typename >
     uresult::uresult(T&& val)
     : value_{std::forward<T>(val)} {}
 
-    template < typename T, typename Tp, typename >
+    template < typename T, typename >
     uresult& uresult::operator=(T&& val) {
         value_ = std::forward<T>(val);
         error_ = error_code::no_error;
         return *this;
     }
 
-    template < typename T, typename... Args, typename Tp >
-        requires std::is_constructible_v<Tp, Args...> //
+    template < typename T, typename... Args >
+        requires std::is_constructible_v<std::decay_t<T>, Args...> //
     uresult::uresult(std::in_place_type_t<T>, Args&&... args)
     : value_{std::in_place_type<T>, std::forward<Args>(args)...} {}
 
-    template < typename T, typename U, typename... Args, typename Tp >
-        requires std::is_constructible_v<Tp, std::initializer_list<U>&, Args...> //
+    template < typename T, typename U, typename... Args >
+        requires std::is_constructible_v<std::decay_t<T>, std::initializer_list<U>&, Args...> //
     uresult::uresult(std::in_place_type_t<T>, std::initializer_list<U> ilist, Args&&... args)
     : value_{std::in_place_type<T>, ilist, std::forward<Args>(args)...} {}
 
-    template < typename T, typename... Args, typename Tp >
-        requires std::is_constructible_v<Tp, Args...> //
-    Tp& uresult::emplace(Args&&... args) {
-        Tp& val{value_.emplace<Tp>(std::forward<Args>(args)...)};
+    template < typename T, typename... Args >
+        requires std::is_constructible_v<std::decay_t<T>, Args...> //
+    std::decay_t<T>& uresult::emplace(Args&&... args) {
+        std::decay_t<T>& val{value_.emplace<std::decay_t<T>>(std::forward<Args>(args)...)};
         error_ = error_code::no_error;
         return val;
     }
 
-    template < typename T, typename U, typename... Args, typename Tp >
-        requires std::is_constructible_v<Tp, std::initializer_list<U>&, Args...> //
-    Tp& uresult::emplace(std::initializer_list<U> ilist, Args&&... args) {
-        Tp& val{value_.emplace<Tp>(ilist, std::forward<Args>(args)...)};
+    template < typename T, typename U, typename... Args >
+        requires std::is_constructible_v<std::decay_t<T>, std::initializer_list<U>&, Args...> //
+    std::decay_t<T>& uresult::emplace(std::initializer_list<U> ilist, Args&&... args) {
+        std::decay_t<T>& val{value_.emplace<std::decay_t<T>>(ilist, std::forward<Args>(args)...)};
         error_ = error_code::no_error;
         return val;
     }
