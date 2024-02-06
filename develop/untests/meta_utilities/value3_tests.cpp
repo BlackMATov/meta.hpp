@@ -224,9 +224,7 @@ TEST_CASE("meta/meta_utilities/value3/try_as") {
     namespace meta = meta_hpp;
 
     static_assert(std::is_same_v<decltype(std::declval<meta::uvalue&>().try_as<derived>()), derived*>);
-    static_assert(std::is_same_v<decltype(std::declval<meta::uvalue&&>().try_as<derived>()), derived*>);
     static_assert(std::is_same_v<decltype(std::declval<const meta::uvalue&>().try_as<derived>()), const derived*>);
-    static_assert(std::is_same_v<decltype(std::declval<const meta::uvalue&&>().try_as<derived>()), const derived*>);
 
     static_assert(std::is_same_v<decltype(std::declval<meta::uvalue&>().try_as<derived*>()), derived*>);
     static_assert(std::is_same_v<decltype(std::declval<meta::uvalue&&>().try_as<derived*>()), derived*>);

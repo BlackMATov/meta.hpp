@@ -443,17 +443,6 @@ namespace meta_hpp
     }
 
     template < non_pointer_kind T >
-    T uvalue::as() && {
-        static_assert(std::is_same_v<T, std::decay_t<T>>);
-
-        if ( T* ptr = try_as<T>() ) {
-            return std::move(*ptr);
-        }
-
-        throw_exception(error_code::bad_uvalue_access);
-    }
-
-    template < non_pointer_kind T >
     T& uvalue::as() & {
         static_assert(std::is_same_v<T, std::decay_t<T>>);
 
@@ -470,6 +459,17 @@ namespace meta_hpp
 
         if ( const T* ptr = try_as<T>() ) {
             return *ptr;
+        }
+
+        throw_exception(error_code::bad_uvalue_access);
+    }
+
+    template < non_pointer_kind T >
+    T uvalue::as() && {
+        static_assert(std::is_same_v<T, std::decay_t<T>>);
+
+        if ( T* ptr = try_as<T>() ) {
+            return std::move(*ptr);
         }
 
         throw_exception(error_code::bad_uvalue_access);
@@ -515,7 +515,7 @@ namespace meta_hpp
     }
 
     template < non_pointer_kind T >
-    T* uvalue::try_as() noexcept {
+    T* uvalue::try_as() & noexcept {
         static_assert(std::is_same_v<T, std::decay_t<T>>);
 
         using namespace detail;
@@ -529,7 +529,7 @@ namespace meta_hpp
     }
 
     template < non_pointer_kind T >
-    const T* uvalue::try_as() const noexcept {
+    const T* uvalue::try_as() const& noexcept {
         static_assert(std::is_same_v<T, std::decay_t<T>>);
 
         using namespace detail;

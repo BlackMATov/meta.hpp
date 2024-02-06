@@ -88,11 +88,11 @@ namespace meta_hpp
         [[nodiscard]] T as() const;
 
         template < non_pointer_kind T >
-        [[nodiscard]] T as() &&;
-        template < non_pointer_kind T >
         [[nodiscard]] T& as() &;
         template < non_pointer_kind T >
         [[nodiscard]] const T& as() const&;
+        template < non_pointer_kind T >
+        [[nodiscard]] T as() &&;
         template < non_pointer_kind T >
         [[nodiscard]] const T&& as() const&&;
 
@@ -102,9 +102,13 @@ namespace meta_hpp
         [[nodiscard]] T try_as() const noexcept;
 
         template < non_pointer_kind T >
-        [[nodiscard]] T* try_as() noexcept;
+        [[nodiscard]] T* try_as() & noexcept;
         template < non_pointer_kind T >
-        [[nodiscard]] const T* try_as() const noexcept;
+        [[nodiscard]] const T* try_as() const& noexcept;
+        template < non_pointer_kind T >
+        void try_as() && = delete;
+        template < non_pointer_kind T >
+        void try_as() const&& = delete;
 
     private:
         struct vtable_t;
