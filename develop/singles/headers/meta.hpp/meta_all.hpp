@@ -171,11 +171,13 @@ namespace meta_hpp::detail
         using underlying_type = std::underlying_type_t<Enum>;
 
         bitflags() = default;
-        bitflags(const bitflags&) = default;
-        bitflags& operator=(const bitflags&) = default;
-        bitflags(bitflags&&) noexcept = default;
-        bitflags& operator=(bitflags&&) noexcept = default;
         ~bitflags() = default;
+
+        bitflags(bitflags&&) = default;
+        bitflags(const bitflags&) = default;
+
+        bitflags& operator=(bitflags&&) = default;
+        bitflags& operator=(const bitflags&) = default;
 
         constexpr bitflags(enum_type flags)
         : flags_(static_cast<underlying_type>(flags)) {}
@@ -3547,11 +3549,11 @@ namespace meta_hpp
         uerror() = default;
         ~uerror() = default;
 
-        uerror(uerror&&) noexcept = default;
-        uerror(const uerror&) noexcept = default;
+        uerror(uerror&&) = default;
+        uerror(const uerror&) = default;
 
-        uerror& operator=(uerror&&) noexcept = default;
-        uerror& operator=(const uerror&) noexcept = default;
+        uerror& operator=(uerror&&) = default;
+        uerror& operator=(const uerror&) = default;
 
         explicit uerror(error_code error) noexcept;
         uerror& operator=(error_code error) noexcept;
@@ -3598,10 +3600,10 @@ namespace meta_hpp
         uresult() = default;
         ~uresult() = default;
 
-        uresult(uresult&&) noexcept = default;
+        uresult(uresult&&) = default;
         uresult(const uresult&) = delete;
 
-        uresult& operator=(uresult&&) noexcept = default;
+        uresult& operator=(uresult&&) = default;
         uresult& operator=(const uresult&) = delete;
 
         explicit(false) uresult(uerror error) noexcept;

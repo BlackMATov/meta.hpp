@@ -19,11 +19,13 @@ namespace meta_hpp::detail
         using underlying_type = std::underlying_type_t<Enum>;
 
         bitflags() = default;
-        bitflags(const bitflags&) = default;
-        bitflags& operator=(const bitflags&) = default;
-        bitflags(bitflags&&) noexcept = default;
-        bitflags& operator=(bitflags&&) noexcept = default;
         ~bitflags() = default;
+
+        bitflags(bitflags&&) = default;
+        bitflags(const bitflags&) = default;
+
+        bitflags& operator=(bitflags&&) = default;
+        bitflags& operator=(const bitflags&) = default;
 
         constexpr bitflags(enum_type flags)
         : flags_(static_cast<underlying_type>(flags)) {}
