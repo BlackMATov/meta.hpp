@@ -155,6 +155,7 @@
 |                                                     |                  |
 | --------------------------------------------------- | ---------------- |
 | [type_id](./api/basics.md#type_id)                  | type_id          |
+| [type_base](./api/types.md#type_base)               | type_base        |
 | [any_type](./api/types.md#any_type)                 | any_type         |
 | [array_type](./api/types.md#array_type)             | array_type       |
 | [class_type](./api/types.md#class_type)             | class_type       |
