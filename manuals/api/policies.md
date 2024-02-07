@@ -12,42 +12,83 @@
 
 ### constructor_policy
 
-`as_object`
+```cpp
+namespace constructor_policy
+{
+    inline constexpr struct as_object_t final {
+    } as_object{};
 
-`as_raw_pointer`
+    inline constexpr struct as_raw_pointer_t final {
+    } as_raw_pointer{};
 
-`as_shared_pointer`
+    inline constexpr struct as_shared_pointer_t final {
+    } as_shared_pointer{};
 
-`as_unique_pointer`
+    inline constexpr struct as_unique_pointer_t final {
+    } as_unique_pointer{};
+}
+```
 
 ### function_policy
 
-`as_copy`
+```cpp
+namespace function_policy
+{
+    inline constexpr struct as_copy_t final {
+    } as_copy{};
 
-`discard_return`
+    inline constexpr struct discard_return_t final {
+    } discard_return{};
 
-`return_reference_as_pointer`
+    inline constexpr struct return_reference_as_pointer_t final {
+    } return_reference_as_pointer{};
+}
+```
 
 ### member_policy
 
-`as_copy`
+```cpp
+namespace member_policy
+{
+    inline constexpr struct as_copy_t final {
+    } as_copy{};
 
-`as_pointer`
+    inline constexpr struct as_pointer_t final {
+    } as_pointer{};
 
-`as_reference_wrapper`
+    inline constexpr struct as_reference_wrapper_t final {
+    } as_reference_wrapper{};
+}
+```
 
 ### method_policy
 
-`as_copy`
+```cpp
+namespace method_policy
+{
+    inline constexpr struct as_copy_t final {
+    } as_copy{};
 
-`discard_return`
+    inline constexpr struct discard_return_t final {
+    } discard_return{};
 
-`return_reference_as_pointer`
+    inline constexpr struct return_reference_as_pointer_t final {
+    } return_reference_as_pointer{};
+}
+```
 
 ### variable_policy
 
-`as_copy`
+```cpp
+namespace variable_policy
+{
+    inline constexpr struct as_copy_t final {
+    } as_copy{};
 
-`as_pointer`
+    inline constexpr struct as_pointer_t final {
+    } as_pointer{};
 
-`as_reference_wrapper`
+    inline constexpr struct as_reference_wrapper_t final {
+    } as_reference_wrapper{};
+}
+```
