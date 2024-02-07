@@ -127,10 +127,10 @@
 
 |                                                    |                |
 | -------------------------------------------------- | -------------- |
-| [resolve_type](./api/registry.md#resolve_type)     | resole_type    |
 | [for_each_type](./api/registry.md#for_each_type)   | for_each_type  |
-| [resolve_scope](./api/registry.md#resolve_scope)   | resolve_scope  |
+| [resolve_type](./api/registry.md#resolve_type)     | resole_type    |
 | [for_each_scope](./api/registry.md#for_each_scope) | for_each_scope |
+| [resolve_scope](./api/registry.md#resolve_scope)   | resolve_scope  |
 
 ## States
 
