@@ -138,6 +138,7 @@
 
 |                                            |             |
 | ------------------------------------------ | ----------- |
+| [state_base](./api/states.md#state_base)   | state_base  |
 | [argument](./api/states.md#argument)       | argument    |
 | [constructor](./api/states.md#constructor) | constructor |
 | [destructor](./api/states.md#destructor)   | destructor  |
