@@ -25,7 +25,7 @@ TEST_CASE("meta/meta_states/method2") {
     namespace meta = meta_hpp;
 
     meta::class_<ivec2>()
-        .method_("add", &ivec2::add, meta::argument_("other"));
+        .method_("add", &ivec2::add, meta::arguments_()("other"));
 
     const meta::class_type ivec2_type = meta::resolve_type<ivec2>();
     REQUIRE(ivec2_type);

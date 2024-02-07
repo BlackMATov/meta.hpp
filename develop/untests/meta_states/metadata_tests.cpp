@@ -96,8 +96,9 @@ TEST_CASE("meta/meta_states/metadata/class") {
             ("v", meta::metadata_()("desc", "the ctor arg"s)),
         meta::metadata_()("desc", "one arg 2d vector ctor"s))
     .constructor_<int, int>(
-        meta::argument_("x", meta::metadata_("desc", "the 1st ctor arg"s)),
-        meta::argument_("y", meta::metadata_("desc", "the 2nd ctor arg"s)),
+        meta::arguments_()
+            ("x", meta::metadata_("desc", "the 1st ctor arg"s))
+            ("y", meta::metadata_("desc", "the 2nd ctor arg"s)),
         meta::metadata_()("desc", "two args 2d vector ctor"s))
     .member_("x", &ivec2::x, meta::metadata_()("desc", "x-member"s))
     .member_("y", &ivec2::y, meta::metadata_()("desc", "y-member"s))
