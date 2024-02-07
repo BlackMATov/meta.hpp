@@ -83,9 +83,17 @@ Or just use the single-header version of the library, which you can find [here](
 - doesn't contain 3rd-party dependencies
 - can be used without rtti and exceptions
 
-## API
+## Documentation
 
-> coming soon
+- [API Reference](./manuals/api.md#api-reference)
+  - [Basics](./manuals/api/basics.md)
+  - [Binds](./manuals/api/binds.md)
+  - [Indices](./manuals/api/indices.md)
+  - [Invoke](./manuals/api/invoke.md)
+  - [Policies](./manuals/api/policies.md)
+  - [Registry](./manuals/api/registry.md)
+  - [States](./manuals/api/states.md)
+  - [Types](./manuals/api/types.md)
 
 ## Alternatives
 
