@@ -149,12 +149,12 @@ namespace meta_hpp
     }
 
     template < typename T, typename... Args >
-    uvalue make_uvalue(Args&&... args) {
+    [[nodiscard]] uvalue make_uvalue(Args&&... args) {
         return uvalue(std::in_place_type<T>, std::forward<Args>(args)...);
     }
 
     template < typename T, typename U, typename... Args >
-    uvalue make_uvalue(std::initializer_list<U> ilist, Args&&... args) {
+    [[nodiscard]] uvalue make_uvalue(std::initializer_list<U> ilist, Args&&... args) {
         return uvalue(std::in_place_type<T>, ilist, std::forward<Args>(args)...);
     }
 }

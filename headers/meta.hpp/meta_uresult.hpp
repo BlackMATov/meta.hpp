@@ -45,7 +45,7 @@ namespace meta_hpp
         l.swap(r);
     }
 
-    inline uerror make_uerror(error_code error) {
+    [[nodiscard]] inline uerror make_uerror(error_code error) {
         return uerror{error};
     }
 }
@@ -142,12 +142,12 @@ namespace meta_hpp
     }
 
     template < typename T, typename... Args >
-    uresult make_uresult(Args&&... args) {
+    [[nodiscard]] uresult make_uresult(Args&&... args) {
         return uresult(std::in_place_type<T>, std::forward<Args>(args)...);
     }
 
     template < typename T, typename U, typename... Args >
-    uresult make_uresult(std::initializer_list<U> ilist, Args&&... args) {
+    [[nodiscard]] uresult make_uresult(std::initializer_list<U> ilist, Args&&... args) {
         return uresult(std::in_place_type<T>, ilist, std::forward<Args>(args)...);
     }
 }
