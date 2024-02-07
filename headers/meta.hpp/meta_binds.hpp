@@ -411,14 +411,6 @@ namespace meta_hpp
     inline arguments_bind arguments_() {
         return arguments_bind{};
     }
-
-    inline arguments_bind argument_(std::string name) {
-        return arguments_()(std::move(name));
-    }
-
-    inline arguments_bind argument_(std::string name, metadata_map metadata) {
-        return arguments_()(std::move(name), std::move(metadata));
-    }
 }
 
 namespace meta_hpp
@@ -491,9 +483,5 @@ namespace meta_hpp
 
     inline metadata_bind metadata_() {
         return metadata_bind{};
-    }
-
-    inline metadata_bind metadata_(std::string name, uvalue value) {
-        return metadata_()(std::move(name), std::move(value));
     }
 }
