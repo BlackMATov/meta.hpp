@@ -13,7 +13,7 @@
 #include "meta_base/exceptions.hpp"
 #include "meta_base/fixed_function.hpp"
 #include "meta_base/fnv1a_hash.hpp"
-#include "meta_base/hash_combiner.hpp"
+#include "meta_base/hash_composer.hpp"
 #include "meta_base/hashed_string.hpp"
 #include "meta_base/insert_or_assign.hpp"
 #include "meta_base/is_in_place_type.hpp"

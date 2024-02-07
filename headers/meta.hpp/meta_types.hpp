@@ -79,6 +79,8 @@ namespace meta_hpp
         [[nodiscard]] bool is_valid() const noexcept;
         [[nodiscard]] explicit operator bool() const noexcept;
 
+        [[nodiscard]] std::size_t get_hash() const noexcept;
+
         [[nodiscard]] id_type get_id() const noexcept;
         [[nodiscard]] type_kind get_kind() const noexcept;
         [[nodiscard]] const metadata_map& get_metadata() const noexcept;
@@ -371,7 +373,7 @@ namespace std
     template < meta_hpp::type_family Type >
     struct hash<Type> {
         size_t operator()(const Type& type) const noexcept {
-            return type.is_valid() ? type.get_id().get_hash() : 0;
+            return type.get_hash();
         }
     };
 }
@@ -644,6 +646,11 @@ namespace meta_hpp
     template < type_family Type >
     type_base<Type>::operator bool() const noexcept {
         return is_valid();
+    }
+
+    template < type_family Type >
+    std::size_t type_base<Type>::get_hash() const noexcept {
+        return get_id().get_hash();
     }
 
     template < type_family Type >

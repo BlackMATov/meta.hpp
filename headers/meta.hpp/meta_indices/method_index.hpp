@@ -34,6 +34,6 @@ namespace meta_hpp
     }
 
     inline std::size_t method_index::get_hash() const noexcept {
-        return detail::hash_combiner{}(detail::hash_combiner{}(type_), name_);
+        return detail::hash_composer{} << type_.get_hash() << name_;
     }
 }

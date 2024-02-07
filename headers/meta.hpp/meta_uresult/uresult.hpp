@@ -47,7 +47,7 @@ namespace meta_hpp
     }
 
     inline std::size_t uerror::get_hash() const noexcept {
-        return detail::hash_combiner{}(error_);
+        return detail::hash_composer{} << error_;
     }
 }
 
