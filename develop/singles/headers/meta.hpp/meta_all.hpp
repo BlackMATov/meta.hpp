@@ -5203,10 +5203,6 @@ namespace meta_hpp
     inline metadata_bind metadata_() {
         return metadata_bind{};
     }
-
-    inline metadata_bind metadata_(std::string name, uvalue value) {
-        return metadata_()(std::move(name), std::move(value));
-    }
 }
 
 namespace meta_hpp
