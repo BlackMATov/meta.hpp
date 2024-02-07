@@ -130,7 +130,7 @@ namespace meta_hpp::detail
     , metadata{std::move(nmetadata)} {}
 
     template < method_policy_family Policy, method_pointer_kind Method >
-    method_state_ptr method_state::make(std::string name, Method method_ptr, metadata_map metadata) {
+    method_state::state_ptr method_state::make(std::string name, Method method_ptr, metadata_map metadata) {
         type_registry& registry{type_registry::instance()};
 
         method_state state{

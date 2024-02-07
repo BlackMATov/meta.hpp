@@ -116,7 +116,7 @@ namespace meta_hpp::detail
     , metadata{std::move(nmetadata)} {}
 
     template < variable_policy_family Policy, pointer_kind Pointer >
-    variable_state_ptr variable_state::make(std::string name, Pointer variable_ptr, metadata_map metadata) {
+    variable_state::state_ptr variable_state::make(std::string name, Pointer variable_ptr, metadata_map metadata) {
         type_registry& registry{type_registry::instance()};
 
         variable_state state{

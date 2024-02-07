@@ -147,7 +147,7 @@ namespace meta_hpp::detail
     , metadata{std::move(nmetadata)} {}
 
     template < constructor_policy_family Policy, class_kind Class, typename... Args >
-    constructor_state_ptr constructor_state::make(metadata_map metadata) {
+    constructor_state::state_ptr constructor_state::make(metadata_map metadata) {
         type_registry& registry{type_registry::instance()};
 
         constructor_state state{

@@ -1305,29 +1305,6 @@ namespace meta_hpp
     class scope;
     class variable;
 
-    namespace detail
-    {
-        struct argument_state;
-        struct constructor_state;
-        struct destructor_state;
-        struct evalue_state;
-        struct function_state;
-        struct member_state;
-        struct method_state;
-        struct scope_state;
-        struct variable_state;
-
-        using argument_state_ptr = std::shared_ptr<argument_state>;
-        using constructor_state_ptr = std::shared_ptr<constructor_state>;
-        using destructor_state_ptr = std::shared_ptr<destructor_state>;
-        using evalue_state_ptr = std::shared_ptr<evalue_state>;
-        using function_state_ptr = std::shared_ptr<function_state>;
-        using member_state_ptr = std::shared_ptr<member_state>;
-        using method_state_ptr = std::shared_ptr<method_state>;
-        using scope_state_ptr = std::shared_ptr<scope_state>;
-        using variable_state_ptr = std::shared_ptr<variable_state>;
-    }
-
     template < typename T >
     concept state_family                 //
         = std::is_same_v<T, argument>    //
@@ -1357,24 +1334,6 @@ namespace meta_hpp
     class pointer_type;
     class reference_type;
     class void_type;
-
-    namespace detail
-    {
-        struct type_data_base;
-        struct array_type_data;
-        struct class_type_data;
-        struct constructor_type_data;
-        struct destructor_type_data;
-        struct enum_type_data;
-        struct function_type_data;
-        struct member_type_data;
-        struct method_type_data;
-        struct nullptr_type_data;
-        struct number_type_data;
-        struct pointer_type_data;
-        struct reference_type_data;
-        struct void_type_data;
-    }
 
     template < typename T >
     concept type_family                       //
@@ -1421,8 +1380,6 @@ namespace meta_hpp
 
 namespace meta_hpp
 {
-    using string_ilist = std::initializer_list<std::string_view>;
-
     using metadata_map = std::map<std::string, uvalue, std::less<>>;
     using typedef_map = std::map<std::string, any_type, std::less<>>;
     using uvalue_list = std::vector<uvalue>;
@@ -2358,6 +2315,24 @@ namespace meta_hpp::detail
             return flags;
         }
     };
+}
+
+namespace meta_hpp::detail
+{
+    struct type_data_base;
+    struct array_type_data;
+    struct class_type_data;
+    struct constructor_type_data;
+    struct destructor_type_data;
+    struct enum_type_data;
+    struct function_type_data;
+    struct member_type_data;
+    struct method_type_data;
+    struct nullptr_type_data;
+    struct number_type_data;
+    struct pointer_type_data;
+    struct reference_type_data;
+    struct void_type_data;
 }
 
 namespace meta_hpp::detail
@@ -3761,6 +3736,19 @@ namespace meta_hpp
 
 namespace meta_hpp::detail
 {
+    struct argument_state;
+    struct constructor_state;
+    struct destructor_state;
+    struct evalue_state;
+    struct function_state;
+    struct member_state;
+    struct method_state;
+    struct scope_state;
+    struct variable_state;
+}
+
+namespace meta_hpp::detail
+{
     template < state_family State >
     struct state_traits;
 
@@ -3775,55 +3763,55 @@ namespace meta_hpp::detail
     template <>
     struct state_traits<argument> {
         using index_type = argument_index;
-        using state_ptr = argument_state_ptr;
+        using state_ptr = std::shared_ptr<argument_state>;
     };
 
     template <>
     struct state_traits<constructor> {
         using index_type = constructor_index;
-        using state_ptr = constructor_state_ptr;
+        using state_ptr = std::shared_ptr<constructor_state>;
     };
 
     template <>
     struct state_traits<destructor> {
         using index_type = destructor_index;
-        using state_ptr = destructor_state_ptr;
+        using state_ptr = std::shared_ptr<destructor_state>;
     };
 
     template <>
     struct state_traits<evalue> {
         using index_type = evalue_index;
-        using state_ptr = evalue_state_ptr;
+        using state_ptr = std::shared_ptr<evalue_state>;
     };
 
     template <>
     struct state_traits<function> {
         using index_type = function_index;
-        using state_ptr = function_state_ptr;
+        using state_ptr = std::shared_ptr<function_state>;
     };
 
     template <>
     struct state_traits<member> {
         using index_type = member_index;
-        using state_ptr = member_state_ptr;
+        using state_ptr = std::shared_ptr<member_state>;
     };
 
     template <>
     struct state_traits<method> {
         using index_type = method_index;
-        using state_ptr = method_state_ptr;
+        using state_ptr = std::shared_ptr<method_state>;
     };
 
     template <>
     struct state_traits<scope> {
         using index_type = scope_index;
-        using state_ptr = scope_state_ptr;
+        using state_ptr = std::shared_ptr<scope_state>;
     };
 
     template <>
     struct state_traits<variable> {
         using index_type = variable_index;
-        using state_ptr = variable_state_ptr;
+        using state_ptr = std::shared_ptr<variable_state>;
     };
 }
 
@@ -4230,18 +4218,18 @@ namespace meta_hpp
 
 namespace meta_hpp::detail
 {
-    struct argument_state final {
+    struct argument_state final : private state_traits<argument> {
         argument_index index;
         metadata_map metadata;
 
         std::string name{};
 
         template < typename Argument >
-        [[nodiscard]] static argument_state_ptr make(std::size_t position, metadata_map metadata);
+        [[nodiscard]] static state_ptr make(std::size_t position, metadata_map metadata);
         explicit argument_state(argument_index index, metadata_map metadata);
     };
 
-    struct constructor_state final {
+    struct constructor_state final : private state_traits<constructor> {
         using create_impl = fixed_function<uvalue(std::span<const uarg>)>;
         using create_at_impl = fixed_function<uvalue(void*, std::span<const uarg>)>;
         using create_error_impl = fixed_function<uerror(std::span<const uarg_base>)>;
@@ -4255,11 +4243,11 @@ namespace meta_hpp::detail
         argument_list arguments{};
 
         template < constructor_policy_family Policy, class_kind Class, typename... Args >
-        [[nodiscard]] static constructor_state_ptr make(metadata_map metadata);
+        [[nodiscard]] static state_ptr make(metadata_map metadata);
         explicit constructor_state(constructor_index index, metadata_map metadata);
     };
 
-    struct destructor_state final {
+    struct destructor_state final : private state_traits<destructor> {
         using destroy_impl = fixed_function<void(const uarg&)>;
         using destroy_at_impl = fixed_function<void(void*)>;
         using destroy_error_impl = fixed_function<uerror(const uarg_base&)>;
@@ -4272,11 +4260,11 @@ namespace meta_hpp::detail
         destroy_error_impl destroy_error{};
 
         template < class_kind Class >
-        [[nodiscard]] static destructor_state_ptr make(metadata_map metadata);
+        [[nodiscard]] static state_ptr make(metadata_map metadata);
         explicit destructor_state(destructor_index index, metadata_map metadata);
     };
 
-    struct evalue_state final {
+    struct evalue_state final : private state_traits<evalue> {
         evalue_index index;
         metadata_map metadata;
 
@@ -4284,11 +4272,11 @@ namespace meta_hpp::detail
         uvalue underlying_value{};
 
         template < enum_kind Enum >
-        [[nodiscard]] static evalue_state_ptr make(std::string name, Enum evalue, metadata_map metadata);
+        [[nodiscard]] static state_ptr make(std::string name, Enum evalue, metadata_map metadata);
         explicit evalue_state(evalue_index index, metadata_map metadata);
     };
 
-    struct function_state final {
+    struct function_state final : private state_traits<function> {
         using invoke_impl = fixed_function<uvalue(std::span<const uarg>)>;
         using invoke_error_impl = fixed_function<uerror(std::span<const uarg_base>)>;
 
@@ -4300,11 +4288,11 @@ namespace meta_hpp::detail
         argument_list arguments{};
 
         template < function_policy_family Policy, function_pointer_kind Function >
-        [[nodiscard]] static function_state_ptr make(std::string name, Function function_ptr, metadata_map metadata);
+        [[nodiscard]] static state_ptr make(std::string name, Function function_ptr, metadata_map metadata);
         explicit function_state(function_index index, metadata_map metadata);
     };
 
-    struct member_state final {
+    struct member_state final : private state_traits<member> {
         using getter_impl = fixed_function<uvalue(const uinst&)>;
         using setter_impl = fixed_function<void(const uinst&, const uarg&)>;
 
@@ -4320,11 +4308,11 @@ namespace meta_hpp::detail
         setter_error_impl setter_error{};
 
         template < member_policy_family Policy, member_pointer_kind Member >
-        [[nodiscard]] static member_state_ptr make(std::string name, Member member_ptr, metadata_map metadata);
+        [[nodiscard]] static state_ptr make(std::string name, Member member_ptr, metadata_map metadata);
         explicit member_state(member_index index, metadata_map metadata);
     };
 
-    struct method_state final {
+    struct method_state final : private state_traits<method> {
         using invoke_impl = fixed_function<uvalue(const uinst&, std::span<const uarg>)>;
         using invoke_error_impl = fixed_function<uerror(const uinst_base&, std::span<const uarg_base>)>;
 
@@ -4336,11 +4324,11 @@ namespace meta_hpp::detail
         argument_list arguments{};
 
         template < method_policy_family Policy, method_pointer_kind Method >
-        [[nodiscard]] static method_state_ptr make(std::string name, Method method_ptr, metadata_map metadata);
+        [[nodiscard]] static state_ptr make(std::string name, Method method_ptr, metadata_map metadata);
         explicit method_state(method_index index, metadata_map metadata);
     };
 
-    struct scope_state final {
+    struct scope_state final : private state_traits<scope> {
         scope_index index;
         metadata_map metadata;
 
@@ -4348,11 +4336,11 @@ namespace meta_hpp::detail
         typedef_map typedefs{};
         variable_list variables{};
 
-        [[nodiscard]] static scope_state_ptr make(std::string name, metadata_map metadata);
+        [[nodiscard]] static state_ptr make(std::string name, metadata_map metadata);
         explicit scope_state(scope_index index, metadata_map metadata);
     };
 
-    struct variable_state final {
+    struct variable_state final : private state_traits<variable> {
         using getter_impl = fixed_function<uvalue()>;
         using setter_impl = fixed_function<void(const uarg&)>;
         using setter_error_impl = fixed_function<uerror(const uarg_base&)>;
@@ -4365,7 +4353,7 @@ namespace meta_hpp::detail
         setter_error_impl setter_error{};
 
         template < variable_policy_family Policy, pointer_kind Pointer >
-        [[nodiscard]] static variable_state_ptr make(std::string name, Pointer variable_ptr, metadata_map metadata);
+        [[nodiscard]] static state_ptr make(std::string name, Pointer variable_ptr, metadata_map metadata);
         explicit variable_state(variable_index index, metadata_map metadata);
     };
 }
@@ -6944,7 +6932,7 @@ namespace meta_hpp::detail
     , metadata{std::move(nmetadata)} {}
 
     template < function_policy_family Policy, function_pointer_kind Function >
-    function_state_ptr function_state::make(std::string name, Function function_ptr, metadata_map metadata) {
+    function_state::state_ptr function_state::make(std::string name, Function function_ptr, metadata_map metadata) {
         type_registry& registry{type_registry::instance()};
 
         function_state state{
@@ -7522,7 +7510,7 @@ namespace meta_hpp::detail
     , metadata{std::move(nmetadata)} {}
 
     template < member_policy_family Policy, member_pointer_kind Member >
-    member_state_ptr member_state::make(std::string name, Member member_ptr, metadata_map metadata) {
+    member_state::state_ptr member_state::make(std::string name, Member member_ptr, metadata_map metadata) {
         type_registry& registry{type_registry::instance()};
 
         member_state state{
@@ -7843,7 +7831,7 @@ namespace meta_hpp::detail
     , metadata{std::move(nmetadata)} {}
 
     template < method_policy_family Policy, method_pointer_kind Method >
-    method_state_ptr method_state::make(std::string name, Method method_ptr, metadata_map metadata) {
+    method_state::state_ptr method_state::make(std::string name, Method method_ptr, metadata_map metadata) {
         type_registry& registry{type_registry::instance()};
 
         method_state state{
@@ -8255,7 +8243,7 @@ namespace meta_hpp::detail
     , metadata{std::move(nmetadata)} {}
 
     template < typename Argument >
-    inline argument_state_ptr argument_state::make(std::size_t position, metadata_map metadata) {
+    inline argument_state::state_ptr argument_state::make(std::size_t position, metadata_map metadata) {
         type_registry& registry{type_registry::instance()};
 
         argument_state state{
@@ -8470,7 +8458,7 @@ namespace meta_hpp::detail
     , metadata{std::move(nmetadata)} {}
 
     template < constructor_policy_family Policy, class_kind Class, typename... Args >
-    constructor_state_ptr constructor_state::make(metadata_map metadata) {
+    constructor_state::state_ptr constructor_state::make(metadata_map metadata) {
         type_registry& registry{type_registry::instance()};
 
         constructor_state state{
@@ -8723,7 +8711,7 @@ namespace meta_hpp::detail
     , metadata{std::move(nmetadata)} {}
 
     template < class_kind Class >
-    destructor_state_ptr destructor_state::make(metadata_map metadata) {
+    destructor_state::state_ptr destructor_state::make(metadata_map metadata) {
         type_registry& registry{type_registry::instance()};
 
         destructor_state state{
@@ -8870,7 +8858,7 @@ namespace meta_hpp::detail
     , metadata{std::move(nmetadata)} {}
 
     template < enum_kind Enum >
-    evalue_state_ptr evalue_state::make(std::string name, Enum evalue, metadata_map metadata) {
+    evalue_state::state_ptr evalue_state::make(std::string name, Enum evalue, metadata_map metadata) {
         type_registry& registry{type_registry::instance()};
 
         evalue_state state{
@@ -9027,7 +9015,7 @@ namespace meta_hpp::detail
     , metadata{std::move(nmetadata)} {}
 
     template < variable_policy_family Policy, pointer_kind Pointer >
-    variable_state_ptr variable_state::make(std::string name, Pointer variable_ptr, metadata_map metadata) {
+    variable_state::state_ptr variable_state::make(std::string name, Pointer variable_ptr, metadata_map metadata) {
         type_registry& registry{type_registry::instance()};
 
         variable_state state{
@@ -9663,7 +9651,7 @@ namespace meta_hpp::detail
     : index{std::move(nindex)}
     , metadata{std::move(nmetadata)} {}
 
-    inline scope_state_ptr scope_state::make(std::string name, metadata_map metadata) {
+    inline scope_state::state_ptr scope_state::make(std::string name, metadata_map metadata) {
         scope_state state{
             scope_index{std::move(name)},
             std::move(metadata),

@@ -118,7 +118,7 @@ namespace meta_hpp::detail
     , metadata{std::move(nmetadata)} {}
 
     template < function_policy_family Policy, function_pointer_kind Function >
-    function_state_ptr function_state::make(std::string name, Function function_ptr, metadata_map metadata) {
+    function_state::state_ptr function_state::make(std::string name, Function function_ptr, metadata_map metadata) {
         type_registry& registry{type_registry::instance()};
 
         function_state state{

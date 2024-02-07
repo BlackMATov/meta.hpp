@@ -195,7 +195,7 @@ namespace meta_hpp::detail
     , metadata{std::move(nmetadata)} {}
 
     template < member_policy_family Policy, member_pointer_kind Member >
-    member_state_ptr member_state::make(std::string name, Member member_ptr, metadata_map metadata) {
+    member_state::state_ptr member_state::make(std::string name, Member member_ptr, metadata_map metadata) {
         type_registry& registry{type_registry::instance()};
 
         member_state state{
