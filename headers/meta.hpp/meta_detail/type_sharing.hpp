@@ -9,6 +9,7 @@
 #include "../meta_base.hpp"
 
 #include "type_family.hpp"
+#include "type_kinds.hpp"
 
 namespace meta_hpp::detail
 {

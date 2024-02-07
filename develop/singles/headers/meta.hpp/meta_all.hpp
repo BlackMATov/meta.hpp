@@ -1108,115 +1108,6 @@ namespace meta_hpp::detail
 
 namespace meta_hpp::detail
 {
-    enum class type_kind : std::uint32_t {
-        array_,
-        class_,
-        constructor_,
-        destructor_,
-        enum_,
-        function_,
-        member_,
-        method_,
-        nullptr_,
-        number_,
-        pointer_,
-        reference_,
-        void_,
-    };
-}
-
-namespace meta_hpp::detail
-{
-    template < typename T >
-    concept array_kind = std::is_array_v<T>;
-
-    template < typename T >
-    concept class_kind = std::is_class_v<T>;
-
-    template < typename T >
-    concept enum_kind = std::is_enum_v<T>;
-
-    template < typename T >
-    concept function_kind = std::is_function_v<T>;
-
-    template < typename T >
-    concept function_pointer_kind = std::is_pointer_v<T> && std::is_function_v<std::remove_pointer_t<T>>;
-
-    template < typename T >
-    concept member_pointer_kind = std::is_member_object_pointer_v<T>;
-
-    template < typename T >
-    concept method_pointer_kind = std::is_member_function_pointer_v<T>;
-
-    template < typename T >
-    concept nullptr_kind = std::is_null_pointer_v<T>;
-
-    template < typename T >
-    concept number_kind = std::is_arithmetic_v<T>;
-
-    template < typename T >
-    concept pointer_kind = std::is_pointer_v<T>;
-
-    template < typename T >
-    concept reference_kind = std::is_reference_v<T>;
-
-    template < typename T >
-    concept void_kind = std::is_void_v<T>;
-
-    template < typename T >
-    concept any_pointer_family = std::is_pointer_v<T> || std::is_member_pointer_v<T>;
-
-    template < typename T >
-    concept not_any_pointer_family = !std::is_pointer_v<T> && !std::is_member_pointer_v<T>;
-}
-
-namespace meta_hpp::detail
-{
-    template < typename T >
-    struct type_to_kind;
-
-    template < typename T >
-    inline constexpr type_kind type_to_kind_v = type_to_kind<T>::value;
-}
-
-namespace meta_hpp::detail
-{
-    template < array_kind T >
-    struct type_to_kind<T> : std::integral_constant<type_kind, type_kind::array_> {};
-
-    template < class_kind T >
-    struct type_to_kind<T> : std::integral_constant<type_kind, type_kind::class_> {};
-
-    template < enum_kind T >
-    struct type_to_kind<T> : std::integral_constant<type_kind, type_kind::enum_> {};
-
-    template < function_kind T >
-    struct type_to_kind<T> : std::integral_constant<type_kind, type_kind::function_> {};
-
-    template < member_pointer_kind T >
-    struct type_to_kind<T> : std::integral_constant<type_kind, type_kind::member_> {};
-
-    template < method_pointer_kind T >
-    struct type_to_kind<T> : std::integral_constant<type_kind, type_kind::method_> {};
-
-    template < nullptr_kind T >
-    struct type_to_kind<T> : std::integral_constant<type_kind, type_kind::nullptr_> {};
-
-    template < number_kind T >
-    struct type_to_kind<T> : std::integral_constant<type_kind, type_kind::number_> {};
-
-    template < pointer_kind T >
-    struct type_to_kind<T> : std::integral_constant<type_kind, type_kind::pointer_> {};
-
-    template < reference_kind T >
-    struct type_to_kind<T> : std::integral_constant<type_kind, type_kind::reference_> {};
-
-    template < void_kind T >
-    struct type_to_kind<T> : std::integral_constant<type_kind, type_kind::void_> {};
-}
-
-namespace meta_hpp::detail
-{
     template < typename... Types >
     struct type_list {
         template < typename F >
@@ -1332,7 +1223,6 @@ namespace meta_hpp
     using detail::select_non_const;
     using detail::select_overload;
 
-    using detail::type_kind;
     using detail::type_list;
 }
 
@@ -1509,6 +1399,115 @@ namespace meta_hpp
     using member_list = std::vector<member>;
     using method_list = std::vector<method>;
     using variable_list = std::vector<variable>;
+}
+
+namespace meta_hpp::detail
+{
+    enum class type_kind : std::uint32_t {
+        array_,
+        class_,
+        constructor_,
+        destructor_,
+        enum_,
+        function_,
+        member_,
+        method_,
+        nullptr_,
+        number_,
+        pointer_,
+        reference_,
+        void_,
+    };
+}
+
+namespace meta_hpp::detail
+{
+    template < typename T >
+    concept array_kind = std::is_array_v<T>;
+
+    template < typename T >
+    concept class_kind = std::is_class_v<T>;
+
+    template < typename T >
+    concept enum_kind = std::is_enum_v<T>;
+
+    template < typename T >
+    concept function_kind = std::is_function_v<T>;
+
+    template < typename T >
+    concept function_pointer_kind = std::is_pointer_v<T> && std::is_function_v<std::remove_pointer_t<T>>;
+
+    template < typename T >
+    concept member_pointer_kind = std::is_member_object_pointer_v<T>;
+
+    template < typename T >
+    concept method_pointer_kind = std::is_member_function_pointer_v<T>;
+
+    template < typename T >
+    concept nullptr_kind = std::is_null_pointer_v<T>;
+
+    template < typename T >
+    concept number_kind = std::is_arithmetic_v<T>;
+
+    template < typename T >
+    concept pointer_kind = std::is_pointer_v<T>;
+
+    template < typename T >
+    concept reference_kind = std::is_reference_v<T>;
+
+    template < typename T >
+    concept void_kind = std::is_void_v<T>;
+
+    template < typename T >
+    concept any_pointer_family = std::is_pointer_v<T> || std::is_member_pointer_v<T>;
+
+    template < typename T >
+    concept not_any_pointer_family = !std::is_pointer_v<T> && !std::is_member_pointer_v<T>;
+}
+
+namespace meta_hpp::detail
+{
+    template < typename T >
+    struct type_to_kind;
+
+    template < typename T >
+    inline constexpr type_kind type_to_kind_v = type_to_kind<T>::value;
+}
+
+namespace meta_hpp::detail
+{
+    template < array_kind T >
+    struct type_to_kind<T> : std::integral_constant<type_kind, type_kind::array_> {};
+
+    template < class_kind T >
+    struct type_to_kind<T> : std::integral_constant<type_kind, type_kind::class_> {};
+
+    template < enum_kind T >
+    struct type_to_kind<T> : std::integral_constant<type_kind, type_kind::enum_> {};
+
+    template < function_kind T >
+    struct type_to_kind<T> : std::integral_constant<type_kind, type_kind::function_> {};
+
+    template < member_pointer_kind T >
+    struct type_to_kind<T> : std::integral_constant<type_kind, type_kind::member_> {};
+
+    template < method_pointer_kind T >
+    struct type_to_kind<T> : std::integral_constant<type_kind, type_kind::method_> {};
+
+    template < nullptr_kind T >
+    struct type_to_kind<T> : std::integral_constant<type_kind, type_kind::nullptr_> {};
+
+    template < number_kind T >
+    struct type_to_kind<T> : std::integral_constant<type_kind, type_kind::number_> {};
+
+    template < pointer_kind T >
+    struct type_to_kind<T> : std::integral_constant<type_kind, type_kind::pointer_> {};
+
+    template < reference_kind T >
+    struct type_to_kind<T> : std::integral_constant<type_kind, type_kind::reference_> {};
+
+    template < void_kind T >
+    struct type_to_kind<T> : std::integral_constant<type_kind, type_kind::void_> {};
 }
 
 namespace meta_hpp::detail
@@ -1870,6 +1869,16 @@ namespace meta_hpp::detail
 namespace meta_hpp::detail
 {
     template < class_kind Class, typename... Args >
+    struct constructor_traits;
+
+    template < typename Class, typename... Args >
+    concept class_constructor_kind //
+        = class_kind<Class> && std::is_constructible_v<Class, Args...>;
+}
+
+namespace meta_hpp::detail
+{
+    template < class_kind Class, typename... Args >
     struct constructor_traits {
         static constexpr std::size_t arity{sizeof...(Args)};
 
@@ -1897,6 +1906,16 @@ namespace meta_hpp::detail
 
     using destructor_bitflags = bitflags<destructor_flags>;
     META_HPP_DETAIL_BITFLAGS_OPERATORS_DECL(destructor_flags)
+}
+
+namespace meta_hpp::detail
+{
+    template < class_kind Class >
+    struct destructor_traits;
+
+    template < typename Class >
+    concept class_destructor_kind //
+        = class_kind<Class> && std::is_destructible_v<Class>;
 }
 
 namespace meta_hpp::detail
@@ -2000,6 +2019,14 @@ namespace meta_hpp::detail
     template < member_pointer_kind Member >
     struct member_traits;
 
+    template < typename Member, typename Class >
+    concept class_member_pointer_kind                      //
+        = class_kind<Class> && member_pointer_kind<Member> //
+       && std::is_same_v<Class, typename member_traits<Member>::class_type>;
+}
+
+namespace meta_hpp::detail
+{
     template < typename V, typename C >
     struct member_traits<V C::*> {
         using cv_value_type = V;
@@ -2043,6 +2070,14 @@ namespace meta_hpp::detail
     template < method_pointer_kind Method >
     struct method_traits;
 
+    template < typename Method, typename Class >
+    concept class_method_pointer_kind                      //
+        = class_kind<Class> && method_pointer_kind<Method> //
+       && std::is_same_v<Class, typename method_traits<Method>::class_type>;
+}
+
+namespace meta_hpp::detail
+{
     template < typename R, typename C, typename... Args >
     struct method_traits<R (C::*)(Args...)> {
         static constexpr std::size_t arity{sizeof...(Args)};
@@ -2384,6 +2419,44 @@ namespace meta_hpp::detail
 
 namespace meta_hpp
 {
+    using detail::array_bitflags;
+    using detail::array_flags;
+
+    using detail::class_bitflags;
+    using detail::class_flags;
+
+    using detail::constructor_bitflags;
+    using detail::constructor_flags;
+
+    using detail::destructor_bitflags;
+    using detail::destructor_flags;
+
+    using detail::enum_bitflags;
+    using detail::enum_flags;
+
+    using detail::function_bitflags;
+    using detail::function_flags;
+
+    using detail::member_bitflags;
+    using detail::member_flags;
+
+    using detail::method_bitflags;
+    using detail::method_flags;
+
+    using detail::number_bitflags;
+    using detail::number_flags;
+
+    using detail::pointer_bitflags;
+    using detail::pointer_flags;
+
+    using detail::reference_bitflags;
+    using detail::reference_flags;
+}
+
+namespace meta_hpp
+{
+    using detail::type_kind;
+
     using detail::array_kind;
     using detail::class_kind;
     using detail::enum_kind;
@@ -2399,28 +2472,11 @@ namespace meta_hpp
 
     using detail::any_pointer_family;
     using detail::not_any_pointer_family;
-}
 
-namespace meta_hpp
-{
-    template < typename Class, typename... Args >
-    concept class_constructor_kind                 //
-        = class_kind<Class>                        //
-       && std::is_constructible_v<Class, Args...>; //
-
-    template < typename Class >
-    concept class_destructor_kind                             //
-        = class_kind<Class> && std::is_destructible_v<Class>; //
-
-    template < typename Member, typename Class >
-    concept class_member_kind                                                        //
-        = member_pointer_kind<Member> && class_kind<Class>                           //
-       && std::is_same_v<Class, typename detail::member_traits<Member>::class_type>; //
-
-    template < typename Method, typename Class >
-    concept class_method_kind                                                        //
-        = method_pointer_kind<Method> && class_kind<Class>                           //
-       && std::is_same_v<Class, typename detail::method_traits<Method>::class_type>; //
+    using detail::class_constructor_kind;
+    using detail::class_destructor_kind;
+    using detail::class_member_pointer_kind;
+    using detail::class_method_pointer_kind;
 }
 
 namespace meta_hpp
@@ -2571,42 +2627,6 @@ namespace meta_hpp
     uvalue make_uvalue(std::initializer_list<U> ilist, Args&&... args) {
         return uvalue(std::in_place_type<T>, ilist, std::forward<Args>(args)...);
     }
-}
-
-namespace meta_hpp
-{
-    using detail::array_bitflags;
-    using detail::array_flags;
-
-    using detail::class_bitflags;
-    using detail::class_flags;
-
-    using detail::constructor_bitflags;
-    using detail::constructor_flags;
-
-    using detail::destructor_bitflags;
-    using detail::destructor_flags;
-
-    using detail::enum_bitflags;
-    using detail::enum_flags;
-
-    using detail::function_bitflags;
-    using detail::function_flags;
-
-    using detail::member_bitflags;
-    using detail::member_flags;
-
-    using detail::method_bitflags;
-    using detail::method_flags;
-
-    using detail::number_bitflags;
-    using detail::number_flags;
-
-    using detail::pointer_bitflags;
-    using detail::pointer_flags;
-
-    using detail::reference_bitflags;
-    using detail::reference_flags;
 }
 
 namespace meta_hpp
@@ -4756,10 +4776,10 @@ namespace meta_hpp
         template < function_pointer_kind Function, typename... Opts >
         class_bind& function_(std::string name, Function function_ptr, Opts&&... opts);
 
-        template < class_member_kind<Class> Member, typename... Opts >
+        template < class_member_pointer_kind<Class> Member, typename... Opts >
         class_bind& member_(std::string name, Member member_ptr, Opts&&... opts);
 
-        template < class_method_kind<Class> Method, typename... Opts >
+        template < class_method_pointer_kind<Class> Method, typename... Opts >
         class_bind& method_(std::string name, Method method_ptr, Opts&&... opts);
 
         template < typename Type >
@@ -5262,7 +5282,7 @@ namespace meta_hpp
     }
 
     template < class_kind Class >
-    template < class_member_kind<Class> Member, typename... Opts >
+    template < class_member_pointer_kind<Class> Member, typename... Opts >
     class_bind<Class>& class_bind<Class>::member_(std::string name, Member member_ptr, Opts&&... opts) {
         using namespace detail;
 
@@ -5281,7 +5301,7 @@ namespace meta_hpp
     }
 
     template < class_kind Class >
-    template < class_method_kind<Class> Method, typename... Opts >
+    template < class_method_pointer_kind<Class> Method, typename... Opts >
     class_bind<Class>& class_bind<Class>::method_(std::string name, Method method_ptr, Opts&&... opts) {
         using namespace detail;
 

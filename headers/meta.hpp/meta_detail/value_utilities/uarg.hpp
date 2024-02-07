@@ -7,7 +7,6 @@
 #pragma once
 
 #include "../../meta_base.hpp"
-#include "../../meta_concepts.hpp"
 #include "../../meta_registry.hpp"
 #include "../../meta_uresult.hpp"
 #include "../../meta_uvalue.hpp"

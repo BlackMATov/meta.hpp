@@ -103,7 +103,7 @@ namespace meta_hpp
     }
 
     template < class_kind Class >
-    template < class_member_kind<Class> Member, typename... Opts >
+    template < class_member_pointer_kind<Class> Member, typename... Opts >
     class_bind<Class>& class_bind<Class>::member_(std::string name, Member member_ptr, Opts&&... opts) {
         using namespace detail;
 
@@ -122,7 +122,7 @@ namespace meta_hpp
     }
 
     template < class_kind Class >
-    template < class_method_kind<Class> Method, typename... Opts >
+    template < class_method_pointer_kind<Class> Method, typename... Opts >
     class_bind<Class>& class_bind<Class>::method_(std::string name, Method method_ptr, Opts&&... opts) {
         using namespace detail;
 

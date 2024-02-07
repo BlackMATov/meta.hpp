@@ -8,6 +8,8 @@
 
 #include "../../meta_base.hpp"
 
+#include "../type_kinds.hpp"
+
 namespace meta_hpp::detail
 {
     enum class member_flags : std::uint32_t {
@@ -24,6 +26,14 @@ namespace meta_hpp::detail
     template < member_pointer_kind Member >
     struct member_traits;
 
+    template < typename Member, typename Class >
+    concept class_member_pointer_kind                      //
+        = class_kind<Class> && member_pointer_kind<Member> //
+       && std::is_same_v<Class, typename member_traits<Member>::class_type>;
+}
+
+namespace meta_hpp::detail
+{
     template < typename V, typename C >
     struct member_traits<V C::*> {
         using cv_value_type = V;

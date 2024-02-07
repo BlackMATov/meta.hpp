@@ -7,7 +7,7 @@
 #pragma once
 
 #include "meta_base.hpp"
-#include "meta_concepts.hpp"
+#include "meta_details.hpp"
 #include "meta_registry.hpp"
 #include "meta_states.hpp"
 #include "meta_types.hpp"
@@ -92,10 +92,10 @@ namespace meta_hpp
         template < function_pointer_kind Function, typename... Opts >
         class_bind& function_(std::string name, Function function_ptr, Opts&&... opts);
 
-        template < class_member_kind<Class> Member, typename... Opts >
+        template < class_member_pointer_kind<Class> Member, typename... Opts >
         class_bind& member_(std::string name, Member member_ptr, Opts&&... opts);
 
-        template < class_method_kind<Class> Method, typename... Opts >
+        template < class_method_pointer_kind<Class> Method, typename... Opts >
         class_bind& method_(std::string name, Method method_ptr, Opts&&... opts);
 
         template < typename Type >

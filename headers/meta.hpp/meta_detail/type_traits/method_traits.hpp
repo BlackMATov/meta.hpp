@@ -8,6 +8,8 @@
 
 #include "../../meta_base.hpp"
 
+#include "../type_kinds.hpp"
+
 namespace meta_hpp::detail
 {
     enum class method_flags : std::uint32_t {
@@ -26,6 +28,14 @@ namespace meta_hpp::detail
     template < method_pointer_kind Method >
     struct method_traits;
 
+    template < typename Method, typename Class >
+    concept class_method_pointer_kind                      //
+        = class_kind<Class> && method_pointer_kind<Method> //
+       && std::is_same_v<Class, typename method_traits<Method>::class_type>;
+}
+
+namespace meta_hpp::detail
+{
     template < typename R, typename C, typename... Args >
     struct method_traits<R (C::*)(Args...)> {
         static constexpr std::size_t arity{sizeof...(Args)};

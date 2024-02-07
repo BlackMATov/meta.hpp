@@ -7,7 +7,7 @@
 #pragma once
 
 #include "meta_base.hpp"
-#include "meta_concepts.hpp"
+#include "meta_details.hpp"
 #include "meta_indices.hpp"
 #include "meta_policies.hpp"
 #include "meta_types.hpp"

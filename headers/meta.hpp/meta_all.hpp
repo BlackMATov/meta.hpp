@@ -22,7 +22,7 @@
 #include "meta_binds/scope_bind.hpp"
 #include "meta_binds/void_bind.hpp"
 
-#include "meta_concepts.hpp"
+#include "meta_details.hpp"
 
 #include "meta_indices.hpp"
 #include "meta_indices/argument_index.hpp"

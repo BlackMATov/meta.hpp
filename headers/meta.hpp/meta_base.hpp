@@ -23,7 +23,6 @@
 #include "meta_base/overloaded.hpp"
 #include "meta_base/select_overload.hpp"
 #include "meta_base/to_underlying.hpp"
-#include "meta_base/type_kinds.hpp"
 #include "meta_base/type_list.hpp"
 
 namespace meta_hpp
@@ -41,7 +40,6 @@ namespace meta_hpp
     using detail::select_non_const;
     using detail::select_overload;
 
-    using detail::type_kind;
     using detail::type_list;
 }
 

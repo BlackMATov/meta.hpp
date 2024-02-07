@@ -8,6 +8,8 @@
 
 #include "../meta_base.hpp"
 
+#include "type_kinds.hpp"
+
 #include "type_traits/array_traits.hpp"
 #include "type_traits/class_traits.hpp"
 #include "type_traits/constructor_traits.hpp"

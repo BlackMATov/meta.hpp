@@ -8,6 +8,8 @@
 
 #include "../../meta_base.hpp"
 
+#include "../type_kinds.hpp"
+
 namespace meta_hpp::detail
 {
     enum class constructor_flags : std::uint32_t {
@@ -16,6 +18,16 @@ namespace meta_hpp::detail
 
     using constructor_bitflags = bitflags<constructor_flags>;
     META_HPP_DETAIL_BITFLAGS_OPERATORS_DECL(constructor_flags)
+}
+
+namespace meta_hpp::detail
+{
+    template < class_kind Class, typename... Args >
+    struct constructor_traits;
+
+    template < typename Class, typename... Args >
+    concept class_constructor_kind //
+        = class_kind<Class> && std::is_constructible_v<Class, Args...>;
 }
 
 namespace meta_hpp::detail

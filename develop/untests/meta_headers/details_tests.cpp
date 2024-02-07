@@ -5,12 +5,12 @@
  ******************************************************************************/
 
 #if defined(META_HPP_HEADERS_BUILD)
-#    include <meta.hpp/meta_concepts.hpp>
+#    include <meta.hpp/meta_details.hpp>
 #else
 #    include <meta.hpp/meta_all.hpp>
 #endif
 
 #include <doctest/doctest.h>
 
-TEST_CASE("meta/meta_headers/concepts") {
+TEST_CASE("meta/meta_headers/details") {
 }

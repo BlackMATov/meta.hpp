@@ -8,6 +8,8 @@
 
 #include "../../meta_base.hpp"
 
+#include "../type_kinds.hpp"
+
 namespace meta_hpp::detail
 {
     enum class pointer_flags : std::uint32_t {

@@ -7,46 +7,11 @@
 #pragma once
 
 #include "meta_base.hpp"
-#include "meta_concepts.hpp"
+#include "meta_details.hpp"
 #include "meta_uvalue.hpp"
 
 #include "meta_detail/type_family.hpp"
-
-namespace meta_hpp
-{
-    using detail::array_bitflags;
-    using detail::array_flags;
-
-    using detail::class_bitflags;
-    using detail::class_flags;
-
-    using detail::constructor_bitflags;
-    using detail::constructor_flags;
-
-    using detail::destructor_bitflags;
-    using detail::destructor_flags;
-
-    using detail::enum_bitflags;
-    using detail::enum_flags;
-
-    using detail::function_bitflags;
-    using detail::function_flags;
-
-    using detail::member_bitflags;
-    using detail::member_flags;
-
-    using detail::method_bitflags;
-    using detail::method_flags;
-
-    using detail::number_bitflags;
-    using detail::number_flags;
-
-    using detail::pointer_bitflags;
-    using detail::pointer_flags;
-
-    using detail::reference_bitflags;
-    using detail::reference_flags;
-}
+#include "meta_detail/type_kinds.hpp"
 
 namespace meta_hpp
 {
