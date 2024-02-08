@@ -12,7 +12,7 @@
 
 namespace meta_hpp::detail
 {
-    enum class destructor_flags : std::uint32_t {
+    enum class destructor_flags : std::uint8_t {
         is_noexcept = 1 << 0,
         is_virtual = 1 << 1,
     };

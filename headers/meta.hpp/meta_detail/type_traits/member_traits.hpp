@@ -12,7 +12,7 @@
 
 namespace meta_hpp::detail
 {
-    enum class member_flags : std::uint32_t {
+    enum class member_flags : std::uint8_t {
         is_readonly = 1 << 0,
         is_volatile = 1 << 1,
     };

@@ -12,7 +12,7 @@
 
 namespace meta_hpp::detail
 {
-    enum class pointer_flags : std::uint32_t {
+    enum class pointer_flags : std::uint8_t {
         is_readonly = 1 << 0,
         is_volatile = 1 << 1,
     };

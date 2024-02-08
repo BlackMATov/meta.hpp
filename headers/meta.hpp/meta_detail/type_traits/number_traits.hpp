@@ -12,7 +12,7 @@
 
 namespace meta_hpp::detail
 {
-    enum class number_flags : std::uint32_t {
+    enum class number_flags : std::uint8_t {
         is_signed = 1 << 0,
         is_unsigned = 1 << 1,
         is_integral = 1 << 2,

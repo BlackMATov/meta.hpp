@@ -12,7 +12,7 @@
 
 namespace meta_hpp::detail
 {
-    enum class class_flags : std::uint32_t {
+    enum class class_flags : std::uint8_t {
         is_empty = 1 << 0,
         is_final = 1 << 1,
         is_abstract = 1 << 2,

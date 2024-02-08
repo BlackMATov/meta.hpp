@@ -1509,7 +1509,7 @@ namespace meta_hpp::detail
 
 namespace meta_hpp::detail
 {
-    enum class array_flags : std::uint32_t {
+    enum class array_flags : std::uint8_t {
         is_readonly = 1 << 0,
         is_volatile = 1 << 1,
         is_bounded = 1 << 2,
@@ -1558,7 +1558,7 @@ namespace meta_hpp::detail
 
 namespace meta_hpp::detail
 {
-    enum class class_flags : std::uint32_t {
+    enum class class_flags : std::uint8_t {
         is_empty = 1 << 0,
         is_final = 1 << 1,
         is_abstract = 1 << 2,
@@ -1855,7 +1855,7 @@ namespace meta_hpp::detail
 
 namespace meta_hpp::detail
 {
-    enum class constructor_flags : std::uint32_t {
+    enum class constructor_flags : std::uint8_t {
         is_noexcept = 1 << 0,
     };
 
@@ -1896,7 +1896,7 @@ namespace meta_hpp::detail
 
 namespace meta_hpp::detail
 {
-    enum class destructor_flags : std::uint32_t {
+    enum class destructor_flags : std::uint8_t {
         is_noexcept = 1 << 0,
         is_virtual = 1 << 1,
     };
@@ -1939,7 +1939,7 @@ namespace meta_hpp::detail
 
 namespace meta_hpp::detail
 {
-    enum class enum_flags : std::uint32_t {
+    enum class enum_flags : std::uint8_t {
         is_scoped = 1 << 0,
     };
 
@@ -1967,7 +1967,7 @@ namespace meta_hpp::detail
 
 namespace meta_hpp::detail
 {
-    enum class function_flags : std::uint32_t {
+    enum class function_flags : std::uint8_t {
         is_noexcept = 1 << 0,
     };
 
@@ -2002,7 +2002,7 @@ namespace meta_hpp::detail
 
 namespace meta_hpp::detail
 {
-    enum class member_flags : std::uint32_t {
+    enum class member_flags : std::uint8_t {
         is_readonly = 1 << 0,
         is_volatile = 1 << 1,
     };
@@ -2051,7 +2051,7 @@ namespace meta_hpp::detail
 
 namespace meta_hpp::detail
 {
-    enum class method_flags : std::uint32_t {
+    enum class method_flags : std::uint8_t {
         is_const = 1 << 0,
         is_noexcept = 1 << 1,
         is_lvalue_qualified = 1 << 2,
@@ -2191,7 +2191,7 @@ namespace meta_hpp::detail
 
 namespace meta_hpp::detail
 {
-    enum class number_flags : std::uint32_t {
+    enum class number_flags : std::uint8_t {
         is_signed = 1 << 0,
         is_unsigned = 1 << 1,
         is_integral = 1 << 2,
@@ -2235,7 +2235,7 @@ namespace meta_hpp::detail
 
 namespace meta_hpp::detail
 {
-    enum class pointer_flags : std::uint32_t {
+    enum class pointer_flags : std::uint8_t {
         is_readonly = 1 << 0,
         is_volatile = 1 << 1,
     };
@@ -2272,7 +2272,7 @@ namespace meta_hpp::detail
 
 namespace meta_hpp::detail
 {
-    enum class reference_flags : std::uint32_t {
+    enum class reference_flags : std::uint8_t {
         is_readonly = 1 << 0,
         is_volatile = 1 << 1,
         is_lvalue = 1 << 2,

@@ -12,7 +12,7 @@
 
 namespace meta_hpp::detail
 {
-    enum class method_flags : std::uint32_t {
+    enum class method_flags : std::uint8_t {
         is_const = 1 << 0,
         is_noexcept = 1 << 1,
         is_lvalue_qualified = 1 << 2,
