@@ -15,9 +15,6 @@ namespace
 
     struct ivec2 {
         int x{}, y{};
-
-        explicit ivec2(int nv) : x{nv}, y{nv} {}
-        ivec2(int nx, int ny) : x{nx}, y{ny} {}
     };
 
     struct another_ivec2 {
@@ -78,11 +75,19 @@ TEST_CASE("meta/meta_shared/tests") {
         REQUIRE(ivec2_dtor);
         REQUIRE(another_ivec2_dtor);
 
-        CHECK(ivec2_ctor0.get_type() == meta::resolve_constructor_type<ivec2, const ivec2&>());
-        CHECK(ivec2_ctor1.get_type() == meta::resolve_constructor_type<ivec2, int>());
-        CHECK(ivec2_ctor2.get_type() == meta::resolve_constructor_type<ivec2, int, int>());
-        CHECK(ivec2_dtor.get_type() == meta::resolve_destructor_type<ivec2>());
-        CHECK(another_ivec2_dtor.get_type() == meta::resolve_destructor_type<another_ivec2>());
+        CHECK(ivec2_ctor0.get_type().get_owner_type() == meta::resolve_type<ivec2>());
+        CHECK(ivec2_ctor0.get_type().get_argument_type(0) == meta::resolve_type<const ivec2&>());
+
+        CHECK(ivec2_ctor1.get_type().get_owner_type() == meta::resolve_type<ivec2>());
+        CHECK(ivec2_ctor1.get_type().get_argument_type(0) == meta::resolve_type<int>());
+
+        CHECK(ivec2_ctor2.get_type().get_owner_type() == meta::resolve_type<ivec2>());
+        CHECK(ivec2_ctor2.get_type().get_argument_type(0) == meta::resolve_type<int>());
+        CHECK(ivec2_ctor2.get_type().get_argument_type(1) == meta::resolve_type<int>());
+
+        CHECK(ivec2_dtor.get_type().get_owner_type() == meta::resolve_type<ivec2>());
+
+        CHECK(another_ivec2_dtor.get_type().get_owner_type() == meta::resolve_type<another_ivec2>());
 
         CHECK(ivec2_ctor0 != ivec2_ctor1);
         CHECK(ivec2_ctor1 != ivec2_ctor2);
