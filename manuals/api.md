@@ -17,6 +17,7 @@
     - [Classes](#classes-3)
   - [Types](#types)
     - [Classes](#classes-4)
+    - [Enumerations](#enumerations)
 
 # API Reference
 
@@ -171,3 +172,19 @@
 | [pointer_type](./api/types.md#pointer_type)         | pointer_type     |
 | [reference_type](./api/types.md#reference_type)     | reference_type   |
 | [void_type](./api/types.md#void_type)               | void_type        |
+
+### Enumerations
+
+|                                                       |                   |
+| ----------------------------------------------------- | ----------------- |
+| [array_flags](./api/types.md#array_flags)             | array_flags       |
+| [class_flags](./api/types.md#class_flags)             | class_flags       |
+| [constructor_flags](./api/types.md#constructor_flags) | constructor_flags |
+| [destructor_flags](./api/types.md#destructor_flags)   | destructor_flags  |
+| [enum_flags](./api/types.md#enum_flags)               | enum_flags        |
+| [function_flags](./api/types.md#function_flags)       | function_flags    |
+| [member_flags](./api/types.md#member_flags)           | member_flags      |
+| [method_flags](./api/types.md#method_flags)           | method_flags      |
+| [number_flags](./api/types.md#number_flags)           | number_flags      |
+| [pointer_flags](./api/types.md#pointer_flags)         | pointer_flags     |
+| [reference_flags](./api/types.md#reference_flags)     | reference_flags   |

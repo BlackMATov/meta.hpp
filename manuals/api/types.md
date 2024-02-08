@@ -16,6 +16,18 @@
     - [pointer\_type](#pointer_type)
     - [reference\_type](#reference_type)
     - [void\_type](#void_type)
+  - [Enumerations](#enumerations)
+    - [array\_flags](#array_flags)
+    - [class\_flags](#class_flags)
+    - [constructor\_flags](#constructor_flags)
+    - [destructor\_flags](#destructor_flags)
+    - [enum\_flags](#enum_flags)
+    - [function\_flags](#function_flags)
+    - [member\_flags](#member_flags)
+    - [method\_flags](#method_flags)
+    - [number\_flags](#number_flags)
+    - [pointer\_flags](#pointer_flags)
+    - [reference\_flags](#reference_flags)
 
 # API Types
 
@@ -402,4 +414,135 @@ class void_type final : public type_base<void_type> {
 public:
     using type_base<void_type>::type_base;
 };
+```
+
+## Enumerations
+
+### array_flags
+
+```cpp
+enum class array_flags : std::uint8_t {
+    is_readonly = 1 << 0,
+    is_volatile = 1 << 1,
+    is_bounded = 1 << 2,
+    is_unbounded = 1 << 3,
+};
+
+using array_bitflags = bitflags<array_flags>;
+```
+
+### class_flags
+
+```cpp
+enum class class_flags : std::uint8_t {
+    is_empty = 1 << 0,
+    is_final = 1 << 1,
+    is_abstract = 1 << 2,
+    is_polymorphic = 1 << 3,
+    is_template_instantiation = 1 << 4,
+};
+
+using class_bitflags = bitflags<class_flags>;
+```
+
+### constructor_flags
+
+```cpp
+enum class constructor_flags : std::uint8_t {
+    is_noexcept = 1 << 0,
+};
+
+using constructor_bitflags = bitflags<constructor_flags>;
+```
+
+### destructor_flags
+
+```cpp
+enum class destructor_flags : std::uint8_t {
+    is_noexcept = 1 << 0,
+    is_virtual = 1 << 1,
+};
+
+using destructor_bitflags = bitflags<destructor_flags>;
+```
+
+### enum_flags
+
+```cpp
+enum class enum_flags : std::uint8_t {
+    is_scoped = 1 << 0,
+};
+
+using enum_bitflags = bitflags<enum_flags>;
+```
+
+### function_flags
+
+```cpp
+enum class function_flags : std::uint8_t {
+    is_noexcept = 1 << 0,
+};
+
+using function_bitflags = bitflags<function_flags>;
+```
+
+### member_flags
+
+```cpp
+enum class member_flags : std::uint8_t {
+    is_readonly = 1 << 0,
+    is_volatile = 1 << 1,
+};
+
+using member_bitflags = bitflags<member_flags>;
+```
+
+### method_flags
+
+```cpp
+enum class method_flags : std::uint8_t {
+    is_const = 1 << 0,
+    is_noexcept = 1 << 1,
+    is_lvalue_qualified = 1 << 2,
+    is_rvalue_qualified = 1 << 3,
+};
+
+using method_bitflags = bitflags<method_flags>;
+```
+
+### number_flags
+
+```cpp
+enum class number_flags : std::uint8_t {
+    is_signed = 1 << 0,
+    is_unsigned = 1 << 1,
+    is_integral = 1 << 2,
+    is_floating_point = 1 << 3,
+};
+
+using number_bitflags = bitflags<number_flags>;
+```
+
+### pointer_flags
+
+```cpp
+enum class pointer_flags : std::uint8_t {
+    is_readonly = 1 << 0,
+    is_volatile = 1 << 1,
+};
+
+using pointer_bitflags = bitflags<pointer_flags>;
+```
+
+### reference_flags
+
+```cpp
+enum class reference_flags : std::uint8_t {
+    is_readonly = 1 << 0,
+    is_volatile = 1 << 1,
+    is_lvalue = 1 << 2,
+    is_rvalue = 1 << 3,
+};
+
+using reference_bitflags = bitflags<reference_flags>;
 ```
