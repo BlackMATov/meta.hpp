@@ -25,7 +25,7 @@ namespace
     }
 }
 
-TEST_CASE("meta/meta_manuals/metadata") {
+TEST_CASE("meta/meta_examples/metadata") {
     namespace meta = meta_hpp;
     using namespace std::literals;
 

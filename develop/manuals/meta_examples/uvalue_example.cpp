@@ -14,10 +14,6 @@ namespace
     class shape {
         META_HPP_ENABLE_POLY_INFO()
     public:
-        shape() = default;
-        shape(const shape&) = default;
-        virtual ~shape() = default;
-
         virtual int get_area() const = 0;
     };
 
@@ -45,7 +41,7 @@ namespace
     };
 }
 
-TEST_CASE("meta/meta_manuals/uvalue") {
+TEST_CASE("meta/meta_examples/uvalue/bind") {
     namespace meta = meta_hpp;
 
     // 'shape' class type registration
@@ -59,7 +55,7 @@ TEST_CASE("meta/meta_manuals/uvalue") {
         .method_("get_height", &rectangle::get_height);
 }
 
-TEST_CASE("meta/meta_manuals/uvalue/usage") {
+TEST_CASE("meta/meta_examples/uvalue/usage") {
     namespace meta = meta_hpp;
 
     // the 'uvalue' class allows to store any typed value inside
