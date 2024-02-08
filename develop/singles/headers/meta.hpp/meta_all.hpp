@@ -2634,12 +2634,12 @@ namespace meta_hpp
     }
 
     template < typename T, typename... Args >
-    uvalue make_uvalue(Args&&... args) {
+    [[nodiscard]] uvalue make_uvalue(Args&&... args) {
         return uvalue(std::in_place_type<T>, std::forward<Args>(args)...);
     }
 
     template < typename T, typename U, typename... Args >
-    uvalue make_uvalue(std::initializer_list<U> ilist, Args&&... args) {
+    [[nodiscard]] uvalue make_uvalue(std::initializer_list<U> ilist, Args&&... args) {
         return uvalue(std::in_place_type<T>, ilist, std::forward<Args>(args)...);
     }
 }
@@ -3627,7 +3627,7 @@ namespace meta_hpp
         l.swap(r);
     }
 
-    inline uerror make_uerror(error_code error) {
+    [[nodiscard]] inline uerror make_uerror(error_code error) {
         return uerror{error};
     }
 }
@@ -3724,12 +3724,12 @@ namespace meta_hpp
     }
 
     template < typename T, typename... Args >
-    uresult make_uresult(Args&&... args) {
+    [[nodiscard]] uresult make_uresult(Args&&... args) {
         return uresult(std::in_place_type<T>, std::forward<Args>(args)...);
     }
 
     template < typename T, typename U, typename... Args >
-    uresult make_uresult(std::initializer_list<U> ilist, Args&&... args) {
+    [[nodiscard]] uresult make_uresult(std::initializer_list<U> ilist, Args&&... args) {
         return uresult(std::in_place_type<T>, ilist, std::forward<Args>(args)...);
     }
 }
@@ -5016,28 +5016,14 @@ namespace meta_hpp
             argument_info(const argument_info&) = delete;
             argument_info& operator=(const argument_info&) = delete;
 
-            argument_info(std::string name)
-            : name_{std::move(name)} {}
+            argument_info(std::string name);
+            argument_info(std::string name, metadata_map metadata);
 
-            argument_info(std::string name, metadata_map metadata)
-            : name_{std::move(name)}
-            , metadata_{std::move(metadata)} {}
+            [[nodiscard]] std::string& get_name() noexcept;
+            [[nodiscard]] const std::string& get_name() const noexcept;
 
-            [[nodiscard]] std::string& get_name() noexcept {
-                return name_;
-            }
-
-            [[nodiscard]] const std::string& get_name() const noexcept {
-                return name_;
-            }
-
-            [[nodiscard]] metadata_map& get_metadata() noexcept {
-                return metadata_;
-            }
-
-            [[nodiscard]] const metadata_map& get_metadata() const noexcept {
-                return metadata_;
-            }
+            [[nodiscard]] metadata_map& get_metadata() noexcept;
+            [[nodiscard]] const metadata_map& get_metadata() const noexcept;
 
         private:
             std::string name_;
@@ -5047,23 +5033,10 @@ namespace meta_hpp
     public:
         using values_t = std::vector<argument_info>;
 
-        operator values_t() && {
-            return std::move(values_);
-        }
+        operator values_t() &&;
 
         template < typename... Opts >
-        static values_t from_opts(Opts&&... opts) {
-            arguments_bind bind;
-
-            const auto process_opt = detail::overloaded{
-                [&bind](arguments_bind b) { bind(std::move(b)); },
-                [&bind](arguments_bind::values_t vs) { bind(std::move(vs)); },
-                [](auto&&) {}, // // ignore other opts
-            };
-
-            (process_opt(META_HPP_FWD(opts)), ...);
-            return std::move(bind.values_);
-        }
+        static values_t from_opts(Opts&&... opts);
 
     public:
         arguments_bind() = default;
@@ -5075,53 +5048,14 @@ namespace meta_hpp
         arguments_bind& operator=(arguments_bind&&) = default;
         arguments_bind& operator=(const arguments_bind&) = delete;
 
-        arguments_bind& operator()(std::string name) & {
-            values_.emplace_back(std::move(name));
-            return *this;
-        }
+        arguments_bind& operator()(std::string name) &;
+        arguments_bind operator()(std::string name) &&;
 
-        arguments_bind operator()(std::string name) && {
-            (*this)(std::move(name));
-            return std::move(*this);
-        }
+        arguments_bind& operator()(std::string name, metadata_map metadata) &;
+        arguments_bind operator()(std::string name, metadata_map metadata) &&;
 
-        arguments_bind& operator()(std::string name, metadata_map metadata) & {
-            values_.emplace_back(std::move(name), std::move(metadata));
-            return *this;
-        }
-
-        arguments_bind operator()(std::string name, metadata_map metadata) && {
-            (*this)(std::move(name), std::move(metadata));
-            return std::move(*this);
-        }
-
-        arguments_bind& operator()(values_t values) & {
-            values_.insert( //
-                values_.end(),
-                std::make_move_iterator(values.begin()),
-                std::make_move_iterator(values.end())
-            );
-            return *this;
-        }
-
-        arguments_bind operator()(values_t values) && {
-            (*this)(std::move(values));
-            return std::move(*this);
-        }
-
-        arguments_bind& operator()(arguments_bind bind) & {
-            values_.insert( //
-                values_.end(),
-                std::make_move_iterator(bind.values_.begin()),
-                std::make_move_iterator(bind.values_.end())
-            );
-            return *this;
-        }
-
-        arguments_bind operator()(arguments_bind bind) && {
-            (*this)(std::move(bind));
-            return std::move(*this);
-        }
+        arguments_bind& operator()(arguments_bind bind) &;
+        arguments_bind operator()(arguments_bind bind) &&;
 
     private:
         values_t values_;
@@ -5129,6 +5063,80 @@ namespace meta_hpp
 
     inline arguments_bind arguments_() {
         return arguments_bind{};
+    }
+
+    inline arguments_bind::argument_info::argument_info(std::string name)
+    : name_{std::move(name)} {}
+
+    inline arguments_bind::argument_info::argument_info(std::string name, metadata_map metadata)
+    : name_{std::move(name)}
+    , metadata_{std::move(metadata)} {}
+
+    inline std::string& arguments_bind::argument_info::get_name() noexcept {
+        return name_;
+    }
+
+    inline const std::string& arguments_bind::argument_info::get_name() const noexcept {
+        return name_;
+    }
+
+    inline metadata_map& arguments_bind::argument_info::get_metadata() noexcept {
+        return metadata_;
+    }
+
+    inline const metadata_map& arguments_bind::argument_info::get_metadata() const noexcept {
+        return metadata_;
+    }
+
+    inline arguments_bind::operator values_t() && {
+        return std::move(values_);
+    }
+
+    template < typename... Opts >
+    inline arguments_bind::values_t arguments_bind::from_opts(Opts&&... opts) {
+        arguments_bind bind;
+
+        const auto process_opt = detail::overloaded{
+            [&bind](arguments_bind b) { bind(std::move(b)); }, //
+            [](auto&&) {},                                     // ignore other opts
+        };
+
+        (process_opt(META_HPP_FWD(opts)), ...);
+        return std::move(bind.values_);
+    }
+
+    inline arguments_bind& arguments_bind::operator()(std::string name) & {
+        values_.emplace_back(std::move(name));
+        return *this;
+    }
+
+    inline arguments_bind arguments_bind::operator()(std::string name) && {
+        (*this)(std::move(name));
+        return std::move(*this);
+    }
+
+    inline arguments_bind& arguments_bind::operator()(std::string name, metadata_map metadata) & {
+        values_.emplace_back(std::move(name), std::move(metadata));
+        return *this;
+    }
+
+    inline arguments_bind arguments_bind::operator()(std::string name, metadata_map metadata) && {
+        (*this)(std::move(name), std::move(metadata));
+        return std::move(*this);
+    }
+
+    inline arguments_bind& arguments_bind::operator()(arguments_bind bind) & {
+        values_.insert( //
+            values_.end(),
+            std::make_move_iterator(bind.values_.begin()),
+            std::make_move_iterator(bind.values_.end())
+        );
+        return *this;
+    }
+
+    inline arguments_bind arguments_bind::operator()(arguments_bind bind) && {
+        (*this)(std::move(bind));
+        return std::move(*this);
     }
 }
 
@@ -5138,63 +5146,26 @@ namespace meta_hpp
     public:
         using values_t = metadata_map;
 
-        operator values_t() && {
-            return std::move(values_);
-        }
+        operator values_t() &&;
 
         template < typename... Opts >
-        static values_t from_opts(Opts&&... opts) {
-            metadata_bind bind;
-
-            const auto process_opt = detail::overloaded{
-                [&bind](metadata_bind b) { bind(std::move(b)); },
-                [&bind](metadata_bind::values_t vs) { bind(std::move(vs)); },
-                [](auto&&) {}, // // ignore other opts
-            };
-
-            (process_opt(META_HPP_FWD(opts)), ...);
-            return std::move(bind.values_);
-        }
+        static values_t from_opts(Opts&&... opts);
 
     public:
         metadata_bind() = default;
         ~metadata_bind() = default;
 
         metadata_bind(metadata_bind&&) = default;
-        metadata_bind(const metadata_bind&) = delete;
-
         metadata_bind& operator=(metadata_bind&&) = default;
+
+        metadata_bind(const metadata_bind&) = delete;
         metadata_bind& operator=(const metadata_bind&) = delete;
 
-        metadata_bind& operator()(std::string name, uvalue value) & {
-            values_.insert_or_assign(std::move(name), std::move(value));
-            return *this;
-        }
+        metadata_bind& operator()(std::string name, uvalue value) &;
+        metadata_bind operator()(std::string name, uvalue value) &&;
 
-        metadata_bind operator()(std::string name, uvalue value) && {
-            (*this)(std::move(name), std::move(value));
-            return std::move(*this);
-        }
-
-        metadata_bind& operator()(values_t values) & {
-            detail::insert_or_assign(values_, std::move(values));
-            return *this;
-        }
-
-        metadata_bind operator()(values_t values) && {
-            (*this)(std::move(values));
-            return std::move(*this);
-        }
-
-        metadata_bind& operator()(metadata_bind bind) & {
-            detail::insert_or_assign(values_, std::move(bind.values_));
-            return *this;
-        }
-
-        metadata_bind operator()(metadata_bind bind) && {
-            (*this)(std::move(bind));
-            return std::move(*this);
-        }
+        metadata_bind& operator()(metadata_bind bind) &;
+        metadata_bind operator()(metadata_bind bind) &&;
 
     private:
         values_t values_;
@@ -5202,6 +5173,43 @@ namespace meta_hpp
 
     inline metadata_bind metadata_() {
         return metadata_bind{};
+    }
+
+    inline metadata_bind::operator values_t() && {
+        return std::move(values_);
+    }
+
+    template < typename... Opts >
+    metadata_bind::values_t metadata_bind::from_opts(Opts&&... opts) {
+        metadata_bind bind;
+
+        const auto process_opt = detail::overloaded{
+            [&bind](metadata_bind b) { bind(std::move(b)); }, //
+            [](auto&&) {},                                    // ignore other opts
+        };
+
+        (process_opt(META_HPP_FWD(opts)), ...);
+        return std::move(bind.values_);
+    }
+
+    inline metadata_bind& metadata_bind::operator()(std::string name, uvalue value) & {
+        values_.insert_or_assign(std::move(name), std::move(value));
+        return *this;
+    }
+
+    inline metadata_bind metadata_bind::operator()(std::string name, uvalue value) && {
+        (*this)(std::move(name), std::move(value));
+        return std::move(*this);
+    }
+
+    inline metadata_bind& metadata_bind::operator()(metadata_bind bind) & {
+        detail::insert_or_assign(values_, std::move(bind.values_));
+        return *this;
+    }
+
+    inline metadata_bind metadata_bind::operator()(metadata_bind bind) && {
+        (*this)(std::move(bind));
+        return std::move(*this);
     }
 }
 
