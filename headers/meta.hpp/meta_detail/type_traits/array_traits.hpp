@@ -8,9 +8,11 @@
 
 #include "../../meta_base.hpp"
 
+#include "../type_kinds.hpp"
+
 namespace meta_hpp::detail
 {
-    enum class array_flags : std::uint32_t {
+    enum class array_flags : std::uint8_t {
         is_readonly = 1 << 0,
         is_volatile = 1 << 1,
         is_bounded = 1 << 2,

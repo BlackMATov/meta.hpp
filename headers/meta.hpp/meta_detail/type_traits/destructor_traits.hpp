@@ -8,15 +8,27 @@
 
 #include "../../meta_base.hpp"
 
+#include "../type_kinds.hpp"
+
 namespace meta_hpp::detail
 {
-    enum class destructor_flags : std::uint32_t {
+    enum class destructor_flags : std::uint8_t {
         is_noexcept = 1 << 0,
         is_virtual = 1 << 1,
     };
 
     using destructor_bitflags = bitflags<destructor_flags>;
     META_HPP_DETAIL_BITFLAGS_OPERATORS_DECL(destructor_flags)
+}
+
+namespace meta_hpp::detail
+{
+    template < class_kind Class >
+    struct destructor_traits;
+
+    template < typename Class >
+    concept class_destructor_kind //
+        = class_kind<Class> && std::is_destructible_v<Class>;
 }
 
 namespace meta_hpp::detail

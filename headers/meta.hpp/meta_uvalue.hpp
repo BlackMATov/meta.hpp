@@ -7,6 +7,7 @@
 #pragma once
 
 #include "meta_base.hpp"
+#include "meta_details.hpp"
 
 namespace meta_hpp
 {
@@ -16,43 +17,41 @@ namespace meta_hpp
         ~uvalue() noexcept;
 
         uvalue(uvalue&& other) noexcept;
-        uvalue(const uvalue& other) = delete;
-
         uvalue& operator=(uvalue&& other) noexcept;
+
+        uvalue(const uvalue& other) = delete;
         uvalue& operator=(const uvalue& other) = delete;
 
-        template <                                 //
-            typename T,                            //
-            typename Tp = std::decay_t<T>,         //
-            typename = std::enable_if_t<           //
-                !uvalue_family<Tp> &&              //
-                !detail::is_in_place_type_v<Tp> && //
-                std::is_constructible_v<Tp, T>>>   //
+        template <                                              //
+            typename T,                                         //
+            typename = std::enable_if_t<                        //
+                !uvalue_family<std::decay_t<T>> &&              //
+                !detail::is_in_place_type_v<std::decay_t<T>> && //
+                std::is_constructible_v<std::decay_t<T>, T>>>   //
         uvalue(T&& val);
 
-        template <                               //
-            typename T,                          //
-            typename Tp = std::decay_t<T>,       //
-            typename = std::enable_if_t<         //
-                !uvalue_family<Tp> &&            //
-                std::is_constructible_v<Tp, T>>> //
+        template <                                            //
+            typename T,                                       //
+            typename = std::enable_if_t<                      //
+                !uvalue_family<std::decay_t<T>> &&            //
+                std::is_constructible_v<std::decay_t<T>, T>>> //
         uvalue& operator=(T&& val);
 
-        template < typename T, typename... Args, typename Tp = std::decay_t<T> >
-            requires std::is_constructible_v<Tp, Args...> //
+        template < typename T, typename... Args >
+            requires std::is_constructible_v<std::decay_t<T>, Args...>
         explicit uvalue(std::in_place_type_t<T>, Args&&... args);
 
-        template < typename T, typename U, typename... Args, typename Tp = std::decay_t<T> >
-            requires std::is_constructible_v<Tp, std::initializer_list<U>&, Args...> //
+        template < typename T, typename U, typename... Args >
+            requires std::is_constructible_v<std::decay_t<T>, std::initializer_list<U>&, Args...>
         explicit uvalue(std::in_place_type_t<T>, std::initializer_list<U> ilist, Args&&... args);
 
-        template < typename T, typename... Args, typename Tp = std::decay_t<T> >
-            requires std::is_constructible_v<Tp, Args...> //
-        Tp& emplace(Args&&... args);
+        template < typename T, typename... Args >
+            requires std::is_constructible_v<std::decay_t<T>, Args...>
+        std::decay_t<T>& emplace(Args&&... args);
 
-        template < typename T, typename U, typename... Args, typename Tp = std::decay_t<T> >
-            requires std::is_constructible_v<Tp, std::initializer_list<U>&, Args...> //
-        Tp& emplace(std::initializer_list<U> ilist, Args&&... args);
+        template < typename T, typename U, typename... Args >
+            requires std::is_constructible_v<std::decay_t<T>, std::initializer_list<U>&, Args...>
+        std::decay_t<T>& emplace(std::initializer_list<U> ilist, Args&&... args);
 
         [[nodiscard]] bool has_value() const noexcept;
         [[nodiscard]] explicit operator bool() const noexcept;
@@ -81,29 +80,33 @@ namespace meta_hpp
         template < typename T >
         [[nodiscard]] bool is() const noexcept;
 
-        template < detail::pointer_kind T >
+        template < any_pointer_family T >
         [[nodiscard]] T as();
-        template < detail::pointer_kind T >
+        template < any_pointer_family T >
         [[nodiscard]] T as() const;
 
-        template < detail::non_pointer_kind T >
-        [[nodiscard]] T as() &&;
-        template < detail::non_pointer_kind T >
+        template < not_any_pointer_family T >
         [[nodiscard]] T& as() &;
-        template < detail::non_pointer_kind T >
+        template < not_any_pointer_family T >
         [[nodiscard]] const T& as() const&;
-        template < detail::non_pointer_kind T >
+        template < not_any_pointer_family T >
+        [[nodiscard]] T as() &&;
+        template < not_any_pointer_family T >
         [[nodiscard]] const T&& as() const&&;
 
-        template < detail::pointer_kind T >
+        template < any_pointer_family T >
         [[nodiscard]] T try_as() noexcept;
-        template < detail::pointer_kind T >
+        template < any_pointer_family T >
         [[nodiscard]] T try_as() const noexcept;
 
-        template < detail::non_pointer_kind T >
-        [[nodiscard]] T* try_as() noexcept;
-        template < detail::non_pointer_kind T >
-        [[nodiscard]] const T* try_as() const noexcept;
+        template < not_any_pointer_family T >
+        [[nodiscard]] T* try_as() & noexcept;
+        template < not_any_pointer_family T >
+        [[nodiscard]] const T* try_as() const& noexcept;
+        template < not_any_pointer_family T >
+        void try_as() && = delete;
+        template < not_any_pointer_family T >
+        void try_as() const&& = delete;
 
     private:
         struct vtable_t;
@@ -146,12 +149,12 @@ namespace meta_hpp
     }
 
     template < typename T, typename... Args >
-    uvalue make_uvalue(Args&&... args) {
+    [[nodiscard]] uvalue make_uvalue(Args&&... args) {
         return uvalue(std::in_place_type<T>, std::forward<Args>(args)...);
     }
 
     template < typename T, typename U, typename... Args >
-    uvalue make_uvalue(std::initializer_list<U> ilist, Args&&... args) {
+    [[nodiscard]] uvalue make_uvalue(std::initializer_list<U> ilist, Args&&... args) {
         return uvalue(std::in_place_type<T>, ilist, std::forward<Args>(args)...);
     }
 }

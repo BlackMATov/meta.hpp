@@ -48,7 +48,7 @@ namespace meta_hpp
         return evalue{};
     }
 
-    template < detail::enum_kind Enum >
+    template < enum_kind Enum >
     std::string_view enum_type::value_to_name(Enum value) const noexcept {
         if ( resolve_type<Enum>() != *this ) {
             return std::string_view{};

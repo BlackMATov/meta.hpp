@@ -45,7 +45,7 @@ namespace
     };
 }
 
-TEST_CASE("meta/meta_manuals/class/type") {
+TEST_CASE("meta/meta_examples/class/type") {
     namespace meta = meta_hpp;
 
     // 'shape' class type registration
@@ -75,7 +75,7 @@ TEST_CASE("meta/meta_manuals/class/type") {
     //   + get_width/0
 }
 
-TEST_CASE("meta/meta_manuals/class/usage") {
+TEST_CASE("meta/meta_examples/class/usage") {
     namespace meta = meta_hpp;
 
     // resolves a class type by static class type

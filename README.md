@@ -46,20 +46,6 @@ target_link_libraries(your_project_target PUBLIC meta.hpp::meta.hpp)
 
 Or just use the single-header version of the library, which you can find [here](develop/singles/headers/meta.hpp/meta_all.hpp).
 
-## Manuals
-
-- [class](develop/manuals/meta_manuals/class_manual.cpp)
-- [enum](develop/manuals/meta_manuals/enum_manual.cpp)
-- [function](develop/manuals/meta_manuals/function_manual.cpp)
-- [inplace](develop/manuals/meta_manuals/inplace_manual.cpp)
-- [member](develop/manuals/meta_manuals/member_manual.cpp)
-- [metadata](develop/manuals/meta_manuals/metadata_manual.cpp)
-- [method](develop/manuals/meta_manuals/method_manual.cpp)
-- [scopes](develop/manuals/meta_manuals/scopes_manual.cpp)
-- [ucast](develop/manuals/meta_manuals/ucast_manual.cpp)
-- [uvalue](develop/manuals/meta_manuals/uvalue_manual.cpp)
-- [variable](develop/manuals/meta_manuals/variable_manual.cpp)
-
 ## Features
 
 - can reflect:
@@ -83,9 +69,23 @@ Or just use the single-header version of the library, which you can find [here](
 - doesn't contain 3rd-party dependencies
 - can be used without rtti and exceptions
 
-## API
+## Documentation
 
-> coming soon
+- [API Reference](./manuals/api.md)
+
+### Examples
+
+- [class](develop/manuals/meta_examples/class_example.cpp)
+- [enum](develop/manuals/meta_examples/enum_example.cpp)
+- [function](develop/manuals/meta_examples/function_example.cpp)
+- [inplace](develop/manuals/meta_examples/inplace_example.cpp)
+- [member](develop/manuals/meta_examples/member_example.cpp)
+- [metadata](develop/manuals/meta_examples/metadata_example.cpp)
+- [method](develop/manuals/meta_examples/method_example.cpp)
+- [scopes](develop/manuals/meta_examples/scopes_example.cpp)
+- [ucast](develop/manuals/meta_examples/ucast_example.cpp)
+- [uvalue](develop/manuals/meta_examples/uvalue_example.cpp)
+- [variable](develop/manuals/meta_examples/variable_example.cpp)
 
 ## Alternatives
 

@@ -12,7 +12,7 @@
 
 namespace meta_hpp
 {
-    template < detail::pointer_kind Pointer >
+    template < pointer_kind Pointer >
     pointer_bind<Pointer>::pointer_bind(metadata_map metadata)
     : type_bind_base{resolve_type<Pointer>(), std::move(metadata)} {}
 }

@@ -32,7 +32,7 @@ namespace
     };
 }
 
-TEST_CASE("meta/meta_manuals/ucast") {
+TEST_CASE("meta/meta_examples/ucast") {
     namespace meta = meta_hpp;
 
     C c{};

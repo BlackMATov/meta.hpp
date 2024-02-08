@@ -7,6 +7,7 @@
 #pragma once
 
 #include "meta_base.hpp"
+#include "meta_details.hpp"
 #include "meta_states.hpp"
 #include "meta_types.hpp"
 
@@ -59,14 +60,14 @@ namespace meta_hpp
 
 namespace meta_hpp
 {
-    template < detail::class_kind Class, typename... Args >
+    template < class_kind Class, typename... Args >
     [[nodiscard]] constructor_type resolve_constructor_type() {
         using namespace detail;
         type_registry& registry = type_registry::instance();
         return registry.resolve_constructor_type<Class, Args...>();
     }
 
-    template < detail::class_kind Class >
+    template < class_kind Class >
     [[nodiscard]] destructor_type resolve_destructor_type() {
         using namespace detail;
         type_registry& registry = type_registry::instance();

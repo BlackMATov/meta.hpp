@@ -12,7 +12,7 @@
 
 namespace meta_hpp
 {
-    template < detail::number_kind Number >
+    template < number_kind Number >
     number_bind<Number>::number_bind(metadata_map metadata)
     : type_bind_base{resolve_type<Number>(), std::move(metadata)} {}
 }

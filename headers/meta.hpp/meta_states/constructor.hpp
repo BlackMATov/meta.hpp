@@ -15,7 +15,7 @@
 
 namespace meta_hpp::detail
 {
-    template < constructor_policy::family Policy, class_kind Class, typename... Args >
+    template < constructor_policy_family Policy, class_kind Class, typename... Args >
     uvalue raw_constructor_create(type_registry& registry, std::span<const uarg> args) {
         using ct = constructor_traits<Class, Args...>;
         using class_type = typename ct::class_type;
@@ -104,7 +104,7 @@ namespace meta_hpp::detail
 
 namespace meta_hpp::detail
 {
-    template < constructor_policy::family Policy, class_kind Class, typename... Args >
+    template < constructor_policy_family Policy, class_kind Class, typename... Args >
     constructor_state::create_impl make_constructor_create(type_registry& registry) {
         return [&registry](std::span<const uarg> args) { //
             return raw_constructor_create<Policy, Class, Args...>(registry, args);
@@ -146,8 +146,8 @@ namespace meta_hpp::detail
     : index{nindex}
     , metadata{std::move(nmetadata)} {}
 
-    template < constructor_policy::family Policy, class_kind Class, typename... Args >
-    constructor_state_ptr constructor_state::make(metadata_map metadata) {
+    template < constructor_policy_family Policy, class_kind Class, typename... Args >
+    constructor_state::state_ptr constructor_state::make(metadata_map metadata) {
         type_registry& registry{type_registry::instance()};
 
         constructor_state state{

@@ -31,7 +31,7 @@ namespace meta_hpp
         return function.try_invoke(META_HPP_FWD(args)...);
     }
 
-    template < detail::function_pointer_kind Function, typename... Args >
+    template < function_pointer_kind Function, typename... Args >
     uvalue invoke(Function function_ptr, Args&&... args) {
         using namespace detail;
         type_registry& registry{type_registry::instance()};
@@ -39,7 +39,7 @@ namespace meta_hpp
         return raw_function_invoke<function_policy::as_copy_t>(registry, function_ptr, vargs);
     }
 
-    template < detail::function_pointer_kind Function, typename... Args >
+    template < function_pointer_kind Function, typename... Args >
     uresult try_invoke(Function function_ptr, Args&&... args) {
         using namespace detail;
         type_registry& registry{type_registry::instance()};
@@ -69,7 +69,7 @@ namespace meta_hpp
         return member.try_get(META_HPP_FWD(instance));
     }
 
-    template < detail::member_pointer_kind Member, typename Instance >
+    template < member_pointer_kind Member, typename Instance >
     uvalue invoke(Member member_ptr, Instance&& instance) {
         using namespace detail;
         type_registry& registry{type_registry::instance()};
@@ -77,7 +77,7 @@ namespace meta_hpp
         return raw_member_getter<member_policy::as_copy_t>(registry, member_ptr, vinst);
     }
 
-    template < detail::member_pointer_kind Member, typename Instance >
+    template < member_pointer_kind Member, typename Instance >
     uresult try_invoke(Member member_ptr, Instance&& instance) {
         using namespace detail;
         type_registry& registry{type_registry::instance()};
@@ -107,7 +107,7 @@ namespace meta_hpp
         return method.try_invoke(META_HPP_FWD(instance), META_HPP_FWD(args)...);
     }
 
-    template < detail::method_pointer_kind Method, typename Instance, typename... Args >
+    template < method_pointer_kind Method, typename Instance, typename... Args >
     uvalue invoke(Method method_ptr, Instance&& instance, Args&&... args) {
         using namespace detail;
         type_registry& registry{type_registry::instance()};
@@ -116,7 +116,7 @@ namespace meta_hpp
         return raw_method_invoke<method_policy::as_copy_t>(registry, method_ptr, vinst, vargs);
     }
 
-    template < detail::method_pointer_kind Method, typename Instance, typename... Args >
+    template < method_pointer_kind Method, typename Instance, typename... Args >
     uresult try_invoke(Method method_ptr, Instance&& instance, Args&&... args) {
         using namespace detail;
         type_registry& registry{type_registry::instance()};
@@ -148,12 +148,12 @@ namespace meta_hpp
         return !check_invocable_error(function, META_HPP_FWD(args)...);
     }
 
-    template < typename... Args, detail::function_pointer_kind Function >
+    template < typename... Args, function_pointer_kind Function >
     bool is_invocable_with(Function function_ptr) noexcept {
         return !check_invocable_error<Args...>(function_ptr);
     }
 
-    template < typename... Args, detail::function_pointer_kind Function >
+    template < typename... Args, function_pointer_kind Function >
     bool is_invocable_with(Function function_ptr, Args&&... args) noexcept {
         return !check_invocable_error(function_ptr, META_HPP_FWD(args)...);
     }
@@ -168,7 +168,7 @@ namespace meta_hpp
         return function.check_invocable_error(META_HPP_FWD(args)...);
     }
 
-    template < typename... Args, detail::function_pointer_kind Function >
+    template < typename... Args, function_pointer_kind Function >
     uerror check_invocable_error(Function) noexcept {
         using namespace detail;
         type_registry& registry{type_registry::instance()};
@@ -176,7 +176,7 @@ namespace meta_hpp
         return raw_function_invoke_error<Function>(registry, vargs);
     }
 
-    template < typename... Args, detail::function_pointer_kind Function >
+    template < typename... Args, function_pointer_kind Function >
     uerror check_invocable_error(Function, Args&&... args) noexcept {
         using namespace detail;
         type_registry& registry{type_registry::instance()};
@@ -197,12 +197,12 @@ namespace meta_hpp
         return !check_invocable_error(member, META_HPP_FWD(instance));
     }
 
-    template < typename Instance, detail::member_pointer_kind Member >
+    template < typename Instance, member_pointer_kind Member >
     bool is_invocable_with(Member member_ptr) noexcept {
         return !check_invocable_error<Instance>(member_ptr);
     }
 
-    template < typename Instance, detail::member_pointer_kind Member >
+    template < typename Instance, member_pointer_kind Member >
     bool is_invocable_with(Member member_ptr, Instance&& instance) noexcept {
         return !check_invocable_error(member_ptr, META_HPP_FWD(instance));
     }
@@ -217,7 +217,7 @@ namespace meta_hpp
         return member.check_gettable_error(META_HPP_FWD(instance));
     }
 
-    template < typename Instance, detail::member_pointer_kind Member >
+    template < typename Instance, member_pointer_kind Member >
     uerror check_invocable_error(Member) noexcept {
         using namespace detail;
         type_registry& registry{type_registry::instance()};
@@ -225,7 +225,7 @@ namespace meta_hpp
         return raw_member_getter_error<Member>(registry, vinst);
     }
 
-    template < typename Instance, detail::member_pointer_kind Member >
+    template < typename Instance, member_pointer_kind Member >
     uerror check_invocable_error(Member, Instance&& instance) noexcept {
         using namespace detail;
         type_registry& registry{type_registry::instance()};
@@ -246,12 +246,12 @@ namespace meta_hpp
         return !check_invocable_error(method, META_HPP_FWD(instance), META_HPP_FWD(args)...);
     }
 
-    template < typename Instance, typename... Args, detail::method_pointer_kind Method >
+    template < typename Instance, typename... Args, method_pointer_kind Method >
     bool is_invocable_with(Method method_ptr) noexcept {
         return !check_invocable_error<Instance, Args...>(method_ptr);
     }
 
-    template < typename Instance, typename... Args, detail::method_pointer_kind Method >
+    template < typename Instance, typename... Args, method_pointer_kind Method >
     bool is_invocable_with(Method method_ptr, Instance&& instance, Args&&... args) noexcept {
         return !check_invocable_error(method_ptr, META_HPP_FWD(instance), META_HPP_FWD(args)...);
     }
@@ -266,7 +266,7 @@ namespace meta_hpp
         return method.check_invocable_error(META_HPP_FWD(instance), META_HPP_FWD(args)...);
     }
 
-    template < typename Instance, typename... Args, detail::method_pointer_kind Method >
+    template < typename Instance, typename... Args, method_pointer_kind Method >
     uerror check_invocable_error(Method) noexcept {
         using namespace detail;
         type_registry& registry{type_registry::instance()};
@@ -275,7 +275,7 @@ namespace meta_hpp
         return raw_method_invoke_error<Method>(registry, vinst, vargs);
     }
 
-    template < typename Instance, typename... Args, detail::method_pointer_kind Method >
+    template < typename Instance, typename... Args, method_pointer_kind Method >
     uerror check_invocable_error(Method, Instance&& instance, Args&&... args) noexcept {
         using namespace detail;
         type_registry& registry{type_registry::instance()};

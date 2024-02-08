@@ -8,9 +8,11 @@
 
 #include "../../meta_base.hpp"
 
+#include "../type_kinds.hpp"
+
 namespace meta_hpp::detail
 {
-    enum class enum_flags : std::uint32_t {
+    enum class enum_flags : std::uint8_t {
         is_scoped = 1 << 0,
     };
 

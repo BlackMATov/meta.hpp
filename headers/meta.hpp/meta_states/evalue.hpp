@@ -19,7 +19,7 @@ namespace meta_hpp::detail
     , metadata{std::move(nmetadata)} {}
 
     template < enum_kind Enum >
-    evalue_state_ptr evalue_state::make(std::string name, Enum evalue, metadata_map metadata) {
+    evalue_state::state_ptr evalue_state::make(std::string name, Enum evalue, metadata_map metadata) {
         type_registry& registry{type_registry::instance()};
 
         evalue_state state{

@@ -13,7 +13,7 @@
 #include "meta_base/exceptions.hpp"
 #include "meta_base/fixed_function.hpp"
 #include "meta_base/fnv1a_hash.hpp"
-#include "meta_base/hash_combiner.hpp"
+#include "meta_base/hash_composer.hpp"
 #include "meta_base/hashed_string.hpp"
 #include "meta_base/insert_or_assign.hpp"
 #include "meta_base/is_in_place_type.hpp"
@@ -23,7 +23,6 @@
 #include "meta_base/overloaded.hpp"
 #include "meta_base/select_overload.hpp"
 #include "meta_base/to_underlying.hpp"
-#include "meta_base/type_kinds.hpp"
 #include "meta_base/type_list.hpp"
 
 namespace meta_hpp
@@ -41,7 +40,6 @@ namespace meta_hpp
     using detail::select_non_const;
     using detail::select_overload;
 
-    using detail::type_kind;
     using detail::type_list;
 }
 
@@ -84,29 +82,6 @@ namespace meta_hpp
     class scope;
     class variable;
 
-    namespace detail
-    {
-        struct argument_state;
-        struct constructor_state;
-        struct destructor_state;
-        struct evalue_state;
-        struct function_state;
-        struct member_state;
-        struct method_state;
-        struct scope_state;
-        struct variable_state;
-
-        using argument_state_ptr = std::shared_ptr<argument_state>;
-        using constructor_state_ptr = std::shared_ptr<constructor_state>;
-        using destructor_state_ptr = std::shared_ptr<destructor_state>;
-        using evalue_state_ptr = std::shared_ptr<evalue_state>;
-        using function_state_ptr = std::shared_ptr<function_state>;
-        using member_state_ptr = std::shared_ptr<member_state>;
-        using method_state_ptr = std::shared_ptr<method_state>;
-        using scope_state_ptr = std::shared_ptr<scope_state>;
-        using variable_state_ptr = std::shared_ptr<variable_state>;
-    }
-
     template < typename T >
     concept state_family                 //
         = std::is_same_v<T, argument>    //
@@ -136,24 +111,6 @@ namespace meta_hpp
     class pointer_type;
     class reference_type;
     class void_type;
-
-    namespace detail
-    {
-        struct type_data_base;
-        struct array_type_data;
-        struct class_type_data;
-        struct constructor_type_data;
-        struct destructor_type_data;
-        struct enum_type_data;
-        struct function_type_data;
-        struct member_type_data;
-        struct method_type_data;
-        struct nullptr_type_data;
-        struct number_type_data;
-        struct pointer_type_data;
-        struct reference_type_data;
-        struct void_type_data;
-    }
 
     template < typename T >
     concept type_family                       //
@@ -200,8 +157,6 @@ namespace meta_hpp
 
 namespace meta_hpp
 {
-    using string_ilist = std::initializer_list<std::string_view>;
-
     using metadata_map = std::map<std::string, uvalue, std::less<>>;
     using typedef_map = std::map<std::string, any_type, std::less<>>;
     using uvalue_list = std::vector<uvalue>;

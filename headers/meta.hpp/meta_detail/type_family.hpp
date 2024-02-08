@@ -8,6 +8,8 @@
 
 #include "../meta_base.hpp"
 
+#include "type_kinds.hpp"
+
 #include "type_traits/array_traits.hpp"
 #include "type_traits/class_traits.hpp"
 #include "type_traits/constructor_traits.hpp"
@@ -19,6 +21,24 @@
 #include "type_traits/number_traits.hpp"
 #include "type_traits/pointer_traits.hpp"
 #include "type_traits/reference_traits.hpp"
+
+namespace meta_hpp::detail
+{
+    struct type_data_base;
+    struct array_type_data;
+    struct class_type_data;
+    struct constructor_type_data;
+    struct destructor_type_data;
+    struct enum_type_data;
+    struct function_type_data;
+    struct member_type_data;
+    struct method_type_data;
+    struct nullptr_type_data;
+    struct number_type_data;
+    struct pointer_type_data;
+    struct reference_type_data;
+    struct void_type_data;
+}
 
 namespace meta_hpp::detail
 {

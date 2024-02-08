@@ -28,6 +28,6 @@ namespace meta_hpp
     }
 
     inline std::size_t scope_index::get_hash() const noexcept {
-        return detail::hash_combiner{}(name_);
+        return detail::hash_composer{} << name_;
     }
 }

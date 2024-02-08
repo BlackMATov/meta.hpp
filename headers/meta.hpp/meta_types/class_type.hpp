@@ -246,7 +246,7 @@ namespace meta_hpp
         return false;
     }
 
-    template < detail::class_kind Derived >
+    template < class_kind Derived >
     bool class_type::is_base_of() const noexcept {
         return is_base_of(resolve_type<Derived>());
     }
@@ -265,7 +265,7 @@ namespace meta_hpp
         return false;
     }
 
-    template < detail::class_kind Derived >
+    template < class_kind Derived >
     bool class_type::is_direct_base_of() const noexcept {
         return is_direct_base_of(resolve_type<Derived>());
     }
@@ -284,7 +284,7 @@ namespace meta_hpp
         return false;
     }
 
-    template < detail::class_kind Base >
+    template < class_kind Base >
     bool class_type::is_derived_from() const noexcept {
         return is_derived_from(resolve_type<Base>());
     }
@@ -293,7 +293,7 @@ namespace meta_hpp
         return base.is_base_of(*this);
     }
 
-    template < detail::class_kind Base >
+    template < class_kind Base >
     bool class_type::is_direct_derived_from() const noexcept {
         return is_direct_derived_from(resolve_type<Base>());
     }

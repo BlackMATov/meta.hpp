@@ -78,7 +78,7 @@ namespace meta_hpp::detail
     , metadata{std::move(nmetadata)} {}
 
     template < class_kind Class >
-    destructor_state_ptr destructor_state::make(metadata_map metadata) {
+    destructor_state::state_ptr destructor_state::make(metadata_map metadata) {
         type_registry& registry{type_registry::instance()};
 
         destructor_state state{

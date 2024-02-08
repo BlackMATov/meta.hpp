@@ -18,7 +18,7 @@ namespace meta_hpp::detail
     , metadata{std::move(nmetadata)} {}
 
     template < typename Argument >
-    inline argument_state_ptr argument_state::make(std::size_t position, metadata_map metadata) {
+    inline argument_state::state_ptr argument_state::make(std::size_t position, metadata_map metadata) {
         type_registry& registry{type_registry::instance()};
 
         argument_state state{

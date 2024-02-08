@@ -6,7 +6,7 @@
 
 #pragma once
 
-#include "base.hpp"
+#include "../meta_base.hpp"
 
 namespace meta_hpp::detail
 {
@@ -42,6 +42,9 @@ namespace meta_hpp::detail
     concept function_kind = std::is_function_v<T>;
 
     template < typename T >
+    concept function_pointer_kind = std::is_pointer_v<T> && std::is_function_v<std::remove_pointer_t<T>>;
+
+    template < typename T >
     concept member_pointer_kind = std::is_member_object_pointer_v<T>;
 
     template < typename T >
@@ -61,18 +64,12 @@ namespace meta_hpp::detail
 
     template < typename T >
     concept void_kind = std::is_void_v<T>;
-}
-
-namespace meta_hpp::detail
-{
-    template < typename T >
-    concept non_pointer_kind = !std::is_pointer_v<T>;
 
     template < typename T >
-    concept function_pointer_kind = std::is_pointer_v<T> && std::is_function_v<std::remove_pointer_t<T>>;
+    concept any_pointer_family = std::is_pointer_v<T> || std::is_member_pointer_v<T>;
 
     template < typename T >
-    concept non_function_pointer_kind = std::is_pointer_v<T> && !std::is_function_v<std::remove_pointer_t<T>>;
+    concept not_any_pointer_family = !std::is_pointer_v<T> && !std::is_member_pointer_v<T>;
 }
 
 namespace meta_hpp::detail

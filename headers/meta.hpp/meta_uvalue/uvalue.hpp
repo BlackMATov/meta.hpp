@@ -257,39 +257,39 @@ namespace meta_hpp
         return *this;
     }
 
-    template < typename T, typename Tp, typename >
+    template < typename T, typename >
     uvalue::uvalue(T&& val) {
         vtable_t::do_ctor<T>(*this, std::forward<T>(val));
     }
 
-    template < typename T, typename Tp, typename >
+    template < typename T, typename >
     uvalue& uvalue::operator=(T&& val) {
         uvalue{std::forward<T>(val)}.swap(*this);
         return *this;
     }
 
-    template < typename T, typename... Args, typename Tp >
-        requires std::is_constructible_v<Tp, Args...>
+    template < typename T, typename... Args >
+        requires std::is_constructible_v<std::decay_t<T>, Args...>
     uvalue::uvalue(std::in_place_type_t<T>, Args&&... args) {
         vtable_t::do_ctor<T>(*this, std::forward<Args>(args)...);
     }
 
-    template < typename T, typename U, typename... Args, typename Tp >
-        requires std::is_constructible_v<Tp, std::initializer_list<U>&, Args...>
+    template < typename T, typename U, typename... Args >
+        requires std::is_constructible_v<std::decay_t<T>, std::initializer_list<U>&, Args...>
     uvalue::uvalue(std::in_place_type_t<T>, std::initializer_list<U> ilist, Args&&... args) {
         vtable_t::do_ctor<T>(*this, ilist, std::forward<Args>(args)...);
     }
 
-    template < typename T, typename... Args, typename Tp >
-        requires std::is_constructible_v<Tp, Args...>
-    Tp& uvalue::emplace(Args&&... args) {
+    template < typename T, typename... Args >
+        requires std::is_constructible_v<std::decay_t<T>, Args...>
+    std::decay_t<T>& uvalue::emplace(Args&&... args) {
         vtable_t::do_reset(*this);
         return vtable_t::do_ctor<T>(*this, std::forward<Args>(args)...);
     }
 
-    template < typename T, typename U, typename... Args, typename Tp >
-        requires std::is_constructible_v<Tp, std::initializer_list<U>&, Args...>
-    Tp& uvalue::emplace(std::initializer_list<U> ilist, Args&&... args) {
+    template < typename T, typename U, typename... Args >
+        requires std::is_constructible_v<std::decay_t<T>, std::initializer_list<U>&, Args...>
+    std::decay_t<T>& uvalue::emplace(std::initializer_list<U> ilist, Args&&... args) {
         vtable_t::do_reset(*this);
         return vtable_t::do_ctor<T>(*this, ilist, std::forward<Args>(args)...);
     }
@@ -420,7 +420,7 @@ namespace meta_hpp
         return detail::is_a(resolve_type<T>(), get_type());
     }
 
-    template < detail::pointer_kind T >
+    template < any_pointer_family T >
     T uvalue::as() {
         static_assert(std::is_same_v<T, std::decay_t<T>>);
 
@@ -431,7 +431,7 @@ namespace meta_hpp
         throw_exception(error_code::bad_uvalue_access);
     }
 
-    template < detail::pointer_kind T >
+    template < any_pointer_family T >
     T uvalue::as() const {
         static_assert(std::is_same_v<T, std::decay_t<T>>);
 
@@ -442,18 +442,7 @@ namespace meta_hpp
         throw_exception(error_code::bad_uvalue_access);
     }
 
-    template < detail::non_pointer_kind T >
-    T uvalue::as() && {
-        static_assert(std::is_same_v<T, std::decay_t<T>>);
-
-        if ( T* ptr = try_as<T>() ) {
-            return std::move(*ptr);
-        }
-
-        throw_exception(error_code::bad_uvalue_access);
-    }
-
-    template < detail::non_pointer_kind T >
+    template < not_any_pointer_family T >
     T& uvalue::as() & {
         static_assert(std::is_same_v<T, std::decay_t<T>>);
 
@@ -464,7 +453,7 @@ namespace meta_hpp
         throw_exception(error_code::bad_uvalue_access);
     }
 
-    template < detail::non_pointer_kind T >
+    template < not_any_pointer_family T >
     const T& uvalue::as() const& {
         static_assert(std::is_same_v<T, std::decay_t<T>>);
 
@@ -475,7 +464,18 @@ namespace meta_hpp
         throw_exception(error_code::bad_uvalue_access);
     }
 
-    template < detail::non_pointer_kind T >
+    template < not_any_pointer_family T >
+    T uvalue::as() && {
+        static_assert(std::is_same_v<T, std::decay_t<T>>);
+
+        if ( T* ptr = try_as<T>() ) {
+            return std::move(*ptr);
+        }
+
+        throw_exception(error_code::bad_uvalue_access);
+    }
+
+    template < not_any_pointer_family T >
     const T&& uvalue::as() const&& {
         static_assert(std::is_same_v<T, std::decay_t<T>>);
 
@@ -486,7 +486,7 @@ namespace meta_hpp
         throw_exception(error_code::bad_uvalue_access);
     }
 
-    template < detail::pointer_kind T >
+    template < any_pointer_family T >
     T uvalue::try_as() noexcept {
         static_assert(std::is_same_v<T, std::decay_t<T>>);
 
@@ -500,7 +500,7 @@ namespace meta_hpp
         return nullptr;
     }
 
-    template < detail::pointer_kind T >
+    template < any_pointer_family T >
     T uvalue::try_as() const noexcept {
         static_assert(std::is_same_v<T, std::decay_t<T>>);
 
@@ -514,8 +514,8 @@ namespace meta_hpp
         return nullptr;
     }
 
-    template < detail::non_pointer_kind T >
-    T* uvalue::try_as() noexcept {
+    template < not_any_pointer_family T >
+    T* uvalue::try_as() & noexcept {
         static_assert(std::is_same_v<T, std::decay_t<T>>);
 
         using namespace detail;
@@ -528,8 +528,8 @@ namespace meta_hpp
         return nullptr;
     }
 
-    template < detail::non_pointer_kind T >
-    const T* uvalue::try_as() const noexcept {
+    template < not_any_pointer_family T >
+    const T* uvalue::try_as() const& noexcept {
         static_assert(std::is_same_v<T, std::decay_t<T>>);
 
         using namespace detail;

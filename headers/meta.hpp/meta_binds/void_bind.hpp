@@ -12,7 +12,7 @@
 
 namespace meta_hpp
 {
-    template < detail::void_kind Void >
+    template < void_kind Void >
     void_bind<Void>::void_bind(metadata_map metadata)
     : type_bind_base{resolve_type<Void>(), std::move(metadata)} {}
 }

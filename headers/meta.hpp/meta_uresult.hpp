@@ -16,11 +16,11 @@ namespace meta_hpp
         uerror() = default;
         ~uerror() = default;
 
-        uerror(uerror&&) noexcept = default;
-        uerror(const uerror&) noexcept = default;
+        uerror(uerror&&) = default;
+        uerror& operator=(uerror&&) = default;
 
-        uerror& operator=(uerror&&) noexcept = default;
-        uerror& operator=(const uerror&) noexcept = default;
+        uerror(const uerror&) = default;
+        uerror& operator=(const uerror&) = default;
 
         explicit uerror(error_code error) noexcept;
         uerror& operator=(error_code error) noexcept;
@@ -45,7 +45,7 @@ namespace meta_hpp
         l.swap(r);
     }
 
-    inline uerror make_uerror(error_code error) {
+    [[nodiscard]] inline uerror make_uerror(error_code error) {
         return uerror{error};
     }
 }
@@ -67,10 +67,10 @@ namespace meta_hpp
         uresult() = default;
         ~uresult() = default;
 
-        uresult(uresult&&) noexcept = default;
-        uresult(const uresult&) = delete;
+        uresult(uresult&&) = default;
+        uresult& operator=(uresult&&) = default;
 
-        uresult& operator=(uresult&&) noexcept = default;
+        uresult(const uresult&) = delete;
         uresult& operator=(const uresult&) = delete;
 
         explicit(false) uresult(uerror error) noexcept;
@@ -79,38 +79,36 @@ namespace meta_hpp
         uresult& operator=(uerror error) noexcept;
         uresult& operator=(uvalue value) noexcept;
 
-        template <                                 //
-            typename T,                            //
-            typename Tp = std::decay_t<T>,         //
-            typename = std::enable_if_t<           //
-                !uvalue_family<Tp> &&              //
-                !detail::is_in_place_type_v<Tp> && //
-                std::is_constructible_v<Tp, T>>>   //
+        template <                                              //
+            typename T,                                         //
+            typename = std::enable_if_t<                        //
+                !uvalue_family<std::decay_t<T>> &&              //
+                !detail::is_in_place_type_v<std::decay_t<T>> && //
+                std::is_constructible_v<std::decay_t<T>, T>>>   //
         uresult(T&& val);
 
-        template <                               //
-            typename T,                          //
-            typename Tp = std::decay_t<T>,       //
-            typename = std::enable_if_t<         //
-                !uvalue_family<Tp> &&            //
-                std::is_constructible_v<Tp, T>>> //
+        template <                                            //
+            typename T,                                       //
+            typename = std::enable_if_t<                      //
+                !uvalue_family<std::decay_t<T>> &&            //
+                std::is_constructible_v<std::decay_t<T>, T>>> //
         uresult& operator=(T&& val);
 
-        template < typename T, typename... Args, typename Tp = std::decay_t<T> >
-            requires std::is_constructible_v<Tp, Args...> //
+        template < typename T, typename... Args >
+            requires std::is_constructible_v<std::decay_t<T>, Args...>
         explicit uresult(std::in_place_type_t<T>, Args&&... args);
 
-        template < typename T, typename U, typename... Args, typename Tp = std::decay_t<T> >
-            requires std::is_constructible_v<Tp, std::initializer_list<U>&, Args...> //
+        template < typename T, typename U, typename... Args >
+            requires std::is_constructible_v<std::decay_t<T>, std::initializer_list<U>&, Args...>
         explicit uresult(std::in_place_type_t<T>, std::initializer_list<U> ilist, Args&&... args);
 
-        template < typename T, typename... Args, typename Tp = std::decay_t<T> >
-            requires std::is_constructible_v<Tp, Args...> //
-        Tp& emplace(Args&&... args);
+        template < typename T, typename... Args >
+            requires std::is_constructible_v<std::decay_t<T>, Args...>
+        std::decay_t<T>& emplace(Args&&... args);
 
-        template < typename T, typename U, typename... Args, typename Tp = std::decay_t<T> >
-            requires std::is_constructible_v<Tp, std::initializer_list<U>&, Args...> //
-        Tp& emplace(std::initializer_list<U> ilist, Args&&... args);
+        template < typename T, typename U, typename... Args >
+            requires std::is_constructible_v<std::decay_t<T>, std::initializer_list<U>&, Args...>
+        std::decay_t<T>& emplace(std::initializer_list<U> ilist, Args&&... args);
 
         [[nodiscard]] bool has_error() const noexcept;
         [[nodiscard]] bool has_value() const noexcept;
@@ -144,12 +142,12 @@ namespace meta_hpp
     }
 
     template < typename T, typename... Args >
-    uresult make_uresult(Args&&... args) {
+    [[nodiscard]] uresult make_uresult(Args&&... args) {
         return uresult(std::in_place_type<T>, std::forward<Args>(args)...);
     }
 
     template < typename T, typename U, typename... Args >
-    uresult make_uresult(std::initializer_list<U> ilist, Args&&... args) {
+    [[nodiscard]] uresult make_uresult(std::initializer_list<U> ilist, Args&&... args) {
         return uresult(std::in_place_type<T>, ilist, std::forward<Args>(args)...);
     }
 }

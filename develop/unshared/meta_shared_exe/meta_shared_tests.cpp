@@ -281,34 +281,34 @@ TEST_CASE("meta/meta_shared/tests") {
 
     SUBCASE("9") {
         using meta::detail::type_access;
-        using meta::detail::hash_combiner;
+        using meta::detail::hash_composer;
 
-        CHECK_FALSE(meta::resolve_type<ivec2[]>().get_id().get_hash() == hash_combiner{}(type_access(meta::resolve_type<ivec2[]>())));
-        CHECK_FALSE(meta::resolve_type<ivec2>().get_id().get_hash() == hash_combiner{}(type_access(meta::resolve_type<ivec2>())));
-        CHECK_FALSE(meta::resolve_type<color>().get_id().get_hash() == hash_combiner{}(type_access(meta::resolve_type<color>())));
-        CHECK_FALSE(meta::resolve_type<ivec2()>().get_id().get_hash() == hash_combiner{}(type_access(meta::resolve_type<ivec2()>())));
-        CHECK_FALSE(meta::resolve_type<void(ivec2)>().get_id().get_hash() == hash_combiner{}(type_access(meta::resolve_type<void(ivec2)>())));
-        CHECK_FALSE(meta::resolve_type<int ivec2::*>().get_id().get_hash() == hash_combiner{}(type_access(meta::resolve_type<int ivec2::*>())));
-        CHECK_FALSE(meta::resolve_type<int (ivec2::*)()>().get_id().get_hash() == hash_combiner{}(type_access(meta::resolve_type<int (ivec2::*)()>())));
-        CHECK_FALSE(meta::resolve_type<ivec2*>().get_id().get_hash() == hash_combiner{}(type_access(meta::resolve_type<ivec2*>())));
-        CHECK_FALSE(meta::resolve_type<ivec2 const*>().get_id().get_hash() == hash_combiner{}(type_access(meta::resolve_type<ivec2 const*>())));
-        CHECK_FALSE(meta::resolve_type<ivec2&>().get_id().get_hash() == hash_combiner{}(type_access(meta::resolve_type<ivec2&>())));
-        CHECK_FALSE(meta::resolve_type<ivec2 const&>().get_id().get_hash() == hash_combiner{}(type_access(meta::resolve_type<ivec2 const&>())));
+        CHECK_FALSE(meta::resolve_type<ivec2[]>().get_id().get_hash() == hash_composer{} << type_access(meta::resolve_type<ivec2[]>()));
+        CHECK_FALSE(meta::resolve_type<ivec2>().get_id().get_hash() == hash_composer{} << type_access(meta::resolve_type<ivec2>()));
+        CHECK_FALSE(meta::resolve_type<color>().get_id().get_hash() == hash_composer{} << type_access(meta::resolve_type<color>()));
+        CHECK_FALSE(meta::resolve_type<ivec2()>().get_id().get_hash() == hash_composer{} << type_access(meta::resolve_type<ivec2()>()));
+        CHECK_FALSE(meta::resolve_type<void(ivec2)>().get_id().get_hash() == hash_composer{} << type_access(meta::resolve_type<void(ivec2)>()));
+        CHECK_FALSE(meta::resolve_type<int ivec2::*>().get_id().get_hash() == hash_composer{} << type_access(meta::resolve_type<int ivec2::*>()));
+        CHECK_FALSE(meta::resolve_type<int (ivec2::*)()>().get_id().get_hash() == hash_composer{} << type_access(meta::resolve_type<int (ivec2::*)()>()));
+        CHECK_FALSE(meta::resolve_type<ivec2*>().get_id().get_hash() == hash_composer{} << type_access(meta::resolve_type<ivec2*>()));
+        CHECK_FALSE(meta::resolve_type<ivec2 const*>().get_id().get_hash() == hash_composer{} << type_access(meta::resolve_type<ivec2 const*>()));
+        CHECK_FALSE(meta::resolve_type<ivec2&>().get_id().get_hash() == hash_composer{} << type_access(meta::resolve_type<ivec2&>()));
+        CHECK_FALSE(meta::resolve_type<ivec2 const&>().get_id().get_hash() == hash_composer{} << type_access(meta::resolve_type<ivec2 const&>()));
 
-        CHECK(meta::resolve_type<unshared_ivec2[]>().get_id().get_hash() == hash_combiner{}(type_access(meta::resolve_type<unshared_ivec2[]>())));
-        CHECK(meta::resolve_type<unshared_ivec2>().get_id().get_hash() == hash_combiner{}(type_access(meta::resolve_type<unshared_ivec2>())));
-        CHECK(meta::resolve_type<unshared_color>().get_id().get_hash() == hash_combiner{}(type_access(meta::resolve_type<unshared_color>())));
-        CHECK(meta::resolve_type<unshared_ivec2()>().get_id().get_hash() == hash_combiner{}(type_access(meta::resolve_type<unshared_ivec2()>())));
-        CHECK(meta::resolve_type<void(unshared_ivec2)>().get_id().get_hash() == hash_combiner{}(type_access(meta::resolve_type<void(unshared_ivec2)>())));
-        CHECK(meta::resolve_type<unshared_ivec2 ivec2::*>().get_id().get_hash() == hash_combiner{}(type_access(meta::resolve_type<unshared_ivec2 ivec2::*>())));
-        CHECK(meta::resolve_type<int unshared_ivec2::*>().get_id().get_hash() == hash_combiner{}(type_access(meta::resolve_type<int unshared_ivec2::*>())));
-        CHECK(meta::resolve_type<unshared_ivec2 (ivec2::*)()>().get_id().get_hash() == hash_combiner{}(type_access(meta::resolve_type<unshared_ivec2 (ivec2::*)()>())));
-        CHECK(meta::resolve_type<int (ivec2::*)(unshared_ivec2)>().get_id().get_hash() == hash_combiner{}(type_access(meta::resolve_type<int (ivec2::*)(unshared_ivec2)>())));
-        CHECK(meta::resolve_type<int (unshared_ivec2::*)()>().get_id().get_hash() == hash_combiner{}(type_access(meta::resolve_type<int (unshared_ivec2::*)()>())));
-        CHECK(meta::resolve_type<unshared_ivec2*>().get_id().get_hash() == hash_combiner{}(type_access(meta::resolve_type<unshared_ivec2*>())));
-        CHECK(meta::resolve_type<unshared_ivec2 const*>().get_id().get_hash() == hash_combiner{}(type_access(meta::resolve_type<unshared_ivec2 const*>())));
-        CHECK(meta::resolve_type<unshared_ivec2&>().get_id().get_hash() == hash_combiner{}(type_access(meta::resolve_type<unshared_ivec2&>())));
-        CHECK(meta::resolve_type<unshared_ivec2 const&>().get_id().get_hash() == hash_combiner{}(type_access(meta::resolve_type<unshared_ivec2 const&>())));
+        CHECK(meta::resolve_type<unshared_ivec2[]>().get_id().get_hash() == hash_composer{} << type_access(meta::resolve_type<unshared_ivec2[]>()));
+        CHECK(meta::resolve_type<unshared_ivec2>().get_id().get_hash() == hash_composer{} << type_access(meta::resolve_type<unshared_ivec2>()));
+        CHECK(meta::resolve_type<unshared_color>().get_id().get_hash() == hash_composer{} << type_access(meta::resolve_type<unshared_color>()));
+        CHECK(meta::resolve_type<unshared_ivec2()>().get_id().get_hash() == hash_composer{} << type_access(meta::resolve_type<unshared_ivec2()>()));
+        CHECK(meta::resolve_type<void(unshared_ivec2)>().get_id().get_hash() == hash_composer{} << type_access(meta::resolve_type<void(unshared_ivec2)>()));
+        CHECK(meta::resolve_type<unshared_ivec2 ivec2::*>().get_id().get_hash() == hash_composer{} << type_access(meta::resolve_type<unshared_ivec2 ivec2::*>()));
+        CHECK(meta::resolve_type<int unshared_ivec2::*>().get_id().get_hash() == hash_composer{} << type_access(meta::resolve_type<int unshared_ivec2::*>()));
+        CHECK(meta::resolve_type<unshared_ivec2 (ivec2::*)()>().get_id().get_hash() == hash_composer{} << type_access(meta::resolve_type<unshared_ivec2 (ivec2::*)()>()));
+        CHECK(meta::resolve_type<int (ivec2::*)(unshared_ivec2)>().get_id().get_hash() == hash_composer{} << type_access(meta::resolve_type<int (ivec2::*)(unshared_ivec2)>()));
+        CHECK(meta::resolve_type<int (unshared_ivec2::*)()>().get_id().get_hash() == hash_composer{} << type_access(meta::resolve_type<int (unshared_ivec2::*)()>()));
+        CHECK(meta::resolve_type<unshared_ivec2*>().get_id().get_hash() == hash_composer{} << type_access(meta::resolve_type<unshared_ivec2*>()));
+        CHECK(meta::resolve_type<unshared_ivec2 const*>().get_id().get_hash() == hash_composer{} << type_access(meta::resolve_type<unshared_ivec2 const*>()));
+        CHECK(meta::resolve_type<unshared_ivec2&>().get_id().get_hash() == hash_composer{} << type_access(meta::resolve_type<unshared_ivec2&>()));
+        CHECK(meta::resolve_type<unshared_ivec2 const&>().get_id().get_hash() == hash_composer{} << type_access(meta::resolve_type<unshared_ivec2 const&>()));
     }
 
     SUBCASE("10") {

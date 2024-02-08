@@ -15,13 +15,15 @@ namespace meta_hpp
     inline scope_bind::scope_bind(const scope& scope, metadata_map metadata)
     : state_bind_base{scope, std::move(metadata)} {}
 
-    template < detail::function_pointer_kind Function, typename... Opts >
+    template < function_pointer_kind Function, typename... Opts >
     scope_bind& scope_bind::function_(std::string name, Function function_ptr, Opts&&... opts) {
-        using opts_t = detail::type_list<std::remove_cvref_t<Opts>...>;
-        using policy_t = detail::type_list_first_of_t<function_policy::is_family, function_policy::as_copy_t, opts_t>;
+        using namespace detail;
+
+        using opts_t = type_list<std::remove_cvref_t<Opts>...>;
+        using policy_t = type_list_first_of_t<is_function_policy, function_policy::as_copy_t, opts_t>;
 
         static_assert( //
-            detail::type_list_count_of_v<function_policy::is_family, opts_t> <= 1,
+            type_list_count_of_v<is_function_policy, opts_t> <= 1,
             "function policy may be specified only once"
         );
 
@@ -29,7 +31,7 @@ namespace meta_hpp
         metadata_bind::values_t metadata = metadata_bind::from_opts(META_HPP_FWD(opts)...);
         arguments_bind::values_t arguments = arguments_bind::from_opts(META_HPP_FWD(opts)...);
 
-        auto state = detail::function_state::make<policy_t>(std::move(name), function_ptr, std::move(metadata));
+        auto state = function_state::make<policy_t>(std::move(name), function_ptr, std::move(metadata));
 
         META_HPP_ASSERT(                                //
             arguments.size() <= state->arguments.size() //
@@ -39,11 +41,11 @@ namespace meta_hpp
         using std::min; // prevents windows.h min/max issues
         for ( std::size_t i{}, e{min(arguments.size(), state->arguments.size())}; i < e; ++i ) {
             argument& arg = state->arguments[i];
-            detail::state_access(arg)->name = std::move(arguments[i].get_name());
-            detail::state_access(arg)->metadata = std::move(arguments[i].get_metadata());
+            state_access(arg)->name = std::move(arguments[i].get_name());
+            state_access(arg)->metadata = std::move(arguments[i].get_metadata());
         }
 
-        detail::insert_or_assign(get_state().functions, function{std::move(state)});
+        insert_or_assign(get_state().functions, function{std::move(state)});
         return *this;
     }
 
@@ -53,19 +55,21 @@ namespace meta_hpp
         return *this;
     }
 
-    template < detail::pointer_kind Pointer, typename... Opts >
+    template < pointer_kind Pointer, typename... Opts >
     scope_bind& scope_bind::variable_(std::string name, Pointer variable_ptr, Opts&&... opts) {
-        using opts_t = detail::type_list<std::remove_cvref_t<Opts>...>;
-        using policy_t = detail::type_list_first_of_t<variable_policy::is_family, variable_policy::as_copy_t, opts_t>;
+        using namespace detail;
+
+        using opts_t = type_list<std::remove_cvref_t<Opts>...>;
+        using policy_t = type_list_first_of_t<is_variable_policy, variable_policy::as_copy_t, opts_t>;
 
         static_assert( //
-            detail::type_list_count_of_v<variable_policy::is_family, opts_t> <= 1,
+            type_list_count_of_v<is_variable_policy, opts_t> <= 1,
             "variable policy may be specified only once"
         );
 
         metadata_bind::values_t metadata = metadata_bind::from_opts(META_HPP_FWD(opts)...);
-        auto state = detail::variable_state::make<policy_t>(std::move(name), variable_ptr, std::move(metadata));
-        detail::insert_or_assign(get_state().variables, variable{std::move(state)});
+        auto state = variable_state::make<policy_t>(std::move(name), variable_ptr, std::move(metadata));
+        insert_or_assign(get_state().variables, variable{std::move(state)});
         return *this;
     }
 }

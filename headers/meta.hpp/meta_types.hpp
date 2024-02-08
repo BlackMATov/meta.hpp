@@ -7,45 +7,11 @@
 #pragma once
 
 #include "meta_base.hpp"
+#include "meta_details.hpp"
 #include "meta_uvalue.hpp"
 
 #include "meta_detail/type_family.hpp"
-
-namespace meta_hpp
-{
-    using detail::array_bitflags;
-    using detail::array_flags;
-
-    using detail::class_bitflags;
-    using detail::class_flags;
-
-    using detail::constructor_bitflags;
-    using detail::constructor_flags;
-
-    using detail::destructor_bitflags;
-    using detail::destructor_flags;
-
-    using detail::enum_bitflags;
-    using detail::enum_flags;
-
-    using detail::function_bitflags;
-    using detail::function_flags;
-
-    using detail::member_bitflags;
-    using detail::member_flags;
-
-    using detail::method_bitflags;
-    using detail::method_flags;
-
-    using detail::number_bitflags;
-    using detail::number_flags;
-
-    using detail::pointer_bitflags;
-    using detail::pointer_flags;
-
-    using detail::reference_bitflags;
-    using detail::reference_flags;
-}
+#include "meta_detail/type_kinds.hpp"
 
 namespace meta_hpp
 {
@@ -112,6 +78,8 @@ namespace meta_hpp
 
         [[nodiscard]] bool is_valid() const noexcept;
         [[nodiscard]] explicit operator bool() const noexcept;
+
+        [[nodiscard]] std::size_t get_hash() const noexcept;
 
         [[nodiscard]] id_type get_id() const noexcept;
         [[nodiscard]] type_kind get_kind() const noexcept;
@@ -213,19 +181,19 @@ namespace meta_hpp
         bool destroy(Arg&& arg) const;
         bool destroy_at(void* mem) const;
 
-        template < detail::class_kind Derived >
+        template < class_kind Derived >
         [[nodiscard]] bool is_base_of() const noexcept;
         [[nodiscard]] bool is_base_of(const class_type& derived) const noexcept;
 
-        template < detail::class_kind Derived >
+        template < class_kind Derived >
         [[nodiscard]] bool is_direct_base_of() const noexcept;
         [[nodiscard]] bool is_direct_base_of(const class_type& derived) const noexcept;
 
-        template < detail::class_kind Base >
+        template < class_kind Base >
         [[nodiscard]] bool is_derived_from() const noexcept;
         [[nodiscard]] bool is_derived_from(const class_type& base) const noexcept;
 
-        template < detail::class_kind Base >
+        template < class_kind Base >
         [[nodiscard]] bool is_direct_derived_from() const noexcept;
         [[nodiscard]] bool is_direct_derived_from(const class_type& base) const noexcept;
 
@@ -327,7 +295,7 @@ namespace meta_hpp
 
         [[nodiscard]] evalue get_evalue(std::string_view name) const noexcept;
 
-        template < detail::enum_kind Enum >
+        template < enum_kind Enum >
         [[nodiscard]] std::string_view value_to_name(Enum value) const noexcept;
         [[nodiscard]] const uvalue& name_to_value(std::string_view name) const noexcept;
     };
@@ -405,7 +373,7 @@ namespace std
     template < meta_hpp::type_family Type >
     struct hash<Type> {
         size_t operator()(const Type& type) const noexcept {
-            return type.is_valid() ? type.get_id().get_hash() : 0;
+            return type.get_hash();
         }
     };
 }
@@ -678,6 +646,11 @@ namespace meta_hpp
     template < type_family Type >
     type_base<Type>::operator bool() const noexcept {
         return is_valid();
+    }
+
+    template < type_family Type >
+    std::size_t type_base<Type>::get_hash() const noexcept {
+        return get_id().get_hash();
     }
 
     template < type_family Type >

@@ -22,7 +22,7 @@ namespace meta_hpp::detail
     : index{std::move(nindex)}
     , metadata{std::move(nmetadata)} {}
 
-    inline scope_state_ptr scope_state::make(std::string name, metadata_map metadata) {
+    inline scope_state::state_ptr scope_state::make(std::string name, metadata_map metadata) {
         scope_state state{
             scope_index{std::move(name)},
             std::move(metadata),
