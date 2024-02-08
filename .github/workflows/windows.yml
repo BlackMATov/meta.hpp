@@ -17,7 +17,7 @@ jobs:
     name: "${{matrix.config.vc}}-${{matrix.config.arch}}"
     steps:
       - name: Setup
-        run: choco install cmake ninja doxygen.install
+        run: choco install cmake ninja
       - name: Checkout
         uses: actions/checkout@v4
         with:

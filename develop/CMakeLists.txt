@@ -14,7 +14,6 @@ include(EnableGCov)
 include(EnableUBSan)
 include(SetupTargets)
 
-add_subdirectory(doxygen)
 add_subdirectory(manuals)
 add_subdirectory(singles)
 add_subdirectory(unbench)
