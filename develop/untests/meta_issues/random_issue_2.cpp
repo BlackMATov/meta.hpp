@@ -34,19 +34,19 @@ TEST_CASE("meta/meta_issues/random/2") {
 
     meta::detail::type_registry& r = meta::detail::type_registry::instance();
 
-    CHECK(r.resolve_array_type<A[]>() == r.resolve_array_type<const A[]>());
-    CHECK(r.resolve_array_type<A[]>() == r.resolve_array_type<volatile A[]>());
-    CHECK(r.resolve_array_type<A[]>() == r.resolve_array_type<const volatile A[]>());
+    CHECK(r.resolve_by_type<A[]>() == r.resolve_by_type<const A[]>());
+    CHECK(r.resolve_by_type<A[]>() == r.resolve_by_type<volatile A[]>());
+    CHECK(r.resolve_by_type<A[]>() == r.resolve_by_type<const volatile A[]>());
 
-    CHECK(r.resolve_class_type<A>() == r.resolve_class_type<const A>());
-    CHECK(r.resolve_class_type<A>() == r.resolve_class_type<volatile A>());
-    CHECK(r.resolve_class_type<A>() == r.resolve_class_type<const volatile A>());
+    CHECK(r.resolve_by_type<A>() == r.resolve_by_type<const A>());
+    CHECK(r.resolve_by_type<A>() == r.resolve_by_type<volatile A>());
+    CHECK(r.resolve_by_type<A>() == r.resolve_by_type<const volatile A>());
 
-    CHECK(r.resolve_enum_type<E>() == r.resolve_enum_type<const E>());
-    CHECK(r.resolve_enum_type<E>() == r.resolve_enum_type<volatile E>());
-    CHECK(r.resolve_enum_type<E>() == r.resolve_enum_type<const volatile E>());
+    CHECK(r.resolve_by_type<E>() == r.resolve_by_type<const E>());
+    CHECK(r.resolve_by_type<E>() == r.resolve_by_type<volatile E>());
+    CHECK(r.resolve_by_type<E>() == r.resolve_by_type<const volatile E>());
 
-    CHECK(r.resolve_number_type<int>() == r.resolve_number_type<const int>());
-    CHECK(r.resolve_number_type<int>() == r.resolve_number_type<volatile int>());
-    CHECK(r.resolve_number_type<int>() == r.resolve_number_type<const volatile int>());
+    CHECK(r.resolve_by_type<int>() == r.resolve_by_type<const int>());
+    CHECK(r.resolve_by_type<int>() == r.resolve_by_type<volatile int>());
+    CHECK(r.resolve_by_type<int>() == r.resolve_by_type<const volatile int>());
 }

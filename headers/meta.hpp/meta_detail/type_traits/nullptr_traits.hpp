@@ -6,15 +6,12 @@
 
 #pragma once
 
-#include "../meta_base.hpp"
-#include "../meta_registry.hpp"
-#include "../meta_types.hpp"
+#include "../../meta_base.hpp"
 
-#include "../meta_detail/type_sharing.hpp"
+#include "../type_kinds.hpp"
 
 namespace meta_hpp::detail
 {
     template < nullptr_kind Nullptr >
-    nullptr_type_data::nullptr_type_data(nullptr_traits<Nullptr>)
-    : type_data_base{type_kind::nullptr_, shared_traits_hash<nullptr_traits<Nullptr>>{}(this)} {}
+    struct nullptr_traits {};
 }

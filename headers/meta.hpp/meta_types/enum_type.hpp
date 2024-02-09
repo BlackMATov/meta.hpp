@@ -19,8 +19,8 @@
 namespace meta_hpp::detail
 {
     template < enum_kind Enum >
-    enum_type_data::enum_type_data(type_list<Enum>)
-    : type_data_base{type_kind::enum_, shared_type_data_hash<type_kind::enum_, Enum>{}(this)}
+    enum_type_data::enum_type_data(enum_traits<Enum>)
+    : type_data_base{type_kind::enum_, shared_traits_hash<enum_traits<Enum>>{}(this)}
     , flags{enum_traits<Enum>::make_flags()}
     , underlying_type{resolve_type<typename enum_traits<Enum>::underlying_type>()} {}
 }

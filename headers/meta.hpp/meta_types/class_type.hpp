@@ -105,8 +105,8 @@ namespace meta_hpp::detail::class_type_data_impl
 namespace meta_hpp::detail
 {
     template < class_kind Class >
-    class_type_data::class_type_data(type_list<Class>)
-    : type_data_base{type_kind::class_, shared_type_data_hash<type_kind::class_, Class>{}(this)}
+    class_type_data::class_type_data(class_traits<Class>)
+    : type_data_base{type_kind::class_, shared_traits_hash<class_traits<Class>>{}(this)}
     , flags{class_traits<Class>::make_flags()}
     , size{class_traits<Class>::size}
     , align{class_traits<Class>::align}
@@ -397,7 +397,7 @@ namespace meta_hpp
     template < typename... Args >
     constructor class_type::get_constructor_with() const noexcept {
         detail::type_registry& registry{detail::type_registry::instance()};
-        return get_constructor_with({registry.resolve_type<Args>()...});
+        return get_constructor_with({registry.resolve_by_type<Args>()...});
     }
 
     template < typename Iter >
@@ -442,7 +442,7 @@ namespace meta_hpp
         bool recursively
     ) const noexcept {
         detail::type_registry& registry{detail::type_registry::instance()};
-        return get_function_with(name, {registry.resolve_type<Args>()...}, recursively);
+        return get_function_with(name, {registry.resolve_by_type<Args>()...}, recursively);
     }
 
     template < typename Iter >
@@ -502,7 +502,7 @@ namespace meta_hpp
         bool recursively
     ) const noexcept {
         detail::type_registry& registry{detail::type_registry::instance()};
-        return get_method_with(name, {registry.resolve_type<Args>()...}, recursively);
+        return get_method_with(name, {registry.resolve_by_type<Args>()...}, recursively);
     }
 
     template < typename Iter >

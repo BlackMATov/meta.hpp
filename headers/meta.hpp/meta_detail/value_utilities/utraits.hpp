@@ -184,8 +184,8 @@ namespace meta_hpp::detail
     [[nodiscard]] To* pointer_upcast(type_registry& registry, From* ptr) {
         return static_cast<To*>(pointer_upcast( //
             ptr,
-            registry.resolve_type<From>(),
-            registry.resolve_type<To>()
+            registry.resolve_by_type<From>(),
+            registry.resolve_by_type<To>()
         ));
     }
 
@@ -193,8 +193,8 @@ namespace meta_hpp::detail
     [[nodiscard]] const To* pointer_upcast(type_registry& registry, const From* ptr) {
         return static_cast<const To*>(pointer_upcast( //
             ptr,
-            registry.resolve_type<From>(),
-            registry.resolve_type<To>()
+            registry.resolve_by_type<From>(),
+            registry.resolve_by_type<To>()
         ));
     }
 }

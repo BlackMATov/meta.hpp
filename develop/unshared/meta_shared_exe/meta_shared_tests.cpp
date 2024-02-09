@@ -39,18 +39,20 @@ TEST_CASE("meta/meta_shared/tests") {
     REQUIRE(library_scope);
 
     SUBCASE("0") {
-        static_assert(meta::detail::shared_type_hash<meta::type_kind::array_, ivec2[42]>{}());
-        static_assert(meta::detail::shared_type_hash<meta::type_kind::class_, ivec2>{}());
-        static_assert(meta::detail::shared_type_hash<meta::type_kind::constructor_, ivec2, int>{}());
-        static_assert(meta::detail::shared_type_hash<meta::type_kind::destructor_, ivec2>{}());
-        static_assert(meta::detail::shared_type_hash<meta::type_kind::enum_, color>{}());
-        static_assert(meta::detail::shared_type_hash<meta::type_kind::function_, color(ivec2)>{}());
-        static_assert(meta::detail::shared_type_hash<meta::type_kind::member_, color ivec2::*>{}());
-        static_assert(meta::detail::shared_type_hash<meta::type_kind::method_, color (ivec2::*)(int const*)>{}());
-        static_assert(meta::detail::shared_type_hash<meta::type_kind::nullptr_, std::nullptr_t>{}());
-        static_assert(meta::detail::shared_type_hash<meta::type_kind::number_, int>{}());
-        static_assert(meta::detail::shared_type_hash<meta::type_kind::pointer_, int*>{}());
-        static_assert(meta::detail::shared_type_hash<meta::type_kind::reference_, int&>{}());
+        using namespace meta::detail;
+        using namespace meta::detail::impl;
+        static_assert(shared_traits<array_traits<ivec2[42]>>{}());
+        static_assert(shared_traits<class_traits<ivec2>>{}());
+        static_assert(shared_traits<constructor_traits<ivec2, int>>{}());
+        static_assert(shared_traits<destructor_traits<ivec2>>{}());
+        static_assert(shared_traits<enum_traits<color>>{}());
+        static_assert(shared_traits<function_traits<color(ivec2)>>{}());
+        static_assert(shared_traits<member_traits<color ivec2::*>>{}());
+        static_assert(shared_traits<method_traits<color (ivec2::*)(int const*)>>{}());
+        static_assert(shared_traits<nullptr_traits<std::nullptr_t>>{}());
+        static_assert(shared_traits<number_traits<int>>{}());
+        static_assert(shared_traits<pointer_traits<int*>>{}());
+        static_assert(shared_traits<reference_traits<int(&)(ivec2)>>{}());
     }
 
     SUBCASE("1") {

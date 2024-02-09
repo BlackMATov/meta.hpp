@@ -47,7 +47,7 @@ public: \
     META_HPP_DETAIL_IGNORE_OVERRIDE_WARNINGS_PUSH() \
     virtual ::meta_hpp::detail::poly_info meta_poly_info(::meta_hpp::detail::type_registry& registry) const { \
         using self_type = std::remove_cvref_t<decltype(*this)>; \
-        return ::meta_hpp::detail::poly_info{.ptr = this, .type = registry.resolve_class_type<self_type>()}; \
+        return ::meta_hpp::detail::poly_info{.ptr = this, .type = registry.resolve_by_type<self_type>()}; \
     } \
     META_HPP_DETAIL_IGNORE_OVERRIDE_WARNINGS_POP() \
 private:

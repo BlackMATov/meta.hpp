@@ -82,7 +82,7 @@ namespace meta_hpp::detail
         type_registry& registry{type_registry::instance()};
 
         destructor_state state{
-            destructor_index{registry.resolve_destructor_type<Class>()},
+            destructor_index{registry.resolve_by_traits<destructor_traits<Class>>()},
             std::move(metadata),
         };
 

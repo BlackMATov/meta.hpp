@@ -23,7 +23,7 @@ namespace meta_hpp::detail
         type_registry& registry{type_registry::instance()};
 
         evalue_state state{
-            evalue_index{registry.resolve_type<Enum>(), std::move(name)},
+            evalue_index{registry.resolve_by_type<Enum>(), std::move(name)},
             std::move(metadata),
         };
 

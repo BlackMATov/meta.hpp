@@ -41,128 +41,38 @@ namespace meta_hpp::detail
         void for_each_type(F&& f) const {
             const locker lock;
 
-            // we use an index based for loop to avoid the iterator invalidation issues
-            // that can happen when adding a new type inside the loop
-            for ( std::size_t i{}; i < types_.size(); ++i ) {
-                std::invoke(f, types_[i]);
+            for ( auto&& type : types_ ) {
+                std::invoke(f, type);
             }
         }
 
     public:
         template < typename T >
-        [[nodiscard]] auto resolve_type() {
-            // clang-format off
-            if constexpr ( array_kind<T> ) { return resolve_array_type<T>(); }
-            if constexpr ( class_kind<T> ) { return resolve_class_type<T>(); }
-            if constexpr ( enum_kind<T> ) { return resolve_enum_type<T>(); }
-            if constexpr ( function_kind<T> ) { return resolve_function_type<T>(); }
-            if constexpr ( member_pointer_kind<T> ) { return resolve_member_type<T>(); }
-            if constexpr ( method_pointer_kind<T> ) { return resolve_method_type<T>(); }
-            if constexpr ( nullptr_kind<T> ) { return resolve_nullptr_type<T>(); }
-            if constexpr ( number_kind<T> ) { return resolve_number_type<T>(); }
-            if constexpr ( pointer_kind<T> ) { return resolve_pointer_type<T>(); }
-            if constexpr ( reference_kind<T> ) { return resolve_reference_type<T>(); }
-            if constexpr ( void_kind<T> ) { return resolve_void_type<T>(); }
-            // clang-format on
+        [[nodiscard]] auto resolve_by_type() {
+            return resolve_by_traits<type_to_traits_t<std::remove_cv_t<T>>>();
         }
 
-    public:
-        template < array_kind Array >
-        [[nodiscard]] array_type resolve_array_type() {
-            using array_t = std::remove_cv_t<Array>;
-            return array_type{ensure_type<array_type_data>(type_list<array_t>{})};
-        }
+        template < typename Traits >
+        [[nodiscard]] auto resolve_by_traits() {
+            using type_traits = traits_to_type_traits_t<Traits>;
 
-        template < class_kind Class >
-        [[nodiscard]] class_type resolve_class_type() {
-            using class_t = std::remove_cv_t<Class>;
-            return class_type{ensure_type<class_type_data>(type_list<class_t>{})};
-        }
+            static auto type_data_instance = [this]() {
+                auto new_data{std::make_unique<typename type_traits::data_type>(Traits{})};
 
-        template < class_kind Class, typename... Args >
-        [[nodiscard]] constructor_type resolve_constructor_type() {
-            using class_t = std::remove_cv_t<Class>;
-            return constructor_type{ensure_type<constructor_type_data>(type_list<class_t>{}, type_list<Args...>{})};
-        }
+                const locker lock;
+                types_.emplace(new_data.get());
 
-        template < class_kind Class >
-        [[nodiscard]] destructor_type resolve_destructor_type() {
-            using class_t = std::remove_cv_t<Class>;
-            return destructor_type{ensure_type<destructor_type_data>(type_list<class_t>{})};
-        }
+                return new_data;
+            }();
 
-        template < enum_kind Enum >
-        [[nodiscard]] enum_type resolve_enum_type() {
-            using enum_t = std::remove_cv_t<Enum>;
-            return enum_type{ensure_type<enum_type_data>(type_list<enum_t>{})};
-        }
-
-        template < function_kind Function >
-        [[nodiscard]] function_type resolve_function_type() {
-            using function_t = std::remove_cv_t<Function>;
-            return function_type{ensure_type<function_type_data>(type_list<function_t>{})};
-        }
-
-        template < member_pointer_kind Member >
-        [[nodiscard]] member_type resolve_member_type() {
-            using member_t = std::remove_cv_t<Member>;
-            return member_type{ensure_type<member_type_data>(type_list<member_t>{})};
-        }
-
-        template < method_pointer_kind Method >
-        [[nodiscard]] method_type resolve_method_type() {
-            using method_t = std::remove_cv_t<Method>;
-            return method_type{ensure_type<method_type_data>(type_list<method_t>{})};
-        }
-
-        template < nullptr_kind Nullptr >
-        [[nodiscard]] nullptr_type resolve_nullptr_type() {
-            using nullptr_t = std::remove_cv_t<Nullptr>;
-            return nullptr_type{ensure_type<nullptr_type_data>(type_list<nullptr_t>{})};
-        }
-
-        template < number_kind Number >
-        [[nodiscard]] number_type resolve_number_type() {
-            using number_t = std::remove_cv_t<Number>;
-            return number_type{ensure_type<number_type_data>(type_list<number_t>{})};
-        }
-
-        template < pointer_kind Pointer >
-        [[nodiscard]] pointer_type resolve_pointer_type() {
-            using pointer_t = std::remove_cv_t<Pointer>;
-            return pointer_type{ensure_type<pointer_type_data>(type_list<pointer_t>{})};
-        }
-
-        template < reference_kind Reference >
-        [[nodiscard]] reference_type resolve_reference_type() {
-            using reference_t = std::remove_cv_t<Reference>;
-            return reference_type{ensure_type<reference_type_data>(type_list<reference_t>{})};
-        }
-
-        template < void_kind Void >
-        [[nodiscard]] void_type resolve_void_type() {
-            using void_t = std::remove_cv_t<Void>;
-            return void_type{ensure_type<void_type_data>(type_list<void_t>{})};
+            return typename type_traits::type{type_data_instance.get()};
         }
 
     private:
         type_registry() = default;
 
-        template < typename TypeData, typename... Args >
-        TypeData* ensure_type(Args&&... args) {
-            static auto data = [this](Args&&... captured_args) {
-                auto new_data{std::make_unique<TypeData>(META_HPP_FWD(captured_args)...)};
-
-                const locker lock;
-                types_.emplace_back(new_data.get());
-
-                return new_data;
-            }(META_HPP_FWD(args)...);
-            return data.get();
-        }
-
     private:
         std::recursive_mutex mutex_;
-        std::vector<any_type> types_;
+        std::set<any_type, std::less<>> types_;
     };
 }

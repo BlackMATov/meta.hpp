@@ -37,8 +37,8 @@ namespace meta_hpp::detail::method_type_data_impl
 namespace meta_hpp::detail
 {
     template < method_pointer_kind Method >
-    method_type_data::method_type_data(type_list<Method>)
-    : type_data_base{type_kind::method_, shared_type_data_hash<type_kind::method_, Method>{}(this)}
+    method_type_data::method_type_data(method_traits<Method>)
+    : type_data_base{type_kind::method_, shared_traits_hash<method_traits<Method>>{}(this)}
     , flags{method_traits<Method>::make_flags()}
     , owner_type{resolve_type<typename method_traits<Method>::class_type>()}
     , return_type{resolve_type<typename method_traits<Method>::return_type>()}

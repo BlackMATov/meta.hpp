@@ -43,12 +43,12 @@ namespace meta_hpp::detail
         template < inst_class_lvalue_ref_kind T >
         explicit uinst_base(type_registry& registry, type_list<T>)
         : ref_type_{std::is_const_v<std::remove_reference_t<T>> ? ref_types::const_lvalue : ref_types::lvalue}
-        , raw_type_{registry.resolve_type<std::remove_cvref_t<T>>()} {}
+        , raw_type_{registry.resolve_by_type<std::remove_cvref_t<T>>()} {}
 
         template < inst_class_rvalue_ref_kind T >
         explicit uinst_base(type_registry& registry, type_list<T>)
         : ref_type_{std::is_const_v<std::remove_reference_t<T>> ? ref_types::const_rvalue : ref_types::rvalue}
-        , raw_type_{registry.resolve_type<std::remove_cvref_t<T>>()} {}
+        , raw_type_{registry.resolve_by_type<std::remove_cvref_t<T>>()} {}
 
         explicit uinst_base(type_registry&, uvalue& v)
         : ref_type_{ref_types::lvalue}
@@ -155,7 +155,7 @@ namespace meta_hpp::detail
         using inst_method = typename inst_traits<Q>::method_type;
 
         const any_type& from_type = get_raw_type();
-        const any_type& to_type = registry.resolve_type<inst_class>();
+        const any_type& to_type = registry.resolve_by_type<inst_class>();
 
         if ( from_type.is_class() ) {
             const auto is_invocable = [this]() {
@@ -202,7 +202,7 @@ namespace meta_hpp::detail
         using inst_class = std::remove_cv_t<inst_class_cv>;
 
         const any_type& from_type = get_raw_type();
-        const any_type& to_type = registry.resolve_type<inst_class>();
+        const any_type& to_type = registry.resolve_by_type<inst_class>();
 
         if ( from_type.is_class() && to_type.is_class() ) {
             void* to_ptr = pointer_upcast( //

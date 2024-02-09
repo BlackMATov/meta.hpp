@@ -46,7 +46,7 @@ namespace meta_hpp
             if constexpr ( std::is_void_v<to_data_type> ) {
                 return most_derived_object_ptr;
             } else {
-                const class_type& to_class_type = registry.resolve_class_type<to_data_type>();
+                const class_type& to_class_type = registry.resolve_by_type<to_data_type>();
                 return static_cast<To>(detail::pointer_upcast(most_derived_object_ptr, meta_info.type, to_class_type));
             }
         }

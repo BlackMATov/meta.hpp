@@ -151,7 +151,7 @@ namespace meta_hpp::detail
         type_registry& registry{type_registry::instance()};
 
         constructor_state state{
-            constructor_index{registry.resolve_constructor_type<Class, Args...>()},
+            constructor_index{registry.resolve_by_traits<constructor_traits<Class, Args...>>()},
             std::move(metadata),
         };
 
