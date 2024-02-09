@@ -164,7 +164,6 @@ namespace meta_hpp
 
         [[nodiscard]] const class_list& get_base_classes() const noexcept;
         [[nodiscard]] const constructor_list& get_constructors() const noexcept;
-        [[nodiscard]] const destructor_list& get_destructors() const noexcept;
         [[nodiscard]] const function_list& get_functions() const noexcept;
         [[nodiscard]] const member_list& get_members() const noexcept;
         [[nodiscard]] const method_list& get_methods() const noexcept;

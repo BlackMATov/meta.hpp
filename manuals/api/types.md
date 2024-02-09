@@ -169,7 +169,6 @@ public:
 
     const class_list& get_base_classes() const noexcept;
     const constructor_list& get_constructors() const noexcept;
-    const destructor_list& get_destructors() const noexcept;
     const function_list& get_functions() const noexcept;
     const member_list& get_members() const noexcept;
     const method_list& get_methods() const noexcept;

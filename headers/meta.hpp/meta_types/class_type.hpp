@@ -177,10 +177,6 @@ namespace meta_hpp
         return data_->constructors;
     }
 
-    inline const destructor_list& class_type::get_destructors() const noexcept {
-        return data_->destructors;
-    }
-
     inline const function_list& class_type::get_functions() const noexcept {
         return data_->functions;
     }
