@@ -47,7 +47,7 @@ namespace
             ++constructor_counter;
         }
 
-        clazz_noncopyable(clazz_noncopyable&& other) : i{other.i} {
+        clazz_noncopyable(clazz_noncopyable&& other) noexcept : i{other.i} {
             other.i = 0;
             ++move_constructor_counter;
         }
@@ -88,7 +88,10 @@ TEST_CASE("meta/meta_states/ctor/noncopyable") {
         {
             const meta::constructor ctor = clazz_type.get_constructor_with<int>();
             REQUIRE(ctor);
-            CHECK(ctor.get_type() == meta::resolve_constructor_type<clazz_t, int>());
+
+            CHECK(ctor.get_type().get_owner_type() == meta::resolve_type<clazz_t>());
+            CHECK(ctor.get_type().get_arity() == 1);
+            CHECK(ctor.get_type().get_argument_type(0) == meta::resolve_type<int>());
         }
         {
             const meta::uvalue v = clazz_type.create(42);
@@ -106,7 +109,11 @@ TEST_CASE("meta/meta_states/ctor/noncopyable") {
         {
             const meta::constructor ctor = clazz_type.get_constructor_with<clazz_t&&>();
             REQUIRE(ctor);
-            CHECK(ctor.get_type() == meta::resolve_constructor_type<clazz_t, clazz_t&&>());
+
+            CHECK(ctor.get_type().get_owner_type() == meta::resolve_type<clazz_t>());
+            CHECK(ctor.get_type().get_arity() == 1);
+            CHECK(ctor.get_type().get_argument_type(0) == meta::resolve_type<clazz_t&&>());
+            CHECK(ctor.get_type().get_flags() == meta::constructor_flags::is_noexcept);
         }
         {
             clazz_t o{42};
@@ -146,8 +153,10 @@ TEST_CASE("meta/meta_states/ctor/as_object") {
         {
             const meta::constructor ctor = clazz_type.get_constructor_with<int>();
             REQUIRE(ctor);
-            CHECK(ctor.get_type() == meta::resolve_constructor_type<clazz_t, int>());
+
             CHECK(ctor.get_type().get_owner_type() == meta::resolve_type<clazz_t>());
+            CHECK(ctor.get_type().get_arity() == 1);
+            CHECK(ctor.get_type().get_argument_type(0) == meta::resolve_type<int>());
             CHECK(ctor.get_type().get_flags() == meta::constructor_bitflags{});
         }
         {
@@ -221,8 +230,10 @@ TEST_CASE("meta/meta_states/ctor/as_object") {
         {
             const meta::constructor ctor = clazz_type.get_constructor_with<clazz_t&&>();
             REQUIRE(ctor);
-            CHECK(ctor.get_type() == meta::resolve_constructor_type<clazz_t, clazz_t&&>());
+
             CHECK(ctor.get_type().get_owner_type() == meta::resolve_type<clazz_t>());
+            CHECK(ctor.get_type().get_arity() == 1);
+            CHECK(ctor.get_type().get_argument_type(0) == meta::resolve_type<clazz_t&&>());
             CHECK(ctor.get_type().get_flags() == meta::constructor_flags::is_noexcept);
         }
         {
@@ -260,7 +271,11 @@ TEST_CASE("meta/meta_states/ctor/as_object") {
         {
             const meta::constructor ctor = clazz_type.get_constructor_with<const clazz_t&>();
             REQUIRE(ctor);
-            CHECK(ctor.get_type() == meta::resolve_constructor_type<clazz_t, const clazz_t&>());
+
+            CHECK(ctor.get_type().get_owner_type() == meta::resolve_type<clazz_t>());
+            CHECK(ctor.get_type().get_arity() == 1);
+            CHECK(ctor.get_type().get_argument_type(0) == meta::resolve_type<const clazz_t&>());
+            CHECK(ctor.get_type().get_flags() == meta::constructor_bitflags{});
         }
         {
             clazz_t o{42};
@@ -316,7 +331,11 @@ TEST_CASE("meta/meta_states/ctor/as_raw_pointer") {
         {
             const meta::constructor ctor = clazz_type.get_constructor_with<int>();
             REQUIRE(ctor);
-            CHECK(ctor.get_type() == meta::resolve_constructor_type<clazz_t, int>());
+
+            CHECK(ctor.get_type().get_owner_type() == meta::resolve_type<clazz_t>());
+            CHECK(ctor.get_type().get_arity() == 1);
+            CHECK(ctor.get_type().get_argument_type(0) == meta::resolve_type<int>());
+            CHECK(ctor.get_type().get_flags() == meta::constructor_bitflags{});
         }
         {
             const meta::uvalue v = clazz_type.create(42);
@@ -334,7 +353,11 @@ TEST_CASE("meta/meta_states/ctor/as_raw_pointer") {
         {
             const meta::constructor ctor = clazz_type.get_constructor_with<clazz_t&&>();
             REQUIRE(ctor);
-            CHECK(ctor.get_type() == meta::resolve_constructor_type<clazz_t, clazz_t&&>());
+
+            CHECK(ctor.get_type().get_owner_type() == meta::resolve_type<clazz_t>());
+            CHECK(ctor.get_type().get_arity() == 1);
+            CHECK(ctor.get_type().get_argument_type(0) == meta::resolve_type<clazz_t&&>());
+            CHECK(ctor.get_type().get_flags() == meta::constructor_flags::is_noexcept);
         }
         {
             clazz_t o{42};
@@ -353,7 +376,11 @@ TEST_CASE("meta/meta_states/ctor/as_raw_pointer") {
         {
             const meta::constructor ctor = clazz_type.get_constructor_with<const clazz_t&>();
             REQUIRE(ctor);
-            CHECK(ctor.get_type() == meta::resolve_constructor_type<clazz_t, const clazz_t&>());
+
+            CHECK(ctor.get_type().get_owner_type() == meta::resolve_type<clazz_t>());
+            CHECK(ctor.get_type().get_arity() == 1);
+            CHECK(ctor.get_type().get_argument_type(0) == meta::resolve_type<const clazz_t&>());
+            CHECK(ctor.get_type().get_flags() == meta::constructor_bitflags{});
         }
         {
             clazz_t o{42};
@@ -391,7 +418,11 @@ TEST_CASE("meta/meta_states/ctor/as_shared_pointer") {
         {
             const meta::constructor ctor = clazz_type.get_constructor_with<int>();
             REQUIRE(ctor);
-            CHECK(ctor.get_type() == meta::resolve_constructor_type<clazz_t, int>());
+
+            CHECK(ctor.get_type().get_owner_type() == meta::resolve_type<clazz_t>());
+            CHECK(ctor.get_type().get_arity() == 1);
+            CHECK(ctor.get_type().get_argument_type(0) == meta::resolve_type<int>());
+            CHECK(ctor.get_type().get_flags() == meta::constructor_bitflags{});
         }
         {
             const meta::uvalue v = clazz_type.create(42);
@@ -409,7 +440,11 @@ TEST_CASE("meta/meta_states/ctor/as_shared_pointer") {
         {
             const meta::constructor ctor = clazz_type.get_constructor_with<clazz_t&&>();
             REQUIRE(ctor);
-            CHECK(ctor.get_type() == meta::resolve_constructor_type<clazz_t, clazz_t&&>());
+
+            CHECK(ctor.get_type().get_owner_type() == meta::resolve_type<clazz_t>());
+            CHECK(ctor.get_type().get_arity() == 1);
+            CHECK(ctor.get_type().get_argument_type(0) == meta::resolve_type<clazz_t&&>());
+            CHECK(ctor.get_type().get_flags() == meta::constructor_flags::is_noexcept);
         }
         {
             clazz_t o{42};
@@ -428,7 +463,11 @@ TEST_CASE("meta/meta_states/ctor/as_shared_pointer") {
         {
             const meta::constructor ctor = clazz_type.get_constructor_with<const clazz_t&>();
             REQUIRE(ctor);
-            CHECK(ctor.get_type() == meta::resolve_constructor_type<clazz_t, const clazz_t&>());
+
+            CHECK(ctor.get_type().get_owner_type() == meta::resolve_type<clazz_t>());
+            CHECK(ctor.get_type().get_arity() == 1);
+            CHECK(ctor.get_type().get_argument_type(0) == meta::resolve_type<const clazz_t&>());
+            CHECK(ctor.get_type().get_flags() == meta::constructor_bitflags{});
         }
         {
             clazz_t o{42};
@@ -466,7 +505,11 @@ TEST_CASE("meta/meta_states/ctor/as_unique_pointer") {
         {
             const meta::constructor ctor = clazz_type.get_constructor_with<int>();
             REQUIRE(ctor);
-            CHECK(ctor.get_type() == meta::resolve_constructor_type<clazz_t, int>());
+
+            CHECK(ctor.get_type().get_owner_type() == meta::resolve_type<clazz_t>());
+            CHECK(ctor.get_type().get_arity() == 1);
+            CHECK(ctor.get_type().get_argument_type(0) == meta::resolve_type<int>());
+            CHECK(ctor.get_type().get_flags() == meta::constructor_bitflags{});
         }
         {
             const meta::uvalue v = clazz_type.create(42);
@@ -484,7 +527,11 @@ TEST_CASE("meta/meta_states/ctor/as_unique_pointer") {
         {
             const meta::constructor ctor = clazz_type.get_constructor_with<clazz_t&&>();
             REQUIRE(ctor);
-            CHECK(ctor.get_type() == meta::resolve_constructor_type<clazz_t, clazz_t&&>());
+
+            CHECK(ctor.get_type().get_owner_type() == meta::resolve_type<clazz_t>());
+            CHECK(ctor.get_type().get_arity() == 1);
+            CHECK(ctor.get_type().get_argument_type(0) == meta::resolve_type<clazz_t&&>());
+            CHECK(ctor.get_type().get_flags() == meta::constructor_flags::is_noexcept);
         }
         {
             clazz_t o{42};
@@ -503,7 +550,11 @@ TEST_CASE("meta/meta_states/ctor/as_unique_pointer") {
         {
             const meta::constructor ctor = clazz_type.get_constructor_with<const clazz_t&>();
             REQUIRE(ctor);
-            CHECK(ctor.get_type() == meta::resolve_constructor_type<clazz_t, const clazz_t&>());
+
+            CHECK(ctor.get_type().get_owner_type() == meta::resolve_type<clazz_t>());
+            CHECK(ctor.get_type().get_arity() == 1);
+            CHECK(ctor.get_type().get_argument_type(0) == meta::resolve_type<const clazz_t&>());
+            CHECK(ctor.get_type().get_flags() == meta::constructor_bitflags{});
         }
         {
             clazz_t o{42};

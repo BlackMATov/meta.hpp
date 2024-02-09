@@ -122,7 +122,7 @@ namespace meta_hpp::detail
         type_registry& registry{type_registry::instance()};
 
         function_state state{
-            function_index{registry.resolve_type<std::remove_pointer_t<Function>>(), std::move(name)},
+            function_index{registry.resolve_by_type<std::remove_pointer_t<Function>>(), std::move(name)},
             std::move(metadata),
         };
 

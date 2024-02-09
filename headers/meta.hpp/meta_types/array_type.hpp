@@ -16,8 +16,8 @@
 namespace meta_hpp::detail
 {
     template < array_kind Array >
-    array_type_data::array_type_data(type_list<Array>)
-    : type_data_base{type_kind::array_, shared_type_data_hash<type_kind::array_, Array>{}(this)}
+    array_type_data::array_type_data(array_traits<Array>)
+    : type_data_base{type_kind::array_, shared_traits_hash<array_traits<Array>>{}(this)}
     , flags{array_traits<Array>::make_flags()}
     , extent{array_traits<Array>::extent}
     , data_type{resolve_type<typename array_traits<Array>::data_type>()} {}

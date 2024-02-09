@@ -37,8 +37,8 @@ namespace meta_hpp::detail::function_type_data_impl
 namespace meta_hpp::detail
 {
     template < function_kind Function >
-    function_type_data::function_type_data(type_list<Function>)
-    : type_data_base{type_kind::function_, shared_type_data_hash<type_kind::function_, Function>{}(this)}
+    function_type_data::function_type_data(function_traits<Function>)
+    : type_data_base{type_kind::function_, shared_traits_hash<function_traits<Function>>{}(this)}
     , flags{function_traits<Function>::make_flags()}
     , return_type{resolve_type<typename function_traits<Function>::return_type>()}
     , argument_types(function_type_data_impl::make_argument_types<Function>()) {}

@@ -11,7 +11,6 @@
 #include "meta_uvalue.hpp"
 
 #include "meta_detail/type_family.hpp"
-#include "meta_detail/type_kinds.hpp"
 
 namespace meta_hpp
 {
@@ -165,7 +164,6 @@ namespace meta_hpp
 
         [[nodiscard]] const class_list& get_base_classes() const noexcept;
         [[nodiscard]] const constructor_list& get_constructors() const noexcept;
-        [[nodiscard]] const destructor_list& get_destructors() const noexcept;
         [[nodiscard]] const function_list& get_functions() const noexcept;
         [[nodiscard]] const member_list& get_members() const noexcept;
         [[nodiscard]] const method_list& get_methods() const noexcept;
@@ -438,7 +436,7 @@ namespace meta_hpp::detail
         // NOLINTEND(*-avoid-const-or-ref-data-members)
 
         template < array_kind Array >
-        explicit array_type_data(type_list<Array>);
+        explicit array_type_data(array_traits<Array>);
     };
 
     struct class_type_data final : type_data_base {
@@ -473,7 +471,7 @@ namespace meta_hpp::detail
         deep_upcasts_t deep_upcasts;
 
         template < class_kind Class >
-        explicit class_type_data(type_list<Class>);
+        explicit class_type_data(class_traits<Class>);
     };
 
     struct constructor_type_data final : type_data_base {
@@ -484,7 +482,7 @@ namespace meta_hpp::detail
         // NOLINTEND(*-avoid-const-or-ref-data-members)
 
         template < class_kind Class, typename... Args >
-        explicit constructor_type_data(type_list<Class>, type_list<Args...>);
+        explicit constructor_type_data(constructor_traits<Class, Args...>);
     };
 
     struct destructor_type_data final : type_data_base {
@@ -494,7 +492,7 @@ namespace meta_hpp::detail
         // NOLINTEND(*-avoid-const-or-ref-data-members)
 
         template < class_kind Class >
-        explicit destructor_type_data(type_list<Class>);
+        explicit destructor_type_data(destructor_traits<Class>);
     };
 
     struct enum_type_data final : type_data_base {
@@ -506,7 +504,7 @@ namespace meta_hpp::detail
         evalue_list evalues;
 
         template < enum_kind Enum >
-        explicit enum_type_data(type_list<Enum>);
+        explicit enum_type_data(enum_traits<Enum>);
     };
 
     struct function_type_data final : type_data_base {
@@ -517,7 +515,7 @@ namespace meta_hpp::detail
         // NOLINTEND(*-avoid-const-or-ref-data-members)
 
         template < function_kind Function >
-        explicit function_type_data(type_list<Function>);
+        explicit function_type_data(function_traits<Function>);
     };
 
     struct member_type_data final : type_data_base {
@@ -528,7 +526,7 @@ namespace meta_hpp::detail
         // NOLINTEND(*-avoid-const-or-ref-data-members)
 
         template < member_pointer_kind Member >
-        explicit member_type_data(type_list<Member>);
+        explicit member_type_data(member_traits<Member>);
     };
 
     struct method_type_data final : type_data_base {
@@ -540,12 +538,12 @@ namespace meta_hpp::detail
         // NOLINTEND(*-avoid-const-or-ref-data-members)
 
         template < method_pointer_kind Method >
-        explicit method_type_data(type_list<Method>);
+        explicit method_type_data(method_traits<Method>);
     };
 
     struct nullptr_type_data final : type_data_base {
         template < nullptr_kind Nullptr >
-        explicit nullptr_type_data(type_list<Nullptr>);
+        explicit nullptr_type_data(nullptr_traits<Nullptr>);
     };
 
     struct number_type_data final : type_data_base {
@@ -556,7 +554,7 @@ namespace meta_hpp::detail
         // NOLINTEND(*-avoid-const-or-ref-data-members)
 
         template < number_kind Number >
-        explicit number_type_data(type_list<Number>);
+        explicit number_type_data(number_traits<Number>);
     };
 
     struct pointer_type_data final : type_data_base {
@@ -566,7 +564,7 @@ namespace meta_hpp::detail
         // NOLINTEND(*-avoid-const-or-ref-data-members)
 
         template < pointer_kind Pointer >
-        explicit pointer_type_data(type_list<Pointer>);
+        explicit pointer_type_data(pointer_traits<Pointer>);
     };
 
     struct reference_type_data final : type_data_base {
@@ -576,12 +574,12 @@ namespace meta_hpp::detail
         // NOLINTEND(*-avoid-const-or-ref-data-members)
 
         template < reference_kind Reference >
-        explicit reference_type_data(type_list<Reference>);
+        explicit reference_type_data(reference_traits<Reference>);
     };
 
     struct void_type_data final : type_data_base {
         template < void_kind Void >
-        explicit void_type_data(type_list<Void>);
+        explicit void_type_data(void_traits<Void>);
     };
 }
 

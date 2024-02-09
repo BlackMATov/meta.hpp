@@ -9,92 +9,108 @@
 #include "../meta_base.hpp"
 
 #include "type_family.hpp"
-#include "type_kinds.hpp"
 
 namespace meta_hpp::detail
 {
-    template < typename >
-    struct shared_type_name;
+    namespace impl
+    {
+        template < typename Type >
+        struct shared_type;
 
-    template < type_kind, typename... >
-    struct shared_type_hash;
-}
+        template < typename Traits >
+        struct shared_traits;
 
-namespace meta_hpp::detail
-{
-    template < typename Type >
-    [[nodiscard]] constexpr std::size_t get_shared_hash() noexcept {
-        return shared_type_hash<type_to_kind_v<Type>, Type>{}();
+        template < typename Type >
+        concept shared_type_kind = requires {
+            { shared_type<Type>{} };
+        };
+
+        template < typename Traits >
+        concept shared_traits_kind = requires {
+            { shared_traits<Traits>{} };
+        };
+
+        template < typename Type >
+        struct is_shared_type : std::bool_constant<shared_type_kind<Type>> {};
+
+        template < typename Traits >
+        struct is_shared_traits : std::bool_constant<shared_traits_kind<Traits>> {};
     }
-}
 
-namespace meta_hpp::detail
-{
-    template < typename T >
-    struct is_shared_type : std::false_type {};
-
-    template < typename T >
-    concept shared_type_kind = is_shared_type<std::remove_cv_t<T>>::value;
-}
-
-namespace meta_hpp::detail
-{
-    template < type_kind, typename... >
-    struct shared_type_data_hash {
+    template < typename Traits >
+    struct shared_traits_hash {
         [[nodiscard]] std::size_t operator()(const void* type_data) const noexcept {
             return hash_composer{} << type_data;
         }
     };
 
-    template < type_kind Kind, shared_type_kind... Types >
-    struct shared_type_data_hash<Kind, Types...> {
+    template < impl::shared_traits_kind Traits >
+    struct shared_traits_hash<Traits> {
         [[nodiscard]] std::size_t operator()(const void*) const noexcept {
-            return shared_type_hash<Kind, Types...>{}();
+            return impl::shared_traits<Traits>{}();
         }
     };
 }
 
-namespace meta_hpp::detail
+namespace meta_hpp::detail::impl
 {
-    template < typename T >
-        requires requires {
-            { shared_type_name<T>{}() };
-        }
-    struct is_shared_type<T> : std::true_type {};
-
     template < array_kind Array >
         requires shared_type_kind<typename array_traits<Array>::data_type>
-    struct is_shared_type<Array> : std::true_type {};
+    struct shared_type<Array> {
+        [[nodiscard]] constexpr std::size_t operator()() const noexcept {
+            return shared_traits<type_to_traits_t<Array>>{}();
+        }
+    };
 
     template < function_kind Function >
         requires shared_type_kind<typename function_traits<Function>::return_type>
               && type_list_and_v<is_shared_type, typename function_traits<Function>::argument_types>
-    struct is_shared_type<Function> : std::true_type {};
+    struct shared_type<Function> {
+        [[nodiscard]] constexpr std::size_t operator()() const noexcept {
+            return shared_traits<type_to_traits_t<Function>>{}();
+        }
+    };
 
     template < member_pointer_kind Member >
         requires shared_type_kind<typename member_traits<Member>::class_type>
               && shared_type_kind<typename member_traits<Member>::value_type>
-    struct is_shared_type<Member> : std::true_type {};
+    struct shared_type<Member> {
+        [[nodiscard]] constexpr std::size_t operator()() const noexcept {
+            return shared_traits<type_to_traits_t<Member>>{}();
+        }
+    };
 
     template < method_pointer_kind Method >
         requires shared_type_kind<typename method_traits<Method>::class_type>
               && shared_type_kind<typename method_traits<Method>::return_type>
               && type_list_and_v<is_shared_type, typename method_traits<Method>::argument_types>
-    struct is_shared_type<Method> : std::true_type {};
+    struct shared_type<Method> {
+        [[nodiscard]] constexpr std::size_t operator()() const noexcept {
+            return shared_traits<type_to_traits_t<Method>>{}();
+        }
+    };
 
     template < pointer_kind Pointer >
         requires shared_type_kind<typename pointer_traits<Pointer>::data_type>
-    struct is_shared_type<Pointer> : std::true_type {};
+    struct shared_type<Pointer> {
+        [[nodiscard]] constexpr std::size_t operator()() const noexcept {
+            return shared_traits<type_to_traits_t<Pointer>>{}();
+        }
+    };
 
     template < reference_kind Reference >
         requires shared_type_kind<typename reference_traits<Reference>::data_type>
-    struct is_shared_type<Reference> : std::true_type {};
+    struct shared_type<Reference> {
+        [[nodiscard]] constexpr std::size_t operator()() const noexcept {
+            return shared_traits<type_to_traits_t<Reference>>{}();
+        }
+    };
 }
 
-namespace meta_hpp::detail
+namespace meta_hpp::detail::impl
 {
     template < shared_type_kind Array >
-    struct shared_type_hash<type_kind::array_, Array> {
+    struct shared_traits<array_traits<Array>> {
         [[nodiscard]] constexpr std::size_t operator()() const noexcept {
             hash_composer hash{};
             hash << type_kind::array_;
@@ -102,7 +118,7 @@ namespace meta_hpp::detail
             using traits = array_traits<Array>;
             hash << traits::make_flags();
 
-            hash << get_shared_hash<typename traits::data_type>();
+            hash << shared_type<typename traits::data_type>{}();
 
             hash << traits::extent;
 
@@ -111,7 +127,7 @@ namespace meta_hpp::detail
     };
 
     template < shared_type_kind Class >
-    struct shared_type_hash<type_kind::class_, Class> {
+    struct shared_traits<class_traits<Class>> {
         [[nodiscard]] constexpr std::size_t operator()() const noexcept {
             hash_composer hash{};
             hash << type_kind::class_;
@@ -119,14 +135,14 @@ namespace meta_hpp::detail
             using traits = class_traits<Class>;
             hash << traits::make_flags();
 
-            hash << shared_type_name<Class>{}();
+            hash << shared_type<Class>{}();
 
             return hash.hash;
         }
     };
 
     template < shared_type_kind Class, shared_type_kind... Args >
-    struct shared_type_hash<type_kind::constructor_, Class, Args...> {
+    struct shared_traits<constructor_traits<Class, Args...>> {
         [[nodiscard]] constexpr std::size_t operator()() const noexcept {
             hash_composer hash{};
             hash << type_kind::constructor_;
@@ -134,10 +150,10 @@ namespace meta_hpp::detail
             using traits = constructor_traits<Class, Args...>;
             hash << traits::make_flags();
 
-            hash << get_shared_hash<typename traits::class_type>();
+            hash << shared_type<typename traits::class_type>{}();
 
             traits::argument_types::for_each([&hash]<typename Arg>() { //
-                hash << get_shared_hash<Arg>();
+                hash << shared_type<Arg>{}();
             });
 
             return hash.hash;
@@ -145,7 +161,7 @@ namespace meta_hpp::detail
     };
 
     template < shared_type_kind Class >
-    struct shared_type_hash<type_kind::destructor_, Class> {
+    struct shared_traits<destructor_traits<Class>> {
         [[nodiscard]] constexpr std::size_t operator()() const noexcept {
             hash_composer hash{};
             hash << type_kind::destructor_;
@@ -153,14 +169,14 @@ namespace meta_hpp::detail
             using traits = destructor_traits<Class>;
             hash << traits::make_flags();
 
-            hash << get_shared_hash<typename traits::class_type>();
+            hash << shared_type<typename traits::class_type>{}();
 
             return hash.hash;
         }
     };
 
     template < shared_type_kind Enum >
-    struct shared_type_hash<type_kind::enum_, Enum> {
+    struct shared_traits<enum_traits<Enum>> {
         [[nodiscard]] constexpr std::size_t operator()() const noexcept {
             hash_composer hash{};
             hash << type_kind::enum_;
@@ -168,34 +184,33 @@ namespace meta_hpp::detail
             using traits = enum_traits<Enum>;
             hash << traits::make_flags();
 
-            hash << shared_type_name<Enum>{}();
+            hash << shared_type<Enum>{}();
 
             return hash.hash;
         }
     };
 
     template < shared_type_kind Function >
-    struct shared_type_hash<type_kind::function_, Function> {
+    struct shared_traits<function_traits<Function>> {
         [[nodiscard]] constexpr std::size_t operator()() const noexcept {
-            hash_composer composer{};
-
-            composer << type_kind::function_;
+            hash_composer hash{};
+            hash << type_kind::function_;
 
             using traits = function_traits<Function>;
-            composer << traits::make_flags();
+            hash << traits::make_flags();
 
-            composer << get_shared_hash<typename traits::return_type>();
+            hash << shared_type<typename traits::return_type>{}();
 
-            traits::argument_types::for_each([&composer]<typename Arg>() { //
-                composer << get_shared_hash<Arg>();
+            traits::argument_types::for_each([&hash]<typename Arg>() { //
+                hash << shared_type<Arg>{}();
             });
 
-            return composer.hash;
+            return hash.hash;
         }
     };
 
     template < shared_type_kind Member >
-    struct shared_type_hash<type_kind::member_, Member> {
+    struct shared_traits<member_traits<Member>> {
         [[nodiscard]] constexpr std::size_t operator()() const noexcept {
             hash_composer hash{};
             hash << type_kind::member_;
@@ -203,15 +218,15 @@ namespace meta_hpp::detail
             using traits = member_traits<Member>;
             hash << traits::make_flags();
 
-            hash << get_shared_hash<typename traits::class_type>();
-            hash << get_shared_hash<typename traits::value_type>();
+            hash << shared_type<typename traits::class_type>{}();
+            hash << shared_type<typename traits::value_type>{}();
 
             return hash.hash;
         }
     };
 
     template < shared_type_kind Method >
-    struct shared_type_hash<type_kind::method_, Method> {
+    struct shared_traits<method_traits<Method>> {
         [[nodiscard]] constexpr std::size_t operator()() const noexcept {
             hash_composer hash{};
             hash << type_kind::method_;
@@ -219,11 +234,11 @@ namespace meta_hpp::detail
             using traits = method_traits<Method>;
             hash << traits::make_flags();
 
-            hash << get_shared_hash<typename traits::class_type>();
-            hash << get_shared_hash<typename traits::return_type>();
+            hash << shared_type<typename traits::class_type>{}();
+            hash << shared_type<typename traits::return_type>{}();
 
             traits::argument_types::for_each([&hash]<typename Arg>() { //
-                hash << get_shared_hash<Arg>();
+                hash << shared_type<Arg>{}();
             });
 
             return hash.hash;
@@ -231,19 +246,19 @@ namespace meta_hpp::detail
     };
 
     template < shared_type_kind Nullptr >
-    struct shared_type_hash<type_kind::nullptr_, Nullptr> {
+    struct shared_traits<nullptr_traits<Nullptr>> {
         [[nodiscard]] constexpr std::size_t operator()() const noexcept {
             hash_composer hash{};
             hash << type_kind::nullptr_;
 
-            hash << shared_type_name<Nullptr>{}();
+            hash << shared_type<Nullptr>{}();
 
             return hash.hash;
         }
     };
 
     template < shared_type_kind Number >
-    struct shared_type_hash<type_kind::number_, Number> {
+    struct shared_traits<number_traits<Number>> {
         [[nodiscard]] constexpr std::size_t operator()() const noexcept {
             hash_composer hash{};
             hash << type_kind::number_;
@@ -251,14 +266,14 @@ namespace meta_hpp::detail
             using traits = number_traits<Number>;
             hash << traits::make_flags();
 
-            hash << shared_type_name<Number>{}();
+            hash << shared_type<Number>{}();
 
             return hash.hash;
         }
     };
 
     template < shared_type_kind Pointer >
-    struct shared_type_hash<type_kind::pointer_, Pointer> {
+    struct shared_traits<pointer_traits<Pointer>> {
         [[nodiscard]] constexpr std::size_t operator()() const noexcept {
             hash_composer hash{};
             hash << type_kind::pointer_;
@@ -266,14 +281,14 @@ namespace meta_hpp::detail
             using traits = pointer_traits<Pointer>;
             hash << traits::make_flags();
 
-            hash << get_shared_hash<typename traits::data_type>();
+            hash << shared_type<typename traits::data_type>{}();
 
             return hash.hash;
         }
     };
 
     template < shared_type_kind Reference >
-    struct shared_type_hash<type_kind::reference_, Reference> {
+    struct shared_traits<reference_traits<Reference>> {
         [[nodiscard]] constexpr std::size_t operator()() const noexcept {
             hash_composer hash{};
             hash << type_kind::reference_;
@@ -281,19 +296,19 @@ namespace meta_hpp::detail
             using traits = reference_traits<Reference>;
             hash << traits::make_flags();
 
-            hash << get_shared_hash<typename traits::data_type>();
+            hash << shared_type<typename traits::data_type>{}();
 
             return hash.hash;
         }
     };
 
     template < shared_type_kind Void >
-    struct shared_type_hash<type_kind::void_, Void> {
+    struct shared_traits<void_traits<Void>> {
         [[nodiscard]] constexpr std::size_t operator()() const noexcept {
             hash_composer hash{};
             hash << type_kind::void_;
 
-            hash << shared_type_name<Void>{}();
+            hash << shared_type<Void>{}();
 
             return hash.hash;
         }
@@ -301,10 +316,10 @@ namespace meta_hpp::detail
 }
 
 #define META_HPP_DEFINE_SHARED_TYPE(Type, Name) \
-    namespace meta_hpp::detail \
+    namespace meta_hpp::detail::impl \
     { \
         template <> \
-        struct shared_type_name<Type> { \
+        struct shared_type<Type> { \
             [[nodiscard]] constexpr std::size_t operator()() const noexcept { \
                 return hash_composer{} << std::string_view{Name}; \
             } \

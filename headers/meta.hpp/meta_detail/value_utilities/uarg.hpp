@@ -52,12 +52,12 @@ namespace meta_hpp::detail
         template < arg_lvalue_ref_kind T >
         explicit uarg_base(type_registry& registry, type_list<T>)
         : ref_type_{std::is_const_v<std::remove_reference_t<T>> ? ref_types::const_lvalue : ref_types::lvalue}
-        , raw_type_{registry.resolve_type<std::remove_cvref_t<T>>()} {}
+        , raw_type_{registry.resolve_by_type<std::remove_cvref_t<T>>()} {}
 
         template < arg_rvalue_ref_kind T >
         explicit uarg_base(type_registry& registry, type_list<T>)
         : ref_type_{std::is_const_v<std::remove_reference_t<T>> ? ref_types::const_rvalue : ref_types::rvalue}
-        , raw_type_{registry.resolve_type<std::remove_cvref_t<T>>()} {}
+        , raw_type_{registry.resolve_by_type<std::remove_cvref_t<T>>()} {}
 
         explicit uarg_base(type_registry&, uvalue& v)
         : ref_type_{ref_types::lvalue}
@@ -164,7 +164,7 @@ namespace meta_hpp::detail
         using to_raw_type = std::remove_cv_t<To>;
 
         const any_type& from_type = get_raw_type();
-        const pointer_type& to_type_ptr = registry.resolve_type<to_raw_type>();
+        const pointer_type& to_type_ptr = registry.resolve_by_type<to_raw_type>();
 
         if ( from_type.is_nullptr() ) {
             return true;
@@ -216,7 +216,7 @@ namespace meta_hpp::detail
         );
 
         const any_type& from_type = get_raw_type();
-        const any_type& to_type = registry.resolve_type<to_raw_type>();
+        const any_type& to_type = registry.resolve_by_type<to_raw_type>();
 
         const auto is_convertible_to_ref = [this]<typename ToRef>(type_list<ToRef>) {
             switch ( get_ref_type() ) {
@@ -271,7 +271,7 @@ namespace meta_hpp::detail
         using to_raw_type = std::remove_cv_t<To>;
 
         const any_type& from_type = get_raw_type();
-        const pointer_type& to_type_ptr = registry.resolve_type<to_raw_type>();
+        const pointer_type& to_type_ptr = registry.resolve_by_type<to_raw_type>();
 
         if ( from_type.is_nullptr() ) {
             return static_cast<To>(nullptr);
@@ -319,7 +319,7 @@ namespace meta_hpp::detail
         );
 
         const any_type& from_type = get_raw_type();
-        const any_type& to_type = registry.resolve_type<to_raw_type>();
+        const any_type& to_type = registry.resolve_by_type<to_raw_type>();
 
         void* to_ptr = pointer_upcast(data_, from_type, to_type);
         META_HPP_ASSERT(to_ptr);

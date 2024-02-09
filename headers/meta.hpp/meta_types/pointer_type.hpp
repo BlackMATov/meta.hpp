@@ -16,8 +16,8 @@
 namespace meta_hpp::detail
 {
     template < pointer_kind Pointer >
-    pointer_type_data::pointer_type_data(type_list<Pointer>)
-    : type_data_base{type_kind::pointer_, shared_type_data_hash<type_kind::pointer_, Pointer>{}(this)}
+    pointer_type_data::pointer_type_data(pointer_traits<Pointer>)
+    : type_data_base{type_kind::pointer_, shared_traits_hash<pointer_traits<Pointer>>{}(this)}
     , flags{pointer_traits<Pointer>::make_flags()}
     , data_type{resolve_type<typename pointer_traits<Pointer>::data_type>()} {}
 }

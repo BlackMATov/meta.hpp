@@ -199,7 +199,7 @@ namespace meta_hpp::detail
         type_registry& registry{type_registry::instance()};
 
         member_state state{
-            member_index{registry.resolve_type<Member>(), std::move(name)},
+            member_index{registry.resolve_by_type<Member>(), std::move(name)},
             std::move(metadata),
         };
 

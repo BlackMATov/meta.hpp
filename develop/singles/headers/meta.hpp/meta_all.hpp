@@ -20,6 +20,7 @@
 #include <map>
 #include <memory>
 #include <mutex>
+#include <set>
 #include <span>
 #include <string>
 #include <string_view>
@@ -2191,6 +2192,12 @@ namespace meta_hpp::detail
 
 namespace meta_hpp::detail
 {
+    template < nullptr_kind Nullptr >
+    struct nullptr_traits {};
+}
+
+namespace meta_hpp::detail
+{
     enum class number_flags : std::uint8_t {
         is_signed = 1 << 0,
         is_unsigned = 1 << 1,
@@ -2319,6 +2326,12 @@ namespace meta_hpp::detail
 
 namespace meta_hpp::detail
 {
+    template < void_kind Void >
+    struct void_traits {};
+}
+
+namespace meta_hpp::detail
+{
     struct type_data_base;
     struct array_type_data;
     struct class_type_data;
@@ -2337,7 +2350,7 @@ namespace meta_hpp::detail
 
 namespace meta_hpp::detail
 {
-    template <type_family Type>
+    template < type_family Type >
     struct type_traits;
 
     template < type_family Type >
@@ -2355,80 +2368,244 @@ namespace meta_hpp::detail
 
     template <>
     struct type_traits<array_type> {
+        using type = array_type;
         using data_ptr = array_type_data*;
+        using data_type = array_type_data;
         inline static constexpr type_kind kind{type_kind::array_};
     };
 
     template <>
     struct type_traits<class_type> {
+        using type = class_type;
         using data_ptr = class_type_data*;
+        using data_type = class_type_data;
         inline static constexpr type_kind kind{type_kind::class_};
     };
 
     template <>
     struct type_traits<constructor_type> {
+        using type = constructor_type;
         using data_ptr = constructor_type_data*;
+        using data_type = constructor_type_data;
         inline static constexpr type_kind kind{type_kind::constructor_};
     };
 
     template <>
     struct type_traits<destructor_type> {
+        using type = destructor_type;
         using data_ptr = destructor_type_data*;
+        using data_type = destructor_type_data;
         inline static constexpr type_kind kind{type_kind::destructor_};
     };
 
     template <>
     struct type_traits<enum_type> {
+        using type = enum_type;
         using data_ptr = enum_type_data*;
+        using data_type = enum_type_data;
         inline static constexpr type_kind kind{type_kind::enum_};
     };
 
     template <>
     struct type_traits<function_type> {
+        using type = function_type;
         using data_ptr = function_type_data*;
+        using data_type = function_type_data;
         inline static constexpr type_kind kind{type_kind::function_};
     };
 
     template <>
     struct type_traits<member_type> {
+        using type = member_type;
         using data_ptr = member_type_data*;
+        using data_type = member_type_data;
         inline static constexpr type_kind kind{type_kind::member_};
     };
 
     template <>
     struct type_traits<method_type> {
+        using type = method_type;
         using data_ptr = method_type_data*;
+        using data_type = method_type_data;
         inline static constexpr type_kind kind{type_kind::method_};
     };
 
     template <>
     struct type_traits<nullptr_type> {
+        using type = nullptr_type;
         using data_ptr = nullptr_type_data*;
+        using data_type = nullptr_type_data;
         inline static constexpr type_kind kind{type_kind::nullptr_};
     };
 
     template <>
     struct type_traits<number_type> {
+        using type = number_type;
         using data_ptr = number_type_data*;
+        using data_type = number_type_data;
         inline static constexpr type_kind kind{type_kind::number_};
     };
 
     template <>
     struct type_traits<pointer_type> {
+        using type = pointer_type;
         using data_ptr = pointer_type_data*;
+        using data_type = pointer_type_data;
         inline static constexpr type_kind kind{type_kind::pointer_};
     };
 
     template <>
     struct type_traits<reference_type> {
+        using type = reference_type;
         using data_ptr = reference_type_data*;
+        using data_type = reference_type_data;
         inline static constexpr type_kind kind{type_kind::reference_};
     };
 
     template <>
     struct type_traits<void_type> {
+        using type = void_type;
         using data_ptr = void_type_data*;
+        using data_type = void_type_data;
         inline static constexpr type_kind kind{type_kind::void_};
+    };
+}
+
+namespace meta_hpp::detail
+{
+    template < typename T >
+    struct type_to_traits;
+
+    template < typename T >
+    using type_to_traits_t = typename type_to_traits<T>::type;
+
+    template < array_kind T >
+    struct type_to_traits<T> {
+        using type = array_traits<T>;
+    };
+
+    template < class_kind T >
+    struct type_to_traits<T> {
+        using type = class_traits<T>;
+    };
+
+    template < enum_kind T >
+    struct type_to_traits<T> {
+        using type = enum_traits<T>;
+    };
+
+    template < function_kind T >
+    struct type_to_traits<T> {
+        using type = function_traits<T>;
+    };
+
+    template < member_pointer_kind T >
+    struct type_to_traits<T> {
+        using type = member_traits<T>;
+    };
+
+    template < method_pointer_kind T >
+    struct type_to_traits<T> {
+        using type = method_traits<T>;
+    };
+
+    template < nullptr_kind T >
+    struct type_to_traits<T> {
+        using type = nullptr_traits<T>;
+    };
+
+    template < number_kind T >
+    struct type_to_traits<T> {
+        using type = number_traits<T>;
+    };
+
+    template < pointer_kind T >
+    struct type_to_traits<T> {
+        using type = pointer_traits<T>;
+    };
+
+    template < reference_kind T >
+    struct type_to_traits<T> {
+        using type = reference_traits<T>;
+    };
+
+    template < void_kind T >
+    struct type_to_traits<T> {
+        using type = void_traits<T>;
+    };
+}
+
+namespace meta_hpp::detail
+{
+    template < typename Traits >
+    struct traits_to_type_traits;
+
+    template < typename Traits >
+    using traits_to_type_traits_t = typename traits_to_type_traits<Traits>::type;
+
+    template < array_kind Array >
+    struct traits_to_type_traits<array_traits<Array>> {
+        using type = type_traits<array_type>;
+    };
+
+    template < class_kind Class >
+    struct traits_to_type_traits<class_traits<Class>> {
+        using type = type_traits<class_type>;
+    };
+
+    template < class_kind Class, typename... Args >
+    struct traits_to_type_traits<constructor_traits<Class, Args...>> {
+        using type = type_traits<constructor_type>;
+    };
+
+    template < class_kind Class >
+    struct traits_to_type_traits<destructor_traits<Class>> {
+        using type = type_traits<destructor_type>;
+    };
+
+    template < enum_kind Enum >
+    struct traits_to_type_traits<enum_traits<Enum>> {
+        using type = type_traits<enum_type>;
+    };
+
+    template < function_kind Function >
+    struct traits_to_type_traits<function_traits<Function>> {
+        using type = type_traits<function_type>;
+    };
+
+    template < member_pointer_kind Member >
+    struct traits_to_type_traits<member_traits<Member>> {
+        using type = type_traits<member_type>;
+    };
+
+    template < method_pointer_kind Method >
+    struct traits_to_type_traits<method_traits<Method>> {
+        using type = type_traits<method_type>;
+    };
+
+    template < nullptr_kind Nullptr >
+    struct traits_to_type_traits<nullptr_traits<Nullptr>> {
+        using type = type_traits<nullptr_type>;
+    };
+
+    template < number_kind Number >
+    struct traits_to_type_traits<number_traits<Number>> {
+        using type = type_traits<number_type>;
+    };
+
+    template < pointer_kind Pointer >
+    struct traits_to_type_traits<pointer_traits<Pointer>> {
+        using type = type_traits<pointer_type>;
+    };
+
+    template < reference_kind Reference >
+    struct traits_to_type_traits<reference_traits<Reference>> {
+        using type = type_traits<reference_type>;
+    };
+
+    template < void_kind Void >
+    struct traits_to_type_traits<void_traits<Void>> {
+        using type = type_traits<void_type>;
     };
 }
 
@@ -2796,7 +2973,6 @@ namespace meta_hpp
 
         [[nodiscard]] const class_list& get_base_classes() const noexcept;
         [[nodiscard]] const constructor_list& get_constructors() const noexcept;
-        [[nodiscard]] const destructor_list& get_destructors() const noexcept;
         [[nodiscard]] const function_list& get_functions() const noexcept;
         [[nodiscard]] const member_list& get_members() const noexcept;
         [[nodiscard]] const method_list& get_methods() const noexcept;
@@ -3069,7 +3245,7 @@ namespace meta_hpp::detail
         // NOLINTEND(*-avoid-const-or-ref-data-members)
 
         template < array_kind Array >
-        explicit array_type_data(type_list<Array>);
+        explicit array_type_data(array_traits<Array>);
     };
 
     struct class_type_data final : type_data_base {
@@ -3104,7 +3280,7 @@ namespace meta_hpp::detail
         deep_upcasts_t deep_upcasts;
 
         template < class_kind Class >
-        explicit class_type_data(type_list<Class>);
+        explicit class_type_data(class_traits<Class>);
     };
 
     struct constructor_type_data final : type_data_base {
@@ -3115,7 +3291,7 @@ namespace meta_hpp::detail
         // NOLINTEND(*-avoid-const-or-ref-data-members)
 
         template < class_kind Class, typename... Args >
-        explicit constructor_type_data(type_list<Class>, type_list<Args...>);
+        explicit constructor_type_data(constructor_traits<Class, Args...>);
     };
 
     struct destructor_type_data final : type_data_base {
@@ -3125,7 +3301,7 @@ namespace meta_hpp::detail
         // NOLINTEND(*-avoid-const-or-ref-data-members)
 
         template < class_kind Class >
-        explicit destructor_type_data(type_list<Class>);
+        explicit destructor_type_data(destructor_traits<Class>);
     };
 
     struct enum_type_data final : type_data_base {
@@ -3137,7 +3313,7 @@ namespace meta_hpp::detail
         evalue_list evalues;
 
         template < enum_kind Enum >
-        explicit enum_type_data(type_list<Enum>);
+        explicit enum_type_data(enum_traits<Enum>);
     };
 
     struct function_type_data final : type_data_base {
@@ -3148,7 +3324,7 @@ namespace meta_hpp::detail
         // NOLINTEND(*-avoid-const-or-ref-data-members)
 
         template < function_kind Function >
-        explicit function_type_data(type_list<Function>);
+        explicit function_type_data(function_traits<Function>);
     };
 
     struct member_type_data final : type_data_base {
@@ -3159,7 +3335,7 @@ namespace meta_hpp::detail
         // NOLINTEND(*-avoid-const-or-ref-data-members)
 
         template < member_pointer_kind Member >
-        explicit member_type_data(type_list<Member>);
+        explicit member_type_data(member_traits<Member>);
     };
 
     struct method_type_data final : type_data_base {
@@ -3171,12 +3347,12 @@ namespace meta_hpp::detail
         // NOLINTEND(*-avoid-const-or-ref-data-members)
 
         template < method_pointer_kind Method >
-        explicit method_type_data(type_list<Method>);
+        explicit method_type_data(method_traits<Method>);
     };
 
     struct nullptr_type_data final : type_data_base {
         template < nullptr_kind Nullptr >
-        explicit nullptr_type_data(type_list<Nullptr>);
+        explicit nullptr_type_data(nullptr_traits<Nullptr>);
     };
 
     struct number_type_data final : type_data_base {
@@ -3187,7 +3363,7 @@ namespace meta_hpp::detail
         // NOLINTEND(*-avoid-const-or-ref-data-members)
 
         template < number_kind Number >
-        explicit number_type_data(type_list<Number>);
+        explicit number_type_data(number_traits<Number>);
     };
 
     struct pointer_type_data final : type_data_base {
@@ -3197,7 +3373,7 @@ namespace meta_hpp::detail
         // NOLINTEND(*-avoid-const-or-ref-data-members)
 
         template < pointer_kind Pointer >
-        explicit pointer_type_data(type_list<Pointer>);
+        explicit pointer_type_data(pointer_traits<Pointer>);
     };
 
     struct reference_type_data final : type_data_base {
@@ -3207,12 +3383,12 @@ namespace meta_hpp::detail
         // NOLINTEND(*-avoid-const-or-ref-data-members)
 
         template < reference_kind Reference >
-        explicit reference_type_data(type_list<Reference>);
+        explicit reference_type_data(reference_traits<Reference>);
     };
 
     struct void_type_data final : type_data_base {
         template < void_kind Void >
-        explicit void_type_data(type_list<Void>);
+        explicit void_type_data(void_traits<Void>);
     };
 }
 
@@ -4417,129 +4593,39 @@ namespace meta_hpp::detail
         void for_each_type(F&& f) const {
             const locker lock;
 
-            // we use an index based for loop to avoid the iterator invalidation issues
-            // that can happen when adding a new type inside the loop
-            for ( std::size_t i{}; i < types_.size(); ++i ) {
-                std::invoke(f, types_[i]);
+            for ( auto&& type : types_ ) {
+                std::invoke(f, type);
             }
         }
 
     public:
         template < typename T >
-        [[nodiscard]] auto resolve_type() {
-            // clang-format off
-            if constexpr ( array_kind<T> ) { return resolve_array_type<T>(); }
-            if constexpr ( class_kind<T> ) { return resolve_class_type<T>(); }
-            if constexpr ( enum_kind<T> ) { return resolve_enum_type<T>(); }
-            if constexpr ( function_kind<T> ) { return resolve_function_type<T>(); }
-            if constexpr ( member_pointer_kind<T> ) { return resolve_member_type<T>(); }
-            if constexpr ( method_pointer_kind<T> ) { return resolve_method_type<T>(); }
-            if constexpr ( nullptr_kind<T> ) { return resolve_nullptr_type<T>(); }
-            if constexpr ( number_kind<T> ) { return resolve_number_type<T>(); }
-            if constexpr ( pointer_kind<T> ) { return resolve_pointer_type<T>(); }
-            if constexpr ( reference_kind<T> ) { return resolve_reference_type<T>(); }
-            if constexpr ( void_kind<T> ) { return resolve_void_type<T>(); }
-            // clang-format on
+        [[nodiscard]] auto resolve_by_type() {
+            return resolve_by_traits<type_to_traits_t<std::remove_cv_t<T>>>();
         }
 
-    public:
-        template < array_kind Array >
-        [[nodiscard]] array_type resolve_array_type() {
-            using array_t = std::remove_cv_t<Array>;
-            return array_type{ensure_type<array_type_data>(type_list<array_t>{})};
-        }
+        template < typename Traits >
+        [[nodiscard]] auto resolve_by_traits() {
+            using type_traits = traits_to_type_traits_t<Traits>;
 
-        template < class_kind Class >
-        [[nodiscard]] class_type resolve_class_type() {
-            using class_t = std::remove_cv_t<Class>;
-            return class_type{ensure_type<class_type_data>(type_list<class_t>{})};
-        }
+            static auto type_data_instance = [this]() {
+                auto new_data{std::make_unique<typename type_traits::data_type>(Traits{})};
 
-        template < class_kind Class, typename... Args >
-        [[nodiscard]] constructor_type resolve_constructor_type() {
-            using class_t = std::remove_cv_t<Class>;
-            return constructor_type{ensure_type<constructor_type_data>(type_list<class_t>{}, type_list<Args...>{})};
-        }
+                const locker lock;
+                types_.emplace(new_data.get());
 
-        template < class_kind Class >
-        [[nodiscard]] destructor_type resolve_destructor_type() {
-            using class_t = std::remove_cv_t<Class>;
-            return destructor_type{ensure_type<destructor_type_data>(type_list<class_t>{})};
-        }
+                return new_data;
+            }();
 
-        template < enum_kind Enum >
-        [[nodiscard]] enum_type resolve_enum_type() {
-            using enum_t = std::remove_cv_t<Enum>;
-            return enum_type{ensure_type<enum_type_data>(type_list<enum_t>{})};
-        }
-
-        template < function_kind Function >
-        [[nodiscard]] function_type resolve_function_type() {
-            using function_t = std::remove_cv_t<Function>;
-            return function_type{ensure_type<function_type_data>(type_list<function_t>{})};
-        }
-
-        template < member_pointer_kind Member >
-        [[nodiscard]] member_type resolve_member_type() {
-            using member_t = std::remove_cv_t<Member>;
-            return member_type{ensure_type<member_type_data>(type_list<member_t>{})};
-        }
-
-        template < method_pointer_kind Method >
-        [[nodiscard]] method_type resolve_method_type() {
-            using method_t = std::remove_cv_t<Method>;
-            return method_type{ensure_type<method_type_data>(type_list<method_t>{})};
-        }
-
-        template < nullptr_kind Nullptr >
-        [[nodiscard]] nullptr_type resolve_nullptr_type() {
-            using nullptr_t = std::remove_cv_t<Nullptr>;
-            return nullptr_type{ensure_type<nullptr_type_data>(type_list<nullptr_t>{})};
-        }
-
-        template < number_kind Number >
-        [[nodiscard]] number_type resolve_number_type() {
-            using number_t = std::remove_cv_t<Number>;
-            return number_type{ensure_type<number_type_data>(type_list<number_t>{})};
-        }
-
-        template < pointer_kind Pointer >
-        [[nodiscard]] pointer_type resolve_pointer_type() {
-            using pointer_t = std::remove_cv_t<Pointer>;
-            return pointer_type{ensure_type<pointer_type_data>(type_list<pointer_t>{})};
-        }
-
-        template < reference_kind Reference >
-        [[nodiscard]] reference_type resolve_reference_type() {
-            using reference_t = std::remove_cv_t<Reference>;
-            return reference_type{ensure_type<reference_type_data>(type_list<reference_t>{})};
-        }
-
-        template < void_kind Void >
-        [[nodiscard]] void_type resolve_void_type() {
-            using void_t = std::remove_cv_t<Void>;
-            return void_type{ensure_type<void_type_data>(type_list<void_t>{})};
+            return typename type_traits::type{type_data_instance.get()};
         }
 
     private:
         type_registry() = default;
 
-        template < typename TypeData, typename... Args >
-        TypeData* ensure_type(Args&&... args) {
-            static auto data = [this](Args&&... captured_args) {
-                auto new_data{std::make_unique<TypeData>(META_HPP_FWD(captured_args)...)};
-
-                const locker lock;
-                types_.emplace_back(new_data.get());
-
-                return new_data;
-            }(META_HPP_FWD(args)...);
-            return data.get();
-        }
-
     private:
         std::recursive_mutex mutex_;
-        std::vector<any_type> types_;
+        std::set<any_type, std::less<>> types_;
     };
 }
 
@@ -4579,7 +4665,7 @@ public: \
     META_HPP_DETAIL_IGNORE_OVERRIDE_WARNINGS_PUSH() \
     virtual ::meta_hpp::detail::poly_info meta_poly_info(::meta_hpp::detail::type_registry& registry) const { \
         using self_type = std::remove_cvref_t<decltype(*this)>; \
-        return ::meta_hpp::detail::poly_info{.ptr = this, .type = registry.resolve_class_type<self_type>()}; \
+        return ::meta_hpp::detail::poly_info{.ptr = this, .type = registry.resolve_by_type<self_type>()}; \
     } \
     META_HPP_DETAIL_IGNORE_OVERRIDE_WARNINGS_POP() \
 private:
@@ -4673,7 +4759,7 @@ namespace meta_hpp
     [[nodiscard]] auto resolve_type() {
         using namespace detail;
         type_registry& registry = type_registry::instance();
-        return registry.resolve_type<std::remove_cv_t<T>>();
+        return registry.resolve_by_type<std::remove_cv_t<T>>();
     }
 
     template < typename T >
@@ -4693,25 +4779,8 @@ namespace meta_hpp
             return detail::get_meta_poly_info(registry, from).type;
         } else {
             (void)from;
-            return registry.resolve_type<raw_type>();
+            return registry.resolve_by_type<raw_type>();
         }
-    }
-}
-
-namespace meta_hpp
-{
-    template < class_kind Class, typename... Args >
-    [[nodiscard]] constructor_type resolve_constructor_type() {
-        using namespace detail;
-        type_registry& registry = type_registry::instance();
-        return registry.resolve_constructor_type<Class, Args...>();
-    }
-
-    template < class_kind Class >
-    [[nodiscard]] destructor_type resolve_destructor_type() {
-        using namespace detail;
-        type_registry& registry = type_registry::instance();
-        return registry.resolve_destructor_type<Class>();
     }
 }
 
@@ -6052,8 +6121,8 @@ namespace meta_hpp::detail
     [[nodiscard]] To* pointer_upcast(type_registry& registry, From* ptr) {
         return static_cast<To*>(pointer_upcast( //
             ptr,
-            registry.resolve_type<From>(),
-            registry.resolve_type<To>()
+            registry.resolve_by_type<From>(),
+            registry.resolve_by_type<To>()
         ));
     }
 
@@ -6061,8 +6130,8 @@ namespace meta_hpp::detail
     [[nodiscard]] const To* pointer_upcast(type_registry& registry, const From* ptr) {
         return static_cast<const To*>(pointer_upcast( //
             ptr,
-            registry.resolve_type<From>(),
-            registry.resolve_type<To>()
+            registry.resolve_by_type<From>(),
+            registry.resolve_by_type<To>()
         ));
     }
 }
@@ -6106,12 +6175,12 @@ namespace meta_hpp::detail
         template < arg_lvalue_ref_kind T >
         explicit uarg_base(type_registry& registry, type_list<T>)
         : ref_type_{std::is_const_v<std::remove_reference_t<T>> ? ref_types::const_lvalue : ref_types::lvalue}
-        , raw_type_{registry.resolve_type<std::remove_cvref_t<T>>()} {}
+        , raw_type_{registry.resolve_by_type<std::remove_cvref_t<T>>()} {}
 
         template < arg_rvalue_ref_kind T >
         explicit uarg_base(type_registry& registry, type_list<T>)
         : ref_type_{std::is_const_v<std::remove_reference_t<T>> ? ref_types::const_rvalue : ref_types::rvalue}
-        , raw_type_{registry.resolve_type<std::remove_cvref_t<T>>()} {}
+        , raw_type_{registry.resolve_by_type<std::remove_cvref_t<T>>()} {}
 
         explicit uarg_base(type_registry&, uvalue& v)
         : ref_type_{ref_types::lvalue}
@@ -6218,7 +6287,7 @@ namespace meta_hpp::detail
         using to_raw_type = std::remove_cv_t<To>;
 
         const any_type& from_type = get_raw_type();
-        const pointer_type& to_type_ptr = registry.resolve_type<to_raw_type>();
+        const pointer_type& to_type_ptr = registry.resolve_by_type<to_raw_type>();
 
         if ( from_type.is_nullptr() ) {
             return true;
@@ -6270,7 +6339,7 @@ namespace meta_hpp::detail
         );
 
         const any_type& from_type = get_raw_type();
-        const any_type& to_type = registry.resolve_type<to_raw_type>();
+        const any_type& to_type = registry.resolve_by_type<to_raw_type>();
 
         const auto is_convertible_to_ref = [this]<typename ToRef>(type_list<ToRef>) {
             switch ( get_ref_type() ) {
@@ -6325,7 +6394,7 @@ namespace meta_hpp::detail
         using to_raw_type = std::remove_cv_t<To>;
 
         const any_type& from_type = get_raw_type();
-        const pointer_type& to_type_ptr = registry.resolve_type<to_raw_type>();
+        const pointer_type& to_type_ptr = registry.resolve_by_type<to_raw_type>();
 
         if ( from_type.is_nullptr() ) {
             return static_cast<To>(nullptr);
@@ -6373,7 +6442,7 @@ namespace meta_hpp::detail
         );
 
         const any_type& from_type = get_raw_type();
-        const any_type& to_type = registry.resolve_type<to_raw_type>();
+        const any_type& to_type = registry.resolve_by_type<to_raw_type>();
 
         void* to_ptr = pointer_upcast(data_, from_type, to_type);
         META_HPP_ASSERT(to_ptr);
@@ -6447,88 +6516,105 @@ namespace meta_hpp::detail
 
 namespace meta_hpp::detail
 {
-    template < typename >
-    struct shared_type_name;
+    namespace impl
+    {
+        template < typename Type >
+        struct shared_type;
 
-    template < type_kind, typename... >
-    struct shared_type_hash;
-}
+        template < typename Traits >
+        struct shared_traits;
 
-namespace meta_hpp::detail
-{
-    template < typename Type >
-    [[nodiscard]] constexpr std::size_t get_shared_hash() noexcept {
-        return shared_type_hash<type_to_kind_v<Type>, Type>{}();
+        template < typename Type >
+        concept shared_type_kind = requires {
+            { shared_type<Type>{} };
+        };
+
+        template < typename Traits >
+        concept shared_traits_kind = requires {
+            { shared_traits<Traits>{} };
+        };
+
+        template < typename Type >
+        struct is_shared_type : std::bool_constant<shared_type_kind<Type>> {};
+
+        template < typename Traits >
+        struct is_shared_traits : std::bool_constant<shared_traits_kind<Traits>> {};
     }
-}
 
-namespace meta_hpp::detail
-{
-    template < typename T >
-    struct is_shared_type : std::false_type {};
-
-    template < typename T >
-    concept shared_type_kind = is_shared_type<std::remove_cv_t<T>>::value;
-}
-
-namespace meta_hpp::detail
-{
-    template < type_kind, typename... >
-    struct shared_type_data_hash {
+    template < typename Traits >
+    struct shared_traits_hash {
         [[nodiscard]] std::size_t operator()(const void* type_data) const noexcept {
             return hash_composer{} << type_data;
         }
     };
 
-    template < type_kind Kind, shared_type_kind... Types >
-    struct shared_type_data_hash<Kind, Types...> {
+    template < impl::shared_traits_kind Traits >
+    struct shared_traits_hash<Traits> {
         [[nodiscard]] std::size_t operator()(const void*) const noexcept {
-            return shared_type_hash<Kind, Types...>{}();
+            return impl::shared_traits<Traits>{}();
         }
     };
 }
 
-namespace meta_hpp::detail
+namespace meta_hpp::detail::impl
 {
-    template < typename T >
-        requires requires {
-            { shared_type_name<T>{}() };
-        }
-    struct is_shared_type<T> : std::true_type {};
-
     template < array_kind Array >
         requires shared_type_kind<typename array_traits<Array>::data_type>
-    struct is_shared_type<Array> : std::true_type {};
+    struct shared_type<Array> {
+        [[nodiscard]] constexpr std::size_t operator()() const noexcept {
+            return shared_traits<type_to_traits_t<Array>>{}();
+        }
+    };
 
     template < function_kind Function >
         requires shared_type_kind<typename function_traits<Function>::return_type>
               && type_list_and_v<is_shared_type, typename function_traits<Function>::argument_types>
-    struct is_shared_type<Function> : std::true_type {};
+    struct shared_type<Function> {
+        [[nodiscard]] constexpr std::size_t operator()() const noexcept {
+            return shared_traits<type_to_traits_t<Function>>{}();
+        }
+    };
 
     template < member_pointer_kind Member >
         requires shared_type_kind<typename member_traits<Member>::class_type>
               && shared_type_kind<typename member_traits<Member>::value_type>
-    struct is_shared_type<Member> : std::true_type {};
+    struct shared_type<Member> {
+        [[nodiscard]] constexpr std::size_t operator()() const noexcept {
+            return shared_traits<type_to_traits_t<Member>>{}();
+        }
+    };
 
     template < method_pointer_kind Method >
         requires shared_type_kind<typename method_traits<Method>::class_type>
               && shared_type_kind<typename method_traits<Method>::return_type>
               && type_list_and_v<is_shared_type, typename method_traits<Method>::argument_types>
-    struct is_shared_type<Method> : std::true_type {};
+    struct shared_type<Method> {
+        [[nodiscard]] constexpr std::size_t operator()() const noexcept {
+            return shared_traits<type_to_traits_t<Method>>{}();
+        }
+    };
 
     template < pointer_kind Pointer >
         requires shared_type_kind<typename pointer_traits<Pointer>::data_type>
-    struct is_shared_type<Pointer> : std::true_type {};
+    struct shared_type<Pointer> {
+        [[nodiscard]] constexpr std::size_t operator()() const noexcept {
+            return shared_traits<type_to_traits_t<Pointer>>{}();
+        }
+    };
 
     template < reference_kind Reference >
         requires shared_type_kind<typename reference_traits<Reference>::data_type>
-    struct is_shared_type<Reference> : std::true_type {};
+    struct shared_type<Reference> {
+        [[nodiscard]] constexpr std::size_t operator()() const noexcept {
+            return shared_traits<type_to_traits_t<Reference>>{}();
+        }
+    };
 }
 
-namespace meta_hpp::detail
+namespace meta_hpp::detail::impl
 {
     template < shared_type_kind Array >
-    struct shared_type_hash<type_kind::array_, Array> {
+    struct shared_traits<array_traits<Array>> {
         [[nodiscard]] constexpr std::size_t operator()() const noexcept {
             hash_composer hash{};
             hash << type_kind::array_;
@@ -6536,7 +6622,7 @@ namespace meta_hpp::detail
             using traits = array_traits<Array>;
             hash << traits::make_flags();
 
-            hash << get_shared_hash<typename traits::data_type>();
+            hash << shared_type<typename traits::data_type>{}();
 
             hash << traits::extent;
 
@@ -6545,7 +6631,7 @@ namespace meta_hpp::detail
     };
 
     template < shared_type_kind Class >
-    struct shared_type_hash<type_kind::class_, Class> {
+    struct shared_traits<class_traits<Class>> {
         [[nodiscard]] constexpr std::size_t operator()() const noexcept {
             hash_composer hash{};
             hash << type_kind::class_;
@@ -6553,14 +6639,14 @@ namespace meta_hpp::detail
             using traits = class_traits<Class>;
             hash << traits::make_flags();
 
-            hash << shared_type_name<Class>{}();
+            hash << shared_type<Class>{}();
 
             return hash.hash;
         }
     };
 
     template < shared_type_kind Class, shared_type_kind... Args >
-    struct shared_type_hash<type_kind::constructor_, Class, Args...> {
+    struct shared_traits<constructor_traits<Class, Args...>> {
         [[nodiscard]] constexpr std::size_t operator()() const noexcept {
             hash_composer hash{};
             hash << type_kind::constructor_;
@@ -6568,10 +6654,10 @@ namespace meta_hpp::detail
             using traits = constructor_traits<Class, Args...>;
             hash << traits::make_flags();
 
-            hash << get_shared_hash<typename traits::class_type>();
+            hash << shared_type<typename traits::class_type>{}();
 
             traits::argument_types::for_each([&hash]<typename Arg>() { //
-                hash << get_shared_hash<Arg>();
+                hash << shared_type<Arg>{}();
             });
 
             return hash.hash;
@@ -6579,7 +6665,7 @@ namespace meta_hpp::detail
     };
 
     template < shared_type_kind Class >
-    struct shared_type_hash<type_kind::destructor_, Class> {
+    struct shared_traits<destructor_traits<Class>> {
         [[nodiscard]] constexpr std::size_t operator()() const noexcept {
             hash_composer hash{};
             hash << type_kind::destructor_;
@@ -6587,14 +6673,14 @@ namespace meta_hpp::detail
             using traits = destructor_traits<Class>;
             hash << traits::make_flags();
 
-            hash << get_shared_hash<typename traits::class_type>();
+            hash << shared_type<typename traits::class_type>{}();
 
             return hash.hash;
         }
     };
 
     template < shared_type_kind Enum >
-    struct shared_type_hash<type_kind::enum_, Enum> {
+    struct shared_traits<enum_traits<Enum>> {
         [[nodiscard]] constexpr std::size_t operator()() const noexcept {
             hash_composer hash{};
             hash << type_kind::enum_;
@@ -6602,34 +6688,33 @@ namespace meta_hpp::detail
             using traits = enum_traits<Enum>;
             hash << traits::make_flags();
 
-            hash << shared_type_name<Enum>{}();
+            hash << shared_type<Enum>{}();
 
             return hash.hash;
         }
     };
 
     template < shared_type_kind Function >
-    struct shared_type_hash<type_kind::function_, Function> {
+    struct shared_traits<function_traits<Function>> {
         [[nodiscard]] constexpr std::size_t operator()() const noexcept {
-            hash_composer composer{};
-
-            composer << type_kind::function_;
+            hash_composer hash{};
+            hash << type_kind::function_;
 
             using traits = function_traits<Function>;
-            composer << traits::make_flags();
+            hash << traits::make_flags();
 
-            composer << get_shared_hash<typename traits::return_type>();
+            hash << shared_type<typename traits::return_type>{}();
 
-            traits::argument_types::for_each([&composer]<typename Arg>() { //
-                composer << get_shared_hash<Arg>();
+            traits::argument_types::for_each([&hash]<typename Arg>() { //
+                hash << shared_type<Arg>{}();
             });
 
-            return composer.hash;
+            return hash.hash;
         }
     };
 
     template < shared_type_kind Member >
-    struct shared_type_hash<type_kind::member_, Member> {
+    struct shared_traits<member_traits<Member>> {
         [[nodiscard]] constexpr std::size_t operator()() const noexcept {
             hash_composer hash{};
             hash << type_kind::member_;
@@ -6637,15 +6722,15 @@ namespace meta_hpp::detail
             using traits = member_traits<Member>;
             hash << traits::make_flags();
 
-            hash << get_shared_hash<typename traits::class_type>();
-            hash << get_shared_hash<typename traits::value_type>();
+            hash << shared_type<typename traits::class_type>{}();
+            hash << shared_type<typename traits::value_type>{}();
 
             return hash.hash;
         }
     };
 
     template < shared_type_kind Method >
-    struct shared_type_hash<type_kind::method_, Method> {
+    struct shared_traits<method_traits<Method>> {
         [[nodiscard]] constexpr std::size_t operator()() const noexcept {
             hash_composer hash{};
             hash << type_kind::method_;
@@ -6653,11 +6738,11 @@ namespace meta_hpp::detail
             using traits = method_traits<Method>;
             hash << traits::make_flags();
 
-            hash << get_shared_hash<typename traits::class_type>();
-            hash << get_shared_hash<typename traits::return_type>();
+            hash << shared_type<typename traits::class_type>{}();
+            hash << shared_type<typename traits::return_type>{}();
 
             traits::argument_types::for_each([&hash]<typename Arg>() { //
-                hash << get_shared_hash<Arg>();
+                hash << shared_type<Arg>{}();
             });
 
             return hash.hash;
@@ -6665,19 +6750,19 @@ namespace meta_hpp::detail
     };
 
     template < shared_type_kind Nullptr >
-    struct shared_type_hash<type_kind::nullptr_, Nullptr> {
+    struct shared_traits<nullptr_traits<Nullptr>> {
         [[nodiscard]] constexpr std::size_t operator()() const noexcept {
             hash_composer hash{};
             hash << type_kind::nullptr_;
 
-            hash << shared_type_name<Nullptr>{}();
+            hash << shared_type<Nullptr>{}();
 
             return hash.hash;
         }
     };
 
     template < shared_type_kind Number >
-    struct shared_type_hash<type_kind::number_, Number> {
+    struct shared_traits<number_traits<Number>> {
         [[nodiscard]] constexpr std::size_t operator()() const noexcept {
             hash_composer hash{};
             hash << type_kind::number_;
@@ -6685,14 +6770,14 @@ namespace meta_hpp::detail
             using traits = number_traits<Number>;
             hash << traits::make_flags();
 
-            hash << shared_type_name<Number>{}();
+            hash << shared_type<Number>{}();
 
             return hash.hash;
         }
     };
 
     template < shared_type_kind Pointer >
-    struct shared_type_hash<type_kind::pointer_, Pointer> {
+    struct shared_traits<pointer_traits<Pointer>> {
         [[nodiscard]] constexpr std::size_t operator()() const noexcept {
             hash_composer hash{};
             hash << type_kind::pointer_;
@@ -6700,14 +6785,14 @@ namespace meta_hpp::detail
             using traits = pointer_traits<Pointer>;
             hash << traits::make_flags();
 
-            hash << get_shared_hash<typename traits::data_type>();
+            hash << shared_type<typename traits::data_type>{}();
 
             return hash.hash;
         }
     };
 
     template < shared_type_kind Reference >
-    struct shared_type_hash<type_kind::reference_, Reference> {
+    struct shared_traits<reference_traits<Reference>> {
         [[nodiscard]] constexpr std::size_t operator()() const noexcept {
             hash_composer hash{};
             hash << type_kind::reference_;
@@ -6715,19 +6800,19 @@ namespace meta_hpp::detail
             using traits = reference_traits<Reference>;
             hash << traits::make_flags();
 
-            hash << get_shared_hash<typename traits::data_type>();
+            hash << shared_type<typename traits::data_type>{}();
 
             return hash.hash;
         }
     };
 
     template < shared_type_kind Void >
-    struct shared_type_hash<type_kind::void_, Void> {
+    struct shared_traits<void_traits<Void>> {
         [[nodiscard]] constexpr std::size_t operator()() const noexcept {
             hash_composer hash{};
             hash << type_kind::void_;
 
-            hash << shared_type_name<Void>{}();
+            hash << shared_type<Void>{}();
 
             return hash.hash;
         }
@@ -6735,10 +6820,10 @@ namespace meta_hpp::detail
 }
 
 #define META_HPP_DEFINE_SHARED_TYPE(Type, Name) \
-    namespace meta_hpp::detail \
+    namespace meta_hpp::detail::impl \
     { \
         template <> \
-        struct shared_type_name<Type> { \
+        struct shared_type<Type> { \
             [[nodiscard]] constexpr std::size_t operator()() const noexcept { \
                 return hash_composer{} << std::string_view{Name}; \
             } \
@@ -6793,8 +6878,8 @@ namespace meta_hpp::detail::function_type_data_impl
 namespace meta_hpp::detail
 {
     template < function_kind Function >
-    function_type_data::function_type_data(type_list<Function>)
-    : type_data_base{type_kind::function_, shared_type_data_hash<type_kind::function_, Function>{}(this)}
+    function_type_data::function_type_data(function_traits<Function>)
+    : type_data_base{type_kind::function_, shared_traits_hash<function_traits<Function>>{}(this)}
     , flags{function_traits<Function>::make_flags()}
     , return_type{resolve_type<typename function_traits<Function>::return_type>()}
     , argument_types(function_type_data_impl::make_argument_types<Function>()) {}
@@ -6932,7 +7017,7 @@ namespace meta_hpp::detail
         type_registry& registry{type_registry::instance()};
 
         function_state state{
-            function_index{registry.resolve_type<std::remove_pointer_t<Function>>(), std::move(name)},
+            function_index{registry.resolve_by_type<std::remove_pointer_t<Function>>(), std::move(name)},
             std::move(metadata),
         };
 
@@ -7092,12 +7177,12 @@ namespace meta_hpp::detail
         template < inst_class_lvalue_ref_kind T >
         explicit uinst_base(type_registry& registry, type_list<T>)
         : ref_type_{std::is_const_v<std::remove_reference_t<T>> ? ref_types::const_lvalue : ref_types::lvalue}
-        , raw_type_{registry.resolve_type<std::remove_cvref_t<T>>()} {}
+        , raw_type_{registry.resolve_by_type<std::remove_cvref_t<T>>()} {}
 
         template < inst_class_rvalue_ref_kind T >
         explicit uinst_base(type_registry& registry, type_list<T>)
         : ref_type_{std::is_const_v<std::remove_reference_t<T>> ? ref_types::const_rvalue : ref_types::rvalue}
-        , raw_type_{registry.resolve_type<std::remove_cvref_t<T>>()} {}
+        , raw_type_{registry.resolve_by_type<std::remove_cvref_t<T>>()} {}
 
         explicit uinst_base(type_registry&, uvalue& v)
         : ref_type_{ref_types::lvalue}
@@ -7204,7 +7289,7 @@ namespace meta_hpp::detail
         using inst_method = typename inst_traits<Q>::method_type;
 
         const any_type& from_type = get_raw_type();
-        const any_type& to_type = registry.resolve_type<inst_class>();
+        const any_type& to_type = registry.resolve_by_type<inst_class>();
 
         if ( from_type.is_class() ) {
             const auto is_invocable = [this]() {
@@ -7251,7 +7336,7 @@ namespace meta_hpp::detail
         using inst_class = std::remove_cv_t<inst_class_cv>;
 
         const any_type& from_type = get_raw_type();
-        const any_type& to_type = registry.resolve_type<inst_class>();
+        const any_type& to_type = registry.resolve_by_type<inst_class>();
 
         if ( from_type.is_class() && to_type.is_class() ) {
             void* to_ptr = pointer_upcast( //
@@ -7303,8 +7388,8 @@ namespace meta_hpp::detail
 namespace meta_hpp::detail
 {
     template < member_pointer_kind Member >
-    member_type_data::member_type_data(type_list<Member>)
-    : type_data_base{type_kind::member_, shared_type_data_hash<type_kind::member_, Member>{}(this)}
+    member_type_data::member_type_data(member_traits<Member>)
+    : type_data_base{type_kind::member_, shared_traits_hash<member_traits<Member>>{}(this)}
     , flags{member_traits<Member>::make_flags()}
     , owner_type{resolve_type<typename member_traits<Member>::class_type>()}
     , value_type{resolve_type<typename member_traits<Member>::value_type>()} {}
@@ -7510,7 +7595,7 @@ namespace meta_hpp::detail
         type_registry& registry{type_registry::instance()};
 
         member_state state{
-            member_index{registry.resolve_type<Member>(), std::move(name)},
+            member_index{registry.resolve_by_type<Member>(), std::move(name)},
             std::move(metadata),
         };
 
@@ -7676,8 +7761,8 @@ namespace meta_hpp::detail::method_type_data_impl
 namespace meta_hpp::detail
 {
     template < method_pointer_kind Method >
-    method_type_data::method_type_data(type_list<Method>)
-    : type_data_base{type_kind::method_, shared_type_data_hash<type_kind::method_, Method>{}(this)}
+    method_type_data::method_type_data(method_traits<Method>)
+    : type_data_base{type_kind::method_, shared_traits_hash<method_traits<Method>>{}(this)}
     , flags{method_traits<Method>::make_flags()}
     , owner_type{resolve_type<typename method_traits<Method>::class_type>()}
     , return_type{resolve_type<typename method_traits<Method>::return_type>()}
@@ -7831,7 +7916,7 @@ namespace meta_hpp::detail
         type_registry& registry{type_registry::instance()};
 
         method_state state{
-            method_index{registry.resolve_type<Method>(), std::move(name)},
+            method_index{registry.resolve_by_type<Method>(), std::move(name)},
             std::move(metadata),
         };
 
@@ -8243,7 +8328,7 @@ namespace meta_hpp::detail
         type_registry& registry{type_registry::instance()};
 
         argument_state state{
-            argument_index{registry.resolve_type<Argument>(), position},
+            argument_index{registry.resolve_by_type<Argument>(), position},
             std::move(metadata),
         };
 
@@ -8290,8 +8375,8 @@ namespace meta_hpp::detail::constructor_type_data_impl
 namespace meta_hpp::detail
 {
     template < class_kind Class, typename... Args >
-    constructor_type_data::constructor_type_data(type_list<Class>, type_list<Args...>)
-    : type_data_base{type_kind::constructor_, shared_type_data_hash<type_kind::constructor_, Class, Args...>{}(this)}
+    constructor_type_data::constructor_type_data(constructor_traits<Class, Args...>)
+    : type_data_base{type_kind::constructor_, shared_traits_hash<constructor_traits<Class, Args...>>{}(this)}
     , flags{constructor_traits<Class, Args...>::make_flags()}
     , owner_type{resolve_type<typename constructor_traits<Class, Args...>::class_type>()}
     , argument_types(constructor_type_data_impl::make_argument_types<Class, Args...>()) {}
@@ -8458,7 +8543,7 @@ namespace meta_hpp::detail
         type_registry& registry{type_registry::instance()};
 
         constructor_state state{
-            constructor_index{registry.resolve_constructor_type<Class, Args...>()},
+            constructor_index{registry.resolve_by_traits<constructor_traits<Class, Args...>>()},
             std::move(metadata),
         };
 
@@ -8625,8 +8710,8 @@ namespace meta_hpp
 namespace meta_hpp::detail
 {
     template < class_kind Class >
-    destructor_type_data::destructor_type_data(type_list<Class>)
-    : type_data_base{type_kind::destructor_, shared_type_data_hash<type_kind::destructor_, Class>{}(this)}
+    destructor_type_data::destructor_type_data(destructor_traits<Class>)
+    : type_data_base{type_kind::destructor_, shared_traits_hash<destructor_traits<Class>>{}(this)}
     , flags{destructor_traits<Class>::make_flags()}
     , owner_type{resolve_type<typename destructor_traits<Class>::class_type>()} {}
 }
@@ -8711,7 +8796,7 @@ namespace meta_hpp::detail
         type_registry& registry{type_registry::instance()};
 
         destructor_state state{
-            destructor_index{registry.resolve_destructor_type<Class>()},
+            destructor_index{registry.resolve_by_traits<destructor_traits<Class>>()},
             std::move(metadata),
         };
 
@@ -8794,8 +8879,8 @@ namespace meta_hpp
 namespace meta_hpp::detail
 {
     template < enum_kind Enum >
-    enum_type_data::enum_type_data(type_list<Enum>)
-    : type_data_base{type_kind::enum_, shared_type_data_hash<type_kind::enum_, Enum>{}(this)}
+    enum_type_data::enum_type_data(enum_traits<Enum>)
+    : type_data_base{type_kind::enum_, shared_traits_hash<enum_traits<Enum>>{}(this)}
     , flags{enum_traits<Enum>::make_flags()}
     , underlying_type{resolve_type<typename enum_traits<Enum>::underlying_type>()} {}
 }
@@ -8858,7 +8943,7 @@ namespace meta_hpp::detail
         type_registry& registry{type_registry::instance()};
 
         evalue_state state{
-            evalue_index{registry.resolve_type<Enum>(), std::move(name)},
+            evalue_index{registry.resolve_by_type<Enum>(), std::move(name)},
             std::move(metadata),
         };
 
@@ -8891,8 +8976,8 @@ namespace meta_hpp
 namespace meta_hpp::detail
 {
     template < pointer_kind Pointer >
-    pointer_type_data::pointer_type_data(type_list<Pointer>)
-    : type_data_base{type_kind::pointer_, shared_type_data_hash<type_kind::pointer_, Pointer>{}(this)}
+    pointer_type_data::pointer_type_data(pointer_traits<Pointer>)
+    : type_data_base{type_kind::pointer_, shared_traits_hash<pointer_traits<Pointer>>{}(this)}
     , flags{pointer_traits<Pointer>::make_flags()}
     , data_type{resolve_type<typename pointer_traits<Pointer>::data_type>()} {}
 }
@@ -9015,7 +9100,7 @@ namespace meta_hpp::detail
         type_registry& registry{type_registry::instance()};
 
         variable_state state{
-            variable_index{registry.resolve_type<Pointer>(), std::move(name)},
+            variable_index{registry.resolve_by_type<Pointer>(), std::move(name)},
             std::move(metadata),
         };
 
@@ -9193,8 +9278,8 @@ namespace meta_hpp::detail::class_type_data_impl
 namespace meta_hpp::detail
 {
     template < class_kind Class >
-    class_type_data::class_type_data(type_list<Class>)
-    : type_data_base{type_kind::class_, shared_type_data_hash<type_kind::class_, Class>{}(this)}
+    class_type_data::class_type_data(class_traits<Class>)
+    : type_data_base{type_kind::class_, shared_traits_hash<class_traits<Class>>{}(this)}
     , flags{class_traits<Class>::make_flags()}
     , size{class_traits<Class>::size}
     , align{class_traits<Class>::align}
@@ -9263,10 +9348,6 @@ namespace meta_hpp
 
     inline const constructor_list& class_type::get_constructors() const noexcept {
         return data_->constructors;
-    }
-
-    inline const destructor_list& class_type::get_destructors() const noexcept {
-        return data_->destructors;
     }
 
     inline const function_list& class_type::get_functions() const noexcept {
@@ -9485,7 +9566,7 @@ namespace meta_hpp
     template < typename... Args >
     constructor class_type::get_constructor_with() const noexcept {
         detail::type_registry& registry{detail::type_registry::instance()};
-        return get_constructor_with({registry.resolve_type<Args>()...});
+        return get_constructor_with({registry.resolve_by_type<Args>()...});
     }
 
     template < typename Iter >
@@ -9530,7 +9611,7 @@ namespace meta_hpp
         bool recursively
     ) const noexcept {
         detail::type_registry& registry{detail::type_registry::instance()};
-        return get_function_with(name, {registry.resolve_type<Args>()...}, recursively);
+        return get_function_with(name, {registry.resolve_by_type<Args>()...}, recursively);
     }
 
     template < typename Iter >
@@ -9590,7 +9671,7 @@ namespace meta_hpp
         bool recursively
     ) const noexcept {
         detail::type_registry& registry{detail::type_registry::instance()};
-        return get_method_with(name, {registry.resolve_type<Args>()...}, recursively);
+        return get_method_with(name, {registry.resolve_by_type<Args>()...}, recursively);
     }
 
     template < typename Iter >
@@ -9704,7 +9785,7 @@ namespace meta_hpp
         std::string_view name
     ) const noexcept {
         detail::type_registry& registry{detail::type_registry::instance()};
-        return get_function_with(name, {registry.resolve_type<Args>()...});
+        return get_function_with(name, {registry.resolve_by_type<Args>()...});
     }
 
     template < typename Iter >
@@ -9932,8 +10013,8 @@ namespace meta_hpp
 namespace meta_hpp::detail
 {
     template < array_kind Array >
-    array_type_data::array_type_data(type_list<Array>)
-    : type_data_base{type_kind::array_, shared_type_data_hash<type_kind::array_, Array>{}(this)}
+    array_type_data::array_type_data(array_traits<Array>)
+    : type_data_base{type_kind::array_, shared_traits_hash<array_traits<Array>>{}(this)}
     , flags{array_traits<Array>::make_flags()}
     , extent{array_traits<Array>::extent}
     , data_type{resolve_type<typename array_traits<Array>::data_type>()} {}
@@ -9957,15 +10038,15 @@ namespace meta_hpp
 namespace meta_hpp::detail
 {
     template < nullptr_kind Nullptr >
-    nullptr_type_data::nullptr_type_data(type_list<Nullptr>)
-    : type_data_base{type_kind::nullptr_, shared_type_data_hash<type_kind::nullptr_, Nullptr>{}(this)} {}
+    nullptr_type_data::nullptr_type_data(nullptr_traits<Nullptr>)
+    : type_data_base{type_kind::nullptr_, shared_traits_hash<nullptr_traits<Nullptr>>{}(this)} {}
 }
 
 namespace meta_hpp::detail
 {
     template < number_kind Number >
-    number_type_data::number_type_data(type_list<Number>)
-    : type_data_base{type_kind::number_, shared_type_data_hash<type_kind::number_, Number>{}(this)}
+    number_type_data::number_type_data(number_traits<Number>)
+    : type_data_base{type_kind::number_, shared_traits_hash<number_traits<Number>>{}(this)}
     , flags{number_traits<Number>::make_flags()}
     , size{number_traits<Number>::size}
     , align{number_traits<Number>::align} {}
@@ -9989,8 +10070,8 @@ namespace meta_hpp
 namespace meta_hpp::detail
 {
     template < reference_kind Reference >
-    reference_type_data::reference_type_data(type_list<Reference>)
-    : type_data_base{type_kind::reference_, shared_type_data_hash<type_kind::reference_, Reference>{}(this)}
+    reference_type_data::reference_type_data(reference_traits<Reference>)
+    : type_data_base{type_kind::reference_, shared_traits_hash<reference_traits<Reference>>{}(this)}
     , flags{reference_traits<Reference>::make_flags()}
     , data_type{resolve_type<typename reference_traits<Reference>::data_type>()} {}
 }
@@ -10009,8 +10090,8 @@ namespace meta_hpp
 namespace meta_hpp::detail
 {
     template < void_kind Void >
-    void_type_data::void_type_data(type_list<Void>)
-    : type_data_base{type_kind::void_, shared_type_data_hash<type_kind::void_, Void>{}(this)} {}
+    void_type_data::void_type_data(void_traits<Void>)
+    : type_data_base{type_kind::void_, shared_traits_hash<void_traits<Void>>{}(this)} {}
 }
 
 namespace meta_hpp::detail
@@ -10082,7 +10163,7 @@ namespace meta_hpp
             if constexpr ( std::is_void_v<to_data_type> ) {
                 return most_derived_object_ptr;
             } else {
-                const class_type& to_class_type = registry.resolve_class_type<to_data_type>();
+                const class_type& to_class_type = registry.resolve_by_type<to_data_type>();
                 return static_cast<To>(detail::pointer_upcast(most_derived_object_ptr, meta_info.type, to_class_type));
             }
         }

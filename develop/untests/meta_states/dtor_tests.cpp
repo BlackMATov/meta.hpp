@@ -44,14 +44,14 @@ TEST_CASE("meta/meta_states/dtor") {
         const meta::class_type clazz_type = meta::resolve_type<clazz_closed_dtor>();
         REQUIRE(clazz_type);
 
-        CHECK(clazz_type.get_destructors().empty());
+        CHECK_FALSE(clazz_type.get_destructor());
     }
 
     SUBCASE("opened_dtor") {
         const meta::class_type clazz_type = meta::resolve_type<clazz_opened_dtor>();
         REQUIRE(clazz_type);
 
-        REQUIRE(clazz_type.get_destructors().size() == 1);
+        REQUIRE(clazz_type.get_destructor());
         const meta::destructor dtor = clazz_type.get_destructor();
 
         CHECK(dtor.get_type().get_owner_type() == meta::resolve_type<clazz_opened_dtor>());
@@ -69,7 +69,7 @@ TEST_CASE("meta/meta_states/dtor") {
         const meta::class_type clazz_type = meta::resolve_type<clazz_virtual_dtor>();
         REQUIRE(clazz_type);
 
-        REQUIRE(clazz_type.get_destructors().size() == 1);
+        REQUIRE(clazz_type.get_destructor());
         const meta::destructor dtor = clazz_type.get_destructor();
 
         CHECK(dtor.get_type().get_owner_type() == meta::resolve_type<clazz_virtual_dtor>());
@@ -80,7 +80,7 @@ TEST_CASE("meta/meta_states/dtor") {
         const meta::class_type clazz_type = meta::resolve_type<clazz_virtual_dtor>();
         REQUIRE(clazz_type);
 
-        REQUIRE(clazz_type.get_destructors().size() == 1);
+        REQUIRE(clazz_type.get_destructor());
         const meta::destructor dtor = clazz_type.get_destructor();
 
         CHECK(dtor.get_type().get_owner_type() == meta::resolve_type<clazz_virtual_dtor>());
@@ -91,7 +91,7 @@ TEST_CASE("meta/meta_states/dtor") {
         const meta::class_type clazz_type = meta::resolve_type<clazz_dtor_metadata>();
         REQUIRE(clazz_type);
 
-        REQUIRE(clazz_type.get_destructors().size() == 1);
+        REQUIRE(clazz_type.get_destructor());
         const meta::destructor dtor = clazz_type.get_destructor();
 
         CHECK(dtor.get_type().get_owner_type() == meta::resolve_type<clazz_dtor_metadata>());

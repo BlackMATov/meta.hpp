@@ -79,7 +79,7 @@ namespace meta_hpp
         std::string_view name
     ) const noexcept {
         detail::type_registry& registry{detail::type_registry::instance()};
-        return get_function_with(name, {registry.resolve_type<Args>()...});
+        return get_function_with(name, {registry.resolve_by_type<Args>()...});
     }
 
     template < typename Iter >

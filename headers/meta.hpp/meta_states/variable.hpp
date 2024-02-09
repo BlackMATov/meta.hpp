@@ -120,7 +120,7 @@ namespace meta_hpp::detail
         type_registry& registry{type_registry::instance()};
 
         variable_state state{
-            variable_index{registry.resolve_type<Pointer>(), std::move(name)},
+            variable_index{registry.resolve_by_type<Pointer>(), std::move(name)},
             std::move(metadata),
         };
 

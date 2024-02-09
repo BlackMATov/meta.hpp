@@ -33,7 +33,7 @@ namespace meta_hpp
     [[nodiscard]] auto resolve_type() {
         using namespace detail;
         type_registry& registry = type_registry::instance();
-        return registry.resolve_type<std::remove_cv_t<T>>();
+        return registry.resolve_by_type<std::remove_cv_t<T>>();
     }
 
     template < typename T >
@@ -53,25 +53,8 @@ namespace meta_hpp
             return detail::get_meta_poly_info(registry, from).type;
         } else {
             (void)from;
-            return registry.resolve_type<raw_type>();
+            return registry.resolve_by_type<raw_type>();
         }
-    }
-}
-
-namespace meta_hpp
-{
-    template < class_kind Class, typename... Args >
-    [[nodiscard]] constructor_type resolve_constructor_type() {
-        using namespace detail;
-        type_registry& registry = type_registry::instance();
-        return registry.resolve_constructor_type<Class, Args...>();
-    }
-
-    template < class_kind Class >
-    [[nodiscard]] destructor_type resolve_destructor_type() {
-        using namespace detail;
-        type_registry& registry = type_registry::instance();
-        return registry.resolve_destructor_type<Class>();
     }
 }
 

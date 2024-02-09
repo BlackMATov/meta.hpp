@@ -16,8 +16,8 @@
 namespace meta_hpp::detail
 {
     template < reference_kind Reference >
-    reference_type_data::reference_type_data(type_list<Reference>)
-    : type_data_base{type_kind::reference_, shared_type_data_hash<type_kind::reference_, Reference>{}(this)}
+    reference_type_data::reference_type_data(reference_traits<Reference>)
+    : type_data_base{type_kind::reference_, shared_traits_hash<reference_traits<Reference>>{}(this)}
     , flags{reference_traits<Reference>::make_flags()}
     , data_type{resolve_type<typename reference_traits<Reference>::data_type>()} {}
 }

@@ -16,8 +16,8 @@
 namespace meta_hpp::detail
 {
     template < class_kind Class >
-    destructor_type_data::destructor_type_data(type_list<Class>)
-    : type_data_base{type_kind::destructor_, shared_type_data_hash<type_kind::destructor_, Class>{}(this)}
+    destructor_type_data::destructor_type_data(destructor_traits<Class>)
+    : type_data_base{type_kind::destructor_, shared_traits_hash<destructor_traits<Class>>{}(this)}
     , flags{destructor_traits<Class>::make_flags()}
     , owner_type{resolve_type<typename destructor_traits<Class>::class_type>()} {}
 }
