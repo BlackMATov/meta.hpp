@@ -102,12 +102,16 @@
 
 ### Functions
 
-|                                                                |                       |
-| -------------------------------------------------------------- | --------------------- |
-| [invoke](./api/invoke.md#invoke)                               | invoke                |
-| [try_invoke](./api/invoke.md#try_invoke)                       | try_invoke            |
-| [is_invocable_with](./api/invoke.md#is_invocable_with)         | is_invocable_with     |
-| [check_invocable_error](./api/invoke.md#check_invocable_error) | check_invocable_error |
+|                                                                                  |                                |
+| -------------------------------------------------------------------------------- | ------------------------------ |
+| [invoke](./api/invoke.md#invoke)                                                 | invoke                         |
+| [invoke_variadic](./api/invoke.md#invoke_variadic)                               | invoke_variadic                |
+| [try_invoke](./api/invoke.md#try_invoke)                                         | try_invoke                     |
+| [try_invoke_variadic](./api/invoke.md#try_invoke_variadic)                       | try_invoke_variadic            |
+| [is_invocable_with](./api/invoke.md#is_invocable_with)                           | is_invocable_with              |
+| [is_variadic_invocable_with](./api/invoke.md#is_variadic_invocable_with)         | is_variadic_invocable_with     |
+| [check_invocable_error](./api/invoke.md#check_invocable_error)                   | check_invocable_error          |
+| [check_variadic_invocable_error](./api/invoke.md#check_variadic_invocable_error) | check_variadic_invocable_error |
 
 
 ## Policies
@@ -156,7 +160,7 @@
 
 |                                                     |                  |
 | --------------------------------------------------- | ---------------- |
-| [type_id](./api/basics.md#type_id)                  | type_id          |
+| [type_id](./api/types.md#type_id)                   | type_id          |
 | [type_base](./api/types.md#type_base)               | type_base        |
 | [any_type](./api/types.md#any_type)                 | any_type         |
 | [array_type](./api/types.md#array_type)             | array_type       |
