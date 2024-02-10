@@ -41,6 +41,7 @@ TEST_CASE("meta/meta_utilities/invoke") {
     params.push_back(3);
     std::vector<meta::uvalue> wrong_params;
     wrong_params.push_back(ivec2{});
+    wrong_params.push_back(ivec2{});
     std::vector<int> typed_params;
     typed_params.push_back(3);
 

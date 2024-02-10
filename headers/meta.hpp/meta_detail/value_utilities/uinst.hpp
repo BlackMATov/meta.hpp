@@ -29,9 +29,9 @@ namespace meta_hpp::detail
         ~uinst_base() = default;
 
         uinst_base(uinst_base&&) = default;
-        uinst_base(const uinst_base&) = default;
+        uinst_base& operator=(uinst_base&&) = default;
 
-        uinst_base& operator=(uinst_base&&) = delete;
+        uinst_base(const uinst_base&) = delete;
         uinst_base& operator=(const uinst_base&) = delete;
 
         template < typename T, typename Tp = std::decay_t<T> >
@@ -107,9 +107,9 @@ namespace meta_hpp::detail
         ~uinst() = default;
 
         uinst(uinst&&) = default;
-        uinst(const uinst&) = default;
+        uinst& operator=(uinst&&) = default;
 
-        uinst& operator=(uinst&&) = delete;
+        uinst(const uinst&) = delete;
         uinst& operator=(const uinst&) = delete;
 
         template < typename T, typename Tp = std::decay_t<T> >

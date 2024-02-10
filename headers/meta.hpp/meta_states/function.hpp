@@ -119,10 +119,11 @@ namespace meta_hpp::detail
 
     template < function_policy_family Policy, function_pointer_kind Function >
     function_state::state_ptr function_state::make(std::string name, Function function_ptr, metadata_map metadata) {
+        using ft = function_traits<std::remove_pointer_t<Function>>;
         type_registry& registry{type_registry::instance()};
 
         function_state state{
-            function_index{registry.resolve_by_type<std::remove_pointer_t<Function>>(), std::move(name)},
+            function_index{registry.resolve_by_traits<ft>(), std::move(name)},
             std::move(metadata),
         };
 
@@ -207,14 +208,21 @@ namespace meta_hpp
     template < typename Iter >
     uvalue function::invoke_variadic(Iter first, Iter last) const {
         using namespace detail;
+
+        const std::size_t arity = get_arity();
         type_registry& registry{type_registry::instance()};
 
-        static thread_local std::vector<uarg> vargs;
+        META_HPP_DETAIL_IGNORE_ALLOCA_WARNINGS_PUSH()
 
-        vargs.clear();
-        vargs.reserve(get_type().get_arity());
+        void* vargs_mem = META_HPP_ALLOCA(sizeof(uarg) * arity);
+        detail::inline_vector<uarg> vargs{static_cast<uarg*>(vargs_mem), arity};
 
-        for ( ; first != last; ++first ) {
+        META_HPP_DETAIL_IGNORE_ALLOCA_WARNINGS_POP()
+
+        for ( std::size_t i{}; first != last; ++i, ++first ) {
+            if ( i >= arity ) {
+                throw_exception(error_code::arity_mismatch);
+            }
             vargs.emplace_back(registry, *first);
         }
 
@@ -237,14 +245,21 @@ namespace meta_hpp
     template < typename Iter >
     uerror function::check_variadic_invocable_error(Iter first, Iter last) const {
         using namespace detail;
+
+        const std::size_t arity = get_arity();
         type_registry& registry{type_registry::instance()};
 
-        static thread_local std::vector<uarg_base> vargs;
+        META_HPP_DETAIL_IGNORE_ALLOCA_WARNINGS_PUSH()
 
-        vargs.clear();
-        vargs.reserve(get_type().get_arity());
+        void* vargs_mem = META_HPP_ALLOCA(sizeof(uarg_base) * arity);
+        detail::inline_vector<uarg_base> vargs{static_cast<uarg_base*>(vargs_mem), arity};
 
-        for ( ; first != last; ++first ) {
+        META_HPP_DETAIL_IGNORE_ALLOCA_WARNINGS_POP()
+
+        for ( std::size_t i{}; first != last; ++i, ++first ) {
+            if ( i >= arity ) {
+                return uerror(error_code::arity_mismatch);
+            }
             vargs.emplace_back(registry, *first);
         }
 

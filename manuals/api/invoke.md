@@ -150,18 +150,18 @@ bool is_invocable_with(Method method_ptr, Instance&& instance, Args&&... args) n
 
 ```cpp
 template < typename Iter >
-bool is_variadic_invocable_with(const function& function, Iter first, Iter last) noexcept;
+bool is_variadic_invocable_with(const function& function, Iter first, Iter last);
 
 template < typename Iter, function_pointer_kind Function >
-bool is_variadic_invocable_with(Function function_ptr, Iter first, Iter last) noexcept;
+bool is_variadic_invocable_with(Function function_ptr, Iter first, Iter last);
 
 //
 
 template < typename Instance, typename Iter >
-bool is_variadic_invocable_with(const method& method, Instance&& instance, Iter first, Iter last) noexcept;
+bool is_variadic_invocable_with(const method& method, Instance&& instance, Iter first, Iter last);
 
 template < typename Instance, typename Iter, method_pointer_kind Method >
-bool is_variadic_invocable_with(Method method_ptr, Instance&& instance, Iter first, Iter last) noexcept;
+bool is_variadic_invocable_with(Method method_ptr, Instance&& instance, Iter first, Iter last);
 ```
 
 ### check_invocable_error
@@ -212,16 +212,16 @@ uerror check_invocable_error(Method method_ptr, Instance&& instance, Args&&... a
 
 ```cpp
 template < typename Iter >
-uerror check_variadic_invocable_error(const function& function, Iter first, Iter last) noexcept;
+uerror check_variadic_invocable_error(const function& function, Iter first, Iter last);
 
 template < typename Iter, function_pointer_kind Function >
-uerror check_variadic_invocable_error(Function function_ptr, Iter first, Iter last) noexcept;
+uerror check_variadic_invocable_error(Function function_ptr, Iter first, Iter last);
 
 //
 
 template < typename Instance, typename Iter >
-uerror check_variadic_invocable_error(const method& method, Instance&& instance, Iter first, Iter last) noexcept;
+uerror check_variadic_invocable_error(const method& method, Instance&& instance, Iter first, Iter last);
 
 template < typename Instance, typename Iter, method_pointer_kind Method >
-uerror check_variadic_invocable_error(Method method_ptr, Instance&& instance, Iter first, Iter last) noexcept;
+uerror check_variadic_invocable_error(Method method_ptr, Instance&& instance, Iter first, Iter last);
 ```

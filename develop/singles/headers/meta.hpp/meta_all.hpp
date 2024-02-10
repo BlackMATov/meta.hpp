@@ -96,6 +96,13 @@
 //
 //
 
+#define META_HPP_PP_CAT(x, y) META_HPP_PP_CAT_I(x, y)
+#define META_HPP_PP_CAT_I(x, y) x##y
+
+//
+//
+//
+
 #define META_HPP_DETAIL_CLANG_COMPILER_ID 1
 #define META_HPP_DETAIL_GCC_COMPILER_ID 2
 #define META_HPP_DETAIL_MSVC_COMPILER_ID 3
@@ -110,6 +117,12 @@
 #else
 #    define META_HPP_DETAIL_COMPILER_ID META_HPP_DETAIL_UNKNOWN_COMPILER_ID
 #endif
+
+//
+//
+//
+
+#define META_HPP_ALLOCA(size) __builtin_alloca(size)
 
 //
 //
@@ -148,6 +161,16 @@
 #    define META_HPP_DETAIL_MSVC_IGNORE_WARNINGS_PUSH()
 #    define META_HPP_DETAIL_MSVC_IGNORE_WARNINGS_POP()
 #endif
+
+//
+//
+//
+
+#define META_HPP_DETAIL_IGNORE_ALLOCA_WARNINGS_PUSH() \
+    META_HPP_DETAIL_CLANG_IGNORE_WARNINGS_PUSH() \
+    META_HPP_DETAIL_CLANG_IGNORE_WARNING("-Walloca")
+
+#define META_HPP_DETAIL_IGNORE_ALLOCA_WARNINGS_POP() META_HPP_DETAIL_CLANG_IGNORE_WARNINGS_POP()
 
 //
 //
@@ -890,6 +913,61 @@ namespace meta_hpp::detail
 
 namespace meta_hpp::detail
 {
+    template < typename T >
+    class inline_vector final {
+    public:
+        inline_vector() = delete;
+
+        inline_vector(inline_vector&&) = delete;
+        inline_vector& operator=(inline_vector&&) = delete;
+
+        inline_vector(const inline_vector&) = delete;
+        inline_vector& operator=(const inline_vector&) = delete;
+
+        inline_vector(T* mem, std::size_t capacity)
+        : begin_{mem}
+        , end_{mem}
+        , capacity_{mem + capacity} {}
+
+        ~inline_vector() {
+            std::destroy(begin_, end_);
+        }
+
+        // clang-format off
+
+        [[nodiscard]] T* begin() noexcept { return begin_; }
+        [[nodiscard]] const T* begin() const noexcept { return begin_; }
+        [[nodiscard]] const T* cbegin() const noexcept { return begin_; }
+
+        [[nodiscard]] T* end() noexcept { return end_; }
+        [[nodiscard]] const T* end() const noexcept { return end_; }
+        [[nodiscard]] const T* cend() const noexcept { return end_; }
+
+        // clang-format on
+
+        template < typename... Args >
+        T& emplace_back(Args&&... args) {
+            META_HPP_ASSERT(end_ < capacity_ && "full vector");
+            return *std::construct_at(end_++, std::forward<Args>(args)...);
+        }
+
+        [[nodiscard]] std::size_t get_size() const noexcept {
+            return static_cast<std::size_t>(end_ - begin_);
+        }
+
+        [[nodiscard]] std::size_t get_capacity() const noexcept {
+            return static_cast<std::size_t>(capacity_ - begin_);
+        }
+
+    private:
+        T* begin_{};
+        T* end_{};
+        T* capacity_{};
+    };
+}
+
+namespace meta_hpp::detail
+{
     template < typename Value, typename Allocator >
         requires std::is_move_constructible_v<Value> && std::is_move_assignable_v<Value>
     typename std::vector<Value, Allocator>::iterator insert_or_assign( //
@@ -1255,16 +1333,12 @@ namespace meta_hpp
     using detail::exception;
     using detail::get_error_code_message;
 
-    using detail::hashed_string;
     using detail::memory_buffer;
-
     using detail::overloaded;
 
     using detail::select_const;
     using detail::select_non_const;
     using detail::select_overload;
-
-    using detail::type_list;
 }
 
 namespace meta_hpp
@@ -4087,10 +4161,10 @@ namespace meta_hpp
         uresult try_create_variadic_at(void* mem, Iter first, Iter last) const;
 
         template < typename Iter >
-        [[nodiscard]] bool is_variadic_invocable_with(Iter first, Iter last) const noexcept;
+        [[nodiscard]] bool is_variadic_invocable_with(Iter first, Iter last) const;
 
         template < typename Iter >
-        [[nodiscard]] uerror check_variadic_invocable_error(Iter first, Iter last) const noexcept;
+        [[nodiscard]] uerror check_variadic_invocable_error(Iter first, Iter last) const;
     };
 
     class destructor final : public state_base<destructor> {
@@ -5922,16 +5996,16 @@ namespace meta_hpp
     //
 
     template < typename Iter >
-    bool is_variadic_invocable_with(const function& function, Iter first, Iter last) noexcept;
+    bool is_variadic_invocable_with(const function& function, Iter first, Iter last);
 
     template < typename Iter, function_pointer_kind Function >
-    bool is_variadic_invocable_with(Function function_ptr, Iter first, Iter last) noexcept;
+    bool is_variadic_invocable_with(Function function_ptr, Iter first, Iter last);
 
     template < typename Iter >
-    uerror check_variadic_invocable_error(const function& function, Iter first, Iter last) noexcept;
+    uerror check_variadic_invocable_error(const function& function, Iter first, Iter last);
 
     template < typename Iter, function_pointer_kind Function >
-    uerror check_variadic_invocable_error(Function function_ptr, Iter first, Iter last) noexcept;
+    uerror check_variadic_invocable_error(Function function_ptr, Iter first, Iter last);
 }
 
 namespace meta_hpp
@@ -5990,16 +6064,16 @@ namespace meta_hpp
     //
 
     template < typename Instance, typename Iter >
-    bool is_variadic_invocable_with(const method& method, Instance&& instance, Iter first, Iter last) noexcept;
+    bool is_variadic_invocable_with(const method& method, Instance&& instance, Iter first, Iter last);
 
     template < typename Instance, typename Iter, method_pointer_kind Method >
-    bool is_variadic_invocable_with(Method method_ptr, Instance&& instance, Iter first, Iter last) noexcept;
+    bool is_variadic_invocable_with(Method method_ptr, Instance&& instance, Iter first, Iter last);
 
     template < typename Instance, typename Iter >
-    uerror check_variadic_invocable_error(const method& method, Instance&& instance, Iter first, Iter last) noexcept;
+    uerror check_variadic_invocable_error(const method& method, Instance&& instance, Iter first, Iter last);
 
     template < typename Instance, typename Iter, method_pointer_kind Method >
-    uerror check_variadic_invocable_error(Method method_ptr, Instance&& instance, Iter first, Iter last) noexcept;
+    uerror check_variadic_invocable_error(Method method_ptr, Instance&& instance, Iter first, Iter last);
 }
 
 namespace meta_hpp::detail
@@ -6217,9 +6291,9 @@ namespace meta_hpp::detail
         ~uarg_base() = default;
 
         uarg_base(uarg_base&&) = default;
-        uarg_base(const uarg_base&) = default;
+        uarg_base& operator=(uarg_base&&) = default;
 
-        uarg_base& operator=(uarg_base&&) = delete;
+        uarg_base(const uarg_base&) = delete;
         uarg_base& operator=(const uarg_base&) = delete;
 
         template < typename T, typename Tp = std::decay_t<T> >
@@ -6293,9 +6367,9 @@ namespace meta_hpp::detail
         ~uarg() = default;
 
         uarg(uarg&&) = default;
-        uarg(const uarg&) = default;
+        uarg& operator=(uarg&&) = default;
 
-        uarg& operator=(uarg&&) = delete;
+        uarg(const uarg&) = delete;
         uarg& operator=(const uarg&) = delete;
 
         template < typename T, typename Tp = std::decay_t<T> >
@@ -7070,10 +7144,11 @@ namespace meta_hpp::detail
 
     template < function_policy_family Policy, function_pointer_kind Function >
     function_state::state_ptr function_state::make(std::string name, Function function_ptr, metadata_map metadata) {
+        using ft = function_traits<std::remove_pointer_t<Function>>;
         type_registry& registry{type_registry::instance()};
 
         function_state state{
-            function_index{registry.resolve_by_type<std::remove_pointer_t<Function>>(), std::move(name)},
+            function_index{registry.resolve_by_traits<ft>(), std::move(name)},
             std::move(metadata),
         };
 
@@ -7158,14 +7233,21 @@ namespace meta_hpp
     template < typename Iter >
     uvalue function::invoke_variadic(Iter first, Iter last) const {
         using namespace detail;
+
+        const std::size_t arity = get_arity();
         type_registry& registry{type_registry::instance()};
 
-        static thread_local std::vector<uarg> vargs;
+        META_HPP_DETAIL_IGNORE_ALLOCA_WARNINGS_PUSH()
 
-        vargs.clear();
-        vargs.reserve(get_type().get_arity());
+        void* vargs_mem = META_HPP_ALLOCA(sizeof(uarg) * arity);
+        detail::inline_vector<uarg> vargs{static_cast<uarg*>(vargs_mem), arity};
 
-        for ( ; first != last; ++first ) {
+        META_HPP_DETAIL_IGNORE_ALLOCA_WARNINGS_POP()
+
+        for ( std::size_t i{}; first != last; ++i, ++first ) {
+            if ( i >= arity ) {
+                throw_exception(error_code::arity_mismatch);
+            }
             vargs.emplace_back(registry, *first);
         }
 
@@ -7188,14 +7270,21 @@ namespace meta_hpp
     template < typename Iter >
     uerror function::check_variadic_invocable_error(Iter first, Iter last) const {
         using namespace detail;
+
+        const std::size_t arity = get_arity();
         type_registry& registry{type_registry::instance()};
 
-        static thread_local std::vector<uarg_base> vargs;
+        META_HPP_DETAIL_IGNORE_ALLOCA_WARNINGS_PUSH()
 
-        vargs.clear();
-        vargs.reserve(get_type().get_arity());
+        void* vargs_mem = META_HPP_ALLOCA(sizeof(uarg_base) * arity);
+        detail::inline_vector<uarg_base> vargs{static_cast<uarg_base*>(vargs_mem), arity};
 
-        for ( ; first != last; ++first ) {
+        META_HPP_DETAIL_IGNORE_ALLOCA_WARNINGS_POP()
+
+        for ( std::size_t i{}; first != last; ++i, ++first ) {
+            if ( i >= arity ) {
+                return uerror(error_code::arity_mismatch);
+            }
             vargs.emplace_back(registry, *first);
         }
 
@@ -7219,9 +7308,9 @@ namespace meta_hpp::detail
         ~uinst_base() = default;
 
         uinst_base(uinst_base&&) = default;
-        uinst_base(const uinst_base&) = default;
+        uinst_base& operator=(uinst_base&&) = default;
 
-        uinst_base& operator=(uinst_base&&) = delete;
+        uinst_base(const uinst_base&) = delete;
         uinst_base& operator=(const uinst_base&) = delete;
 
         template < typename T, typename Tp = std::decay_t<T> >
@@ -7297,9 +7386,9 @@ namespace meta_hpp::detail
         ~uinst() = default;
 
         uinst(uinst&&) = default;
-        uinst(const uinst&) = default;
+        uinst& operator=(uinst&&) = default;
 
-        uinst& operator=(uinst&&) = delete;
+        uinst(const uinst&) = delete;
         uinst& operator=(const uinst&) = delete;
 
         template < typename T, typename Tp = std::decay_t<T> >
@@ -7951,10 +8040,11 @@ namespace meta_hpp::detail
 
     template < method_policy_family Policy, method_pointer_kind Method >
     method_state::state_ptr method_state::make(std::string name, Method method_ptr, metadata_map metadata) {
+        using mt = method_traits<Method>;
         type_registry& registry{type_registry::instance()};
 
         method_state state{
-            method_index{registry.resolve_by_type<Method>(), std::move(name)},
+            method_index{registry.resolve_by_traits<mt>(), std::move(name)},
             std::move(metadata),
         };
 
@@ -8042,18 +8132,25 @@ namespace meta_hpp
     template < typename Instance, typename Iter >
     uvalue method::invoke_variadic(Instance&& instance, Iter first, Iter last) const {
         using namespace detail;
+
+        const std::size_t arity = get_arity();
         type_registry& registry{type_registry::instance()};
 
-        const uinst vinst{registry, META_HPP_FWD(instance)};
-        static thread_local std::vector<uarg> vargs;
+        META_HPP_DETAIL_IGNORE_ALLOCA_WARNINGS_PUSH()
 
-        vargs.clear();
-        vargs.reserve(get_type().get_arity());
+        void* vargs_mem = META_HPP_ALLOCA(sizeof(uarg) * arity);
+        detail::inline_vector<uarg> vargs{static_cast<uarg*>(vargs_mem), arity};
 
-        for ( ; first != last; ++first ) {
+        META_HPP_DETAIL_IGNORE_ALLOCA_WARNINGS_POP()
+
+        for ( std::size_t i{}; first != last; ++i, ++first ) {
+            if ( i >= arity ) {
+                throw_exception(error_code::arity_mismatch);
+            }
             vargs.emplace_back(registry, *first);
         }
 
+        const uinst vinst{registry, META_HPP_FWD(instance)};
         return state_->invoke(vinst, vargs);
     }
 
@@ -8074,18 +8171,25 @@ namespace meta_hpp
     template < typename Instance, typename Iter >
     uerror method::check_variadic_invocable_error(Instance&& instance, Iter first, Iter last) const {
         using namespace detail;
+
+        const std::size_t arity = get_arity();
         type_registry& registry{type_registry::instance()};
 
-        const uinst_base vinst{registry, META_HPP_FWD(instance)};
-        static thread_local std::vector<uarg_base> vargs;
+        META_HPP_DETAIL_IGNORE_ALLOCA_WARNINGS_PUSH()
 
-        vargs.clear();
-        vargs.reserve(get_type().get_arity());
+        void* vargs_mem = META_HPP_ALLOCA(sizeof(uarg_base) * arity);
+        detail::inline_vector<uarg_base> vargs{static_cast<uarg_base*>(vargs_mem), arity};
 
-        for ( ; first != last; ++first ) {
+        META_HPP_DETAIL_IGNORE_ALLOCA_WARNINGS_POP()
+
+        for ( std::size_t i{}; first != last; ++i, ++first ) {
+            if ( i >= arity ) {
+                return uerror(error_code::arity_mismatch);
+            }
             vargs.emplace_back(registry, *first);
         }
 
+        const uinst_base vinst{registry, META_HPP_FWD(instance)};
         return state_->invoke_error(vinst, vargs);
     }
 }
@@ -8134,13 +8238,14 @@ namespace meta_hpp
         using namespace detail;
         type_registry& registry{type_registry::instance()};
 
-        static thread_local std::vector<uarg> vargs;
+        using ft = function_traits<std::remove_pointer_t<Function>>;
+        std::array<uarg, ft::arity> vargs;
 
-        vargs.clear();
-        vargs.reserve(function_traits<std::remove_pointer_t<Function>>::arity);
-
-        for ( ; first != last; ++first ) {
-            vargs.emplace_back(registry, *first);
+        for ( std::size_t count{}; first != last; ++count, ++first ) {
+            if ( count >= ft::arity ) {
+                throw_exception(error_code::arity_mismatch);
+            }
+            vargs[count] = uarg{registry, *first};
         }
 
         return raw_function_invoke<function_policy::as_copy_t>(registry, function_ptr, vargs);
@@ -8230,16 +8335,17 @@ namespace meta_hpp
         using namespace detail;
         type_registry& registry{type_registry::instance()};
 
-        const uinst vinst{registry, META_HPP_FWD(instance)};
-        static thread_local std::vector<uarg> vargs;
+        using mt = method_traits<Method>;
+        std::array<uarg, mt::arity> vargs;
 
-        vargs.clear();
-        vargs.reserve(method_traits<Method>::arity);
-
-        for ( ; first != last; ++first ) {
-            vargs.emplace_back(registry, *first);
+        for ( std::size_t count{}; first != last; ++count, ++first ) {
+            if ( count >= mt::arity ) {
+                throw_exception(error_code::arity_mismatch);
+            }
+            vargs[count] = uarg{registry, *first};
         }
 
+        const uinst vinst{registry, META_HPP_FWD(instance)};
         return raw_method_invoke<method_policy::as_copy_t>(registry, method_ptr, vinst, vargs);
     }
 
@@ -8302,32 +8408,33 @@ namespace meta_hpp
     }
 
     template < typename Iter >
-    bool is_variadic_invocable_with(const function& function, Iter first, Iter last) noexcept {
+    bool is_variadic_invocable_with(const function& function, Iter first, Iter last) {
         return function.is_variadic_invocable_with(first, last);
     }
 
     template < typename Iter, function_pointer_kind Function >
-    bool is_variadic_invocable_with(Function function_ptr, Iter first, Iter last) noexcept {
+    bool is_variadic_invocable_with(Function function_ptr, Iter first, Iter last) {
         return !check_variadic_invocable_error(function_ptr, first, last);
     }
 
     template < typename Iter >
-    uerror check_variadic_invocable_error(const function& function, Iter first, Iter last) noexcept {
+    uerror check_variadic_invocable_error(const function& function, Iter first, Iter last) {
         return function.check_variadic_invocable_error(first, last);
     }
 
     template < typename Iter, function_pointer_kind Function >
-    uerror check_variadic_invocable_error(Function, Iter first, Iter last) noexcept {
+    uerror check_variadic_invocable_error(Function, Iter first, Iter last) {
         using namespace detail;
         type_registry& registry{type_registry::instance()};
 
-        static thread_local std::vector<uarg_base> vargs;
+        using ft = function_traits<std::remove_pointer_t<Function>>;
+        std::array<uarg_base, ft::arity> vargs;
 
-        vargs.clear();
-        vargs.reserve(function_traits<std::remove_pointer_t<Function>>::arity);
-
-        for ( ; first != last; ++first ) {
-            vargs.emplace_back(registry, *first);
+        for ( std::size_t count{}; first != last; ++count, ++first ) {
+            if ( count >= ft::arity ) {
+                return uerror{error_code::arity_mismatch};
+            }
+            vargs[count] = uarg_base{registry, *first};
         }
 
         return raw_function_invoke_error<Function>(registry, vargs);
@@ -8434,35 +8541,36 @@ namespace meta_hpp
     }
 
     template < typename Instance, typename Iter >
-    bool is_variadic_invocable_with(const method& method, Instance&& instance, Iter first, Iter last) noexcept {
+    bool is_variadic_invocable_with(const method& method, Instance&& instance, Iter first, Iter last) {
         return method.is_variadic_invocable_with(META_HPP_FWD(instance), first, last);
     }
 
     template < typename Instance, typename Iter, method_pointer_kind Method >
-    bool is_variadic_invocable_with(Method method_ptr, Instance&& instance, Iter first, Iter last) noexcept {
+    bool is_variadic_invocable_with(Method method_ptr, Instance&& instance, Iter first, Iter last) {
         return !check_variadic_invocable_error(method_ptr, META_HPP_FWD(instance), first, last);
     }
 
     template < typename Instance, typename Iter >
-    uerror check_variadic_invocable_error(const method& method, Instance&& instance, Iter first, Iter last) noexcept {
+    uerror check_variadic_invocable_error(const method& method, Instance&& instance, Iter first, Iter last) {
         return method.check_variadic_invocable_error(META_HPP_FWD(instance), first, last);
     }
 
     template < typename Instance, typename Iter, method_pointer_kind Method >
-    uerror check_variadic_invocable_error(Method, Instance&& instance, Iter first, Iter last) noexcept {
+    uerror check_variadic_invocable_error(Method, Instance&& instance, Iter first, Iter last) {
         using namespace detail;
         type_registry& registry{type_registry::instance()};
 
-        const uinst_base vinst{registry, META_HPP_FWD(instance)};
-        static thread_local std::vector<uarg_base> vargs;
+        using mt = method_traits<Method>;
+        std::array<uarg_base, mt::arity> vargs;
 
-        vargs.clear();
-        vargs.reserve(method_traits<Method>::arity);
-
-        for ( ; first != last; ++first ) {
-            vargs.emplace_back(registry, *first);
+        for ( std::size_t count{}; first != last; ++count, ++first ) {
+            if ( count >= mt::arity ) {
+                return uerror{error_code::arity_mismatch};
+            }
+            vargs[count] = uarg_base{registry, *first};
         }
 
+        const uinst_base vinst{registry, META_HPP_FWD(instance)};
         return raw_method_invoke_error<Method>(registry, vinst, vargs);
     }
 }
@@ -8690,10 +8798,11 @@ namespace meta_hpp::detail
 
     template < constructor_policy_family Policy, class_kind Class, typename... Args >
     constructor_state::state_ptr constructor_state::make(metadata_map metadata) {
+        using ct = constructor_traits<Class, Args...>;
         type_registry& registry{type_registry::instance()};
 
         constructor_state state{
-            constructor_index{registry.resolve_by_traits<constructor_traits<Class, Args...>>()},
+            constructor_index{registry.resolve_by_traits<ct>()},
             std::move(metadata),
         };
 
@@ -8787,14 +8896,21 @@ namespace meta_hpp
     template < typename Iter >
     uvalue constructor::create_variadic(Iter first, Iter last) const {
         using namespace detail;
+
+        const std::size_t arity = get_arity();
         type_registry& registry{type_registry::instance()};
 
-        static thread_local std::vector<uarg> vargs;
+        META_HPP_DETAIL_IGNORE_ALLOCA_WARNINGS_PUSH()
 
-        vargs.clear();
-        vargs.reserve(get_type().get_arity());
+        void* vargs_mem = META_HPP_ALLOCA(sizeof(uarg) * arity);
+        detail::inline_vector<uarg> vargs{static_cast<uarg*>(vargs_mem), arity};
 
-        for ( ; first != last; ++first ) {
+        META_HPP_DETAIL_IGNORE_ALLOCA_WARNINGS_POP()
+
+        for ( std::size_t i{}; first != last; ++i, ++first ) {
+            if ( i >= arity ) {
+                throw_exception(error_code::arity_mismatch);
+            }
             vargs.emplace_back(registry, *first);
         }
 
@@ -8812,14 +8928,21 @@ namespace meta_hpp
     template < typename Iter >
     uvalue constructor::create_variadic_at(void* mem, Iter first, Iter last) const {
         using namespace detail;
+
+        const std::size_t arity = get_arity();
         type_registry& registry{type_registry::instance()};
 
-        static thread_local std::vector<uarg> vargs;
+        META_HPP_DETAIL_IGNORE_ALLOCA_WARNINGS_PUSH()
 
-        vargs.clear();
-        vargs.reserve(get_type().get_arity());
+        void* vargs_mem = META_HPP_ALLOCA(sizeof(uarg) * arity);
+        detail::inline_vector<uarg> vargs{static_cast<uarg*>(vargs_mem), arity};
 
-        for ( ; first != last; ++first ) {
+        META_HPP_DETAIL_IGNORE_ALLOCA_WARNINGS_POP()
+
+        for ( std::size_t i{}; first != last; ++i, ++first ) {
+            if ( i >= arity ) {
+                throw_exception(error_code::arity_mismatch);
+            }
             vargs.emplace_back(registry, *first);
         }
 
@@ -8835,21 +8958,28 @@ namespace meta_hpp
     }
 
     template < typename Iter >
-    bool constructor::is_variadic_invocable_with(Iter first, Iter last) const noexcept {
+    bool constructor::is_variadic_invocable_with(Iter first, Iter last) const {
         return !check_variadic_invocable_error(first, last);
     }
 
     template < typename Iter >
-    uerror constructor::check_variadic_invocable_error(Iter first, Iter last) const noexcept {
+    uerror constructor::check_variadic_invocable_error(Iter first, Iter last) const {
         using namespace detail;
+
+        const std::size_t arity = get_arity();
         type_registry& registry{type_registry::instance()};
 
-        static thread_local std::vector<uarg_base> vargs;
+        META_HPP_DETAIL_IGNORE_ALLOCA_WARNINGS_PUSH()
 
-        vargs.clear();
-        vargs.reserve(get_type().get_arity());
+        void* vargs_mem = META_HPP_ALLOCA(sizeof(uarg_base) * arity);
+        detail::inline_vector<uarg_base> vargs{static_cast<uarg_base*>(vargs_mem), arity};
 
-        for ( ; first != last; ++first ) {
+        META_HPP_DETAIL_IGNORE_ALLOCA_WARNINGS_POP()
+
+        for ( std::size_t i{}; first != last; ++i, ++first ) {
+            if ( i >= arity ) {
+                return uerror(error_code::arity_mismatch);
+            }
             vargs.emplace_back(registry, *first);
         }
 

@@ -109,10 +109,10 @@ public:
     uresult try_create_variadic_at(void* mem, Iter first, Iter last) const;
 
     template < typename Iter >
-    bool is_variadic_invocable_with(Iter first, Iter last) const noexcept;
+    bool is_variadic_invocable_with(Iter first, Iter last) const;
 
     template < typename Iter >
-    uerror check_variadic_invocable_error(Iter first, Iter last) const noexcept;
+    uerror check_variadic_invocable_error(Iter first, Iter last) const;
 };
 ```
 

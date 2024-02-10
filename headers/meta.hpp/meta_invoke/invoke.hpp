@@ -63,13 +63,14 @@ namespace meta_hpp
         using namespace detail;
         type_registry& registry{type_registry::instance()};
 
-        static thread_local std::vector<uarg> vargs;
+        using ft = function_traits<std::remove_pointer_t<Function>>;
+        std::array<uarg, ft::arity> vargs;
 
-        vargs.clear();
-        vargs.reserve(function_traits<std::remove_pointer_t<Function>>::arity);
-
-        for ( ; first != last; ++first ) {
-            vargs.emplace_back(registry, *first);
+        for ( std::size_t count{}; first != last; ++count, ++first ) {
+            if ( count >= ft::arity ) {
+                throw_exception(error_code::arity_mismatch);
+            }
+            vargs[count] = uarg{registry, *first};
         }
 
         return raw_function_invoke<function_policy::as_copy_t>(registry, function_ptr, vargs);
@@ -159,16 +160,17 @@ namespace meta_hpp
         using namespace detail;
         type_registry& registry{type_registry::instance()};
 
-        const uinst vinst{registry, META_HPP_FWD(instance)};
-        static thread_local std::vector<uarg> vargs;
+        using mt = method_traits<Method>;
+        std::array<uarg, mt::arity> vargs;
 
-        vargs.clear();
-        vargs.reserve(method_traits<Method>::arity);
-
-        for ( ; first != last; ++first ) {
-            vargs.emplace_back(registry, *first);
+        for ( std::size_t count{}; first != last; ++count, ++first ) {
+            if ( count >= mt::arity ) {
+                throw_exception(error_code::arity_mismatch);
+            }
+            vargs[count] = uarg{registry, *first};
         }
 
+        const uinst vinst{registry, META_HPP_FWD(instance)};
         return raw_method_invoke<method_policy::as_copy_t>(registry, method_ptr, vinst, vargs);
     }
 
@@ -231,32 +233,33 @@ namespace meta_hpp
     }
 
     template < typename Iter >
-    bool is_variadic_invocable_with(const function& function, Iter first, Iter last) noexcept {
+    bool is_variadic_invocable_with(const function& function, Iter first, Iter last) {
         return function.is_variadic_invocable_with(first, last);
     }
 
     template < typename Iter, function_pointer_kind Function >
-    bool is_variadic_invocable_with(Function function_ptr, Iter first, Iter last) noexcept {
+    bool is_variadic_invocable_with(Function function_ptr, Iter first, Iter last) {
         return !check_variadic_invocable_error(function_ptr, first, last);
     }
 
     template < typename Iter >
-    uerror check_variadic_invocable_error(const function& function, Iter first, Iter last) noexcept {
+    uerror check_variadic_invocable_error(const function& function, Iter first, Iter last) {
         return function.check_variadic_invocable_error(first, last);
     }
 
     template < typename Iter, function_pointer_kind Function >
-    uerror check_variadic_invocable_error(Function, Iter first, Iter last) noexcept {
+    uerror check_variadic_invocable_error(Function, Iter first, Iter last) {
         using namespace detail;
         type_registry& registry{type_registry::instance()};
 
-        static thread_local std::vector<uarg_base> vargs;
+        using ft = function_traits<std::remove_pointer_t<Function>>;
+        std::array<uarg_base, ft::arity> vargs;
 
-        vargs.clear();
-        vargs.reserve(function_traits<std::remove_pointer_t<Function>>::arity);
-
-        for ( ; first != last; ++first ) {
-            vargs.emplace_back(registry, *first);
+        for ( std::size_t count{}; first != last; ++count, ++first ) {
+            if ( count >= ft::arity ) {
+                return uerror{error_code::arity_mismatch};
+            }
+            vargs[count] = uarg_base{registry, *first};
         }
 
         return raw_function_invoke_error<Function>(registry, vargs);
@@ -363,35 +366,36 @@ namespace meta_hpp
     }
 
     template < typename Instance, typename Iter >
-    bool is_variadic_invocable_with(const method& method, Instance&& instance, Iter first, Iter last) noexcept {
+    bool is_variadic_invocable_with(const method& method, Instance&& instance, Iter first, Iter last) {
         return method.is_variadic_invocable_with(META_HPP_FWD(instance), first, last);
     }
 
     template < typename Instance, typename Iter, method_pointer_kind Method >
-    bool is_variadic_invocable_with(Method method_ptr, Instance&& instance, Iter first, Iter last) noexcept {
+    bool is_variadic_invocable_with(Method method_ptr, Instance&& instance, Iter first, Iter last) {
         return !check_variadic_invocable_error(method_ptr, META_HPP_FWD(instance), first, last);
     }
 
     template < typename Instance, typename Iter >
-    uerror check_variadic_invocable_error(const method& method, Instance&& instance, Iter first, Iter last) noexcept {
+    uerror check_variadic_invocable_error(const method& method, Instance&& instance, Iter first, Iter last) {
         return method.check_variadic_invocable_error(META_HPP_FWD(instance), first, last);
     }
 
     template < typename Instance, typename Iter, method_pointer_kind Method >
-    uerror check_variadic_invocable_error(Method, Instance&& instance, Iter first, Iter last) noexcept {
+    uerror check_variadic_invocable_error(Method, Instance&& instance, Iter first, Iter last) {
         using namespace detail;
         type_registry& registry{type_registry::instance()};
 
-        const uinst_base vinst{registry, META_HPP_FWD(instance)};
-        static thread_local std::vector<uarg_base> vargs;
+        using mt = method_traits<Method>;
+        std::array<uarg_base, mt::arity> vargs;
 
-        vargs.clear();
-        vargs.reserve(method_traits<Method>::arity);
-
-        for ( ; first != last; ++first ) {
-            vargs.emplace_back(registry, *first);
+        for ( std::size_t count{}; first != last; ++count, ++first ) {
+            if ( count >= mt::arity ) {
+                return uerror{error_code::arity_mismatch};
+            }
+            vargs[count] = uarg_base{registry, *first};
         }
 
+        const uinst_base vinst{registry, META_HPP_FWD(instance)};
         return raw_method_invoke_error<Method>(registry, vinst, vargs);
     }
 }

@@ -38,9 +38,9 @@ namespace meta_hpp::detail
         ~uarg_base() = default;
 
         uarg_base(uarg_base&&) = default;
-        uarg_base(const uarg_base&) = default;
+        uarg_base& operator=(uarg_base&&) = default;
 
-        uarg_base& operator=(uarg_base&&) = delete;
+        uarg_base(const uarg_base&) = delete;
         uarg_base& operator=(const uarg_base&) = delete;
 
         template < typename T, typename Tp = std::decay_t<T> >
@@ -114,9 +114,9 @@ namespace meta_hpp::detail
         ~uarg() = default;
 
         uarg(uarg&&) = default;
-        uarg(const uarg&) = default;
+        uarg& operator=(uarg&&) = default;
 
-        uarg& operator=(uarg&&) = delete;
+        uarg(const uarg&) = delete;
         uarg& operator=(const uarg&) = delete;
 
         template < typename T, typename Tp = std::decay_t<T> >

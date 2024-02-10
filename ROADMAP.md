@@ -3,7 +3,6 @@
 ## Backlog
 
 - add coverage information
-- remove argument cache from variadic invoke functions
 
 ## Version 1.0
 

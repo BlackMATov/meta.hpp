@@ -112,10 +112,10 @@ namespace meta_hpp
         uresult try_create_variadic_at(void* mem, Iter first, Iter last) const;
 
         template < typename Iter >
-        [[nodiscard]] bool is_variadic_invocable_with(Iter first, Iter last) const noexcept;
+        [[nodiscard]] bool is_variadic_invocable_with(Iter first, Iter last) const;
 
         template < typename Iter >
-        [[nodiscard]] uerror check_variadic_invocable_error(Iter first, Iter last) const noexcept;
+        [[nodiscard]] uerror check_variadic_invocable_error(Iter first, Iter last) const;
     };
 
     class destructor final : public state_base<destructor> {
