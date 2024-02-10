@@ -2,7 +2,8 @@
 
 ## Backlog
 
-- add variadic variant of invoking to meta_invoke
+- add coverage information
+- remove argument cache from variadic invoke functions
 
 ## Version 1.0
 

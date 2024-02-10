@@ -239,6 +239,7 @@ namespace meta_hpp
 
     template < typename Instance, typename Iter >
     uresult method::try_invoke_variadic(Instance&& instance, Iter first, Iter last) const {
+        // doesn't actually move an 'instance', just checks conversion errors
         if ( const uerror err = check_variadic_invocable_error(META_HPP_FWD(instance), first, last) ) {
             return err;
         }
