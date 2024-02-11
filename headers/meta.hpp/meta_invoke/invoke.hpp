@@ -41,19 +41,47 @@ namespace meta_hpp
 
     template < function_pointer_kind Function, typename... Args >
     uresult try_invoke(Function function_ptr, Args&&... args) {
+        // doesn't actually move 'args', just checks conversion errors
+        if ( const uerror err = check_invocable_error(function_ptr, META_HPP_FWD(args)...) ) {
+            return err;
+        }
+        return invoke(function_ptr, META_HPP_FWD(args)...);
+    }
+
+    template < typename Iter >
+    uvalue invoke_variadic(const function& function, Iter first, Iter last) {
+        return function.invoke_variadic(first, last);
+    }
+
+    template < typename Iter >
+    uresult try_invoke_variadic(const function& function, Iter first, Iter last) {
+        return function.try_invoke_variadic(first, last);
+    }
+
+    template < function_pointer_kind Function, typename Iter >
+    uvalue invoke_variadic(Function function_ptr, Iter first, Iter last) {
         using namespace detail;
         type_registry& registry{type_registry::instance()};
 
-        {
-            // doesn't actually move 'args', just checks conversion errors
-            const std::array<uarg_base, sizeof...(Args)> vargs{uarg_base{registry, META_HPP_FWD(args)}...};
-            if ( const uerror err = raw_function_invoke_error<Function>(registry, vargs) ) {
-                return err;
+        using ft = function_traits<std::remove_pointer_t<Function>>;
+        std::array<uarg, ft::arity> vargs;
+
+        for ( std::size_t count{}; first != last; ++count, ++first ) {
+            if ( count >= ft::arity ) {
+                throw_exception(error_code::arity_mismatch);
             }
+            vargs[count] = uarg{registry, *first};
         }
 
-        const std::array<uarg, sizeof...(Args)> vargs{uarg{registry, META_HPP_FWD(args)}...};
         return raw_function_invoke<function_policy::as_copy_t>(registry, function_ptr, vargs);
+    }
+
+    template < function_pointer_kind Function, typename Iter >
+    uresult try_invoke_variadic(Function function_ptr, Iter first, Iter last) {
+        if ( const uerror err = check_variadic_invocable_error(function_ptr, first, last) ) {
+            return err;
+        }
+        return invoke_variadic(function_ptr, first, last);
     }
 }
 
@@ -79,19 +107,11 @@ namespace meta_hpp
 
     template < member_pointer_kind Member, typename Instance >
     uresult try_invoke(Member member_ptr, Instance&& instance) {
-        using namespace detail;
-        type_registry& registry{type_registry::instance()};
-
-        {
-            // doesn't actually move an 'instance', just checks conversion errors
-            const uinst_base vinst{registry, META_HPP_FWD(instance)};
-            if ( const uerror err = raw_member_getter_error<Member>(registry, vinst) ) {
-                return err;
-            }
+        // doesn't actually move an 'instance', just checks conversion errors
+        if ( const uerror err = check_invocable_error(member_ptr, META_HPP_FWD(instance)) ) {
+            return err;
         }
-
-        const uinst vinst{registry, META_HPP_FWD(instance)};
-        return raw_member_getter<member_policy::as_copy_t>(registry, member_ptr, vinst);
+        return invoke(member_ptr, META_HPP_FWD(instance));
     }
 }
 
@@ -118,21 +138,49 @@ namespace meta_hpp
 
     template < method_pointer_kind Method, typename Instance, typename... Args >
     uresult try_invoke(Method method_ptr, Instance&& instance, Args&&... args) {
+        // doesn't actually move an 'instance' and 'args', just checks conversion errors
+        if ( const uerror err = check_invocable_error(method_ptr, META_HPP_FWD(instance), META_HPP_FWD(args)...) ) {
+            return err;
+        }
+        return invoke(method_ptr, META_HPP_FWD(instance), META_HPP_FWD(args)...);
+    }
+
+    template < typename Instance, typename Iter >
+    uvalue invoke_variadic(const method& method, Instance&& instance, Iter first, Iter last) {
+        return method.invoke_variadic(META_HPP_FWD(instance), first, last);
+    }
+
+    template < typename Instance, typename Iter >
+    uresult try_invoke_variadic(const method& method, Instance&& instance, Iter first, Iter last) {
+        return method.try_invoke_variadic(META_HPP_FWD(instance), first, last);
+    }
+
+    template < method_pointer_kind Method, typename Instance, typename Iter >
+    uvalue invoke_variadic(Method method_ptr, Instance&& instance, Iter first, Iter last) {
         using namespace detail;
         type_registry& registry{type_registry::instance()};
 
-        {
-            // doesn't actually move an 'instance' and 'args', just checks conversion errors
-            const uinst_base vinst{registry, META_HPP_FWD(instance)};
-            const std::array<uarg_base, sizeof...(Args)> vargs{uarg_base{registry, META_HPP_FWD(args)}...};
-            if ( const uerror err = raw_method_invoke_error<Method>(registry, vinst, vargs) ) {
-                return err;
+        using mt = method_traits<Method>;
+        std::array<uarg, mt::arity> vargs;
+
+        for ( std::size_t count{}; first != last; ++count, ++first ) {
+            if ( count >= mt::arity ) {
+                throw_exception(error_code::arity_mismatch);
             }
+            vargs[count] = uarg{registry, *first};
         }
 
         const uinst vinst{registry, META_HPP_FWD(instance)};
-        const std::array<uarg, sizeof...(Args)> vargs{uarg{registry, META_HPP_FWD(args)}...};
         return raw_method_invoke<method_policy::as_copy_t>(registry, method_ptr, vinst, vargs);
+    }
+
+    template < method_pointer_kind Method, typename Instance, typename Iter >
+    uresult try_invoke_variadic(Method method_ptr, Instance&& instance, Iter first, Iter last) {
+        // doesn't actually move an 'instance', just checks conversion errors
+        if ( const uerror err = check_variadic_invocable_error(method_ptr, META_HPP_FWD(instance), first, last) ) {
+            return err;
+        }
+        return invoke_variadic(method_ptr, META_HPP_FWD(instance), first, last);
     }
 }
 
@@ -181,6 +229,39 @@ namespace meta_hpp
         using namespace detail;
         type_registry& registry{type_registry::instance()};
         const std::array<uarg_base, sizeof...(Args)> vargs{uarg_base{registry, META_HPP_FWD(args)}...};
+        return raw_function_invoke_error<Function>(registry, vargs);
+    }
+
+    template < typename Iter >
+    bool is_variadic_invocable_with(const function& function, Iter first, Iter last) {
+        return function.is_variadic_invocable_with(first, last);
+    }
+
+    template < typename Iter, function_pointer_kind Function >
+    bool is_variadic_invocable_with(Function function_ptr, Iter first, Iter last) {
+        return !check_variadic_invocable_error(function_ptr, first, last);
+    }
+
+    template < typename Iter >
+    uerror check_variadic_invocable_error(const function& function, Iter first, Iter last) {
+        return function.check_variadic_invocable_error(first, last);
+    }
+
+    template < typename Iter, function_pointer_kind Function >
+    uerror check_variadic_invocable_error(Function, Iter first, Iter last) {
+        using namespace detail;
+        type_registry& registry{type_registry::instance()};
+
+        using ft = function_traits<std::remove_pointer_t<Function>>;
+        std::array<uarg_base, ft::arity> vargs;
+
+        for ( std::size_t count{}; first != last; ++count, ++first ) {
+            if ( count >= ft::arity ) {
+                return uerror{error_code::arity_mismatch};
+            }
+            vargs[count] = uarg_base{registry, *first};
+        }
+
         return raw_function_invoke_error<Function>(registry, vargs);
     }
 }
@@ -281,6 +362,40 @@ namespace meta_hpp
         type_registry& registry{type_registry::instance()};
         const uinst_base vinst{registry, META_HPP_FWD(instance)};
         const std::array<uarg_base, sizeof...(Args)> vargs{uarg_base{registry, META_HPP_FWD(args)}...};
+        return raw_method_invoke_error<Method>(registry, vinst, vargs);
+    }
+
+    template < typename Instance, typename Iter >
+    bool is_variadic_invocable_with(const method& method, Instance&& instance, Iter first, Iter last) {
+        return method.is_variadic_invocable_with(META_HPP_FWD(instance), first, last);
+    }
+
+    template < typename Instance, typename Iter, method_pointer_kind Method >
+    bool is_variadic_invocable_with(Method method_ptr, Instance&& instance, Iter first, Iter last) {
+        return !check_variadic_invocable_error(method_ptr, META_HPP_FWD(instance), first, last);
+    }
+
+    template < typename Instance, typename Iter >
+    uerror check_variadic_invocable_error(const method& method, Instance&& instance, Iter first, Iter last) {
+        return method.check_variadic_invocable_error(META_HPP_FWD(instance), first, last);
+    }
+
+    template < typename Instance, typename Iter, method_pointer_kind Method >
+    uerror check_variadic_invocable_error(Method, Instance&& instance, Iter first, Iter last) {
+        using namespace detail;
+        type_registry& registry{type_registry::instance()};
+
+        using mt = method_traits<Method>;
+        std::array<uarg_base, mt::arity> vargs;
+
+        for ( std::size_t count{}; first != last; ++count, ++first ) {
+            if ( count >= mt::arity ) {
+                return uerror{error_code::arity_mismatch};
+            }
+            vargs[count] = uarg_base{registry, *first};
+        }
+
+        const uinst_base vinst{registry, META_HPP_FWD(instance)};
         return raw_method_invoke_error<Method>(registry, vinst, vargs);
     }
 }

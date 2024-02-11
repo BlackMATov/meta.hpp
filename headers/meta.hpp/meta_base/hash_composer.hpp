@@ -9,7 +9,6 @@
 #include "base.hpp"
 #include "bitflags.hpp"
 #include "fnv1a_hash.hpp"
-#include "hashed_string.hpp"
 
 namespace meta_hpp::detail
 {
@@ -40,7 +39,7 @@ namespace meta_hpp::detail
         }
 
         constexpr hash_composer operator<<(std::string_view value) noexcept {
-            hash = combine(hash, hashed_string{value}.get_hash());
+            hash = combine(hash, fnv1a_hash(value.data(), value.size()));
             return *this;
         }
 

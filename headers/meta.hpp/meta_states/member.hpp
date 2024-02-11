@@ -232,19 +232,11 @@ namespace meta_hpp
 
     template < typename Instance >
     uresult member::try_get(Instance&& instance) const {
-        using namespace detail;
-        type_registry& registry{type_registry::instance()};
-
-        {
-            // doesn't actually move an 'instance', just checks conversion errors
-            const uinst_base vinst{registry, META_HPP_FWD(instance)};
-            if ( const uerror err = state_->getter_error(vinst) ) {
-                return err;
-            }
+        // doesn't actually move an 'instance', just checks conversion errors
+        if ( const uerror err = check_gettable_error(META_HPP_FWD(instance)) ) {
+            return err;
         }
-
-        const uinst vinst{registry, META_HPP_FWD(instance)};
-        return state_->getter(vinst);
+        return get(META_HPP_FWD(instance));
     }
 
     template < typename Instance >
@@ -263,21 +255,11 @@ namespace meta_hpp
 
     template < typename Instance, typename Value >
     uresult member::try_set(Instance&& instance, Value&& value) const {
-        using namespace detail;
-        type_registry& registry{type_registry::instance()};
-
-        {
-            // doesn't actually move an 'instance' and 'args', just checks conversion errors
-            const uinst_base vinst{registry, META_HPP_FWD(instance)};
-            const uarg_base vvalue{registry, META_HPP_FWD(value)};
-            if ( const uerror err = state_->setter_error(vinst, vvalue) ) {
-                return err;
-            }
+        // doesn't actually move an 'instance' and a 'value', just checks conversion errors
+        if ( const uerror err = check_settable_error(META_HPP_FWD(instance), META_HPP_FWD(value)) ) {
+            return err;
         }
-
-        const uinst vinst{registry, META_HPP_FWD(instance)};
-        const uarg vvalue{registry, META_HPP_FWD(value)};
-        state_->setter(vinst, vvalue);
+        set(META_HPP_FWD(instance), META_HPP_FWD(value));
         return uerror{error_code::no_error};
     }
 
@@ -287,27 +269,27 @@ namespace meta_hpp
     }
 
     template < typename Instance >
-    [[nodiscard]] bool member::is_gettable_with() const noexcept {
+    [[nodiscard]] bool member::is_gettable_with() const {
         return !check_gettable_error<Instance>();
     }
 
     template < typename Instance >
-    [[nodiscard]] bool member::is_gettable_with(Instance&& instance) const noexcept {
+    [[nodiscard]] bool member::is_gettable_with(Instance&& instance) const {
         return !check_gettable_error(META_HPP_FWD(instance));
     }
 
     template < typename Instance, typename Value >
-    [[nodiscard]] bool member::is_settable_with() const noexcept {
+    [[nodiscard]] bool member::is_settable_with() const {
         return !check_settable_error<Instance, Value>();
     }
 
     template < typename Instance, typename Value >
-    [[nodiscard]] bool member::is_settable_with(Instance&& instance, Value&& value) const noexcept {
+    [[nodiscard]] bool member::is_settable_with(Instance&& instance, Value&& value) const {
         return !check_settable_error(META_HPP_FWD(instance), META_HPP_FWD(value));
     }
 
     template < typename Instance >
-    [[nodiscard]] uerror member::check_gettable_error() const noexcept {
+    [[nodiscard]] uerror member::check_gettable_error() const {
         using namespace detail;
         type_registry& registry{type_registry::instance()};
         const uinst_base vinst{registry, type_list<Instance>{}};
@@ -315,7 +297,7 @@ namespace meta_hpp
     }
 
     template < typename Instance >
-    [[nodiscard]] uerror member::check_gettable_error(Instance&& instance) const noexcept {
+    [[nodiscard]] uerror member::check_gettable_error(Instance&& instance) const {
         using namespace detail;
         type_registry& registry{type_registry::instance()};
         const uinst_base vinst{registry, META_HPP_FWD(instance)};
@@ -323,7 +305,7 @@ namespace meta_hpp
     }
 
     template < typename Instance, typename Value >
-    [[nodiscard]] uerror member::check_settable_error() const noexcept {
+    [[nodiscard]] uerror member::check_settable_error() const {
         using namespace detail;
         type_registry& registry{type_registry::instance()};
         const uinst_base vinst{registry, type_list<Instance>{}};
@@ -332,7 +314,7 @@ namespace meta_hpp
     }
 
     template < typename Instance, typename Value >
-    [[nodiscard]] uerror member::check_settable_error(Instance&& instance, Value&& value) const noexcept {
+    [[nodiscard]] uerror member::check_settable_error(Instance&& instance, Value&& value) const {
         using namespace detail;
         type_registry& registry{type_registry::instance()};
         const uinst_base vinst{registry, META_HPP_FWD(instance)};

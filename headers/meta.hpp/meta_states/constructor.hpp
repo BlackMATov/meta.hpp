@@ -148,10 +148,11 @@ namespace meta_hpp::detail
 
     template < constructor_policy_family Policy, class_kind Class, typename... Args >
     constructor_state::state_ptr constructor_state::make(metadata_map metadata) {
+        using ct = constructor_traits<Class, Args...>;
         type_registry& registry{type_registry::instance()};
 
         constructor_state state{
-            constructor_index{registry.resolve_by_traits<constructor_traits<Class, Args...>>()},
+            constructor_index{registry.resolve_by_traits<ct>()},
             std::move(metadata),
         };
 
@@ -217,17 +218,17 @@ namespace meta_hpp
     }
 
     template < typename... Args >
-    bool constructor::is_invocable_with() const noexcept {
+    bool constructor::is_invocable_with() const {
         return !check_invocable_error<Args...>();
     }
 
     template < typename... Args >
-    bool constructor::is_invocable_with(Args&&... args) const noexcept {
+    bool constructor::is_invocable_with(Args&&... args) const {
         return !check_invocable_error(META_HPP_FWD(args)...);
     }
 
     template < typename... Args >
-    uerror constructor::check_invocable_error() const noexcept {
+    uerror constructor::check_invocable_error() const {
         using namespace detail;
         type_registry& registry{type_registry::instance()};
         const std::array<uarg_base, sizeof...(Args)> vargs{uarg_base{registry, type_list<Args>{}}...};
@@ -235,7 +236,7 @@ namespace meta_hpp
     }
 
     template < typename... Args >
-    uerror constructor::check_invocable_error(Args&&... args) const noexcept {
+    uerror constructor::check_invocable_error(Args&&... args) const {
         using namespace detail;
         type_registry& registry{type_registry::instance()};
         const std::array<uarg_base, sizeof...(Args)> vargs{uarg_base{registry, META_HPP_FWD(args)}...};
@@ -245,18 +246,25 @@ namespace meta_hpp
     template < typename Iter >
     uvalue constructor::create_variadic(Iter first, Iter last) const {
         using namespace detail;
+
+        const std::size_t arity = get_arity();
         type_registry& registry{type_registry::instance()};
 
-        static thread_local std::vector<uarg> vargs;
+        META_HPP_DETAIL_IGNORE_ALLOCA_WARNINGS_PUSH()
 
-        vargs.clear();
-        vargs.reserve(get_type().get_arity());
+        void* vargs_mem = META_HPP_ALLOCA(sizeof(uarg) * arity);
+        detail::inline_vector<uarg> vargs{static_cast<uarg*>(vargs_mem), arity};
 
-        for ( ; first != last; ++first ) {
+        META_HPP_DETAIL_IGNORE_ALLOCA_WARNINGS_POP()
+
+        for ( std::size_t i{}; first != last; ++i, ++first ) {
+            if ( i >= arity ) {
+                throw_exception(error_code::arity_mismatch);
+            }
             vargs.emplace_back(registry, *first);
         }
 
-        return state_->create(vargs);
+        return state_->create({vargs.begin(), vargs.end()});
     }
 
     template < typename Iter >
@@ -270,18 +278,25 @@ namespace meta_hpp
     template < typename Iter >
     uvalue constructor::create_variadic_at(void* mem, Iter first, Iter last) const {
         using namespace detail;
+
+        const std::size_t arity = get_arity();
         type_registry& registry{type_registry::instance()};
 
-        static thread_local std::vector<uarg> vargs;
+        META_HPP_DETAIL_IGNORE_ALLOCA_WARNINGS_PUSH()
 
-        vargs.clear();
-        vargs.reserve(get_type().get_arity());
+        void* vargs_mem = META_HPP_ALLOCA(sizeof(uarg) * arity);
+        detail::inline_vector<uarg> vargs{static_cast<uarg*>(vargs_mem), arity};
 
-        for ( ; first != last; ++first ) {
+        META_HPP_DETAIL_IGNORE_ALLOCA_WARNINGS_POP()
+
+        for ( std::size_t i{}; first != last; ++i, ++first ) {
+            if ( i >= arity ) {
+                throw_exception(error_code::arity_mismatch);
+            }
             vargs.emplace_back(registry, *first);
         }
 
-        return state_->create_at(mem, vargs);
+        return state_->create_at(mem, {vargs.begin(), vargs.end()});
     }
 
     template < typename Iter >
@@ -293,24 +308,31 @@ namespace meta_hpp
     }
 
     template < typename Iter >
-    bool constructor::is_variadic_invocable_with(Iter first, Iter last) const noexcept {
+    bool constructor::is_variadic_invocable_with(Iter first, Iter last) const {
         return !check_variadic_invocable_error(first, last);
     }
 
     template < typename Iter >
-    uerror constructor::check_variadic_invocable_error(Iter first, Iter last) const noexcept {
+    uerror constructor::check_variadic_invocable_error(Iter first, Iter last) const {
         using namespace detail;
+
+        const std::size_t arity = get_arity();
         type_registry& registry{type_registry::instance()};
 
-        static thread_local std::vector<uarg_base> vargs;
+        META_HPP_DETAIL_IGNORE_ALLOCA_WARNINGS_PUSH()
 
-        vargs.clear();
-        vargs.reserve(get_type().get_arity());
+        void* vargs_mem = META_HPP_ALLOCA(sizeof(uarg_base) * arity);
+        detail::inline_vector<uarg_base> vargs{static_cast<uarg_base*>(vargs_mem), arity};
 
-        for ( ; first != last; ++first ) {
+        META_HPP_DETAIL_IGNORE_ALLOCA_WARNINGS_POP()
+
+        for ( std::size_t i{}; first != last; ++i, ++first ) {
+            if ( i >= arity ) {
+                return uerror(error_code::arity_mismatch);
+            }
             vargs.emplace_back(registry, *first);
         }
 
-        return state_->create_error(vargs);
+        return state_->create_error({vargs.begin(), vargs.end()});
     }
 }

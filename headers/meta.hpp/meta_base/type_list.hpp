@@ -11,13 +11,7 @@
 namespace meta_hpp::detail
 {
     template < typename... Types >
-    struct type_list {
-        template < typename F >
-        // NOLINTNEXTLINE(*-missing-std-forward)
-        static constexpr void for_each(F&& f) {
-            (f.template operator()<Types>(), ...);
-        }
-    };
+    struct type_list {};
 
     template < std::size_t I >
     using size_constant = std::integral_constant<std::size_t, I>;

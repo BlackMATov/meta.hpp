@@ -186,17 +186,17 @@ namespace meta_hpp
     }
 
     template < typename Value >
-    bool variable::is_settable_with() const noexcept {
+    bool variable::is_settable_with() const {
         return !check_settable_error<Value>();
     }
 
     template < typename Value >
-    bool variable::is_settable_with(Value&& value) const noexcept {
+    bool variable::is_settable_with(Value&& value) const {
         return !check_settable_error(META_HPP_FWD(value));
     }
 
     template < typename Value >
-    uerror variable::check_settable_error() const noexcept {
+    uerror variable::check_settable_error() const {
         using namespace detail;
         type_registry& registry{type_registry::instance()};
         const uarg_base vvalue{registry, type_list<Value>{}};
@@ -204,7 +204,7 @@ namespace meta_hpp
     }
 
     template < typename Value >
-    uerror variable::check_settable_error(Value&& value) const noexcept {
+    uerror variable::check_settable_error(Value&& value) const {
         using namespace detail;
         type_registry& registry{type_registry::instance()};
         const uarg_base vvalue{registry, META_HPP_FWD(value)};

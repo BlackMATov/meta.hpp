@@ -96,6 +96,13 @@
 //
 //
 
+#define META_HPP_PP_CAT(x, y) META_HPP_PP_CAT_I(x, y)
+#define META_HPP_PP_CAT_I(x, y) x##y
+
+//
+//
+//
+
 #define META_HPP_DETAIL_CLANG_COMPILER_ID 1
 #define META_HPP_DETAIL_GCC_COMPILER_ID 2
 #define META_HPP_DETAIL_MSVC_COMPILER_ID 3
@@ -109,6 +116,16 @@
 #    define META_HPP_DETAIL_COMPILER_ID META_HPP_DETAIL_MSVC_COMPILER_ID
 #else
 #    define META_HPP_DETAIL_COMPILER_ID META_HPP_DETAIL_UNKNOWN_COMPILER_ID
+#endif
+
+//
+//
+//
+
+#if META_HPP_DETAIL_COMPILER_ID == META_HPP_DETAIL_MSVC_COMPILER_ID
+#    define META_HPP_ALLOCA(size) _alloca(size)
+#else
+#    define META_HPP_ALLOCA(size) __builtin_alloca(size)
 #endif
 
 //
@@ -148,6 +165,16 @@
 #    define META_HPP_DETAIL_MSVC_IGNORE_WARNINGS_PUSH()
 #    define META_HPP_DETAIL_MSVC_IGNORE_WARNINGS_POP()
 #endif
+
+//
+//
+//
+
+#define META_HPP_DETAIL_IGNORE_ALLOCA_WARNINGS_PUSH() \
+    META_HPP_DETAIL_CLANG_IGNORE_WARNINGS_PUSH() \
+    META_HPP_DETAIL_CLANG_IGNORE_WARNING("-Walloca")
+
+#define META_HPP_DETAIL_IGNORE_ALLOCA_WARNINGS_POP() META_HPP_DETAIL_CLANG_IGNORE_WARNINGS_POP()
 
 //
 //
@@ -767,65 +794,6 @@ namespace meta_hpp::detail
 
 namespace meta_hpp::detail
 {
-    class hashed_string final {
-    public:
-        hashed_string() = default;
-        ~hashed_string() = default;
-
-        hashed_string(hashed_string&&) = default;
-        hashed_string(const hashed_string&) = default;
-
-        hashed_string& operator=(hashed_string&&) = default;
-        hashed_string& operator=(const hashed_string&) = default;
-
-        constexpr hashed_string(std::string_view str) noexcept
-        : hash_{fnv1a_hash(str.data(), str.size())} {}
-
-        constexpr void swap(hashed_string& other) noexcept {
-            std::swap(hash_, other.hash_);
-        }
-
-        [[nodiscard]] constexpr std::size_t get_hash() const noexcept {
-            return hash_;
-        }
-
-        [[nodiscard]] constexpr bool operator==(hashed_string other) const noexcept {
-            return hash_ == other.hash_;
-        }
-
-        [[nodiscard]] constexpr std::strong_ordering operator<=>(hashed_string other) const noexcept {
-            return hash_ <=> other.hash_;
-        }
-
-    private:
-        std::size_t hash_{fnv1a_hash("", 0)};
-    };
-
-    constexpr void swap(hashed_string& l, hashed_string& r) noexcept {
-        l.swap(r);
-    }
-
-    [[nodiscard]] constexpr bool operator==(hashed_string l, std::string_view r) noexcept {
-        return l == hashed_string{r};
-    }
-
-    [[nodiscard]] constexpr std::strong_ordering operator<=>(hashed_string l, std::string_view r) noexcept {
-        return l <=> hashed_string{r};
-    }
-}
-
-namespace std
-{
-    template <>
-    struct hash<meta_hpp::detail::hashed_string> {
-        size_t operator()(meta_hpp::detail::hashed_string hs) const noexcept {
-            return hs.get_hash();
-        }
-    };
-}
-
-namespace meta_hpp::detail
-{
     template < std::size_t SizeBytes = sizeof(std::size_t) >
     struct hash_composer_traits {};
 
@@ -853,7 +821,7 @@ namespace meta_hpp::detail
         }
 
         constexpr hash_composer operator<<(std::string_view value) noexcept {
-            hash = combine(hash, hashed_string{value}.get_hash());
+            hash = combine(hash, fnv1a_hash(value.data(), value.size()));
             return *this;
         }
 
@@ -885,6 +853,64 @@ namespace meta_hpp::detail
             hash = combine(hash, static_cast<std::size_t>(value.as_raw()));
             return *this;
         }
+    };
+}
+
+namespace meta_hpp::detail
+{
+    template < typename T >
+    class inline_vector final {
+    public:
+        inline_vector() = delete;
+
+        inline_vector(inline_vector&&) = delete;
+        inline_vector& operator=(inline_vector&&) = delete;
+
+        inline_vector(const inline_vector&) = delete;
+        inline_vector& operator=(const inline_vector&) = delete;
+
+        inline_vector(T* mem, std::size_t capacity)
+        : begin_{mem}
+        , end_{mem}
+        , capacity_{mem + capacity} {}
+
+        ~inline_vector() {
+            std::destroy(begin_, end_);
+        }
+
+        // clang-format off
+
+        [[nodiscard]] T* data() noexcept { return begin_; }
+        [[nodiscard]] const T* data() const noexcept { return begin_; }
+
+        [[nodiscard]] T* begin() noexcept { return begin_; }
+        [[nodiscard]] const T* begin() const noexcept { return begin_; }
+        [[nodiscard]] const T* cbegin() const noexcept { return begin_; }
+
+        [[nodiscard]] T* end() noexcept { return end_; }
+        [[nodiscard]] const T* end() const noexcept { return end_; }
+        [[nodiscard]] const T* cend() const noexcept { return end_; }
+
+        // clang-format on
+
+        template < typename... Args >
+        T& emplace_back(Args&&... args) {
+            META_HPP_ASSERT(end_ < capacity_ && "full vector");
+            return *std::construct_at(end_++, std::forward<Args>(args)...);
+        }
+
+        [[nodiscard]] std::size_t get_size() const noexcept {
+            return static_cast<std::size_t>(end_ - begin_);
+        }
+
+        [[nodiscard]] std::size_t get_capacity() const noexcept {
+            return static_cast<std::size_t>(capacity_ - begin_);
+        }
+
+    private:
+        T* begin_{};
+        T* end_{};
+        T* capacity_{};
     };
 }
 
@@ -1150,13 +1176,7 @@ namespace meta_hpp::detail
 namespace meta_hpp::detail
 {
     template < typename... Types >
-    struct type_list {
-        template < typename F >
-        // NOLINTNEXTLINE(*-missing-std-forward)
-        static constexpr void for_each(F&& f) {
-            (f.template operator()<Types>(), ...);
-        }
-    };
+    struct type_list {};
 
     template < std::size_t I >
     using size_constant = std::integral_constant<std::size_t, I>;
@@ -1255,16 +1275,12 @@ namespace meta_hpp
     using detail::exception;
     using detail::get_error_code_message;
 
-    using detail::hashed_string;
     using detail::memory_buffer;
-
     using detail::overloaded;
 
     using detail::select_const;
     using detail::select_non_const;
     using detail::select_overload;
-
-    using detail::type_list;
 }
 
 namespace meta_hpp
@@ -2989,19 +3005,19 @@ namespace meta_hpp
         bool destroy_at(void* mem) const;
 
         template < class_kind Derived >
-        [[nodiscard]] bool is_base_of() const noexcept;
+        [[nodiscard]] bool is_base_of() const;
         [[nodiscard]] bool is_base_of(const class_type& derived) const noexcept;
 
         template < class_kind Derived >
-        [[nodiscard]] bool is_direct_base_of() const noexcept;
+        [[nodiscard]] bool is_direct_base_of() const;
         [[nodiscard]] bool is_direct_base_of(const class_type& derived) const noexcept;
 
         template < class_kind Base >
-        [[nodiscard]] bool is_derived_from() const noexcept;
+        [[nodiscard]] bool is_derived_from() const;
         [[nodiscard]] bool is_derived_from(const class_type& base) const noexcept;
 
         template < class_kind Base >
-        [[nodiscard]] bool is_direct_derived_from() const noexcept;
+        [[nodiscard]] bool is_direct_derived_from() const;
         [[nodiscard]] bool is_direct_derived_from(const class_type& base) const noexcept;
 
         [[nodiscard]] function get_function(std::string_view name, bool recursively = true) const noexcept;
@@ -3011,9 +3027,9 @@ namespace meta_hpp
         [[nodiscard]] variable get_variable(std::string_view name, bool recursively = true) const noexcept;
 
         template < typename... Args >
-        [[nodiscard]] constructor get_constructor_with() const noexcept;
+        [[nodiscard]] constructor get_constructor_with() const;
         template < typename Iter >
-        [[nodiscard]] constructor get_constructor_with(Iter first, Iter last) const noexcept;
+        [[nodiscard]] constructor get_constructor_with(Iter first, Iter last) const;
         [[nodiscard]] constructor get_constructor_with(std::span<const any_type> args) const noexcept;
         [[nodiscard]] constructor get_constructor_with(std::initializer_list<any_type> args) const noexcept;
 
@@ -3023,7 +3039,7 @@ namespace meta_hpp
         [[nodiscard]] function get_function_with( //
             std::string_view name,
             bool recursively = true
-        ) const noexcept;
+        ) const;
 
         template < typename Iter >
         [[nodiscard]] function get_function_with( //
@@ -3031,7 +3047,7 @@ namespace meta_hpp
             Iter first,
             Iter last,
             bool recursively = true
-        ) const noexcept;
+        ) const;
 
         [[nodiscard]] function get_function_with( //
             std::string_view name,
@@ -3049,7 +3065,7 @@ namespace meta_hpp
         [[nodiscard]] method get_method_with( //
             std::string_view name,
             bool recursively = true
-        ) const noexcept;
+        ) const;
 
         template < typename Iter >
         [[nodiscard]] method get_method_with( //
@@ -3057,7 +3073,7 @@ namespace meta_hpp
             Iter first,
             Iter last,
             bool recursively = true
-        ) const noexcept;
+        ) const;
 
         [[nodiscard]] method get_method_with( //
             std::string_view name,
@@ -3103,7 +3119,7 @@ namespace meta_hpp
         [[nodiscard]] evalue get_evalue(std::string_view name) const noexcept;
 
         template < enum_kind Enum >
-        [[nodiscard]] std::string_view value_to_name(Enum value) const noexcept;
+        [[nodiscard]] std::string_view value_to_name(Enum value) const;
         [[nodiscard]] const uvalue& name_to_value(std::string_view name) const noexcept;
     };
 
@@ -4061,16 +4077,16 @@ namespace meta_hpp
         uresult try_create_at(void* mem, Args&&... args) const;
 
         template < typename... Args >
-        [[nodiscard]] bool is_invocable_with() const noexcept;
+        [[nodiscard]] bool is_invocable_with() const;
 
         template < typename... Args >
-        [[nodiscard]] bool is_invocable_with(Args&&... args) const noexcept;
+        [[nodiscard]] bool is_invocable_with(Args&&... args) const;
 
         template < typename... Args >
-        [[nodiscard]] uerror check_invocable_error() const noexcept;
+        [[nodiscard]] uerror check_invocable_error() const;
 
         template < typename... Args >
-        [[nodiscard]] uerror check_invocable_error(Args&&... args) const noexcept;
+        [[nodiscard]] uerror check_invocable_error(Args&&... args) const;
 
         //
 
@@ -4087,10 +4103,10 @@ namespace meta_hpp
         uresult try_create_variadic_at(void* mem, Iter first, Iter last) const;
 
         template < typename Iter >
-        [[nodiscard]] bool is_variadic_invocable_with(Iter first, Iter last) const noexcept;
+        [[nodiscard]] bool is_variadic_invocable_with(Iter first, Iter last) const;
 
         template < typename Iter >
-        [[nodiscard]] uerror check_variadic_invocable_error(Iter first, Iter last) const noexcept;
+        [[nodiscard]] uerror check_variadic_invocable_error(Iter first, Iter last) const;
     };
 
     class destructor final : public state_base<destructor> {
@@ -4110,16 +4126,16 @@ namespace meta_hpp
         uresult try_destroy_at(void* mem) const;
 
         template < typename Arg >
-        [[nodiscard]] bool is_invocable_with() const noexcept;
+        [[nodiscard]] bool is_invocable_with() const;
 
         template < typename Arg >
-        [[nodiscard]] bool is_invocable_with(Arg&& arg) const noexcept;
+        [[nodiscard]] bool is_invocable_with(Arg&& arg) const;
 
         template < typename Arg >
-        [[nodiscard]] uerror check_invocable_error() const noexcept;
+        [[nodiscard]] uerror check_invocable_error() const;
 
         template < typename Arg >
-        [[nodiscard]] uerror check_invocable_error(Arg&& arg) const noexcept;
+        [[nodiscard]] uerror check_invocable_error(Arg&& arg) const;
     };
 
     class evalue final : public state_base<evalue> {
@@ -4156,16 +4172,16 @@ namespace meta_hpp
         uvalue operator()(Args&&... args) const;
 
         template < typename... Args >
-        [[nodiscard]] bool is_invocable_with() const noexcept;
+        [[nodiscard]] bool is_invocable_with() const;
 
         template < typename... Args >
-        [[nodiscard]] bool is_invocable_with(Args&&... args) const noexcept;
+        [[nodiscard]] bool is_invocable_with(Args&&... args) const;
 
         template < typename... Args >
-        [[nodiscard]] uerror check_invocable_error() const noexcept;
+        [[nodiscard]] uerror check_invocable_error() const;
 
         template < typename... Args >
-        [[nodiscard]] uerror check_invocable_error(Args&&... args) const noexcept;
+        [[nodiscard]] uerror check_invocable_error(Args&&... args) const;
 
         //
 
@@ -4208,28 +4224,28 @@ namespace meta_hpp
         void operator()(Instance&& instance, Value&& value) const;
 
         template < typename Instance >
-        [[nodiscard]] bool is_gettable_with() const noexcept;
+        [[nodiscard]] bool is_gettable_with() const;
 
         template < typename Instance >
-        [[nodiscard]] bool is_gettable_with(Instance&& instance) const noexcept;
+        [[nodiscard]] bool is_gettable_with(Instance&& instance) const;
 
         template < typename Instance, typename Value >
-        [[nodiscard]] bool is_settable_with() const noexcept;
+        [[nodiscard]] bool is_settable_with() const;
 
         template < typename Instance, typename Value >
-        [[nodiscard]] bool is_settable_with(Instance&& instance, Value&& value) const noexcept;
+        [[nodiscard]] bool is_settable_with(Instance&& instance, Value&& value) const;
 
         template < typename Instance >
-        [[nodiscard]] uerror check_gettable_error() const noexcept;
+        [[nodiscard]] uerror check_gettable_error() const;
 
         template < typename Instance >
-        [[nodiscard]] uerror check_gettable_error(Instance&& instance) const noexcept;
+        [[nodiscard]] uerror check_gettable_error(Instance&& instance) const;
 
         template < typename Instance, typename Value >
-        [[nodiscard]] uerror check_settable_error() const noexcept;
+        [[nodiscard]] uerror check_settable_error() const;
 
         template < typename Instance, typename Value >
-        [[nodiscard]] uerror check_settable_error(Instance&& instance, Value&& value) const noexcept;
+        [[nodiscard]] uerror check_settable_error(Instance&& instance, Value&& value) const;
     };
 
     class method final : public state_base<method> {
@@ -4255,16 +4271,16 @@ namespace meta_hpp
         uvalue operator()(Instance&& instance, Args&&... args) const;
 
         template < typename Instance, typename... Args >
-        [[nodiscard]] bool is_invocable_with() const noexcept;
+        [[nodiscard]] bool is_invocable_with() const;
 
         template < typename Instance, typename... Args >
-        [[nodiscard]] bool is_invocable_with(Instance&& instance, Args&&... args) const noexcept;
+        [[nodiscard]] bool is_invocable_with(Instance&& instance, Args&&... args) const;
 
         template < typename Instance, typename... Args >
-        [[nodiscard]] uerror check_invocable_error() const noexcept;
+        [[nodiscard]] uerror check_invocable_error() const;
 
         template < typename Instance, typename... Args >
-        [[nodiscard]] uerror check_invocable_error(Instance&& instance, Args&&... args) const noexcept;
+        [[nodiscard]] uerror check_invocable_error(Instance&& instance, Args&&... args) const;
 
         //
 
@@ -4298,14 +4314,14 @@ namespace meta_hpp
         template < typename... Args >
         [[nodiscard]] function get_function_with( //
             std::string_view name
-        ) const noexcept;
+        ) const;
 
         template < typename Iter >
         [[nodiscard]] function get_function_with( //
             std::string_view name,
             Iter first,
             Iter last
-        ) const noexcept;
+        ) const;
 
         [[nodiscard]] function get_function_with( //
             std::string_view name,
@@ -4340,16 +4356,16 @@ namespace meta_hpp
         void operator()(Value&& value) const;
 
         template < typename Value >
-        [[nodiscard]] bool is_settable_with() const noexcept;
+        [[nodiscard]] bool is_settable_with() const;
 
         template < typename Value >
-        [[nodiscard]] bool is_settable_with(Value&& value) const noexcept;
+        [[nodiscard]] bool is_settable_with(Value&& value) const;
 
         template < typename Value >
-        [[nodiscard]] uerror check_settable_error() const noexcept;
+        [[nodiscard]] uerror check_settable_error() const;
 
         template < typename Value >
-        [[nodiscard]] uerror check_settable_error(Value&& value) const noexcept;
+        [[nodiscard]] uerror check_settable_error(Value&& value) const;
     };
 }
 
@@ -5833,6 +5849,20 @@ namespace meta_hpp
 
     template < function_pointer_kind Function, typename... Args >
     uresult try_invoke(Function function_ptr, Args&&... args);
+
+    //
+
+    template < typename Iter >
+    uvalue invoke_variadic(const function& function, Iter first, Iter last);
+
+    template < typename Iter >
+    uresult try_invoke_variadic(const function& function, Iter first, Iter last);
+
+    template < function_pointer_kind Function, typename Iter >
+    uvalue invoke_variadic(Function function_ptr, Iter first, Iter last);
+
+    template < function_pointer_kind Function, typename Iter >
+    uresult try_invoke_variadic(Function function_ptr, Iter first, Iter last);
 }
 
 namespace meta_hpp
@@ -5863,6 +5893,20 @@ namespace meta_hpp
 
     template < method_pointer_kind Method, typename Instance, typename... Args >
     uresult try_invoke(Method method_ptr, Instance&& instance, Args&&... args);
+
+    //
+
+    template < typename Instance, typename Iter >
+    uvalue invoke_variadic(const method& method, Instance&& instance, Iter first, Iter last);
+
+    template < typename Instance, typename Iter >
+    uresult try_invoke_variadic(const method& method, Instance&& instance, Iter first, Iter last);
+
+    template < method_pointer_kind Method, typename Instance, typename Iter >
+    uvalue invoke_variadic(Method method_ptr, Instance&& instance, Iter first, Iter last);
+
+    template < method_pointer_kind Method, typename Instance, typename Iter >
+    uresult try_invoke_variadic(Method method_ptr, Instance&& instance, Iter first, Iter last);
 }
 
 namespace meta_hpp
@@ -5890,6 +5934,20 @@ namespace meta_hpp
 
     template < typename... Args, function_pointer_kind Function >
     uerror check_invocable_error(Function function_ptr, Args&&... args) noexcept;
+
+    //
+
+    template < typename Iter >
+    bool is_variadic_invocable_with(const function& function, Iter first, Iter last);
+
+    template < typename Iter, function_pointer_kind Function >
+    bool is_variadic_invocable_with(Function function_ptr, Iter first, Iter last);
+
+    template < typename Iter >
+    uerror check_variadic_invocable_error(const function& function, Iter first, Iter last);
+
+    template < typename Iter, function_pointer_kind Function >
+    uerror check_variadic_invocable_error(Function function_ptr, Iter first, Iter last);
 }
 
 namespace meta_hpp
@@ -5944,6 +6002,20 @@ namespace meta_hpp
 
     template < typename Instance, typename... Args, method_pointer_kind Method >
     uerror check_invocable_error(Method method_ptr, Instance&& instance, Args&&... args) noexcept;
+
+    //
+
+    template < typename Instance, typename Iter >
+    bool is_variadic_invocable_with(const method& method, Instance&& instance, Iter first, Iter last);
+
+    template < typename Instance, typename Iter, method_pointer_kind Method >
+    bool is_variadic_invocable_with(Method method_ptr, Instance&& instance, Iter first, Iter last);
+
+    template < typename Instance, typename Iter >
+    uerror check_variadic_invocable_error(const method& method, Instance&& instance, Iter first, Iter last);
+
+    template < typename Instance, typename Iter, method_pointer_kind Method >
+    uerror check_variadic_invocable_error(Method method_ptr, Instance&& instance, Iter first, Iter last);
 }
 
 namespace meta_hpp::detail
@@ -6161,9 +6233,9 @@ namespace meta_hpp::detail
         ~uarg_base() = default;
 
         uarg_base(uarg_base&&) = default;
-        uarg_base(const uarg_base&) = default;
+        uarg_base& operator=(uarg_base&&) = default;
 
-        uarg_base& operator=(uarg_base&&) = delete;
+        uarg_base(const uarg_base&) = delete;
         uarg_base& operator=(const uarg_base&) = delete;
 
         template < typename T, typename Tp = std::decay_t<T> >
@@ -6237,9 +6309,9 @@ namespace meta_hpp::detail
         ~uarg() = default;
 
         uarg(uarg&&) = default;
-        uarg(const uarg&) = default;
+        uarg& operator=(uarg&&) = default;
 
-        uarg& operator=(uarg&&) = delete;
+        uarg(const uarg&) = delete;
         uarg& operator=(const uarg&) = delete;
 
         template < typename T, typename Tp = std::decay_t<T> >
@@ -6656,9 +6728,9 @@ namespace meta_hpp::detail::impl
 
             hash << shared_type<typename traits::class_type>{}();
 
-            traits::argument_types::for_each([&hash]<typename Arg>() { //
-                hash << shared_type<Arg>{}();
-            });
+            [&hash]<typename... ArgTypes>(type_list<ArgTypes...>) {
+                ((hash << shared_type<ArgTypes>{}()), ...);
+            }(typename traits::argument_types{});
 
             return hash.hash;
         }
@@ -6705,9 +6777,9 @@ namespace meta_hpp::detail::impl
 
             hash << shared_type<typename traits::return_type>{}();
 
-            traits::argument_types::for_each([&hash]<typename Arg>() { //
-                hash << shared_type<Arg>{}();
-            });
+            [&hash]<typename... ArgTypes>(type_list<ArgTypes...>) {
+                ((hash << shared_type<ArgTypes>{}()), ...);
+            }(typename traits::argument_types{});
 
             return hash.hash;
         }
@@ -6741,9 +6813,9 @@ namespace meta_hpp::detail::impl
             hash << shared_type<typename traits::class_type>{}();
             hash << shared_type<typename traits::return_type>{}();
 
-            traits::argument_types::for_each([&hash]<typename Arg>() { //
-                hash << shared_type<Arg>{}();
-            });
+            [&hash]<typename... ArgTypes>(type_list<ArgTypes...>) {
+                ((hash << shared_type<ArgTypes>{}()), ...);
+            }(typename traits::argument_types{});
 
             return hash.hash;
         }
@@ -7014,10 +7086,11 @@ namespace meta_hpp::detail
 
     template < function_policy_family Policy, function_pointer_kind Function >
     function_state::state_ptr function_state::make(std::string name, Function function_ptr, metadata_map metadata) {
+        using ft = function_traits<std::remove_pointer_t<Function>>;
         type_registry& registry{type_registry::instance()};
 
         function_state state{
-            function_index{registry.resolve_by_type<std::remove_pointer_t<Function>>(), std::move(name)},
+            function_index{registry.resolve_by_traits<ft>(), std::move(name)},
             std::move(metadata),
         };
 
@@ -7074,17 +7147,17 @@ namespace meta_hpp
     }
 
     template < typename... Args >
-    bool function::is_invocable_with() const noexcept {
+    bool function::is_invocable_with() const {
         return !check_invocable_error<Args...>();
     }
 
     template < typename... Args >
-    bool function::is_invocable_with(Args&&... args) const noexcept {
+    bool function::is_invocable_with(Args&&... args) const {
         return !check_invocable_error(META_HPP_FWD(args)...);
     }
 
     template < typename... Args >
-    uerror function::check_invocable_error() const noexcept {
+    uerror function::check_invocable_error() const {
         using namespace detail;
         type_registry& registry{type_registry::instance()};
         const std::array<uarg_base, sizeof...(Args)> vargs{uarg_base{registry, type_list<Args>{}}...};
@@ -7092,7 +7165,7 @@ namespace meta_hpp
     }
 
     template < typename... Args >
-    uerror function::check_invocable_error(Args&&... args) const noexcept {
+    uerror function::check_invocable_error(Args&&... args) const {
         using namespace detail;
         type_registry& registry{type_registry::instance()};
         const std::array<uarg_base, sizeof...(Args)> vargs{uarg_base{registry, META_HPP_FWD(args)}...};
@@ -7102,18 +7175,25 @@ namespace meta_hpp
     template < typename Iter >
     uvalue function::invoke_variadic(Iter first, Iter last) const {
         using namespace detail;
+
+        const std::size_t arity = get_arity();
         type_registry& registry{type_registry::instance()};
 
-        static thread_local std::vector<uarg> vargs;
+        META_HPP_DETAIL_IGNORE_ALLOCA_WARNINGS_PUSH()
 
-        vargs.clear();
-        vargs.reserve(get_type().get_arity());
+        void* vargs_mem = META_HPP_ALLOCA(sizeof(uarg) * arity);
+        detail::inline_vector<uarg> vargs{static_cast<uarg*>(vargs_mem), arity};
 
-        for ( ; first != last; ++first ) {
+        META_HPP_DETAIL_IGNORE_ALLOCA_WARNINGS_POP()
+
+        for ( std::size_t i{}; first != last; ++i, ++first ) {
+            if ( i >= arity ) {
+                throw_exception(error_code::arity_mismatch);
+            }
             vargs.emplace_back(registry, *first);
         }
 
-        return state_->invoke(vargs);
+        return state_->invoke({vargs.begin(), vargs.end()});
     }
 
     template < typename Iter >
@@ -7132,18 +7212,25 @@ namespace meta_hpp
     template < typename Iter >
     uerror function::check_variadic_invocable_error(Iter first, Iter last) const {
         using namespace detail;
+
+        const std::size_t arity = get_arity();
         type_registry& registry{type_registry::instance()};
 
-        static thread_local std::vector<uarg_base> vargs;
+        META_HPP_DETAIL_IGNORE_ALLOCA_WARNINGS_PUSH()
 
-        vargs.clear();
-        vargs.reserve(get_type().get_arity());
+        void* vargs_mem = META_HPP_ALLOCA(sizeof(uarg_base) * arity);
+        detail::inline_vector<uarg_base> vargs{static_cast<uarg_base*>(vargs_mem), arity};
 
-        for ( ; first != last; ++first ) {
+        META_HPP_DETAIL_IGNORE_ALLOCA_WARNINGS_POP()
+
+        for ( std::size_t i{}; first != last; ++i, ++first ) {
+            if ( i >= arity ) {
+                return uerror(error_code::arity_mismatch);
+            }
             vargs.emplace_back(registry, *first);
         }
 
-        return state_->invoke_error(vargs);
+        return state_->invoke_error({vargs.begin(), vargs.end()});
     }
 }
 
@@ -7163,9 +7250,9 @@ namespace meta_hpp::detail
         ~uinst_base() = default;
 
         uinst_base(uinst_base&&) = default;
-        uinst_base(const uinst_base&) = default;
+        uinst_base& operator=(uinst_base&&) = default;
 
-        uinst_base& operator=(uinst_base&&) = delete;
+        uinst_base(const uinst_base&) = delete;
         uinst_base& operator=(const uinst_base&) = delete;
 
         template < typename T, typename Tp = std::decay_t<T> >
@@ -7241,9 +7328,9 @@ namespace meta_hpp::detail
         ~uinst() = default;
 
         uinst(uinst&&) = default;
-        uinst(const uinst&) = default;
+        uinst& operator=(uinst&&) = default;
 
-        uinst& operator=(uinst&&) = delete;
+        uinst(const uinst&) = delete;
         uinst& operator=(const uinst&) = delete;
 
         template < typename T, typename Tp = std::decay_t<T> >
@@ -7628,19 +7715,11 @@ namespace meta_hpp
 
     template < typename Instance >
     uresult member::try_get(Instance&& instance) const {
-        using namespace detail;
-        type_registry& registry{type_registry::instance()};
-
-        {
-            // doesn't actually move an 'instance', just checks conversion errors
-            const uinst_base vinst{registry, META_HPP_FWD(instance)};
-            if ( const uerror err = state_->getter_error(vinst) ) {
-                return err;
-            }
+        // doesn't actually move an 'instance', just checks conversion errors
+        if ( const uerror err = check_gettable_error(META_HPP_FWD(instance)) ) {
+            return err;
         }
-
-        const uinst vinst{registry, META_HPP_FWD(instance)};
-        return state_->getter(vinst);
+        return get(META_HPP_FWD(instance));
     }
 
     template < typename Instance >
@@ -7659,21 +7738,11 @@ namespace meta_hpp
 
     template < typename Instance, typename Value >
     uresult member::try_set(Instance&& instance, Value&& value) const {
-        using namespace detail;
-        type_registry& registry{type_registry::instance()};
-
-        {
-            // doesn't actually move an 'instance' and 'args', just checks conversion errors
-            const uinst_base vinst{registry, META_HPP_FWD(instance)};
-            const uarg_base vvalue{registry, META_HPP_FWD(value)};
-            if ( const uerror err = state_->setter_error(vinst, vvalue) ) {
-                return err;
-            }
+        // doesn't actually move an 'instance' and a 'value', just checks conversion errors
+        if ( const uerror err = check_settable_error(META_HPP_FWD(instance), META_HPP_FWD(value)) ) {
+            return err;
         }
-
-        const uinst vinst{registry, META_HPP_FWD(instance)};
-        const uarg vvalue{registry, META_HPP_FWD(value)};
-        state_->setter(vinst, vvalue);
+        set(META_HPP_FWD(instance), META_HPP_FWD(value));
         return uerror{error_code::no_error};
     }
 
@@ -7683,27 +7752,27 @@ namespace meta_hpp
     }
 
     template < typename Instance >
-    [[nodiscard]] bool member::is_gettable_with() const noexcept {
+    [[nodiscard]] bool member::is_gettable_with() const {
         return !check_gettable_error<Instance>();
     }
 
     template < typename Instance >
-    [[nodiscard]] bool member::is_gettable_with(Instance&& instance) const noexcept {
+    [[nodiscard]] bool member::is_gettable_with(Instance&& instance) const {
         return !check_gettable_error(META_HPP_FWD(instance));
     }
 
     template < typename Instance, typename Value >
-    [[nodiscard]] bool member::is_settable_with() const noexcept {
+    [[nodiscard]] bool member::is_settable_with() const {
         return !check_settable_error<Instance, Value>();
     }
 
     template < typename Instance, typename Value >
-    [[nodiscard]] bool member::is_settable_with(Instance&& instance, Value&& value) const noexcept {
+    [[nodiscard]] bool member::is_settable_with(Instance&& instance, Value&& value) const {
         return !check_settable_error(META_HPP_FWD(instance), META_HPP_FWD(value));
     }
 
     template < typename Instance >
-    [[nodiscard]] uerror member::check_gettable_error() const noexcept {
+    [[nodiscard]] uerror member::check_gettable_error() const {
         using namespace detail;
         type_registry& registry{type_registry::instance()};
         const uinst_base vinst{registry, type_list<Instance>{}};
@@ -7711,7 +7780,7 @@ namespace meta_hpp
     }
 
     template < typename Instance >
-    [[nodiscard]] uerror member::check_gettable_error(Instance&& instance) const noexcept {
+    [[nodiscard]] uerror member::check_gettable_error(Instance&& instance) const {
         using namespace detail;
         type_registry& registry{type_registry::instance()};
         const uinst_base vinst{registry, META_HPP_FWD(instance)};
@@ -7719,7 +7788,7 @@ namespace meta_hpp
     }
 
     template < typename Instance, typename Value >
-    [[nodiscard]] uerror member::check_settable_error() const noexcept {
+    [[nodiscard]] uerror member::check_settable_error() const {
         using namespace detail;
         type_registry& registry{type_registry::instance()};
         const uinst_base vinst{registry, type_list<Instance>{}};
@@ -7728,7 +7797,7 @@ namespace meta_hpp
     }
 
     template < typename Instance, typename Value >
-    [[nodiscard]] uerror member::check_settable_error(Instance&& instance, Value&& value) const noexcept {
+    [[nodiscard]] uerror member::check_settable_error(Instance&& instance, Value&& value) const {
         using namespace detail;
         type_registry& registry{type_registry::instance()};
         const uinst_base vinst{registry, META_HPP_FWD(instance)};
@@ -7913,10 +7982,11 @@ namespace meta_hpp::detail
 
     template < method_policy_family Policy, method_pointer_kind Method >
     method_state::state_ptr method_state::make(std::string name, Method method_ptr, metadata_map metadata) {
+        using mt = method_traits<Method>;
         type_registry& registry{type_registry::instance()};
 
         method_state state{
-            method_index{registry.resolve_by_type<Method>(), std::move(name)},
+            method_index{registry.resolve_by_traits<mt>(), std::move(name)},
             std::move(metadata),
         };
 
@@ -7974,17 +8044,17 @@ namespace meta_hpp
     }
 
     template < typename Instance, typename... Args >
-    bool method::is_invocable_with() const noexcept {
+    bool method::is_invocable_with() const {
         return !check_invocable_error<Instance, Args...>();
     }
 
     template < typename Instance, typename... Args >
-    bool method::is_invocable_with(Instance&& instance, Args&&... args) const noexcept {
+    bool method::is_invocable_with(Instance&& instance, Args&&... args) const {
         return !check_invocable_error(META_HPP_FWD(instance), META_HPP_FWD(args)...);
     }
 
     template < typename Instance, typename... Args >
-    uerror method::check_invocable_error() const noexcept {
+    uerror method::check_invocable_error() const {
         using namespace detail;
         type_registry& registry{type_registry::instance()};
         const uinst_base vinst{registry, type_list<Instance>{}};
@@ -7993,7 +8063,7 @@ namespace meta_hpp
     }
 
     template < typename Instance, typename... Args >
-    uerror method::check_invocable_error(Instance&& instance, Args&&... args) const noexcept {
+    uerror method::check_invocable_error(Instance&& instance, Args&&... args) const {
         using namespace detail;
         type_registry& registry{type_registry::instance()};
         const uinst_base vinst{registry, META_HPP_FWD(instance)};
@@ -8004,23 +8074,31 @@ namespace meta_hpp
     template < typename Instance, typename Iter >
     uvalue method::invoke_variadic(Instance&& instance, Iter first, Iter last) const {
         using namespace detail;
+
+        const std::size_t arity = get_arity();
         type_registry& registry{type_registry::instance()};
 
-        const uinst vinst{registry, META_HPP_FWD(instance)};
-        static thread_local std::vector<uarg> vargs;
+        META_HPP_DETAIL_IGNORE_ALLOCA_WARNINGS_PUSH()
 
-        vargs.clear();
-        vargs.reserve(get_type().get_arity());
+        void* vargs_mem = META_HPP_ALLOCA(sizeof(uarg) * arity);
+        detail::inline_vector<uarg> vargs{static_cast<uarg*>(vargs_mem), arity};
 
-        for ( ; first != last; ++first ) {
+        META_HPP_DETAIL_IGNORE_ALLOCA_WARNINGS_POP()
+
+        for ( std::size_t i{}; first != last; ++i, ++first ) {
+            if ( i >= arity ) {
+                throw_exception(error_code::arity_mismatch);
+            }
             vargs.emplace_back(registry, *first);
         }
 
-        return state_->invoke(vinst, vargs);
+        const uinst vinst{registry, META_HPP_FWD(instance)};
+        return state_->invoke(vinst, {vargs.begin(), vargs.end()});
     }
 
     template < typename Instance, typename Iter >
     uresult method::try_invoke_variadic(Instance&& instance, Iter first, Iter last) const {
+        // doesn't actually move an 'instance', just checks conversion errors
         if ( const uerror err = check_variadic_invocable_error(META_HPP_FWD(instance), first, last) ) {
             return err;
         }
@@ -8035,19 +8113,26 @@ namespace meta_hpp
     template < typename Instance, typename Iter >
     uerror method::check_variadic_invocable_error(Instance&& instance, Iter first, Iter last) const {
         using namespace detail;
+
+        const std::size_t arity = get_arity();
         type_registry& registry{type_registry::instance()};
 
-        const uinst_base vinst{registry, META_HPP_FWD(instance)};
-        static thread_local std::vector<uarg_base> vargs;
+        META_HPP_DETAIL_IGNORE_ALLOCA_WARNINGS_PUSH()
 
-        vargs.clear();
-        vargs.reserve(get_type().get_arity());
+        void* vargs_mem = META_HPP_ALLOCA(sizeof(uarg_base) * arity);
+        detail::inline_vector<uarg_base> vargs{static_cast<uarg_base*>(vargs_mem), arity};
 
-        for ( ; first != last; ++first ) {
+        META_HPP_DETAIL_IGNORE_ALLOCA_WARNINGS_POP()
+
+        for ( std::size_t i{}; first != last; ++i, ++first ) {
+            if ( i >= arity ) {
+                return uerror(error_code::arity_mismatch);
+            }
             vargs.emplace_back(registry, *first);
         }
 
-        return state_->invoke_error(vinst, vargs);
+        const uinst_base vinst{registry, META_HPP_FWD(instance)};
+        return state_->invoke_error(vinst, {vargs.begin(), vargs.end()});
     }
 }
 
@@ -8073,19 +8158,47 @@ namespace meta_hpp
 
     template < function_pointer_kind Function, typename... Args >
     uresult try_invoke(Function function_ptr, Args&&... args) {
+        // doesn't actually move 'args', just checks conversion errors
+        if ( const uerror err = check_invocable_error(function_ptr, META_HPP_FWD(args)...) ) {
+            return err;
+        }
+        return invoke(function_ptr, META_HPP_FWD(args)...);
+    }
+
+    template < typename Iter >
+    uvalue invoke_variadic(const function& function, Iter first, Iter last) {
+        return function.invoke_variadic(first, last);
+    }
+
+    template < typename Iter >
+    uresult try_invoke_variadic(const function& function, Iter first, Iter last) {
+        return function.try_invoke_variadic(first, last);
+    }
+
+    template < function_pointer_kind Function, typename Iter >
+    uvalue invoke_variadic(Function function_ptr, Iter first, Iter last) {
         using namespace detail;
         type_registry& registry{type_registry::instance()};
 
-        {
-            // doesn't actually move 'args', just checks conversion errors
-            const std::array<uarg_base, sizeof...(Args)> vargs{uarg_base{registry, META_HPP_FWD(args)}...};
-            if ( const uerror err = raw_function_invoke_error<Function>(registry, vargs) ) {
-                return err;
+        using ft = function_traits<std::remove_pointer_t<Function>>;
+        std::array<uarg, ft::arity> vargs;
+
+        for ( std::size_t count{}; first != last; ++count, ++first ) {
+            if ( count >= ft::arity ) {
+                throw_exception(error_code::arity_mismatch);
             }
+            vargs[count] = uarg{registry, *first};
         }
 
-        const std::array<uarg, sizeof...(Args)> vargs{uarg{registry, META_HPP_FWD(args)}...};
         return raw_function_invoke<function_policy::as_copy_t>(registry, function_ptr, vargs);
+    }
+
+    template < function_pointer_kind Function, typename Iter >
+    uresult try_invoke_variadic(Function function_ptr, Iter first, Iter last) {
+        if ( const uerror err = check_variadic_invocable_error(function_ptr, first, last) ) {
+            return err;
+        }
+        return invoke_variadic(function_ptr, first, last);
     }
 }
 
@@ -8111,19 +8224,11 @@ namespace meta_hpp
 
     template < member_pointer_kind Member, typename Instance >
     uresult try_invoke(Member member_ptr, Instance&& instance) {
-        using namespace detail;
-        type_registry& registry{type_registry::instance()};
-
-        {
-            // doesn't actually move an 'instance', just checks conversion errors
-            const uinst_base vinst{registry, META_HPP_FWD(instance)};
-            if ( const uerror err = raw_member_getter_error<Member>(registry, vinst) ) {
-                return err;
-            }
+        // doesn't actually move an 'instance', just checks conversion errors
+        if ( const uerror err = check_invocable_error(member_ptr, META_HPP_FWD(instance)) ) {
+            return err;
         }
-
-        const uinst vinst{registry, META_HPP_FWD(instance)};
-        return raw_member_getter<member_policy::as_copy_t>(registry, member_ptr, vinst);
+        return invoke(member_ptr, META_HPP_FWD(instance));
     }
 }
 
@@ -8150,21 +8255,49 @@ namespace meta_hpp
 
     template < method_pointer_kind Method, typename Instance, typename... Args >
     uresult try_invoke(Method method_ptr, Instance&& instance, Args&&... args) {
+        // doesn't actually move an 'instance' and 'args', just checks conversion errors
+        if ( const uerror err = check_invocable_error(method_ptr, META_HPP_FWD(instance), META_HPP_FWD(args)...) ) {
+            return err;
+        }
+        return invoke(method_ptr, META_HPP_FWD(instance), META_HPP_FWD(args)...);
+    }
+
+    template < typename Instance, typename Iter >
+    uvalue invoke_variadic(const method& method, Instance&& instance, Iter first, Iter last) {
+        return method.invoke_variadic(META_HPP_FWD(instance), first, last);
+    }
+
+    template < typename Instance, typename Iter >
+    uresult try_invoke_variadic(const method& method, Instance&& instance, Iter first, Iter last) {
+        return method.try_invoke_variadic(META_HPP_FWD(instance), first, last);
+    }
+
+    template < method_pointer_kind Method, typename Instance, typename Iter >
+    uvalue invoke_variadic(Method method_ptr, Instance&& instance, Iter first, Iter last) {
         using namespace detail;
         type_registry& registry{type_registry::instance()};
 
-        {
-            // doesn't actually move an 'instance' and 'args', just checks conversion errors
-            const uinst_base vinst{registry, META_HPP_FWD(instance)};
-            const std::array<uarg_base, sizeof...(Args)> vargs{uarg_base{registry, META_HPP_FWD(args)}...};
-            if ( const uerror err = raw_method_invoke_error<Method>(registry, vinst, vargs) ) {
-                return err;
+        using mt = method_traits<Method>;
+        std::array<uarg, mt::arity> vargs;
+
+        for ( std::size_t count{}; first != last; ++count, ++first ) {
+            if ( count >= mt::arity ) {
+                throw_exception(error_code::arity_mismatch);
             }
+            vargs[count] = uarg{registry, *first};
         }
 
         const uinst vinst{registry, META_HPP_FWD(instance)};
-        const std::array<uarg, sizeof...(Args)> vargs{uarg{registry, META_HPP_FWD(args)}...};
         return raw_method_invoke<method_policy::as_copy_t>(registry, method_ptr, vinst, vargs);
+    }
+
+    template < method_pointer_kind Method, typename Instance, typename Iter >
+    uresult try_invoke_variadic(Method method_ptr, Instance&& instance, Iter first, Iter last) {
+        // doesn't actually move an 'instance', just checks conversion errors
+        if ( const uerror err = check_variadic_invocable_error(method_ptr, META_HPP_FWD(instance), first, last) ) {
+            return err;
+        }
+        return invoke_variadic(method_ptr, META_HPP_FWD(instance), first, last);
     }
 }
 
@@ -8213,6 +8346,39 @@ namespace meta_hpp
         using namespace detail;
         type_registry& registry{type_registry::instance()};
         const std::array<uarg_base, sizeof...(Args)> vargs{uarg_base{registry, META_HPP_FWD(args)}...};
+        return raw_function_invoke_error<Function>(registry, vargs);
+    }
+
+    template < typename Iter >
+    bool is_variadic_invocable_with(const function& function, Iter first, Iter last) {
+        return function.is_variadic_invocable_with(first, last);
+    }
+
+    template < typename Iter, function_pointer_kind Function >
+    bool is_variadic_invocable_with(Function function_ptr, Iter first, Iter last) {
+        return !check_variadic_invocable_error(function_ptr, first, last);
+    }
+
+    template < typename Iter >
+    uerror check_variadic_invocable_error(const function& function, Iter first, Iter last) {
+        return function.check_variadic_invocable_error(first, last);
+    }
+
+    template < typename Iter, function_pointer_kind Function >
+    uerror check_variadic_invocable_error(Function, Iter first, Iter last) {
+        using namespace detail;
+        type_registry& registry{type_registry::instance()};
+
+        using ft = function_traits<std::remove_pointer_t<Function>>;
+        std::array<uarg_base, ft::arity> vargs;
+
+        for ( std::size_t count{}; first != last; ++count, ++first ) {
+            if ( count >= ft::arity ) {
+                return uerror{error_code::arity_mismatch};
+            }
+            vargs[count] = uarg_base{registry, *first};
+        }
+
         return raw_function_invoke_error<Function>(registry, vargs);
     }
 }
@@ -8313,6 +8479,40 @@ namespace meta_hpp
         type_registry& registry{type_registry::instance()};
         const uinst_base vinst{registry, META_HPP_FWD(instance)};
         const std::array<uarg_base, sizeof...(Args)> vargs{uarg_base{registry, META_HPP_FWD(args)}...};
+        return raw_method_invoke_error<Method>(registry, vinst, vargs);
+    }
+
+    template < typename Instance, typename Iter >
+    bool is_variadic_invocable_with(const method& method, Instance&& instance, Iter first, Iter last) {
+        return method.is_variadic_invocable_with(META_HPP_FWD(instance), first, last);
+    }
+
+    template < typename Instance, typename Iter, method_pointer_kind Method >
+    bool is_variadic_invocable_with(Method method_ptr, Instance&& instance, Iter first, Iter last) {
+        return !check_variadic_invocable_error(method_ptr, META_HPP_FWD(instance), first, last);
+    }
+
+    template < typename Instance, typename Iter >
+    uerror check_variadic_invocable_error(const method& method, Instance&& instance, Iter first, Iter last) {
+        return method.check_variadic_invocable_error(META_HPP_FWD(instance), first, last);
+    }
+
+    template < typename Instance, typename Iter, method_pointer_kind Method >
+    uerror check_variadic_invocable_error(Method, Instance&& instance, Iter first, Iter last) {
+        using namespace detail;
+        type_registry& registry{type_registry::instance()};
+
+        using mt = method_traits<Method>;
+        std::array<uarg_base, mt::arity> vargs;
+
+        for ( std::size_t count{}; first != last; ++count, ++first ) {
+            if ( count >= mt::arity ) {
+                return uerror{error_code::arity_mismatch};
+            }
+            vargs[count] = uarg_base{registry, *first};
+        }
+
+        const uinst_base vinst{registry, META_HPP_FWD(instance)};
         return raw_method_invoke_error<Method>(registry, vinst, vargs);
     }
 }
@@ -8540,10 +8740,11 @@ namespace meta_hpp::detail
 
     template < constructor_policy_family Policy, class_kind Class, typename... Args >
     constructor_state::state_ptr constructor_state::make(metadata_map metadata) {
+        using ct = constructor_traits<Class, Args...>;
         type_registry& registry{type_registry::instance()};
 
         constructor_state state{
-            constructor_index{registry.resolve_by_traits<constructor_traits<Class, Args...>>()},
+            constructor_index{registry.resolve_by_traits<ct>()},
             std::move(metadata),
         };
 
@@ -8609,17 +8810,17 @@ namespace meta_hpp
     }
 
     template < typename... Args >
-    bool constructor::is_invocable_with() const noexcept {
+    bool constructor::is_invocable_with() const {
         return !check_invocable_error<Args...>();
     }
 
     template < typename... Args >
-    bool constructor::is_invocable_with(Args&&... args) const noexcept {
+    bool constructor::is_invocable_with(Args&&... args) const {
         return !check_invocable_error(META_HPP_FWD(args)...);
     }
 
     template < typename... Args >
-    uerror constructor::check_invocable_error() const noexcept {
+    uerror constructor::check_invocable_error() const {
         using namespace detail;
         type_registry& registry{type_registry::instance()};
         const std::array<uarg_base, sizeof...(Args)> vargs{uarg_base{registry, type_list<Args>{}}...};
@@ -8627,7 +8828,7 @@ namespace meta_hpp
     }
 
     template < typename... Args >
-    uerror constructor::check_invocable_error(Args&&... args) const noexcept {
+    uerror constructor::check_invocable_error(Args&&... args) const {
         using namespace detail;
         type_registry& registry{type_registry::instance()};
         const std::array<uarg_base, sizeof...(Args)> vargs{uarg_base{registry, META_HPP_FWD(args)}...};
@@ -8637,18 +8838,25 @@ namespace meta_hpp
     template < typename Iter >
     uvalue constructor::create_variadic(Iter first, Iter last) const {
         using namespace detail;
+
+        const std::size_t arity = get_arity();
         type_registry& registry{type_registry::instance()};
 
-        static thread_local std::vector<uarg> vargs;
+        META_HPP_DETAIL_IGNORE_ALLOCA_WARNINGS_PUSH()
 
-        vargs.clear();
-        vargs.reserve(get_type().get_arity());
+        void* vargs_mem = META_HPP_ALLOCA(sizeof(uarg) * arity);
+        detail::inline_vector<uarg> vargs{static_cast<uarg*>(vargs_mem), arity};
 
-        for ( ; first != last; ++first ) {
+        META_HPP_DETAIL_IGNORE_ALLOCA_WARNINGS_POP()
+
+        for ( std::size_t i{}; first != last; ++i, ++first ) {
+            if ( i >= arity ) {
+                throw_exception(error_code::arity_mismatch);
+            }
             vargs.emplace_back(registry, *first);
         }
 
-        return state_->create(vargs);
+        return state_->create({vargs.begin(), vargs.end()});
     }
 
     template < typename Iter >
@@ -8662,18 +8870,25 @@ namespace meta_hpp
     template < typename Iter >
     uvalue constructor::create_variadic_at(void* mem, Iter first, Iter last) const {
         using namespace detail;
+
+        const std::size_t arity = get_arity();
         type_registry& registry{type_registry::instance()};
 
-        static thread_local std::vector<uarg> vargs;
+        META_HPP_DETAIL_IGNORE_ALLOCA_WARNINGS_PUSH()
 
-        vargs.clear();
-        vargs.reserve(get_type().get_arity());
+        void* vargs_mem = META_HPP_ALLOCA(sizeof(uarg) * arity);
+        detail::inline_vector<uarg> vargs{static_cast<uarg*>(vargs_mem), arity};
 
-        for ( ; first != last; ++first ) {
+        META_HPP_DETAIL_IGNORE_ALLOCA_WARNINGS_POP()
+
+        for ( std::size_t i{}; first != last; ++i, ++first ) {
+            if ( i >= arity ) {
+                throw_exception(error_code::arity_mismatch);
+            }
             vargs.emplace_back(registry, *first);
         }
 
-        return state_->create_at(mem, vargs);
+        return state_->create_at(mem, {vargs.begin(), vargs.end()});
     }
 
     template < typename Iter >
@@ -8685,25 +8900,32 @@ namespace meta_hpp
     }
 
     template < typename Iter >
-    bool constructor::is_variadic_invocable_with(Iter first, Iter last) const noexcept {
+    bool constructor::is_variadic_invocable_with(Iter first, Iter last) const {
         return !check_variadic_invocable_error(first, last);
     }
 
     template < typename Iter >
-    uerror constructor::check_variadic_invocable_error(Iter first, Iter last) const noexcept {
+    uerror constructor::check_variadic_invocable_error(Iter first, Iter last) const {
         using namespace detail;
+
+        const std::size_t arity = get_arity();
         type_registry& registry{type_registry::instance()};
 
-        static thread_local std::vector<uarg_base> vargs;
+        META_HPP_DETAIL_IGNORE_ALLOCA_WARNINGS_PUSH()
 
-        vargs.clear();
-        vargs.reserve(get_type().get_arity());
+        void* vargs_mem = META_HPP_ALLOCA(sizeof(uarg_base) * arity);
+        detail::inline_vector<uarg_base> vargs{static_cast<uarg_base*>(vargs_mem), arity};
 
-        for ( ; first != last; ++first ) {
+        META_HPP_DETAIL_IGNORE_ALLOCA_WARNINGS_POP()
+
+        for ( std::size_t i{}; first != last; ++i, ++first ) {
+            if ( i >= arity ) {
+                return uerror(error_code::arity_mismatch);
+            }
             vargs.emplace_back(registry, *first);
         }
 
-        return state_->create_error(vargs);
+        return state_->create_error({vargs.begin(), vargs.end()});
     }
 }
 
@@ -8850,17 +9072,17 @@ namespace meta_hpp
     }
 
     template < typename Arg >
-    bool destructor::is_invocable_with() const noexcept {
+    bool destructor::is_invocable_with() const {
         return !check_invocable_error<Arg>();
     }
 
     template < typename Arg >
-    bool destructor::is_invocable_with(Arg&& arg) const noexcept {
+    bool destructor::is_invocable_with(Arg&& arg) const {
         return !check_invocable_error(META_HPP_FWD(arg));
     }
 
     template < typename Arg >
-    uerror destructor::check_invocable_error() const noexcept {
+    uerror destructor::check_invocable_error() const {
         using namespace detail;
         type_registry& registry{type_registry::instance()};
         const uarg_base varg{registry, type_list<Arg>{}};
@@ -8868,7 +9090,7 @@ namespace meta_hpp
     }
 
     template < typename Arg >
-    uerror destructor::check_invocable_error(Arg&& arg) const noexcept {
+    uerror destructor::check_invocable_error(Arg&& arg) const {
         using namespace detail;
         type_registry& registry{type_registry::instance()};
         const uarg_base varg{registry, META_HPP_FWD(arg)};
@@ -8909,7 +9131,7 @@ namespace meta_hpp
     }
 
     template < enum_kind Enum >
-    std::string_view enum_type::value_to_name(Enum value) const noexcept {
+    std::string_view enum_type::value_to_name(Enum value) const {
         if ( resolve_type<Enum>() != *this ) {
             return std::string_view{};
         }
@@ -9166,17 +9388,17 @@ namespace meta_hpp
     }
 
     template < typename Value >
-    bool variable::is_settable_with() const noexcept {
+    bool variable::is_settable_with() const {
         return !check_settable_error<Value>();
     }
 
     template < typename Value >
-    bool variable::is_settable_with(Value&& value) const noexcept {
+    bool variable::is_settable_with(Value&& value) const {
         return !check_settable_error(META_HPP_FWD(value));
     }
 
     template < typename Value >
-    uerror variable::check_settable_error() const noexcept {
+    uerror variable::check_settable_error() const {
         using namespace detail;
         type_registry& registry{type_registry::instance()};
         const uarg_base vvalue{registry, type_list<Value>{}};
@@ -9184,7 +9406,7 @@ namespace meta_hpp
     }
 
     template < typename Value >
-    uerror variable::check_settable_error(Value&& value) const noexcept {
+    uerror variable::check_settable_error(Value&& value) const {
         using namespace detail;
         type_registry& registry{type_registry::instance()};
         const uarg_base vvalue{registry, META_HPP_FWD(value)};
@@ -9217,21 +9439,19 @@ namespace meta_hpp::detail::class_type_data_impl
         });
 
         if constexpr ( check_base_info_enabled<Target> ) {
-            using target_base_info = get_meta_base_info<Target>;
-            target_base_info::for_each([&info]<class_kind TargetBase>() { //
-                add_upcast_info<Class, TargetBase>(info);
-            });
+            [&info]<typename... TargetBases>(type_list<TargetBases...>) {
+                (add_upcast_info<Class, TargetBases>(info), ...);
+            }(get_meta_base_info<Target>{});
         }
     }
 
     template < class_kind Class >
     void fill_upcast_info(new_base_info_t& info) {
         if constexpr ( check_base_info_enabled<Class> ) {
-            using class_base_info = get_meta_base_info<Class>;
-            class_base_info::for_each([&info]<class_kind ClassBase>() {
-                info.base_classes.push_back(resolve_type<ClassBase>());
-                add_upcast_info<Class, ClassBase>(info);
-            });
+            [&info]<typename... ClassBases>(type_list<ClassBases...>) {
+                (info.base_classes.push_back(resolve_type<ClassBases>()), ...);
+                (add_upcast_info<Class, ClassBases>(info), ...);
+            }(get_meta_base_info<Class>{});
         }
     }
 
@@ -9416,7 +9636,7 @@ namespace meta_hpp
     }
 
     template < class_kind Derived >
-    bool class_type::is_base_of() const noexcept {
+    bool class_type::is_base_of() const {
         return is_base_of(resolve_type<Derived>());
     }
 
@@ -9435,7 +9655,7 @@ namespace meta_hpp
     }
 
     template < class_kind Derived >
-    bool class_type::is_direct_base_of() const noexcept {
+    bool class_type::is_direct_base_of() const {
         return is_direct_base_of(resolve_type<Derived>());
     }
 
@@ -9454,7 +9674,7 @@ namespace meta_hpp
     }
 
     template < class_kind Base >
-    bool class_type::is_derived_from() const noexcept {
+    bool class_type::is_derived_from() const {
         return is_derived_from(resolve_type<Base>());
     }
 
@@ -9463,7 +9683,7 @@ namespace meta_hpp
     }
 
     template < class_kind Base >
-    bool class_type::is_direct_derived_from() const noexcept {
+    bool class_type::is_direct_derived_from() const {
         return is_direct_derived_from(resolve_type<Base>());
     }
 
@@ -9564,13 +9784,13 @@ namespace meta_hpp
     //
 
     template < typename... Args >
-    constructor class_type::get_constructor_with() const noexcept {
+    constructor class_type::get_constructor_with() const {
         detail::type_registry& registry{detail::type_registry::instance()};
         return get_constructor_with({registry.resolve_by_type<Args>()...});
     }
 
     template < typename Iter >
-    constructor class_type::get_constructor_with(Iter first, Iter last) const noexcept {
+    constructor class_type::get_constructor_with(Iter first, Iter last) const {
         for ( const constructor& constructor : data_->constructors ) {
             const constructor_type& constructor_type = constructor.get_type();
             const any_type_list& constructor_args = constructor_type.get_argument_types();
@@ -9609,7 +9829,7 @@ namespace meta_hpp
     function class_type::get_function_with( //
         std::string_view name,
         bool recursively
-    ) const noexcept {
+    ) const {
         detail::type_registry& registry{detail::type_registry::instance()};
         return get_function_with(name, {registry.resolve_by_type<Args>()...}, recursively);
     }
@@ -9620,7 +9840,7 @@ namespace meta_hpp
         Iter first,
         Iter last,
         bool recursively
-    ) const noexcept {
+    ) const {
         for ( const function& function : data_->functions ) {
             if ( function.get_name() != name ) {
                 continue;
@@ -9669,7 +9889,7 @@ namespace meta_hpp
     method class_type::get_method_with( //
         std::string_view name,
         bool recursively
-    ) const noexcept {
+    ) const {
         detail::type_registry& registry{detail::type_registry::instance()};
         return get_method_with(name, {registry.resolve_by_type<Args>()...}, recursively);
     }
@@ -9680,7 +9900,7 @@ namespace meta_hpp
         Iter first,
         Iter last,
         bool recursively
-    ) const noexcept {
+    ) const {
         for ( const method& method : data_->methods ) {
             if ( method.get_name() != name ) {
                 continue;
@@ -9783,7 +10003,7 @@ namespace meta_hpp
     template < typename... Args >
     function scope::get_function_with( //
         std::string_view name
-    ) const noexcept {
+    ) const {
         detail::type_registry& registry{detail::type_registry::instance()};
         return get_function_with(name, {registry.resolve_by_type<Args>()...});
     }
@@ -9793,7 +10013,7 @@ namespace meta_hpp
         std::string_view name,
         Iter first,
         Iter last
-    ) const noexcept {
+    ) const {
         for ( const function& function : state_->functions ) {
             if ( function.get_name() != name ) {
                 continue;

@@ -2,7 +2,7 @@
 
 ## Backlog
 
-- add variadic variant of invoking to meta_invoke
+- add coverage information
 
 ## Version 1.0
 

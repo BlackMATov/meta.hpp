@@ -14,7 +14,7 @@
 #include "meta_base/fixed_function.hpp"
 #include "meta_base/fnv1a_hash.hpp"
 #include "meta_base/hash_composer.hpp"
-#include "meta_base/hashed_string.hpp"
+#include "meta_base/inline_vector.hpp"
 #include "meta_base/insert_or_assign.hpp"
 #include "meta_base/is_in_place_type.hpp"
 #include "meta_base/memory_buffer.hpp"
@@ -31,16 +31,12 @@ namespace meta_hpp
     using detail::exception;
     using detail::get_error_code_message;
 
-    using detail::hashed_string;
     using detail::memory_buffer;
-
     using detail::overloaded;
 
     using detail::select_const;
     using detail::select_non_const;
     using detail::select_overload;
-
-    using detail::type_list;
 }
 
 namespace meta_hpp

@@ -86,16 +86,16 @@ namespace meta_hpp
         uresult try_create_at(void* mem, Args&&... args) const;
 
         template < typename... Args >
-        [[nodiscard]] bool is_invocable_with() const noexcept;
+        [[nodiscard]] bool is_invocable_with() const;
 
         template < typename... Args >
-        [[nodiscard]] bool is_invocable_with(Args&&... args) const noexcept;
+        [[nodiscard]] bool is_invocable_with(Args&&... args) const;
 
         template < typename... Args >
-        [[nodiscard]] uerror check_invocable_error() const noexcept;
+        [[nodiscard]] uerror check_invocable_error() const;
 
         template < typename... Args >
-        [[nodiscard]] uerror check_invocable_error(Args&&... args) const noexcept;
+        [[nodiscard]] uerror check_invocable_error(Args&&... args) const;
 
         //
 
@@ -112,10 +112,10 @@ namespace meta_hpp
         uresult try_create_variadic_at(void* mem, Iter first, Iter last) const;
 
         template < typename Iter >
-        [[nodiscard]] bool is_variadic_invocable_with(Iter first, Iter last) const noexcept;
+        [[nodiscard]] bool is_variadic_invocable_with(Iter first, Iter last) const;
 
         template < typename Iter >
-        [[nodiscard]] uerror check_variadic_invocable_error(Iter first, Iter last) const noexcept;
+        [[nodiscard]] uerror check_variadic_invocable_error(Iter first, Iter last) const;
     };
 
     class destructor final : public state_base<destructor> {
@@ -135,16 +135,16 @@ namespace meta_hpp
         uresult try_destroy_at(void* mem) const;
 
         template < typename Arg >
-        [[nodiscard]] bool is_invocable_with() const noexcept;
+        [[nodiscard]] bool is_invocable_with() const;
 
         template < typename Arg >
-        [[nodiscard]] bool is_invocable_with(Arg&& arg) const noexcept;
+        [[nodiscard]] bool is_invocable_with(Arg&& arg) const;
 
         template < typename Arg >
-        [[nodiscard]] uerror check_invocable_error() const noexcept;
+        [[nodiscard]] uerror check_invocable_error() const;
 
         template < typename Arg >
-        [[nodiscard]] uerror check_invocable_error(Arg&& arg) const noexcept;
+        [[nodiscard]] uerror check_invocable_error(Arg&& arg) const;
     };
 
     class evalue final : public state_base<evalue> {
@@ -181,16 +181,16 @@ namespace meta_hpp
         uvalue operator()(Args&&... args) const;
 
         template < typename... Args >
-        [[nodiscard]] bool is_invocable_with() const noexcept;
+        [[nodiscard]] bool is_invocable_with() const;
 
         template < typename... Args >
-        [[nodiscard]] bool is_invocable_with(Args&&... args) const noexcept;
+        [[nodiscard]] bool is_invocable_with(Args&&... args) const;
 
         template < typename... Args >
-        [[nodiscard]] uerror check_invocable_error() const noexcept;
+        [[nodiscard]] uerror check_invocable_error() const;
 
         template < typename... Args >
-        [[nodiscard]] uerror check_invocable_error(Args&&... args) const noexcept;
+        [[nodiscard]] uerror check_invocable_error(Args&&... args) const;
 
         //
 
@@ -233,28 +233,28 @@ namespace meta_hpp
         void operator()(Instance&& instance, Value&& value) const;
 
         template < typename Instance >
-        [[nodiscard]] bool is_gettable_with() const noexcept;
+        [[nodiscard]] bool is_gettable_with() const;
 
         template < typename Instance >
-        [[nodiscard]] bool is_gettable_with(Instance&& instance) const noexcept;
+        [[nodiscard]] bool is_gettable_with(Instance&& instance) const;
 
         template < typename Instance, typename Value >
-        [[nodiscard]] bool is_settable_with() const noexcept;
+        [[nodiscard]] bool is_settable_with() const;
 
         template < typename Instance, typename Value >
-        [[nodiscard]] bool is_settable_with(Instance&& instance, Value&& value) const noexcept;
+        [[nodiscard]] bool is_settable_with(Instance&& instance, Value&& value) const;
 
         template < typename Instance >
-        [[nodiscard]] uerror check_gettable_error() const noexcept;
+        [[nodiscard]] uerror check_gettable_error() const;
 
         template < typename Instance >
-        [[nodiscard]] uerror check_gettable_error(Instance&& instance) const noexcept;
+        [[nodiscard]] uerror check_gettable_error(Instance&& instance) const;
 
         template < typename Instance, typename Value >
-        [[nodiscard]] uerror check_settable_error() const noexcept;
+        [[nodiscard]] uerror check_settable_error() const;
 
         template < typename Instance, typename Value >
-        [[nodiscard]] uerror check_settable_error(Instance&& instance, Value&& value) const noexcept;
+        [[nodiscard]] uerror check_settable_error(Instance&& instance, Value&& value) const;
     };
 
     class method final : public state_base<method> {
@@ -280,16 +280,16 @@ namespace meta_hpp
         uvalue operator()(Instance&& instance, Args&&... args) const;
 
         template < typename Instance, typename... Args >
-        [[nodiscard]] bool is_invocable_with() const noexcept;
+        [[nodiscard]] bool is_invocable_with() const;
 
         template < typename Instance, typename... Args >
-        [[nodiscard]] bool is_invocable_with(Instance&& instance, Args&&... args) const noexcept;
+        [[nodiscard]] bool is_invocable_with(Instance&& instance, Args&&... args) const;
 
         template < typename Instance, typename... Args >
-        [[nodiscard]] uerror check_invocable_error() const noexcept;
+        [[nodiscard]] uerror check_invocable_error() const;
 
         template < typename Instance, typename... Args >
-        [[nodiscard]] uerror check_invocable_error(Instance&& instance, Args&&... args) const noexcept;
+        [[nodiscard]] uerror check_invocable_error(Instance&& instance, Args&&... args) const;
 
         //
 
@@ -323,14 +323,14 @@ namespace meta_hpp
         template < typename... Args >
         [[nodiscard]] function get_function_with( //
             std::string_view name
-        ) const noexcept;
+        ) const;
 
         template < typename Iter >
         [[nodiscard]] function get_function_with( //
             std::string_view name,
             Iter first,
             Iter last
-        ) const noexcept;
+        ) const;
 
         [[nodiscard]] function get_function_with( //
             std::string_view name,
@@ -365,16 +365,16 @@ namespace meta_hpp
         void operator()(Value&& value) const;
 
         template < typename Value >
-        [[nodiscard]] bool is_settable_with() const noexcept;
+        [[nodiscard]] bool is_settable_with() const;
 
         template < typename Value >
-        [[nodiscard]] bool is_settable_with(Value&& value) const noexcept;
+        [[nodiscard]] bool is_settable_with(Value&& value) const;
 
         template < typename Value >
-        [[nodiscard]] uerror check_settable_error() const noexcept;
+        [[nodiscard]] uerror check_settable_error() const;
 
         template < typename Value >
-        [[nodiscard]] uerror check_settable_error(Value&& value) const noexcept;
+        [[nodiscard]] uerror check_settable_error(Value&& value) const;
     };
 }
 

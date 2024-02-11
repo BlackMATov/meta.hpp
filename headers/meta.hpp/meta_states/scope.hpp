@@ -77,7 +77,7 @@ namespace meta_hpp
     template < typename... Args >
     function scope::get_function_with( //
         std::string_view name
-    ) const noexcept {
+    ) const {
         detail::type_registry& registry{detail::type_registry::instance()};
         return get_function_with(name, {registry.resolve_by_type<Args>()...});
     }
@@ -87,7 +87,7 @@ namespace meta_hpp
         std::string_view name,
         Iter first,
         Iter last
-    ) const noexcept {
+    ) const {
         for ( const function& function : state_->functions ) {
             if ( function.get_name() != name ) {
                 continue;
