@@ -935,6 +935,9 @@ namespace meta_hpp::detail
 
         // clang-format off
 
+        [[nodiscard]] T* data() noexcept { return begin_; }
+        [[nodiscard]] const T* data() const noexcept { return begin_; }
+
         [[nodiscard]] T* begin() noexcept { return begin_; }
         [[nodiscard]] const T* begin() const noexcept { return begin_; }
         [[nodiscard]] const T* cbegin() const noexcept { return begin_; }
