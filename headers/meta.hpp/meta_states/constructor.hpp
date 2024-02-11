@@ -264,7 +264,7 @@ namespace meta_hpp
             vargs.emplace_back(registry, *first);
         }
 
-        return state_->create(vargs);
+        return state_->create({vargs.begin(), vargs.end()});
     }
 
     template < typename Iter >
@@ -296,7 +296,7 @@ namespace meta_hpp
             vargs.emplace_back(registry, *first);
         }
 
-        return state_->create_at(mem, vargs);
+        return state_->create_at(mem, {vargs.begin(), vargs.end()});
     }
 
     template < typename Iter >
@@ -333,6 +333,6 @@ namespace meta_hpp
             vargs.emplace_back(registry, *first);
         }
 
-        return state_->create_error(vargs);
+        return state_->create_error({vargs.begin(), vargs.end()});
     }
 }

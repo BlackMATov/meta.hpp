@@ -242,7 +242,7 @@ namespace meta_hpp
         }
 
         const uinst vinst{registry, META_HPP_FWD(instance)};
-        return state_->invoke(vinst, vargs);
+        return state_->invoke(vinst, {vargs.begin(), vargs.end()});
     }
 
     template < typename Instance, typename Iter >
@@ -281,6 +281,6 @@ namespace meta_hpp
         }
 
         const uinst_base vinst{registry, META_HPP_FWD(instance)};
-        return state_->invoke_error(vinst, vargs);
+        return state_->invoke_error(vinst, {vargs.begin(), vargs.end()});
     }
 }

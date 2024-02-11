@@ -226,7 +226,7 @@ namespace meta_hpp
             vargs.emplace_back(registry, *first);
         }
 
-        return state_->invoke(vargs);
+        return state_->invoke({vargs.begin(), vargs.end()});
     }
 
     template < typename Iter >
@@ -263,6 +263,6 @@ namespace meta_hpp
             vargs.emplace_back(registry, *first);
         }
 
-        return state_->invoke_error(vargs);
+        return state_->invoke_error({vargs.begin(), vargs.end()});
     }
 }

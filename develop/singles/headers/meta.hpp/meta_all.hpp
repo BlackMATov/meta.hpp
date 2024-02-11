@@ -7254,7 +7254,7 @@ namespace meta_hpp
             vargs.emplace_back(registry, *first);
         }
 
-        return state_->invoke(vargs);
+        return state_->invoke({vargs.begin(), vargs.end()});
     }
 
     template < typename Iter >
@@ -7291,7 +7291,7 @@ namespace meta_hpp
             vargs.emplace_back(registry, *first);
         }
 
-        return state_->invoke_error(vargs);
+        return state_->invoke_error({vargs.begin(), vargs.end()});
     }
 }
 
@@ -8154,7 +8154,7 @@ namespace meta_hpp
         }
 
         const uinst vinst{registry, META_HPP_FWD(instance)};
-        return state_->invoke(vinst, vargs);
+        return state_->invoke(vinst, {vargs.begin(), vargs.end()});
     }
 
     template < typename Instance, typename Iter >
@@ -8193,7 +8193,7 @@ namespace meta_hpp
         }
 
         const uinst_base vinst{registry, META_HPP_FWD(instance)};
-        return state_->invoke_error(vinst, vargs);
+        return state_->invoke_error(vinst, {vargs.begin(), vargs.end()});
     }
 }
 
@@ -8917,7 +8917,7 @@ namespace meta_hpp
             vargs.emplace_back(registry, *first);
         }
 
-        return state_->create(vargs);
+        return state_->create({vargs.begin(), vargs.end()});
     }
 
     template < typename Iter >
@@ -8949,7 +8949,7 @@ namespace meta_hpp
             vargs.emplace_back(registry, *first);
         }
 
-        return state_->create_at(mem, vargs);
+        return state_->create_at(mem, {vargs.begin(), vargs.end()});
     }
 
     template < typename Iter >
@@ -8986,7 +8986,7 @@ namespace meta_hpp
             vargs.emplace_back(registry, *first);
         }
 
-        return state_->create_error(vargs);
+        return state_->create_error({vargs.begin(), vargs.end()});
     }
 }
 
