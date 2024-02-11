@@ -152,9 +152,9 @@ namespace meta_hpp::detail::impl
 
             hash << shared_type<typename traits::class_type>{}();
 
-            traits::argument_types::for_each([&hash]<typename Arg>() { //
-                hash << shared_type<Arg>{}();
-            });
+            [&hash]<typename... ArgTypes>(type_list<ArgTypes...>) {
+                ((hash << shared_type<ArgTypes>{}()), ...);
+            }(typename traits::argument_types{});
 
             return hash.hash;
         }
@@ -201,9 +201,9 @@ namespace meta_hpp::detail::impl
 
             hash << shared_type<typename traits::return_type>{}();
 
-            traits::argument_types::for_each([&hash]<typename Arg>() { //
-                hash << shared_type<Arg>{}();
-            });
+            [&hash]<typename... ArgTypes>(type_list<ArgTypes...>) {
+                ((hash << shared_type<ArgTypes>{}()), ...);
+            }(typename traits::argument_types{});
 
             return hash.hash;
         }
@@ -237,9 +237,9 @@ namespace meta_hpp::detail::impl
             hash << shared_type<typename traits::class_type>{}();
             hash << shared_type<typename traits::return_type>{}();
 
-            traits::argument_types::for_each([&hash]<typename Arg>() { //
-                hash << shared_type<Arg>{}();
-            });
+            [&hash]<typename... ArgTypes>(type_list<ArgTypes...>) {
+                ((hash << shared_type<ArgTypes>{}()), ...);
+            }(typename traits::argument_types{});
 
             return hash.hash;
         }

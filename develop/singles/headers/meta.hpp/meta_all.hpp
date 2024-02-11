@@ -1176,13 +1176,7 @@ namespace meta_hpp::detail
 namespace meta_hpp::detail
 {
     template < typename... Types >
-    struct type_list {
-        template < typename F >
-        // NOLINTNEXTLINE(*-missing-std-forward)
-        static constexpr void for_each(F&& f) {
-            (f.template operator()<Types>(), ...);
-        }
-    };
+    struct type_list {};
 
     template < std::size_t I >
     using size_constant = std::integral_constant<std::size_t, I>;
@@ -6734,9 +6728,9 @@ namespace meta_hpp::detail::impl
 
             hash << shared_type<typename traits::class_type>{}();
 
-            traits::argument_types::for_each([&hash]<typename Arg>() { //
-                hash << shared_type<Arg>{}();
-            });
+            [&hash]<typename... ArgTypes>(type_list<ArgTypes...>) {
+                ((hash << shared_type<ArgTypes>{}()), ...);
+            }(typename traits::argument_types{});
 
             return hash.hash;
         }
@@ -6783,9 +6777,9 @@ namespace meta_hpp::detail::impl
 
             hash << shared_type<typename traits::return_type>{}();
 
-            traits::argument_types::for_each([&hash]<typename Arg>() { //
-                hash << shared_type<Arg>{}();
-            });
+            [&hash]<typename... ArgTypes>(type_list<ArgTypes...>) {
+                ((hash << shared_type<ArgTypes>{}()), ...);
+            }(typename traits::argument_types{});
 
             return hash.hash;
         }
@@ -6819,9 +6813,9 @@ namespace meta_hpp::detail::impl
             hash << shared_type<typename traits::class_type>{}();
             hash << shared_type<typename traits::return_type>{}();
 
-            traits::argument_types::for_each([&hash]<typename Arg>() { //
-                hash << shared_type<Arg>{}();
-            });
+            [&hash]<typename... ArgTypes>(type_list<ArgTypes...>) {
+                ((hash << shared_type<ArgTypes>{}()), ...);
+            }(typename traits::argument_types{});
 
             return hash.hash;
         }
@@ -9445,21 +9439,19 @@ namespace meta_hpp::detail::class_type_data_impl
         });
 
         if constexpr ( check_base_info_enabled<Target> ) {
-            using target_base_info = get_meta_base_info<Target>;
-            target_base_info::for_each([&info]<class_kind TargetBase>() { //
-                add_upcast_info<Class, TargetBase>(info);
-            });
+            [&info]<typename... TargetBases>(type_list<TargetBases...>) {
+                (add_upcast_info<Class, TargetBases>(info), ...);
+            }(get_meta_base_info<Target>{});
         }
     }
 
     template < class_kind Class >
     void fill_upcast_info(new_base_info_t& info) {
         if constexpr ( check_base_info_enabled<Class> ) {
-            using class_base_info = get_meta_base_info<Class>;
-            class_base_info::for_each([&info]<class_kind ClassBase>() {
-                info.base_classes.push_back(resolve_type<ClassBase>());
-                add_upcast_info<Class, ClassBase>(info);
-            });
+            [&info]<typename... ClassBases>(type_list<ClassBases...>) {
+                (info.base_classes.push_back(resolve_type<ClassBases>()), ...);
+                (add_upcast_info<Class, ClassBases>(info), ...);
+            }(get_meta_base_info<Class>{});
         }
     }
 
