@@ -180,19 +180,19 @@ namespace meta_hpp
         bool destroy_at(void* mem) const;
 
         template < class_kind Derived >
-        [[nodiscard]] bool is_base_of() const noexcept;
+        [[nodiscard]] bool is_base_of() const;
         [[nodiscard]] bool is_base_of(const class_type& derived) const noexcept;
 
         template < class_kind Derived >
-        [[nodiscard]] bool is_direct_base_of() const noexcept;
+        [[nodiscard]] bool is_direct_base_of() const;
         [[nodiscard]] bool is_direct_base_of(const class_type& derived) const noexcept;
 
         template < class_kind Base >
-        [[nodiscard]] bool is_derived_from() const noexcept;
+        [[nodiscard]] bool is_derived_from() const;
         [[nodiscard]] bool is_derived_from(const class_type& base) const noexcept;
 
         template < class_kind Base >
-        [[nodiscard]] bool is_direct_derived_from() const noexcept;
+        [[nodiscard]] bool is_direct_derived_from() const;
         [[nodiscard]] bool is_direct_derived_from(const class_type& base) const noexcept;
 
         [[nodiscard]] function get_function(std::string_view name, bool recursively = true) const noexcept;
@@ -202,9 +202,9 @@ namespace meta_hpp
         [[nodiscard]] variable get_variable(std::string_view name, bool recursively = true) const noexcept;
 
         template < typename... Args >
-        [[nodiscard]] constructor get_constructor_with() const noexcept;
+        [[nodiscard]] constructor get_constructor_with() const;
         template < typename Iter >
-        [[nodiscard]] constructor get_constructor_with(Iter first, Iter last) const noexcept;
+        [[nodiscard]] constructor get_constructor_with(Iter first, Iter last) const;
         [[nodiscard]] constructor get_constructor_with(std::span<const any_type> args) const noexcept;
         [[nodiscard]] constructor get_constructor_with(std::initializer_list<any_type> args) const noexcept;
 
@@ -214,7 +214,7 @@ namespace meta_hpp
         [[nodiscard]] function get_function_with( //
             std::string_view name,
             bool recursively = true
-        ) const noexcept;
+        ) const;
 
         template < typename Iter >
         [[nodiscard]] function get_function_with( //
@@ -222,7 +222,7 @@ namespace meta_hpp
             Iter first,
             Iter last,
             bool recursively = true
-        ) const noexcept;
+        ) const;
 
         [[nodiscard]] function get_function_with( //
             std::string_view name,
@@ -240,7 +240,7 @@ namespace meta_hpp
         [[nodiscard]] method get_method_with( //
             std::string_view name,
             bool recursively = true
-        ) const noexcept;
+        ) const;
 
         template < typename Iter >
         [[nodiscard]] method get_method_with( //
@@ -248,7 +248,7 @@ namespace meta_hpp
             Iter first,
             Iter last,
             bool recursively = true
-        ) const noexcept;
+        ) const;
 
         [[nodiscard]] method get_method_with( //
             std::string_view name,
@@ -294,7 +294,7 @@ namespace meta_hpp
         [[nodiscard]] evalue get_evalue(std::string_view name) const noexcept;
 
         template < enum_kind Enum >
-        [[nodiscard]] std::string_view value_to_name(Enum value) const noexcept;
+        [[nodiscard]] std::string_view value_to_name(Enum value) const;
         [[nodiscard]] const uvalue& name_to_value(std::string_view name) const noexcept;
     };
 

@@ -180,17 +180,17 @@ namespace meta_hpp
     }
 
     template < typename... Args >
-    bool function::is_invocable_with() const noexcept {
+    bool function::is_invocable_with() const {
         return !check_invocable_error<Args...>();
     }
 
     template < typename... Args >
-    bool function::is_invocable_with(Args&&... args) const noexcept {
+    bool function::is_invocable_with(Args&&... args) const {
         return !check_invocable_error(META_HPP_FWD(args)...);
     }
 
     template < typename... Args >
-    uerror function::check_invocable_error() const noexcept {
+    uerror function::check_invocable_error() const {
         using namespace detail;
         type_registry& registry{type_registry::instance()};
         const std::array<uarg_base, sizeof...(Args)> vargs{uarg_base{registry, type_list<Args>{}}...};
@@ -198,7 +198,7 @@ namespace meta_hpp
     }
 
     template < typename... Args >
-    uerror function::check_invocable_error(Args&&... args) const noexcept {
+    uerror function::check_invocable_error(Args&&... args) const {
         using namespace detail;
         type_registry& registry{type_registry::instance()};
         const std::array<uarg_base, sizeof...(Args)> vargs{uarg_base{registry, META_HPP_FWD(args)}...};

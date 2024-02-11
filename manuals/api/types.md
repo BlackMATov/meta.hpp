@@ -185,19 +185,19 @@ public:
     bool destroy_at(void* mem) const;
 
     template < class_kind Derived >
-    bool is_base_of() const noexcept;
+    bool is_base_of() const;
     bool is_base_of(const class_type& derived) const noexcept;
 
     template < class_kind Derived >
-    bool is_direct_base_of() const noexcept;
+    bool is_direct_base_of() const;
     bool is_direct_base_of(const class_type& derived) const noexcept;
 
     template < class_kind Base >
-    bool is_derived_from() const noexcept;
+    bool is_derived_from() const;
     bool is_derived_from(const class_type& base) const noexcept;
 
     template < class_kind Base >
-    bool is_direct_derived_from() const noexcept;
+    bool is_direct_derived_from() const;
     bool is_direct_derived_from(const class_type& base) const noexcept;
 
     function get_function(std::string_view name, bool recursively = true) const noexcept;
@@ -207,9 +207,9 @@ public:
     variable get_variable(std::string_view name, bool recursively = true) const noexcept;
 
     template < typename... Args >
-    constructor get_constructor_with() const noexcept;
+    constructor get_constructor_with() const;
     template < typename Iter >
-    constructor get_constructor_with(Iter first, Iter last) const noexcept;
+    constructor get_constructor_with(Iter first, Iter last) const;
     constructor get_constructor_with(std::span<const any_type> args) const noexcept;
     constructor get_constructor_with(std::initializer_list<any_type> args) const noexcept;
 
@@ -219,7 +219,7 @@ public:
     function get_function_with(
         std::string_view name,
         bool recursively = true
-    ) const noexcept;
+    ) const;
 
     template < typename Iter >
     function get_function_with(
@@ -227,7 +227,7 @@ public:
         Iter first,
         Iter last,
         bool recursively = true
-    ) const noexcept;
+    ) const;
 
     function get_function_with(
         std::string_view name,
@@ -245,7 +245,7 @@ public:
     method get_method_with(
         std::string_view name,
         bool recursively = true
-    ) const noexcept;
+    ) const;
 
     template < typename Iter >
     method get_method_with(
@@ -253,7 +253,7 @@ public:
         Iter first,
         Iter last,
         bool recursively = true
-    ) const noexcept;
+    ) const;
 
     method get_method_with(
         std::string_view name,
@@ -311,7 +311,7 @@ public:
     evalue get_evalue(std::string_view name) const noexcept;
 
     template < enum_kind Enum >
-    std::string_view value_to_name(Enum value) const noexcept;
+    std::string_view value_to_name(Enum value) const;
     const uvalue& name_to_value(std::string_view name) const noexcept;
 };
 ```

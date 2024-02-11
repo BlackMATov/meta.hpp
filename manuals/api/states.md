@@ -83,16 +83,16 @@ public:
     uresult try_create_at(void* mem, Args&&... args) const;
 
     template < typename... Args >
-    bool is_invocable_with() const noexcept;
+    bool is_invocable_with() const;
 
     template < typename... Args >
-    bool is_invocable_with(Args&&... args) const noexcept;
+    bool is_invocable_with(Args&&... args) const;
 
     template < typename... Args >
-    uerror check_invocable_error() const noexcept;
+    uerror check_invocable_error() const;
 
     template < typename... Args >
-    uerror check_invocable_error(Args&&... args) const noexcept;
+    uerror check_invocable_error(Args&&... args) const;
 
     //
 
@@ -136,16 +136,16 @@ public:
     uresult try_destroy_at(void* mem) const;
 
     template < typename Arg >
-    bool is_invocable_with() const noexcept;
+    bool is_invocable_with() const;
 
     template < typename Arg >
-    bool is_invocable_with(Arg&& arg) const noexcept;
+    bool is_invocable_with(Arg&& arg) const;
 
     template < typename Arg >
-    uerror check_invocable_error() const noexcept;
+    uerror check_invocable_error() const;
 
     template < typename Arg >
-    uerror check_invocable_error(Arg&& arg) const noexcept;
+    uerror check_invocable_error(Arg&& arg) const;
 };
 ```
 
@@ -190,16 +190,16 @@ public:
     uvalue operator()(Args&&... args) const;
 
     template < typename... Args >
-    bool is_invocable_with() const noexcept;
+    bool is_invocable_with() const;
 
     template < typename... Args >
-    bool is_invocable_with(Args&&... args) const noexcept;
+    bool is_invocable_with(Args&&... args) const;
 
     template < typename... Args >
-    uerror check_invocable_error() const noexcept;
+    uerror check_invocable_error() const;
 
     template < typename... Args >
-    uerror check_invocable_error(Args&&... args) const noexcept;
+    uerror check_invocable_error(Args&&... args) const;
 
     //
 
@@ -246,28 +246,28 @@ public:
     void operator()(Instance&& instance, Value&& value) const;
 
     template < typename Instance >
-    bool is_gettable_with() const noexcept;
+    bool is_gettable_with() const;
 
     template < typename Instance >
-    bool is_gettable_with(Instance&& instance) const noexcept;
+    bool is_gettable_with(Instance&& instance) const;
 
     template < typename Instance, typename Value >
-    bool is_settable_with() const noexcept;
+    bool is_settable_with() const;
 
     template < typename Instance, typename Value >
-    bool is_settable_with(Instance&& instance, Value&& value) const noexcept;
+    bool is_settable_with(Instance&& instance, Value&& value) const;
 
     template < typename Instance >
-    uerror check_gettable_error() const noexcept;
+    uerror check_gettable_error() const;
 
     template < typename Instance >
-    uerror check_gettable_error(Instance&& instance) const noexcept;
+    uerror check_gettable_error(Instance&& instance) const;
 
     template < typename Instance, typename Value >
-    uerror check_settable_error() const noexcept;
+    uerror check_settable_error() const;
 
     template < typename Instance, typename Value >
-    uerror check_settable_error(Instance&& instance, Value&& value) const noexcept;
+    uerror check_settable_error(Instance&& instance, Value&& value) const;
 };
 ```
 
@@ -297,16 +297,16 @@ public:
     uvalue operator()(Instance&& instance, Args&&... args) const;
 
     template < typename Instance, typename... Args >
-    bool is_invocable_with() const noexcept;
+    bool is_invocable_with() const;
 
     template < typename Instance, typename... Args >
-    bool is_invocable_with(Instance&& instance, Args&&... args) const noexcept;
+    bool is_invocable_with(Instance&& instance, Args&&... args) const;
 
     template < typename Instance, typename... Args >
-    uerror check_invocable_error() const noexcept;
+    uerror check_invocable_error() const;
 
     template < typename Instance, typename... Args >
-    uerror check_invocable_error(Instance&& instance, Args&&... args) const noexcept;
+    uerror check_invocable_error(Instance&& instance, Args&&... args) const;
 
     //
 
@@ -344,14 +344,14 @@ public:
     template < typename... Args >
     function get_function_with(
         std::string_view name
-    ) const noexcept;
+    ) const;
 
     template < typename Iter >
     function get_function_with(
         std::string_view name,
         Iter first,
         Iter last
-    ) const noexcept;
+    ) const;
 
     function get_function_with(
         std::string_view name,
@@ -390,15 +390,15 @@ public:
     void operator()(Value&& value) const;
 
     template < typename Value >
-    bool is_settable_with() const noexcept;
+    bool is_settable_with() const;
 
     template < typename Value >
-    bool is_settable_with(Value&& value) const noexcept;
+    bool is_settable_with(Value&& value) const;
 
     template < typename Value >
-    uerror check_settable_error() const noexcept;
+    uerror check_settable_error() const;
 
     template < typename Value >
-    uerror check_settable_error(Value&& value) const noexcept;
+    uerror check_settable_error(Value&& value) const;
 };
 ```

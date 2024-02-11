@@ -136,17 +136,17 @@ namespace meta_hpp
     }
 
     template < typename Arg >
-    bool destructor::is_invocable_with() const noexcept {
+    bool destructor::is_invocable_with() const {
         return !check_invocable_error<Arg>();
     }
 
     template < typename Arg >
-    bool destructor::is_invocable_with(Arg&& arg) const noexcept {
+    bool destructor::is_invocable_with(Arg&& arg) const {
         return !check_invocable_error(META_HPP_FWD(arg));
     }
 
     template < typename Arg >
-    uerror destructor::check_invocable_error() const noexcept {
+    uerror destructor::check_invocable_error() const {
         using namespace detail;
         type_registry& registry{type_registry::instance()};
         const uarg_base varg{registry, type_list<Arg>{}};
@@ -154,7 +154,7 @@ namespace meta_hpp
     }
 
     template < typename Arg >
-    uerror destructor::check_invocable_error(Arg&& arg) const noexcept {
+    uerror destructor::check_invocable_error(Arg&& arg) const {
         using namespace detail;
         type_registry& registry{type_registry::instance()};
         const uarg_base varg{registry, META_HPP_FWD(arg)};

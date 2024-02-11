@@ -243,7 +243,7 @@ namespace meta_hpp
     }
 
     template < class_kind Derived >
-    bool class_type::is_base_of() const noexcept {
+    bool class_type::is_base_of() const {
         return is_base_of(resolve_type<Derived>());
     }
 
@@ -262,7 +262,7 @@ namespace meta_hpp
     }
 
     template < class_kind Derived >
-    bool class_type::is_direct_base_of() const noexcept {
+    bool class_type::is_direct_base_of() const {
         return is_direct_base_of(resolve_type<Derived>());
     }
 
@@ -281,7 +281,7 @@ namespace meta_hpp
     }
 
     template < class_kind Base >
-    bool class_type::is_derived_from() const noexcept {
+    bool class_type::is_derived_from() const {
         return is_derived_from(resolve_type<Base>());
     }
 
@@ -290,7 +290,7 @@ namespace meta_hpp
     }
 
     template < class_kind Base >
-    bool class_type::is_direct_derived_from() const noexcept {
+    bool class_type::is_direct_derived_from() const {
         return is_direct_derived_from(resolve_type<Base>());
     }
 
@@ -391,13 +391,13 @@ namespace meta_hpp
     //
 
     template < typename... Args >
-    constructor class_type::get_constructor_with() const noexcept {
+    constructor class_type::get_constructor_with() const {
         detail::type_registry& registry{detail::type_registry::instance()};
         return get_constructor_with({registry.resolve_by_type<Args>()...});
     }
 
     template < typename Iter >
-    constructor class_type::get_constructor_with(Iter first, Iter last) const noexcept {
+    constructor class_type::get_constructor_with(Iter first, Iter last) const {
         for ( const constructor& constructor : data_->constructors ) {
             const constructor_type& constructor_type = constructor.get_type();
             const any_type_list& constructor_args = constructor_type.get_argument_types();
@@ -436,7 +436,7 @@ namespace meta_hpp
     function class_type::get_function_with( //
         std::string_view name,
         bool recursively
-    ) const noexcept {
+    ) const {
         detail::type_registry& registry{detail::type_registry::instance()};
         return get_function_with(name, {registry.resolve_by_type<Args>()...}, recursively);
     }
@@ -447,7 +447,7 @@ namespace meta_hpp
         Iter first,
         Iter last,
         bool recursively
-    ) const noexcept {
+    ) const {
         for ( const function& function : data_->functions ) {
             if ( function.get_name() != name ) {
                 continue;
@@ -496,7 +496,7 @@ namespace meta_hpp
     method class_type::get_method_with( //
         std::string_view name,
         bool recursively
-    ) const noexcept {
+    ) const {
         detail::type_registry& registry{detail::type_registry::instance()};
         return get_method_with(name, {registry.resolve_by_type<Args>()...}, recursively);
     }
@@ -507,7 +507,7 @@ namespace meta_hpp
         Iter first,
         Iter last,
         bool recursively
-    ) const noexcept {
+    ) const {
         for ( const method& method : data_->methods ) {
             if ( method.get_name() != name ) {
                 continue;
