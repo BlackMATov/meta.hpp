@@ -123,7 +123,11 @@
 //
 //
 
-#define META_HPP_ALLOCA(size) __builtin_alloca(size)
+#if META_HPP_DETAIL_COMPILER_ID == META_HPP_DETAIL_MSVC_COMPILER_ID
+#    define META_HPP_ALLOCA(size) _alloca(size)
+#else
+#    define META_HPP_ALLOCA(size) __builtin_alloca(size)
+#endif
 
 //
 //
