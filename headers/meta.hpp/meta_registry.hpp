@@ -30,7 +30,7 @@ namespace meta_hpp
     }
 
     template < typename T >
-    [[nodiscard]] auto resolve_type() {
+    auto resolve_type() {
         using namespace detail;
         type_registry& registry = type_registry::instance();
         return registry.resolve_by_type<std::remove_cv_t<T>>();
@@ -38,7 +38,7 @@ namespace meta_hpp
 
     template < typename T >
     // NOLINTNEXTLINE(*-missing-std-forward)
-    [[nodiscard]] auto resolve_type(T&& from) {
+    auto resolve_type(T&& from) {
         using namespace detail;
 
         using raw_type = std::remove_cvref_t<T>;
@@ -67,7 +67,7 @@ namespace meta_hpp
         registry.for_each_scope(std::forward<F>(f));
     }
 
-    [[nodiscard]] inline scope resolve_scope(std::string_view name) {
+    inline scope resolve_scope(std::string_view name) {
         using namespace detail;
         state_registry& registry = state_registry::instance();
         return registry.resolve_scope(name);
