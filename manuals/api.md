@@ -44,22 +44,22 @@
 
 ### Classes
 
-|                                                  |                |
-| ------------------------------------------------ | -------------- |
-| [array_bind](./api/binds.md##array_bind)         | array_bind     |
-| [class_bind](./api/binds.md##class_bind)         | class_bind     |
-| [enum_bind](./api/binds.md##enum_bind)           | enum_bind      |
-| [function_bind](./api/binds.md##function_bind)   | function_bind  |
-| [member_bind](./api/binds.md##member_bind)       | member_bind    |
-| [method_bind](./api/binds.md##method_bind)       | method_bind    |
-| [nullptr_bind](./api/binds.md##nullptr_bind)     | nullptr_bind   |
-| [number_bind](./api/binds.md##number_bind)       | number_bind    |
-| [pointer_bind](./api/binds.md##pointer_bind)     | pointer_bind   |
-| [reference_bind](./api/binds.md##reference_bind) | reference_bind |
-| [void_bind](./api/binds.md##void_bind)           | void_bind      |
-| [scope_bind](./api/binds.md##scope_bind)         | scope_bind     |
-| [arguments_bind](./api/binds.md##arguments_bind) | arguments_bind |
-| [metadata_bind](./api/binds.md##metadata_bind)   | metadata_bind  |
+|                                                 |                |
+| ----------------------------------------------- | -------------- |
+| [array_bind](./api/binds.md#array_bind)         | array_bind     |
+| [class_bind](./api/binds.md#class_bind)         | class_bind     |
+| [enum_bind](./api/binds.md#enum_bind)           | enum_bind      |
+| [function_bind](./api/binds.md#function_bind)   | function_bind  |
+| [member_bind](./api/binds.md#member_bind)       | member_bind    |
+| [method_bind](./api/binds.md#method_bind)       | method_bind    |
+| [nullptr_bind](./api/binds.md#nullptr_bind)     | nullptr_bind   |
+| [number_bind](./api/binds.md#number_bind)       | number_bind    |
+| [pointer_bind](./api/binds.md#pointer_bind)     | pointer_bind   |
+| [reference_bind](./api/binds.md#reference_bind) | reference_bind |
+| [void_bind](./api/binds.md#void_bind)           | void_bind      |
+| [scope_bind](./api/binds.md#scope_bind)         | scope_bind     |
+| [arguments_bind](./api/binds.md#arguments_bind) | arguments_bind |
+| [metadata_bind](./api/binds.md#metadata_bind)   | metadata_bind  |
 
 ### Functions
 
