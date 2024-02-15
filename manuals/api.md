@@ -5,8 +5,6 @@
   - [Binds](#binds)
     - [Classes](#classes-1)
     - [Functions](#functions-1)
-  - [Indices](#indices)
-    - [Classes](#classes-2)
   - [Invoke](#invoke)
     - [Functions](#functions-2)
   - [Policies](#policies)
@@ -14,9 +12,9 @@
   - [Registry](#registry)
     - [Functions](#functions-3)
   - [States](#states)
-    - [Classes](#classes-3)
+    - [Classes](#classes-2)
   - [Types](#types)
-    - [Classes](#classes-4)
+    - [Classes](#classes-3)
     - [Enumerations](#enumerations)
 
 # API Reference
@@ -81,22 +79,6 @@
 | [extend_scope_](./api/binds.md#extend_scope_) | extend_scope_ |
 | [arguments_](./api/binds.md#arguments_)       | arguments_    |
 | [metadata_](./api/binds.md#metadata_)         | metadata_     |
-
-## Indices
-
-### Classes
-
-|                                                         |                   |
-| ------------------------------------------------------- | ----------------- |
-| [argument_index](./api/indices.md#argument_index)       | argument_index    |
-| [constructor_index](./api/indices.md#constructor_index) | constructor_index |
-| [destructor_index](./api/indices.md#destructor_index)   | destructor_index  |
-| [evalue_index](./api/indices.md#evalue_index)           | evalue_index      |
-| [function_index](./api/indices.md#function_index)       | function_index    |
-| [member_index](./api/indices.md#member_index)           | member_index      |
-| [method_index](./api/indices.md#method_index)           | method_index      |
-| [scope_index](./api/indices.md#scope_index)             | scope_index       |
-| [variable_index](./api/indices.md#variable_index)       | variable_index    |
 
 ## Invoke
 
