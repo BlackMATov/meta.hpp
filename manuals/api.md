@@ -5,8 +5,6 @@
   - [Binds](#binds)
     - [Classes](#classes-1)
     - [Functions](#functions-1)
-  - [Indices](#indices)
-    - [Classes](#classes-2)
   - [Invoke](#invoke)
     - [Functions](#functions-2)
   - [Policies](#policies)
@@ -14,9 +12,9 @@
   - [Registry](#registry)
     - [Functions](#functions-3)
   - [States](#states)
-    - [Classes](#classes-3)
+    - [Classes](#classes-2)
   - [Types](#types)
-    - [Classes](#classes-4)
+    - [Classes](#classes-3)
     - [Enumerations](#enumerations)
 
 # API Reference
@@ -44,22 +42,22 @@
 
 ### Classes
 
-|                                                  |                |
-| ------------------------------------------------ | -------------- |
-| [array_bind](./api/binds.md##array_bind)         | array_bind     |
-| [class_bind](./api/binds.md##class_bind)         | class_bind     |
-| [enum_bind](./api/binds.md##enum_bind)           | enum_bind      |
-| [function_bind](./api/binds.md##function_bind)   | function_bind  |
-| [member_bind](./api/binds.md##member_bind)       | member_bind    |
-| [method_bind](./api/binds.md##method_bind)       | method_bind    |
-| [nullptr_bind](./api/binds.md##nullptr_bind)     | nullptr_bind   |
-| [number_bind](./api/binds.md##number_bind)       | number_bind    |
-| [pointer_bind](./api/binds.md##pointer_bind)     | pointer_bind   |
-| [reference_bind](./api/binds.md##reference_bind) | reference_bind |
-| [void_bind](./api/binds.md##void_bind)           | void_bind      |
-| [scope_bind](./api/binds.md##scope_bind)         | scope_bind     |
-| [arguments_bind](./api/binds.md##arguments_bind) | arguments_bind |
-| [metadata_bind](./api/binds.md##metadata_bind)   | metadata_bind  |
+|                                                 |                |
+| ----------------------------------------------- | -------------- |
+| [array_bind](./api/binds.md#array_bind)         | array_bind     |
+| [class_bind](./api/binds.md#class_bind)         | class_bind     |
+| [enum_bind](./api/binds.md#enum_bind)           | enum_bind      |
+| [function_bind](./api/binds.md#function_bind)   | function_bind  |
+| [member_bind](./api/binds.md#member_bind)       | member_bind    |
+| [method_bind](./api/binds.md#method_bind)       | method_bind    |
+| [nullptr_bind](./api/binds.md#nullptr_bind)     | nullptr_bind   |
+| [number_bind](./api/binds.md#number_bind)       | number_bind    |
+| [pointer_bind](./api/binds.md#pointer_bind)     | pointer_bind   |
+| [reference_bind](./api/binds.md#reference_bind) | reference_bind |
+| [void_bind](./api/binds.md#void_bind)           | void_bind      |
+| [scope_bind](./api/binds.md#scope_bind)         | scope_bind     |
+| [arguments_bind](./api/binds.md#arguments_bind) | arguments_bind |
+| [metadata_bind](./api/binds.md#metadata_bind)   | metadata_bind  |
 
 ### Functions
 
@@ -81,22 +79,6 @@
 | [extend_scope_](./api/binds.md#extend_scope_) | extend_scope_ |
 | [arguments_](./api/binds.md#arguments_)       | arguments_    |
 | [metadata_](./api/binds.md#metadata_)         | metadata_     |
-
-## Indices
-
-### Classes
-
-|                                                         |                   |
-| ------------------------------------------------------- | ----------------- |
-| [argument_index](./api/indices.md#argument_index)       | argument_index    |
-| [constructor_index](./api/indices.md#constructor_index) | constructor_index |
-| [destructor_index](./api/indices.md#destructor_index)   | destructor_index  |
-| [evalue_index](./api/indices.md#evalue_index)           | evalue_index      |
-| [function_index](./api/indices.md#function_index)       | function_index    |
-| [member_index](./api/indices.md#member_index)           | member_index      |
-| [method_index](./api/indices.md#method_index)           | method_index      |
-| [scope_index](./api/indices.md#scope_index)             | scope_index       |
-| [variable_index](./api/indices.md#variable_index)       | variable_index    |
 
 ## Invoke
 
