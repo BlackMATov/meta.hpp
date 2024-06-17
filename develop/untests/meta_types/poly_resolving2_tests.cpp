@@ -13,6 +13,8 @@ namespace
     struct derived : base {};
 
     struct poly_base {
+        poly_base() = default;
+        poly_base(const poly_base&) = default;
         virtual ~poly_base() = default;
         META_HPP_ENABLE_POLY_INFO()
     };

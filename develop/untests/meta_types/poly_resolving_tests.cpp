@@ -9,6 +9,8 @@
 
 namespace {
     struct A {
+        A() = default;
+        A(const A&) = default;
         virtual ~A() = default;
         META_HPP_ENABLE_POLY_INFO()
     };

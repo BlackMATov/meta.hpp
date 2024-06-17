@@ -18,11 +18,15 @@ namespace
     // like `ucast` or `resolve_type(T&&)`
 
     struct A {
+        A() = default;
+        A(const A&) = default;
         virtual ~A() = default;
         META_HPP_ENABLE_POLY_INFO()
     };
 
     struct B {
+        B() = default;
+        B(const B&) = default;
         virtual ~B() = default;
         META_HPP_ENABLE_POLY_INFO()
     };
