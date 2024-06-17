@@ -14,7 +14,10 @@ target_compile_options(${PROJECT_NAME}.setup_targets INTERFACE
         -Wno-exit-time-destructors
         -Wno-global-constructors
         -Wno-padded
+        -Wno-switch-default
+        -Wno-unknown-warning-option
         -Wno-unneeded-internal-declaration
+        -Wno-unsafe-buffer-usage
         -Wno-unused-macros
         -Wno-unused-member-function
         -Wno-weak-vtables
