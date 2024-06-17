@@ -17,7 +17,7 @@ namespace
     };
 
     struct position_component : component {
-        META_HPP_ENABLE_POLY_INFO()
+        META_HPP_ENABLE_POLY_INFO(component)
     public:
         explicit position_component(int nx, int ny) : x{nx}, y{ny} {}
 
