@@ -44,11 +44,11 @@ TEST_CASE("meta/meta_discussion/88") {
         CHECK(derived_instance_ptr_type == meta::resolve_type<position_component*>());
 
         // to get all members of the component we should extract a class type from the pointer (position_component)
-        meta::any_type derived_instance_type = derived_instance_ptr_type.as_pointer().get_data_type();
+        meta::class_type derived_instance_type = derived_instance_ptr_type.as_pointer().get_data_type().as_class();
         CHECK(derived_instance_type == meta::resolve_type<position_component>());
 
         // for each member we can show our debug inspector (imgui input for example)
-        for (const meta::member& m : derived_instance_type.as_class().get_members()) {
+        for (const meta::member& m : derived_instance_type.get_members()) {
             // we registered members as pointers (member_policy::as_pointer), so the type of the member is a pointer
             CHECK(m.get_type() == meta::resolve_type<int position_component::*>());
             CHECK(m.get_type().get_value_type() == meta::resolve_type<int>());
