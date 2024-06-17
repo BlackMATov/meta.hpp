@@ -3,6 +3,7 @@
 ## Backlog
 
 - add coverage information
+- add an ucast function with a dynamic `to` argument
 
 ## Version 1.0
 

@@ -8,6 +8,7 @@
 
 #include "../meta_base.hpp"
 #include "../meta_types.hpp"
+#include "../meta_uvalue.hpp"
 
 #include "type_registry.hpp"
 
@@ -45,6 +46,12 @@ private:
     META_HPP_ENABLE_BASE_INFO(__VA_ARGS__) \
 public: \
     META_HPP_DETAIL_IGNORE_OVERRIDE_WARNINGS_PUSH() \
+    virtual ::meta_hpp::uvalue meta_poly_ptr() { \
+        return ::meta_hpp::uvalue{this}; \
+    } \
+    virtual ::meta_hpp::uvalue meta_poly_ptr() const { \
+        return ::meta_hpp::uvalue{this}; \
+    } \
     virtual ::meta_hpp::detail::poly_info meta_poly_info(::meta_hpp::detail::type_registry& registry) const { \
         using self_type = std::remove_cvref_t<decltype(*this)>; \
         return ::meta_hpp::detail::poly_info{.ptr = this, .type = registry.resolve_by_type<self_type>()}; \
