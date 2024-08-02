@@ -24,5 +24,6 @@ Diagnostics:
       - readability-identifier-length
       - readability-named-parameter
       - readability-redundant-access-specifiers
+      - readability-redundant-member-init
       - readability-simplify-boolean-expr
       - readability-use-anyofallof
