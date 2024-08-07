@@ -39,35 +39,41 @@ namespace meta_hpp
         return data_->evalues;
     }
 
-    inline evalue enum_type::get_evalue(std::string_view name) const noexcept {
+    template < enum_kind Enum >
+    evalue enum_type::value_to_evalue(Enum value) const {
+        if ( *this != resolve_type<Enum>() ) {
+            return evalue{};
+        }
+
+        for ( const evalue& evalue : data_->evalues ) {
+            if ( evalue.get_value().as<Enum>() == value ) {
+                return evalue;
+            }
+        }
+
+        return evalue{};
+    }
+
+    inline evalue enum_type::value_to_evalue(const uvalue& value) const {
+        if ( *this != value.get_type() ) {
+            return evalue{};
+        }
+
+        for ( const evalue& evalue : data_->evalues ) {
+            if ( evalue.get_value().equals(value) ) {
+                return evalue;
+            }
+        }
+
+        return evalue{};
+    }
+
+    inline evalue enum_type::name_to_evalue(std::string_view name) const noexcept {
         for ( const evalue& evalue : data_->evalues ) {
             if ( evalue.get_name() == name ) {
                 return evalue;
             }
         }
         return evalue{};
-    }
-
-    template < enum_kind Enum >
-    std::string_view enum_type::value_to_name(Enum value) const {
-        if ( resolve_type<Enum>() != *this ) {
-            return std::string_view{};
-        }
-
-        for ( const evalue& evalue : data_->evalues ) {
-            if ( evalue.get_value().as<Enum>() == value ) {
-                return evalue.get_name();
-            }
-        }
-
-        return std::string_view{};
-    }
-
-    inline const uvalue& enum_type::name_to_value(std::string_view name) const noexcept {
-        if ( const evalue& value = get_evalue(name) ) {
-            return value.get_value();
-        }
-        static const uvalue empty_value;
-        return empty_value;
     }
 }

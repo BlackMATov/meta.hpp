@@ -77,7 +77,7 @@ TEST_CASE("meta/meta_states/metadata/enum") {
     }
 
     SUBCASE("color::red") {
-        const meta::evalue red_evalue = color_type.get_evalue("red");
+        const meta::evalue red_evalue = color_type.name_to_evalue("red");
         REQUIRE(red_evalue);
         CHECK_FALSE(red_evalue.get_metadata().contains("desc1"));
         CHECK(red_evalue.get_metadata().at("desc2").as<std::string>() == "new-red-color"s);
