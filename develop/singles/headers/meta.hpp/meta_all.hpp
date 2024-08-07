@@ -456,6 +456,7 @@ namespace meta_hpp::detail
 
         bad_const_access,
         bad_uvalue_access,
+        bad_uvalue_operation,
 
         bad_argument_cast,
         bad_instance_cast,
@@ -475,6 +476,8 @@ namespace meta_hpp::detail
             return "bad const access";
         case error_code::bad_uvalue_access:
             return "bad uvalue access";
+        case error_code::bad_uvalue_operation:
+            return "bad uvalue operation";
         case error_code::bad_argument_cast:
             return "bad argument cast";
         case error_code::bad_instance_cast:
@@ -11189,9 +11192,12 @@ namespace meta_hpp
 
     inline uvalue uvalue::operator*() const {
         auto&& [tag, vtable] = vtable_t::unpack_vtag(*this);
-        return tag != storage_e::nothing && vtable->deref != nullptr //
-                 ? vtable->deref(storage_)
-                 : uvalue{};
+
+        if ( tag != storage_e::nothing && vtable->deref != nullptr ) {
+            return vtable->deref(storage_);
+        }
+
+        throw_exception(error_code::bad_uvalue_operation);
     }
 
     inline bool uvalue::has_deref_op() const noexcept {
@@ -11201,9 +11207,12 @@ namespace meta_hpp
 
     inline uvalue uvalue::operator[](std::size_t index) const {
         auto&& [tag, vtable] = vtable_t::unpack_vtag(*this);
-        return tag != storage_e::nothing && vtable->index != nullptr //
-                 ? vtable->index(storage_, index)
-                 : uvalue{};
+
+        if ( tag != storage_e::nothing && vtable->index != nullptr ) {
+            return vtable->index(storage_, index);
+        }
+
+        throw_exception(error_code::bad_uvalue_operation);
     }
 
     inline bool uvalue::has_index_op() const noexcept {
@@ -11213,21 +11222,31 @@ namespace meta_hpp
 
     inline uvalue uvalue::copy() const {
         auto&& [tag, vtable] = vtable_t::unpack_vtag(*this);
-        return tag != storage_e::nothing && vtable->copy != nullptr //
-                 ? vtable->copy(storage_)
-                 : uvalue{};
+
+        if ( tag == storage_e::nothing ) {
+            return uvalue{};
+        }
+
+        if ( vtable->copy != nullptr ) {
+            return vtable->copy(storage_);
+        }
+
+        throw_exception(error_code::bad_uvalue_operation);
     }
 
     inline bool uvalue::has_copy_op() const noexcept {
         auto&& [tag, vtable] = vtable_t::unpack_vtag(*this);
-        return tag != storage_e::nothing && vtable->copy != nullptr;
+        return tag == storage_e::nothing || vtable->copy != nullptr;
     }
 
     inline uvalue uvalue::unmap() const {
         auto&& [tag, vtable] = vtable_t::unpack_vtag(*this);
-        return tag != storage_e::nothing && vtable->unmap != nullptr //
-                 ? vtable->unmap(storage_)
-                 : uvalue{};
+
+        if ( tag != storage_e::nothing && vtable->unmap != nullptr ) {
+            return vtable->unmap(storage_);
+        }
+
+        throw_exception(error_code::bad_uvalue_operation);
     }
 
     inline bool uvalue::has_unmap_op() const noexcept {
@@ -11236,22 +11255,26 @@ namespace meta_hpp
     }
 
     inline bool uvalue::less(const uvalue& other) const {
+        if ( this == &other ) {
+            return false;
+        }
+
         auto&& [l_tag, l_vtable] = vtable_t::unpack_vtag(*this);
         auto&& [r_tag, r_vtable] = vtable_t::unpack_vtag(other);
 
-        if ( l_tag != r_tag ) {
-            return false;
+        if ( l_tag != r_tag || l_tag == storage_e::nothing ) {
+            return l_tag < r_tag;
         }
 
-        if ( l_tag == storage_e::nothing ) {
-            return false;
+        if ( l_vtable != r_vtable ) {
+            return l_vtable->type < r_vtable->type;
         }
 
-        if ( l_vtable != r_vtable || l_vtable->less == nullptr ) {
-            return false;
+        if ( l_vtable->less != nullptr ) {
+            return l_vtable->less(storage_, other.storage_);
         }
 
-        return l_vtable->less(storage_, other.storage_);
+        throw_exception(error_code::bad_uvalue_operation);
     }
 
     inline bool uvalue::has_less_op() const noexcept {
@@ -11260,22 +11283,26 @@ namespace meta_hpp
     }
 
     inline bool uvalue::equals(const uvalue& other) const {
-        auto&& [l_tag, l_vtable] = vtable_t::unpack_vtag(*this);
-        auto&& [r_tag, r_vtable] = vtable_t::unpack_vtag(other);
-
-        if ( l_tag != r_tag ) {
-            return false;
-        }
-
-        if ( l_tag == storage_e::nothing ) {
+        if ( this == &other ) {
             return true;
         }
 
-        if ( l_vtable != r_vtable || l_vtable->equals == nullptr ) {
-            return false;
+        auto&& [l_tag, l_vtable] = vtable_t::unpack_vtag(*this);
+        auto&& [r_tag, r_vtable] = vtable_t::unpack_vtag(other);
+
+        if ( l_tag != r_tag || l_tag == storage_e::nothing ) {
+            return l_tag == r_tag;
         }
 
-        return l_vtable->equals(storage_, other.storage_);
+        if ( l_vtable != r_vtable ) {
+            return l_vtable->type == r_vtable->type;
+        }
+
+        if ( l_vtable->equals != nullptr ) {
+            return l_vtable->equals(storage_, other.storage_);
+        }
+
+        throw_exception(error_code::bad_uvalue_operation);
     }
 
     inline bool uvalue::has_equals_op() const noexcept {

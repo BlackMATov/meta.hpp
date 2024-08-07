@@ -98,10 +98,12 @@ namespace
         return {l.x + r.x, l.y + r.y};
     }
 
+    [[maybe_unused]]
     bool operator==(const ivec2& l, const ivec2& r) noexcept {
         return l.x == r.x && l.y == r.y;
     }
 
+    [[maybe_unused]]
     bool operator==(const ivec2_big& l, const ivec2_big& r) noexcept {
         return l.x == r.x && l.y == r.y;
     }
@@ -164,8 +166,8 @@ TEST_CASE("meta/meta_utilities/value") {
             CHECK(std::as_const(val).get_data() == nullptr);
             CHECK(std::as_const(val).get_cdata() == nullptr);
 
-            CHECK_FALSE(*val);
-            CHECK_FALSE(val[0]);
+            CHECK_THROWS(std::ignore = *val);
+            CHECK_THROWS(std::ignore = val[0]);
 
             CHECK_FALSE(val.try_as<ivec2>());
             CHECK_FALSE(std::as_const(val).try_as<ivec2>());
@@ -476,6 +478,13 @@ TEST_CASE("meta/meta_utilities/value") {
 
     SUBCASE("copy") {
         {
+            const meta::uvalue u{};
+            CHECK(u.has_copy_op());
+
+            const meta::uvalue v{u.copy()};
+            CHECK_FALSE(v);
+        }
+        {
             const meta::uvalue u{42};
             CHECK(u.has_copy_op());
 
@@ -486,7 +495,7 @@ TEST_CASE("meta/meta_utilities/value") {
         {
             const meta::uvalue u{std::unique_ptr<int>{}};
             CHECK_FALSE(u.has_copy_op());
-            CHECK_FALSE(u.copy());
+            CHECK_THROWS(std::ignore = u.copy());
         }
     }
 
@@ -494,7 +503,7 @@ TEST_CASE("meta/meta_utilities/value") {
         {
             const meta::uvalue u{42};
             CHECK_FALSE(u.has_unmap_op());
-            CHECK_FALSE(u.unmap());
+            CHECK_THROWS(std::ignore = u.unmap());
         }
         {
             int i{42};
@@ -573,10 +582,10 @@ TEST_CASE("meta/meta_utilities/value") {
             CHECK_FALSE(meta::uvalue(p3).has_deref_op());
             CHECK_FALSE(meta::uvalue(p4).has_deref_op());
 
-            CHECK_FALSE(*meta::uvalue(p1));
-            CHECK_FALSE(*meta::uvalue(p2));
-            CHECK_FALSE(*meta::uvalue(p3));
-            CHECK_FALSE(*meta::uvalue(p4));
+            CHECK_THROWS(std::ignore = *meta::uvalue(p1));
+            CHECK_THROWS(std::ignore = *meta::uvalue(p2));
+            CHECK_THROWS(std::ignore = *meta::uvalue(p3));
+            CHECK_THROWS(std::ignore = *meta::uvalue(p4));
         }
         {
             int* p1 = nullptr;
@@ -616,122 +625,192 @@ TEST_CASE("meta/meta_utilities/value") {
         }
     }
 
-    SUBCASE("less/equals") {
+    SUBCASE("less/equal") {
         {
-            meta::uvalue v1{42};
-            meta::uvalue v2{42};
-            CHECK(v1.has_less_op());
-            CHECK(v2.has_less_op());
-            CHECK(v1.has_equals_op());
-            CHECK(v2.has_equals_op());
-            CHECK_FALSE(v1.less(v2));
-            CHECK_FALSE(v2.less(v1));
-            CHECK(v1.equals(v2));
-            CHECK(v2.equals(v1));
+            meta::uvalue l{};
+            meta::uvalue r{};
+
+            CHECK(l.has_less_op());
+            CHECK(r.has_less_op());
+            CHECK_FALSE(l.less(l));
+            CHECK_FALSE(r.less(r));
+            CHECK_FALSE(l.less(r));
+            CHECK_FALSE(r.less(l));
+
+            CHECK(l.has_equals_op());
+            CHECK(r.has_equals_op());
+            CHECK(l.equals(l));
+            CHECK(r.equals(r));
+            CHECK(l.equals(r));
+            CHECK(r.equals(l));
         }
         {
-            meta::uvalue v1{42};
-            meta::uvalue v2{43};
-            CHECK(v1.has_less_op());
-            CHECK(v2.has_less_op());
-            CHECK(v1.has_equals_op());
-            CHECK(v2.has_equals_op());
-            CHECK(v1.less(v2));
-            CHECK_FALSE(v2.less(v1));
-            CHECK_FALSE(v1.equals(v2));
-            CHECK_FALSE(v2.equals(v1));
+            meta::uvalue l{};
+            meta::uvalue r{42};
+
+            CHECK(l.has_less_op());
+            CHECK(r.has_less_op());
+            CHECK_FALSE(l.less(l));
+            CHECK_FALSE(r.less(r));
+            CHECK(l.less(r));
+            CHECK_FALSE(r.less(l));
+
+            CHECK(l.has_equals_op());
+            CHECK(r.has_equals_op());
+            CHECK(l.equals(l));
+            CHECK(r.equals(r));
+            CHECK_FALSE(l.equals(r));
+            CHECK_FALSE(r.equals(l));
         }
         {
-            meta::uvalue v1{42};
-            meta::uvalue v2{'a'};
-            CHECK(v1.has_less_op());
-            CHECK(v2.has_less_op());
-            CHECK(v1.has_equals_op());
-            CHECK(v2.has_equals_op());
-            CHECK_FALSE(v1.less(v2));
-            CHECK_FALSE(v2.less(v1));
-            CHECK_FALSE(v1.equals(v2));
-            CHECK_FALSE(v2.equals(v1));
+            meta::uvalue l{21};
+            meta::uvalue r{42};
+            meta::uvalue r2{42};
+
+            CHECK(l.has_less_op());
+            CHECK(r.has_less_op());
+            CHECK_FALSE(l.less(l));
+            CHECK_FALSE(r.less(r));
+            CHECK(l.less(r));
+            CHECK_FALSE(r.less(l));
+            CHECK_FALSE(r.less(r2));
+
+            CHECK(l.has_equals_op());
+            CHECK(r.has_equals_op());
+            CHECK(l.equals(l));
+            CHECK(r.equals(r));
+            CHECK_FALSE(l.equals(r));
+            CHECK_FALSE(r.equals(l));
+            CHECK(r.equals(r2));
         }
         {
-            meta::uvalue v1{ivec2{1,2}};
-            meta::uvalue v2{ivec2{1,2}};
-            CHECK_FALSE(v1.has_less_op());
-            CHECK_FALSE(v2.has_less_op());
-            CHECK(v1.has_equals_op());
-            CHECK(v2.has_equals_op());
-            CHECK_FALSE(v1.less(v2));
-            CHECK_FALSE(v2.less(v1));
-            CHECK(v1.equals(v2));
-            CHECK(v2.equals(v1));
+            meta::uvalue l{42};
+            meta::uvalue r{'a'};
+
+            CHECK(l.has_less_op());
+            CHECK(r.has_less_op());
+            CHECK_FALSE(l.less(l));
+            CHECK_FALSE(r.less(r));
+            CHECK(l.less(r) == l.get_type() < r.get_type());
+            CHECK(r.less(l) == r.get_type() < l.get_type());
+
+            CHECK(l.has_equals_op());
+            CHECK(r.has_equals_op());
+            CHECK(l.equals(l));
+            CHECK(r.equals(r));
+            CHECK_FALSE(l.equals(r));
+            CHECK_FALSE(r.equals(l));
         }
         {
-            meta::uvalue v1{ivec2{1,2}};
-            meta::uvalue v2{ivec3{1,2,3}};
-            CHECK_FALSE(v1.has_less_op());
-            CHECK_FALSE(v2.has_less_op());
-            CHECK(v1.has_equals_op());
-            CHECK_FALSE(v2.has_equals_op());
-            CHECK_FALSE(v1.less(v2));
-            CHECK_FALSE(v2.less(v1));
-            CHECK_FALSE(v1.equals(v2));
-            CHECK_FALSE(v2.equals(v1));
+            meta::uvalue l{42};
+            meta::uvalue r{ivec2{1,2}};
+
+            CHECK(l.has_less_op());
+            CHECK_FALSE(r.has_less_op());
+            CHECK_FALSE(l.less(l));
+            CHECK_FALSE(r.less(r));
+            CHECK(l.less(r) == l.get_type() < r.get_type());
+            CHECK(r.less(l) == r.get_type() < l.get_type());
+
+            CHECK(l.has_equals_op());
+            CHECK(r.has_equals_op());
+            CHECK(l.equals(l));
+            CHECK(r.equals(r));
+            CHECK_FALSE(l.equals(r));
+            CHECK_FALSE(r.equals(l));
         }
         {
-            meta::uvalue v{};
-            CHECK(v.has_less_op());
-            CHECK(v.has_equals_op());
-            CHECK_FALSE(v.less(v));
-            CHECK_FALSE(v.less(meta::uvalue{42}));
-            CHECK_FALSE(meta::uvalue{42}.less(meta::uvalue{}));
-            CHECK(v.equals(v));
-            CHECK_FALSE(v.equals(meta::uvalue{42}));
-            CHECK_FALSE(meta::uvalue{42}.equals(meta::uvalue{}));
+            meta::uvalue l{ivec2{1,2}};
+            meta::uvalue r{ivec2{1,2}};
+
+            CHECK_FALSE(l.has_less_op());
+            CHECK_FALSE(r.has_less_op());
+            CHECK_FALSE(l.less(l));
+            CHECK_FALSE(r.less(r));
+            CHECK_THROWS(std::ignore = l.less(r));
+            CHECK_THROWS(std::ignore = r.less(l));
+
+            CHECK(l.has_equals_op());
+            CHECK(r.has_equals_op());
+            CHECK(l.equals(l));
+            CHECK(r.equals(r));
+            CHECK(l.equals(r));
+            CHECK(r.equals(l));
         }
         {
-            meta::uvalue v1{std::array<ivec2, 2>{ivec2{1,2},ivec2{3,4}}};
-            meta::uvalue v2{std::array<ivec2, 2>{ivec2{1,2},ivec2{3,4}}};
-            meta::uvalue v3{std::array<ivec2, 2>{ivec2{1,2},ivec2{3,5}}};
-            CHECK_FALSE(v1.has_less_op());
-            CHECK_FALSE(v2.has_less_op());
-            CHECK_FALSE(v3.has_less_op());
-            CHECK(v1.has_equals_op());
-            CHECK(v2.has_equals_op());
-            CHECK(v3.has_equals_op());
-            CHECK_FALSE(v1.less(v2));
-            CHECK_FALSE(v2.less(v3));
-            CHECK(v1.equals(v2));
-            CHECK_FALSE(v2.equals(v3));
+            meta::uvalue l{std::vector{1,2}};
+            meta::uvalue r{std::vector{1,3}};
+
+            CHECK(l.has_less_op());
+            CHECK(r.has_less_op());
+            CHECK_FALSE(l.less(l));
+            CHECK_FALSE(r.less(r));
+            CHECK(l.less(r));
+            CHECK_FALSE(r.less(l));
+
+            CHECK(l.has_equals_op());
+            CHECK(r.has_equals_op());
+            CHECK(l.equals(l));
+            CHECK(r.equals(r));
+            CHECK_FALSE(l.equals(r));
+            CHECK_FALSE(r.equals(l));
         }
         {
-            meta::uvalue v1{std::vector<ivec2>{{1,2},{3,4}}};
-            meta::uvalue v2{std::vector<ivec2>{{1,2},{3,4}}};
-            meta::uvalue v3{std::vector<ivec2>{{1,2},{3,5}}};
-            CHECK_FALSE(v1.has_less_op());
-            CHECK_FALSE(v2.has_less_op());
-            CHECK_FALSE(v3.has_less_op());
-            CHECK(v1.has_equals_op());
-            CHECK(v2.has_equals_op());
-            CHECK(v3.has_equals_op());
-            CHECK_FALSE(v1.less(v2));
-            CHECK_FALSE(v2.less(v3));
-            CHECK(v1.equals(v2));
-            CHECK_FALSE(v2.equals(v3));
+            meta::uvalue l{std::vector{ivec2{1,2}}};
+            meta::uvalue r{std::vector{ivec2{1,3}}};
+
+            CHECK_FALSE(l.has_less_op());
+            CHECK_FALSE(r.has_less_op());
+            CHECK_FALSE(l.less(l));
+            CHECK_FALSE(r.less(r));
+            CHECK_THROWS(std::ignore = l.less(r));
+            CHECK_THROWS(std::ignore = r.less(l));
+
+            CHECK(l.has_equals_op());
+            CHECK(r.has_equals_op());
+            CHECK(l.equals(l));
+            CHECK(r.equals(r));
+            CHECK_FALSE(l.equals(r));
+            CHECK_FALSE(r.equals(l));
         }
         {
-            meta::uvalue v1{std::tuple<int, ivec2>{42, {1,2}}};
-            meta::uvalue v2{std::tuple<int, ivec2>{42, {1,2}}};
-            meta::uvalue v3{std::tuple<int, ivec2>{42, {1,3}}};
-            CHECK_FALSE(v1.has_less_op());
-            CHECK_FALSE(v2.has_less_op());
-            CHECK_FALSE(v3.has_less_op());
-            CHECK(v1.has_equals_op());
-            CHECK(v2.has_equals_op());
-            CHECK(v3.has_equals_op());
-            CHECK_FALSE(v1.less(v2));
-            CHECK_FALSE(v2.less(v3));
-            CHECK(v1.equals(v2));
-            CHECK_FALSE(v2.equals(v3));
+            CHECK(meta::uvalue{std::array<int, 1>{42}}.has_less_op());
+            CHECK(meta::uvalue{std::tuple<std::string>{""}}.has_less_op());
+            CHECK(meta::uvalue{std::vector{std::string_view{""}}}.has_less_op());
+            CHECK(meta::uvalue{std::make_shared<int>(42)}.has_less_op());
+            CHECK(meta::uvalue{std::make_unique<int>(42)}.has_less_op());
+
+            CHECK_FALSE(meta::uvalue{std::array<ivec2, 1>{ivec2{1,2}}}.has_less_op());
+            CHECK_FALSE(meta::uvalue{std::tuple<ivec2>{ivec2{1,2}}}.has_less_op());
+            CHECK_FALSE(meta::uvalue{std::vector{ivec2{1,2}}}.has_less_op());
+            CHECK(meta::uvalue{std::make_shared<ivec2>(1,2)}.has_less_op());
+            CHECK(meta::uvalue{std::make_unique<ivec2>(1,2)}.has_less_op());
+
+            CHECK(meta::uvalue{std::array<int, 1>{42}}.has_equals_op());
+            CHECK(meta::uvalue{std::tuple<std::string>{""}}.has_equals_op());
+            CHECK(meta::uvalue{std::vector{std::string_view{""}}}.has_equals_op());
+            CHECK(meta::uvalue{std::make_shared<int>(42)}.has_equals_op());
+            CHECK(meta::uvalue{std::make_unique<int>(42)}.has_equals_op());
+
+            CHECK(meta::uvalue{std::array<ivec2, 1>{ivec2{1,2}}}.has_equals_op());
+            CHECK(meta::uvalue{std::tuple<ivec2>{ivec2{1,2}}}.has_equals_op());
+            CHECK(meta::uvalue{std::vector{ivec2{1,2}}}.has_equals_op());
+            CHECK(meta::uvalue{std::make_shared<ivec2>(1,2)}.has_equals_op());
+            CHECK(meta::uvalue{std::make_unique<ivec2>(1,2)}.has_equals_op());
+
+            {
+                int v1 = 42;
+                CHECK(meta::uvalue{std::ref(v1)}.has_less_op());
+                CHECK(meta::uvalue{std::cref(v1)}.has_less_op());
+                CHECK(meta::uvalue{std::ref(v1)}.has_equals_op());
+                CHECK(meta::uvalue{std::cref(v1)}.has_equals_op());
+
+                ivec2 v2{1,2};
+                CHECK_FALSE(meta::uvalue{std::ref(v2)}.has_less_op());
+                CHECK_FALSE(meta::uvalue{std::cref(v2)}.has_less_op());
+                CHECK(meta::uvalue{std::ref(v2)}.has_equals_op());
+                CHECK(meta::uvalue{std::cref(v2)}.has_equals_op());
+            }
         }
     }
 }
@@ -743,7 +822,7 @@ TEST_CASE("meta/meta_utilities/value/arrays") {
         meta::uvalue v{42};
         CHECK(v.get_type() == meta::resolve_type<int>());
         CHECK_FALSE(v.has_index_op());
-        CHECK_FALSE(v[0]);
+        CHECK_THROWS(std::ignore = v[0]);
     }
 
     SUBCASE("void*") {
@@ -752,7 +831,7 @@ TEST_CASE("meta/meta_utilities/value/arrays") {
         meta::uvalue v{p};
         CHECK(v.get_type() == meta::resolve_type<void*>());
         CHECK_FALSE(v.has_index_op());
-        CHECK_FALSE(v[0]);
+        CHECK_THROWS(std::ignore = v[0]);
     }
 
     SUBCASE("const void*") {
@@ -761,7 +840,7 @@ TEST_CASE("meta/meta_utilities/value/arrays") {
         meta::uvalue v{p};
         CHECK(v.get_type() == meta::resolve_type<const void*>());
         CHECK_FALSE(v.has_index_op());
-        CHECK_FALSE(v[0]);
+        CHECK_THROWS(std::ignore = v[0]);
     }
 
     SUBCASE("int[3]") {

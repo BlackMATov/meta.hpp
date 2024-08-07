@@ -17,6 +17,7 @@ namespace meta_hpp::detail
 
         bad_const_access,
         bad_uvalue_access,
+        bad_uvalue_operation,
 
         bad_argument_cast,
         bad_instance_cast,
@@ -36,6 +37,8 @@ namespace meta_hpp::detail
             return "bad const access";
         case error_code::bad_uvalue_access:
             return "bad uvalue access";
+        case error_code::bad_uvalue_operation:
+            return "bad uvalue operation";
         case error_code::bad_argument_cast:
             return "bad argument cast";
         case error_code::bad_instance_cast:
