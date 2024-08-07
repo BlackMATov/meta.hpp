@@ -615,6 +615,125 @@ TEST_CASE("meta/meta_utilities/value") {
             CHECK((*v).as<int>() == 42);
         }
     }
+
+    SUBCASE("less/equals") {
+        {
+            meta::uvalue v1{42};
+            meta::uvalue v2{42};
+            CHECK(v1.has_less_op());
+            CHECK(v2.has_less_op());
+            CHECK(v1.has_equals_op());
+            CHECK(v2.has_equals_op());
+            CHECK_FALSE(v1.less(v2));
+            CHECK_FALSE(v2.less(v1));
+            CHECK(v1.equals(v2));
+            CHECK(v2.equals(v1));
+        }
+        {
+            meta::uvalue v1{42};
+            meta::uvalue v2{43};
+            CHECK(v1.has_less_op());
+            CHECK(v2.has_less_op());
+            CHECK(v1.has_equals_op());
+            CHECK(v2.has_equals_op());
+            CHECK(v1.less(v2));
+            CHECK_FALSE(v2.less(v1));
+            CHECK_FALSE(v1.equals(v2));
+            CHECK_FALSE(v2.equals(v1));
+        }
+        {
+            meta::uvalue v1{42};
+            meta::uvalue v2{'a'};
+            CHECK(v1.has_less_op());
+            CHECK(v2.has_less_op());
+            CHECK(v1.has_equals_op());
+            CHECK(v2.has_equals_op());
+            CHECK_FALSE(v1.less(v2));
+            CHECK_FALSE(v2.less(v1));
+            CHECK_FALSE(v1.equals(v2));
+            CHECK_FALSE(v2.equals(v1));
+        }
+        {
+            meta::uvalue v1{ivec2{1,2}};
+            meta::uvalue v2{ivec2{1,2}};
+            CHECK_FALSE(v1.has_less_op());
+            CHECK_FALSE(v2.has_less_op());
+            CHECK(v1.has_equals_op());
+            CHECK(v2.has_equals_op());
+            CHECK_FALSE(v1.less(v2));
+            CHECK_FALSE(v2.less(v1));
+            CHECK(v1.equals(v2));
+            CHECK(v2.equals(v1));
+        }
+        {
+            meta::uvalue v1{ivec2{1,2}};
+            meta::uvalue v2{ivec3{1,2,3}};
+            CHECK_FALSE(v1.has_less_op());
+            CHECK_FALSE(v2.has_less_op());
+            CHECK(v1.has_equals_op());
+            CHECK_FALSE(v2.has_equals_op());
+            CHECK_FALSE(v1.less(v2));
+            CHECK_FALSE(v2.less(v1));
+            CHECK_FALSE(v1.equals(v2));
+            CHECK_FALSE(v2.equals(v1));
+        }
+        {
+            meta::uvalue v{};
+            CHECK(v.has_less_op());
+            CHECK(v.has_equals_op());
+            CHECK_FALSE(v.less(v));
+            CHECK_FALSE(v.less(meta::uvalue{42}));
+            CHECK_FALSE(meta::uvalue{42}.less(meta::uvalue{}));
+            CHECK(v.equals(v));
+            CHECK_FALSE(v.equals(meta::uvalue{42}));
+            CHECK_FALSE(meta::uvalue{42}.equals(meta::uvalue{}));
+        }
+        {
+            meta::uvalue v1{std::array<ivec2, 2>{ivec2{1,2},ivec2{3,4}}};
+            meta::uvalue v2{std::array<ivec2, 2>{ivec2{1,2},ivec2{3,4}}};
+            meta::uvalue v3{std::array<ivec2, 2>{ivec2{1,2},ivec2{3,5}}};
+            CHECK_FALSE(v1.has_less_op());
+            CHECK_FALSE(v2.has_less_op());
+            CHECK_FALSE(v3.has_less_op());
+            CHECK(v1.has_equals_op());
+            CHECK(v2.has_equals_op());
+            CHECK(v3.has_equals_op());
+            CHECK_FALSE(v1.less(v2));
+            CHECK_FALSE(v2.less(v3));
+            CHECK(v1.equals(v2));
+            CHECK_FALSE(v2.equals(v3));
+        }
+        {
+            meta::uvalue v1{std::vector<ivec2>{{1,2},{3,4}}};
+            meta::uvalue v2{std::vector<ivec2>{{1,2},{3,4}}};
+            meta::uvalue v3{std::vector<ivec2>{{1,2},{3,5}}};
+            CHECK_FALSE(v1.has_less_op());
+            CHECK_FALSE(v2.has_less_op());
+            CHECK_FALSE(v3.has_less_op());
+            CHECK(v1.has_equals_op());
+            CHECK(v2.has_equals_op());
+            CHECK(v3.has_equals_op());
+            CHECK_FALSE(v1.less(v2));
+            CHECK_FALSE(v2.less(v3));
+            CHECK(v1.equals(v2));
+            CHECK_FALSE(v2.equals(v3));
+        }
+        {
+            meta::uvalue v1{std::tuple<int, ivec2>{42, {1,2}}};
+            meta::uvalue v2{std::tuple<int, ivec2>{42, {1,2}}};
+            meta::uvalue v3{std::tuple<int, ivec2>{42, {1,3}}};
+            CHECK_FALSE(v1.has_less_op());
+            CHECK_FALSE(v2.has_less_op());
+            CHECK_FALSE(v3.has_less_op());
+            CHECK(v1.has_equals_op());
+            CHECK(v2.has_equals_op());
+            CHECK(v3.has_equals_op());
+            CHECK_FALSE(v1.less(v2));
+            CHECK_FALSE(v2.less(v3));
+            CHECK(v1.equals(v2));
+            CHECK_FALSE(v2.equals(v3));
+        }
+    }
 }
 
 TEST_CASE("meta/meta_utilities/value/arrays") {

@@ -12,7 +12,9 @@
 
 #include "../meta_detail/value_traits/copy_traits.hpp"
 #include "../meta_detail/value_traits/deref_traits.hpp"
+#include "../meta_detail/value_traits/equals_traits.hpp"
 #include "../meta_detail/value_traits/index_traits.hpp"
+#include "../meta_detail/value_traits/less_traits.hpp"
 #include "../meta_detail/value_traits/unmap_traits.hpp"
 
 #include "../meta_detail/value_utilities/uarg.hpp"
@@ -31,6 +33,9 @@ namespace meta_hpp
         uvalue (*const deref)(const storage_u& self);
         uvalue (*const index)(const storage_u& self, std::size_t i);
         uvalue (*const unmap)(const storage_u& self);
+
+        bool (*const less)(const storage_u& l, const storage_u& r);
+        bool (*const equals)(const storage_u& l, const storage_u& r);
         // NOLINTEND(*-avoid-const-or-ref-data-members)
 
         template < typename T >
@@ -233,6 +238,26 @@ namespace meta_hpp
                         return nullptr;
                     }
                 }()},
+
+                .less{[]() {
+                    if constexpr ( detail::has_less_traits<Tp> ) {
+                        return +[](const storage_u& l, const storage_u& r) -> bool {
+                            return detail::less_traits<Tp>{}(*storage_cast<Tp>(l), *storage_cast<Tp>(r));
+                        };
+                    } else {
+                        return nullptr;
+                    }
+                }()},
+
+                .equals{[]() {
+                    if constexpr ( detail::has_equals_traits<Tp> ) {
+                        return +[](const storage_u& l, const storage_u& r) -> bool {
+                            return detail::equals_traits<Tp>{}(*storage_cast<Tp>(l), *storage_cast<Tp>(r));
+                        };
+                    } else {
+                        return nullptr;
+                    }
+                }()},
             };
 
             return &table;
@@ -412,6 +437,54 @@ namespace meta_hpp
     inline bool uvalue::has_unmap_op() const noexcept {
         auto&& [tag, vtable] = vtable_t::unpack_vtag(*this);
         return tag != storage_e::nothing && vtable->unmap != nullptr;
+    }
+
+    inline bool uvalue::less(const uvalue& other) const {
+        auto&& [l_tag, l_vtable] = vtable_t::unpack_vtag(*this);
+        auto&& [r_tag, r_vtable] = vtable_t::unpack_vtag(other);
+
+        if ( l_tag != r_tag ) {
+            return false;
+        }
+
+        if ( l_tag == storage_e::nothing ) {
+            return false;
+        }
+
+        if ( l_vtable != r_vtable || l_vtable->less == nullptr ) {
+            return false;
+        }
+
+        return l_vtable->less(storage_, other.storage_);
+    }
+
+    inline bool uvalue::has_less_op() const noexcept {
+        auto&& [tag, vtable] = vtable_t::unpack_vtag(*this);
+        return tag == storage_e::nothing || vtable->less != nullptr;
+    }
+
+    inline bool uvalue::equals(const uvalue& other) const {
+        auto&& [l_tag, l_vtable] = vtable_t::unpack_vtag(*this);
+        auto&& [r_tag, r_vtable] = vtable_t::unpack_vtag(other);
+
+        if ( l_tag != r_tag ) {
+            return false;
+        }
+
+        if ( l_tag == storage_e::nothing ) {
+            return true;
+        }
+
+        if ( l_vtable != r_vtable || l_vtable->equals == nullptr ) {
+            return false;
+        }
+
+        return l_vtable->equals(storage_, other.storage_);
+    }
+
+    inline bool uvalue::has_equals_op() const noexcept {
+        auto&& [tag, vtable] = vtable_t::unpack_vtag(*this);
+        return tag == storage_e::nothing || vtable->equals != nullptr;
     }
 
     template < typename T >
