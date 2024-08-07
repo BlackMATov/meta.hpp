@@ -191,6 +191,12 @@ public:
     uvalue unmap() const;
     bool has_unmap_op() const noexcept;
 
+    bool less(const uvalue& other) const;
+    bool has_less_op() const noexcept;
+
+    bool equals(const uvalue& other) const;
+    bool has_equals_op() const noexcept;
+
     template < typename T >
     bool is() const noexcept;
 

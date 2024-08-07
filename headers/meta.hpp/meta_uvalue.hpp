@@ -77,6 +77,12 @@ namespace meta_hpp
         [[nodiscard]] uvalue unmap() const;
         [[nodiscard]] bool has_unmap_op() const noexcept;
 
+        [[nodiscard]] bool less(const uvalue& other) const;
+        [[nodiscard]] bool has_less_op() const noexcept;
+
+        [[nodiscard]] bool equals(const uvalue& other) const;
+        [[nodiscard]] bool has_equals_op() const noexcept;
+
         template < typename T >
         [[nodiscard]] bool is() const noexcept;
 

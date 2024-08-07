@@ -308,11 +308,10 @@ public:
 
     const evalue_list& get_evalues() const noexcept;
 
-    evalue get_evalue(std::string_view name) const noexcept;
-
     template < enum_kind Enum >
-    std::string_view value_to_name(Enum value) const;
-    const uvalue& name_to_value(std::string_view name) const noexcept;
+    evalue value_to_evalue(Enum value) const;
+    evalue value_to_evalue(const uvalue& value) const;
+    evalue name_to_evalue(std::string_view name) const noexcept;
 };
 ```
 

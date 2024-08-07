@@ -60,8 +60,8 @@ TEST_CASE("meta/meta_examples/enum/usage") {
     const meta::enum_type align_type = meta::resolve_type(e);
 
     // converts the enumerator to its name
-    CHECK(align_type.value_to_name(e) == "center");
+    CHECK(align_type.value_to_evalue(e).get_name() == "center");
 
     // ... and back again
-    CHECK(align_type.name_to_value("center").as<align>() == e);
+    CHECK(align_type.name_to_evalue("center").get_value().as<align>() == e);
 }

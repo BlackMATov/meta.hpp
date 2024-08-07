@@ -66,7 +66,7 @@ TEST_CASE("meta/meta_utilities/hash") {
     const meta::method ivec2_method = ivec2_type.get_method("add");
 
     const meta::enum_type color_type = meta::resolve_type<color>();
-    const meta::evalue red_color = color_type.get_evalue("red");
+    const meta::evalue red_color = color_type.name_to_evalue("red");
 
     const meta::scope local_scope = meta::local_scope_("local-scope")
         .variable_("pi_v", &pi_v);

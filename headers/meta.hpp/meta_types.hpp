@@ -291,11 +291,10 @@ namespace meta_hpp
 
         [[nodiscard]] const evalue_list& get_evalues() const noexcept;
 
-        [[nodiscard]] evalue get_evalue(std::string_view name) const noexcept;
-
         template < enum_kind Enum >
-        [[nodiscard]] std::string_view value_to_name(Enum value) const;
-        [[nodiscard]] const uvalue& name_to_value(std::string_view name) const noexcept;
+        [[nodiscard]] evalue value_to_evalue(Enum value) const;
+        [[nodiscard]] evalue value_to_evalue(const uvalue& value) const;
+        [[nodiscard]] evalue name_to_evalue(std::string_view name) const noexcept;
     };
 
     class function_type final : public type_base<function_type> {

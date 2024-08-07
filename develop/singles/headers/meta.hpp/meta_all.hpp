@@ -188,6 +188,18 @@
 
 #define META_HPP_DETAIL_IGNORE_OVERRIDE_WARNINGS_POP() META_HPP_DETAIL_CLANG_IGNORE_WARNINGS_POP()
 
+//
+//
+//
+
+#define META_HPP_DETAIL_IGNORE_COMPARISON_WARNINGS_PUSH() \
+    META_HPP_DETAIL_CLANG_IGNORE_WARNINGS_PUSH() \
+    META_HPP_DETAIL_CLANG_IGNORE_WARNING("-Wunknown-warning-option") \
+    META_HPP_DETAIL_CLANG_IGNORE_WARNING("-Wfloat-equal") \
+    META_HPP_DETAIL_CLANG_IGNORE_WARNING("-Wordered-compare-function-pointers")
+
+#define META_HPP_DETAIL_IGNORE_COMPARISON_WARNINGS_POP() META_HPP_DETAIL_CLANG_IGNORE_WARNINGS_POP()
+
 namespace meta_hpp::detail
 {
     template < typename Enum >
@@ -444,6 +456,7 @@ namespace meta_hpp::detail
 
         bad_const_access,
         bad_uvalue_access,
+        bad_uvalue_operation,
 
         bad_argument_cast,
         bad_instance_cast,
@@ -463,6 +476,8 @@ namespace meta_hpp::detail
             return "bad const access";
         case error_code::bad_uvalue_access:
             return "bad uvalue access";
+        case error_code::bad_uvalue_operation:
+            return "bad uvalue operation";
         case error_code::bad_argument_cast:
             return "bad argument cast";
         case error_code::bad_instance_cast:
@@ -2755,6 +2770,12 @@ namespace meta_hpp
         [[nodiscard]] uvalue unmap() const;
         [[nodiscard]] bool has_unmap_op() const noexcept;
 
+        [[nodiscard]] bool less(const uvalue& other) const;
+        [[nodiscard]] bool has_less_op() const noexcept;
+
+        [[nodiscard]] bool equals(const uvalue& other) const;
+        [[nodiscard]] bool has_equals_op() const noexcept;
+
         template < typename T >
         [[nodiscard]] bool is() const noexcept;
 
@@ -3116,11 +3137,10 @@ namespace meta_hpp
 
         [[nodiscard]] const evalue_list& get_evalues() const noexcept;
 
-        [[nodiscard]] evalue get_evalue(std::string_view name) const noexcept;
-
         template < enum_kind Enum >
-        [[nodiscard]] std::string_view value_to_name(Enum value) const;
-        [[nodiscard]] const uvalue& name_to_value(std::string_view name) const noexcept;
+        [[nodiscard]] evalue value_to_evalue(Enum value) const;
+        [[nodiscard]] evalue value_to_evalue(const uvalue& value) const;
+        [[nodiscard]] evalue name_to_evalue(std::string_view name) const noexcept;
     };
 
     class function_type final : public type_base<function_type> {
@@ -9127,36 +9147,42 @@ namespace meta_hpp
         return data_->evalues;
     }
 
-    inline evalue enum_type::get_evalue(std::string_view name) const noexcept {
+    template < enum_kind Enum >
+    evalue enum_type::value_to_evalue(Enum value) const {
+        if ( *this != resolve_type<Enum>() ) {
+            return evalue{};
+        }
+
+        for ( const evalue& evalue : data_->evalues ) {
+            if ( evalue.get_value().as<Enum>() == value ) {
+                return evalue;
+            }
+        }
+
+        return evalue{};
+    }
+
+    inline evalue enum_type::value_to_evalue(const uvalue& value) const {
+        if ( *this != value.get_type() ) {
+            return evalue{};
+        }
+
+        for ( const evalue& evalue : data_->evalues ) {
+            if ( evalue.get_value().equals(value) ) {
+                return evalue;
+            }
+        }
+
+        return evalue{};
+    }
+
+    inline evalue enum_type::name_to_evalue(std::string_view name) const noexcept {
         for ( const evalue& evalue : data_->evalues ) {
             if ( evalue.get_name() == name ) {
                 return evalue;
             }
         }
         return evalue{};
-    }
-
-    template < enum_kind Enum >
-    std::string_view enum_type::value_to_name(Enum value) const {
-        if ( resolve_type<Enum>() != *this ) {
-            return std::string_view{};
-        }
-
-        for ( const evalue& evalue : data_->evalues ) {
-            if ( evalue.get_value().as<Enum>() == value ) {
-                return evalue.get_name();
-            }
-        }
-
-        return std::string_view{};
-    }
-
-    inline const uvalue& enum_type::name_to_value(std::string_view name) const noexcept {
-        if ( const evalue& value = get_evalue(name) ) {
-            return value.get_value();
-        }
-        static const uvalue empty_value;
-        return empty_value;
     }
 }
 
@@ -10477,6 +10503,120 @@ namespace meta_hpp::detail
 namespace meta_hpp::detail
 {
     template < typename T >
+    struct equals_traits;
+
+    template < typename T >
+    concept has_equals_traits //
+        = requires(const T& v) { equals_traits<T>{}(v, v); };
+}
+
+namespace meta_hpp::detail
+{
+    template < typename T >
+        requires requires(const T& v) {
+                     { v == v } -> std::convertible_to<bool>;
+                 } && (!class_kind<T> || type_list_arity_v<typename class_traits<T>::argument_types> == 0)
+    struct equals_traits<T> {
+        bool operator()(const T& l, const T& r) const {
+            META_HPP_DETAIL_IGNORE_COMPARISON_WARNINGS_PUSH()
+            return l == r;
+            META_HPP_DETAIL_IGNORE_COMPARISON_WARNINGS_POP()
+        }
+    };
+
+    template < typename T, std::size_t Size >
+        requires has_equals_traits<T>
+    struct equals_traits<std::array<T, Size>> {
+        using value_t = std::array<T, Size>;
+
+        bool operator()(const value_t& l, const value_t& r) const {
+            return l == r;
+        }
+    };
+
+    template < typename T, typename Traits, typename Allocator >
+        requires has_equals_traits<T>
+    struct equals_traits<std::basic_string<T, Traits, Allocator>> {
+        using value_t = std::basic_string<T, Traits, Allocator>;
+
+        bool operator()(const value_t& l, const value_t& r) const {
+            return l == r;
+        }
+    };
+
+    template < typename T, typename Traits >
+        requires has_equals_traits<T>
+    struct equals_traits<std::basic_string_view<T, Traits>> {
+        using value_t = std::basic_string_view<T, Traits>;
+
+        bool operator()(const value_t& l, const value_t& r) const {
+            return l == r;
+        }
+    };
+
+    template < typename T, typename Allocator >
+        requires has_equals_traits<T>
+    struct equals_traits<std::vector<T, Allocator>> {
+        using value_t = std::vector<T, Allocator>;
+
+        bool operator()(const value_t& l, const value_t& r) const {
+            return l == r;
+        }
+    };
+
+    template < typename T >
+    struct equals_traits<std::shared_ptr<T>> {
+        using value_t = std::shared_ptr<T>;
+
+        bool operator()(const value_t& l, const value_t& r) const {
+            return l == r;
+        }
+    };
+
+    template < typename T, typename Deleter >
+    struct equals_traits<std::unique_ptr<T, Deleter>> {
+        using value_t = std::unique_ptr<T, Deleter>;
+
+        bool operator()(const value_t& l, const value_t& r) const {
+            return l == r;
+        }
+    };
+
+    template < typename T >
+        requires has_equals_traits<T>
+    struct equals_traits<std::reference_wrapper<T>> {
+        using value_t = std::reference_wrapper<T>;
+
+        bool operator()(const value_t& l, const value_t& r) const {
+            return l.get() == r.get();
+        }
+    };
+
+    template < typename... Ts >
+        requires(... && has_equals_traits<Ts>)
+    struct equals_traits<std::tuple<Ts...>> {
+        using value_t = std::tuple<Ts...>;
+
+        bool operator()(const value_t& l, const value_t& r) const {
+            return l == r;
+        }
+    };
+}
+
+#define META_HPP_DECLARE_EQUALS_TRAITS_FOR(T) \
+    namespace meta_hpp::detail \
+    { \
+        template <> \
+        struct equals_traits<T> { \
+            bool operator()(const T& l, const T& r) const { \
+                return l == r; \
+            } \
+        }; \
+    }
+
+namespace meta_hpp::detail
+{
+    template < typename T >
     struct index_traits;
 
     template < typename T >
@@ -10539,6 +10679,120 @@ namespace meta_hpp::detail
 namespace meta_hpp::detail
 {
     template < typename T >
+    struct less_traits;
+
+    template < typename T >
+    concept has_less_traits //
+        = requires(const T& v) { less_traits<T>{}(v, v); };
+}
+
+namespace meta_hpp::detail
+{
+    template < typename T >
+        requires requires(const T& v) {
+                     { v < v } -> std::convertible_to<bool>;
+                 } && (!class_kind<T> || type_list_arity_v<typename class_traits<T>::argument_types> == 0)
+    struct less_traits<T> {
+        bool operator()(const T& l, const T& r) const {
+            META_HPP_DETAIL_IGNORE_COMPARISON_WARNINGS_PUSH()
+            return l < r;
+            META_HPP_DETAIL_IGNORE_COMPARISON_WARNINGS_POP()
+        }
+    };
+
+    template < typename T, std::size_t Size >
+        requires has_less_traits<T>
+    struct less_traits<std::array<T, Size>> {
+        using value_t = std::array<T, Size>;
+
+        bool operator()(const value_t& l, const value_t& r) const {
+            return l < r;
+        }
+    };
+
+    template < typename T, typename Traits, typename Allocator >
+        requires has_less_traits<T>
+    struct less_traits<std::basic_string<T, Traits, Allocator>> {
+        using value_t = std::basic_string<T, Traits, Allocator>;
+
+        bool operator()(const value_t& l, const value_t& r) const {
+            return l < r;
+        }
+    };
+
+    template < typename T, typename Traits >
+        requires has_less_traits<T>
+    struct less_traits<std::basic_string_view<T, Traits>> {
+        using value_t = std::basic_string_view<T, Traits>;
+
+        bool operator()(const value_t& l, const value_t& r) const {
+            return l < r;
+        }
+    };
+
+    template < typename T, typename Allocator >
+        requires has_less_traits<T>
+    struct less_traits<std::vector<T, Allocator>> {
+        using value_t = std::vector<T, Allocator>;
+
+        bool operator()(const value_t& l, const value_t& r) const {
+            return l < r;
+        }
+    };
+
+    template < typename T >
+    struct less_traits<std::shared_ptr<T>> {
+        using value_t = std::shared_ptr<T>;
+
+        bool operator()(const value_t& l, const value_t& r) const {
+            return l < r;
+        }
+    };
+
+    template < typename T, typename Deleter >
+    struct less_traits<std::unique_ptr<T, Deleter>> {
+        using value_t = std::unique_ptr<T, Deleter>;
+
+        bool operator()(const value_t& l, const value_t& r) const {
+            return l < r;
+        }
+    };
+
+    template < typename T >
+        requires has_less_traits<T>
+    struct less_traits<std::reference_wrapper<T>> {
+        using value_t = std::reference_wrapper<T>;
+
+        bool operator()(const value_t& l, const value_t& r) const {
+            return l.get() < r.get();
+        }
+    };
+
+    template < typename... Ts >
+        requires(... && has_less_traits<Ts>)
+    struct less_traits<std::tuple<Ts...>> {
+        using value_t = std::tuple<Ts...>;
+
+        bool operator()(const value_t& l, const value_t& r) const {
+            return l < r;
+        }
+    };
+}
+
+#define META_HPP_DECLARE_LESS_TRAITS_FOR(T) \
+    namespace meta_hpp::detail \
+    { \
+        template <> \
+        struct less_traits<T> { \
+            bool operator()(const T& l, const T& r) const { \
+                return l < r; \
+            } \
+        }; \
+    }
+
+namespace meta_hpp::detail
+{
+    template < typename T >
     struct unmap_traits;
 
     template < typename T >
@@ -10583,6 +10837,9 @@ namespace meta_hpp
         uvalue (*const deref)(const storage_u& self);
         uvalue (*const index)(const storage_u& self, std::size_t i);
         uvalue (*const unmap)(const storage_u& self);
+
+        bool (*const less)(const storage_u& l, const storage_u& r);
+        bool (*const equals)(const storage_u& l, const storage_u& r);
         // NOLINTEND(*-avoid-const-or-ref-data-members)
 
         template < typename T >
@@ -10785,6 +11042,26 @@ namespace meta_hpp
                         return nullptr;
                     }
                 }()},
+
+                .less{[]() {
+                    if constexpr ( detail::has_less_traits<Tp> ) {
+                        return +[](const storage_u& l, const storage_u& r) -> bool {
+                            return detail::less_traits<Tp>{}(*storage_cast<Tp>(l), *storage_cast<Tp>(r));
+                        };
+                    } else {
+                        return nullptr;
+                    }
+                }()},
+
+                .equals{[]() {
+                    if constexpr ( detail::has_equals_traits<Tp> ) {
+                        return +[](const storage_u& l, const storage_u& r) -> bool {
+                            return detail::equals_traits<Tp>{}(*storage_cast<Tp>(l), *storage_cast<Tp>(r));
+                        };
+                    } else {
+                        return nullptr;
+                    }
+                }()},
             };
 
             return &table;
@@ -10920,9 +11197,12 @@ namespace meta_hpp
 
     inline uvalue uvalue::operator*() const {
         auto&& [tag, vtable] = vtable_t::unpack_vtag(*this);
-        return tag != storage_e::nothing && vtable->deref != nullptr //
-                 ? vtable->deref(storage_)
-                 : uvalue{};
+
+        if ( tag != storage_e::nothing && vtable->deref != nullptr ) {
+            return vtable->deref(storage_);
+        }
+
+        throw_exception(error_code::bad_uvalue_operation);
     }
 
     inline bool uvalue::has_deref_op() const noexcept {
@@ -10932,9 +11212,12 @@ namespace meta_hpp
 
     inline uvalue uvalue::operator[](std::size_t index) const {
         auto&& [tag, vtable] = vtable_t::unpack_vtag(*this);
-        return tag != storage_e::nothing && vtable->index != nullptr //
-                 ? vtable->index(storage_, index)
-                 : uvalue{};
+
+        if ( tag != storage_e::nothing && vtable->index != nullptr ) {
+            return vtable->index(storage_, index);
+        }
+
+        throw_exception(error_code::bad_uvalue_operation);
     }
 
     inline bool uvalue::has_index_op() const noexcept {
@@ -10944,26 +11227,92 @@ namespace meta_hpp
 
     inline uvalue uvalue::copy() const {
         auto&& [tag, vtable] = vtable_t::unpack_vtag(*this);
-        return tag != storage_e::nothing && vtable->copy != nullptr //
-                 ? vtable->copy(storage_)
-                 : uvalue{};
+
+        if ( tag == storage_e::nothing ) {
+            return uvalue{};
+        }
+
+        if ( vtable->copy != nullptr ) {
+            return vtable->copy(storage_);
+        }
+
+        throw_exception(error_code::bad_uvalue_operation);
     }
 
     inline bool uvalue::has_copy_op() const noexcept {
         auto&& [tag, vtable] = vtable_t::unpack_vtag(*this);
-        return tag != storage_e::nothing && vtable->copy != nullptr;
+        return tag == storage_e::nothing || vtable->copy != nullptr;
     }
 
     inline uvalue uvalue::unmap() const {
         auto&& [tag, vtable] = vtable_t::unpack_vtag(*this);
-        return tag != storage_e::nothing && vtable->unmap != nullptr //
-                 ? vtable->unmap(storage_)
-                 : uvalue{};
+
+        if ( tag != storage_e::nothing && vtable->unmap != nullptr ) {
+            return vtable->unmap(storage_);
+        }
+
+        throw_exception(error_code::bad_uvalue_operation);
     }
 
     inline bool uvalue::has_unmap_op() const noexcept {
         auto&& [tag, vtable] = vtable_t::unpack_vtag(*this);
         return tag != storage_e::nothing && vtable->unmap != nullptr;
+    }
+
+    inline bool uvalue::less(const uvalue& other) const {
+        if ( this == &other ) {
+            return false;
+        }
+
+        auto&& [l_tag, l_vtable] = vtable_t::unpack_vtag(*this);
+        auto&& [r_tag, r_vtable] = vtable_t::unpack_vtag(other);
+
+        if ( l_tag != r_tag || l_tag == storage_e::nothing ) {
+            return l_tag < r_tag;
+        }
+
+        if ( l_vtable != r_vtable ) {
+            return l_vtable->type < r_vtable->type;
+        }
+
+        if ( l_vtable->less != nullptr ) {
+            return l_vtable->less(storage_, other.storage_);
+        }
+
+        throw_exception(error_code::bad_uvalue_operation);
+    }
+
+    inline bool uvalue::has_less_op() const noexcept {
+        auto&& [tag, vtable] = vtable_t::unpack_vtag(*this);
+        return tag == storage_e::nothing || vtable->less != nullptr;
+    }
+
+    inline bool uvalue::equals(const uvalue& other) const {
+        if ( this == &other ) {
+            return true;
+        }
+
+        auto&& [l_tag, l_vtable] = vtable_t::unpack_vtag(*this);
+        auto&& [r_tag, r_vtable] = vtable_t::unpack_vtag(other);
+
+        if ( l_tag != r_tag || l_tag == storage_e::nothing ) {
+            return l_tag == r_tag;
+        }
+
+        if ( l_vtable != r_vtable ) {
+            return l_vtable->type == r_vtable->type;
+        }
+
+        if ( l_vtable->equals != nullptr ) {
+            return l_vtable->equals(storage_, other.storage_);
+        }
+
+        throw_exception(error_code::bad_uvalue_operation);
+    }
+
+    inline bool uvalue::has_equals_op() const noexcept {
+        auto&& [tag, vtable] = vtable_t::unpack_vtag(*this);
+        return tag == storage_e::nothing || vtable->equals != nullptr;
     }
 
     template < typename T >

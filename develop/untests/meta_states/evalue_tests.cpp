@@ -35,19 +35,19 @@ TEST_CASE("meta/meta_states/evalue") {
         const meta::evalue evalue;
         CHECK_FALSE(evalue);
         CHECK_FALSE(evalue.is_valid());
-        CHECK(evalue == color_type.get_evalue("non-existent-evalue"));
+        CHECK(evalue == color_type.name_to_evalue("non-existent-evalue"));
     }
 
     SUBCASE("operators") {
-        const meta::evalue blue_e = color_type.get_evalue("blue");
-        const meta::evalue white_e = color_type.get_evalue("white");
+        const meta::evalue blue_e = color_type.name_to_evalue("blue");
+        const meta::evalue white_e = color_type.name_to_evalue("white");
         CHECK(blue_e == blue_e);
         CHECK(blue_e != white_e);
         CHECK((blue_e < white_e || white_e < blue_e));
     }
 
     SUBCASE("green") {
-        const meta::evalue evalue = color_type.get_evalue("green");
+        const meta::evalue evalue = color_type.name_to_evalue("green");
         REQUIRE(evalue);
 
         CHECK(evalue.get_index().get_type() == evalue.get_type());
