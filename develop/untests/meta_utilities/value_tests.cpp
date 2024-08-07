@@ -691,8 +691,8 @@ TEST_CASE("meta/meta_utilities/value") {
             CHECK(r.has_less_op());
             CHECK_FALSE(l.less(l));
             CHECK_FALSE(r.less(r));
-            CHECK(l.less(r) == l.get_type() < r.get_type());
-            CHECK(r.less(l) == r.get_type() < l.get_type());
+            CHECK(l.less(r) == (l.get_type() < r.get_type()));
+            CHECK(r.less(l) == (r.get_type() < l.get_type()));
 
             CHECK(l.has_equals_op());
             CHECK(r.has_equals_op());
@@ -709,8 +709,8 @@ TEST_CASE("meta/meta_utilities/value") {
             CHECK_FALSE(r.has_less_op());
             CHECK_FALSE(l.less(l));
             CHECK_FALSE(r.less(r));
-            CHECK(l.less(r) == l.get_type() < r.get_type());
-            CHECK(r.less(l) == r.get_type() < l.get_type());
+            CHECK(l.less(r) == (l.get_type() < r.get_type()));
+            CHECK(r.less(l) == (r.get_type() < l.get_type()));
 
             CHECK(l.has_equals_op());
             CHECK(r.has_equals_op());
