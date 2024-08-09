@@ -144,10 +144,6 @@ namespace meta_hpp
         return state_->index.get_name();
     }
 
-    inline const uvalue& variable::get_pointer() const noexcept {
-        return state_->pointer;
-    }
-
     inline uvalue variable::get() const {
         return state_->getter();
     }

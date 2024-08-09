@@ -80,11 +80,6 @@ TEST_CASE("meta/meta_states/variable") {
         CHECK((int_variable_v < const_int_variable_v || const_int_variable_v < int_variable_v));
     }
 
-    SUBCASE("pointers") {
-        CHECK(clazz_1_type.get_variable("int_variable").get_pointer().as<decltype(&clazz_1::int_variable)>() == &clazz_1::int_variable);
-        CHECK(clazz_1_type.get_variable("const_int_variable").get_pointer().as<decltype(&clazz_1::const_int_variable)>() == &clazz_1::const_int_variable);
-    }
-
     SUBCASE("int") {
         meta::variable vm = clazz_1_type.get_variable("int_variable");
         REQUIRE(vm);

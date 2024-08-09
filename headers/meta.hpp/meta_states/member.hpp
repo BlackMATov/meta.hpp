@@ -224,10 +224,6 @@ namespace meta_hpp
         return state_->index.get_name();
     }
 
-    inline const uvalue& member::get_pointer() const noexcept {
-        return state_->pointer;
-    }
-
     template < typename Instance >
     uvalue member::get(Instance&& instance) const {
         using namespace detail;
