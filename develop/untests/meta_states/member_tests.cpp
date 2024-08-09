@@ -50,6 +50,11 @@ TEST_CASE("meta/meta_states/member") {
         CHECK((int_member_m < const_int_member_m || const_int_member_m < int_member_m));
     }
 
+    SUBCASE("pointers") {
+        CHECK(clazz_1_type.get_member("int_member").get_pointer().as<decltype(&clazz_1::int_member)>() == &clazz_1::int_member);
+        CHECK(clazz_1_type.get_member("const_int_member").get_pointer().as<decltype(&clazz_1::const_int_member)>() == &clazz_1::const_int_member);
+    }
+
     SUBCASE("int") {
         meta::member vm = clazz_1_type.get_member("int_member");
         REQUIRE(vm);

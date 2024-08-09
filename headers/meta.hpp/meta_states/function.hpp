@@ -127,6 +127,7 @@ namespace meta_hpp::detail
             std::move(metadata),
         };
 
+        state.pointer = function_ptr;
         state.invoke = make_function_invoke<Policy>(registry, function_ptr);
         state.invoke_error = make_function_invoke_error<Function>(registry);
         state.arguments = make_function_arguments<Function>();
@@ -143,6 +144,10 @@ namespace meta_hpp
 
     inline const std::string& function::get_name() const noexcept {
         return state_->index.get_name();
+    }
+
+    inline const uvalue& function::get_pointer() const noexcept {
+        return state_->pointer;
     }
 
     inline std::size_t function::get_arity() const noexcept {

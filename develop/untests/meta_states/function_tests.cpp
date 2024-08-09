@@ -28,6 +28,7 @@ namespace
         static int arg_unbounded_const_arr(const ivec2 vs[]) { return vs[0].x + vs[0].y + vs[1].x + vs[1].y; }
     };
 
+    [[maybe_unused]]
     bool operator==(const ivec2& l, const ivec2& r) noexcept {
         return l.x == r.x && l.y == r.y;
     }
@@ -61,6 +62,11 @@ TEST_CASE("meta/meta_states/function") {
         CHECK(iadd_f == iadd_f);
         CHECK(iadd_f != ilength2_f);
         CHECK((iadd_f < ilength2_f || ilength2_f < iadd_f));
+    }
+
+    SUBCASE("pointers") {
+        CHECK(ivec2_type.get_function("iadd").get_pointer().as<decltype(&ivec2::iadd)>() == &ivec2::iadd);
+        CHECK(ivec2_type.get_function("ilength2").get_pointer().as<decltype(&ivec2::ilength2)>() == &ivec2::ilength2);
     }
 
     SUBCASE("iadd") {

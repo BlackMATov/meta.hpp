@@ -174,6 +174,8 @@ public:
     function_type get_type() const noexcept;
     const std::string& get_name() const noexcept;
 
+    const uvalue& get_pointer() const noexcept;
+
     std::size_t get_arity() const noexcept;
     argument get_argument(std::size_t position) const noexcept;
     const argument_list& get_arguments() const noexcept;
@@ -226,6 +228,8 @@ public:
 
     member_type get_type() const noexcept;
     const std::string& get_name() const noexcept;
+
+    const uvalue& get_pointer() const noexcept;
 
     template < typename Instance >
     uvalue get(Instance&& instance) const;
@@ -280,6 +284,8 @@ public:
 
     method_type get_type() const noexcept;
     const std::string& get_name() const noexcept;
+
+    const uvalue& get_pointer() const noexcept;
 
     std::size_t get_arity() const noexcept;
     argument get_argument(std::size_t position) const noexcept;
@@ -374,6 +380,8 @@ public:
 
     pointer_type get_type() const noexcept;
     const std::string& get_name() const noexcept;
+
+    const uvalue& get_pointer() const noexcept;
 
     uvalue get() const;
     uresult try_get() const;
