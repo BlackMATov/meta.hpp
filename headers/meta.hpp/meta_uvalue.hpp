@@ -119,7 +119,7 @@ namespace meta_hpp
 
         struct alignas(std::max_align_t) internal_storage_t final {
             // NOLINTNEXTLINE(*-avoid-c-arrays)
-            std::byte data[sizeof(void*) * 2];
+            std::byte data[sizeof(void*) * 3];
         };
 
         struct external_storage_t final {
