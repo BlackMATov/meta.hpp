@@ -4176,8 +4176,6 @@ namespace meta_hpp
         [[nodiscard]] function_type get_type() const noexcept;
         [[nodiscard]] const std::string& get_name() const noexcept;
 
-        [[nodiscard]] const uvalue& get_pointer() const noexcept;
-
         [[nodiscard]] std::size_t get_arity() const noexcept;
         [[nodiscard]] argument get_argument(std::size_t position) const noexcept;
         [[nodiscard]] const argument_list& get_arguments() const noexcept;
@@ -4226,8 +4224,6 @@ namespace meta_hpp
 
         [[nodiscard]] member_type get_type() const noexcept;
         [[nodiscard]] const std::string& get_name() const noexcept;
-
-        [[nodiscard]] const uvalue& get_pointer() const noexcept;
 
         template < typename Instance >
         [[nodiscard]] uvalue get(Instance&& instance) const;
@@ -4278,8 +4274,6 @@ namespace meta_hpp
 
         [[nodiscard]] method_type get_type() const noexcept;
         [[nodiscard]] const std::string& get_name() const noexcept;
-
-        [[nodiscard]] const uvalue& get_pointer() const noexcept;
 
         [[nodiscard]] std::size_t get_arity() const noexcept;
         [[nodiscard]] argument get_argument(std::size_t position) const noexcept;
@@ -4366,8 +4360,6 @@ namespace meta_hpp
 
         [[nodiscard]] pointer_type get_type() const noexcept;
         [[nodiscard]] const std::string& get_name() const noexcept;
-
-        [[nodiscard]] const uvalue& get_pointer() const noexcept;
 
         [[nodiscard]] uvalue get() const;
         [[nodiscard]] uresult try_get() const;
@@ -7152,10 +7144,6 @@ namespace meta_hpp
         return state_->index.get_name();
     }
 
-    inline const uvalue& function::get_pointer() const noexcept {
-        return state_->pointer;
-    }
-
     inline std::size_t function::get_arity() const noexcept {
         return state_->arguments.size();
     }
@@ -7751,10 +7739,6 @@ namespace meta_hpp
         return state_->index.get_name();
     }
 
-    inline const uvalue& member::get_pointer() const noexcept {
-        return state_->pointer;
-    }
-
     template < typename Instance >
     uvalue member::get(Instance&& instance) const {
         using namespace detail;
@@ -8058,10 +8042,6 @@ namespace meta_hpp
 
     inline const std::string& method::get_name() const noexcept {
         return state_->index.get_name();
-    }
-
-    inline const uvalue& method::get_pointer() const noexcept {
-        return state_->pointer;
     }
 
     inline std::size_t method::get_arity() const noexcept {
@@ -9406,10 +9386,6 @@ namespace meta_hpp
 
     inline const std::string& variable::get_name() const noexcept {
         return state_->index.get_name();
-    }
-
-    inline const uvalue& variable::get_pointer() const noexcept {
-        return state_->pointer;
     }
 
     inline uvalue variable::get() const {

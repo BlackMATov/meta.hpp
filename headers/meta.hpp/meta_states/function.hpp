@@ -147,10 +147,6 @@ namespace meta_hpp
         return state_->index.get_name();
     }
 
-    inline const uvalue& function::get_pointer() const noexcept {
-        return state_->pointer;
-    }
-
     inline std::size_t function::get_arity() const noexcept {
         return state_->arguments.size();
     }

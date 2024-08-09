@@ -64,11 +64,6 @@ TEST_CASE("meta/meta_states/function") {
         CHECK((iadd_f < ilength2_f || ilength2_f < iadd_f));
     }
 
-    SUBCASE("pointers") {
-        CHECK(ivec2_type.get_function("iadd").get_pointer().as<decltype(&ivec2::iadd)>() == &ivec2::iadd);
-        CHECK(ivec2_type.get_function("ilength2").get_pointer().as<decltype(&ivec2::ilength2)>() == &ivec2::ilength2);
-    }
-
     SUBCASE("iadd") {
         const meta::function func = ivec2_type.get_function("iadd");
         REQUIRE(func);
