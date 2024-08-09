@@ -2812,7 +2812,7 @@ namespace meta_hpp
 
         struct alignas(std::max_align_t) internal_storage_t final {
             // NOLINTNEXTLINE(*-avoid-c-arrays)
-            std::byte data[sizeof(void*) * 2];
+            std::byte data[sizeof(void*) * 3];
         };
 
         struct external_storage_t final {
@@ -4176,6 +4176,8 @@ namespace meta_hpp
         [[nodiscard]] function_type get_type() const noexcept;
         [[nodiscard]] const std::string& get_name() const noexcept;
 
+        [[nodiscard]] const uvalue& get_pointer() const noexcept;
+
         [[nodiscard]] std::size_t get_arity() const noexcept;
         [[nodiscard]] argument get_argument(std::size_t position) const noexcept;
         [[nodiscard]] const argument_list& get_arguments() const noexcept;
@@ -4224,6 +4226,8 @@ namespace meta_hpp
 
         [[nodiscard]] member_type get_type() const noexcept;
         [[nodiscard]] const std::string& get_name() const noexcept;
+
+        [[nodiscard]] const uvalue& get_pointer() const noexcept;
 
         template < typename Instance >
         [[nodiscard]] uvalue get(Instance&& instance) const;
@@ -4274,6 +4278,8 @@ namespace meta_hpp
 
         [[nodiscard]] method_type get_type() const noexcept;
         [[nodiscard]] const std::string& get_name() const noexcept;
+
+        [[nodiscard]] const uvalue& get_pointer() const noexcept;
 
         [[nodiscard]] std::size_t get_arity() const noexcept;
         [[nodiscard]] argument get_argument(std::size_t position) const noexcept;
@@ -4360,6 +4366,8 @@ namespace meta_hpp
 
         [[nodiscard]] pointer_type get_type() const noexcept;
         [[nodiscard]] const std::string& get_name() const noexcept;
+
+        [[nodiscard]] const uvalue& get_pointer() const noexcept;
 
         [[nodiscard]] uvalue get() const;
         [[nodiscard]] uresult try_get() const;
@@ -4495,6 +4503,7 @@ namespace meta_hpp::detail
         function_index index;
         metadata_map metadata;
 
+        uvalue pointer;
         invoke_impl invoke{};
         invoke_error_impl invoke_error{};
         argument_list arguments{};
@@ -4514,6 +4523,7 @@ namespace meta_hpp::detail
         member_index index;
         metadata_map metadata;
 
+        uvalue pointer;
         getter_impl getter{};
         setter_impl setter{};
         getter_error_impl getter_error{};
@@ -4531,6 +4541,7 @@ namespace meta_hpp::detail
         method_index index;
         metadata_map metadata;
 
+        uvalue pointer;
         invoke_impl invoke{};
         invoke_error_impl invoke_error{};
         argument_list arguments{};
@@ -4560,6 +4571,7 @@ namespace meta_hpp::detail
         variable_index index;
         metadata_map metadata;
 
+        uvalue pointer;
         getter_impl getter{};
         setter_impl setter{};
         setter_error_impl setter_error{};
@@ -7120,6 +7132,8 @@ namespace meta_hpp::detail
             std::move(metadata),
         };
 
+        state.pointer = function_ptr;
+
         state.invoke = make_function_invoke<Policy>(registry, function_ptr);
         state.invoke_error = make_function_invoke_error<Function>(registry);
         state.arguments = make_function_arguments<Function>();
@@ -7136,6 +7150,10 @@ namespace meta_hpp
 
     inline const std::string& function::get_name() const noexcept {
         return state_->index.get_name();
+    }
+
+    inline const uvalue& function::get_pointer() const noexcept {
+        return state_->pointer;
     }
 
     inline std::size_t function::get_arity() const noexcept {
@@ -7712,6 +7730,8 @@ namespace meta_hpp::detail
             std::move(metadata),
         };
 
+        state.pointer = member_ptr;
+
         state.getter = make_member_getter<Policy>(registry, member_ptr);
         state.setter = make_member_setter(registry, member_ptr);
         state.getter_error = make_member_getter_error<Member>(registry);
@@ -7729,6 +7749,10 @@ namespace meta_hpp
 
     inline const std::string& member::get_name() const noexcept {
         return state_->index.get_name();
+    }
+
+    inline const uvalue& member::get_pointer() const noexcept {
+        return state_->pointer;
     }
 
     template < typename Instance >
@@ -8016,6 +8040,8 @@ namespace meta_hpp::detail
             std::move(metadata),
         };
 
+        state.pointer = method_ptr;
+
         state.invoke = make_method_invoke<Policy>(registry, method_ptr);
         state.invoke_error = make_method_invoke_error<Method>(registry);
         state.arguments = make_method_arguments<Method>();
@@ -8032,6 +8058,10 @@ namespace meta_hpp
 
     inline const std::string& method::get_name() const noexcept {
         return state_->index.get_name();
+    }
+
+    inline const uvalue& method::get_pointer() const noexcept {
+        return state_->pointer;
     }
 
     inline std::size_t method::get_arity() const noexcept {
@@ -9358,6 +9388,8 @@ namespace meta_hpp::detail
             std::move(metadata),
         };
 
+        state.pointer = variable_ptr;
+
         state.getter = make_variable_getter<Policy>(registry, variable_ptr);
         state.setter = make_variable_setter(registry, variable_ptr);
         state.setter_error = make_variable_setter_error<Pointer>(registry);
@@ -9374,6 +9406,10 @@ namespace meta_hpp
 
     inline const std::string& variable::get_name() const noexcept {
         return state_->index.get_name();
+    }
+
+    inline const uvalue& variable::get_pointer() const noexcept {
+        return state_->pointer;
     }
 
     inline uvalue variable::get() const {

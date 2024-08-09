@@ -203,6 +203,8 @@ namespace meta_hpp::detail
             std::move(metadata),
         };
 
+        state.pointer = member_ptr;
+
         state.getter = make_member_getter<Policy>(registry, member_ptr);
         state.setter = make_member_setter(registry, member_ptr);
         state.getter_error = make_member_getter_error<Member>(registry);
@@ -220,6 +222,10 @@ namespace meta_hpp
 
     inline const std::string& member::get_name() const noexcept {
         return state_->index.get_name();
+    }
+
+    inline const uvalue& member::get_pointer() const noexcept {
+        return state_->pointer;
     }
 
     template < typename Instance >

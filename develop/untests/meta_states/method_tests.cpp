@@ -114,6 +114,11 @@ TEST_CASE("meta/meta_states/method") {
         CHECK((non_const_method_m < non_const_method_rref_m || non_const_method_rref_m < non_const_method_m));
     }
 
+    SUBCASE("pointers") {
+        CHECK(ct.get_method("non_const_method").get_pointer().as<decltype(&clazz::non_const_method)>() == &clazz::non_const_method);
+        CHECK(ct.get_method("const_method").get_pointer().as<decltype(&clazz::const_method)>() == &clazz::const_method);
+    }
+
     SUBCASE("non_const_method") {
         const meta::method mi = ct.get_method("non_const_method");
         REQUIRE(mi);

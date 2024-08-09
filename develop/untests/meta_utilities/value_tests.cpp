@@ -376,13 +376,13 @@ TEST_CASE("meta/meta_utilities/value") {
         CHECK(ivec2::move_constructor_counter == 1);
         CHECK(ivec2::copy_constructor_counter == 0);
 
-        val1.swap(val2);
+        val2.swap(val1);
         CHECK(val1.as<ivec2>() == ivec2{1,2});
         CHECK(val2.as<std::string>() == "world"s);
         CHECK(ivec2::move_constructor_counter == 2);
         CHECK(ivec2::copy_constructor_counter == 0);
 
-        swap(val1, val2);
+        swap(val2, val1);
         CHECK(val1.as<std::string>() == "world"s);
         CHECK(val2.as<ivec2>() == ivec2{1,2});
     }

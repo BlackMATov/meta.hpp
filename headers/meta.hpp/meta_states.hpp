@@ -165,6 +165,8 @@ namespace meta_hpp
         [[nodiscard]] function_type get_type() const noexcept;
         [[nodiscard]] const std::string& get_name() const noexcept;
 
+        [[nodiscard]] const uvalue& get_pointer() const noexcept;
+
         [[nodiscard]] std::size_t get_arity() const noexcept;
         [[nodiscard]] argument get_argument(std::size_t position) const noexcept;
         [[nodiscard]] const argument_list& get_arguments() const noexcept;
@@ -213,6 +215,8 @@ namespace meta_hpp
 
         [[nodiscard]] member_type get_type() const noexcept;
         [[nodiscard]] const std::string& get_name() const noexcept;
+
+        [[nodiscard]] const uvalue& get_pointer() const noexcept;
 
         template < typename Instance >
         [[nodiscard]] uvalue get(Instance&& instance) const;
@@ -263,6 +267,8 @@ namespace meta_hpp
 
         [[nodiscard]] method_type get_type() const noexcept;
         [[nodiscard]] const std::string& get_name() const noexcept;
+
+        [[nodiscard]] const uvalue& get_pointer() const noexcept;
 
         [[nodiscard]] std::size_t get_arity() const noexcept;
         [[nodiscard]] argument get_argument(std::size_t position) const noexcept;
@@ -349,6 +355,8 @@ namespace meta_hpp
 
         [[nodiscard]] pointer_type get_type() const noexcept;
         [[nodiscard]] const std::string& get_name() const noexcept;
+
+        [[nodiscard]] const uvalue& get_pointer() const noexcept;
 
         [[nodiscard]] uvalue get() const;
         [[nodiscard]] uresult try_get() const;
@@ -484,6 +492,7 @@ namespace meta_hpp::detail
         function_index index;
         metadata_map metadata;
 
+        uvalue pointer;
         invoke_impl invoke{};
         invoke_error_impl invoke_error{};
         argument_list arguments{};
@@ -503,6 +512,7 @@ namespace meta_hpp::detail
         member_index index;
         metadata_map metadata;
 
+        uvalue pointer;
         getter_impl getter{};
         setter_impl setter{};
         getter_error_impl getter_error{};
@@ -520,6 +530,7 @@ namespace meta_hpp::detail
         method_index index;
         metadata_map metadata;
 
+        uvalue pointer;
         invoke_impl invoke{};
         invoke_error_impl invoke_error{};
         argument_list arguments{};
@@ -549,6 +560,7 @@ namespace meta_hpp::detail
         variable_index index;
         metadata_map metadata;
 
+        uvalue pointer;
         getter_impl getter{};
         setter_impl setter{};
         setter_error_impl setter_error{};
