@@ -204,6 +204,7 @@ namespace meta_hpp::detail
         };
 
         state.pointer = member_ptr;
+
         state.getter = make_member_getter<Policy>(registry, member_ptr);
         state.setter = make_member_setter(registry, member_ptr);
         state.getter_error = make_member_getter_error<Member>(registry);

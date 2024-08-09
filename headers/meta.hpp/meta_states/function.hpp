@@ -128,6 +128,7 @@ namespace meta_hpp::detail
         };
 
         state.pointer = function_ptr;
+
         state.invoke = make_function_invoke<Policy>(registry, function_ptr);
         state.invoke_error = make_function_invoke_error<Function>(registry);
         state.arguments = make_function_arguments<Function>();

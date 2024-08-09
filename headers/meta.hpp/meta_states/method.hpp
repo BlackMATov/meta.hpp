@@ -140,6 +140,7 @@ namespace meta_hpp::detail
         };
 
         state.pointer = method_ptr;
+
         state.invoke = make_method_invoke<Policy>(registry, method_ptr);
         state.invoke_error = make_method_invoke_error<Method>(registry);
         state.arguments = make_method_arguments<Method>();
