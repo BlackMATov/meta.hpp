@@ -90,6 +90,9 @@ namespace
     int ivec2_big::copy_constructor_counter{0};
 }
 
+META_HPP_DECLARE_COPY_TRAITS_FOR(ivec2)
+META_HPP_DECLARE_COPY_TRAITS_FOR(ivec2_big)
+
 TEST_CASE("meta/meta_utilities/value2") {
     namespace meta = meta_hpp;
 

@@ -109,6 +109,9 @@ namespace
     }
 }
 
+META_HPP_DECLARE_COPY_TRAITS_FOR(ivec2)
+META_HPP_DECLARE_COPY_TRAITS_FOR(ivec2_big)
+
 TEST_CASE("meta/meta_utilities/value/_") {
     namespace meta = meta_hpp;
 
@@ -496,6 +499,25 @@ TEST_CASE("meta/meta_utilities/value") {
             const meta::uvalue u{std::unique_ptr<int>{}};
             CHECK_FALSE(u.has_copy_op());
             CHECK_THROWS(std::ignore = u.copy());
+        }
+        {
+            CHECK(meta::uvalue{std::array<int, 1>{}}.has_copy_op());
+            CHECK_FALSE(meta::uvalue{std::array<std::unique_ptr<int>, 1>{}}.has_copy_op());
+            CHECK(meta::uvalue{std::string{}}.has_copy_op());
+            CHECK(meta::uvalue{std::string_view{}}.has_copy_op());
+            CHECK(meta::uvalue{std::vector{42, 21}}.has_copy_op());
+            CHECK_FALSE(meta::uvalue{std::vector<std::unique_ptr<int>>{}}.has_copy_op());
+            CHECK(meta::uvalue{std::shared_ptr<int>{}}.has_copy_op());
+            {
+                using ref_t = std::reference_wrapper<const std::unique_ptr<int>>;
+                std::unique_ptr u = std::make_unique<int>(42);
+                CHECK(meta::uvalue{ref_t{u}}.has_copy_op());
+                meta::uvalue v = meta::uvalue{ref_t{u}}.copy();
+                CHECK(v.get_type() == meta::resolve_type<ref_t>());
+                CHECK(v.as<ref_t>().get().get() == u.get());
+            }
+            CHECK(meta::uvalue{std::make_tuple(42, std::make_shared<int>(42))}.has_copy_op());
+            CHECK_FALSE(meta::uvalue{std::make_tuple(42, std::make_unique<int>(42))}.has_copy_op());
         }
     }
 
