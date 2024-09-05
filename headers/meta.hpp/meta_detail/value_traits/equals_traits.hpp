@@ -16,17 +16,17 @@ namespace meta_hpp::detail
 
     template < typename T >
     concept has_equals_traits //
-        = requires(const T& v) { equals_traits<T>{}(v, v); };
+        = requires(const T& v) { equals_traits<std::remove_cv_t<T>>{}(v, v); };
 }
 
 namespace meta_hpp::detail
 {
     template < typename T >
-        requires requires(const T& v) {
-                     { v == v } -> std::convertible_to<bool>;
-                 } && (!class_kind<T> || type_list_arity_v<typename class_traits<T>::argument_types> == 0)
+        requires(!std::is_class_v<T>) && requires(T v) {
+            { v == v } -> std::convertible_to<bool>;
+        }
     struct equals_traits<T> {
-        bool operator()(const T& l, const T& r) const {
+        bool operator()(T l, T r) const {
             META_HPP_DETAIL_IGNORE_COMPARISON_WARNINGS_PUSH()
             return l == r;
             META_HPP_DETAIL_IGNORE_COMPARISON_WARNINGS_POP()
