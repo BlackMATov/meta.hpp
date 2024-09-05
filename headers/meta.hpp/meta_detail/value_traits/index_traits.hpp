@@ -18,13 +18,13 @@ namespace meta_hpp::detail
 
     template < typename T >
     concept has_index_traits //
-        = requires(const T& v, std::size_t i) { index_traits<T>{}(v, i); };
+        = requires(const T& v, std::size_t i) { index_traits<std::remove_cv_t<T>>{}(v, i); };
 }
 
 namespace meta_hpp::detail
 {
     template < typename T >
-        requires has_copy_traits<T>
+        requires has_copy_traits<T> && (!std::is_function_v<T>)
     struct index_traits<T*> {
         uvalue operator()(T* v, std::size_t i) const {
             // NOLINTNEXTLINE(*-pointer-arithmetic)

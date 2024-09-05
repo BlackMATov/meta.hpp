@@ -115,6 +115,19 @@ namespace
     struct deref_custom_class {
         int operator*() const { return 42; }
     };
+
+    struct custom_class_without_comparison {};
+
+    struct custom_class_with_fake_comparison {
+        std::vector<custom_class_without_comparison> vs;
+        bool operator==(const custom_class_with_fake_comparison&) const = default;
+    };
+
+    struct custom_class_with_comparison {
+        std::vector<int> vs;
+        bool operator<(const custom_class_with_comparison& r) const { return vs < r.vs; }
+        bool operator==(const custom_class_with_comparison& r) const { return vs == r.vs; }
+    };
 }
 
 META_HPP_DECLARE_COPY_TRAITS_FOR(ivec2)
@@ -123,6 +136,11 @@ META_HPP_DECLARE_COPY_TRAITS_FOR(ivec2_big)
 META_HPP_DECLARE_DEREF_TRAITS_FOR(deref_custom_class)
 
 META_HPP_DECLARE_INDEX_TRAITS_FOR(ivec2)
+
+META_HPP_DECLARE_EQUALS_TRAITS_FOR(ivec2)
+
+META_HPP_DECLARE_LESS_TRAITS_FOR(custom_class_with_comparison)
+META_HPP_DECLARE_EQUALS_TRAITS_FOR(custom_class_with_comparison)
 
 TEST_CASE("meta/meta_utilities/value/_") {
     namespace meta = meta_hpp;
@@ -521,12 +539,23 @@ TEST_CASE("meta/meta_utilities/value") {
             CHECK_FALSE(meta::uvalue{std::vector<std::unique_ptr<int>>{}}.has_copy_op());
             CHECK(meta::uvalue{std::shared_ptr<int>{}}.has_copy_op());
             {
-                using ref_t = std::reference_wrapper<const std::unique_ptr<int>>;
+                using ref_t = std::reference_wrapper<std::unique_ptr<int>>;
+                using cref_t = std::reference_wrapper<const std::unique_ptr<int>>;
+
                 std::unique_ptr u = std::make_unique<int>(42);
                 CHECK(meta::uvalue{ref_t{u}}.has_copy_op());
-                meta::uvalue v = meta::uvalue{ref_t{u}}.copy();
-                CHECK(v.get_type() == meta::resolve_type<ref_t>());
-                CHECK(v.as<ref_t>().get().get() == u.get());
+                CHECK(meta::uvalue{cref_t{u}}.has_copy_op());
+                meta::uvalue v1 = meta::uvalue{ref_t{u}}.copy();
+                meta::uvalue v2 = meta::uvalue{cref_t{u}}.copy();
+                CHECK(v1.get_type() == meta::resolve_type<ref_t>());
+                CHECK(v1.as<ref_t>().get().get() == u.get());
+                CHECK(v2.get_type() == meta::resolve_type<cref_t>());
+                CHECK(v2.as<cref_t>().get().get() == u.get());
+            }
+            {
+                ivec2 u = ivec2{42, 21};
+                CHECK(meta::uvalue{std::ref(u)}.has_copy_op());
+                CHECK(meta::uvalue{std::cref(u)}.has_copy_op());
             }
             CHECK(meta::uvalue{std::make_tuple(42, std::make_shared<int>(42))}.has_copy_op());
             CHECK_FALSE(meta::uvalue{std::make_tuple(42, std::make_unique<int>(42))}.has_copy_op());
@@ -668,6 +697,10 @@ TEST_CASE("meta/meta_utilities/value") {
             const meta::uvalue u = *v;
             CHECK(u.get_type() == meta::resolve_type<int>());
             CHECK(u.as<int>() == 42);
+        }
+        {
+            CHECK(meta::uvalue{std::unique_ptr<ivec2>{}}.has_deref_op());
+            CHECK(meta::uvalue{std::unique_ptr<const ivec2>{}}.has_deref_op());
         }
     }
 
@@ -857,6 +890,16 @@ TEST_CASE("meta/meta_utilities/value") {
                 CHECK(meta::uvalue{std::ref(v2)}.has_equals_op());
                 CHECK(meta::uvalue{std::cref(v2)}.has_equals_op());
             }
+        }
+        {
+            meta::uvalue v{custom_class_with_comparison{}};
+            CHECK(v.has_less_op());
+            CHECK(v.has_equals_op());
+        }
+        {
+            meta::uvalue v{custom_class_with_fake_comparison{}};
+            CHECK_FALSE(v.has_less_op());
+            CHECK_FALSE(v.has_equals_op());
         }
     }
 }

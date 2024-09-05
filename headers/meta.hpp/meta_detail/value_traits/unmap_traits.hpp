@@ -16,7 +16,7 @@ namespace meta_hpp::detail
 
     template < typename T >
     concept has_unmap_traits //
-        = requires(const T& v) { unmap_traits<T>{}(v); };
+        = requires(const T& v) { unmap_traits<std::remove_cv_t<T>>{}(v); };
 }
 
 namespace meta_hpp::detail

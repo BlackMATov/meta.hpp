@@ -18,13 +18,13 @@ namespace meta_hpp::detail
 
     template < typename T >
     concept has_deref_traits //
-        = requires(const T& v) { deref_traits<T>{}(v); };
+        = requires(const T& v) { deref_traits<std::remove_cv_t<T>>{}(v); };
 }
 
 namespace meta_hpp::detail
 {
     template < typename T >
-        requires has_copy_traits<T>
+        requires has_copy_traits<T> && (!std::is_function_v<T>)
     struct deref_traits<T*> {
         uvalue operator()(T* v) const {
             return v != nullptr ? uvalue{*v} : uvalue{};
