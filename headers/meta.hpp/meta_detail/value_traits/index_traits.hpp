@@ -9,6 +9,8 @@
 #include "../../meta_base.hpp"
 #include "../../meta_uvalue.hpp"
 
+#include "copy_traits.hpp"
+
 namespace meta_hpp::detail
 {
     template < typename T >
@@ -22,7 +24,7 @@ namespace meta_hpp::detail
 namespace meta_hpp::detail
 {
     template < typename T >
-        requires std::is_copy_constructible_v<T>
+        requires has_copy_traits<T>
     struct index_traits<T*> {
         uvalue operator()(T* v, std::size_t i) const {
             // NOLINTNEXTLINE(*-pointer-arithmetic)
@@ -31,7 +33,7 @@ namespace meta_hpp::detail
     };
 
     template < typename T, std::size_t Size >
-        requires std::is_copy_constructible_v<T>
+        requires has_copy_traits<T>
     struct index_traits<std::array<T, Size>> {
         uvalue operator()(const std::array<T, Size>& v, std::size_t i) const {
             return i < v.size() ? uvalue{v[i]} : uvalue{};
@@ -39,7 +41,7 @@ namespace meta_hpp::detail
     };
 
     template < typename T, typename Traits, typename Allocator >
-        requires std::is_copy_constructible_v<T>
+        requires has_copy_traits<T>
     struct index_traits<std::basic_string<T, Traits, Allocator>> {
         uvalue operator()(const std::basic_string<T, Traits, Allocator>& v, std::size_t i) const {
             return i < v.size() ? uvalue{v[i]} : uvalue{};
@@ -47,7 +49,7 @@ namespace meta_hpp::detail
     };
 
     template < typename T, typename Traits >
-        requires std::is_copy_constructible_v<T>
+        requires has_copy_traits<T>
     struct index_traits<std::basic_string_view<T, Traits>> {
         uvalue operator()(const std::basic_string_view<T, Traits>& v, std::size_t i) const {
             return i < v.size() ? uvalue{v[i]} : uvalue{};
@@ -55,7 +57,7 @@ namespace meta_hpp::detail
     };
 
     template < typename T, std::size_t Extent >
-        requires std::is_copy_constructible_v<T>
+        requires has_copy_traits<T>
     struct index_traits<std::span<T, Extent>> {
         uvalue operator()(const std::span<T, Extent>& v, std::size_t i) const {
             return i < v.size() ? uvalue{v[i]} : uvalue{};
@@ -63,10 +65,21 @@ namespace meta_hpp::detail
     };
 
     template < typename T, typename Allocator >
-        requires std::is_copy_constructible_v<T>
+        requires has_copy_traits<T>
     struct index_traits<std::vector<T, Allocator>> {
         uvalue operator()(const std::vector<T, Allocator>& v, std::size_t i) const {
             return i < v.size() ? uvalue{v[i]} : uvalue{};
         }
     };
 }
+
+#define META_HPP_DECLARE_INDEX_TRAITS_FOR(T) \
+    namespace meta_hpp::detail \
+    { \
+        template <> \
+        struct index_traits<T> { \
+            uvalue operator()(const T& v, std::size_t i) const { \
+                return uvalue{v[i]}; \
+            } \
+        }; \
+    }

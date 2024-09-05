@@ -38,6 +38,10 @@ namespace
             return *this;
         }
 
+        int operator[](std::size_t i) const noexcept {
+            return i == 0 ? x : y;
+        }
+
         ivec2& operator=(ivec2&& other) = delete;
         ivec2& operator=(const ivec2& other) = delete;
     public:
@@ -117,6 +121,8 @@ META_HPP_DECLARE_COPY_TRAITS_FOR(ivec2)
 META_HPP_DECLARE_COPY_TRAITS_FOR(ivec2_big)
 
 META_HPP_DECLARE_DEREF_TRAITS_FOR(deref_custom_class)
+
+META_HPP_DECLARE_INDEX_TRAITS_FOR(ivec2)
 
 TEST_CASE("meta/meta_utilities/value/_") {
     namespace meta = meta_hpp;
@@ -977,6 +983,23 @@ TEST_CASE("meta/meta_utilities/value/arrays") {
         CHECK(v[1].as<int>() == 2);
         CHECK(v[2].as<int>() == 3);
         CHECK_FALSE(v[3]);
+    }
+
+    SUBCASE("ivec2/ivec3") {
+        {
+            meta::uvalue v{ivec2{1,2}};
+            CHECK(v.get_type() == meta::resolve_type<ivec2>());
+            CHECK(v.has_index_op());
+
+            CHECK(v[0].as<int>() == 1);
+            CHECK(v[1].as<int>() == 2);
+        }
+        {
+            meta::uvalue v{ivec3{1,2,3}};
+            CHECK(v.get_type() == meta::resolve_type<ivec3>());
+            CHECK_FALSE(v.has_index_op());
+            CHECK_THROWS(std::ignore = v[0]);
+        }
     }
 }
 

@@ -46,6 +46,8 @@ namespace
     };
 }
 
+META_HPP_DECLARE_COPY_TRAITS_FOR(clazz_throw_dtor)
+
 TEST_CASE("meta/meta_utilities/value4") {
     namespace meta = meta_hpp;
 
