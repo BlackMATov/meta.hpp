@@ -107,10 +107,16 @@ namespace
     bool operator==(const ivec2_big& l, const ivec2_big& r) noexcept {
         return l.x == r.x && l.y == r.y;
     }
+
+    struct deref_custom_class {
+        int operator*() const { return 42; }
+    };
 }
 
 META_HPP_DECLARE_COPY_TRAITS_FOR(ivec2)
 META_HPP_DECLARE_COPY_TRAITS_FOR(ivec2_big)
+
+META_HPP_DECLARE_DEREF_TRAITS_FOR(deref_custom_class)
 
 TEST_CASE("meta/meta_utilities/value/_") {
     namespace meta = meta_hpp;
@@ -644,6 +650,18 @@ TEST_CASE("meta/meta_utilities/value") {
         {
             meta::uvalue v{std::make_unique<int>(42)};
             CHECK((*v).as<int>() == 42);
+        }
+        {
+            CHECK(meta::uvalue{std::make_shared<std::vector<std::shared_ptr<int>>>()}.has_deref_op());
+            CHECK_FALSE(meta::uvalue{std::make_shared<std::vector<std::unique_ptr<int>>>()}.has_deref_op());
+        }
+        {
+            const meta::uvalue v{deref_custom_class{}};
+            CHECK(v.has_deref_op());
+
+            const meta::uvalue u = *v;
+            CHECK(u.get_type() == meta::resolve_type<int>());
+            CHECK(u.as<int>() == 42);
         }
     }
 

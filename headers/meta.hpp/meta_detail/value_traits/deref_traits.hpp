@@ -9,6 +9,8 @@
 #include "../../meta_base.hpp"
 #include "../../meta_uvalue.hpp"
 
+#include "copy_traits.hpp"
+
 namespace meta_hpp::detail
 {
     template < typename T >
@@ -22,7 +24,7 @@ namespace meta_hpp::detail
 namespace meta_hpp::detail
 {
     template < typename T >
-        requires std::is_copy_constructible_v<T>
+        requires has_copy_traits<T>
     struct deref_traits<T*> {
         uvalue operator()(T* v) const {
             return v != nullptr ? uvalue{*v} : uvalue{};
@@ -30,18 +32,33 @@ namespace meta_hpp::detail
     };
 
     template < typename T >
-        requires std::is_copy_constructible_v<T>
+        requires has_copy_traits<T>
     struct deref_traits<std::shared_ptr<T>> {
-        uvalue operator()(const std::shared_ptr<T>& v) const {
+        using value_t = std::shared_ptr<T>;
+
+        uvalue operator()(const value_t& v) const {
             return v != nullptr ? uvalue{*v} : uvalue{};
         }
     };
 
     template < typename T, typename Deleter >
-        requires std::is_copy_constructible_v<T>
+        requires has_copy_traits<T>
     struct deref_traits<std::unique_ptr<T, Deleter>> {
-        uvalue operator()(const std::unique_ptr<T, Deleter>& v) const {
+        using value_t = std::unique_ptr<T, Deleter>;
+
+        uvalue operator()(const value_t& v) const {
             return v != nullptr ? uvalue{*v} : uvalue{};
         }
     };
 }
+
+#define META_HPP_DECLARE_DEREF_TRAITS_FOR(T) \
+    namespace meta_hpp::detail \
+    { \
+        template <> \
+        struct deref_traits<T> { \
+            uvalue operator()(const T& v) const { \
+                return uvalue{*v}; \
+            } \
+        }; \
+    }
