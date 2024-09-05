@@ -542,7 +542,7 @@ TEST_CASE("meta/meta_utilities/value") {
                 using ref_t = std::reference_wrapper<std::unique_ptr<int>>;
                 using cref_t = std::reference_wrapper<const std::unique_ptr<int>>;
 
-                std::unique_ptr u = std::make_unique<int>(42);
+                std::unique_ptr<int> u = std::make_unique<int>(42);
                 CHECK(meta::uvalue{ref_t{u}}.has_copy_op());
                 CHECK(meta::uvalue{cref_t{u}}.has_copy_op());
                 meta::uvalue v1 = meta::uvalue{ref_t{u}}.copy();
