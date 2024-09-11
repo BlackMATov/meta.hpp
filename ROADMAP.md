@@ -4,6 +4,7 @@
 
 - add coverage information
 - add an ucast function with a dynamic `to` argument
+- add the ability to clear the registry and registered types
 
 ## Version 1.0
 
