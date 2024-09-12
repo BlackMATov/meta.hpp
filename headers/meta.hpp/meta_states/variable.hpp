@@ -124,8 +124,6 @@ namespace meta_hpp::detail
             std::move(metadata),
         };
 
-        state.pointer = variable_ptr;
-
         state.getter = make_variable_getter<Policy>(registry, variable_ptr);
         state.setter = make_variable_setter(registry, variable_ptr);
         state.setter_error = make_variable_setter_error<Pointer>(registry);

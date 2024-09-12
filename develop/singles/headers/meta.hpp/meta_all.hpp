@@ -4495,7 +4495,6 @@ namespace meta_hpp::detail
         function_index index;
         metadata_map metadata;
 
-        uvalue pointer;
         invoke_impl invoke{};
         invoke_error_impl invoke_error{};
         argument_list arguments{};
@@ -4515,7 +4514,6 @@ namespace meta_hpp::detail
         member_index index;
         metadata_map metadata;
 
-        uvalue pointer;
         getter_impl getter{};
         setter_impl setter{};
         getter_error_impl getter_error{};
@@ -4533,7 +4531,6 @@ namespace meta_hpp::detail
         method_index index;
         metadata_map metadata;
 
-        uvalue pointer;
         invoke_impl invoke{};
         invoke_error_impl invoke_error{};
         argument_list arguments{};
@@ -4563,7 +4560,6 @@ namespace meta_hpp::detail
         variable_index index;
         metadata_map metadata;
 
-        uvalue pointer;
         getter_impl getter{};
         setter_impl setter{};
         setter_error_impl setter_error{};
@@ -7124,8 +7120,6 @@ namespace meta_hpp::detail
             std::move(metadata),
         };
 
-        state.pointer = function_ptr;
-
         state.invoke = make_function_invoke<Policy>(registry, function_ptr);
         state.invoke_error = make_function_invoke_error<Function>(registry);
         state.arguments = make_function_arguments<Function>();
@@ -7718,8 +7712,6 @@ namespace meta_hpp::detail
             std::move(metadata),
         };
 
-        state.pointer = member_ptr;
-
         state.getter = make_member_getter<Policy>(registry, member_ptr);
         state.setter = make_member_setter(registry, member_ptr);
         state.getter_error = make_member_getter_error<Member>(registry);
@@ -8023,8 +8015,6 @@ namespace meta_hpp::detail
             method_index{registry.resolve_by_traits<mt>(), std::move(name)},
             std::move(metadata),
         };
-
-        state.pointer = method_ptr;
 
         state.invoke = make_method_invoke<Policy>(registry, method_ptr);
         state.invoke_error = make_method_invoke_error<Method>(registry);
@@ -9367,8 +9357,6 @@ namespace meta_hpp::detail
             variable_index{registry.resolve_by_type<Pointer>(), std::move(name)},
             std::move(metadata),
         };
-
-        state.pointer = variable_ptr;
 
         state.getter = make_variable_getter<Policy>(registry, variable_ptr);
         state.setter = make_variable_setter(registry, variable_ptr);
