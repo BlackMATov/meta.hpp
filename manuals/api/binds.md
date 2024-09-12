@@ -15,6 +15,7 @@
     - [arguments\_bind](#arguments_bind)
     - [metadata\_bind](#metadata_bind)
   - [Functions](#functions)
+    - [bind\_](#bind_)
     - [array\_](#array_)
     - [class\_](#class_)
     - [enum\_](#enum_)
@@ -241,6 +242,13 @@ public:
 ```
 
 ## Functions
+
+### bind_
+
+```cpp
+template < typename T >
+auto bind_(metadata_map metadata = {});
+```
 
 ### array_
 

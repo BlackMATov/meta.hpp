@@ -63,6 +63,7 @@
 
 |                                               |               |
 | --------------------------------------------- | ------------- |
+| [bind_](./api/binds.md#bind_)                 | bind_         |
 | [array_](./api/binds.md#array_)               | array_        |
 | [class_](./api/binds.md#class_)               | class_        |
 | [enum_](./api/binds.md#enum_)                 | enum_         |
