@@ -32,6 +32,14 @@ namespace meta_hpp::detail
 
         return std::make_shared<evalue_state>(std::move(state));
     }
+
+    inline void evalue_state::purge_binds() {
+        // nothing
+    }
+
+    inline void evalue_state::purge_metadata() {
+        metadata.clear();
+    }
 }
 
 namespace meta_hpp

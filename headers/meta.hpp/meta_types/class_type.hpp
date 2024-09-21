@@ -11,6 +11,7 @@
 #include "../meta_types.hpp"
 
 #include "../meta_states/constructor.hpp"
+#include "../meta_states/destructor.hpp"
 #include "../meta_states/function.hpp"
 #include "../meta_states/member.hpp"
 #include "../meta_states/method.hpp"
@@ -114,6 +115,32 @@ namespace meta_hpp::detail
         class_type_data_impl::fill_upcast_info<Class>(new_base_info);
         base_classes.swap(new_base_info.base_classes);
         deep_upcasts.swap(new_base_info.deep_upcasts);
+    }
+
+    inline void class_type_data::purge_binds() {
+        constructors.clear();
+        constructors.shrink_to_fit();
+
+        destructors.clear();
+        destructors.shrink_to_fit();
+
+        functions.clear();
+        functions.shrink_to_fit();
+
+        members.clear();
+        members.shrink_to_fit();
+
+        methods.clear();
+        methods.shrink_to_fit();
+
+        typedefs.clear();
+
+        variables.clear();
+        variables.shrink_to_fit();
+    }
+
+    inline void class_type_data::purge_metadata() {
+        metadata.clear();
     }
 }
 

@@ -20,6 +20,14 @@ namespace meta_hpp::detail
     : type_data_base{type_kind::destructor_, shared_traits_hash<destructor_traits<Class>>{}(this)}
     , flags{destructor_traits<Class>::make_flags()}
     , owner_type{resolve_type<typename destructor_traits<Class>::class_type>()} {}
+
+    inline void destructor_type_data::purge_binds() {
+        // nothing
+    }
+
+    inline void destructor_type_data::purge_metadata() {
+        metadata.clear();
+    }
 }
 
 namespace meta_hpp

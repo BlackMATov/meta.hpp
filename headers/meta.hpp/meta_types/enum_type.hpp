@@ -23,6 +23,15 @@ namespace meta_hpp::detail
     : type_data_base{type_kind::enum_, shared_traits_hash<enum_traits<Enum>>{}(this)}
     , flags{enum_traits<Enum>::make_flags()}
     , underlying_type{resolve_type<typename enum_traits<Enum>::underlying_type>()} {}
+
+    inline void enum_type_data::purge_binds() {
+        evalues.clear();
+        evalues.shrink_to_fit();
+    }
+
+    inline void enum_type_data::purge_metadata() {
+        metadata.clear();
+    }
 }
 
 namespace meta_hpp

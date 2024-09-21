@@ -203,14 +203,20 @@ namespace meta_hpp::detail
             std::move(metadata),
         };
 
-        state.pointer = member_ptr;
-
         state.getter = make_member_getter<Policy>(registry, member_ptr);
         state.setter = make_member_setter(registry, member_ptr);
         state.getter_error = make_member_getter_error<Member>(registry);
         state.setter_error = make_member_setter_error<Member>(registry);
 
         return std::make_shared<member_state>(std::move(state));
+    }
+
+    inline void member_state::purge_binds() {
+        // nothing
+    }
+
+    inline void member_state::purge_metadata() {
+        metadata.clear();
     }
 }
 

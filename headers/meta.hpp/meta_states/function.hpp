@@ -127,13 +127,25 @@ namespace meta_hpp::detail
             std::move(metadata),
         };
 
-        state.pointer = function_ptr;
-
         state.invoke = make_function_invoke<Policy>(registry, function_ptr);
         state.invoke_error = make_function_invoke_error<Function>(registry);
         state.arguments = make_function_arguments<Function>();
 
         return std::make_shared<function_state>(std::move(state));
+    }
+
+    inline void function_state::purge_binds() {
+        for ( argument& arg : arguments ) {
+            state_access(arg)->purge_binds();
+        }
+    }
+
+    inline void function_state::purge_metadata() {
+        metadata.clear();
+
+        for ( argument& arg : arguments ) {
+            state_access(arg)->purge_metadata();
+        }
     }
 }
 

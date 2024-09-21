@@ -3260,16 +3260,19 @@ namespace meta_hpp::detail
 
         metadata_map metadata;
 
-        explicit type_data_base(type_kind nkind, std::size_t nshared)
-        : kind{nkind}
-        , shared{nshared} {}
-
         type_data_base(type_data_base&&) = delete;
         type_data_base(const type_data_base&) = delete;
         type_data_base& operator=(type_data_base&&) = delete;
         type_data_base& operator=(const type_data_base&) = delete;
 
+        virtual void purge_binds() = 0;
+        virtual void purge_metadata() = 0;
+
     protected:
+        explicit type_data_base(type_kind nkind, std::size_t nshared)
+        : kind{nkind}
+        , shared{nshared} {}
+
         ~type_data_base() = default;
     };
 
@@ -3282,6 +3285,9 @@ namespace meta_hpp::detail
 
         template < array_kind Array >
         explicit array_type_data(array_traits<Array>);
+
+        void purge_binds() override;
+        void purge_metadata() override;
     };
 
     struct class_type_data final : type_data_base {
@@ -3293,7 +3299,6 @@ namespace meta_hpp::detail
         const uvalue_list argument_values;
         // NOLINTEND(*-avoid-const-or-ref-data-members)
 
-        class_list base_classes;
         constructor_list constructors;
         destructor_list destructors;
         function_list functions;
@@ -3313,10 +3318,15 @@ namespace meta_hpp::detail
         };
 
         using deep_upcasts_t = std::vector<upcast_func_t>;
+
+        class_list base_classes;
         deep_upcasts_t deep_upcasts;
 
         template < class_kind Class >
         explicit class_type_data(class_traits<Class>);
+
+        void purge_binds() override;
+        void purge_metadata() override;
     };
 
     struct constructor_type_data final : type_data_base {
@@ -3328,6 +3338,9 @@ namespace meta_hpp::detail
 
         template < class_kind Class, typename... Args >
         explicit constructor_type_data(constructor_traits<Class, Args...>);
+
+        void purge_binds() override;
+        void purge_metadata() override;
     };
 
     struct destructor_type_data final : type_data_base {
@@ -3338,6 +3351,9 @@ namespace meta_hpp::detail
 
         template < class_kind Class >
         explicit destructor_type_data(destructor_traits<Class>);
+
+        void purge_binds() override;
+        void purge_metadata() override;
     };
 
     struct enum_type_data final : type_data_base {
@@ -3350,6 +3366,9 @@ namespace meta_hpp::detail
 
         template < enum_kind Enum >
         explicit enum_type_data(enum_traits<Enum>);
+
+        void purge_binds() override;
+        void purge_metadata() override;
     };
 
     struct function_type_data final : type_data_base {
@@ -3361,6 +3380,9 @@ namespace meta_hpp::detail
 
         template < function_kind Function >
         explicit function_type_data(function_traits<Function>);
+
+        void purge_binds() override;
+        void purge_metadata() override;
     };
 
     struct member_type_data final : type_data_base {
@@ -3372,6 +3394,9 @@ namespace meta_hpp::detail
 
         template < member_pointer_kind Member >
         explicit member_type_data(member_traits<Member>);
+
+        void purge_binds() override;
+        void purge_metadata() override;
     };
 
     struct method_type_data final : type_data_base {
@@ -3384,11 +3409,17 @@ namespace meta_hpp::detail
 
         template < method_pointer_kind Method >
         explicit method_type_data(method_traits<Method>);
+
+        void purge_binds() override;
+        void purge_metadata() override;
     };
 
     struct nullptr_type_data final : type_data_base {
         template < nullptr_kind Nullptr >
         explicit nullptr_type_data(nullptr_traits<Nullptr>);
+
+        void purge_binds() override;
+        void purge_metadata() override;
     };
 
     struct number_type_data final : type_data_base {
@@ -3400,6 +3431,9 @@ namespace meta_hpp::detail
 
         template < number_kind Number >
         explicit number_type_data(number_traits<Number>);
+
+        void purge_binds() override;
+        void purge_metadata() override;
     };
 
     struct pointer_type_data final : type_data_base {
@@ -3410,6 +3444,9 @@ namespace meta_hpp::detail
 
         template < pointer_kind Pointer >
         explicit pointer_type_data(pointer_traits<Pointer>);
+
+        void purge_binds() override;
+        void purge_metadata() override;
     };
 
     struct reference_type_data final : type_data_base {
@@ -3420,11 +3457,17 @@ namespace meta_hpp::detail
 
         template < reference_kind Reference >
         explicit reference_type_data(reference_traits<Reference>);
+
+        void purge_binds() override;
+        void purge_metadata() override;
     };
 
     struct void_type_data final : type_data_base {
         template < void_kind Void >
         explicit void_type_data(void_traits<Void>);
+
+        void purge_binds() override;
+        void purge_metadata() override;
     };
 }
 
@@ -4439,6 +4482,9 @@ namespace meta_hpp::detail
         template < typename Argument >
         [[nodiscard]] static state_ptr make(std::size_t position, metadata_map metadata);
         explicit argument_state(argument_index index, metadata_map metadata);
+
+        void purge_binds();
+        void purge_metadata();
     };
 
     struct constructor_state final : private state_traits<constructor> {
@@ -4457,6 +4503,9 @@ namespace meta_hpp::detail
         template < constructor_policy_family Policy, class_kind Class, typename... Args >
         [[nodiscard]] static state_ptr make(metadata_map metadata);
         explicit constructor_state(constructor_index index, metadata_map metadata);
+
+        void purge_binds();
+        void purge_metadata();
     };
 
     struct destructor_state final : private state_traits<destructor> {
@@ -4474,6 +4523,9 @@ namespace meta_hpp::detail
         template < class_kind Class >
         [[nodiscard]] static state_ptr make(metadata_map metadata);
         explicit destructor_state(destructor_index index, metadata_map metadata);
+
+        void purge_binds();
+        void purge_metadata();
     };
 
     struct evalue_state final : private state_traits<evalue> {
@@ -4486,6 +4538,9 @@ namespace meta_hpp::detail
         template < enum_kind Enum >
         [[nodiscard]] static state_ptr make(std::string name, Enum evalue, metadata_map metadata);
         explicit evalue_state(evalue_index index, metadata_map metadata);
+
+        void purge_binds();
+        void purge_metadata();
     };
 
     struct function_state final : private state_traits<function> {
@@ -4495,7 +4550,6 @@ namespace meta_hpp::detail
         function_index index;
         metadata_map metadata;
 
-        uvalue pointer;
         invoke_impl invoke{};
         invoke_error_impl invoke_error{};
         argument_list arguments{};
@@ -4503,6 +4557,9 @@ namespace meta_hpp::detail
         template < function_policy_family Policy, function_pointer_kind Function >
         [[nodiscard]] static state_ptr make(std::string name, Function function_ptr, metadata_map metadata);
         explicit function_state(function_index index, metadata_map metadata);
+
+        void purge_binds();
+        void purge_metadata();
     };
 
     struct member_state final : private state_traits<member> {
@@ -4515,7 +4572,6 @@ namespace meta_hpp::detail
         member_index index;
         metadata_map metadata;
 
-        uvalue pointer;
         getter_impl getter{};
         setter_impl setter{};
         getter_error_impl getter_error{};
@@ -4524,6 +4580,9 @@ namespace meta_hpp::detail
         template < member_policy_family Policy, member_pointer_kind Member >
         [[nodiscard]] static state_ptr make(std::string name, Member member_ptr, metadata_map metadata);
         explicit member_state(member_index index, metadata_map metadata);
+
+        void purge_binds();
+        void purge_metadata();
     };
 
     struct method_state final : private state_traits<method> {
@@ -4533,7 +4592,6 @@ namespace meta_hpp::detail
         method_index index;
         metadata_map metadata;
 
-        uvalue pointer;
         invoke_impl invoke{};
         invoke_error_impl invoke_error{};
         argument_list arguments{};
@@ -4541,6 +4599,9 @@ namespace meta_hpp::detail
         template < method_policy_family Policy, method_pointer_kind Method >
         [[nodiscard]] static state_ptr make(std::string name, Method method_ptr, metadata_map metadata);
         explicit method_state(method_index index, metadata_map metadata);
+
+        void purge_binds();
+        void purge_metadata();
     };
 
     struct scope_state final : private state_traits<scope> {
@@ -4553,6 +4614,9 @@ namespace meta_hpp::detail
 
         [[nodiscard]] static state_ptr make(std::string name, metadata_map metadata);
         explicit scope_state(scope_index index, metadata_map metadata);
+
+        void purge_binds();
+        void purge_metadata();
     };
 
     struct variable_state final : private state_traits<variable> {
@@ -4563,7 +4627,6 @@ namespace meta_hpp::detail
         variable_index index;
         metadata_map metadata;
 
-        uvalue pointer;
         getter_impl getter{};
         setter_impl setter{};
         setter_error_impl setter_error{};
@@ -4571,6 +4634,9 @@ namespace meta_hpp::detail
         template < variable_policy_family Policy, pointer_kind Pointer >
         [[nodiscard]] static state_ptr make(std::string name, Pointer variable_ptr, metadata_map metadata);
         explicit variable_state(variable_index index, metadata_map metadata);
+
+        void purge_binds();
+        void purge_metadata();
     };
 }
 
@@ -5044,58 +5110,116 @@ namespace meta_hpp
 namespace meta_hpp
 {
     template < array_kind Array >
-    array_bind<Array> array_(metadata_map metadata = {}) {
+    array_bind<Array> bind_(metadata_map metadata = {}) {
         return array_bind<Array>{std::move(metadata)};
     }
 
     template < class_kind Class >
-    class_bind<Class> class_(metadata_map metadata = {}) {
+    class_bind<Class> bind_(metadata_map metadata = {}) {
         return class_bind<Class>{std::move(metadata)};
     }
 
     template < enum_kind Enum >
-    enum_bind<Enum> enum_(metadata_map metadata = {}) {
+    enum_bind<Enum> bind_(metadata_map metadata = {}) {
         return enum_bind<Enum>{std::move(metadata)};
     }
 
     template < function_kind Function >
-    function_bind<Function> function_(metadata_map metadata = {}) {
+    function_bind<Function> bind_(metadata_map metadata = {}) {
         return function_bind<Function>{std::move(metadata)};
     }
 
     template < member_pointer_kind Member >
-    member_bind<Member> member_(metadata_map metadata = {}) {
+    member_bind<Member> bind_(metadata_map metadata = {}) {
         return member_bind<Member>{std::move(metadata)};
     }
 
     template < method_pointer_kind Method >
-    method_bind<Method> method_(metadata_map metadata = {}) {
+    method_bind<Method> bind_(metadata_map metadata = {}) {
         return method_bind<Method>{std::move(metadata)};
     }
 
     template < nullptr_kind Nullptr >
-    nullptr_bind<Nullptr> nullptr_(metadata_map metadata = {}) {
+    nullptr_bind<Nullptr> bind_(metadata_map metadata = {}) {
         return nullptr_bind<Nullptr>{std::move(metadata)};
     }
 
     template < number_kind Number >
-    number_bind<Number> number_(metadata_map metadata = {}) {
+    number_bind<Number> bind_(metadata_map metadata = {}) {
         return number_bind<Number>{std::move(metadata)};
     }
 
     template < pointer_kind Pointer >
-    pointer_bind<Pointer> pointer_(metadata_map metadata = {}) {
+    pointer_bind<Pointer> bind_(metadata_map metadata = {}) {
         return pointer_bind<Pointer>{std::move(metadata)};
     }
 
     template < reference_kind Reference >
-    reference_bind<Reference> reference_(metadata_map metadata = {}) {
+    reference_bind<Reference> bind_(metadata_map metadata = {}) {
         return reference_bind<Reference>{std::move(metadata)};
     }
 
     template < void_kind Void >
-    void_bind<Void> void_(metadata_map metadata = {}) {
+    void_bind<Void> bind_(metadata_map metadata = {}) {
         return void_bind<Void>{std::move(metadata)};
+    }
+}
+
+namespace meta_hpp
+{
+    template < array_kind Array >
+    array_bind<Array> array_(metadata_map metadata = {}) {
+        return bind_<Array>(std::move(metadata));
+    }
+
+    template < class_kind Class >
+    class_bind<Class> class_(metadata_map metadata = {}) {
+        return bind_<Class>(std::move(metadata));
+    }
+
+    template < enum_kind Enum >
+    enum_bind<Enum> enum_(metadata_map metadata = {}) {
+        return bind_<Enum>(std::move(metadata));
+    }
+
+    template < function_kind Function >
+    function_bind<Function> function_(metadata_map metadata = {}) {
+        return bind_<Function>(std::move(metadata));
+    }
+
+    template < member_pointer_kind Member >
+    member_bind<Member> member_(metadata_map metadata = {}) {
+        return bind_<Member>(std::move(metadata));
+    }
+
+    template < method_pointer_kind Method >
+    method_bind<Method> method_(metadata_map metadata = {}) {
+        return bind_<Method>(std::move(metadata));
+    }
+
+    template < nullptr_kind Nullptr >
+    nullptr_bind<Nullptr> nullptr_(metadata_map metadata = {}) {
+        return bind_<Nullptr>(std::move(metadata));
+    }
+
+    template < number_kind Number >
+    number_bind<Number> number_(metadata_map metadata = {}) {
+        return bind_<Number>(std::move(metadata));
+    }
+
+    template < pointer_kind Pointer >
+    pointer_bind<Pointer> pointer_(metadata_map metadata = {}) {
+        return bind_<Pointer>(std::move(metadata));
+    }
+
+    template < reference_kind Reference >
+    reference_bind<Reference> reference_(metadata_map metadata = {}) {
+        return bind_<Reference>(std::move(metadata));
+    }
+
+    template < void_kind Void >
+    void_bind<Void> void_(metadata_map metadata = {}) {
+        return bind_<Void>(std::move(metadata));
     }
 }
 
@@ -5113,6 +5237,53 @@ namespace meta_hpp
 
     inline scope_bind extend_scope_(const scope& scope, metadata_map metadata = {}) {
         return scope_bind{scope, std::move(metadata)};
+    }
+}
+
+namespace meta_hpp
+{
+    template < type_family Type >
+    void purge_(const Type& type) {
+        if ( type ) {
+            detail::type_access(type)->purge_binds();
+            detail::type_access(type)->purge_metadata();
+        }
+    }
+
+    template < state_family State >
+    void purge_(const State& state) {
+        if ( state ) {
+            detail::state_access(state)->purge_binds();
+            detail::state_access(state)->purge_metadata();
+        }
+    }
+
+    template < type_family Type >
+    void purge_binds_(const Type& type) {
+        if ( type ) {
+            detail::type_access(type)->purge_binds();
+        }
+    }
+
+    template < state_family State >
+    void purge_binds_(const State& state) {
+        if ( state ) {
+            detail::state_access(state)->purge_binds();
+        }
+    }
+
+    template < type_family Type >
+    void purge_metadata_(const Type& type) {
+        if ( type ) {
+            detail::type_access(type)->purge_metadata();
+        }
+    }
+
+    template < state_family State >
+    void purge_metadata_(const State& state) {
+        if ( state ) {
+            detail::state_access(state)->purge_metadata();
+        }
     }
 }
 
@@ -5341,7 +5512,9 @@ namespace meta_hpp
     class_bind<Class>::class_bind(metadata_map metadata)
     : type_bind_base{resolve_type<Class>(), std::move(metadata)} {
         if constexpr ( std::is_destructible_v<Class> ) {
-            destructor_();
+            if ( get_data().destructors.empty() ) {
+                destructor_();
+            }
         }
     }
 
@@ -6985,6 +7158,14 @@ namespace meta_hpp::detail
     , flags{function_traits<Function>::make_flags()}
     , return_type{resolve_type<typename function_traits<Function>::return_type>()}
     , argument_types(function_type_data_impl::make_argument_types<Function>()) {}
+
+    inline void function_type_data::purge_binds() {
+        // nothing
+    }
+
+    inline void function_type_data::purge_metadata() {
+        metadata.clear();
+    }
 }
 
 namespace meta_hpp
@@ -7124,13 +7305,25 @@ namespace meta_hpp::detail
             std::move(metadata),
         };
 
-        state.pointer = function_ptr;
-
         state.invoke = make_function_invoke<Policy>(registry, function_ptr);
         state.invoke_error = make_function_invoke_error<Function>(registry);
         state.arguments = make_function_arguments<Function>();
 
         return std::make_shared<function_state>(std::move(state));
+    }
+
+    inline void function_state::purge_binds() {
+        for ( argument& arg : arguments ) {
+            state_access(arg)->purge_binds();
+        }
+    }
+
+    inline void function_state::purge_metadata() {
+        metadata.clear();
+
+        for ( argument& arg : arguments ) {
+            state_access(arg)->purge_metadata();
+        }
     }
 }
 
@@ -7512,6 +7705,14 @@ namespace meta_hpp::detail
     , flags{member_traits<Member>::make_flags()}
     , owner_type{resolve_type<typename member_traits<Member>::class_type>()}
     , value_type{resolve_type<typename member_traits<Member>::value_type>()} {}
+
+    inline void member_type_data::purge_binds() {
+        // nothing
+    }
+
+    inline void member_type_data::purge_metadata() {
+        metadata.clear();
+    }
 }
 
 namespace meta_hpp
@@ -7718,14 +7919,20 @@ namespace meta_hpp::detail
             std::move(metadata),
         };
 
-        state.pointer = member_ptr;
-
         state.getter = make_member_getter<Policy>(registry, member_ptr);
         state.setter = make_member_setter(registry, member_ptr);
         state.getter_error = make_member_getter_error<Member>(registry);
         state.setter_error = make_member_setter_error<Member>(registry);
 
         return std::make_shared<member_state>(std::move(state));
+    }
+
+    inline void member_state::purge_binds() {
+        // nothing
+    }
+
+    inline void member_state::purge_metadata() {
+        metadata.clear();
     }
 }
 
@@ -7870,6 +8077,14 @@ namespace meta_hpp::detail
     , owner_type{resolve_type<typename method_traits<Method>::class_type>()}
     , return_type{resolve_type<typename method_traits<Method>::return_type>()}
     , argument_types(method_type_data_impl::make_argument_types<Method>()) {}
+
+    inline void method_type_data::purge_binds() {
+        // nothing
+    }
+
+    inline void method_type_data::purge_metadata() {
+        metadata.clear();
+    }
 }
 
 namespace meta_hpp
@@ -8024,13 +8239,25 @@ namespace meta_hpp::detail
             std::move(metadata),
         };
 
-        state.pointer = method_ptr;
-
         state.invoke = make_method_invoke<Policy>(registry, method_ptr);
         state.invoke_error = make_method_invoke_error<Method>(registry);
         state.arguments = make_method_arguments<Method>();
 
         return std::make_shared<method_state>(std::move(state));
+    }
+
+    inline void method_state::purge_binds() {
+        for ( argument& arg : arguments ) {
+            state_access(arg)->purge_binds();
+        }
+    }
+
+    inline void method_state::purge_metadata() {
+        metadata.clear();
+
+        for ( argument& arg : arguments ) {
+            state_access(arg)->purge_metadata();
+        }
     }
 }
 
@@ -8570,6 +8797,15 @@ namespace meta_hpp::detail
 
         return std::make_shared<argument_state>(std::move(state));
     }
+
+    inline void argument_state::purge_binds() {
+        name.clear();
+        name.shrink_to_fit();
+    }
+
+    inline void argument_state::purge_metadata() {
+        metadata.clear();
+    }
 }
 
 namespace meta_hpp
@@ -8616,6 +8852,14 @@ namespace meta_hpp::detail
     , flags{constructor_traits<Class, Args...>::make_flags()}
     , owner_type{resolve_type<typename constructor_traits<Class, Args...>::class_type>()}
     , argument_types(constructor_type_data_impl::make_argument_types<Class, Args...>()) {}
+
+    inline void constructor_type_data::purge_binds() {
+        // nothing
+    }
+
+    inline void constructor_type_data::purge_metadata() {
+        metadata.clear();
+    }
 }
 
 namespace meta_hpp
@@ -8790,6 +9034,20 @@ namespace meta_hpp::detail
         state.arguments = make_constructor_arguments<Class, Args...>();
 
         return std::make_shared<constructor_state>(std::move(state));
+    }
+
+    inline void constructor_state::purge_binds() {
+        for ( argument& arg : arguments ) {
+            state_access(arg)->purge_binds();
+        }
+    }
+
+    inline void constructor_state::purge_metadata() {
+        metadata.clear();
+
+        for ( argument& arg : arguments ) {
+            state_access(arg)->purge_metadata();
+        }
     }
 }
 
@@ -8972,6 +9230,14 @@ namespace meta_hpp::detail
     : type_data_base{type_kind::destructor_, shared_traits_hash<destructor_traits<Class>>{}(this)}
     , flags{destructor_traits<Class>::make_flags()}
     , owner_type{resolve_type<typename destructor_traits<Class>::class_type>()} {}
+
+    inline void destructor_type_data::purge_binds() {
+        // nothing
+    }
+
+    inline void destructor_type_data::purge_metadata() {
+        metadata.clear();
+    }
 }
 
 namespace meta_hpp
@@ -9064,6 +9330,14 @@ namespace meta_hpp::detail
 
         return std::make_shared<destructor_state>(std::move(state));
     }
+
+    inline void destructor_state::purge_binds() {
+        // nothing
+    }
+
+    inline void destructor_state::purge_metadata() {
+        metadata.clear();
+    }
 }
 
 namespace meta_hpp
@@ -9141,6 +9415,15 @@ namespace meta_hpp::detail
     : type_data_base{type_kind::enum_, shared_traits_hash<enum_traits<Enum>>{}(this)}
     , flags{enum_traits<Enum>::make_flags()}
     , underlying_type{resolve_type<typename enum_traits<Enum>::underlying_type>()} {}
+
+    inline void enum_type_data::purge_binds() {
+        evalues.clear();
+        evalues.shrink_to_fit();
+    }
+
+    inline void enum_type_data::purge_metadata() {
+        metadata.clear();
+    }
 }
 
 namespace meta_hpp
@@ -9216,6 +9499,14 @@ namespace meta_hpp::detail
 
         return std::make_shared<evalue_state>(std::move(state));
     }
+
+    inline void evalue_state::purge_binds() {
+        // nothing
+    }
+
+    inline void evalue_state::purge_metadata() {
+        metadata.clear();
+    }
 }
 
 namespace meta_hpp
@@ -9244,6 +9535,14 @@ namespace meta_hpp::detail
     : type_data_base{type_kind::pointer_, shared_traits_hash<pointer_traits<Pointer>>{}(this)}
     , flags{pointer_traits<Pointer>::make_flags()}
     , data_type{resolve_type<typename pointer_traits<Pointer>::data_type>()} {}
+
+    inline void pointer_type_data::purge_binds() {
+        // nothing
+    }
+
+    inline void pointer_type_data::purge_metadata() {
+        metadata.clear();
+    }
 }
 
 namespace meta_hpp
@@ -9368,13 +9667,19 @@ namespace meta_hpp::detail
             std::move(metadata),
         };
 
-        state.pointer = variable_ptr;
-
         state.getter = make_variable_getter<Policy>(registry, variable_ptr);
         state.setter = make_variable_setter(registry, variable_ptr);
         state.setter_error = make_variable_setter_error<Pointer>(registry);
 
         return std::make_shared<variable_state>(std::move(state));
+    }
+
+    inline void variable_state::purge_binds() {
+        // nothing
+    }
+
+    inline void variable_state::purge_metadata() {
+        metadata.clear();
     }
 }
 
@@ -9553,6 +9858,32 @@ namespace meta_hpp::detail
         class_type_data_impl::fill_upcast_info<Class>(new_base_info);
         base_classes.swap(new_base_info.base_classes);
         deep_upcasts.swap(new_base_info.deep_upcasts);
+    }
+
+    inline void class_type_data::purge_binds() {
+        constructors.clear();
+        constructors.shrink_to_fit();
+
+        destructors.clear();
+        destructors.shrink_to_fit();
+
+        functions.clear();
+        functions.shrink_to_fit();
+
+        members.clear();
+        members.shrink_to_fit();
+
+        methods.clear();
+        methods.shrink_to_fit();
+
+        typedefs.clear();
+
+        variables.clear();
+        variables.shrink_to_fit();
+    }
+
+    inline void class_type_data::purge_metadata() {
+        metadata.clear();
     }
 }
 
@@ -9999,6 +10330,20 @@ namespace meta_hpp::detail
         };
         return std::make_shared<scope_state>(std::move(state));
     }
+
+    inline void scope_state::purge_binds() {
+        functions.clear();
+        functions.shrink_to_fit();
+
+        typedefs.clear();
+
+        variables.clear();
+        variables.shrink_to_fit();
+    }
+
+    inline void scope_state::purge_metadata() {
+        metadata.clear();
+    }
 }
 
 namespace meta_hpp
@@ -10282,6 +10627,14 @@ namespace meta_hpp::detail
     , flags{array_traits<Array>::make_flags()}
     , extent{array_traits<Array>::extent}
     , data_type{resolve_type<typename array_traits<Array>::data_type>()} {}
+
+    inline void array_type_data::purge_binds() {
+        // nothing
+    }
+
+    inline void array_type_data::purge_metadata() {
+        metadata.clear();
+    }
 }
 
 namespace meta_hpp
@@ -10304,6 +10657,14 @@ namespace meta_hpp::detail
     template < nullptr_kind Nullptr >
     nullptr_type_data::nullptr_type_data(nullptr_traits<Nullptr>)
     : type_data_base{type_kind::nullptr_, shared_traits_hash<nullptr_traits<Nullptr>>{}(this)} {}
+
+    inline void nullptr_type_data::purge_binds() {
+        // nothing
+    }
+
+    inline void nullptr_type_data::purge_metadata() {
+        metadata.clear();
+    }
 }
 
 namespace meta_hpp::detail
@@ -10314,6 +10675,14 @@ namespace meta_hpp::detail
     , flags{number_traits<Number>::make_flags()}
     , size{number_traits<Number>::size}
     , align{number_traits<Number>::align} {}
+
+    inline void number_type_data::purge_binds() {
+        // nothing
+    }
+
+    inline void number_type_data::purge_metadata() {
+        metadata.clear();
+    }
 }
 
 namespace meta_hpp
@@ -10338,6 +10707,14 @@ namespace meta_hpp::detail
     : type_data_base{type_kind::reference_, shared_traits_hash<reference_traits<Reference>>{}(this)}
     , flags{reference_traits<Reference>::make_flags()}
     , data_type{resolve_type<typename reference_traits<Reference>::data_type>()} {}
+
+    inline void reference_type_data::purge_binds() {
+        // nothing
+    }
+
+    inline void reference_type_data::purge_metadata() {
+        metadata.clear();
+    }
 }
 
 namespace meta_hpp
@@ -10356,6 +10733,14 @@ namespace meta_hpp::detail
     template < void_kind Void >
     void_type_data::void_type_data(void_traits<Void>)
     : type_data_base{type_kind::void_, shared_traits_hash<void_traits<Void>>{}(this)} {}
+
+    inline void void_type_data::purge_binds() {
+        // nothing
+    }
+
+    inline void void_type_data::purge_metadata() {
+        metadata.clear();
+    }
 }
 
 namespace meta_hpp::detail

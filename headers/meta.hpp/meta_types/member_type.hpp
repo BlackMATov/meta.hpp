@@ -21,6 +21,14 @@ namespace meta_hpp::detail
     , flags{member_traits<Member>::make_flags()}
     , owner_type{resolve_type<typename member_traits<Member>::class_type>()}
     , value_type{resolve_type<typename member_traits<Member>::value_type>()} {}
+
+    inline void member_type_data::purge_binds() {
+        // nothing
+    }
+
+    inline void member_type_data::purge_metadata() {
+        metadata.clear();
+    }
 }
 
 namespace meta_hpp

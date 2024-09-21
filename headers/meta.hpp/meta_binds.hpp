@@ -210,58 +210,116 @@ namespace meta_hpp
 namespace meta_hpp
 {
     template < array_kind Array >
-    array_bind<Array> array_(metadata_map metadata = {}) {
+    array_bind<Array> bind_(metadata_map metadata = {}) {
         return array_bind<Array>{std::move(metadata)};
     }
 
     template < class_kind Class >
-    class_bind<Class> class_(metadata_map metadata = {}) {
+    class_bind<Class> bind_(metadata_map metadata = {}) {
         return class_bind<Class>{std::move(metadata)};
     }
 
     template < enum_kind Enum >
-    enum_bind<Enum> enum_(metadata_map metadata = {}) {
+    enum_bind<Enum> bind_(metadata_map metadata = {}) {
         return enum_bind<Enum>{std::move(metadata)};
     }
 
     template < function_kind Function >
-    function_bind<Function> function_(metadata_map metadata = {}) {
+    function_bind<Function> bind_(metadata_map metadata = {}) {
         return function_bind<Function>{std::move(metadata)};
     }
 
     template < member_pointer_kind Member >
-    member_bind<Member> member_(metadata_map metadata = {}) {
+    member_bind<Member> bind_(metadata_map metadata = {}) {
         return member_bind<Member>{std::move(metadata)};
     }
 
     template < method_pointer_kind Method >
-    method_bind<Method> method_(metadata_map metadata = {}) {
+    method_bind<Method> bind_(metadata_map metadata = {}) {
         return method_bind<Method>{std::move(metadata)};
     }
 
     template < nullptr_kind Nullptr >
-    nullptr_bind<Nullptr> nullptr_(metadata_map metadata = {}) {
+    nullptr_bind<Nullptr> bind_(metadata_map metadata = {}) {
         return nullptr_bind<Nullptr>{std::move(metadata)};
     }
 
     template < number_kind Number >
-    number_bind<Number> number_(metadata_map metadata = {}) {
+    number_bind<Number> bind_(metadata_map metadata = {}) {
         return number_bind<Number>{std::move(metadata)};
     }
 
     template < pointer_kind Pointer >
-    pointer_bind<Pointer> pointer_(metadata_map metadata = {}) {
+    pointer_bind<Pointer> bind_(metadata_map metadata = {}) {
         return pointer_bind<Pointer>{std::move(metadata)};
     }
 
     template < reference_kind Reference >
-    reference_bind<Reference> reference_(metadata_map metadata = {}) {
+    reference_bind<Reference> bind_(metadata_map metadata = {}) {
         return reference_bind<Reference>{std::move(metadata)};
     }
 
     template < void_kind Void >
-    void_bind<Void> void_(metadata_map metadata = {}) {
+    void_bind<Void> bind_(metadata_map metadata = {}) {
         return void_bind<Void>{std::move(metadata)};
+    }
+}
+
+namespace meta_hpp
+{
+    template < array_kind Array >
+    array_bind<Array> array_(metadata_map metadata = {}) {
+        return bind_<Array>(std::move(metadata));
+    }
+
+    template < class_kind Class >
+    class_bind<Class> class_(metadata_map metadata = {}) {
+        return bind_<Class>(std::move(metadata));
+    }
+
+    template < enum_kind Enum >
+    enum_bind<Enum> enum_(metadata_map metadata = {}) {
+        return bind_<Enum>(std::move(metadata));
+    }
+
+    template < function_kind Function >
+    function_bind<Function> function_(metadata_map metadata = {}) {
+        return bind_<Function>(std::move(metadata));
+    }
+
+    template < member_pointer_kind Member >
+    member_bind<Member> member_(metadata_map metadata = {}) {
+        return bind_<Member>(std::move(metadata));
+    }
+
+    template < method_pointer_kind Method >
+    method_bind<Method> method_(metadata_map metadata = {}) {
+        return bind_<Method>(std::move(metadata));
+    }
+
+    template < nullptr_kind Nullptr >
+    nullptr_bind<Nullptr> nullptr_(metadata_map metadata = {}) {
+        return bind_<Nullptr>(std::move(metadata));
+    }
+
+    template < number_kind Number >
+    number_bind<Number> number_(metadata_map metadata = {}) {
+        return bind_<Number>(std::move(metadata));
+    }
+
+    template < pointer_kind Pointer >
+    pointer_bind<Pointer> pointer_(metadata_map metadata = {}) {
+        return bind_<Pointer>(std::move(metadata));
+    }
+
+    template < reference_kind Reference >
+    reference_bind<Reference> reference_(metadata_map metadata = {}) {
+        return bind_<Reference>(std::move(metadata));
+    }
+
+    template < void_kind Void >
+    void_bind<Void> void_(metadata_map metadata = {}) {
+        return bind_<Void>(std::move(metadata));
     }
 }
 
@@ -279,6 +337,53 @@ namespace meta_hpp
 
     inline scope_bind extend_scope_(const scope& scope, metadata_map metadata = {}) {
         return scope_bind{scope, std::move(metadata)};
+    }
+}
+
+namespace meta_hpp
+{
+    template < type_family Type >
+    void purge_(const Type& type) {
+        if ( type ) {
+            detail::type_access(type)->purge_binds();
+            detail::type_access(type)->purge_metadata();
+        }
+    }
+
+    template < state_family State >
+    void purge_(const State& state) {
+        if ( state ) {
+            detail::state_access(state)->purge_binds();
+            detail::state_access(state)->purge_metadata();
+        }
+    }
+
+    template < type_family Type >
+    void purge_binds_(const Type& type) {
+        if ( type ) {
+            detail::type_access(type)->purge_binds();
+        }
+    }
+
+    template < state_family State >
+    void purge_binds_(const State& state) {
+        if ( state ) {
+            detail::state_access(state)->purge_binds();
+        }
+    }
+
+    template < type_family Type >
+    void purge_metadata_(const Type& type) {
+        if ( type ) {
+            detail::type_access(type)->purge_metadata();
+        }
+    }
+
+    template < state_family State >
+    void purge_metadata_(const State& state) {
+        if ( state ) {
+            detail::state_access(state)->purge_metadata();
+        }
     }
 }
 

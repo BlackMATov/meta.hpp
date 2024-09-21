@@ -28,6 +28,15 @@ namespace meta_hpp::detail
 
         return std::make_shared<argument_state>(std::move(state));
     }
+
+    inline void argument_state::purge_binds() {
+        name.clear();
+        name.shrink_to_fit();
+    }
+
+    inline void argument_state::purge_metadata() {
+        metadata.clear();
+    }
 }
 
 namespace meta_hpp

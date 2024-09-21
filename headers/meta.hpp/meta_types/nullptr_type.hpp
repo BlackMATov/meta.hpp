@@ -17,4 +17,12 @@ namespace meta_hpp::detail
     template < nullptr_kind Nullptr >
     nullptr_type_data::nullptr_type_data(nullptr_traits<Nullptr>)
     : type_data_base{type_kind::nullptr_, shared_traits_hash<nullptr_traits<Nullptr>>{}(this)} {}
+
+    inline void nullptr_type_data::purge_binds() {
+        // nothing
+    }
+
+    inline void nullptr_type_data::purge_metadata() {
+        metadata.clear();
+    }
 }

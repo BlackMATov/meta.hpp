@@ -16,7 +16,9 @@ namespace meta_hpp
     class_bind<Class>::class_bind(metadata_map metadata)
     : type_bind_base{resolve_type<Class>(), std::move(metadata)} {
         if constexpr ( std::is_destructible_v<Class> ) {
-            destructor_();
+            if ( get_data().destructors.empty() ) {
+                destructor_();
+            }
         }
     }
 

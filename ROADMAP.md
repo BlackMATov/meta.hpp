@@ -4,6 +4,7 @@
 
 - add coverage information
 - add an ucast function with a dynamic `to` argument
+- remove metadata merging?
 
 ## Version 1.0
 

@@ -20,6 +20,14 @@ namespace meta_hpp::detail
     : type_data_base{type_kind::pointer_, shared_traits_hash<pointer_traits<Pointer>>{}(this)}
     , flags{pointer_traits<Pointer>::make_flags()}
     , data_type{resolve_type<typename pointer_traits<Pointer>::data_type>()} {}
+
+    inline void pointer_type_data::purge_binds() {
+        // nothing
+    }
+
+    inline void pointer_type_data::purge_metadata() {
+        metadata.clear();
+    }
 }
 
 namespace meta_hpp

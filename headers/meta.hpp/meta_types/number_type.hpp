@@ -21,6 +21,14 @@ namespace meta_hpp::detail
     , flags{number_traits<Number>::make_flags()}
     , size{number_traits<Number>::size}
     , align{number_traits<Number>::align} {}
+
+    inline void number_type_data::purge_binds() {
+        // nothing
+    }
+
+    inline void number_type_data::purge_metadata() {
+        metadata.clear();
+    }
 }
 
 namespace meta_hpp

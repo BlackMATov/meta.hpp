@@ -29,6 +29,20 @@ namespace meta_hpp::detail
         };
         return std::make_shared<scope_state>(std::move(state));
     }
+
+    inline void scope_state::purge_binds() {
+        functions.clear();
+        functions.shrink_to_fit();
+
+        typedefs.clear();
+
+        variables.clear();
+        variables.shrink_to_fit();
+    }
+
+    inline void scope_state::purge_metadata() {
+        metadata.clear();
+    }
 }
 
 namespace meta_hpp
