@@ -17,4 +17,12 @@ namespace meta_hpp::detail
     template < void_kind Void >
     void_type_data::void_type_data(void_traits<Void>)
     : type_data_base{type_kind::void_, shared_traits_hash<void_traits<Void>>{}(this)} {}
+
+    inline void void_type_data::purge_binds() {
+        // nothing
+    }
+
+    inline void void_type_data::purge_metadata() {
+        metadata.clear();
+    }
 }

@@ -342,6 +342,53 @@ namespace meta_hpp
 
 namespace meta_hpp
 {
+    template < type_family Type >
+    void purge_(const Type& type) {
+        if ( type ) {
+            detail::type_access(type)->purge_binds();
+            detail::type_access(type)->purge_metadata();
+        }
+    }
+
+    template < state_family State >
+    void purge_(const State& state) {
+        if ( state ) {
+            detail::state_access(state)->purge_binds();
+            detail::state_access(state)->purge_metadata();
+        }
+    }
+
+    template < type_family Type >
+    void purge_binds_(const Type& type) {
+        if ( type ) {
+            detail::type_access(type)->purge_binds();
+        }
+    }
+
+    template < state_family State >
+    void purge_binds_(const State& state) {
+        if ( state ) {
+            detail::state_access(state)->purge_binds();
+        }
+    }
+
+    template < type_family Type >
+    void purge_metadata_(const Type& type) {
+        if ( type ) {
+            detail::type_access(type)->purge_metadata();
+        }
+    }
+
+    template < state_family State >
+    void purge_metadata_(const State& state) {
+        if ( state ) {
+            detail::state_access(state)->purge_metadata();
+        }
+    }
+}
+
+namespace meta_hpp
+{
     class arguments_bind final {
     public:
         class argument_info final {

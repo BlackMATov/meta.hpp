@@ -414,16 +414,19 @@ namespace meta_hpp::detail
 
         metadata_map metadata;
 
-        explicit type_data_base(type_kind nkind, std::size_t nshared)
-        : kind{nkind}
-        , shared{nshared} {}
-
         type_data_base(type_data_base&&) = delete;
         type_data_base(const type_data_base&) = delete;
         type_data_base& operator=(type_data_base&&) = delete;
         type_data_base& operator=(const type_data_base&) = delete;
 
+        virtual void purge_binds() = 0;
+        virtual void purge_metadata() = 0;
+
     protected:
+        explicit type_data_base(type_kind nkind, std::size_t nshared)
+        : kind{nkind}
+        , shared{nshared} {}
+
         ~type_data_base() = default;
     };
 
@@ -436,6 +439,9 @@ namespace meta_hpp::detail
 
         template < array_kind Array >
         explicit array_type_data(array_traits<Array>);
+
+        void purge_binds() override;
+        void purge_metadata() override;
     };
 
     struct class_type_data final : type_data_base {
@@ -447,7 +453,6 @@ namespace meta_hpp::detail
         const uvalue_list argument_values;
         // NOLINTEND(*-avoid-const-or-ref-data-members)
 
-        class_list base_classes;
         constructor_list constructors;
         destructor_list destructors;
         function_list functions;
@@ -467,10 +472,15 @@ namespace meta_hpp::detail
         };
 
         using deep_upcasts_t = std::vector<upcast_func_t>;
+
+        class_list base_classes;
         deep_upcasts_t deep_upcasts;
 
         template < class_kind Class >
         explicit class_type_data(class_traits<Class>);
+
+        void purge_binds() override;
+        void purge_metadata() override;
     };
 
     struct constructor_type_data final : type_data_base {
@@ -482,6 +492,9 @@ namespace meta_hpp::detail
 
         template < class_kind Class, typename... Args >
         explicit constructor_type_data(constructor_traits<Class, Args...>);
+
+        void purge_binds() override;
+        void purge_metadata() override;
     };
 
     struct destructor_type_data final : type_data_base {
@@ -492,6 +505,9 @@ namespace meta_hpp::detail
 
         template < class_kind Class >
         explicit destructor_type_data(destructor_traits<Class>);
+
+        void purge_binds() override;
+        void purge_metadata() override;
     };
 
     struct enum_type_data final : type_data_base {
@@ -504,6 +520,9 @@ namespace meta_hpp::detail
 
         template < enum_kind Enum >
         explicit enum_type_data(enum_traits<Enum>);
+
+        void purge_binds() override;
+        void purge_metadata() override;
     };
 
     struct function_type_data final : type_data_base {
@@ -515,6 +534,9 @@ namespace meta_hpp::detail
 
         template < function_kind Function >
         explicit function_type_data(function_traits<Function>);
+
+        void purge_binds() override;
+        void purge_metadata() override;
     };
 
     struct member_type_data final : type_data_base {
@@ -526,6 +548,9 @@ namespace meta_hpp::detail
 
         template < member_pointer_kind Member >
         explicit member_type_data(member_traits<Member>);
+
+        void purge_binds() override;
+        void purge_metadata() override;
     };
 
     struct method_type_data final : type_data_base {
@@ -538,11 +563,17 @@ namespace meta_hpp::detail
 
         template < method_pointer_kind Method >
         explicit method_type_data(method_traits<Method>);
+
+        void purge_binds() override;
+        void purge_metadata() override;
     };
 
     struct nullptr_type_data final : type_data_base {
         template < nullptr_kind Nullptr >
         explicit nullptr_type_data(nullptr_traits<Nullptr>);
+
+        void purge_binds() override;
+        void purge_metadata() override;
     };
 
     struct number_type_data final : type_data_base {
@@ -554,6 +585,9 @@ namespace meta_hpp::detail
 
         template < number_kind Number >
         explicit number_type_data(number_traits<Number>);
+
+        void purge_binds() override;
+        void purge_metadata() override;
     };
 
     struct pointer_type_data final : type_data_base {
@@ -564,6 +598,9 @@ namespace meta_hpp::detail
 
         template < pointer_kind Pointer >
         explicit pointer_type_data(pointer_traits<Pointer>);
+
+        void purge_binds() override;
+        void purge_metadata() override;
     };
 
     struct reference_type_data final : type_data_base {
@@ -574,11 +611,17 @@ namespace meta_hpp::detail
 
         template < reference_kind Reference >
         explicit reference_type_data(reference_traits<Reference>);
+
+        void purge_binds() override;
+        void purge_metadata() override;
     };
 
     struct void_type_data final : type_data_base {
         template < void_kind Void >
         explicit void_type_data(void_traits<Void>);
+
+        void purge_binds() override;
+        void purge_metadata() override;
     };
 }
 

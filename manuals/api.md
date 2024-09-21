@@ -61,25 +61,28 @@
 
 ### Functions
 
-|                                               |               |
-| --------------------------------------------- | ------------- |
-| [bind_](./api/binds.md#bind_)                 | bind_         |
-| [array_](./api/binds.md#array_)               | array_        |
-| [class_](./api/binds.md#class_)               | class_        |
-| [enum_](./api/binds.md#enum_)                 | enum_         |
-| [function_](./api/binds.md#function_)         | function_     |
-| [member_](./api/binds.md#member_)             | member_       |
-| [method_](./api/binds.md#method_)             | method_       |
-| [nullptr_](./api/binds.md#nullptr_)           | nullptr_      |
-| [number_](./api/binds.md#number_)             | number_       |
-| [pointer_](./api/binds.md#pointer_)           | pointer_      |
-| [reference_](./api/binds.md#reference_)       | reference_    |
-| [void_](./api/binds.md#void_)                 | void_         |
-| [local_scope_](./api/binds.md#local_scope_)   | local_scope_  |
-| [static_scope_](./api/binds.md#static_scope_) | static_scope_ |
-| [extend_scope_](./api/binds.md#extend_scope_) | extend_scope_ |
-| [arguments_](./api/binds.md#arguments_)       | arguments_    |
-| [metadata_](./api/binds.md#metadata_)         | metadata_     |
+|                                                   |                 |
+| ------------------------------------------------- | --------------- |
+| [bind_](./api/binds.md#bind_)                     | bind_           |
+| [array_](./api/binds.md#array_)                   | array_          |
+| [class_](./api/binds.md#class_)                   | class_          |
+| [enum_](./api/binds.md#enum_)                     | enum_           |
+| [function_](./api/binds.md#function_)             | function_       |
+| [member_](./api/binds.md#member_)                 | member_         |
+| [method_](./api/binds.md#method_)                 | method_         |
+| [nullptr_](./api/binds.md#nullptr_)               | nullptr_        |
+| [number_](./api/binds.md#number_)                 | number_         |
+| [pointer_](./api/binds.md#pointer_)               | pointer_        |
+| [reference_](./api/binds.md#reference_)           | reference_      |
+| [void_](./api/binds.md#void_)                     | void_           |
+| [local_scope_](./api/binds.md#local_scope_)       | local_scope_    |
+| [static_scope_](./api/binds.md#static_scope_)     | static_scope_   |
+| [extend_scope_](./api/binds.md#extend_scope_)     | extend_scope_   |
+| [purge_](./api/binds.md#purge_)                   | purge_          |
+| [purge_binds_](./api/binds.md#purge_binds_)       | purge_binds_    |
+| [purge_metadata_](./api/binds.md#purge_metadata_) | purge_metadata_ |
+| [arguments_](./api/binds.md#arguments_)           | arguments_      |
+| [metadata_](./api/binds.md#metadata_)             | metadata_       |
 
 ## Invoke
 

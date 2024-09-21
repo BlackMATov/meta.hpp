@@ -42,6 +42,14 @@ namespace meta_hpp::detail
     , flags{constructor_traits<Class, Args...>::make_flags()}
     , owner_type{resolve_type<typename constructor_traits<Class, Args...>::class_type>()}
     , argument_types(constructor_type_data_impl::make_argument_types<Class, Args...>()) {}
+
+    inline void constructor_type_data::purge_binds() {
+        // nothing
+    }
+
+    inline void constructor_type_data::purge_metadata() {
+        metadata.clear();
+    }
 }
 
 namespace meta_hpp

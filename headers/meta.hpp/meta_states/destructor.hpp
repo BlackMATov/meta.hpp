@@ -92,6 +92,14 @@ namespace meta_hpp::detail
 
         return std::make_shared<destructor_state>(std::move(state));
     }
+
+    inline void destructor_state::purge_binds() {
+        // nothing
+    }
+
+    inline void destructor_state::purge_metadata() {
+        metadata.clear();
+    }
 }
 
 namespace meta_hpp

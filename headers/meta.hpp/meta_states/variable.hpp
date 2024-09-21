@@ -130,6 +130,14 @@ namespace meta_hpp::detail
 
         return std::make_shared<variable_state>(std::move(state));
     }
+
+    inline void variable_state::purge_binds() {
+        // nothing
+    }
+
+    inline void variable_state::purge_metadata() {
+        metadata.clear();
+    }
 }
 
 namespace meta_hpp

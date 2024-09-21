@@ -210,6 +210,14 @@ namespace meta_hpp::detail
 
         return std::make_shared<member_state>(std::move(state));
     }
+
+    inline void member_state::purge_binds() {
+        // nothing
+    }
+
+    inline void member_state::purge_metadata() {
+        metadata.clear();
+    }
 }
 
 namespace meta_hpp

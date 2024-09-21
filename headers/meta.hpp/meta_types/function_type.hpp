@@ -42,6 +42,14 @@ namespace meta_hpp::detail
     , flags{function_traits<Function>::make_flags()}
     , return_type{resolve_type<typename function_traits<Function>::return_type>()}
     , argument_types(function_type_data_impl::make_argument_types<Function>()) {}
+
+    inline void function_type_data::purge_binds() {
+        // nothing
+    }
+
+    inline void function_type_data::purge_metadata() {
+        metadata.clear();
+    }
 }
 
 namespace meta_hpp

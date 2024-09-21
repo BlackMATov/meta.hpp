@@ -20,6 +20,14 @@ namespace meta_hpp::detail
     : type_data_base{type_kind::reference_, shared_traits_hash<reference_traits<Reference>>{}(this)}
     , flags{reference_traits<Reference>::make_flags()}
     , data_type{resolve_type<typename reference_traits<Reference>::data_type>()} {}
+
+    inline void reference_type_data::purge_binds() {
+        // nothing
+    }
+
+    inline void reference_type_data::purge_metadata() {
+        metadata.clear();
+    }
 }
 
 namespace meta_hpp

@@ -30,6 +30,9 @@
     - [local\_scope\_](#local_scope_)
     - [static\_scope\_](#static_scope_)
     - [extend\_scope\_](#extend_scope_)
+    - [purge\_](#purge_)
+    - [purge\_binds\_](#purge_binds_)
+    - [purge\_metadata\_](#purge_metadata_)
     - [arguments\_](#arguments_)
     - [metadata\_](#metadata_)
 
@@ -343,6 +346,36 @@ scope_bind static_scope_(std::string_view name, metadata_map metadata = {});
 
 ```cpp
 scope_bind extend_scope_(const scope& scope, metadata_map metadata = {});
+```
+
+### purge_
+
+```cpp
+template < type_family Type >
+void purge_(const Type& type);
+
+template < state_family State >
+void purge_(const State& state);
+```
+
+### purge_binds_
+
+```cpp
+template < type_family Type >
+void purge_binds_(const Type& type);
+
+template < state_family State >
+void purge_binds_(const State& state);
+```
+
+### purge_metadata_
+
+```cpp
+template < type_family Type >
+void purge_metadata_(const Type& type);
+
+template < state_family State >
+void purge_metadata_(const State& state);
 ```
 
 ### arguments_

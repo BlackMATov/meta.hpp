@@ -21,6 +21,14 @@ namespace meta_hpp::detail
     , flags{array_traits<Array>::make_flags()}
     , extent{array_traits<Array>::extent}
     , data_type{resolve_type<typename array_traits<Array>::data_type>()} {}
+
+    inline void array_type_data::purge_binds() {
+        // nothing
+    }
+
+    inline void array_type_data::purge_metadata() {
+        metadata.clear();
+    }
 }
 
 namespace meta_hpp

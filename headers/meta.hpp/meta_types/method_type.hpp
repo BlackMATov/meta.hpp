@@ -43,6 +43,14 @@ namespace meta_hpp::detail
     , owner_type{resolve_type<typename method_traits<Method>::class_type>()}
     , return_type{resolve_type<typename method_traits<Method>::return_type>()}
     , argument_types(method_type_data_impl::make_argument_types<Method>()) {}
+
+    inline void method_type_data::purge_binds() {
+        // nothing
+    }
+
+    inline void method_type_data::purge_metadata() {
+        metadata.clear();
+    }
 }
 
 namespace meta_hpp

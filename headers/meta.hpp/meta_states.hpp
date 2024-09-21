@@ -428,6 +428,9 @@ namespace meta_hpp::detail
         template < typename Argument >
         [[nodiscard]] static state_ptr make(std::size_t position, metadata_map metadata);
         explicit argument_state(argument_index index, metadata_map metadata);
+
+        void purge_binds();
+        void purge_metadata();
     };
 
     struct constructor_state final : private state_traits<constructor> {
@@ -446,6 +449,9 @@ namespace meta_hpp::detail
         template < constructor_policy_family Policy, class_kind Class, typename... Args >
         [[nodiscard]] static state_ptr make(metadata_map metadata);
         explicit constructor_state(constructor_index index, metadata_map metadata);
+
+        void purge_binds();
+        void purge_metadata();
     };
 
     struct destructor_state final : private state_traits<destructor> {
@@ -463,6 +469,9 @@ namespace meta_hpp::detail
         template < class_kind Class >
         [[nodiscard]] static state_ptr make(metadata_map metadata);
         explicit destructor_state(destructor_index index, metadata_map metadata);
+
+        void purge_binds();
+        void purge_metadata();
     };
 
     struct evalue_state final : private state_traits<evalue> {
@@ -475,6 +484,9 @@ namespace meta_hpp::detail
         template < enum_kind Enum >
         [[nodiscard]] static state_ptr make(std::string name, Enum evalue, metadata_map metadata);
         explicit evalue_state(evalue_index index, metadata_map metadata);
+
+        void purge_binds();
+        void purge_metadata();
     };
 
     struct function_state final : private state_traits<function> {
@@ -491,6 +503,9 @@ namespace meta_hpp::detail
         template < function_policy_family Policy, function_pointer_kind Function >
         [[nodiscard]] static state_ptr make(std::string name, Function function_ptr, metadata_map metadata);
         explicit function_state(function_index index, metadata_map metadata);
+
+        void purge_binds();
+        void purge_metadata();
     };
 
     struct member_state final : private state_traits<member> {
@@ -511,6 +526,9 @@ namespace meta_hpp::detail
         template < member_policy_family Policy, member_pointer_kind Member >
         [[nodiscard]] static state_ptr make(std::string name, Member member_ptr, metadata_map metadata);
         explicit member_state(member_index index, metadata_map metadata);
+
+        void purge_binds();
+        void purge_metadata();
     };
 
     struct method_state final : private state_traits<method> {
@@ -527,6 +545,9 @@ namespace meta_hpp::detail
         template < method_policy_family Policy, method_pointer_kind Method >
         [[nodiscard]] static state_ptr make(std::string name, Method method_ptr, metadata_map metadata);
         explicit method_state(method_index index, metadata_map metadata);
+
+        void purge_binds();
+        void purge_metadata();
     };
 
     struct scope_state final : private state_traits<scope> {
@@ -539,6 +560,9 @@ namespace meta_hpp::detail
 
         [[nodiscard]] static state_ptr make(std::string name, metadata_map metadata);
         explicit scope_state(scope_index index, metadata_map metadata);
+
+        void purge_binds();
+        void purge_metadata();
     };
 
     struct variable_state final : private state_traits<variable> {
@@ -556,6 +580,9 @@ namespace meta_hpp::detail
         template < variable_policy_family Policy, pointer_kind Pointer >
         [[nodiscard]] static state_ptr make(std::string name, Pointer variable_ptr, metadata_map metadata);
         explicit variable_state(variable_index index, metadata_map metadata);
+
+        void purge_binds();
+        void purge_metadata();
     };
 }
 
