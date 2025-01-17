@@ -1,7 +1,7 @@
 /*******************************************************************************
  * This file is part of the "https://github.com/blackmatov/meta.hpp"
  * For conditions of distribution and use, see copyright notice in LICENSE.md
- * Copyright (C) 2021-2024, by Matvey Cherevko (blackmatov@gmail.com)
+ * Copyright (C) 2021-2025, by Matvey Cherevko (blackmatov@gmail.com)
  ******************************************************************************/
 
 #pragma once
@@ -48,7 +48,9 @@ namespace meta_hpp::detail
         template < typename... Args >
         T& emplace_back(Args&&... args) {
             META_HPP_ASSERT(end_ < capacity_ && "full vector");
-            return *std::construct_at(end_++, std::forward<Args>(args)...);
+            T& result = *std::construct_at(end_, std::forward<Args>(args)...);
+            ++end_; // NOLINT(*-pointer-arithmetic)
+            return result;
         }
 
         [[nodiscard]] std::size_t get_size() const noexcept {

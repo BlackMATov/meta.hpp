@@ -10,11 +10,12 @@ jobs:
       matrix:
         config:
           # https://github.com/actions/virtual-environments/tree/main/images/macos
-          - { os: "macos-12", xcode: "13.4.1", arch: "x64" }
           - { os: "macos-13", xcode: "14.3.1", arch: "x64" }
           - { os: "macos-13", xcode: "14.3.1", arch: "arm64" }
           - { os: "macos-14", xcode: "15.4", arch: "x64" }
           - { os: "macos-14", xcode: "15.4", arch: "arm64" }
+          - { os: "macos-15", xcode: "16.2", arch: "x64" }
+          - { os: "macos-15", xcode: "16.2", arch: "arm64" }
     name: "xcode-${{matrix.config.xcode}}-${{matrix.config.arch}}"
     steps:
       - name: Setup

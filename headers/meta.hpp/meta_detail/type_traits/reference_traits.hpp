@@ -1,7 +1,7 @@
 /*******************************************************************************
  * This file is part of the "https://github.com/blackmatov/meta.hpp"
  * For conditions of distribution and use, see copyright notice in LICENSE.md
- * Copyright (C) 2021-2024, by Matvey Cherevko (blackmatov@gmail.com)
+ * Copyright (C) 2021-2025, by Matvey Cherevko (blackmatov@gmail.com)
  ******************************************************************************/
 
 #pragma once
@@ -28,8 +28,8 @@ namespace meta_hpp::detail
     template < reference_kind Reference >
     struct reference_traits {
         using cv_data_type = std::remove_reference_t<Reference>;
-        inline static constexpr bool is_readonly = std::is_const_v<cv_data_type>;
-        inline static constexpr bool is_volatile = std::is_volatile_v<cv_data_type>;
+        static constexpr bool is_readonly = std::is_const_v<cv_data_type>;
+        static constexpr bool is_volatile = std::is_volatile_v<cv_data_type>;
 
         using data_type = std::remove_cv_t<cv_data_type>;
 

@@ -5,6 +5,7 @@
 - add coverage information
 - add an ucast function with a dynamic `to` argument
 - remove metadata merging?
+- optional type/state registries sharing?
 
 ## Version 1.0
 

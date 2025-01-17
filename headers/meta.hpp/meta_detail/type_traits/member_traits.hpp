@@ -1,7 +1,7 @@
 /*******************************************************************************
  * This file is part of the "https://github.com/blackmatov/meta.hpp"
  * For conditions of distribution and use, see copyright notice in LICENSE.md
- * Copyright (C) 2021-2024, by Matvey Cherevko (blackmatov@gmail.com)
+ * Copyright (C) 2021-2025, by Matvey Cherevko (blackmatov@gmail.com)
  ******************************************************************************/
 
 #pragma once
@@ -37,8 +37,8 @@ namespace meta_hpp::detail
     template < typename V, typename C >
     struct member_traits<V C::*> {
         using cv_value_type = V;
-        inline static constexpr bool is_readonly = std::is_const_v<cv_value_type>;
-        inline static constexpr bool is_volatile = std::is_volatile_v<cv_value_type>;
+        static constexpr bool is_readonly = std::is_const_v<cv_value_type>;
+        static constexpr bool is_volatile = std::is_volatile_v<cv_value_type>;
 
         using class_type = C;
         using value_type = std::remove_cv_t<cv_value_type>;

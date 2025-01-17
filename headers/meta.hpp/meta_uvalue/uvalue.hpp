@@ -1,7 +1,7 @@
 /*******************************************************************************
  * This file is part of the "https://github.com/blackmatov/meta.hpp"
  * For conditions of distribution and use, see copyright notice in LICENSE.md
- * Copyright (C) 2021-2024, by Matvey Cherevko (blackmatov@gmail.com)
+ * Copyright (C) 2021-2025, by Matvey Cherevko (blackmatov@gmail.com)
  ******************************************************************************/
 
 #pragma once
@@ -39,12 +39,12 @@ namespace meta_hpp
         // NOLINTEND(*-avoid-const-or-ref-data-members)
 
         template < typename T >
-        inline static constexpr bool in_internal_v = //
+        static constexpr bool in_internal_v = //
             (sizeof(T) <= sizeof(internal_storage_t)) && (alignof(internal_storage_t) % alignof(T) == 0)
             && std::is_nothrow_destructible_v<T> && std::is_nothrow_move_constructible_v<T>;
 
         template < typename T >
-        inline static constexpr bool in_trivial_internal_v = //
+        static constexpr bool in_trivial_internal_v = //
             in_internal_v<T> && std::is_trivially_copyable_v<T>;
 
         static std::pair<storage_e, const vtable_t*> unpack_vtag(const uvalue& self) noexcept {

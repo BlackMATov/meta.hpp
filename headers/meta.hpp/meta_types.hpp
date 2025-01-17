@@ -1,7 +1,7 @@
 /*******************************************************************************
  * This file is part of the "https://github.com/blackmatov/meta.hpp"
  * For conditions of distribution and use, see copyright notice in LICENSE.md
- * Copyright (C) 2021-2024, by Matvey Cherevko (blackmatov@gmail.com)
+ * Copyright (C) 2021-2025, by Matvey Cherevko (blackmatov@gmail.com)
  ******************************************************************************/
 
 #pragma once
@@ -414,9 +414,13 @@ namespace meta_hpp::detail
 
         metadata_map metadata;
 
+        type_data_base() = delete;
+        virtual ~type_data_base() = default;
+
         type_data_base(type_data_base&&) = delete;
-        type_data_base(const type_data_base&) = delete;
         type_data_base& operator=(type_data_base&&) = delete;
+
+        type_data_base(const type_data_base&) = delete;
         type_data_base& operator=(const type_data_base&) = delete;
 
         virtual void purge_binds() = 0;
@@ -426,8 +430,6 @@ namespace meta_hpp::detail
         explicit type_data_base(type_kind nkind, std::size_t nshared)
         : kind{nkind}
         , shared{nshared} {}
-
-        ~type_data_base() = default;
     };
 
     struct array_type_data final : type_data_base {

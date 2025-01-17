@@ -1,7 +1,7 @@
 /*******************************************************************************
  * This file is part of the "https://github.com/blackmatov/meta.hpp"
  * For conditions of distribution and use, see copyright notice in LICENSE.md
- * Copyright (C) 2021-2024, by Matvey Cherevko (blackmatov@gmail.com)
+ * Copyright (C) 2021-2025, by Matvey Cherevko (blackmatov@gmail.com)
  ******************************************************************************/
 
 #pragma once
@@ -19,15 +19,15 @@ namespace meta_hpp::detail
     template <>
     struct fnv1a_hash_traits<sizeof(std::uint32_t)> {
         using underlying_type = std::uint32_t;
-        static inline constexpr underlying_type prime{16777619U};
-        static inline constexpr underlying_type offset_basis{2166136261U};
+        static constexpr underlying_type prime{16777619U};
+        static constexpr underlying_type offset_basis{2166136261U};
     };
 
     template <>
     struct fnv1a_hash_traits<sizeof(std::uint64_t)> {
         using underlying_type = std::uint64_t;
-        static inline constexpr underlying_type prime{1099511628211U};
-        static inline constexpr underlying_type offset_basis{14695981039346656037U};
+        static constexpr underlying_type prime{1099511628211U};
+        static constexpr underlying_type offset_basis{14695981039346656037U};
     };
 
     template < typename T >

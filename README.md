@@ -27,7 +27,7 @@
 - [clang](https://clang.llvm.org/) **>= 10**
 - [gcc](https://www.gnu.org/software/gcc/) **>= 10**
 - [msvc](https://visualstudio.microsoft.com/) **>= 2019**
-- [xcode](https://developer.apple.com/xcode/) **>= 13.0**
+- [xcode](https://developer.apple.com/xcode/) **>= 14**
 
 ## Installation
 

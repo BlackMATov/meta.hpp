@@ -1,7 +1,7 @@
 /*******************************************************************************
  * This file is part of the "https://github.com/blackmatov/meta.hpp"
  * For conditions of distribution and use, see copyright notice in LICENSE.md
- * Copyright (C) 2021-2024, by Matvey Cherevko (blackmatov@gmail.com)
+ * Copyright (C) 2021-2025, by Matvey Cherevko (blackmatov@gmail.com)
  ******************************************************************************/
 
 #pragma once
@@ -449,7 +449,7 @@ namespace meta_hpp::detail
 
 namespace meta_hpp::detail
 {
-    enum class error_code {
+    enum class error_code : std::uint8_t {
         no_error,
 
         bad_cast,
@@ -779,15 +779,15 @@ namespace meta_hpp::detail
     template <>
     struct fnv1a_hash_traits<sizeof(std::uint32_t)> {
         using underlying_type = std::uint32_t;
-        static inline constexpr underlying_type prime{16777619U};
-        static inline constexpr underlying_type offset_basis{2166136261U};
+        static constexpr underlying_type prime{16777619U};
+        static constexpr underlying_type offset_basis{2166136261U};
     };
 
     template <>
     struct fnv1a_hash_traits<sizeof(std::uint64_t)> {
         using underlying_type = std::uint64_t;
-        static inline constexpr underlying_type prime{1099511628211U};
-        static inline constexpr underlying_type offset_basis{14695981039346656037U};
+        static constexpr underlying_type prime{1099511628211U};
+        static constexpr underlying_type offset_basis{14695981039346656037U};
     };
 
     template < typename T >
@@ -911,7 +911,9 @@ namespace meta_hpp::detail
         template < typename... Args >
         T& emplace_back(Args&&... args) {
             META_HPP_ASSERT(end_ < capacity_ && "full vector");
-            return *std::construct_at(end_++, std::forward<Args>(args)...);
+            T& result = *std::construct_at(end_, std::forward<Args>(args)...);
+            ++end_; // NOLINT(*-pointer-arithmetic)
+            return result;
         }
 
         [[nodiscard]] std::size_t get_size() const noexcept {
@@ -1175,7 +1177,7 @@ namespace meta_hpp::detail
     }
 
     template < typename Signature, typename C >
-    constexpr auto select_overload(Signature C::*func) noexcept -> decltype(func) {
+    constexpr auto select_overload(Signature C::* func) noexcept -> decltype(func) {
         return func;
     }
 }
@@ -1432,7 +1434,7 @@ namespace meta_hpp
 
 namespace meta_hpp::detail
 {
-    enum class type_kind : std::uint32_t {
+    enum class type_kind : std::uint8_t {
         array_,
         class_,
         constructor_,
@@ -1559,8 +1561,8 @@ namespace meta_hpp::detail
         static constexpr std::size_t extent{std::extent_v<Array>};
 
         using cv_data_type = std::remove_extent_t<Array>;
-        inline static constexpr bool is_readonly = std::is_const_v<cv_data_type>;
-        inline static constexpr bool is_volatile = std::is_volatile_v<cv_data_type>;
+        static constexpr bool is_readonly = std::is_const_v<cv_data_type>;
+        static constexpr bool is_volatile = std::is_volatile_v<cv_data_type>;
 
         using data_type = std::remove_cv_t<cv_data_type>;
 
@@ -1620,8 +1622,7 @@ namespace meta_hpp::detail
         //
 
         template < //
-            template < typename... >
-            typename Class,
+            template < typename... > typename Class,
             typename... Zs >
         struct class_argument_traits_impl<Class<Zs...>> {
             using argument_types = type_list<Zs...>;
@@ -1633,8 +1634,7 @@ namespace meta_hpp::detail
         //
 
         template < //
-            template < auto, typename... >
-            typename Class,
+            template < auto, typename... > typename Class,
             auto A,
             typename... Zs >
             requires(sizeof...(Zs) > 0)
@@ -1649,8 +1649,7 @@ namespace meta_hpp::detail
         //
 
         template < //
-            template < auto, auto, typename... >
-            typename Class,
+            template < auto, auto, typename... > typename Class,
             auto A,
             auto B,
             typename... Zs >
@@ -1661,8 +1660,7 @@ namespace meta_hpp::detail
         };
 
         template < //
-            template < typename, auto, typename... >
-            typename Class,
+            template < typename, auto, typename... > typename Class,
             typename A,
             auto B,
             typename... Zs >
@@ -1680,8 +1678,7 @@ namespace meta_hpp::detail
         //
 
         template < //
-            template < auto, auto, auto, typename... >
-            typename Class,
+            template < auto, auto, auto, typename... > typename Class,
             auto A,
             auto B,
             auto C,
@@ -1693,8 +1690,7 @@ namespace meta_hpp::detail
         };
 
         template < //
-            template < typename, auto, auto, typename... >
-            typename Class,
+            template < typename, auto, auto, typename... > typename Class,
             typename A,
             auto B,
             auto C,
@@ -1706,8 +1702,7 @@ namespace meta_hpp::detail
         };
 
         template < //
-            template < auto, typename, auto, typename... >
-            typename Class,
+            template < auto, typename, auto, typename... > typename Class,
             auto A,
             typename B,
             auto C,
@@ -1719,8 +1714,7 @@ namespace meta_hpp::detail
         };
 
         template < //
-            template < typename, typename, auto, typename... >
-            typename Class,
+            template < typename, typename, auto, typename... > typename Class,
             typename A,
             typename B,
             auto C,
@@ -1736,8 +1730,7 @@ namespace meta_hpp::detail
         //
 
         template < //
-            template < auto... >
-            typename Class,
+            template < auto... > typename Class,
             auto... Zs >
         struct class_argument_traits_impl<Class<Zs...>> {
             using argument_types = type_list<decltype(Zs)...>;
@@ -1749,8 +1742,7 @@ namespace meta_hpp::detail
         //
 
         template < //
-            template < typename, auto... >
-            typename Class,
+            template < typename, auto... > typename Class,
             typename A,
             auto... Zs >
             requires(sizeof...(Zs) > 0)
@@ -1765,8 +1757,7 @@ namespace meta_hpp::detail
         //
 
         template < //
-            template < auto, typename, auto... >
-            typename Class,
+            template < auto, typename, auto... > typename Class,
             auto A,
             typename B,
             auto... Zs >
@@ -1777,8 +1768,7 @@ namespace meta_hpp::detail
         };
 
         template < //
-            template < typename, typename, auto... >
-            typename Class,
+            template < typename, typename, auto... > typename Class,
             typename A,
             typename B,
             auto... Zs >
@@ -1796,8 +1786,7 @@ namespace meta_hpp::detail
         //
 
         template < //
-            template < auto, auto, typename, auto... >
-            typename Class,
+            template < auto, auto, typename, auto... > typename Class,
             auto A,
             auto B,
             typename C,
@@ -1809,8 +1798,7 @@ namespace meta_hpp::detail
         };
 
         template < //
-            template < typename, auto, typename, auto... >
-            typename Class,
+            template < typename, auto, typename, auto... > typename Class,
             typename A,
             auto B,
             typename C,
@@ -1822,8 +1810,7 @@ namespace meta_hpp::detail
         };
 
         template < //
-            template < auto, typename, typename, auto... >
-            typename Class,
+            template < auto, typename, typename, auto... > typename Class,
             auto A,
             typename B,
             typename C,
@@ -1835,8 +1822,7 @@ namespace meta_hpp::detail
         };
 
         template < //
-            template < typename, typename, typename, auto... >
-            typename Class,
+            template < typename, typename, typename, auto... > typename Class,
             typename A,
             typename B,
             typename C,
@@ -2059,8 +2045,8 @@ namespace meta_hpp::detail
     template < typename V, typename C >
     struct member_traits<V C::*> {
         using cv_value_type = V;
-        inline static constexpr bool is_readonly = std::is_const_v<cv_value_type>;
-        inline static constexpr bool is_volatile = std::is_volatile_v<cv_value_type>;
+        static constexpr bool is_readonly = std::is_const_v<cv_value_type>;
+        static constexpr bool is_volatile = std::is_volatile_v<cv_value_type>;
 
         using class_type = C;
         using value_type = std::remove_cv_t<cv_value_type>;
@@ -2287,8 +2273,8 @@ namespace meta_hpp::detail
     template < pointer_kind Pointer >
     struct pointer_traits {
         using cv_data_type = std::remove_pointer_t<Pointer>;
-        inline static constexpr bool is_readonly = std::is_const_v<cv_data_type>;
-        inline static constexpr bool is_volatile = std::is_volatile_v<cv_data_type>;
+        static constexpr bool is_readonly = std::is_const_v<cv_data_type>;
+        static constexpr bool is_volatile = std::is_volatile_v<cv_data_type>;
 
         using data_type = std::remove_cv_t<cv_data_type>;
 
@@ -2326,8 +2312,8 @@ namespace meta_hpp::detail
     template < reference_kind Reference >
     struct reference_traits {
         using cv_data_type = std::remove_reference_t<Reference>;
-        inline static constexpr bool is_readonly = std::is_const_v<cv_data_type>;
-        inline static constexpr bool is_volatile = std::is_volatile_v<cv_data_type>;
+        static constexpr bool is_readonly = std::is_const_v<cv_data_type>;
+        static constexpr bool is_volatile = std::is_volatile_v<cv_data_type>;
 
         using data_type = std::remove_cv_t<cv_data_type>;
 
@@ -2402,7 +2388,7 @@ namespace meta_hpp::detail
         using type = array_type;
         using data_ptr = array_type_data*;
         using data_type = array_type_data;
-        inline static constexpr type_kind kind{type_kind::array_};
+        static constexpr type_kind kind{type_kind::array_};
     };
 
     template <>
@@ -2410,7 +2396,7 @@ namespace meta_hpp::detail
         using type = class_type;
         using data_ptr = class_type_data*;
         using data_type = class_type_data;
-        inline static constexpr type_kind kind{type_kind::class_};
+        static constexpr type_kind kind{type_kind::class_};
     };
 
     template <>
@@ -2418,7 +2404,7 @@ namespace meta_hpp::detail
         using type = constructor_type;
         using data_ptr = constructor_type_data*;
         using data_type = constructor_type_data;
-        inline static constexpr type_kind kind{type_kind::constructor_};
+        static constexpr type_kind kind{type_kind::constructor_};
     };
 
     template <>
@@ -2426,7 +2412,7 @@ namespace meta_hpp::detail
         using type = destructor_type;
         using data_ptr = destructor_type_data*;
         using data_type = destructor_type_data;
-        inline static constexpr type_kind kind{type_kind::destructor_};
+        static constexpr type_kind kind{type_kind::destructor_};
     };
 
     template <>
@@ -2434,7 +2420,7 @@ namespace meta_hpp::detail
         using type = enum_type;
         using data_ptr = enum_type_data*;
         using data_type = enum_type_data;
-        inline static constexpr type_kind kind{type_kind::enum_};
+        static constexpr type_kind kind{type_kind::enum_};
     };
 
     template <>
@@ -2442,7 +2428,7 @@ namespace meta_hpp::detail
         using type = function_type;
         using data_ptr = function_type_data*;
         using data_type = function_type_data;
-        inline static constexpr type_kind kind{type_kind::function_};
+        static constexpr type_kind kind{type_kind::function_};
     };
 
     template <>
@@ -2450,7 +2436,7 @@ namespace meta_hpp::detail
         using type = member_type;
         using data_ptr = member_type_data*;
         using data_type = member_type_data;
-        inline static constexpr type_kind kind{type_kind::member_};
+        static constexpr type_kind kind{type_kind::member_};
     };
 
     template <>
@@ -2458,7 +2444,7 @@ namespace meta_hpp::detail
         using type = method_type;
         using data_ptr = method_type_data*;
         using data_type = method_type_data;
-        inline static constexpr type_kind kind{type_kind::method_};
+        static constexpr type_kind kind{type_kind::method_};
     };
 
     template <>
@@ -2466,7 +2452,7 @@ namespace meta_hpp::detail
         using type = nullptr_type;
         using data_ptr = nullptr_type_data*;
         using data_type = nullptr_type_data;
-        inline static constexpr type_kind kind{type_kind::nullptr_};
+        static constexpr type_kind kind{type_kind::nullptr_};
     };
 
     template <>
@@ -2474,7 +2460,7 @@ namespace meta_hpp::detail
         using type = number_type;
         using data_ptr = number_type_data*;
         using data_type = number_type_data;
-        inline static constexpr type_kind kind{type_kind::number_};
+        static constexpr type_kind kind{type_kind::number_};
     };
 
     template <>
@@ -2482,7 +2468,7 @@ namespace meta_hpp::detail
         using type = pointer_type;
         using data_ptr = pointer_type_data*;
         using data_type = pointer_type_data;
-        inline static constexpr type_kind kind{type_kind::pointer_};
+        static constexpr type_kind kind{type_kind::pointer_};
     };
 
     template <>
@@ -2490,7 +2476,7 @@ namespace meta_hpp::detail
         using type = reference_type;
         using data_ptr = reference_type_data*;
         using data_type = reference_type_data;
-        inline static constexpr type_kind kind{type_kind::reference_};
+        static constexpr type_kind kind{type_kind::reference_};
     };
 
     template <>
@@ -2498,7 +2484,7 @@ namespace meta_hpp::detail
         using type = void_type;
         using data_ptr = void_type_data*;
         using data_type = void_type_data;
-        inline static constexpr type_kind kind{type_kind::void_};
+        static constexpr type_kind kind{type_kind::void_};
     };
 }
 
@@ -2821,7 +2807,7 @@ namespace meta_hpp
             void* ptr;
         };
 
-        enum class storage_e : std::uintptr_t {
+        enum class storage_e : std::uint8_t {
             nothing,
             trivial,
             internal,
@@ -3260,9 +3246,13 @@ namespace meta_hpp::detail
 
         metadata_map metadata;
 
+        type_data_base() = delete;
+        virtual ~type_data_base() = default;
+
         type_data_base(type_data_base&&) = delete;
-        type_data_base(const type_data_base&) = delete;
         type_data_base& operator=(type_data_base&&) = delete;
+
+        type_data_base(const type_data_base&) = delete;
         type_data_base& operator=(const type_data_base&) = delete;
 
         virtual void purge_binds() = 0;
@@ -3272,8 +3262,6 @@ namespace meta_hpp::detail
         explicit type_data_base(type_kind nkind, std::size_t nshared)
         : kind{nkind}
         , shared{nshared} {}
-
-        ~type_data_base() = default;
     };
 
     struct array_type_data final : type_data_base {
@@ -6424,7 +6412,7 @@ namespace meta_hpp::detail
 {
     class uarg_base {
     public:
-        enum class ref_types {
+        enum class ref_types : std::uint8_t {
             lvalue,
             const_lvalue,
             rvalue,
@@ -7463,7 +7451,7 @@ namespace meta_hpp::detail
 {
     class uinst_base {
     public:
-        enum class ref_types {
+        enum class ref_types : std::uint8_t {
             lvalue,
             const_lvalue,
             rvalue,
@@ -9351,7 +9339,7 @@ namespace meta_hpp
         using namespace detail;
         type_registry& registry{type_registry::instance()};
         const uarg varg{registry, META_HPP_FWD(arg)};
-        return state_->destroy(varg);
+        state_->destroy(varg);
     }
 
     template < typename Arg >
@@ -11345,12 +11333,12 @@ namespace meta_hpp
         // NOLINTEND(*-avoid-const-or-ref-data-members)
 
         template < typename T >
-        inline static constexpr bool in_internal_v = //
+        static constexpr bool in_internal_v = //
             (sizeof(T) <= sizeof(internal_storage_t)) && (alignof(internal_storage_t) % alignof(T) == 0)
             && std::is_nothrow_destructible_v<T> && std::is_nothrow_move_constructible_v<T>;
 
         template < typename T >
-        inline static constexpr bool in_trivial_internal_v = //
+        static constexpr bool in_trivial_internal_v = //
             in_internal_v<T> && std::is_trivially_copyable_v<T>;
 
         static std::pair<storage_e, const vtable_t*> unpack_vtag(const uvalue& self) noexcept {
