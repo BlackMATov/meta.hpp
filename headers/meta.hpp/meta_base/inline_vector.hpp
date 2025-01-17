@@ -48,7 +48,9 @@ namespace meta_hpp::detail
         template < typename... Args >
         T& emplace_back(Args&&... args) {
             META_HPP_ASSERT(end_ < capacity_ && "full vector");
-            return *std::construct_at(end_++, std::forward<Args>(args)...);
+            T& result = *std::construct_at(end_, std::forward<Args>(args)...);
+            ++end_; // NOLINT(*-pointer-arithmetic)
+            return result;
         }
 
         [[nodiscard]] std::size_t get_size() const noexcept {
