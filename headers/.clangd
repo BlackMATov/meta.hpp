@@ -13,6 +13,7 @@ Diagnostics:
       - portability-*
       - readability-*
     Remove:
+      - bugprone-crtp-constructor-accessibility
       - bugprone-easily-swappable-parameters
       - bugprone-macro-parentheses
       - cppcoreguidelines-macro-usage
