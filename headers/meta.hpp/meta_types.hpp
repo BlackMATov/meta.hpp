@@ -414,9 +414,13 @@ namespace meta_hpp::detail
 
         metadata_map metadata;
 
+        type_data_base() = delete;
+        virtual ~type_data_base() = default;
+
         type_data_base(type_data_base&&) = delete;
-        type_data_base(const type_data_base&) = delete;
         type_data_base& operator=(type_data_base&&) = delete;
+
+        type_data_base(const type_data_base&) = delete;
         type_data_base& operator=(const type_data_base&) = delete;
 
         virtual void purge_binds() = 0;
@@ -426,8 +430,6 @@ namespace meta_hpp::detail
         explicit type_data_base(type_kind nkind, std::size_t nshared)
         : kind{nkind}
         , shared{nshared} {}
-
-        ~type_data_base() = default;
     };
 
     struct array_type_data final : type_data_base {
