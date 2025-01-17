@@ -17,7 +17,7 @@ namespace meta_hpp::detail
 {
     class uinst_base {
     public:
-        enum class ref_types {
+        enum class ref_types : std::uint8_t {
             lvalue,
             const_lvalue,
             rvalue,

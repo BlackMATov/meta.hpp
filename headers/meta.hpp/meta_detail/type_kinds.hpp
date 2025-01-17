@@ -10,7 +10,7 @@
 
 namespace meta_hpp::detail
 {
-    enum class type_kind : std::uint32_t {
+    enum class type_kind : std::uint8_t {
         array_,
         class_,
         constructor_,

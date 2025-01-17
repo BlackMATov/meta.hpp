@@ -10,7 +10,7 @@
 
 namespace meta_hpp::detail
 {
-    enum class error_code {
+    enum class error_code : std::uint8_t {
         no_error,
 
         bad_cast,

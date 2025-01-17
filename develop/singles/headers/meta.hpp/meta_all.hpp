@@ -449,7 +449,7 @@ namespace meta_hpp::detail
 
 namespace meta_hpp::detail
 {
-    enum class error_code {
+    enum class error_code : std::uint8_t {
         no_error,
 
         bad_cast,
@@ -1432,7 +1432,7 @@ namespace meta_hpp
 
 namespace meta_hpp::detail
 {
-    enum class type_kind : std::uint32_t {
+    enum class type_kind : std::uint8_t {
         array_,
         class_,
         constructor_,
@@ -2805,7 +2805,7 @@ namespace meta_hpp
             void* ptr;
         };
 
-        enum class storage_e : std::uintptr_t {
+        enum class storage_e : std::uint8_t {
             nothing,
             trivial,
             internal,
@@ -6408,7 +6408,7 @@ namespace meta_hpp::detail
 {
     class uarg_base {
     public:
-        enum class ref_types {
+        enum class ref_types : std::uint8_t {
             lvalue,
             const_lvalue,
             rvalue,
@@ -7447,7 +7447,7 @@ namespace meta_hpp::detail
 {
     class uinst_base {
     public:
-        enum class ref_types {
+        enum class ref_types : std::uint8_t {
             lvalue,
             const_lvalue,
             rvalue,

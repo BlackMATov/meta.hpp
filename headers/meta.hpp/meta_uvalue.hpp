@@ -128,7 +128,7 @@ namespace meta_hpp
             void* ptr;
         };
 
-        enum class storage_e : std::uintptr_t {
+        enum class storage_e : std::uint8_t {
             nothing,
             trivial,
             internal,
