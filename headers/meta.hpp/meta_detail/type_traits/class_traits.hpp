@@ -1,7 +1,7 @@
 /*******************************************************************************
  * This file is part of the "https://github.com/blackmatov/meta.hpp"
  * For conditions of distribution and use, see copyright notice in LICENSE.md
- * Copyright (C) 2021-2024, by Matvey Cherevko (blackmatov@gmail.com)
+ * Copyright (C) 2021-2025, by Matvey Cherevko (blackmatov@gmail.com)
  ******************************************************************************/
 
 #pragma once
@@ -42,8 +42,7 @@ namespace meta_hpp::detail
         //
 
         template < //
-            template < typename... >
-            typename Class,
+            template < typename... > typename Class,
             typename... Zs >
         struct class_argument_traits_impl<Class<Zs...>> {
             using argument_types = type_list<Zs...>;
@@ -55,8 +54,7 @@ namespace meta_hpp::detail
         //
 
         template < //
-            template < auto, typename... >
-            typename Class,
+            template < auto, typename... > typename Class,
             auto A,
             typename... Zs >
             requires(sizeof...(Zs) > 0)
@@ -71,8 +69,7 @@ namespace meta_hpp::detail
         //
 
         template < //
-            template < auto, auto, typename... >
-            typename Class,
+            template < auto, auto, typename... > typename Class,
             auto A,
             auto B,
             typename... Zs >
@@ -83,8 +80,7 @@ namespace meta_hpp::detail
         };
 
         template < //
-            template < typename, auto, typename... >
-            typename Class,
+            template < typename, auto, typename... > typename Class,
             typename A,
             auto B,
             typename... Zs >
@@ -102,8 +98,7 @@ namespace meta_hpp::detail
         //
 
         template < //
-            template < auto, auto, auto, typename... >
-            typename Class,
+            template < auto, auto, auto, typename... > typename Class,
             auto A,
             auto B,
             auto C,
@@ -115,8 +110,7 @@ namespace meta_hpp::detail
         };
 
         template < //
-            template < typename, auto, auto, typename... >
-            typename Class,
+            template < typename, auto, auto, typename... > typename Class,
             typename A,
             auto B,
             auto C,
@@ -128,8 +122,7 @@ namespace meta_hpp::detail
         };
 
         template < //
-            template < auto, typename, auto, typename... >
-            typename Class,
+            template < auto, typename, auto, typename... > typename Class,
             auto A,
             typename B,
             auto C,
@@ -141,8 +134,7 @@ namespace meta_hpp::detail
         };
 
         template < //
-            template < typename, typename, auto, typename... >
-            typename Class,
+            template < typename, typename, auto, typename... > typename Class,
             typename A,
             typename B,
             auto C,
@@ -158,8 +150,7 @@ namespace meta_hpp::detail
         //
 
         template < //
-            template < auto... >
-            typename Class,
+            template < auto... > typename Class,
             auto... Zs >
         struct class_argument_traits_impl<Class<Zs...>> {
             using argument_types = type_list<decltype(Zs)...>;
@@ -171,8 +162,7 @@ namespace meta_hpp::detail
         //
 
         template < //
-            template < typename, auto... >
-            typename Class,
+            template < typename, auto... > typename Class,
             typename A,
             auto... Zs >
             requires(sizeof...(Zs) > 0)
@@ -187,8 +177,7 @@ namespace meta_hpp::detail
         //
 
         template < //
-            template < auto, typename, auto... >
-            typename Class,
+            template < auto, typename, auto... > typename Class,
             auto A,
             typename B,
             auto... Zs >
@@ -199,8 +188,7 @@ namespace meta_hpp::detail
         };
 
         template < //
-            template < typename, typename, auto... >
-            typename Class,
+            template < typename, typename, auto... > typename Class,
             typename A,
             typename B,
             auto... Zs >
@@ -218,8 +206,7 @@ namespace meta_hpp::detail
         //
 
         template < //
-            template < auto, auto, typename, auto... >
-            typename Class,
+            template < auto, auto, typename, auto... > typename Class,
             auto A,
             auto B,
             typename C,
@@ -231,8 +218,7 @@ namespace meta_hpp::detail
         };
 
         template < //
-            template < typename, auto, typename, auto... >
-            typename Class,
+            template < typename, auto, typename, auto... > typename Class,
             typename A,
             auto B,
             typename C,
@@ -244,8 +230,7 @@ namespace meta_hpp::detail
         };
 
         template < //
-            template < auto, typename, typename, auto... >
-            typename Class,
+            template < auto, typename, typename, auto... > typename Class,
             auto A,
             typename B,
             typename C,
@@ -257,8 +242,7 @@ namespace meta_hpp::detail
         };
 
         template < //
-            template < typename, typename, typename, auto... >
-            typename Class,
+            template < typename, typename, typename, auto... > typename Class,
             typename A,
             typename B,
             typename C,
