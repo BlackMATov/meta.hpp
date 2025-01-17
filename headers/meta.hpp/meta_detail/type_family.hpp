@@ -65,7 +65,7 @@ namespace meta_hpp::detail
         using type = array_type;
         using data_ptr = array_type_data*;
         using data_type = array_type_data;
-        inline static constexpr type_kind kind{type_kind::array_};
+        static constexpr type_kind kind{type_kind::array_};
     };
 
     template <>
@@ -73,7 +73,7 @@ namespace meta_hpp::detail
         using type = class_type;
         using data_ptr = class_type_data*;
         using data_type = class_type_data;
-        inline static constexpr type_kind kind{type_kind::class_};
+        static constexpr type_kind kind{type_kind::class_};
     };
 
     template <>
@@ -81,7 +81,7 @@ namespace meta_hpp::detail
         using type = constructor_type;
         using data_ptr = constructor_type_data*;
         using data_type = constructor_type_data;
-        inline static constexpr type_kind kind{type_kind::constructor_};
+        static constexpr type_kind kind{type_kind::constructor_};
     };
 
     template <>
@@ -89,7 +89,7 @@ namespace meta_hpp::detail
         using type = destructor_type;
         using data_ptr = destructor_type_data*;
         using data_type = destructor_type_data;
-        inline static constexpr type_kind kind{type_kind::destructor_};
+        static constexpr type_kind kind{type_kind::destructor_};
     };
 
     template <>
@@ -97,7 +97,7 @@ namespace meta_hpp::detail
         using type = enum_type;
         using data_ptr = enum_type_data*;
         using data_type = enum_type_data;
-        inline static constexpr type_kind kind{type_kind::enum_};
+        static constexpr type_kind kind{type_kind::enum_};
     };
 
     template <>
@@ -105,7 +105,7 @@ namespace meta_hpp::detail
         using type = function_type;
         using data_ptr = function_type_data*;
         using data_type = function_type_data;
-        inline static constexpr type_kind kind{type_kind::function_};
+        static constexpr type_kind kind{type_kind::function_};
     };
 
     template <>
@@ -113,7 +113,7 @@ namespace meta_hpp::detail
         using type = member_type;
         using data_ptr = member_type_data*;
         using data_type = member_type_data;
-        inline static constexpr type_kind kind{type_kind::member_};
+        static constexpr type_kind kind{type_kind::member_};
     };
 
     template <>
@@ -121,7 +121,7 @@ namespace meta_hpp::detail
         using type = method_type;
         using data_ptr = method_type_data*;
         using data_type = method_type_data;
-        inline static constexpr type_kind kind{type_kind::method_};
+        static constexpr type_kind kind{type_kind::method_};
     };
 
     template <>
@@ -129,7 +129,7 @@ namespace meta_hpp::detail
         using type = nullptr_type;
         using data_ptr = nullptr_type_data*;
         using data_type = nullptr_type_data;
-        inline static constexpr type_kind kind{type_kind::nullptr_};
+        static constexpr type_kind kind{type_kind::nullptr_};
     };
 
     template <>
@@ -137,7 +137,7 @@ namespace meta_hpp::detail
         using type = number_type;
         using data_ptr = number_type_data*;
         using data_type = number_type_data;
-        inline static constexpr type_kind kind{type_kind::number_};
+        static constexpr type_kind kind{type_kind::number_};
     };
 
     template <>
@@ -145,7 +145,7 @@ namespace meta_hpp::detail
         using type = pointer_type;
         using data_ptr = pointer_type_data*;
         using data_type = pointer_type_data;
-        inline static constexpr type_kind kind{type_kind::pointer_};
+        static constexpr type_kind kind{type_kind::pointer_};
     };
 
     template <>
@@ -153,7 +153,7 @@ namespace meta_hpp::detail
         using type = reference_type;
         using data_ptr = reference_type_data*;
         using data_type = reference_type_data;
-        inline static constexpr type_kind kind{type_kind::reference_};
+        static constexpr type_kind kind{type_kind::reference_};
     };
 
     template <>
@@ -161,7 +161,7 @@ namespace meta_hpp::detail
         using type = void_type;
         using data_ptr = void_type_data*;
         using data_type = void_type_data;
-        inline static constexpr type_kind kind{type_kind::void_};
+        static constexpr type_kind kind{type_kind::void_};
     };
 }
 

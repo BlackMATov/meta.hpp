@@ -26,8 +26,8 @@ namespace meta_hpp::detail
     template < pointer_kind Pointer >
     struct pointer_traits {
         using cv_data_type = std::remove_pointer_t<Pointer>;
-        inline static constexpr bool is_readonly = std::is_const_v<cv_data_type>;
-        inline static constexpr bool is_volatile = std::is_volatile_v<cv_data_type>;
+        static constexpr bool is_readonly = std::is_const_v<cv_data_type>;
+        static constexpr bool is_volatile = std::is_volatile_v<cv_data_type>;
 
         using data_type = std::remove_cv_t<cv_data_type>;
 

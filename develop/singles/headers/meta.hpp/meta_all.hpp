@@ -779,15 +779,15 @@ namespace meta_hpp::detail
     template <>
     struct fnv1a_hash_traits<sizeof(std::uint32_t)> {
         using underlying_type = std::uint32_t;
-        static inline constexpr underlying_type prime{16777619U};
-        static inline constexpr underlying_type offset_basis{2166136261U};
+        static constexpr underlying_type prime{16777619U};
+        static constexpr underlying_type offset_basis{2166136261U};
     };
 
     template <>
     struct fnv1a_hash_traits<sizeof(std::uint64_t)> {
         using underlying_type = std::uint64_t;
-        static inline constexpr underlying_type prime{1099511628211U};
-        static inline constexpr underlying_type offset_basis{14695981039346656037U};
+        static constexpr underlying_type prime{1099511628211U};
+        static constexpr underlying_type offset_basis{14695981039346656037U};
     };
 
     template < typename T >
@@ -1559,8 +1559,8 @@ namespace meta_hpp::detail
         static constexpr std::size_t extent{std::extent_v<Array>};
 
         using cv_data_type = std::remove_extent_t<Array>;
-        inline static constexpr bool is_readonly = std::is_const_v<cv_data_type>;
-        inline static constexpr bool is_volatile = std::is_volatile_v<cv_data_type>;
+        static constexpr bool is_readonly = std::is_const_v<cv_data_type>;
+        static constexpr bool is_volatile = std::is_volatile_v<cv_data_type>;
 
         using data_type = std::remove_cv_t<cv_data_type>;
 
@@ -2043,8 +2043,8 @@ namespace meta_hpp::detail
     template < typename V, typename C >
     struct member_traits<V C::*> {
         using cv_value_type = V;
-        inline static constexpr bool is_readonly = std::is_const_v<cv_value_type>;
-        inline static constexpr bool is_volatile = std::is_volatile_v<cv_value_type>;
+        static constexpr bool is_readonly = std::is_const_v<cv_value_type>;
+        static constexpr bool is_volatile = std::is_volatile_v<cv_value_type>;
 
         using class_type = C;
         using value_type = std::remove_cv_t<cv_value_type>;
@@ -2271,8 +2271,8 @@ namespace meta_hpp::detail
     template < pointer_kind Pointer >
     struct pointer_traits {
         using cv_data_type = std::remove_pointer_t<Pointer>;
-        inline static constexpr bool is_readonly = std::is_const_v<cv_data_type>;
-        inline static constexpr bool is_volatile = std::is_volatile_v<cv_data_type>;
+        static constexpr bool is_readonly = std::is_const_v<cv_data_type>;
+        static constexpr bool is_volatile = std::is_volatile_v<cv_data_type>;
 
         using data_type = std::remove_cv_t<cv_data_type>;
 
@@ -2310,8 +2310,8 @@ namespace meta_hpp::detail
     template < reference_kind Reference >
     struct reference_traits {
         using cv_data_type = std::remove_reference_t<Reference>;
-        inline static constexpr bool is_readonly = std::is_const_v<cv_data_type>;
-        inline static constexpr bool is_volatile = std::is_volatile_v<cv_data_type>;
+        static constexpr bool is_readonly = std::is_const_v<cv_data_type>;
+        static constexpr bool is_volatile = std::is_volatile_v<cv_data_type>;
 
         using data_type = std::remove_cv_t<cv_data_type>;
 
@@ -2386,7 +2386,7 @@ namespace meta_hpp::detail
         using type = array_type;
         using data_ptr = array_type_data*;
         using data_type = array_type_data;
-        inline static constexpr type_kind kind{type_kind::array_};
+        static constexpr type_kind kind{type_kind::array_};
     };
 
     template <>
@@ -2394,7 +2394,7 @@ namespace meta_hpp::detail
         using type = class_type;
         using data_ptr = class_type_data*;
         using data_type = class_type_data;
-        inline static constexpr type_kind kind{type_kind::class_};
+        static constexpr type_kind kind{type_kind::class_};
     };
 
     template <>
@@ -2402,7 +2402,7 @@ namespace meta_hpp::detail
         using type = constructor_type;
         using data_ptr = constructor_type_data*;
         using data_type = constructor_type_data;
-        inline static constexpr type_kind kind{type_kind::constructor_};
+        static constexpr type_kind kind{type_kind::constructor_};
     };
 
     template <>
@@ -2410,7 +2410,7 @@ namespace meta_hpp::detail
         using type = destructor_type;
         using data_ptr = destructor_type_data*;
         using data_type = destructor_type_data;
-        inline static constexpr type_kind kind{type_kind::destructor_};
+        static constexpr type_kind kind{type_kind::destructor_};
     };
 
     template <>
@@ -2418,7 +2418,7 @@ namespace meta_hpp::detail
         using type = enum_type;
         using data_ptr = enum_type_data*;
         using data_type = enum_type_data;
-        inline static constexpr type_kind kind{type_kind::enum_};
+        static constexpr type_kind kind{type_kind::enum_};
     };
 
     template <>
@@ -2426,7 +2426,7 @@ namespace meta_hpp::detail
         using type = function_type;
         using data_ptr = function_type_data*;
         using data_type = function_type_data;
-        inline static constexpr type_kind kind{type_kind::function_};
+        static constexpr type_kind kind{type_kind::function_};
     };
 
     template <>
@@ -2434,7 +2434,7 @@ namespace meta_hpp::detail
         using type = member_type;
         using data_ptr = member_type_data*;
         using data_type = member_type_data;
-        inline static constexpr type_kind kind{type_kind::member_};
+        static constexpr type_kind kind{type_kind::member_};
     };
 
     template <>
@@ -2442,7 +2442,7 @@ namespace meta_hpp::detail
         using type = method_type;
         using data_ptr = method_type_data*;
         using data_type = method_type_data;
-        inline static constexpr type_kind kind{type_kind::method_};
+        static constexpr type_kind kind{type_kind::method_};
     };
 
     template <>
@@ -2450,7 +2450,7 @@ namespace meta_hpp::detail
         using type = nullptr_type;
         using data_ptr = nullptr_type_data*;
         using data_type = nullptr_type_data;
-        inline static constexpr type_kind kind{type_kind::nullptr_};
+        static constexpr type_kind kind{type_kind::nullptr_};
     };
 
     template <>
@@ -2458,7 +2458,7 @@ namespace meta_hpp::detail
         using type = number_type;
         using data_ptr = number_type_data*;
         using data_type = number_type_data;
-        inline static constexpr type_kind kind{type_kind::number_};
+        static constexpr type_kind kind{type_kind::number_};
     };
 
     template <>
@@ -2466,7 +2466,7 @@ namespace meta_hpp::detail
         using type = pointer_type;
         using data_ptr = pointer_type_data*;
         using data_type = pointer_type_data;
-        inline static constexpr type_kind kind{type_kind::pointer_};
+        static constexpr type_kind kind{type_kind::pointer_};
     };
 
     template <>
@@ -2474,7 +2474,7 @@ namespace meta_hpp::detail
         using type = reference_type;
         using data_ptr = reference_type_data*;
         using data_type = reference_type_data;
-        inline static constexpr type_kind kind{type_kind::reference_};
+        static constexpr type_kind kind{type_kind::reference_};
     };
 
     template <>
@@ -2482,7 +2482,7 @@ namespace meta_hpp::detail
         using type = void_type;
         using data_ptr = void_type_data*;
         using data_type = void_type_data;
-        inline static constexpr type_kind kind{type_kind::void_};
+        static constexpr type_kind kind{type_kind::void_};
     };
 }
 
@@ -11329,12 +11329,12 @@ namespace meta_hpp
         // NOLINTEND(*-avoid-const-or-ref-data-members)
 
         template < typename T >
-        inline static constexpr bool in_internal_v = //
+        static constexpr bool in_internal_v = //
             (sizeof(T) <= sizeof(internal_storage_t)) && (alignof(internal_storage_t) % alignof(T) == 0)
             && std::is_nothrow_destructible_v<T> && std::is_nothrow_move_constructible_v<T>;
 
         template < typename T >
-        inline static constexpr bool in_trivial_internal_v = //
+        static constexpr bool in_trivial_internal_v = //
             in_internal_v<T> && std::is_trivially_copyable_v<T>;
 
         static std::pair<storage_e, const vtable_t*> unpack_vtag(const uvalue& self) noexcept {
