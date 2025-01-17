@@ -113,7 +113,7 @@ namespace meta_hpp
         using namespace detail;
         type_registry& registry{type_registry::instance()};
         const uarg varg{registry, META_HPP_FWD(arg)};
-        return state_->destroy(varg);
+        state_->destroy(varg);
     }
 
     template < typename Arg >
