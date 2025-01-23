@@ -77,6 +77,9 @@ namespace meta_hpp
         [[nodiscard]] uvalue unmap() const;
         [[nodiscard]] bool has_unmap_op() const noexcept;
 
+        [[nodiscard]] std::size_t size() const;
+        [[nodiscard]] bool has_size_op() const noexcept;
+
         [[nodiscard]] bool less(const uvalue& other) const;
         [[nodiscard]] bool has_less_op() const noexcept;
 

@@ -191,6 +191,9 @@ public:
     uvalue unmap() const;
     bool has_unmap_op() const noexcept;
 
+    std::size_t size() const;
+    bool has_size_op() const noexcept;
+
     bool less(const uvalue& other) const;
     bool has_less_op() const noexcept;
 

@@ -103,6 +103,11 @@ namespace
     }
 
     [[maybe_unused]]
+    std::size_t size(const ivec2&) {
+        return 2;
+    }
+
+    [[maybe_unused]]
     bool operator==(const ivec2& l, const ivec2& r) noexcept {
         return l.x == r.x && l.y == r.y;
     }
@@ -136,6 +141,7 @@ META_HPP_DECLARE_COPY_TRAITS_FOR(ivec2_big)
 META_HPP_DECLARE_DEREF_TRAITS_FOR(deref_custom_class)
 
 META_HPP_DECLARE_INDEX_TRAITS_FOR(ivec2)
+META_HPP_DECLARE_SIZE_TRAITS_FOR(ivec2)
 
 META_HPP_DECLARE_EQUALS_TRAITS_FOR(ivec2)
 
@@ -911,7 +917,9 @@ TEST_CASE("meta/meta_utilities/value/arrays") {
         meta::uvalue v{42};
         CHECK(v.get_type() == meta::resolve_type<int>());
         CHECK_FALSE(v.has_index_op());
+        CHECK_FALSE(v.has_size_op());
         CHECK_THROWS(std::ignore = v[0]);
+        CHECK_THROWS(std::ignore = v.size());
     }
 
     SUBCASE("void*") {
@@ -920,7 +928,9 @@ TEST_CASE("meta/meta_utilities/value/arrays") {
         meta::uvalue v{p};
         CHECK(v.get_type() == meta::resolve_type<void*>());
         CHECK_FALSE(v.has_index_op());
+        CHECK_FALSE(v.has_size_op());
         CHECK_THROWS(std::ignore = v[0]);
+        CHECK_THROWS(std::ignore = v.size());
     }
 
     SUBCASE("const void*") {
@@ -929,7 +939,9 @@ TEST_CASE("meta/meta_utilities/value/arrays") {
         meta::uvalue v{p};
         CHECK(v.get_type() == meta::resolve_type<const void*>());
         CHECK_FALSE(v.has_index_op());
+        CHECK_FALSE(v.has_size_op());
         CHECK_THROWS(std::ignore = v[0]);
+        CHECK_THROWS(std::ignore = v.size());
     }
 
     SUBCASE("int[3]") {
@@ -938,7 +950,9 @@ TEST_CASE("meta/meta_utilities/value/arrays") {
             meta::uvalue v{arr};
             CHECK(v.get_type() == meta::resolve_type<int*>());
             CHECK(v.has_index_op());
+            CHECK_FALSE(v.has_size_op());
 
+            CHECK_THROWS(std::ignore = v.size());
             CHECK(v[0].as<int>() == 1);
             CHECK(v[1].as<int>() == 2);
             CHECK(v[2].as<int>() == 3);
@@ -948,6 +962,8 @@ TEST_CASE("meta/meta_utilities/value/arrays") {
             meta::uvalue v{arr};
             CHECK(v.get_type() == meta::resolve_type<int*>());
             CHECK(v.has_index_op());
+            CHECK_FALSE(v.has_size_op());
+            CHECK_THROWS(std::ignore = v.size());
             CHECK_FALSE(v[0]);
         }
     }
@@ -958,7 +974,9 @@ TEST_CASE("meta/meta_utilities/value/arrays") {
             meta::uvalue v{arr};
             CHECK(v.get_type() == meta::resolve_type<const int*>());
             CHECK(v.has_index_op());
+            CHECK_FALSE(v.has_size_op());
 
+            CHECK_THROWS(std::ignore = v.size());
             CHECK(v[0].as<int>() == 1);
             CHECK(v[1].as<int>() == 2);
             CHECK(v[2].as<int>() == 3);
@@ -968,6 +986,8 @@ TEST_CASE("meta/meta_utilities/value/arrays") {
             meta::uvalue v{arr};
             CHECK(v.get_type() == meta::resolve_type<const int*>());
             CHECK(v.has_index_op());
+            CHECK_FALSE(v.has_size_op());
+            CHECK_THROWS(std::ignore = v.size());
             CHECK_FALSE(v[0]);
         }
     }
@@ -976,7 +996,9 @@ TEST_CASE("meta/meta_utilities/value/arrays") {
         meta::uvalue v{std::array{1,2,3}};
         CHECK(v.get_type() == meta::resolve_type<std::array<int, 3>>());
         CHECK(v.has_index_op());
+        CHECK(v.has_size_op());
 
+        CHECK(v.size() == 3);
         CHECK(v[0].as<int>() == 1);
         CHECK(v[1].as<int>() == 2);
         CHECK(v[2].as<int>() == 3);
@@ -988,6 +1010,7 @@ TEST_CASE("meta/meta_utilities/value/arrays") {
         CHECK(v.get_type() == meta::resolve_type<std::string>());
         CHECK(v.has_index_op());
 
+        CHECK(v.size() == 3);
         CHECK(v[0].as<char>() == 'h');
         CHECK(v[1].as<char>() == 'i');
         CHECK(v[2].as<char>() == '!');
@@ -998,7 +1021,9 @@ TEST_CASE("meta/meta_utilities/value/arrays") {
         meta::uvalue v{std::string_view{"hi!"}};
         CHECK(v.get_type() == meta::resolve_type<std::string_view>());
         CHECK(v.has_index_op());
+        CHECK(v.has_size_op());
 
+        CHECK(v.size() == 3);
         CHECK(v[0].as<char>() == 'h');
         CHECK(v[1].as<char>() == 'i');
         CHECK(v[2].as<char>() == '!');
@@ -1010,7 +1035,9 @@ TEST_CASE("meta/meta_utilities/value/arrays") {
         meta::uvalue v{std::span{arr}};
         CHECK(v.get_type() == meta::resolve_type<std::span<int>>());
         CHECK(v.has_index_op());
+        CHECK(v.has_size_op());
 
+        CHECK(v.size() == 3);
         CHECK(v[0].as<int>() == 1);
         CHECK(v[1].as<int>() == 2);
         CHECK(v[2].as<int>() == 3);
@@ -1021,7 +1048,9 @@ TEST_CASE("meta/meta_utilities/value/arrays") {
         const meta::uvalue v{std::vector{1,2,3}};
         CHECK(v.get_type() == meta::resolve_type<std::vector<int>>());
         CHECK(v.has_index_op());
+        CHECK(v.has_size_op());
 
+        CHECK(v.size() == 3);
         CHECK(v[0].as<int>() == 1);
         CHECK(v[1].as<int>() == 2);
         CHECK(v[2].as<int>() == 3);
@@ -1033,7 +1062,9 @@ TEST_CASE("meta/meta_utilities/value/arrays") {
             meta::uvalue v{ivec2{1,2}};
             CHECK(v.get_type() == meta::resolve_type<ivec2>());
             CHECK(v.has_index_op());
+            CHECK(v.has_size_op());
 
+            CHECK(v.size() == 2);
             CHECK(v[0].as<int>() == 1);
             CHECK(v[1].as<int>() == 2);
         }
@@ -1041,6 +1072,8 @@ TEST_CASE("meta/meta_utilities/value/arrays") {
             meta::uvalue v{ivec3{1,2,3}};
             CHECK(v.get_type() == meta::resolve_type<ivec3>());
             CHECK_FALSE(v.has_index_op());
+            CHECK_FALSE(v.has_size_op());
+            CHECK_THROWS(std::ignore = v.size());
             CHECK_THROWS(std::ignore = v[0]);
         }
     }
