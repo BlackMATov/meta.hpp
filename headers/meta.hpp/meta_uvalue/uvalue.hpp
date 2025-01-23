@@ -15,6 +15,7 @@
 #include "../meta_detail/value_traits/equals_traits.hpp"
 #include "../meta_detail/value_traits/index_traits.hpp"
 #include "../meta_detail/value_traits/less_traits.hpp"
+#include "../meta_detail/value_traits/size_traits.hpp"
 #include "../meta_detail/value_traits/unmap_traits.hpp"
 
 #include "../meta_detail/value_utilities/uarg.hpp"
@@ -29,9 +30,11 @@ namespace meta_hpp
         void (*const move)(uvalue&& self, uvalue& to) noexcept;
         void (*const reset)(uvalue& self) noexcept;
 
+        uvalue (*const index)(const storage_u& self, std::size_t i);
+        std::size_t (*const size)(const storage_u& self);
+
         uvalue (*const copy)(const storage_u& self);
         uvalue (*const deref)(const storage_u& self);
-        uvalue (*const index)(const storage_u& self, std::size_t i);
         uvalue (*const unmap)(const storage_u& self);
 
         bool (*const less)(const storage_u& l, const storage_u& r);
@@ -199,6 +202,26 @@ namespace meta_hpp
                     self.storage_.vtag = 0;
                 }},
 
+                .index{[]() {
+                    if constexpr ( detail::has_index_traits<Tp> ) {
+                        return +[](const storage_u& self, std::size_t i) -> uvalue {
+                            return detail::index_traits<Tp>{}(*storage_cast<Tp>(self), i);
+                        };
+                    } else {
+                        return nullptr;
+                    }
+                }()},
+
+                .size{[]() {
+                    if constexpr ( detail::has_size_traits<Tp> ) {
+                        return +[](const storage_u& self) -> std::size_t {
+                            return detail::size_traits<Tp>{}(*storage_cast<Tp>(self));
+                        };
+                    } else {
+                        return nullptr;
+                    }
+                }()},
+
                 .copy{[]() {
                     if constexpr ( detail::has_copy_traits<Tp> ) {
                         return +[](const storage_u& self) -> uvalue {
@@ -213,16 +236,6 @@ namespace meta_hpp
                     if constexpr ( detail::has_deref_traits<Tp> ) {
                         return +[](const storage_u& self) -> uvalue {
                             return detail::deref_traits<Tp>{}(*storage_cast<Tp>(self));
-                        };
-                    } else {
-                        return nullptr;
-                    }
-                }()},
-
-                .index{[]() {
-                    if constexpr ( detail::has_index_traits<Tp> ) {
-                        return +[](const storage_u& self, std::size_t i) -> uvalue {
-                            return detail::index_traits<Tp>{}(*storage_cast<Tp>(self), i);
                         };
                     } else {
                         return nullptr;
@@ -453,6 +466,21 @@ namespace meta_hpp
     inline bool uvalue::has_unmap_op() const noexcept {
         auto&& [tag, vtable] = vtable_t::unpack_vtag(*this);
         return tag != storage_e::nothing && vtable->unmap != nullptr;
+    }
+
+    inline std::size_t uvalue::size() const {
+        auto&& [tag, vtable] = vtable_t::unpack_vtag(*this);
+
+        if ( tag != storage_e::nothing && vtable->size != nullptr ) {
+            return vtable->size(storage_);
+        }
+
+        throw_exception(error_code::bad_uvalue_operation);
+    }
+
+    inline bool uvalue::has_size_op() const noexcept {
+        auto&& [tag, vtable] = vtable_t::unpack_vtag(*this);
+        return tag != storage_e::nothing && vtable->size != nullptr;
     }
 
     inline bool uvalue::less(const uvalue& other) const {

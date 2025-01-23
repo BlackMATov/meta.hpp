@@ -18,6 +18,7 @@
 #include <exception>
 #include <functional>
 #include <initializer_list>
+#include <iterator>
 #include <map>
 #include <memory>
 #include <mutex>
