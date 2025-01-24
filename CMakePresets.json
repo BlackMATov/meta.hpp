@@ -7,19 +7,21 @@
     },
     "configurePresets": [
         {
-            "name": "ninja-base",
+            "name": "develop-base",
             "hidden": true,
             "generator": "Ninja Multi-Config",
             "binaryDir": "${sourceDir}/develop/build/${presetName}",
             "installDir": "${sourceDir}/develop/install/${presetName}",
             "cacheVariables": {
+                "META_HPP_DEVELOP": true,
+                "META_HPP_INSTALL": true,
                 "CMAKE_EXPORT_COMPILE_COMMANDS": true
             }
         },
         {
             "name": "linux-base",
             "hidden": true,
-            "inherits": "ninja-base",
+            "inherits": "develop-base",
             "condition": {
                 "type": "equals",
                 "lhs": "${hostSystemName}",
@@ -61,7 +63,7 @@
         {
             "name": "macos-base",
             "hidden": true,
-            "inherits": "ninja-base",
+            "inherits": "develop-base",
             "condition": {
                 "type": "equals",
                 "lhs": "${hostSystemName}",
@@ -80,21 +82,21 @@
             "name": "macos-arm64-san",
             "inherits": "macos-arm64",
             "cacheVariables": {
-                "BUILD_WITH_SANITIZERS": true
+                "META_HPP_DEVELOP_WITH_SANITIZERS": true
             }
         },
         {
             "name": "macos-arm64-san-no-exceptions",
             "inherits": "macos-arm64-san",
             "cacheVariables": {
-                "BUILD_WITH_NO_EXCEPTIONS": true
+                "META_HPP_DEVELOP_WITH_NO_EXCEPTIONS": true
             }
         },
         {
             "name": "macos-arm64-san-no-rtti",
             "inherits": "macos-arm64-san",
             "cacheVariables": {
-                "BUILD_WITH_NO_RTTI": true
+                "META_HPP_DEVELOP_WITH_NO_RTTI": true
             }
         },
         {
@@ -109,27 +111,27 @@
             "name": "macos-x64-san",
             "inherits": "macos-x64",
             "cacheVariables": {
-                "BUILD_WITH_SANITIZERS": true
+                "META_HPP_DEVELOP_WITH_SANITIZERS": true
             }
         },
         {
             "name": "macos-x64-san-no-exceptions",
             "inherits": "macos-x64-san",
             "cacheVariables": {
-                "BUILD_WITH_NO_EXCEPTIONS": true
+                "META_HPP_DEVELOP_WITH_NO_EXCEPTIONS": true
             }
         },
         {
             "name": "macos-x64-san-no-rtti",
             "inherits": "macos-x64-san",
             "cacheVariables": {
-                "BUILD_WITH_NO_RTTI": true
+                "META_HPP_DEVELOP_WITH_NO_RTTI": true
             }
         },
         {
             "name": "windows-base",
             "hidden": true,
-            "inherits": "ninja-base",
+            "inherits": "develop-base",
             "condition": {
                 "type": "equals",
                 "lhs": "${hostSystemName}",
