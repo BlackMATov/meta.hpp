@@ -86,7 +86,8 @@ if(META_HPP_INSTALL)
     include(GNUInstallDirs)
 
     set(META_HPP_INSTALL_CONFIG_DIR
-        "${CMAKE_INSTALL_LIBDIR}/cmake/${PROJECT_NAME}")
+        "${CMAKE_INSTALL_LIBDIR}/cmake/${PROJECT_NAME}"
+        CACHE STRING "Installation directory for cmake files")
 
     set(META_HPP_INSTALL_CONFIG_INPUT
         "${CMAKE_CURRENT_SOURCE_DIR}/cmake/config.cmake.in")
