@@ -25,15 +25,15 @@ target_compile_options(${PROJECT_NAME}.setup_targets INTERFACE
         >)
 
 target_link_libraries(${PROJECT_NAME}.setup_targets INTERFACE
-    $<$<BOOL:${BUILD_WITH_COVERAGE}>:
+    $<$<BOOL:${META_HPP_DEVELOP_WITH_COVERAGE}>:
         meta.hpp::enable_gcov>
-    $<$<BOOL:${BUILD_WITH_SANITIZERS}>:
+    $<$<BOOL:${META_HPP_DEVELOP_WITH_SANITIZERS}>:
         meta.hpp::enable_asan
         meta.hpp::enable_ubsan>
-    $<$<BOOL:${BUILD_WITH_NO_EXCEPTIONS}>:
+    $<$<BOOL:${META_HPP_DEVELOP_WITH_NO_EXCEPTIONS}>:
         meta.hpp::disable_exceptions>
-    $<$<BOOL:${BUILD_WITH_NO_RTTI}>:
+    $<$<BOOL:${META_HPP_DEVELOP_WITH_NO_RTTI}>:
         meta.hpp::disable_rtti>)
 
 target_compile_definitions(${PROJECT_NAME}.setup_targets INTERFACE
-    $<$<BOOL:${BUILD_WITH_SANITIZERS}>:META_HPP_SANITIZERS>)
+    $<$<BOOL:${META_HPP_DEVELOP_WITH_SANITIZERS}>:META_HPP_SANITIZERS>)
