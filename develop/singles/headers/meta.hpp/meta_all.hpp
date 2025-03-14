@@ -9765,7 +9765,7 @@ namespace meta_hpp::detail::class_type_data_impl
     template < class_kind Class, class_kind Target >
     void add_upcast_info(new_base_info_t& info) {
         const class_type_data::upcast_func_t::upcast_t class_to_target = []() {
-            if constexpr ( requires { static_cast<Target*>(std::declval<Class*>()); } ) {
+            if constexpr ( std::is_base_of_v<Target, Class> && std::is_convertible_v<Class*, Target*> ) {
                 return +[](void* from) -> void* { //
                     return static_cast<Target*>(static_cast<Class*>(from));
                 };
