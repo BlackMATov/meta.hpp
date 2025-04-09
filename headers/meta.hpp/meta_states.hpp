@@ -74,10 +74,10 @@ namespace meta_hpp
         //
 
         template < typename... Args >
-        [[nodiscard]] uvalue create(Args&&... args) const;
+        uvalue create(Args&&... args) const;
 
         template < typename... Args >
-        [[nodiscard]] uresult try_create(Args&&... args) const;
+        uresult try_create(Args&&... args) const;
 
         template < typename... Args >
         uvalue create_at(void* mem, Args&&... args) const;
@@ -100,10 +100,10 @@ namespace meta_hpp
         //
 
         template < typename Iter >
-        [[nodiscard]] uvalue create_variadic(Iter first, Iter last) const;
+        uvalue create_variadic(Iter first, Iter last) const;
 
         template < typename Iter >
-        [[nodiscard]] uresult try_create_variadic(Iter first, Iter last) const;
+        uresult try_create_variadic(Iter first, Iter last) const;
 
         template < typename Iter >
         uvalue create_variadic_at(void* mem, Iter first, Iter last) const;

@@ -171,7 +171,7 @@ namespace meta_hpp
         [[nodiscard]] const variable_list& get_variables() const noexcept;
 
         template < typename... Args >
-        [[nodiscard]] uvalue create(Args&&... args) const;
+        uvalue create(Args&&... args) const;
         template < typename... Args >
         uvalue create_at(void* mem, Args&&... args) const;
 
