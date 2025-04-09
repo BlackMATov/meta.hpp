@@ -14,6 +14,7 @@ target_compile_options(${PROJECT_NAME}.setup_targets INTERFACE
         -Wno-exit-time-destructors
         -Wno-global-constructors
         -Wno-padded
+        -Wno-poison-system-directories
         -Wno-switch-default
         -Wno-unknown-warning-option
         -Wno-unneeded-internal-declaration
